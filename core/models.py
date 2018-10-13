@@ -141,10 +141,18 @@ def create_user_profile(sender, instance, created, **kwargs):
     Grader.objects.create(profile=profile)
     CourseAdmin.objects.create(profile=profile)
 
+# Throws RelatedObjectDoesNotExist Exceptions
+# Temp fix --> hasattr(instance.profile, 'student')
+# Could also do try: catch:
+# Or restructure models
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+  instance.profile.save()
+
+  if hasattr(instance.profile, 'student'):
     instance.profile.student.save()
+  if hasattr(instance.profile, 'grader'):
     instance.profile.grader.save()
+  if hasattr(instance.profile, 'courseadmin'):
     instance.profile.courseadmin.save()
 
