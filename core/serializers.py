@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from core.models import File, Comment, Submission
+from core.models import *
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ('url', 'username', 'email')
 
 class FileSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -30,7 +35,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 		model = Submission
 		fields = ('isFinalized', 'dateFinalized', 'grade', 'files')
 		depth = 1
-    
+
 class SubmissionWithCommentsSerializer(serializers.ModelSerializer):
 	files = FileWithCommentsSerializer(many=True)
 
