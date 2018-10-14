@@ -8,6 +8,9 @@
       "venv/**/*.ts"
     ]
   },
+  "rules": {
+    "no-console": false
+  },
   "jsRules": {
     "object-literal-sort-keys": false //Disable for javascript
   }
