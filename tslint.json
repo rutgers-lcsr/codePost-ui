@@ -4,10 +4,11 @@
     "exclude": [
       "config/**/*.js",
       "node_modules/**/*.ts",
-      "coverage/lcov-report/*.js"
+      "coverage/lcov-report/*.js",
+      "venv/**/*.ts"
     ]
   },
   "jsRules": {
     "object-literal-sort-keys": false //Disable for javascript
-  }  
+  }
 }
