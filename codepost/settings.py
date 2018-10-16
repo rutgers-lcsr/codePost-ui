@@ -50,6 +50,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+if DEBUG:
+  MIDDLEWARE.append('core.middleware.dev_cors_middleware')
 
 ROOT_URLCONF = 'codepost.urls'
 
