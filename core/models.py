@@ -84,7 +84,7 @@ class AssignmentParent(models.Model):
 
 class Assignment(models.Model):
   parent = models.ForeignKey(AssignmentParent, on_delete=models.CASCADE)
-  course = models.ForeignKey(Course, on_delete=models.CASCADE)
+  course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='assignments')
   isReleased = models.BooleanField(default=False)
   points = models.IntegerField()
 

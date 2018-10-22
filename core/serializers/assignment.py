@@ -5,5 +5,5 @@ class AssignmentSerializer(serializers.ModelSerializer):
 	name = serializers.CharField(source='parent.name')
 
 	class Meta:
-		model = Course
+		model = Assignment
 		fields = ('name', 'points')
