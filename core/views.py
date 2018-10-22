@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-<<<<<<< HEAD
 from rest_framework import viewsets
 from core.serializers.course import CourseSerializer
 from core.serializers.user import UserSerializer
@@ -8,14 +7,6 @@ from rest_framework.response import Response
 from core.models import Course
 from rest_framework.decorators import action
 from rest_framework import status
-=======
-from core.models import *
-from rest_framework import viewsets, status
-from core.serializers.user import UserSerializer
-from core.serializers.course import CourseSerializer
-from rest_framework.response import Response
-from django.apps import apps
->>>>>>> 8678c79581e5d0ff215bc713a780e8b671149fc2
 
 class UserViewSet(viewsets.ModelViewSet):
   queryset = User.objects.all().order_by('-date_joined')
