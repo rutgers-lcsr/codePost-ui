@@ -1,24 +1,43 @@
 import * as React from 'react';
 import './App.css';
-
+import VerticalPane from './components/VerticalPane'
 import logo from './logo.svg';
+import { ICourse, IOption } from './types/common'
 
 
 interface IStudentState {
-  users: string[];
+  courses: ICourse[],
+  currentAssignment?: IOption,
+  currentCourse?: IOption
 }
 
 class Student extends React.Component<{}, IStudentState> {
 
   public readonly state = {
-    users: []
+    courses: [],
+    currentAssignment: undefined,
+    currentCourse: undefined,
   }
 
-  public componentWillMount() {
-    this.loadUsers();
+  public componentDidMount() {
+    this.loadCourses();
+  }
+
+  public handleAssignmentChange = (option: IOption, event: any) => {
+    this.setState({
+      currentAssignment: option
+    });
+  }
+
+  public handleCourseChange = (option: IOption) => {
+    this.setState({
+      currentAssignment: undefined,
+      currentCourse: option
+    });
   }
 
   public render() {
+    const { courses, currentAssignment, currentCourse } = this.state
     return (
       <div className="App">
         <header className="App-header">
@@ -27,28 +46,32 @@ class Student extends React.Component<{}, IStudentState> {
         </header>
         <p className="App-intro">
           This is the student page.
-          <br/>
-            Users:
-          <br/>
-            {this.state.users.join(',')}
         </p>
+        <VerticalPane
+          currentTab={currentAssignment}
+          currentSelector={currentCourse}
+          items={courses}
+          handleTabChange={this.handleAssignmentChange}
+          handleSelectorChange={this.handleCourseChange}
+        />
       </div>
     );
   }
 
-
-  private loadUsers() {
+  private loadCourses() {
     $.ajax({
+      beforeSend: (xhr : any) => {
+          xhr.setRequestHeader ("Authorization", "Basic " + btoa("rjfreling@gmail.com:pass"));
+      },
       cache: true,
       dataType: 'json',
       error: (xhr : any, status : any, err : any) => {
         console.error(xhr, status, err.toString());
       },
       success: (data : any) => {
-        const email = 'email';
-        this.setState({ users: data.map((val : any) => (val[email])) });
+        this.setState({ courses: data });
       },
-      url: '/api/users/'
+      url: '/api/courses/me/?app=student'
     });
   };
 }
