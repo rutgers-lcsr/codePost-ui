@@ -1,18 +1,34 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, generics
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from core.models import Organization, Course, Submission, Assignment, Profile, Student
+
+
+from core.serializers.organization import OrganizationSerializer
 from core.serializers.course import CourseSerializer
 from core.serializers.user import UserSerializer
 from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer
 from core.serializers.assignment import AssignmentSerializer
+from core.serializers.profile import ProfileSerializer
+from core.serializers.student import StudentSerializer
+from core.serializers.grader import GraderSerializer
+from core.serializers.courseadmin import CourseAdminSerializer
+
+from rest_framework import viewsets, generics
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework.response import Response
-from core.models import Course, Submission, Assignment
 from rest_framework.decorators import action
 from rest_framework import status
 
 class UserViewSet(viewsets.ModelViewSet):
   queryset = User.objects.all().order_by('-date_joined')
   serializer_class = UserSerializer
+
+class OrganizationViewSet(viewsets.ModelViewSet):
+  queryset = Organization.objects.all()
+  serializer_class = OrganizationSerializer
+
+class ProfileViewSet(viewsets.ModelViewSet):
+  queryset = Profile.objects.all()
+  serializer_class = ProfileSerializer
 
 class AssignmentViewSet(viewsets.ModelViewSet):
   queryset = Assignment.objects.all()
@@ -115,3 +131,26 @@ class CourseViewSet(viewsets.ModelViewSet):
       return Response(serializer.data)
     else:
       return Response("Bad Request", status=status.HTTP_400_BAD_REQUEST)
+
+  @action(detail=True)
+  def students(self, request, pk=None):
+    course = Course.objects.get(id=pk)
+    students = course.students.all()
+    serializer = StudentSerializer(students, many=True, context={'request' : request})
+    return Response(serializer.data)
+
+  @action(detail=True)
+  def graders(self, request, pk=None):
+    course = Course.objects.get(id=pk)
+    graders = course.graders.all()
+    serializer = GraderSerializer(graders, many=True, context={'request' : request})
+    return Response(serializer.data)
+
+  @action(detail=True)
+  def courseadmins(self, request, pk=None):
+    course = Course.objects.get(id=pk)
+    courseadmins = course.courseadmins.all()
+    serializer = CourseAdminSerializer(courseadmins, many=True, context={'request' : request})
+    return Response(serializer.data)
+
+
