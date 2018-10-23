@@ -29,6 +29,7 @@ from core.views.section import SectionViewSet
 from core.views.student import StudentViewSet
 from core.views.grader import GraderViewSet
 from core.views.courseadmin import CourseAdminViewSet
+from core.views.comment import CommentViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -41,6 +42,7 @@ router.register(r'sections', SectionViewSet)
 router.register(r'students', StudentViewSet)
 router.register(r'graders', GraderViewSet)
 router.register(r'courseadmins', CourseAdminViewSet)
+router.register(r'comments', CommentViewSet)
 
 urlpatterns = [
   path('admin/', admin.site.urls),

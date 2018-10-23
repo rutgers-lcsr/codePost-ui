@@ -16,6 +16,40 @@ class SubmissionViewSet(viewsets.ModelViewSet):
   queryset = Submission.objects.all()
   serializer_class = SubmissionWithCommentsAuthorsSerializer
 
+  # Option: Could choose to throw an error if the submission is finalized
+  @action(detail=True, methods=['patch'])
+  def finalize(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    submission = Submission.objects.get(id=pk)
+    course = submission.assignment.course
+    if not isStaffOfSub(user, submission):
+      return returnForbidden()
+
+    submission.isFinalized = True
+    submission.save()
+    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    return Response(serializer.data)
+
+  # Option: Could choose to throw an error if the submission is not finalized
+  @action(detail=True, methods=['patch'])
+  def takeBack(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    submission = Submission.objects.get(id=pk)
+    course = submission.assignment.course
+    if not isStaffOfSub(user, submission):
+      return returnForbidden()
+
+    submission.isFinalized = False
+    submission.save()
+    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    return Response(serializer.data)
+
   # Option: Could choose to throw an error if the submission is already unassigned
   @action(detail=True, methods=['patch'])
   def unassign(self, request, pk=None):

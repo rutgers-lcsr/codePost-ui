@@ -32,7 +32,7 @@ def isGrader(user, course):
   return user.profile.grader in course.graders.all()
 
 def isCourseAdmin(user, course):
-  return user.profile.courseadmin in course.courseadmins.all()
+  return user.profile.courseadmin in course.courseAdmins.all()
 
 def isCourseMember(user, course):
   return isStudent(user, course) or isGrader(user, course) or isCourseAdmin(user, course)
