@@ -11,41 +11,38 @@ interface IProps {
   handleSelectorChange: (option: IOption) => void
 }
 
-class VerticalPane extends React.Component<IProps, {}> {
+const VerticalPane = (props: IProps) => {
+  const { currentTab, currentSelector, items } = props;
+  const { handleSelectorChange, handleTabChange } = props;
+  const isLoading = items.length === 0
 
-  public render() {
-    const { currentTab, currentSelector, items } = this.props;
-    const { handleSelectorChange, handleTabChange } = this.props;
-    const isLoading = items.length === 0
+  const options = items.map((item, i) => (
+    {'value': item.id, 'label': item.name}
+  ));
 
-    const options = items.map((item, i) => (
-      {'value': item.id, 'label': item.name}
-    ));
+  let tabs = items.filter((obj: any) => {
+    return currentSelector && obj.id === currentSelector.value;
+  });
+  tabs = tabs.length > 0 ? tabs[0].assignments : []
+  tabs = tabs.map((item, i) => (
+    {'value': item.id, 'label': item.name}
+  ));
 
-    let tabs = items.filter((obj: any) => {
-      return currentSelector && obj.id === currentSelector.value;
-    });
-    tabs = tabs.length > 0 ? tabs[0].assignments : []
-    tabs = tabs.map((item, i) => (
-      {'value': item.id, 'label': item.name}
-    ));
-
-    return (
-      <div>
-        <Select
-          isLoading={isLoading}
-          value={currentSelector}
-          options={options}
-          onChange={handleSelectorChange}
-        />
-        <VerticalTabs
-          currentItem={currentTab}
-          items={tabs}
-          handleTabChange={handleTabChange}
-        />
-      </div>
-    );
-  }
+  return (
+    <div>
+      <Select
+        isLoading={isLoading}
+        value={currentSelector}
+        options={options}
+        onChange={handleSelectorChange}
+      />
+      <VerticalTabs
+        currentItem={currentTab}
+        items={tabs}
+        handleTabChange={handleTabChange}
+      />
+    </div>
+  );
 }
 
 interface ITabProps {
