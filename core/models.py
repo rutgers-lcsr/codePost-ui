@@ -68,7 +68,7 @@ class Course(models.Model):
 
 class Section(models.Model):
   name = models.CharField(max_length=16)
-  course = models.ForeignKey(Course, on_delete=models.CASCADE)
+  course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
   leader = models.ManyToManyField(Grader, blank=True, related_name='sections')
   students = models.ManyToManyField(Student)
 
