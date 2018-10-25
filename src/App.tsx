@@ -5,8 +5,6 @@ import Home from './Home';
 import { HOME, STUDENT } from './routes';
 import Student from './Student';
 
-
-
 class App extends React.Component {
   public render() {
     return (

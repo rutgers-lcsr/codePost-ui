@@ -6,39 +6,28 @@ import { IOption } from '../types/common'
 interface IProps {
   currentTab?: IOption,
   currentSelector?: IOption,
-  items: any[],
+  selectorItems: any[],
+  tabItems: any[],
   handleTabChange: (option: IOption, event: any) => void,
   handleSelectorChange: (option: IOption) => void
 }
 
 const VerticalPane = (props: IProps) => {
-  const { currentTab, currentSelector, items } = props;
+  const { currentTab, currentSelector, selectorItems, tabItems } = props;
   const { handleSelectorChange, handleTabChange } = props;
-  const isLoading = items.length === 0
-
-  const options = items.map((item, i) => (
-    {'value': item.id, 'label': item.name}
-  ));
-
-  let tabs = items.filter((obj: any) => {
-    return currentSelector && obj.id === currentSelector.value;
-  });
-  tabs = tabs.length > 0 ? tabs[0].assignments : []
-  tabs = tabs.map((item, i) => (
-    {'value': item.id, 'label': item.name}
-  ));
+  const isLoading = selectorItems.length === 0
 
   return (
     <div>
       <Select
         isLoading={isLoading}
         value={currentSelector}
-        options={options}
+        options={selectorItems}
         onChange={handleSelectorChange}
       />
       <VerticalTabs
         currentItem={currentTab}
-        items={tabs}
+        items={tabItems}
         handleTabChange={handleTabChange}
       />
     </div>
@@ -80,8 +69,8 @@ const VerticalTabs = (props: IVerticalTabsProps) => {
             key={item.value}
             onClick={props.handleTabChange.bind(props, item)}
           />
-         )
-       })}
+        )
+      })}
     </ul>
   )
 }
