@@ -1,4 +1,3 @@
-import Grid from '@material-ui/core/Grid';
 import * as React from 'react';
 import './App.css';
 import CodeViewer from './components/CodeViewer'
@@ -64,22 +63,15 @@ class Student extends React.Component<{}, IStudentState> {
         <p className="App-intro">
           This is the student page.
         </p>
-
-        <Grid container={true} spacing={24}>
-          <Grid item={true} xs={4}>
-            <VerticalPane
-              currentTab={this.tabCurrentFormatter(currentAssignment)}
-              currentSelector={this.selectorCurrentFormatter(currentCourse)}
-              selectorItems={this.selectorItemsFormatter(courses)}
-              tabItems={this.tabItemsFormatter(currentCourse)}
-              handleTabChange={this.handleAssignmentChange}
-              handleSelectorChange={this.handleCourseChange}
-            />
-          </Grid>
-          <Grid item={true} xs={"auto"}>
-            <ContentArea assignment={currentAssignment} submission={currentSubmission} />
-          </Grid>
-        </Grid>
+        <VerticalPane
+          currentTab={this.tabCurrentFormatter(currentAssignment)}
+          currentSelector={this.selectorCurrentFormatter(currentCourse)}
+          selectorItems={this.selectorItemsFormatter(courses)}
+          tabItems={this.tabItemsFormatter(currentCourse)}
+          handleTabChange={this.handleAssignmentChange}
+          handleSelectorChange={this.handleCourseChange}
+        />
+        <ContentArea assignment={currentAssignment} submission={currentSubmission} />
       </div>
     );
   }
