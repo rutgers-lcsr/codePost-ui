@@ -16,13 +16,3 @@ from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 class CourseAdminViewSet(viewsets.ModelViewSet):
   queryset = CourseAdmin.objects.all()
   serializer_class = CourseAdminSerializer
-
-  @action(detail=False)
-  def myCourses(self, request):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    courses = user.profile.courseadmin.courses.all()
-    serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data)

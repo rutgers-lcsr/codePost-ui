@@ -16,13 +16,3 @@ from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 class GraderViewSet(viewsets.ModelViewSet):
   queryset = Grader.objects.all()
   serializer_class = GraderSerializer
-
-  @action(detail=False)
-  def myCourses(self, request):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    courses = user.profile.grader.courses.all()
-    serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data)

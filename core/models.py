@@ -21,26 +21,26 @@ class Organization(models.Model):
 
 # https://wsvincent.com/django-custom-user-model-tutorial/
 class Profile(models.Model):
-  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
   org = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
 
   def __str__(self):
     return self.user.username
 
 class Student(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="student")
 
   def __str__(self):
     return self.profile.user.username
 
 class Grader(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="grader")
 
   def __str__(self):
     return self.profile.user.username
 
 class CourseAdmin(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="courseadmin")
 
   def __str__(self):
     return self.profile.user.username
