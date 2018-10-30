@@ -1,8 +1,9 @@
 import * as React from 'react';
-import './App.css';
 import CodeViewer from './components/CodeViewer'
+import TopBar from './components/TopBar'
 import VerticalPane from './components/VerticalPane'
-import logo from './logo.svg';
+import './styles/index.scss';
+import './styles/Student.scss';
 import { IAssignment, ICourse, IOption, ISubmission } from './types/common'
 
 
@@ -56,10 +57,7 @@ class Student extends React.Component<{}, IStudentState> {
     const { courses, currentAssignment, currentCourse, currentSubmission } = this.state
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
+        <TopBar />
         <p className="App-intro">
           This is the student page.
         </p>
@@ -169,14 +167,14 @@ const ContentArea = (props: IContentAreaProps) => {
   if (submission && assignment) {
     const deductions = getDeductions(submission);
     return (
-      <div>
-        <div className="gradebox">
+      <div className='content-container'>
+        <div className="grade-container">
           {"Grade: " + submission.grade + "/" + assignment.points}
-          <CodeViewer
-            deductions={deductions}
-            submission={submission}
-          />
         </div>
+        <CodeViewer
+          deductions={deductions}
+          submission={submission}
+        />
       </div>
     );
   }
