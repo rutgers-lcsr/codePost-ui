@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import '../styles/CodeViewer.scss';
 import { IComment, IFile, ISubmission } from '../types/common'
 
 interface IProps {
@@ -12,7 +13,7 @@ class CodeViewer extends React.Component<IProps, {}>  {
   public render() {
     const { deductions, submission } = this.props;
     return (
-      <div>
+      <div className='content-box'>
         <Tabs>
           <TabList>
             {
@@ -28,8 +29,8 @@ class CodeViewer extends React.Component<IProps, {}>  {
             submission.files.map((file: IFile, i: number) => {
               return (
                 <TabPanel key={i}>
-                  <div className="submissionContainer">
-                    <div className="codeBox">
+                  <div className="submission-container">
+                    <div className="code-box">
                       <CodeBox file={file} />
                     </div>
                     <CommentBox comments={file.comments} />
@@ -45,12 +46,12 @@ class CodeViewer extends React.Component<IProps, {}>  {
 
   private getTabTitle = (name: string, deduction: number, numComments: number) => {
     const deductionString = deduction > 0 ? `(-${deduction})` : ''
-    const commentFlag = numComments > 0 ? (<div className="tabTitleNumComments">{numComments}</div>) : '';
+    const commentFlag = numComments > 0 ? (<div className="tab-title-num-comments">{numComments}</div>) : '';
 
     return (
-      <div className="tabTitle">
+      <div className="tab-title">
         {commentFlag}
-        <div className="tabTitle">
+        <div className="tab-title">
           {name + deductionString}
         </div>
       </div>
@@ -107,16 +108,18 @@ const CodeBox = (props: ICodeBoxProps) => {
     );
   });
 
-  // //
-  // Add buildLineNumbers
-  // //
+  const lineNumbers = splitCode.map((item: any, i: number) => {
+    return (
+      <div key={i} className='line-number'> {i} </div>
+    );
+  });
 
   return (
     <div className='sublime'>
-      <div className='lineNumbers'>
-        1
+      <div className='line-numbers'>
+        {lineNumbers}
       </div>
-      <div className="highlightedArea">
+      <div className="highlighted-area">
         {linesOfCode}
       </div>
     </div>
@@ -129,7 +132,7 @@ interface ICommentBoxProps {
 
 const CommentBox = (props: ICommentBoxProps) => {
   return (
-    <div className="commentBox">
+    <div className="comment-box">
       <CommentList comments={props.comments} />
     </div>
   );
@@ -188,7 +191,7 @@ const CommentList = (props: ICommentListProps) => {
   })
 
   return (
-    <div className="commentList">
+    <div >
       {commentNodes}
     </div>
   )
@@ -201,11 +204,29 @@ interface ICommentProps {
 }
 
 const Comment = (props: ICommentProps) => {
+  const onMouseEnter = (i: string, e: any) => {
+    const elems = document.getElementsByClassName(i);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.backgroundColor = "#FAFF91";
+    });
+  }
+
+  const onMouseLeave = (i: string, e: any) => {
+    const elems = document.getElementsByClassName(i);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.backgroundColor = "#ffca93";
+    });
+  }
+
   const deduction = (props.comment.pointDelta === 0) ? "" : `(-${props.comment.pointDelta})`
   return (
     <div className="comment-container">
-      <div className="comment">
-        <div className="comment-deduction">
+      <div
+        className="comment"
+        onMouseEnter={onMouseEnter.bind(props, props.comment.id.toString())}
+        onMouseLeave={onMouseLeave.bind(props, props.comment.id.toString())}
+      >
+        <div>
           {deduction}
         </div>
         {props.comment.text}

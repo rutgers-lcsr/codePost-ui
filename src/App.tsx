@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import './App.css';
 import Home from './Home';
 import { HOME, STUDENT } from './routes';
 import Student from './Student';
+import './styles/App.scss';
 
 class App extends React.Component {
   public render() {

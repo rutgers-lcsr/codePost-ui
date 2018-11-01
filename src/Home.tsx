@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import './App.css';
 import { STUDENT } from './routes';
+import './styles/App.scss';
 
 import logo from './logo.svg';
 
