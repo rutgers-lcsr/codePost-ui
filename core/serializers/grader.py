@@ -3,8 +3,8 @@ from core.models import Grader
 from core.serializers.profile import ProfileSerializer
 
 class GraderSerializer(serializers.HyperlinkedModelSerializer):
-  profile = ProfileSerializer()
+  username = serializers.CharField(source='profile.user.username')
 
   class Meta:
       model = Grader
-      fields = ('profile',)
+      fields = ('username',)

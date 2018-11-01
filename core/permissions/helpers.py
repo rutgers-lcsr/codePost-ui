@@ -18,9 +18,9 @@ def returnForbidden():
 
 def returnNotFound(message=None):
   if message is None:
-    return Response(NOT_FOUND, status.HTTP_403_FORBIDDEN)
+    return Response(NOT_FOUND, status.HTTP_404_NOT_FOUND)
   else:
-    return Response(message, status.HTTP_403_FORBIDDEN)
+    return Response(message, status.HTTP_404_NOT_FOUND)
 
 def isAuthenticated(user):
   return user.is_authenticated

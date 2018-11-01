@@ -25,7 +25,7 @@ for i in range(0, 50):
   cos126s2019.save()
   sub = Submission.objects.create(assignment=hellos2019)
   sub.students.add(tmpUser.profile.student)
-  code = "System.out.println('hello world, my name is" + username + "!')"
+  code = "System.out.println('hello world, my name is " + username + "!')"
   File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
 
 ## Create some superusers

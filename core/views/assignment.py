@@ -1,6 +1,7 @@
 from core.models import Assignment
 from core.serializers.assignment import AssignmentSerializer
-from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer
+from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer, SubmissionStatusSerializer
+from django.contrib.auth.models import User
 
 from rest_framework import status
 from rest_framework import viewsets, generics
@@ -17,7 +18,24 @@ class AssignmentViewSet(viewsets.ModelViewSet):
   queryset = Assignment.objects.all()
   serializer_class = AssignmentSerializer
 
-  @action(detail=True)
+  @action(detail=True, methods=['PATCH'])
+  def toggleReleased(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    assignment = Assignment.objects.get(id=pk)
+    course = assignment.course
+
+    if not isCourseAdmin(user, course):
+      return returnForbidden()
+
+    assignment.isReleased = not assignment.isReleased
+    assignment.save()
+    serializer = AssignmentSerializer(assignment)
+    return Response(serializer.data)
+
+  @action(detail=True, methods=['PATCH'])
   def drawUnassigned(self, request, pk=None):
     user = request.user
     if not isAuthenticated(user):
@@ -32,7 +50,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     section = self.request.query_params.get('section', None)
 
     # Use system ordering to pull random unassigned submission
-    submissions = Assignment.submissions.filter(grader=None)
+    submissions = assignment.submissions.filter(grader=None)
     if section is not None:
       try:
         section = Section.objects.get(name=section, course=course)
@@ -44,36 +62,17 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     if len(submissions) > 0:
       submission = submissions[0]
 
+    # Assign submission to grader
+    # Doing this in this call is important, since it prevents two users from drawing the
+    # save unassigned submission and subsequently trying to claim it
+    submission.grader = user.profile.grader
+    submission.save()
+
     serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
 
-  @action(detail=True)
-  def graderList(self, request, pk=None):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    assignment = Assignment.objects.get(id=pk)
-
-    if not isGrader(user, course) and not isCourseAdmin(user, course):
-      return returnForbidden()
-
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a grader", status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-      user = User.objects.get(username=username)
-    except User.DoesNotExist:
-      return returnNotFound(message="This grader does not exist in your course.")
-
-    if user.profile.grader not in course.graders.all():
-      return returnNotFound(message="This grader does not exist in your course.")
-
-    submissions = Submission.objects.filter(course=course, grader=user.profile.grader)
-    serializer = SubmissionWithCommentsAuthorsSerializer(submissions, many=True)
-    return Response(serializer.data)
-
+# Optional arguments: username, grader
+# If neither specified, returns full list of submissions for this assignment
   @action(detail=True)
   def submissions(self, request, pk=None):
     user = request.user
@@ -86,41 +85,72 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     if not isCourseMember(user, course):
       return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    submissions = assignment.submissions
+    student = self.request.query_params.get('student', None)
+    grader = self.request.query_params.get('grader', None)
+    submissions = assignment.submissions.all()
 
-    if username is None:
+    # If you want to filter by grader, you must be that grader or a courseadmin
+    isThisGrader = isGrader(user, course) and user.username == grader
+    isThisStudent = isStudent(user, course) and user.username == student
+
+    if student is None and grader is None:
       if not isCourseAdmin(user, course):
         return returnForbidden()
-      serializer = SubmissionWithCommentsAuthorsSerializer(submissions, many=True)
-      return Response(serializer.data)
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except User.DoesNotExist:
-      if isCourseAdmin(user, course):
-        return returnNotFound(message="The user does not exist")
-      else:
+    if grader is not None:
+      if not isCourseAdmin(user, course) and not isThisGrader:
         return returnForbidden()
 
-    try:
-      submission = submissions.get(students__in=[userParameter.profile.student])
-    except MultipleObjectsReturned:
-      if isCourseAdmin(user, course):
-        return Response("Multiple objects returned", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-      else:
-        return returnForbidden()
-    except DoesNotExist:
-      if isCourseAdmin(user, course):
-        return returnNotFound(message="The submission does not exist")
-      else:
+    if student is not None:
+      if not isThisStudent and not isGrader(user, course) and not isCourseAdmin(user, course):
         return returnForbidden()
 
-    if isStaffOfSub(user, submission):
-      serializer = SubmissionWithCommentsAuthorsSerializer([submission], many=True)
-    elif isStudentOfSub(user, submission):
-      serializer = SubmissionWithCommentsSerializer([submission], many=True)
+    studentParam = None
+    if student is not None:
+      try:
+        studentParam = User.objects.get(username=student)
+      except User.DoesNotExist:
+        if isCourseAdmin(user, course):
+          return returnNotFound(message="The user does not exist")
+        else:
+          return returnForbidden()
+
+    graderParam = None
+    if grader is not None:
+      try:
+        graderParam = User.objects.get(username=grader)
+      except User.DoesNotExist:
+        if isCourseAdmin(user, course):
+          return returnNotFound(message="The user does not exist")
+        else:
+          return returnForbidden()
+
+    # Perform filtering
+    filteredSubs = None
+    if studentParam is not None and graderParam is not None:
+      filteredSubs = submissions.filter(students__in=[studentParam.profile.student],
+        grader=graderParam.profile.grader)
+    elif studentParam is not None:
+      filteredSubs = submissions.filter(students__in=[studentParam.profile.student])
+    elif graderParam is not None:
+      filteredSubs = submissions.filter(grader=graderParam.profile.grader)
     else:
-      return returnForbidden()
+      filteredSubs = submissions
+
+    # Only include comment authors in serialization if user is authorized to see them
+    serializer = SubmissionWithCommentsSerializer(filteredSubs, many=True)
+    if studentParam is not None:
+      if filteredSubs is not None and len(filteredSubs) > 1:
+        return Response("Whoops, something went wrong", status=status.HTTP_500_SERVER_ERROR)
+      elif len(filteredSubs) == 1:
+        submission = filteredSubs[0]
+        if isStaffOfSub(user, submission):
+          serializer = SubmissionWithCommentsAuthorsSerializer(filteredSubs, many=True)
+        else:
+          if submission.isFinalized == False or assignment.isReleased == False:
+            serializer = SubmissionStatusSerializer(filteredSubs, many=True)
+          else:
+            serialzer = SubmissionWithCommentsSerializer(filteredSubs, many=True)
+
 
     return Response(serializer.data)
