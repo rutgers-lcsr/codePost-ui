@@ -4,10 +4,10 @@ from core.models import Comment
 class CommentSerializer(serializers.ModelSerializer):
   class Meta:
     model = Comment
-    fields = ('text', 'pointDelta', 'startChar', 'endChar')
+    fields = ('id', 'text', 'pointDelta', 'startChar', 'endChar', 'startLine', 'endLine')
 
 class CommentWithAuthorSerializer(serializers.ModelSerializer):
   class Meta:
     model = Comment
-    fields = ('text', 'pointDelta', 'author', 'startChar', 'endChar')
+    fields = ('id', 'text', 'pointDelta', 'author', 'startChar', 'endChar', 'startLine', 'endLine')
     depth = 1

@@ -128,6 +128,8 @@ class Comment(models.Model):
   file = models.ForeignKey(File, on_delete=models.CASCADE, related_name ="comments")
   startChar = models.IntegerField()
   endChar = models.IntegerField()
+  startLine = models.IntegerField()
+  endLine = models.IntegerField()
 
 ###############################################################################
 

@@ -54,8 +54,10 @@ cos126s2019.save()
 cos126s2019.courseAdmins.add(james.profile.courseadmin)
 cos126s2019.save()
 
+
 ## Add some extra objects
 cos126f2019 = Course.objects.create(parent=cos126, period="F2019")
+
 cos226 = CourseParent.objects.create(name='COS226', org=princeton)
 cos226s2020 = Course.objects.create(parent=cos226, period="S2020")
 hellof2019 = Assignment.objects.create(parent=hello, course=cos126f2019, points=20)
@@ -66,3 +68,5 @@ nbodyf2019 = Assignment.objects.create(parent=nbody, course=cos126f2019, points=
 
 percolation = AssignmentParent.objects.create(name="Percolation", org=princeton)
 percolations2020 = Assignment.objects.create(parent=percolation, course=cos226s2020, points=20)
+
+
