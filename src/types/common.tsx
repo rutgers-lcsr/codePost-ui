@@ -8,6 +8,11 @@ export enum APPS {
   CourseAdmin,
 }
 
+export interface IUser {
+  email: string,
+  id: number
+}
+
 export interface IOption {
   label: string,
   value: string | number

@@ -8,18 +8,23 @@ import Home from './Home';
 import { GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
 import './styles/App.scss';
+import { IUser } from './types/common'
 
-const initialState = {
-  displayed_form: 'login',
-  error: '',
-  logged_in: false,
-  username: '',
+
+interface IStudentState {
+  displayed_form: string,
+  error: string,
+  logged_in: boolean,
+  user: IUser
 }
 
-type State = Readonly<typeof initialState>;
-
-class App extends React.Component<{}, State> {
-  public readonly state: State = initialState;
+class App extends React.Component<{}, IStudentState> {
+  public state: Readonly<IStudentState> = {
+    displayed_form: 'login',
+    error: '',
+    logged_in: false,
+    user: {email: '', id: 0},
+  }
 
   public constructor(props : any) {
     super(props);
@@ -27,7 +32,7 @@ class App extends React.Component<{}, State> {
       displayed_form: '',
       error: '',
       logged_in: localStorage.getItem('token') ? true : false,
-      username: '',
+      user: {email: '', id: 0},
     };
   }
 
@@ -40,14 +45,16 @@ class App extends React.Component<{}, State> {
       })
         .then(res => res.json())
         .then(json => {
-          this.setState({ username: json.email });
+          this.setState({ user: json });
+          localStorage.setItem('user', json.id);
         });
     }
   }
 
   public handleLogout = () => {
     localStorage.removeItem('token');
-    this.setState({ logged_in: false, username: '' });
+    localStorage.removeItem('user');
+    this.setState({ logged_in: false, user: {email: '', id: 0} });
   };
 
   public displayForm = (form: string) => {
@@ -68,10 +75,11 @@ class App extends React.Component<{}, State> {
       .then(res => res.json())
       .then(json => {
         localStorage.setItem('token', json.token);
+        localStorage.setItem('user', json.user);
         this.setState({
           displayed_form: '',
           logged_in: true,
-          username: json.user.email
+          user: json.user
         });
       });
   };
@@ -88,10 +96,11 @@ class App extends React.Component<{}, State> {
       .then(res => res.json())
       .then(json => {
         localStorage.setItem('token', json.token);
+        localStorage.setItem('user', json.user.id);
         this.setState({
           displayed_form: '',
           logged_in: true,
-          username: json.user.email
+          user: json.user
         })
       })
       .catch(error => {
@@ -143,15 +152,16 @@ class App extends React.Component<{}, State> {
     }
 
     if (this.state.logged_in) {
+      // @ts-ignore
       return (
         <div>
-            <p>Hello, {this.state.username}</p>
+            <p>Hello, {this.state.user.email}</p>
             <button onClick={this.handleLogout}>Logout</button>
             <div className="AppHome">
               <BrowserRouter>
                 <Switch>
-                  <Route exact={true} path={GRADER} component={Grader} />
                   <Route exact={true} path={STUDENT} component={Student} />
+                  <Route exact={true} path={GRADER} component={Grader} />
                   <Route exact={true} path={HOME} component={Home} />
                 </Switch>
               </BrowserRouter>
