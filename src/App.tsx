@@ -46,14 +46,12 @@ class App extends React.Component<{}, IStudentState> {
         .then(res => res.json())
         .then(json => {
           this.setState({ user: json });
-          localStorage.setItem('user', json.id);
         });
     }
   }
 
   public handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     this.setState({ logged_in: false, user: {email: '', id: 0} });
   };
 
@@ -75,7 +73,6 @@ class App extends React.Component<{}, IStudentState> {
       .then(res => res.json())
       .then(json => {
         localStorage.setItem('token', json.token);
-        localStorage.setItem('user', json.user);
         this.setState({
           displayed_form: '',
           logged_in: true,
@@ -96,7 +93,6 @@ class App extends React.Component<{}, IStudentState> {
       .then(res => res.json())
       .then(json => {
         localStorage.setItem('token', json.token);
-        localStorage.setItem('user', json.user.id);
         this.setState({
           displayed_form: '',
           logged_in: true,
