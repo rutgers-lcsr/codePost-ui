@@ -21,7 +21,8 @@ export interface IOption {
 export interface IAssignment {
   id: number,
   name: string,
-  points: number
+  points: number,
+  isReleased: boolean,
 }
 
 export interface ICourse {
@@ -34,7 +35,7 @@ export interface ICourse {
 export interface ISubmission {
   id: number,
   isFinalized: any,
-  dateFinalized: any,
+  dateFinalized?: any,
   files: any[],
   grade: number
 }

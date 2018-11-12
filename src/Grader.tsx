@@ -1,12 +1,10 @@
 import * as React from 'react';
-import TopBar from './components/TopBar'
 import './styles/index.scss';
 
 class Grader extends React.Component {
   public render() {
     return (
       <div className="App">
-        <TopBar />
         <p>
           This is the grader page
         </p>

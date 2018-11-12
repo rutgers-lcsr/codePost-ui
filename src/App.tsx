@@ -2,7 +2,8 @@ import * as React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import LoginForm from './components/LoginForm';
-import SignupForm from './components/SignupForm';
+import TopBar from './components/TopBar'
+
 import Grader from './Grader';
 import Home from './Home';
 import { GRADER, HOME, STUDENT } from './routes';
@@ -43,9 +44,22 @@ class App extends React.Component<{}, IStudentState> {
           Authorization: `JWT ${localStorage.getItem('token')}`
         }
       })
-        .then(res => res.json())
+        .then(res => {
+          // Mainly to handle token timeout
+          if (res.ok) {
+            return res.json();
+          }
+          else {
+            return Promise.reject();
+          }
+        })
         .then(json => {
           this.setState({ user: json });
+        })
+        .catch(error => {
+
+          this.handleLogout();
+          this.setState({logged_in: false});
         });
     }
   }
@@ -59,26 +73,6 @@ class App extends React.Component<{}, IStudentState> {
     this.setState({
       displayed_form: form
     });
-  };
-
-  public handleSignup = (e: any, data: any) => {
-    e.preventDefault();
-    fetch('http://localhost:8000/users/', {
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-    })
-      .then(res => res.json())
-      .then(json => {
-        localStorage.setItem('token', json.token);
-        this.setState({
-          displayed_form: '',
-          logged_in: true,
-          user: json.user
-        });
-      });
   };
 
   public handleLogin = (e: any, data: any) => {
@@ -131,9 +125,6 @@ class App extends React.Component<{}, IStudentState> {
       case 'login':
         form = <LoginForm handleLogin={this.handleLogin} />;
         break;
-      case 'signup':
-        form = <SignupForm handleSignup={this.handleSignup} />;
-        break;
       default:
         form = null;
     }
@@ -150,17 +141,18 @@ class App extends React.Component<{}, IStudentState> {
     if (this.state.logged_in) {
       // @ts-ignore
       return (
-        <div>
-            <p>Hello, {this.state.user.email}</p>
-            <button onClick={this.handleLogout}>Logout</button>
-            <div className="AppHome">
-              <BrowserRouter>
-                <Switch>
-                  <Route exact={true} path={STUDENT} component={Student} />
-                  <Route exact={true} path={GRADER} component={Grader} />
-                  <Route exact={true} path={HOME} component={Home} />
-                </Switch>
-              </BrowserRouter>
+       <div>
+       <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
+          <div>
+              <div className="AppHome">
+                <BrowserRouter>
+                  <Switch>
+                    <Route exact={true} path={STUDENT} component={Student} />
+                    <Route exact={true} path={GRADER} component={Grader} />
+                    <Route exact={true} path={HOME} component={Home} />
+                  </Switch>
+                </BrowserRouter>
+            </div>
           </div>
         </div>
       )
