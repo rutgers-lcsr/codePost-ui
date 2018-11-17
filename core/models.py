@@ -122,8 +122,8 @@ class File(models.Model):
 
 class Comment(models.Model):
   text = models.TextField()
-  pointDelta = models.FloatField(blank=True)
-  rubricComment = models.ForeignKey(RubricComment, null=True, on_delete=models.SET_NULL, related_name="comments")
+  pointDelta = models.FloatField(blank=True, null=True)
+  rubricComment = models.ForeignKey(RubricComment, null=True, blank=True, on_delete=models.SET_NULL, related_name="comments")
   author = models.ForeignKey(Grader, on_delete=models.SET_NULL, null=True)
   file = models.ForeignKey(File, on_delete=models.CASCADE, related_name ="comments")
   startChar = models.IntegerField()
