@@ -30,7 +30,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 
     submission.isFinalized = True
     submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
 
   # Option: Could choose to throw an error if the submission is not finalized
@@ -47,7 +47,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 
     submission.isFinalized = False
     submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
 
   # Option: Could choose to throw an error if the submission is already unassigned
@@ -64,7 +64,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 
     submission.grader = None
     submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
 
   @action(detail=True, methods=['patch'])
@@ -97,7 +97,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 
     submission.grader = user.profile.grader
     submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
 
   @action(detail=True, methods=['patch'])
@@ -115,5 +115,5 @@ class SubmissionViewSet(viewsets.ModelViewSet):
       f.comments.delete()
 
     submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(data=submission)
+    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
