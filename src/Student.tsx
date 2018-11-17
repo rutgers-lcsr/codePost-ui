@@ -175,7 +175,7 @@ const ContentArea = (props: IContentAreaProps) => {
     for (const file of sub.files) {
       let totalDeduction = 0;
       for (const comment of file.comments) {
-        totalDeduction += comment.pointDelta;
+        totalDeduction += comment.pointDelta != null ? comment.pointDelta : 0;
       }
       deductions.push(totalDeduction);
     }

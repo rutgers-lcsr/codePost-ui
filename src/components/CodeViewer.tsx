@@ -218,7 +218,13 @@ const Comment = (props: ICommentProps) => {
     });
   }
 
-  const deduction = (props.comment.pointDelta === 0) ? "" : `(-${props.comment.pointDelta})`
+  let deduction;
+  if (props.comment.pointDelta == null || props.comment.pointDelta === 0) {
+    deduction = ""
+  } else {
+    deduction = `(-${props.comment.pointDelta})`
+  }
+
   return (
     <div className="comment-container">
       <div
