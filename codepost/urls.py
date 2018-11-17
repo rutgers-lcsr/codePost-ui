@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from rest_framework import routers
-from rest_framework_jwt.views import obtain_jwt_token
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 from core.views.user import UserViewSet
 from core.views.course import CourseViewSet
@@ -49,5 +49,6 @@ urlpatterns = [
   re_path('^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
   re_path('^api/', include(router.urls)),
   path('token-auth/', obtain_jwt_token),
+  path('token-refresh/', refresh_jwt_token),
   re_path('core/', include(('core.urls', 'core'), namespace='codepost')),
 ]

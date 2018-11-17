@@ -55,9 +55,9 @@ class App extends React.Component<{}, IStudentState> {
         })
         .then(json => {
           this.setState({ user: json });
+          this.refreshToken();
         })
         .catch(error => {
-
           this.handleLogout();
           this.setState({logged_in: false});
         });
@@ -67,6 +67,37 @@ class App extends React.Component<{}, IStudentState> {
   public handleLogout = () => {
     localStorage.removeItem('token');
     this.setState({ logged_in: false, user: {email: '', id: 0} });
+  };
+
+  // Used to implement sliding session for JWT authenticated session
+  // See discussion here: https://github.com/nsarno/knock/issues/65
+  //
+  // Note: we could also check to see if the token is close to expiring
+  // and only attempt to refresh if true.
+  public refreshToken = () => {
+    if (!this.state.logged_in) {
+      return
+    }
+
+    const REFRESH_MIN = 30;
+    const REFRESH_INT = 1000 * 60 * REFRESH_MIN;
+
+    fetch('http://localhost:8000/token-refresh/', {
+      body: JSON.stringify({token: localStorage.getItem('token')}),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+    })
+      .then(res => res.json())
+      .then(json => {
+        localStorage.setItem('token', json.token);
+        console.log("refreshed!");
+        setInterval(this.refreshToken, REFRESH_INT);
+      }).catch(error => {
+        this.handleLogout();
+     });
+
   };
 
   public displayForm = (form: string) => {
@@ -139,7 +170,6 @@ class App extends React.Component<{}, IStudentState> {
     }
 
     if (this.state.logged_in) {
-      // @ts-ignore
       return (
        <div>
        <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
