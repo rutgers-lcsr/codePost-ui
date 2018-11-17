@@ -40,7 +40,7 @@ class Student extends React.Component<{}, IStudentState> {
     if (this.state.isLoggedIn) {
       this.loadCourses();
     } else {
-      this.setState({redirect: true});
+      this.setState({ redirect: true });
     }
   }
 
@@ -59,7 +59,7 @@ class Student extends React.Component<{}, IStudentState> {
     if (currentAssignment.isReleased) {
       this.loadSubmission(currentAssignment.id);
     } else {
-      this.setState({currentSubmission: undefined});
+      this.setState({ currentSubmission: undefined });
     }
   }
 
@@ -109,12 +109,12 @@ class Student extends React.Component<{}, IStudentState> {
       }
     })
       .then(res => {
-        return(res.json())
+        return (res.json())
       })
       .then(json => {
         const courses = 'studentCourses';
         this.setState({ courses: json[courses], isLoading: false, email: json.email });
-     });
+      });
   };
 
   private loadSubmission = (id: string | number) => {
@@ -128,7 +128,7 @@ class Student extends React.Component<{}, IStudentState> {
         if (json.length > 0 && json[0].isFinalized) {
           this.setState({ currentSubmission: json[0] });
         }
-     });
+      });
   };
 
   private selectorItemsFormatter = (courses: ICourse[]) => {

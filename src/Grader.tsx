@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { Redirect } from 'react-router-dom'
 import GradedTab from './components/grader/GradedTab'
-import TopBar from './components/TopBar'
 import VerticalPane from './components/VerticalPane'
 import './styles/index.scss';
 import './styles/Student.scss';
@@ -10,7 +10,11 @@ interface IGraderState {
   courses: ICourse[],
   currentAssignment?: IAssignment,
   currentCourse?: ICourse,
-  currentSubmissions: ISubmission[]
+  currentSubmissions: ISubmission[],
+  email: string,
+  isLoggedIn: boolean,
+  isLoading: boolean,
+  redirect: boolean,
 }
 
 class Grader extends React.Component<{}, IGraderState> {
@@ -18,11 +22,24 @@ class Grader extends React.Component<{}, IGraderState> {
     courses: [],
     currentAssignment: undefined,
     currentCourse: undefined,
-    currentSubmissions: []
+    currentSubmissions: [],
+    email: '',
+    isLoading: true,
+    isLoggedIn: localStorage.getItem('token') ? true : false,
+    redirect: false,
   }
 
   public componentDidMount() {
-    this.loadCourses();
+    // Should kick user back to login screne if they are not logged in
+    // Should use props to pass graderID here from top-level app...
+    // ...annoying that typescript doesn't allow usage of lambdas
+    // in render prop of Route object (which is designed to handle
+    // lambdas efficiently)
+    if (this.state.isLoggedIn) {
+      this.loadCourses();
+    } else {
+      this.setState({ redirect: true });
+    }
   }
 
   public handleAssignmentChange = (option: IOption, event: any) => {
@@ -54,59 +71,64 @@ class Grader extends React.Component<{}, IGraderState> {
 
   public claimSubmission = (assignment: IAssignment): any => {
     return new Promise((resolve, reject) => {
-      $.ajax({
-        beforeSend: (xhr: any) => {
-          xhr.setRequestHeader("Authorization", "Basic " + btoa("rjfreling@gmail.com:pass"));
+      fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`
         },
-        cache: true,
-        dataType: 'json',
-        error: (xhr: any, status: any, err: any) => {
-          console.error(xhr, status, err.toString());
-          reject(err);
-        },
-        success: (data: any) => {
-          if (data) {
+        method: "PATCH",
+      })
+        .then(res => {
+          if (res.status === 204) {
+            return undefined
+          }
+          else {
+            return (res.json())
+          }
+        })
+        .then(json => {
+          if (json) {
             this.setState({
-              currentSubmissions: [...this.state.currentSubmissions, data]
+              currentSubmissions: [...this.state.currentSubmissions, json]
             });
           }
-          resolve(data);
-        },
-        type: 'PATCH',
-        url: `/api/assignments/${assignment.id}/drawUnassigned/`
-      });
+          resolve(json)
+        });
     });
   }
 
   public releaseSubmission = (submission: ISubmission): any => {
     return new Promise((resolve, reject) => {
-      $.ajax({
-        beforeSend: (xhr: any) => {
-          xhr.setRequestHeader("Authorization", "Basic " + btoa("rjfreling@gmail.com:pass"));
+      fetch(`/api/submissions/${submission.id}/unassign/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`
         },
-        cache: true,
-        dataType: 'json',
-        error: (xhr: any, status: any, err: any) => {
-          console.error(xhr, status, err.toString());
-          reject(err);
-        },
-        success: (data: any) => {
+        method: "PATCH",
+      })
+        .then(res => {
+          return (res.json())
+        })
+        .then(json => {
           this.setState({
             currentSubmissions: this.state.currentSubmissions.filter(sub => sub.id !== submission.id)
           });
-          resolve(data);
-        },
-        type: 'PATCH',
-        url: `/api/submissions/${submission.id}/unassign/`
-      });
+          resolve(json);
+        });
     });
+  }
+
+  public renderRedirect = () => {
+    if (this.state.redirect) {
+      return <Redirect to='/' />
+    } else {
+      return;
+    }
   }
 
   public render() {
     const { courses, currentAssignment, currentCourse, currentSubmissions } = this.state
     return (
       <div className="App">
-        <TopBar />
+        {this.renderRedirect()}
         <VerticalPane
           currentTab={this.tabCurrentFormatter(currentAssignment)}
           currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -114,6 +136,7 @@ class Grader extends React.Component<{}, IGraderState> {
           tabItems={this.tabItemsFormatter(currentCourse)}
           handleTabChange={this.handleAssignmentChange}
           handleSelectorChange={this.handleCourseChange}
+          isLoading={this.state.isLoading}
         />
         <div className='content-container'>
           <GradedTab
@@ -128,43 +151,35 @@ class Grader extends React.Component<{}, IGraderState> {
   }
 
   private loadCourses = () => {
-    $.ajax({
-      beforeSend: (xhr: any) => {
-        xhr.setRequestHeader("Authorization", "Basic " + btoa("rjfreling@gmail.com:pass"));
-      },
-      cache: true,
-      dataType: 'json',
-      error: (xhr: any, status: any, err: any) => {
-        console.error(xhr, status, err.toString());
-      },
-      success: (data: any) => {
-        const courses = 'graderCourses'
-        this.setState({ courses: data[courses] });
-      },
-      url: '/api/users/me/'
-    });
+    fetch('/api/users/me/', {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => {
+        return (res.json())
+      })
+      .then(json => {
+        const courses = 'graderCourses';
+        this.setState({ courses: json[courses], isLoading: false, email: json.email });
+      });
   };
 
   private loadSubmissions = (id: string | number) => {
-    $.ajax({
-      beforeSend: (xhr: any) => {
-        xhr.setRequestHeader("Authorization", "Basic " + btoa("rjfreling@gmail.com:pass"));
-      },
-      cache: true,
-      dataType: 'json',
-      error: (xhr: any, status: any, err: any) => {
-        console.error(xhr, status, err.toString());
-      },
-      success: (data: any) => {
-        if (data.length > 0) {
-          this.setState({ currentSubmissions: data });
+    fetch(`/api/assignments/${id}/submissions/?grader=rjfreling@gmail.com`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(json => {
+        if (json.length > 0 && json[0].isFinalized) {
+          this.setState({ currentSubmissions: json });
         }
         else {
           this.setState({ currentSubmissions: [] });
         }
-      },
-      url: `/api/assignments/${id}/submissions/?grader=rjfreling@gmail.com`
-    });
+      });
   };
 
 
