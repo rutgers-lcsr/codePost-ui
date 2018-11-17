@@ -12,21 +12,7 @@ cos126s2019 = Course.objects.create(parent=cos126, period="S2019")
 
 ## Create an assignment parent and an assignment
 hello = AssignmentParent.objects.create(name="Hello World", org=princeton)
-hellos2019 = Assignment.objects.create(parent=hello, course=cos126s2019, points=20)
-
-## Create some students and add them to the course
-for i in range(0, 50):
-  username = "user" + str(i) + "@gmail.com"
-  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
-  tmpUser.profile.organization = princeton
-  tmpUser.set_password("rootabega")
-  cos126s2019.students.add(tmpUser.profile.student)
-  tmpUser.save()
-  cos126s2019.save()
-  sub = Submission.objects.create(assignment=hellos2019)
-  sub.students.add(tmpUser.profile.student)
-  code = "System.out.println('hello world, my name is " + username + "!')"
-  File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+hellos2019 = Assignment.objects.create(parent=hello, course=cos126s2019, points=20, isReleased=True)
 
 ## Create some superusers
 james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com', password="rootabega")
@@ -53,6 +39,23 @@ cos126s2019.save()
 ## Add some courseadmins to the course
 cos126s2019.courseAdmins.add(james.profile.courseadmin)
 cos126s2019.save()
+
+## Create some students and add them to the course
+for i in range(0, 50):
+  username = "user" + str(i) + "@gmail.com"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = princeton
+  tmpUser.set_password("rootabega")
+  cos126s2019.students.add(tmpUser.profile.student)
+  tmpUser.save()
+  cos126s2019.save()
+  sub = Submission.objects.create(assignment=hellos2019)
+  sub.students.add(tmpUser.profile.student)
+  code = "System.out.println('hello world, my name is " + username + "!')"
+  tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+  Comment.objects.create(text="good job, " + username, author=vinay.profile.grader, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
+  sub.isFinalized = True
+  sub.save()
 
 
 ## Add some extra objects
