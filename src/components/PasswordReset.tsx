@@ -1,0 +1,117 @@
+import * as React from "react"
+import { Link } from 'react-router-dom';
+import PasswordResetForm from './PasswordResetForm';
+
+
+/****************************************************************
+This component works as follows:
+
+(1) Receive token from user in URL (most likely by clicking on
+reset password link)
+
+(2) Validate that token is valid on server-side. If so, render
+password reset form. Note this is purely a UX optimization. We
+don't want to present users with the password reset *form* before
+we know their token is valid, but we *do* need to resubmit the token
+with the form so that that update password action on the server-side
+can be authenticated.
+
+(3) Submit the token along with the new password to server. If
+action succeeds, present user with option to log in. Otherwise,
+present error message.
+*****************************************************************/
+
+interface IPasswordResetProps {
+  match: any,
+}
+
+interface IPasswordResetState {
+  error: string,
+  loadState: string, // have we validated the token? Note we need to validate on server side
+}
+
+class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetState> {
+  public state: Readonly<IPasswordResetState> = {
+    error: '',
+    loadState: '',
+  }
+
+  public componentDidMount = () => {
+    this.validateToken(this.props.match.params.token);
+  }
+
+  public validateToken = (token: any) => {
+    const payload = new URLSearchParams();
+    const key1 = 'uid'
+    const key2 = 'token'
+    payload.append(key1, this.props.match.params.uid)
+    payload.append(key2, this.props.match.params.token)
+
+    fetch('http://localhost:8000/api/users/isTokenValid/', {
+      body: payload,
+      method: 'POST',
+    }).then(res => res.json())
+    .then(json => {
+      if (json.value) {
+        this.setState({loadState: 'valid'})
+      } else {
+        this.setState({loadState: 'error', error: 'invalid_token'})
+      }
+    });
+  }
+
+  public handleReset = (e: any, data: any) => {
+    e.preventDefault();
+
+    const payload = new URLSearchParams();
+    const key1 = 'token'
+    const key2 = 'uid'
+    const key3 = 'password'
+    payload.append(key1, this.props.match.params.token);
+    payload.append(key2, this.props.match.params.uid);
+    payload.append(key3, data.password1);
+
+    fetch('http://localhost:8000/api/users/updatePassword/', {
+      body: payload,
+      method: 'POST',
+    }).then(res => {
+      if (res.ok) {
+        this.setState({loadState: 'success'})
+      }
+    })
+  };
+
+  public render() {
+    switch (this.state.loadState) {
+      case 'valid':
+        return (
+          <PasswordResetForm handleSubmit={this.handleReset}/>
+        );
+        break;
+      case 'updated':
+        return (
+          <button>Click here to login</button>
+        );
+        break;
+      case 'error':
+        return (
+          <p>An error occurred. Did you already use this link to update your password?</p>
+        );
+        break;
+      case 'success':
+        return (
+          <div>
+            <p>Success!</p>
+            <Link to={`/`}><button>Login now</button></Link>
+          </div>
+        );
+        break;
+      default:
+        return (
+          <p>Hang tight...validating your token</p>
+        );
+    }
+  }
+}
+
+export default PasswordReset;

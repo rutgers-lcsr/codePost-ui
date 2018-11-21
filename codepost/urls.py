@@ -52,3 +52,4 @@ urlpatterns = [
   path('token-refresh/', refresh_jwt_token),
   re_path('core/', include(('core.urls', 'core'), namespace='codepost')),
 ]
+

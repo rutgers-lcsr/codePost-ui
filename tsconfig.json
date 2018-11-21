@@ -28,5 +28,5 @@
     "jest",
     "src/setupTests.ts",
     "venv"
-  ]
+  ],
 }
