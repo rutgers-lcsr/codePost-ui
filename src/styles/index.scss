@@ -1,11 +1,13 @@
+@import 'globals';
+
+@include react-md-everything;
+
 ///////////////
 // Theme
 ///////////////
 
 $primary-color: #2ECD70;
 $primary-font: roboto;
-
-$dark-color: #DEDEDE;
 
 
 ///////////////
@@ -21,27 +23,26 @@ body {
   width: 100%;
 }
 
-#topbar {
-  color: $dark-color;
-  height: 45px;
-  background: rgba(0, 0, 0, 0.89);
+.topbar {
+  background-color: #F5F5F5;
+  height: 60px;
   width: 100%;
+  border-style: solid;
+  border-width: 0px 0px 2px 0px;
+  border-color: $primary-color;
+  font-size: 30px;
 }
 
 .topbar-logo {
-  margin: 10px;
+  padding: 20px;
 }
 
 .codePost-P {
   color: $primary-color;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40px;
+.welcome {
+  font-size: 20px;
+  float: right;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}

@@ -1,16 +1,26 @@
 import * as React from 'react';
-import logo from '../logo.svg';
 import '../styles/index.scss';
 
-const TopBar = () => {
-  return (
-    <div id="topbar">
-      <img src={logo} className="App-logo" alt="logo" />
-      <span className="topbar-logo">
-        code<span className="codePost-P">P</span>ost
-      </span>
-    </div>
-  );
+interface IProps {
+  email: string,
+  handleLogout: (event: any) => void,
+}
+
+class TopBar extends React.Component<IProps, {}> {
+  public render() {
+    return (
+      <div className='topbar'>
+        <div className="topbar-logo">
+          code<span className="codePost-P">P</span>ost
+          <div className="welcome">
+            Hello, {this.props.email}
+            <button onClick={this.props.handleLogout}>Logout</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 }
 
 export default TopBar;

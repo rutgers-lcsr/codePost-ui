@@ -17,19 +17,38 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from rest_framework import routers
-from core import views
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
+
+from core.views.user import UserViewSet
+from core.views.course import CourseViewSet
+from core.views.submission import SubmissionViewSet
+from core.views.assignment import AssignmentViewSet
+from core.views.organization import OrganizationViewSet
+from core.views.profile import ProfileViewSet
+from core.views.section import SectionViewSet
+from core.views.student import StudentViewSet
+from core.views.grader import GraderViewSet
+from core.views.courseadmin import CourseAdminViewSet
+from core.views.comment import CommentViewSet
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'courses', views.CourseViewSet)
-router.register(r'submissions', views.SubmissionViewSet)
-router.register(r'assignments', views.AssignmentViewSet)
-router.register(r'organizations', views.OrganizationViewSet)
-router.register(r'profiles', views.ProfileViewSet)
+router.register(r'users', UserViewSet)
+router.register(r'courses', CourseViewSet)
+router.register(r'submissions', SubmissionViewSet)
+router.register(r'assignments', AssignmentViewSet)
+router.register(r'organizations', OrganizationViewSet)
+router.register(r'profiles', ProfileViewSet)
+router.register(r'sections', SectionViewSet)
+router.register(r'students', StudentViewSet)
+router.register(r'graders', GraderViewSet)
+router.register(r'courseadmins', CourseAdminViewSet)
+router.register(r'comments', CommentViewSet)
 
 urlpatterns = [
   path('admin/', admin.site.urls),
-  re_path('^api/', include(router.urls)),
   re_path('^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-  re_path('.*', include(('core.urls', 'core'), namespace='codepost')),
+  re_path('^api/', include(router.urls)),
+  path('token-auth/', obtain_jwt_token),
+  path('token-refresh/', refresh_jwt_token),
+  re_path('core/', include(('core.urls', 'core'), namespace='codepost')),
 ]

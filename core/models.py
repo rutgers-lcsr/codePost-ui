@@ -21,26 +21,26 @@ class Organization(models.Model):
 
 # https://wsvincent.com/django-custom-user-model-tutorial/
 class Profile(models.Model):
-  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
   org = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
 
   def __str__(self):
     return self.user.username
 
 class Student(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="student")
 
   def __str__(self):
     return self.profile.user.username
 
 class Grader(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="grader")
 
   def __str__(self):
     return self.profile.user.username
 
 class CourseAdmin(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="courseadmin")
 
   def __str__(self):
     return self.profile.user.username
@@ -68,7 +68,7 @@ class Course(models.Model):
 
 class Section(models.Model):
   name = models.CharField(max_length=16)
-  course = models.ForeignKey(Course, on_delete=models.CASCADE)
+  course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
   leader = models.ManyToManyField(Grader, blank=True, related_name='sections')
   students = models.ManyToManyField(Student)
 
@@ -122,8 +122,8 @@ class File(models.Model):
 
 class Comment(models.Model):
   text = models.TextField()
-  pointDelta = models.FloatField(blank=True)
-  rubricComment = models.ForeignKey(RubricComment, null=True, on_delete=models.SET_NULL, related_name="comments")
+  pointDelta = models.FloatField(blank=True, null=True)
+  rubricComment = models.ForeignKey(RubricComment, null=True, blank=True, on_delete=models.SET_NULL, related_name="comments")
   author = models.ForeignKey(Grader, on_delete=models.SET_NULL, null=True)
   file = models.ForeignKey(File, on_delete=models.CASCADE, related_name ="comments")
   startChar = models.IntegerField()

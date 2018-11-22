@@ -8,6 +8,17 @@ export enum APPS {
   CourseAdmin,
 }
 
+export enum ButtonState {
+  Active,
+  Loading,
+  Inactive
+}
+  
+export interface IUser {
+  email: string,
+  id: number
+}
+
 export interface IOption {
   label: string,
   value: string | number
@@ -16,7 +27,8 @@ export interface IOption {
 export interface IAssignment {
   id: number,
   name: string,
-  points: number
+  points: number,
+  isReleased: boolean,
 }
 
 export interface ICourse {
@@ -29,9 +41,10 @@ export interface ICourse {
 export interface ISubmission {
   id: number,
   isFinalized: any,
-  dateFinalized: any,
+  dateFinalized?: any,
   files: any[],
-  grade: number
+  grade: number,
+  students?: IStudent[]
 }
 
 export interface IFile {
@@ -50,4 +63,13 @@ export interface IComment {
   endLine: number,
   pointDelta: number,
   text: string
+}
+
+export interface IProfile {
+  id: number,
+  username: string
+}
+
+export interface IStudent {
+  profile: IProfile
 }

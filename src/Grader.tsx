@@ -1,29 +1,28 @@
 import * as React from 'react';
-import CodeViewer from './components/CodeViewer'
-import TopBar from './components/TopBar'
+import { Redirect } from 'react-router-dom'
+import GradedTab from './components/grader/GradedTab'
 import VerticalPane from './components/VerticalPane'
 import './styles/index.scss';
 import './styles/Student.scss';
 import { IAssignment, ICourse, IOption, ISubmission } from './types/common'
 
-
-interface IStudentState {
+interface IGraderState {
   courses: ICourse[],
   currentAssignment?: IAssignment,
   currentCourse?: ICourse,
-  currentSubmission?: ISubmission,
+  currentSubmissions: ISubmission[],
   email: string,
   isLoggedIn: boolean,
   isLoading: boolean,
   redirect: boolean,
 }
 
-class Student extends React.Component<{}, IStudentState> {
-  public state: Readonly<IStudentState> = {
+class Grader extends React.Component<{}, IGraderState> {
+  public state: Readonly<IGraderState> = {
     courses: [],
     currentAssignment: undefined,
     currentCourse: undefined,
-    currentSubmission: undefined,
+    currentSubmissions: [],
     email: '',
     isLoading: true,
     isLoggedIn: localStorage.getItem('token') ? true : false,
@@ -32,7 +31,7 @@ class Student extends React.Component<{}, IStudentState> {
 
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
-    // Should use props to pass studentID here from top-level app...
+    // Should use props to pass graderID here from top-level app...
     // ...annoying that typescript doesn't allow usage of lambdas
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
@@ -55,11 +54,7 @@ class Student extends React.Component<{}, IStudentState> {
     })[0];
 
     this.setState({ currentAssignment });
-    if (currentAssignment.isReleased) {
-      this.loadSubmission(currentAssignment.id);
-    } else {
-      this.setState({ currentSubmission: undefined });
-    }
+    this.loadSubmissions(currentAssignment.id);
   }
 
   public handleCourseChange = (option: IOption) => {
@@ -70,7 +65,54 @@ class Student extends React.Component<{}, IStudentState> {
     this.setState({
       currentAssignment: undefined,
       currentCourse,
-      currentSubmission: undefined
+      currentSubmissions: []
+    });
+  }
+
+  public claimSubmission = (assignment: IAssignment): any => {
+    return new Promise((resolve, reject) => {
+      fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`
+        },
+        method: "PATCH",
+      })
+        .then(res => {
+          if (res.status === 204) {
+            return undefined
+          }
+          else {
+            return (res.json())
+          }
+        })
+        .then(json => {
+          if (json) {
+            this.setState({
+              currentSubmissions: [...this.state.currentSubmissions, json]
+            });
+          }
+          resolve(json)
+        });
+    });
+  }
+
+  public releaseSubmission = (submission: ISubmission): any => {
+    return new Promise((resolve, reject) => {
+      fetch(`/api/submissions/${submission.id}/unassign/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`
+        },
+        method: "PATCH",
+      })
+        .then(res => {
+          return (res.json())
+        })
+        .then(json => {
+          this.setState({
+            currentSubmissions: this.state.currentSubmissions.filter(sub => sub.id !== submission.id)
+          });
+          resolve(json);
+        });
     });
   }
 
@@ -83,7 +125,7 @@ class Student extends React.Component<{}, IStudentState> {
   }
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission } = this.state
+    const { courses, currentAssignment, currentCourse, currentSubmissions } = this.state
     return (
       <div className="App">
         {this.renderRedirect()}
@@ -96,7 +138,14 @@ class Student extends React.Component<{}, IStudentState> {
           handleSelectorChange={this.handleCourseChange}
           isLoading={this.state.isLoading}
         />
-        <ContentArea assignment={currentAssignment} submission={currentSubmission} />
+        <div className='content-container'>
+          <GradedTab
+            claimSubmission={this.claimSubmission}
+            releaseSubmission={this.releaseSubmission}
+            assignment={currentAssignment}
+            submissions={currentSubmissions}
+          />
+        </div>
       </div>
     );
   }
@@ -111,13 +160,13 @@ class Student extends React.Component<{}, IStudentState> {
         return (res.json())
       })
       .then(json => {
-        const courses = 'studentCourses';
+        const courses = 'graderCourses';
         this.setState({ courses: json[courses], isLoading: false, email: json.email });
       });
   };
 
-  private loadSubmission = (id: string | number) => {
-    fetch('/api/assignments/' + id + '/submissions/?student=' + this.state.email, {
+  private loadSubmissions = (id: string | number) => {
+    fetch(`/api/assignments/${id}/submissions/?grader=rjfreling@gmail.com`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`
       }
@@ -125,10 +174,14 @@ class Student extends React.Component<{}, IStudentState> {
       .then(res => res.json())
       .then(json => {
         if (json.length > 0 && json[0].isFinalized) {
-          this.setState({ currentSubmission: json[0] });
+          this.setState({ currentSubmissions: json });
+        }
+        else {
+          this.setState({ currentSubmissions: [] });
         }
       });
   };
+
 
   private selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => (
@@ -159,56 +212,7 @@ class Student extends React.Component<{}, IStudentState> {
     }
     return { 'value': currentAssignment.id, 'label': currentAssignment.name }
   }
+
 }
 
-interface IContentAreaProps {
-  assignment?: IAssignment,
-  submission?: ISubmission
-}
-
-const ContentArea = (props: IContentAreaProps) => {
-  const { assignment, submission } = props;
-
-  const getDeductions = (sub: ISubmission) => {
-    const deductions = [];
-    for (const file of sub.files) {
-      let totalDeduction = 0;
-      for (const comment of file.comments) {
-        totalDeduction += comment.pointDelta;
-      }
-      deductions.push(totalDeduction);
-    }
-    return deductions;
-  }
-
-  if (submission && assignment) {
-    const deductions = getDeductions(submission);
-    return (
-      <div className='content-container'>
-        <div className="grade-container">
-          {"Grade: " + submission!.grade + "/" + assignment.points}
-        </div>
-        <CodeViewer
-          deductions={deductions}
-          submission={submission!}
-        />
-      </div>
-    );
-  }
-  else if (assignment) {
-    return (
-      <div style={{ margin: '100px' }}>
-        Your {assignment.name} has not yet been graded.
-      </div>
-    );
-  }
-  else {
-    return (
-      <div style={{ margin: '100px' }}>
-        Select an assignment on the left!
-      </div>
-    );
-  }
-}
-
-export default Student;
+export default Grader;
