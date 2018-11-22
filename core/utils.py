@@ -11,6 +11,8 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+
 def my_jwt_response_handler(token, user=None, request=None):
     return {
         'token': token,
@@ -35,10 +37,12 @@ def send_mail(subject_template_name, email_template_name,
     email_message.send()
 
 def emailUser(self, request, subject_template_name, email_template_name):
-  # should change this to request body parameter
-  email = request.POST['email']
-  if email is None:
+  form = PasswordResetForm(request.POST)
+
+  if not form.is_valid():
     return Response("Please specify an email", status=status.HTTP_400_BAD_REQUEST)
+
+  email = form.cleaned_data['email']
 
   try:
     user = User.objects.get(email=email)
@@ -56,7 +60,7 @@ def emailUser(self, request, subject_template_name, email_template_name):
         'protocol': 'https',
     }
 
-    send_mail(subject_template_name, email_template_name, context, None, email)
+    form.send_mail(subject_template_name, email_template_name, context, None, email)
     return Response("Email successfully sent", status=status.HTTP_200_OK)
 
   except ObjectDoesNotExist:

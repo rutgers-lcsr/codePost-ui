@@ -18,6 +18,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from core.utils import emailUser
 
 class BooleanSerialzier(serializers.Serializer):
@@ -50,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
   @action(detail=False, methods=['POST'])
   def isTokenValid(self, request):
-    # valid inputs using Django forms
+    # validate inputs using Django forms
     token = request.POST['token']
     uid = request.POST['uid']
     uid_int = urlsafe_base64_decode(uid).decode()
@@ -74,9 +75,30 @@ class UserViewSet(viewsets.ModelViewSet):
     user = User.objects.get(id=uid_int)
     isValid = default_token_generator.check_token(user, token)
 
-    # Validate the password here
-    # Probably should make the client side stricter than the server-side...
-    user.set_password(password)
-    user.save()
+    if isValid:
+      # Probably should make the client side stricter than the server-side...
+      user.set_password(password)
+      user.save()
+      return Response("Successfully updated password", status=status.HTTP_200_OK)
+    else:
+      return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
 
-    return Response("Successfully updated password", status=status.HTTP_200_OK)
+
+  @action(detail=False, methods=['POST'])
+  def activateUser(self, request):
+    token = request.POST['token']
+    uid = request.POST['uid']
+    password = request.POST['password']
+
+    uid_int = urlsafe_base64_decode(uid).decode()
+    user = User.objects.get(id=uid_int)
+    isValid = default_token_generator.check_token(user, token)
+
+    if isValid:
+      # Probably should make the client side stricter than the server-side...
+      user.is_active = True
+      user.set_password(password)
+      user.save()
+      return Response("Successfully activated", status=status.HTTP_200_OK)
+    else:
+      return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
