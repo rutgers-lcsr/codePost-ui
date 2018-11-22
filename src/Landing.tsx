@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Button } from 'react-md';
+import LandingTopBar from './components/LandingTopBar';
 import './styles/index.scss';
 import './styles/landing.scss';
-import LandingTopBar from './components/LandingTopBar';
 
 class Landing extends React.Component {
   public state: any = {
@@ -35,8 +35,7 @@ class Landing extends React.Component {
               codePost makes grading and course management easy, allowing you to focus on what's important: helping your students improve and become power programmers.
             </div>
           </div>
-          <div className="Hero-image col-md-7"> Some image
-          </div>
+          <div className="Hero-image col-md-7" /> 
         </div>
         <div className="pathBox">
           <svg viewBox="0 0 1280 100" preserveAspectRatio="none">

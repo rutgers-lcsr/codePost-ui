@@ -1,6 +1,7 @@
 import * as React from 'react';
+import { Redirect } from 'react-router-dom'
+
 import CodeViewer from './components/CodeViewer'
-import TopBar from './components/TopBar'
 import VerticalPane from './components/VerticalPane'
 import './styles/index.scss';
 import './styles/Student.scss';
