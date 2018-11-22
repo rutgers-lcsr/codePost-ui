@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { STUDENT } from './routes';
+import { LANDING, STUDENT } from './routes';
 import './styles/App.scss';
 
 import logo from './logo.svg';
@@ -19,6 +19,11 @@ class Home extends React.Component {
         <p className="App-intro">
           <Link to={STUDENT}>
             Link to Student Page
+          </Link>
+        </p>
+        <p className="App-intro">
+          <Link to={LANDING}>
+            Link to Landing Page
           </Link>
         </p>
       </div>
