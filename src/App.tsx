@@ -6,7 +6,8 @@ import TopBar from './components/TopBar'
 
 import Grader from './Grader';
 import Home from './Home';
-import { GRADER, HOME, STUDENT } from './routes';
+import Landing from './Landing';
+import { GRADER, HOME, LANDING, STUDENT } from './routes';
 import Student from './Student';
 import './styles/App.scss';
 import { IUser } from './types/common'
@@ -180,6 +181,7 @@ class App extends React.Component<{}, IStudentState> {
                     <Route exact={true} path={STUDENT} component={Student} />
                     <Route exact={true} path={GRADER} component={Grader} />
                     <Route exact={true} path={HOME} component={Home} />
+                    <Route exact={true} path={LANDING} component={Landing} />
                   </Switch>
                 </BrowserRouter>
             </div>
