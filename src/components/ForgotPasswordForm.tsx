@@ -1,16 +1,13 @@
 import * as React from "react"
 
-interface IForgotPasswordFormProps {
-  handleReset: (e: any, data: any) => void
-}
-
 const initialState = {
   email: '',
+  status: '',
 }
 
 type State = Readonly<typeof initialState>;
 
-class ForgotPasswordForm extends React.Component<IForgotPasswordFormProps, State> {
+class ForgotPasswordForm extends React.Component<{}, State> {
   public readonly state: State = initialState
 
   public handleChange = (e: any) => {
@@ -23,13 +20,46 @@ class ForgotPasswordForm extends React.Component<IForgotPasswordFormProps, State
     });
   }
 
-  public handleLogin = (e: any) => {
-    return this.props.handleReset(e, this.state);
+  public handleReset = (e: any) => {
+    e.preventDefault();
+
+    const payload = new URLSearchParams();
+    const data = this.state;
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        payload.append(key, data[key]);
+      }
+    }
+
+    fetch('http://localhost:8000/api/users/emailPasswordReset/', {
+      body: payload,
+      method: 'POST',
+    })
+      .then(res => {
+        if (res.ok) {
+          this.setState({status: 'success'})
+        } else {
+          this.setState({status: 'failure'})
+        }
+      });
   }
 
   public render() {
+
+    switch(this.state.status) {
+      case 'success':
+        return (<div> Email sent successfully! </div>);
+        break;
+      case 'failure':
+        return (<div> An unknown error occurred... </div>);
+        break;
+      default:
+        break;
+    }
+
     return (
-      <form onSubmit={this.handleLogin}>
+      <form onSubmit={this.handleReset}>
         <h4>Reset your password</h4>
         <label htmlFor="email">Email</label>
         <input

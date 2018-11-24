@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { Route, Switch } from 'react-router-dom';
 
-import IndexButtons from './components/IndexButtons'
-import PasswordReset from './components/PasswordReset'
+import IndexManager from './components/IndexManager'
 import TopBar from './components/TopBar'
 
 import Grader from './Grader';
 import Home from './Home';
-import { GRADER, HOME, RESET_TOKEN, STUDENT } from './routes';
+import { GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
 import './styles/App.scss';
 import { IUser } from './types/common'
@@ -129,23 +128,6 @@ class App extends React.Component<{}, IStudentState> {
       });
   };
 
-  public handleReset = (e: any, data: any) => {
-    e.preventDefault();
-
-    const payload = new URLSearchParams();
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        payload.append(key, data[key]);
-      }
-    }
-
-    fetch('http://localhost:8000/api/users/emailPasswordReset/', {
-      body: payload,
-      method: 'POST',
-    })
-      .then(res => console.log(res))
-  };
-
   public render() {
     /* tslint:disable:jsx-no-lambda */
     // Disabling this rule means we can use the render prop of Route to pass props to components
@@ -154,7 +136,7 @@ class App extends React.Component<{}, IStudentState> {
        <div>
        <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
-              <div className="AppHome">
+              <div className="App">
                 <Switch>
                   <Route exact={true} path={STUDENT} component={Student} />
                   <Route exact={true} path={GRADER} component={Grader} />
@@ -167,15 +149,10 @@ class App extends React.Component<{}, IStudentState> {
     } else {
       return (
         <div className="App">
-          <Switch>
-            <Route exact={true} path={HOME} render={(props: any) => (
-              <IndexButtons
-                handleLogin={this.handleLogin}
-                handleReset={this.handleReset}
-                error={this.state.error} />)}
-            />
-            <Route exact={true} path={RESET_TOKEN} component={PasswordReset} />
-          </Switch>
+         <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+         />
         </div>
       );
     }

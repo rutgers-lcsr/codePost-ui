@@ -1,5 +1,4 @@
 import * as React from "react"
-import { Link } from 'react-router-dom';
 import PasswordResetForm from './PasswordResetForm';
 
 
@@ -23,6 +22,7 @@ present error message.
 
 interface IPasswordResetProps {
   match: any,
+  message: string,
 }
 
 interface IPasswordResetState {
@@ -82,10 +82,26 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   };
 
   public render() {
+
+    let message;
+    switch (this.props.message) {
+      case 'forgot':
+        message = <p>Set a new password below.</p>
+        break;
+      case 'activate':
+        message = <p>Set up a codePost passowrd here to be able to access your account.</p>
+        break;
+      default:
+        message = ''
+    }
+
     switch (this.state.loadState) {
       case 'valid':
         return (
-          <PasswordResetForm handleSubmit={this.handleReset}/>
+          <div>
+            {message}
+            <PasswordResetForm handleSubmit={this.handleReset}/>
+          </div>
         );
         break;
       case 'updated':
@@ -101,8 +117,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
       case 'success':
         return (
           <div>
-            <p>Success!</p>
-            <Link to={`/`}><button>Login now</button></Link>
+            <p>Success! Try logging in now.</p>
           </div>
         );
         break;

@@ -1,0 +1,51 @@
+import * as React from "react"
+import { Link, Route, Switch } from 'react-router-dom';
+
+import ForgotPasswordForm from './ForgotPasswordForm';
+import LoginForm from './LoginForm';
+import NoMatch from './NoMatch';
+import PasswordReset from './PasswordReset';
+
+interface IndexManagerProps {
+  error: string,
+  handleLogin: (e: any, data: any) => void,
+}
+
+class IndexManager extends React.Component<IndexManagerProps, {}> {
+
+  public render() {
+    /* tslint:disable:jsx-no-lambda */
+    return (
+      <div>
+        <p> This is the homepage! </p>
+        <br />
+        <Link to={'/login'}><button>Login</button></Link>
+        <br />
+        <Link to={'/forgot-password'}><button>Forgot your password?</button></Link>
+      <Switch>
+
+        <Route exact={true} path={'/'} />
+
+        <Route exact={true} path={'/login'} render={(props:any) =>
+          <LoginForm handleLogin={this.props.handleLogin} />}
+        />
+
+        <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
+
+        <Route exact={true} path={'/password-reset/:uid/:token'} render={(props:any) =>
+          <PasswordReset {...props} message={'forgot'} />}
+        />
+
+        <Route exact={true} path={'/activate/:uid/:token'} render={(props:any) =>
+          <PasswordReset {...props} message={'activate'} />}
+        />
+
+        <Route component={NoMatch} />
+
+      </Switch>
+      </div>
+    );
+  }
+}
+
+export default IndexManager;
