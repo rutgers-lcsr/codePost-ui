@@ -18,7 +18,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
   queryset = Assignment.objects.all()
   serializer_class = AssignmentSerializer
 
-  @action(detail=True, methods=['PATCH'])
+  @action(detail=True, methods=['GET'])
   def toggleReleased(self, request, pk=None):
     user = request.user
     if not isAuthenticated(user):
@@ -35,7 +35,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     serializer = AssignmentSerializer(assignment)
     return Response(serializer.data)
 
-  @action(detail=True, methods=['PATCH'])
+  @action(detail=True, methods=['patch'])
   def drawUnassigned(self, request, pk=None):
     user = request.user
     if not isAuthenticated(user):
@@ -49,6 +49,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     section = self.request.query_params.get('section', None)
 
+    print (assignment)
     # Use system ordering to pull random unassigned submission
     submissions = assignment.submissions.filter(grader=None)
     if section is not None:
@@ -61,15 +62,16 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     submission = None
     if len(submissions) > 0:
       submission = submissions[0]
+      # Assign submission to grader
+      # Doing this in this call is important, since it prevents two users from drawing the
+      # save unassigned submission and subsequently trying to claim it
+      submission.grader = user.profile.grader
+      submission.save()
 
-    # Assign submission to grader
-    # Doing this in this call is important, since it prevents two users from drawing the
-    # save unassigned submission and subsequently trying to claim it
-    submission.grader = user.profile.grader
-    submission.save()
-
-    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
-    return Response(serializer.data)
+      serializer = SubmissionWithCommentsAuthorsSerializer(submission)
+      return Response(serializer.data)
+    else:
+      return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Optional arguments: username, grader
 # If neither specified, returns full list of submissions for this assignment

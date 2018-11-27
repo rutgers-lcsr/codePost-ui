@@ -73,4 +73,3 @@ nbodyf2019 = Assignment.objects.create(parent=nbody, course=cos126f2019, points=
 percolation = AssignmentParent.objects.create(name="Percolation", org=princeton)
 percolations2020 = Assignment.objects.create(parent=percolation, course=cos226s2020, points=20)
 
-
