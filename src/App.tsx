@@ -70,7 +70,7 @@ class App extends React.Component<{}, IStudentState> {
       return
     }
 
-    const REFRESH_MIN = 30;
+    const REFRESH_MIN = 30; // should define this in a settings file somewhere
     const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
 
     fetch('http://localhost:8000/token-refresh/', {

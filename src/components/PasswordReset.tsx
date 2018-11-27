@@ -20,6 +20,13 @@ action succeeds, present user with option to log in. Otherwise,
 present error message.
 *****************************************************************/
 
+/* NOTE: as of right now, this page allows users who have not previously set a password
+/* to do so via the /activate or /password-reset URLs. This doesn't seem to cause any
+/* adverse behavior, but worth noting in case in case this information can be used to
+/* debug unexpected behavior in the future.
+*/
+
+
 interface IPasswordResetProps {
   match: any,
   message: string,
@@ -40,6 +47,10 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     this.validateToken(this.props.match.params.token);
   }
 
+  // After validating the token, we should take it out of the URl to avoiding leaking
+  // the token in HTTP referer field if the user navigates away from the page.
+  // For an explanation of this vulnerability:
+  // https://robots.thoughtbot.com/is-your-site-leaking-password-reset-links
   public validateToken = (token: any) => {
     const payload = new URLSearchParams();
     const key1 = 'uid'
