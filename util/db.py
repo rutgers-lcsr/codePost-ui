@@ -55,6 +55,7 @@ for i in range(0, 50):
   tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
   Comment.objects.create(text="good job, " + username, author=vinay.profile.grader, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
   sub.isFinalized = True
+  sub.grade = 20
   sub.save()
 
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
-import LoginForm from './components/LoginForm';
+import IndexManager from './components/IndexManager'
 import TopBar from './components/TopBar'
 
 import Grader from './Grader';
@@ -14,24 +14,15 @@ import { IUser } from './types/common'
 
 
 interface IStudentState {
-  displayed_form: string,
   error: string,
   logged_in: boolean,
   user: IUser
 }
 
 class App extends React.Component<{}, IStudentState> {
-  public state: Readonly<IStudentState> = {
-    displayed_form: 'login',
-    error: '',
-    logged_in: false,
-    user: {email: '', id: 0},
-  }
-
   public constructor(props : any) {
     super(props);
     this.state = {
-      displayed_form: '',
       error: '',
       logged_in: localStorage.getItem('token') ? true : false,
       user: {email: '', id: 0},
@@ -80,8 +71,8 @@ class App extends React.Component<{}, IStudentState> {
       return
     }
 
-    const REFRESH_MIN = 30;
-    const REFRESH_INT = 1000 * 60 * REFRESH_MIN;
+    const REFRESH_MIN = 30; // should define this in a settings file somewhere
+    const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
 
     fetch('http://localhost:8000/token-refresh/', {
       body: JSON.stringify({token: localStorage.getItem('token')}),
@@ -90,21 +81,21 @@ class App extends React.Component<{}, IStudentState> {
       },
       method: 'POST',
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        }
+        else {
+          return Promise.reject();
+        }
+      })
       .then(json => {
         localStorage.setItem('token', json.token);
-        console.log("refreshed!");
         setInterval(this.refreshToken, REFRESH_INT);
       }).catch(error => {
         this.handleLogout();
      });
 
-  };
-
-  public displayForm = (form: string) => {
-    this.setState({
-      displayed_form: form
-    });
   };
 
   public handleLogin = (e: any, data: any) => {
@@ -116,60 +107,31 @@ class App extends React.Component<{}, IStudentState> {
       },
       method: 'POST',
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        }
+        else {
+          return Promise.reject();
+        }
+      })
       .then(json => {
         localStorage.setItem('token', json.token);
         this.setState({
-          displayed_form: '',
+          error: '',
           logged_in: true,
-          user: json.user
+          user: json.user,
         })
       })
       .catch(error => {
         this.handleLogout();
-        this.setState({error: 'invalid'});
+        this.setState({error: 'invalid'})
       });
   };
 
-  public toggleLogin = (e: any) => {
-    switch (this.state.displayed_form) {
-      case 'login':
-        this.setState({displayed_form: '', error: ''});
-        break;
-      default:
-        this.setState({displayed_form: 'login'});
-    }
-  }
-
-  public toggleSignup = (e: any) => {
-    switch (this.state.displayed_form) {
-      case 'signup':
-        this.setState({displayed_form: '', error: ''});
-        break;
-      default:
-        this.setState({displayed_form: 'signup'});
-    }
-  }
-
   public render() {
-    let form;
-    switch (this.state.displayed_form) {
-      case 'login':
-        form = <LoginForm handleLogin={this.handleLogin} />;
-        break;
-      default:
-        form = null;
-    }
-
-    let error;
-    switch (this.state.error) {
-      case 'invalid':
-        error = 'Invalid username and password'
-        break;
-      default:
-        error = null
-    }
-
+    /* tslint:disable:jsx-no-lambda */
+    // Disabling this rule means we can use the render prop of Route to pass props to components
     if (this.state.logged_in) {
       return (
        <div>
@@ -191,10 +153,10 @@ class App extends React.Component<{}, IStudentState> {
     } else {
       return (
         <div className="App">
-          <button onClick={this.toggleLogin}>Login</button>
-          <br />
-          {form}
-          <p>{error}</p>
+         <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+         />
         </div>
       );
     }
