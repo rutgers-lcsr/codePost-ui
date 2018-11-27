@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Link } from 'react-router-dom';
 
 interface ILoginFormProps {
   handleLogin: (e: any, data: any) => void
@@ -47,6 +48,9 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           onChange={this.handleChange}
         />
         <input type="submit" />
+        <br />
+        <br />
+        <Link to="/forgot-password">Forgot your password?</Link>
       </form>
     );
   }

@@ -1,5 +1,7 @@
 import * as React from "react"
-import { Link, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+
+import Landing from '../Landing';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -17,14 +19,8 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
     /* tslint:disable:jsx-no-lambda */
     return (
       <div>
-        <p> This is the homepage! </p>
-        <br />
-        <Link to={'/login'}><button>Login</button></Link>
-        <br />
-        <Link to={'/forgot-password'}><button>Forgot your password?</button></Link>
       <Switch>
-
-        <Route exact={true} path={'/'} />
+        <Route exact={true} path={'/'} component={Landing} />
 
         <Route exact={true} path={'/login'} render={(props:any) =>
           <LoginForm handleLogin={this.props.handleLogin} />}
@@ -41,7 +37,6 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
         />
 
         <Route component={NoMatch} />
-
       </Switch>
       </div>
     );

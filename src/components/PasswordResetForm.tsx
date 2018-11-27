@@ -31,7 +31,6 @@ class ForgotPasswordForm extends React.Component<IPasswordResetFormProps, State>
   public render() {
     return (
       <form onSubmit={this.handleSubmit}>
-        <h4>Reset your password</h4>
         <label htmlFor="password1">Password </label>
         <input
           type="password"
