@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
+from django import forms
 
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 
@@ -18,23 +19,6 @@ def my_jwt_response_handler(token, user=None, request=None):
         'token': token,
         'user': UserSerializer(user, context={'request': request}).data
     }
-
-def send_mail(subject_template_name, email_template_name,
-              context, from_email, to_email, html_email_template_name=None):
-    """
-    Send a django.core.mail.EmailMultiAlternatives to `to_email`.
-    """
-    subject = loader.render_to_string(subject_template_name, context)
-    # Email subject *must not* contain newlines
-    subject = ''.join(subject.splitlines())
-    body = loader.render_to_string(email_template_name, context)
-
-    email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
-    if html_email_template_name is not None:
-        html_email = loader.render_to_string(html_email_template_name, context)
-        email_message.attach_alternative(html_email, 'text/html')
-
-    email_message.send()
 
 def emailUser(self, request, subject_template_name, email_template_name):
   form = PasswordResetForm(request.POST)
@@ -66,3 +50,11 @@ def emailUser(self, request, subject_template_name, email_template_name):
   except ObjectDoesNotExist:
     return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
 
+class ValidateTokenForm(forms.Form):
+  token = forms.CharField(min_length=20, strip=True)
+  uid = forms.CharField()
+
+class ChangePasswordForm(forms.Form):
+  token = forms.CharField(min_length=20, strip=True)
+  uid = forms.CharField()
+  password = password = forms.CharField(strip=False)

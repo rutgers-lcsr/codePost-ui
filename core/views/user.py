@@ -1,25 +1,19 @@
-from django.contrib.auth.models import User
-from core.serializers.user import UserSerializer, UserWithProfileSerializer
-
-from rest_framework import status
-from rest_framework import viewsets, generics
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import serializers
 
-from core.permissions.helpers import returnNotAuthorized, returnForbidden, returnNotFound
+from core.permissions.helpers import returnNotAuthorized
 from core.permissions.helpers import isAuthenticated
-from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
-from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
-
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-from core.utils import emailUser
+
+from core.serializers.user import UserSerializer, UserWithProfileSerializer
+from core.utils import emailUser, ValidateTokenForm, ChangePasswordForm
 
 class BooleanSerialzier(serializers.Serializer):
   value = serializers.BooleanField()
@@ -51,54 +45,68 @@ class UserViewSet(viewsets.ModelViewSet):
 
   @action(detail=False, methods=['POST'])
   def isTokenValid(self, request):
-    # validate inputs using Django forms
-    token = request.POST['token']
-    uid = request.POST['uid']
-    uid_int = urlsafe_base64_decode(uid).decode()
+    form = ValidateTokenForm(request.POST)
 
-    try:
-      user = User.objects.get(id=uid_int)
-    except ObjectDoesNotExist:
-      return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
+    if (form.is_valid()):
+      uid_int = urlsafe_base64_decode(form.cleaned_data['uid']).decode()
+      try:
+        user = User.objects.get(id=uid_int)
+      except ObjectDoesNotExist:
+        return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
 
-    isValid = default_token_generator.check_token(user, token)
-    serializer = BooleanSerialzier({"value" : str(isValid)})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+      isValid = default_token_generator.check_token(user, form.cleaned_data['token'])
+      serializer = BooleanSerialzier({"value" : str(isValid)})
+      return Response(serializer.data, status=status.HTTP_200_OK)
+
+    else:
+      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=False, methods=['POST'])
   def updatePassword(self, request):
-    token = request.POST['token']
-    uid = request.POST['uid']
-    password = request.POST['password']
+    form = ChangePasswordForm(request.POST)
 
-    uid_int = urlsafe_base64_decode(uid).decode()
-    user = User.objects.get(id=uid_int)
-    isValid = default_token_generator.check_token(user, token)
+    if (form.is_valid()):
+      try:
+        uid_int = urlsafe_base64_decode(form.cleaned_data['uid']).decode()
+        user = User.objects.get(id=uid_int)
+      except ObjectDoesNotExist:
+        return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
 
-    if isValid:
-      # Probably should make the client side stricter than the server-side...
-      user.set_password(password)
-      user.save()
-      return Response("Successfully updated password", status=status.HTTP_200_OK)
+      isValid = default_token_generator.check_token(user, form.cleaned_data['token'])
+      if isValid:
+        # Probably should make the client side stricter than the server-side...
+        user.set_password(form.cleaned_data['password'])
+        user.save()
+        return Response("Successfully updated password", status=status.HTTP_200_OK)
+      else:
+        return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
+
     else:
-      return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
-
+      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=False, methods=['POST'])
   def activateUser(self, request):
-    token = request.POST['token']
-    uid = request.POST['uid']
-    password = request.POST['password']
+    form = ChangePasswordForm(request.POST)
 
-    uid_int = urlsafe_base64_decode(uid).decode()
-    user = User.objects.get(id=uid_int)
-    isValid = default_token_generator.check_token(user, token)
+    if (form.is_valid()):
+      try:
+        uid_int = urlsafe_base64_decode(form.cleaned_data['uid']).decode()
+        user = User.objects.get(id=uid_int)
+      except ObjectDoesNotExist:
+        return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
 
-    if isValid:
-      # Probably should make the client side stricter than the server-side...
-      user.is_active = True
-      user.set_password(password)
-      user.save()
-      return Response("Successfully activated", status=status.HTTP_200_OK)
+      if user.is_active:
+        return Response("User already active", status=status.HTTP_400_BAD_REQUEST)
+
+      isValid = default_token_generator.check_token(user, form.cleaned_data['token'])
+      if isValid:
+        # Probably should make the client side stricter than the server-side...
+        user.set_password(form.cleaned_data['password'])
+        user.is_active = True
+        user.save()
+        return Response("Successfully updated password", status=status.HTTP_200_OK)
+      else:
+        return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
+
     else:
-      return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
+      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
