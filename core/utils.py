@@ -20,6 +20,27 @@ def my_jwt_response_handler(token, user=None, request=None):
         'user': UserSerializer(user, context={'request': request}).data
     }
 
+def sendMail(request, user, subject_template_name, email_template_name):
+  form = PasswordResetForm(request.POST)
+  if form.is_valid():
+    email = user.email
+    current_site = get_current_site(request)
+    site_name = current_site.name
+    domain = current_site.domain
+
+    context = {
+        'email': email,
+        'domain': domain,
+        'site_name': site_name,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        'user': user,
+        'token': default_token_generator.make_token(user),
+        'protocol': 'https',
+    }
+
+    form.send_mail(subject_template_name, email_template_name, context, None, email)
+
+
 def emailUser(self, request, subject_template_name, email_template_name):
   form = PasswordResetForm(request.POST)
 
@@ -58,3 +79,10 @@ class ChangePasswordForm(forms.Form):
   token = forms.CharField(min_length=20, strip=True)
   uid = forms.CharField()
   password = password = forms.CharField(strip=False)
+
+class EnrollForm(forms.Form):
+  email = forms.EmailField()
+  activate = forms.BooleanField()
+
+class EmailForm(forms.Form):
+  email = forms.EmailField()
