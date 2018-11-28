@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
+from django import forms
 
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 
@@ -49,3 +50,11 @@ def emailUser(self, request, subject_template_name, email_template_name):
   except ObjectDoesNotExist:
     return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
 
+class ValidateTokenForm(forms.Form):
+  token = forms.CharField(min_length=20, strip=True)
+  uid = forms.CharField()
+
+class ChangePasswordForm(forms.Form):
+  token = forms.CharField(min_length=20, strip=True)
+  uid = forms.CharField()
+  password = password = forms.CharField(strip=False)
