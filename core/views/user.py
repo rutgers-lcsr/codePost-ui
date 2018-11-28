@@ -59,10 +59,13 @@ class UserViewSet(viewsets.ModelViewSet):
       return Response(serializer.data, status=status.HTTP_200_OK)
 
     else:
-      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=False, methods=['POST'])
   def updatePassword(self, request):
+
+    # Probably should enforce some password checks here...currently, users
+    # can bypass any client-side password requirements using this endpoint
     form = ChangePasswordForm(request.POST)
 
     if (form.is_valid()):
@@ -74,7 +77,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
       isValid = default_token_generator.check_token(user, form.cleaned_data['token'])
       if isValid:
-        # Probably should make the client side stricter than the server-side...
         user.set_password(form.cleaned_data['password'])
         user.save()
         return Response("Successfully updated password", status=status.HTTP_200_OK)
@@ -82,7 +84,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
 
     else:
-      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=False, methods=['POST'])
   def activateUser(self, request):
@@ -109,4 +111,4 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response("Invalid token", status=status.HTTP_400_BAD_REQUEST)
 
     else:
-      return Response("Bad arguments", status=status.HTTP_400_BAD_REQUEST)
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
