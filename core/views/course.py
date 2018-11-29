@@ -16,6 +16,9 @@ from core.permissions.helpers import isAuthenticated
 from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
 from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
+from core.models import User
+from core.utils import EmailForm, EnrollForm, sendMail
+
 class CourseViewSet(viewsets.ModelViewSet):
   queryset = Course.objects.all()
   serializer_class = CourseSerializer
@@ -26,28 +29,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EmailForm(request.POST)
+    if form.is_valid():
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      try:
+        userParameter = User.objects.get(email=form.cleaned_data['email'])
+      except:
+        return returnNotFound(message="User is not enrolled as a student in this course")
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Student does not exist")
+      if userParameter.profile.student not in course.students.all():
+        return Response("User is not enrolled as a student in this course", status=status.HTTP_400_BAD_REQUEST)
 
-    if userParameter.profile.student not in course.students.all():
-      return Response("User is not enrolled as a student in this course", status=status.HTTP_400_BAD_REQUEST)
-
-    course.students.remove(userParameter.profile.student)
-    course.save()
-    serializer = StudentSerializer(userParameter.profile.student ,context={'request' : request})
-    return Response(serializer.data)
+      course.students.remove(userParameter.profile.student)
+      course.save()
+      serializer = StudentSerializer(userParameter.profile.student, context={'request' : request})
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def removeGrader(self, request, pk=None):
@@ -55,28 +57,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EmailForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      try:
+        userParameter = User.objects.get(email=form.cleaned_data['email'])
+      except:
+        return returnNotFound(message="User is not enrolled as a grader in this course")
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Grader does not exist")
+      if userParameter.profile.grader not in course.graders.all():
+        return Response("User is not enrolled as a grader in this course", status=status.HTTP_400_BAD_REQUEST)
 
-    if userParameter.profile.grader not in course.graders.all():
-      return Response("User is not enrolled as a grader in this course", status=status.HTTP_400_BAD_REQUEST)
-
-    course.graders.remove(userParameter.profile.grader)
-    course.save()
-    serializer = GraderSerializer(userParameter.profile.grader ,context={'request' : request})
-    return Response(serializer.data)
+      course.graders.remove(userParameter.profile.grader)
+      course.save()
+      serializer = GraderSerializer(userParameter.profile.grader, context={'request' : request})
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def removeCourseAdmin(self, request, pk=None):
@@ -84,28 +85,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EmailForm(request.POST)
+    if form.is_valid():
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      try:
+        userParameter = User.objects.get(email=form.cleaned_data['email'])
+      except:
+        return returnNotFound(message="User is not enrolled as a CourseAdmin in this course")
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Grader does not exist")
+      if userParameter.profile.courseadmin not in course.courseAdmins.all():
+        return Response("User is not enrolled as a CourseAdmin in this course", status=status.HTTP_400_BAD_REQUEST)
 
-    if userParameter.profile.courseadmin not in course.courseAdmins.all():
-      return Response("User is not enrolled as a course admin in this course", status=status.HTTP_400_BAD_REQUEST)
-
-    course.courseAdmins.remove(userParameter.profile.courseadmin)
-    course.save()
-    serializer = CourseAdminSerializer(userParameter.profile.courseadmin ,context={'request' : request})
-    return Response(serializer.data)
+      course.courseAdmins.remove(userParameter.profile.courseadmin)
+      course.save()
+      serializer = CourseAdminSerializer(userParameter.profile.courseadmin, context={'request' : request})
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def enrollStudent(self, request, pk=None):
@@ -113,25 +113,33 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EnrollForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      # courseAdmin permissions required
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      activate = form.cleaned_data['activate']
+      email = form.cleaned_data['email']
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Student does not exist")
+      try:
+        userParameter = User.objects.get(username=email)
+      except:
+        userParameter = User.objects.create(username=email, email=email)
+        if activate:
+          subject_template_name = 'registration/user_registration_subject.txt'
+          email_template_name = 'registration/user_registration_email.html'
+          sendMail(request, user, subject_template_name, email_template_name)
 
-    course.students.add(userParameter.profile.student)
-    course.save()
-    serializer = StudentSerializer(userParameter.profile.student ,context={'request' : request})
-    return Response(serializer.data)
+      course.students.add(userParameter.profile.student)
+      course.save()
+      serializer = StudentSerializer(userParameter.profile.student ,context={'request' : request})
+      return Response(serializer.data)
+
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def enrollGrader(self, request, pk=None):
@@ -139,25 +147,33 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EnrollForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      # courseAdmin permissions required
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      activate = form.cleaned_data['activate']
+      email = form.cleaned_data['email']
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Student does not exist")
+      try:
+        userParameter = User.objects.get(username=email)
+      except:
+        userParameter = User.objects.create(username=email, email=email)
+        if activate:
+          subject_template_name = 'registration/user_registration_subject.txt'
+          email_template_name = 'registration/user_registration_email.html'
+          sendMail(request, user, subject_template_name, email_template_name)
 
-    course.graders.add(userParameter.profile.grader)
-    course.save()
-    serializer = GraderSerializer(userParameter.profile.grader ,context={'request' : request})
-    return Response(serializer.data)
+      course.graders.add(userParameter.profile.grader)
+      course.save()
+      serializer = GraderSerializer(userParameter.profile.grader ,context={'request' : request})
+      return Response(serializer.data)
+
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def enrollCourseAdmin(self, request, pk=None):
@@ -165,25 +181,33 @@ class CourseViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    course = Course.objects.get(id=pk)
+    form = EnrollForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
 
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
+      # courseAdmin permissions required
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
 
-    username = self.request.query_params.get('username', None)
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      activate = form.cleaned_data['activate']
+      email = form.cleaned_data['email']
 
-    try:
-      userParameter = User.objects.get(username=username)
-    except:
-      # Should trigger sign up flow here
-      return returnNotFound(message="Student does not exist")
+      try:
+        userParameter = User.objects.get(username=email)
+      except:
+        userParameter = User.objects.create(username=email, email=email)
+        if activate:
+          subject_template_name = 'registration/user_registration_subject.txt'
+          email_template_name = 'registration/user_registration_email.html'
+          sendMail(request, user, subject_template_name, email_template_name)
 
-    course.courseAdmins.add(userParameter.profile.courseadmin)
-    course.save()
-    serializer = CourseAdminSerializer(userParameter.profile.courseadmin ,context={'request' : request})
-    return Response(serializer.data)
+      course.courseAdmins.add(userParameter.profile.courseadmin)
+      course.save()
+      serializer = CourseAdminSerializer(userParameter.profile.courseadmin ,context={'request' : request})
+      return Response(serializer.data)
+
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True)
   def students(self, request, pk=None):

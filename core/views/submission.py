@@ -12,6 +12,8 @@ from core.permissions.helpers import isAuthenticated
 from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
 from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
+from core.utils import EmailForm
+
 class SubmissionViewSet(viewsets.ModelViewSet):
   queryset = Submission.objects.all()
   serializer_class = SubmissionWithCommentsAuthorsSerializer
@@ -73,32 +75,31 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    submission = Submission.objects.get(id=pk)
-    course = submission.assignment.course
-    username = request.query_params.get('username', None)
+    form = EmailForm(request.POST)
+    if form.is_valid():
+      submission = Submission.objects.get(id=pk)
+      course = submission.assignment.course
+      email = form.cleaned_data['email']
 
-    if not isCourseAdmin(user, course) and not isGrader(user, course):
-      return returnForbidden()
+      isVaildGrader = isGrader(user, course) and user.email==email
+      if not isCourseAdmin(user, course) and not isVaildGrader:
+        return returnForbidden()
 
-    if username is None:
-      return Response("Please specify a username", status=status.HTTP_400_BAD_REQUEST)
+      try:
+        user = User.objects.get(email=email)
+      except User.DoesNotExist:
+        return Response("Please specify a valid grader", status=status.HTTP_400_BAD_REQUEST)
 
-    if not isCourseAdmin(user, course) and not user.username == username:
-      return returnForbidden()
+      graders = course.graders
+      if user.profile.grader not in graders:
+        return Response("Please specify a valid grader", status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-      user = User.objects.get(username=username)
-    except User.DoesNotExist:
-      return returnNotFound(message="The user does not exist")
-
-    graders = course.graders
-    if user.profile.grader not in graders:
-      Response("Please specify a valid grader", status=status.HTTP_400_BAD_REQUEST)
-
-    submission.grader = user.profile.grader
-    submission.save()
-    serializer = SubmissionWithCommentsAuthorsSerializer(submission)
-    return Response(serializer.data)
+      submission.grader = user.profile.grader
+      submission.save()
+      serializer = SubmissionWithCommentsAuthorsSerializer(submission)
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
   @action(detail=True, methods=['patch'])
   def clearComments(self, request, pk=None):
