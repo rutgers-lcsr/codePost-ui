@@ -81,7 +81,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
       course = submission.assignment.course
       email = form.cleaned_data['email']
 
-      isVaildGrader = isGrader(user, course) and user.email=email
+      isVaildGrader = isGrader(user, course) and user.email==email
       if not isCourseAdmin(user, course) and not isVaildGrader:
         return returnForbidden()
 
