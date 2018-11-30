@@ -6,6 +6,6 @@ const NoMatch = () => {
       <p>Oops...this page doesn't exist!</p>
     </div>
   );
-}
+};
 
 export default NoMatch;

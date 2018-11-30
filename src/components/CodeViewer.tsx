@@ -2,132 +2,144 @@ import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import '../styles/CodeViewer.scss';
-import { IComment, IFile, ISubmission } from '../types/common'
+import { IComment, IFile, ISubmission } from '../types/common';
 
 interface IProps {
-  deductions: number[],
-  submission: ISubmission
+  deductions: number[];
+  submission: ISubmission;
 }
 
-class CodeViewer extends React.Component<IProps, {}>  {
+class CodeViewer extends React.Component<IProps, {}> {
   public render() {
     const { deductions, submission } = this.props;
     return (
-      <div className='content-box'>
+      <div className="content-box">
         <Tabs>
           <TabList>
-            {
-              submission.files.map((file: IFile, i: number) => {
-                const tabTitle = this.getTabTitle(file.name, deductions[i], file.comments.length);
-                return (
-                  <Tab id="{i}" key={i}>{tabTitle}</Tab>
-                )
-              })
-            }
-          </TabList>
-          {
-            submission.files.map((file: IFile, i: number) => {
+            {submission.files.map((file: IFile, i: number) => {
+              const tabTitle = this.getTabTitle(file.name, deductions[i], file.comments.length);
               return (
-                <TabPanel key={i}>
-                  <div className="submission-container">
-                    <div className="code-box">
-                      <CodeBox file={file} />
-                    </div>
-                    <CommentBox comments={file.comments} />
+                <Tab id="{i}" key={i}>
+                  {tabTitle}
+                </Tab>
+              );
+            })}
+          </TabList>
+          {submission.files.map((file: IFile, i: number) => {
+            return (
+              <TabPanel key={i}>
+                <div className="submission-container">
+                  <div className="code-box">
+                    <CodeBox file={file} />
                   </div>
-                </TabPanel>
-              )
-            })
-          }
+                  <CommentBox comments={file.comments} />
+                </div>
+              </TabPanel>
+            );
+          })}
         </Tabs>
       </div>
     );
   }
 
   private getTabTitle = (name: string, deduction: number, numComments: number) => {
-    const deductionString = deduction > 0 ? `(-${deduction})` : ''
-    const commentFlag = numComments > 0 ? (<div className="tab-title-num-comments">{numComments}</div>) : '';
+    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+    const commentFlag =
+      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
 
     return (
       <div className="tab-title">
         {commentFlag}
-        <div className="tab-title">
-          {name + deductionString}
-        </div>
+        <div className="tab-title">{name + deductionString}</div>
       </div>
     );
-  }
+  };
 }
 
 interface ICodeBoxProps {
-  file: IFile
+  file: IFile;
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = props.file.comments.sort((a: IComment, b: IComment) => {
-    return (a.startLine > b.startLine ? 1 : -1);
-  })
+    return a.startLine > b.startLine ? 1 : -1;
+  });
 
   const highlightText = (thetext: string, line: number) => {
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
         // this line sits between a multi-line highlight
-        return (<strong className={highlight.id}>{thetext}</strong>);
+        return <strong className={highlight.id}>{thetext}</strong>;
+      }
 
-      } else if (highlight.startLine === line) {
+      if (highlight.startLine === line) {
+        let part1 = '';
+        let part2 = '';
+        let part3 = '';
         // we may be in a partial highlight situation
 
         // is the whole comment in one line?
         if (highlight.endLine === highlight.startLine) {
-          const part1 = thetext.substring(0, highlight.startChar);
-          const part2 = thetext.substring(highlight.startChar, highlight.endChar);
-          const part3 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, "");
-          return (<div>{part1}<strong className={highlight.id}>{part2}</strong>{part3}</div>);
-        } else {
-          const part1 = thetext.substring(0, highlight.startChar);
-          const part2 = thetext.substring(highlight.startChar, thetext.length).replace(/\s*$/, "");
-          return (<div>{part1}<strong className={highlight.id}>{part2}</strong></div>);
+          part1 = thetext.substring(0, highlight.startChar);
+          part2 = thetext.substring(highlight.startChar, highlight.endChar);
+          part3 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
+          return (
+            <div>
+              {part1}
+              <strong className={highlight.id}>{part2}</strong>
+              {part3}
+            </div>
+          );
         }
-
-
-      } else if (highlight.endLine === line) {
-        const part1 = thetext.substring(0, highlight.endChar);
-        const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, "");
-        return (<div><strong className={highlight.id}>{part1}</strong>{part2}</div>);
+        part1 = thetext.substring(0, highlight.startChar);
+        part2 = thetext.substring(highlight.startChar, thetext.length).replace(/\s*$/, '');
+        return (
+          <div>
+            {part1}
+            <strong className={highlight.id}>{part2}</strong>
+          </div>
+        );
       }
 
+      if (highlight.endLine === line) {
+        const part1 = thetext.substring(0, highlight.endChar);
+        const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
+        return (
+          <div>
+            <strong className={highlight.id}>{part1}</strong>
+            {part2}
+          </div>
+        );
+      }
       // otherwise, the highlight ends before our line starts
     }
     return thetext;
-  }
+  };
 
   const splitCode = props.file.code.split('\n');
   const linesOfCode = splitCode.map((item: any, i: number) => {
-    return (
-      <div key={i}> {highlightText(item, i)} </div>
-    );
+    return <div key={i}> {highlightText(item, i)} </div>;
   });
 
   const lineNumbers = splitCode.map((item: any, i: number) => {
     return (
-      <div key={i} className='line-number'> {i} </div>
+      <div key={i} className="line-number">
+        {' '}
+        {i}{' '}
+      </div>
     );
   });
 
   return (
-    <div className='sublime'>
-      <div className='line-numbers'>
-        {lineNumbers}
-      </div>
-      <div className="highlighted-area">
-        {linesOfCode}
-      </div>
+    <div className="sublime">
+      <div className="line-numbers">{lineNumbers}</div>
+      <div className="highlighted-area">{linesOfCode}</div>
     </div>
   );
-}
+};
 
 interface ICommentBoxProps {
-  comments: IComment[]
+  comments: IComment[];
 }
 
 const CommentBox = (props: ICommentBoxProps) => {
@@ -136,10 +148,10 @@ const CommentBox = (props: ICommentBoxProps) => {
       <CommentList comments={props.comments} />
     </div>
   );
-}
+};
 
 interface ICommentListProps {
-  comments: IComment[]
+  comments: IComment[];
 }
 
 const CommentList = (props: ICommentListProps) => {
@@ -148,11 +160,10 @@ const CommentList = (props: ICommentListProps) => {
 
   // Sort comments by startLine to help with stacking
   const comments = props.comments.sort((a: IComment, b: IComment) => {
-    return (a.startLine > b.startLine ? 1 : -1);
-  })
+    return a.startLine > b.startLine ? 1 : -1;
+  });
 
   const commentNodes = comments.map((comment: IComment) => {
-
     // Figure out where to place comment vertically
     // Placement model:
     //    - Make comment position fixed
@@ -170,9 +181,9 @@ const CommentList = (props: ICommentListProps) => {
     }
 
     // Estimate the pixel size of a comment block
-    const dedLines = (comment.pointDelta !== 0) ? 1 : 0;
+    const dedLines = comment.pointDelta !== 0 ? 1 : 0;
 
-    const lines = ((comment.text.length / 36) + 3 + dedLines) * 15;
+    const lines = (comment.text.length / 36 + 3 + dedLines) * 15;
     const newBlock = [startAt, startAt + lines];
     ranges.push(newBlock);
 
@@ -180,49 +191,39 @@ const CommentList = (props: ICommentListProps) => {
       return a[0] - b[0];
     });
 
-    const style = `marginTop:${startAt}px`
-    return (
-      <Comment
-        key={comment.id}
-        comment={comment}
-        style={style}
-      />
-    )
-  })
+    const style = `marginTop:${startAt}px`;
+    return <Comment key={comment.id} comment={comment} style={style} />;
+  });
 
-  return (
-    <div >
-      {commentNodes}
-    </div>
-  )
-}
+  return <div>{commentNodes}</div>;
+};
 
 interface ICommentProps {
-  key: number,
-  comment: IComment,
-  style: string
+  key: number;
+  comment: IComment;
+  style: string;
 }
 
 const Comment = (props: ICommentProps) => {
   const onMouseEnter = (i: string, e: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = "#FAFF91";
+      elem.style.backgroundColor = '#FAFF91';
     });
-  }
+  };
 
   const onMouseLeave = (i: string, e: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = "#ffca93";
+      elem.style.backgroundColor = '#ffca93';
     });
-  }
+  };
 
   let deduction;
   if (props.comment.pointDelta == null || props.comment.pointDelta === 0) {
-    deduction = ""
+    deduction = '';
   } else {
-    deduction = `(-${props.comment.pointDelta})`
+    deduction = `(-${props.comment.pointDelta})`;
   }
 
   return (
@@ -232,12 +233,10 @@ const Comment = (props: ICommentProps) => {
         onMouseEnter={onMouseEnter.bind(props, props.comment.id.toString())}
         onMouseLeave={onMouseLeave.bind(props, props.comment.id.toString())}
       >
-        <div>
-          {deduction}
-        </div>
+        <div>{deduction}</div>
         {props.comment.text}
       </div>
     </div>
-  )
-}
+  );
+};
 export default CodeViewer;
