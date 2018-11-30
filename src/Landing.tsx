@@ -164,11 +164,11 @@ class Landing extends React.Component {
               {Object.keys(this.vidTypes).map((vidName: any, link: any) => {
                 const active = vidName === this.state.active ? ' active' : '';
                 return (
-                  <div className="row" key={vidName + '-row'}>
+                  <div className="row" key={`${vidName}-row`}>
                     <Button
                       key={vidName}
                       onClick={this.handleClick.bind(this, vidName)}
-                      className={vidName + '-btn' + active}
+                      className={`${vidName}-btn${active}`}
                       flat={true}
                     >
                       For {vidName}
