@@ -1,32 +1,32 @@
-import * as React from "react"
+import * as React from 'react';
 
 interface ISignupFormProps {
-  handleSignup: (e: any, data: any) => void
+  handleSignup: (e: any, data: any) => void;
 }
 
 const initialState = {
   password: '',
   username: '',
-}
+};
 
 type State = Readonly<typeof initialState>;
 
 class SignupForm extends React.Component<ISignupFormProps, State> {
-  public readonly state: State = initialState
+  public readonly state: State = initialState;
 
   public handleChange = (e: any) => {
     const name = e.target.name;
     const value = e.target.value;
-    this.setState(prevstate => {
+    this.setState((prevstate) => {
       const newState = { ...prevstate };
       newState[name] = value;
       return newState;
     });
-  }
+  };
 
   public handleSignup = (e: any) => {
     return this.props.handleSignup(e, this.state);
-  }
+  };
 
   public render() {
     return (
