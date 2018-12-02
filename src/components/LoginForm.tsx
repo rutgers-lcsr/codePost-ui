@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import '../styles/Auth.scss';
+
 interface ILoginFormProps {
   handleLogin: (e: any, data: any) => void;
 }
@@ -31,7 +33,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
 
   public render() {
     return (
-      <form onSubmit={this.handleLogin}>
+      <form onSubmit={this.handleLogin} className="container-login">
         <h4>Log In</h4>
         <label htmlFor="username">Username</label>
         <input

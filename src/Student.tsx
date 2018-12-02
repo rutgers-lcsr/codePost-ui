@@ -3,8 +3,9 @@ import { Redirect } from 'react-router-dom';
 
 import CodeViewer from './components/CodeViewer';
 import VerticalPane from './components/VerticalPane';
-import './styles/index.scss';
+
 import './styles/Student.scss';
+
 import { IAssignment, ICourse, IOption, ISubmission } from './types/common';
 
 interface IStudentState {
@@ -84,18 +85,20 @@ class Student extends React.Component<{}, IStudentState> {
   public render() {
     const { courses, currentAssignment, currentCourse, currentSubmission } = this.state;
     return (
-      <div className="App">
+      <div>
         {this.renderRedirect()}
-        <VerticalPane
-          currentTab={this.tabCurrentFormatter(currentAssignment)}
-          currentSelector={this.selectorCurrentFormatter(currentCourse)}
-          selectorItems={this.selectorItemsFormatter(courses)}
-          tabItems={this.tabItemsFormatter(currentCourse)}
-          handleTabChange={this.handleAssignmentChange}
-          handleSelectorChange={this.handleCourseChange}
-          isLoading={this.state.isLoading}
-        />
-        <ContentArea assignment={currentAssignment} submission={currentSubmission} />
+        <div className="container-main">
+          <VerticalPane
+            currentTab={this.tabCurrentFormatter(currentAssignment)}
+            currentSelector={this.selectorCurrentFormatter(currentCourse)}
+            selectorItems={this.selectorItemsFormatter(courses)}
+            tabItems={this.tabItemsFormatter(currentCourse)}
+            handleTabChange={this.handleAssignmentChange}
+            handleSelectorChange={this.handleCourseChange}
+            isLoading={this.state.isLoading}
+          />
+          <ContentArea assignment={currentAssignment} submission={currentSubmission} />
+        </div>
       </div>
     );
   }
@@ -183,17 +186,14 @@ const ContentArea = (props: IContentAreaProps) => {
 
   if (submission && assignment) {
     const deductions = getDeductions(submission);
-    return (
-      <div className="content-container">
-        <div className="grade-container">{`Grade: ${submission!.grade}/${assignment.points}`}</div>
-        <CodeViewer deductions={deductions} submission={submission!} />
-      </div>
-    );
+    return <CodeViewer deductions={deductions} submission={submission!} assignment={assignment!} />;
   }
   if (assignment) {
-    return <div style={{ margin: '100px' }}>Your {assignment.name} has not yet been graded.</div>;
+    return (
+      <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>
+    );
   }
-  return <div style={{ margin: '100px' }}>Select an assignment on the left!</div>;
+  return <div className="container-code-viewer">Select an assignment on the left!</div>;
 };
 
 export default Student;

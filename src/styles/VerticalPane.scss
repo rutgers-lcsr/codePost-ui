@@ -1,13 +1,9 @@
-.vertical-pane-container {
-  width: 200px;
-  float: left;
-  border: 1px solid #ddd;
-  margin: 10px;
-  position: fixed;
-  height: 94%;
-  margin-left: 10px;
-  margin-top: 20px;
-  border-bottom: none;
+/////////////////////////////////////////////////
+// Vertical Pane
+/////////////////////////////////////////////////
+
+.container-vertical-pane {
+  flex: 0 1 200px;
 }
 
 .vertical-pane {
@@ -17,19 +13,19 @@
 
 .vertical-pane-tab {
   list-style-type: none;
-  border: 1px solid #ECECEE;
+  border: 1px solid #ececee;
   border-left: none;
   border-right: none;
   padding: 10px;
-  border: "1px solid #ddd"
+  border: '1px solid #ddd';
 }
 
 .vertical-pane-tab.selected {
-  background-color: #F9F9F9;
-  border-left: 6px solid #2ECC71;
+  background-color: #f9f9f9;
+  border-left: 6px solid #2ecc71;
   transition: border-left 0.3s ease;
 }
 
 .vertical-pane-tab:hover {
-  background-color: #DEDEDE;
+  background-color: #dedede;
 }

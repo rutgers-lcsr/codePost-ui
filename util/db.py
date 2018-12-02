@@ -73,3 +73,69 @@ nbodyf2019 = Assignment.objects.create(parent=nbody, course=cos126f2019, points=
 percolation = AssignmentParent.objects.create(name="Percolation", org=princeton)
 percolations2020 = Assignment.objects.create(parent=percolation, course=cos226s2020, points=20)
 
+
+cos126s2019.students.add(richard.profile.student)
+cos126f2019.students.add(richard.profile.student)
+cos226s2020.students.add(richard.profile.student)
+
+code = """public class BinaryConverter {
+public static void main(String[] args){
+for(int i = -5; i < 33; i++){
+System.out.println(i + ": " + toBinary(i));
+System.out.println(i);
+//always another way
+System.out.println(i + ": " + Integer.toBinaryString(i));
+}
+}
+/*
+* pre: none
+* post: returns a String with base10Num in base 2
+*/
+public static String toBinary(int base10Num){
+boolean isNeg = base10Num < 0;
+base10Num = Math.abs(base10Num);
+String result = "";
+
+while(base10Num > 1){
+result = (base10Num % 2) + result;
+base10Num /= 2;
+}
+assert base10Num == 0 || base10Num == 1 : "value is not <= 1: " + base10Num;
+
+result = base10Num + result;
+assert all0sAnd1s(result);
+
+if( isNeg )
+result = "-" + result;
+return result;
+}
+/*
+* pre: cal != null
+* post: return true if val consists only of characters 1 and 0, false otherwise
+*/
+public static boolean all0sAnd1s(String val){
+assert val != null : "Failed precondition all0sAnd1s. parameter cannot be null";
+boolean all = true;
+int i = 0;
+char c;
+
+while(all && i < val.length()){
+c = val.charAt(i);
+all = c == '0' || c == '1';
+i++;
+}
+return all;
+}
+} """
+
+
+sub = Submission.objects.create(assignment=hellos2019)
+sub.students.add(richard.profile.student)
+# code = "System.out.println('hello world, my name is \nabcd abcd\nthereis more code here\n"
+tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+Comment.objects.create(text="good job, " + username, author=vinay.profile.grader, file=tmpFile, startChar=1, endChar=8, startLine=1, endLine=1, pointDelta=3)
+Comment.objects.create(text="this is so terrible. also a really realy reallly long comment. that keeps going on and on without line breaks.", author=vinay.profile.grader, file=tmpFile, startChar=4, endChar=10, startLine=2, endLine=2)
+Comment.objects.create(text="this is even worse", author=vinay.profile.grader, file=tmpFile, startChar=4, endChar=10, startLine=13, endLine=13, pointDelta=2)
+sub.isFinalized = True
+sub.grade = 20
+sub.save()

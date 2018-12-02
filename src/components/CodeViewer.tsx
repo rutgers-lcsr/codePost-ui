@@ -1,19 +1,24 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+
 import 'react-tabs/style/react-tabs.css';
-import '../styles/CodeViewer.scss';
-import { IComment, IFile, ISubmission } from '../types/common';
+import '../styles/Student.scss';
+
+import { IAssignment, IComment, IFile, ISubmission } from '../types/common';
 
 interface IProps {
   deductions: number[];
   submission: ISubmission;
+  assignment: IAssignment;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
   public render() {
-    const { deductions, submission } = this.props;
+    const { assignment, deductions, submission } = this.props;
+    // content-box
     return (
-      <div className="content-box">
+      <div className="container-code-viewer">
+        <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
             {submission.files.map((file: IFile, i: number) => {
@@ -28,10 +33,8 @@ class CodeViewer extends React.Component<IProps, {}> {
           {submission.files.map((file: IFile, i: number) => {
             return (
               <TabPanel key={i}>
-                <div className="submission-container">
-                  <div className="code-box">
-                    <CodeBox file={file} />
-                  </div>
+                <div className="panel-box">
+                  <CodeBox file={file} />
                   <CommentBox comments={file.comments} />
                 </div>
               </TabPanel>
@@ -123,15 +126,15 @@ const CodeBox = (props: ICodeBoxProps) => {
 
   const lineNumbers = splitCode.map((item: any, i: number) => {
     return (
-      <div key={i} className="line-number">
+      <div key={i + 1} className="line-number">
         {' '}
-        {i}{' '}
+        {i + 1}{' '}
       </div>
     );
   });
 
   return (
-    <div className="sublime">
+    <div className="code-box">
       <div className="line-numbers">{lineNumbers}</div>
       <div className="highlighted-area">{linesOfCode}</div>
     </div>
@@ -143,11 +146,7 @@ interface ICommentBoxProps {
 }
 
 const CommentBox = (props: ICommentBoxProps) => {
-  return (
-    <div className="comment-box">
-      <CommentList comments={props.comments} />
-    </div>
-  );
+  return <CommentList comments={props.comments} />;
 };
 
 interface ICommentListProps {
@@ -169,7 +168,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = (comment.startLine + 1) * 15; // Each line is 15px
+    let startAt = (comment.startLine + 1) * 19; // Each line is 15px
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -183,7 +182,7 @@ const CommentList = (props: ICommentListProps) => {
     // Estimate the pixel size of a comment block
     const dedLines = comment.pointDelta !== 0 ? 1 : 0;
 
-    const lines = (comment.text.length / 36 + 3 + dedLines) * 15;
+    const lines = (comment.text.length / 36 + 1 + dedLines) * 19;
     const newBlock = [startAt, startAt + lines];
     ranges.push(newBlock);
 
@@ -191,17 +190,20 @@ const CommentList = (props: ICommentListProps) => {
       return a[0] - b[0];
     });
 
-    const style = `marginTop:${startAt}px`;
+    const style = {
+      top: `${startAt}px`,
+    };
+
     return <Comment key={comment.id} comment={comment} style={style} />;
   });
 
-  return <div>{commentNodes}</div>;
+  return <div className="comment-box">{commentNodes}</div>;
 };
 
 interface ICommentProps {
   key: number;
   comment: IComment;
-  style: string;
+  style: any;
 }
 
 const Comment = (props: ICommentProps) => {
@@ -227,15 +229,14 @@ const Comment = (props: ICommentProps) => {
   }
 
   return (
-    <div className="comment-container">
-      <div
-        className="comment"
-        onMouseEnter={onMouseEnter.bind(props, props.comment.id.toString())}
-        onMouseLeave={onMouseLeave.bind(props, props.comment.id.toString())}
-      >
-        <div>{deduction}</div>
-        {props.comment.text}
-      </div>
+    <div
+      className="comment"
+      style={props.style}
+      onMouseEnter={onMouseEnter.bind(props, props.comment.id.toString())}
+      onMouseLeave={onMouseLeave.bind(props, props.comment.id.toString())}
+    >
+      <div>{deduction}</div>
+      {props.comment.text}
     </div>
   );
 };

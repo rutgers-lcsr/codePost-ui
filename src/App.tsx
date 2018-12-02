@@ -8,7 +8,9 @@ import Grader from './Grader';
 import Home from './Home';
 import { GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
-import './styles/App.scss';
+
+import './styles/index.scss';
+
 import { IUser } from './types/common';
 
 interface IStudentState {

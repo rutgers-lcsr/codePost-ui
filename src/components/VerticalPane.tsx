@@ -1,6 +1,8 @@
 import * as React from 'react';
 import Select from 'react-select';
+
 import '../styles/VerticalPane.scss';
+
 import { IOption } from '../types/common';
 
 interface IProps {
@@ -18,7 +20,7 @@ const VerticalPane = (props: IProps) => {
   const { handleSelectorChange, handleTabChange } = props;
 
   return (
-    <div className="vertical-pane-container">
+    <div className="container-vertical-pane">
       <Select
         isLoading={props.isLoading}
         options={selectorItems}
