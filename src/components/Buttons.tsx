@@ -1,4 +1,7 @@
 import * as React from 'react';
+
+import '../styles/Grader.scss';
+
 import { BUTTON_STATE } from '../types/common';
 
 interface IButtonProps {
@@ -10,14 +13,18 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   const { handleClick, buttonState } = props;
 
   if (buttonState === BUTTON_STATE.Inactive) {
-    return <div>Inactive</div>;
+    return <div className="button-get-another disabled">Nothing left to grade</div>;
   }
 
   if (buttonState === BUTTON_STATE.Loading) {
-    return <div>Loading...</div>;
+    return <div className="button-get-another disabled">Loading...</div>;
   }
 
-  return <div onClick={handleClick}>Active</div>;
+  return (
+    <div className="button-get-another " onClick={handleClick}>
+      Grade another
+    </div>
+  );
 };
 
 export const StartGradingButton = (props: IButtonProps) => {
@@ -25,10 +32,14 @@ export const StartGradingButton = (props: IButtonProps) => {
 
   switch (buttonState) {
     case BUTTON_STATE.Inactive:
-      return <div>Nothing left to grade!</div>;
+      return <div className="button-start-grading disabled">Nothing left to grade!</div>;
     case BUTTON_STATE.Loading:
-      return <div>Loading...</div>;
+      return <div className="button-start-grading disabled">Loading...</div>;
     default:
-      return <div onClick={handleClick}>Start grading!</div>;
+      return (
+        <div className="button-start-grading" onClick={handleClick}>
+          Start grading!
+        </div>
+      );
   }
 };

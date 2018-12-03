@@ -19,9 +19,8 @@ class GradedTab extends React.Component<IProps, {}> {
     buttonState: BUTTON_STATE.Active,
   };
 
-  public openGradePage = () => {
-    const w = window.open('/student/');
-    console.log('w', w);
+  public openGradePage = (submission: ISubmission) => {
+    window.open(`/grade/${submission.id}`);
     // window.open("/grade/" + subid, 'test',
     // 'width=' + screen.availWidth * 0.9 + ',
     // height=' + screen.availHeight * 0.9).resizeTo(screen.availWidth, screen.availHeight);
@@ -60,17 +59,17 @@ class GradedTab extends React.Component<IProps, {}> {
 
     const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
 
+    const style = {
+      cursor: 'pointer',
+    };
+
     if (assignment && submissions.length > 0) {
       return (
-        <div>
-          <hr />
-          <div>
-            <GetAnotherSubmissionButton
-              handleClick={this.getAnotherSubmission}
-              buttonState={buttonState}
-            />
-          </div>
-          <hr />
+        <div className="container-graded-tab">
+          <GetAnotherSubmissionButton
+            handleClick={this.getAnotherSubmission}
+            buttonState={buttonState}
+          />
           <DataTable plain={true}>
             <TableHeader>
               <TableRow>
@@ -82,20 +81,22 @@ class GradedTab extends React.Component<IProps, {}> {
             <TableBody>
               {submissions.map((submission) => {
                 return (
-                  <TableRow key={submission.id}>
-                    <TableColumn onClick={this.openGradePage}>
+                  <TableRow key={submission.id} style={style}>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.students
                         ? submission.students
-                            .map((student: any) => student.profile.username)
-                            .join(',')
+                          .map((student: any) => student.profile.username)
+                          .join(',')
                         : ''}
                     </TableColumn>
-                    <TableColumn onClick={this.openGradePage}>{submission.grade}</TableColumn>
-                    <TableColumn onClick={this.openGradePage}>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
+                      {submission.grade}
+                    </TableColumn>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.dateFinalized}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
-                      RELEASE_BUTTON
+                      <div className="button-release" />
                     </TableColumn>
                   </TableRow>
                 );
@@ -107,12 +108,12 @@ class GradedTab extends React.Component<IProps, {}> {
     }
     if (assignment) {
       return (
-        <div>
+        <div className="container-graded-tab">
           <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
         </div>
       );
     }
-    return <div>Select an assignment on the left</div>;
+    return <div className="container-graded-tab">Select an assignment on the left</div>;
   }
 }
 

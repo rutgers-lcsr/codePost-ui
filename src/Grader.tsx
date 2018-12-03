@@ -2,8 +2,9 @@ import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 import GradedTab from './components/grader/GradedTab';
 import VerticalPane from './components/VerticalPane';
-import './styles/index.scss';
-import './styles/Student.scss';
+
+import './styles/Grader.scss';
+
 import { IAssignment, ICourse, IOption, ISubmission } from './types/common';
 
 interface IGraderState {
@@ -126,18 +127,18 @@ class Grader extends React.Component<{}, IGraderState> {
   public render() {
     const { courses, currentAssignment, currentCourse, currentSubmissions } = this.state;
     return (
-      <div className="App">
+      <div>
         {this.renderRedirect()}
-        <VerticalPane
-          currentTab={this.tabCurrentFormatter(currentAssignment)}
-          currentSelector={this.selectorCurrentFormatter(currentCourse)}
-          selectorItems={this.selectorItemsFormatter(courses)}
-          tabItems={this.tabItemsFormatter(currentCourse)}
-          handleTabChange={this.handleAssignmentChange}
-          handleSelectorChange={this.handleCourseChange}
-          isLoading={this.state.isLoading}
-        />
-        <div className="content-container">
+        <div className="container-main">
+          <VerticalPane
+            currentTab={this.tabCurrentFormatter(currentAssignment)}
+            currentSelector={this.selectorCurrentFormatter(currentCourse)}
+            selectorItems={this.selectorItemsFormatter(courses)}
+            tabItems={this.tabItemsFormatter(currentCourse)}
+            handleTabChange={this.handleAssignmentChange}
+            handleSelectorChange={this.handleCourseChange}
+            isLoading={this.state.isLoading}
+          />
           <GradedTab
             claimSubmission={this.claimSubmission}
             releaseSubmission={this.releaseSubmission}
