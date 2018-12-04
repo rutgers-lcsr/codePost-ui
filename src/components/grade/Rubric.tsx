@@ -130,7 +130,7 @@ const RubricComment = (props: IRubricCommentProps) => {
   return (
     <div className="rubric-item" onClick={onClick}>
       <div className="rubric-item-text">{comment.text}</div>
-      <div className="rubric-item-deduction">{comment.pointDelta}</div>
+      <div className="rubric-item-point-delta">{comment.pointDelta}</div>
     </div>
   );
 };
