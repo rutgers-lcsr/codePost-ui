@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import '../styles/Grade.scss';
 import '../styles/Grader.scss';
 
 import { BUTTON_STATE } from '../types/common';
@@ -9,6 +10,7 @@ interface IButtonProps {
   buttonState: BUTTON_STATE;
 }
 
+// Callback: drawUnassigned
 export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   const { handleClick, buttonState } = props;
 
@@ -27,6 +29,7 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   );
 };
 
+// Callback: drawUnassigned
 export const StartGradingButton = (props: IButtonProps) => {
   const { handleClick, buttonState } = props;
 
@@ -39,6 +42,28 @@ export const StartGradingButton = (props: IButtonProps) => {
       return (
         <div className="button-start-grading" onClick={handleClick}>
           Start grading!
+        </div>
+      );
+  }
+};
+
+// Callback: toggleFinalized
+export const FinalizeButton = (props: IButtonProps) => {
+  const { handleClick, buttonState } = props;
+
+  switch (buttonState) {
+    case BUTTON_STATE.Active:
+      return (
+        <div className="button-finalize" onClick={handleClick}>
+          Take Back
+        </div>
+      );
+    case BUTTON_STATE.Loading:
+      return <div className="button-finalize">Loading...</div>;
+    default:
+      return (
+        <div className="button-finalize" onClick={handleClick}>
+          Finalize
         </div>
       );
   }

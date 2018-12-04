@@ -3,6 +3,7 @@ from core.models import Submission
 from core.serializers.file import FileSerializer, FileWithCommentsSerializer, FileWithCommentsAuthorsSerializer
 from core.serializers.grader import GraderSerializer
 from core.serializers.student import StudentSerializer
+from core.serializers.assignment import AssignmentSerializer
 
 class SubmissionStatusSerializer(serializers.ModelSerializer):
   students = StudentSerializer(many=True)
@@ -33,8 +34,9 @@ class SubmissionWithCommentsAuthorsSerializer(serializers.ModelSerializer):
   students = StudentSerializer(many=True)
   files = FileWithCommentsAuthorsSerializer(many=True)
   grader = GraderSerializer()
+  assignment = AssignmentSerializer()
 
   class Meta:
     model = Submission
-    fields = ('isFinalized', 'dateFinalized', 'grade', 'files', 'id', 'grader', 'students')
+    fields = ('id', 'assignment', 'isFinalized', 'dateFinalized', 'grade', 'files', 'grader', 'students')
     depth = 1

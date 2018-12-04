@@ -20,5 +20,5 @@ class FileWithCommentsAuthorsSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = File
-    fields = ('name', 'code', 'extension', 'comments')
+    fields = ('id', 'name', 'code', 'extension', 'comments')
     depth = 1

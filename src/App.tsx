@@ -4,9 +4,10 @@ import { Route, Switch } from 'react-router-dom';
 import IndexManager from './components/IndexManager';
 import TopBar from './components/TopBar';
 
+import Grade from './Grade';
 import Grader from './Grader';
 import Home from './Home';
-import { GRADER, HOME, STUDENT } from './routes';
+import { GRADE, GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
 
 import './styles/index.scss';
@@ -135,6 +136,7 @@ class App extends React.Component<{}, IStudentState> {
               <Switch>
                 <Route exact={true} path={STUDENT} component={Student} />
                 <Route exact={true} path={GRADER} component={Grader} />
+                <Route exact={true} path={`${GRADE}/:subID`} component={Grade} />
                 <Route exact={true} path={HOME} component={Home} />
               </Switch>
             </div>

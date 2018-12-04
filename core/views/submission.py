@@ -11,8 +11,8 @@ from core.permissions.helpers import returnNotAuthorized, returnForbidden, retur
 from core.permissions.helpers import isAuthenticated
 from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
 from core.permissions.helpers import isStudentOfSub, isStaffOfSub
-
 from core.utils import EmailForm
+import json
 
 class SubmissionViewSet(viewsets.ModelViewSet):
   queryset = Submission.objects.all()
@@ -118,3 +118,4 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     submission.save()
     serializer = SubmissionWithCommentsAuthorsSerializer(submission)
     return Response(serializer.data)
+

@@ -83,7 +83,7 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission } = this.state;
+    const { courses, currentAssignment, currentCourse, currentSubmission, isLoading } = this.state;
     return (
       <div>
         {this.renderRedirect()}
@@ -95,7 +95,7 @@ class Student extends React.Component<{}, IStudentState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={this.state.isLoading}
+            isLoading={isLoading}
           />
           <ContentArea assignment={currentAssignment} submission={currentSubmission} />
         </div>

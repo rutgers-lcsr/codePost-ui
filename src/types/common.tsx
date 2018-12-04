@@ -44,10 +44,13 @@ export interface ISubmission {
   dateFinalized?: any;
   files: any[];
   grade: number;
+  grader?: IGrader;
   students?: IStudent[];
+  assignment: IAssignment;
 }
 
 export interface IFile {
+  id: number;
   code: string;
   comments: any[];
   extension: string;
@@ -56,6 +59,7 @@ export interface IFile {
 
 export interface IComment {
   id: number;
+  localId: number;
   author: any;
   startChar: number;
   endChar: number;
@@ -72,4 +76,21 @@ export interface IProfile {
 
 export interface IStudent {
   profile: IProfile;
+}
+
+export interface IGrader {
+  profile: IProfile;
+}
+
+export interface IRubricComment {
+  text: string;
+  pointDelta: number;
+}
+
+export interface IRubricCategory {
+  id: number;
+  assignment: IAssignment;
+  name: string;
+  pointLimit: number;
+  categoryComments: IRubricComment[];
 }

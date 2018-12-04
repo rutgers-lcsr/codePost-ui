@@ -1,6 +1,7 @@
-from core.models import Assignment
+from core.models import Assignment, RubricCategory
 from core.serializers.assignment import AssignmentSerializer
 from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer, SubmissionStatusSerializer
+from core.serializers.rubric import RubricCategorySerializer
 from django.contrib.auth.models import User
 
 from rest_framework import status
@@ -155,4 +156,22 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             serialzer = SubmissionWithCommentsSerializer(filteredSubs, many=True)
 
 
+    return Response(serializer.data)
+
+#Returns the serialized rubric for this assignment
+  @action(detail=True)
+  def rubric(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    assignment = Assignment.objects.get(id=pk)
+    course = assignment.course
+
+    if not isCourseMember(user, course):
+      return returnForbidden()
+
+    rubric = RubricCategory.objects.filter(assignment=assignment)
+
+    serializer = RubricCategorySerializer(rubric, many=True)
     return Response(serializer.data)
