@@ -65,7 +65,7 @@ export interface IComment {
   endChar: number;
   startLine: number;
   endLine: number;
-  pointDelta: number;
+  pointDelta: number | string;
   text: string;
 }
 

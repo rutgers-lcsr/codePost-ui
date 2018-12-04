@@ -126,6 +126,8 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
     this.setState({ submission });
   };
 
+  // Update comment text and pointDelta
+  // POST / PATCH methods get called from EditableComment
   private updateComment = (comment: IComment, file: IFile) => {
     const { submission } = this.state;
     if (!submission) {
@@ -168,40 +170,6 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       // Is that correct?
       console.log('res', res);
     });
-  };
-
-  private loadSubmission = () => {
-    const subID = this.props.match.params.subID;
-    fetch(`/api/submissions/${subID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        if (json.detail === 'Not found.') {
-          this.setState({ submission: undefined, isLoading: false, email: json.email });
-        } else {
-          this.setState({ submission: json, isLoading: false, email: json.email });
-          this.loadRubric(json.assignment);
-        }
-      });
-  };
-
-  private loadRubric = (assignment: IAssignment) => {
-    fetch(`/api/assignments/${assignment.id}/rubric`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ rubric: json });
-      });
   };
 
   // Callback for Finalize Button
@@ -249,6 +217,40 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
           resolve(json);
         });
     });
+  };
+
+  private loadSubmission = () => {
+    const subID = this.props.match.params.subID;
+    fetch(`/api/submissions/${subID}/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        if (json.detail === 'Not found.') {
+          this.setState({ submission: undefined, isLoading: false, email: json.email });
+        } else {
+          this.setState({ submission: json, isLoading: false, email: json.email });
+          this.loadRubric(json.assignment);
+        }
+      });
+  };
+
+  private loadRubric = (assignment: IAssignment) => {
+    fetch(`/api/assignments/${assignment.id}/rubric`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        this.setState({ rubric: json });
+      });
   };
 }
 

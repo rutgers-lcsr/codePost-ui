@@ -51,7 +51,6 @@ class EditableComment extends React.Component<IProps, IState> {
   public toggleActive = () => {
     const { active, changeActive, comment } = this.props;
     if (active) {
-      // const okToChange = this.onUpdate();
       const saved = this.save();
       if (saved) {
         changeActive(undefined);
@@ -69,12 +68,17 @@ class EditableComment extends React.Component<IProps, IState> {
   };
 
   public validateSave = () => {
-    const { comment } = this.props;
-    if (isNaN(comment.pointDelta)) {
-      this.setState({ saveWarning: true });
-      return false;
+    const { comment, file, updateComment } = this.props;
+    if (comment.pointDelta === '') {
+      comment.pointDelta = 0;
+      updateComment(comment, file);
     }
-    this.setState({ saveWarning: false });
+
+    // if (isNaN(comment.pointDelta)) {
+    //   this.setState({ saveWarning: true });
+    //   return false;
+    // }
+    // this.setState({ saveWarning: false });
     return true;
   };
 
@@ -84,15 +88,6 @@ class EditableComment extends React.Component<IProps, IState> {
     if (!this.validateSave()) {
       return false;
     }
-
-    // TODO: Potentially bad practice.
-    // Should try to avoid object and array mutations.
-    // hacky solution
-
-    // should instead copy the comment props to a new object
-    // then mutate, send that (send it)
-    // comment.text = text;
-    // comment.pointDelta = pointDelta;
 
     // If this is a new comment being edited, then it doesn't have an id yet
     // The new comments get initalized in CodeGrader:onMouseUp (with id undefined)
@@ -128,18 +123,14 @@ class EditableComment extends React.Component<IProps, IState> {
     return true;
   };
 
-  // var deductionClass = classNames('deductionField', { warning: this.state.deductionWarningOn });
-  // className={deductionClass}
-  // <textarea ref={this.focusInput}
-  //      type="text"
-  //      value={this.state.text}
-  //      onChange={this.handleChange}
-  //      onKeyPress={this.handleKeyPress}>
-  //      </textarea>
   public commentContent = () => {
     const { active, comment, file, deleteComment, style } = this.props;
+    const { saveWarning } = this.state;
 
     if (active) {
+      // SaveWarning unused right now. But leaving it here in case we want to include
+      // it in a form validation
+      const pointDeltaClassName = saveWarning ? 'point-delta warning' : 'point-delta';
       return (
         <div
           className="comment"
@@ -148,7 +139,12 @@ class EditableComment extends React.Component<IProps, IState> {
           style={style}
         >
           <div>Deduction: </div>
-          <input type="text" onChange={this.updateDeduction} value={comment.pointDelta} />
+          <input
+            className={pointDeltaClassName}
+            type="text"
+            onChange={this.updateDeduction}
+            value={comment.pointDelta}
+          />
           <div>Text: </div>
           <textarea onChange={this.updateComment} onKeyPress={this.enterKey} value={comment.text} />
           <EditCommentButton active={active} toggleActive={this.toggleActive} />
@@ -156,9 +152,9 @@ class EditableComment extends React.Component<IProps, IState> {
       );
     }
 
-    let deduction = '';
+    let pointDelta = '';
     if (comment.pointDelta && comment.pointDelta !== 0) {
-      deduction = `(-${comment.pointDelta})`;
+      pointDelta = `(-${comment.pointDelta})`;
     }
 
     return (
@@ -169,7 +165,7 @@ class EditableComment extends React.Component<IProps, IState> {
         style={style}
       >
         <div className="button-delete-comment" onClick={deleteComment.bind(this, comment, file)} />
-        <div>{deduction}</div>
+        <div>{pointDelta}</div>
         {comment.text}
         <EditCommentButton active={active} toggleActive={this.toggleActive} />
       </div>
