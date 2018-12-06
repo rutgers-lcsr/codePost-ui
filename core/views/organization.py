@@ -1,12 +1,10 @@
 from core.models import Organization
 from core.serializers.organization import OrganizationSerializer
+from core.views.template import ListProtectedViewSet
+from rest_framework.permissions import IsAuthenticated
+from core.permissions.permissions import OrganizationPermissions
 
-from rest_framework import status
-from rest_framework import viewsets, generics
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from rest_framework.response import Response
-from rest_framework.decorators import action
-
-class OrganizationViewSet(viewsets.ModelViewSet):
+class OrganizationViewSet(ListProtectedViewSet):
   queryset = Organization.objects.all()
   serializer_class = OrganizationSerializer
+  permission_classes = (IsAuthenticated, OrganizationPermissions)

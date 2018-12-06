@@ -3,37 +3,22 @@ from core.serializers.assignment import AssignmentSerializer
 from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer, SubmissionStatusSerializer
 from django.contrib.auth.models import User
 
+from core.views.template import ListProtectedViewSet
+
 from rest_framework import status
-from rest_framework import viewsets, generics
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 
-from core.permissions.helpers import returnNotAuthorized, returnForbidden, returnNotFound
-from core.permissions.helpers import isAuthenticated
-from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
-from core.permissions.helpers import isStudentOfSub, isStaffOfSub
+from core.permissions.permissions import AssignmentPermissions
 
-class AssignmentViewSet(viewsets.ModelViewSet):
+class AssignmentViewSet(ListProtectedViewSet):
   queryset = Assignment.objects.all()
   serializer_class = AssignmentSerializer
+  permission_classes = (IsAuthenticated, AssignmentPermissions)
 
-  @action(detail=True, methods=['GET'])
-  def toggleReleased(self, request, pk=None):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    assignment = Assignment.objects.get(id=pk)
-    course = assignment.course
-
-    if not isCourseAdmin(user, course):
-      return returnForbidden()
-
-    assignment.isReleased = not assignment.isReleased
-    assignment.save()
-    serializer = AssignmentSerializer(assignment)
-    return Response(serializer.data)
+  # Extra functions
+  #####################################################################################
 
   @action(detail=True, methods=['patch'])
   def drawUnassigned(self, request, pk=None):
@@ -65,7 +50,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
       # Assign submission to grader
       # Doing this in this call is important, since it prevents two users from drawing the
       # save unassigned submission and subsequently trying to claim it
-      submission.grader = user.profile.grader
+      submission.grader = user
       submission.save()
 
       serializer = SubmissionWithCommentsAuthorsSerializer(submission)
@@ -130,12 +115,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     # Perform filtering
     filteredSubs = None
     if studentParam is not None and graderParam is not None:
-      filteredSubs = submissions.filter(students__in=[studentParam.profile.student],
-        grader=graderParam.profile.grader)
+      filteredSubs = submissions.filter(students__in=[studentParam],
+        grader=graderParam)
     elif studentParam is not None:
-      filteredSubs = submissions.filter(students__in=[studentParam.profile.student])
+      filteredSubs = submissions.filter(students__in=[studentParam])
     elif graderParam is not None:
-      filteredSubs = submissions.filter(grader=graderParam.profile.grader)
+      filteredSubs = submissions.filter(grader=graderParam)
     else:
       filteredSubs = submissions
 
