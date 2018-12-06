@@ -1,13 +1,12 @@
 from django.contrib.auth.models import User
-from core.models import Student, Grader, CourseAdmin
-from core.models import Course, Assignment, Submission
+from core.models import Organization
+from core.models import Course, Assignment, Submission, Section
 
 from rest_framework.response import Response
 from rest_framework import status
 
-
 NOT_AUTHORIZED = "You are not logged in. Please log in."
-FORBIDDEN = "You do not have the appropriate permissions to perform this action."
+FORBIDDEN = "You do not have permission to perform this action."
 NOT_FOUND = "The object you requested could not be found."
 
 def returnNotAuthorized():
@@ -25,22 +24,44 @@ def returnNotFound(message=None):
 def isAuthenticated(user):
   return user.is_authenticated
 
+def isOrganizationMember(user, organization):
+  return (user.profile.organization.id == organization.id)
+
 def isStudent(user, course):
-  return user.profile.student in course.students.all()
+  return course in user.student_courses.all()
 
 def isGrader(user, course):
-  return user.profile.grader in course.graders.all()
+  return course in user.grader_courses.all()
 
 def isCourseAdmin(user, course):
-  return user.profile.courseadmin in course.courseAdmins.all()
+  return course in user.courseAdmin_courses.all()
 
 def isCourseMember(user, course):
   return isStudent(user, course) or isGrader(user, course) or isCourseAdmin(user, course)
 
 def isStudentOfSub(user, submission):
-  return user.profile.student in submission.students.all()
+  return user in submission.students.all()
 
 def isStaffOfSub(user, submission):
-  return (user.profile.grader == submission.grader) or isCourseAdmin(user, submission.assignment.course)
+  if (user == submission.grader):
+    return True
+  elif isCourseAdmin(user, submission.assignment.course):
+    return True
+  else:
+    # Since this check is the most computationally expensive, only do it
+    # if we need to
+    course = submission.assignment.course
+    if not isGrader(user, course):
+      return False
+
+    # This is expensive, but only performed if the user is a grader of the course
+    sections = Section.objects.filter(course=course, leader__in=[user])
+    students = submission.students.all()
+    for section in sections:
+      for student in students:
+        if student in section.students.all():
+          return True
+
+    return False
 
 
