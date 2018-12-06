@@ -1,17 +1,19 @@
 from rest_framework import serializers
 from core.serializers.course import CourseSerializer
 from rest_framework_jwt.settings import api_settings
-from django.contrib.auth.models import User
+from core.models import User, Organization, Profile
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(source="profile.organization", queryset=Organization.objects.all())
+
     class Meta:
         model = User
-        fields = ('email', 'id')
+        fields = ('email', 'id', 'organization')
 
 class UserWithProfileSerializer(serializers.HyperlinkedModelSerializer):
-    studentCourses = CourseSerializer(many=True, source="profile.student.courses")
-    graderCourses = CourseSerializer(many=True, source="profile.grader.courses")
-    courseadminCourses = CourseSerializer(many=True, source="profile.courseadmin.courses")
+    studentCourses = CourseSerializer(many=True, source="student_courses")
+    graderCourses = CourseSerializer(many=True, source="grader_courses")
+    courseadminCourses = CourseSerializer(many=True, source="courseAdmin_courses")
 
     class Meta:
         model = User

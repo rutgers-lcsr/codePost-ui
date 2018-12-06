@@ -2,8 +2,8 @@ from rest_framework import serializers
 from core.models import Profile
 
 class ProfileSerializer(serializers.HyperlinkedModelSerializer):
-    username = serializers.CharField(source='user.username')
+    email = serializers.CharField(source='user.email')
 
     class Meta:
         model = Profile
-        fields = ('username', 'id')
+        fields = ('email', 'id')
