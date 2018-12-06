@@ -38,7 +38,6 @@ class UserPermissions(permissions.BasePermission):
       if request.method == "GET":
         return user.is_superuser or user == obj
 
-
 class CoursePermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
       user = request.user
@@ -69,7 +68,7 @@ class SectionPermissions(permissions.BasePermission):
       if request.method == "PATCH":
         return isCourseAdmin(user, course)
       if request.method == "GET":
-        return isCourseAdmin(user, course.organization)
+        return isCourseAdmin(user, course)
 
 class AssignmentPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -83,7 +82,7 @@ class AssignmentPermissions(permissions.BasePermission):
       if request.method == "PATCH":
         return isCourseAdmin(user, course)
       if request.method == "GET":
-        return isCourseMember(user, course.organization)
+        return isCourseMember(user, course)
 
 class RubricCategoryPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -97,7 +96,7 @@ class RubricCategoryPermissions(permissions.BasePermission):
       if request.method == "PATCH":
         return isCourseAdmin(user, course)
       if request.method == "GET":
-        return isCourseAdmin(user, course.organization)
+        return isCourseAdmin(user, course)
 
 class RubricCommentPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -111,8 +110,7 @@ class RubricCommentPermissions(permissions.BasePermission):
       if request.method == "PATCH":
         return isCourseAdmin(user, course)
       if request.method == "GET":
-        return isCourseAdmin(user, course.organization)
-
+        return isCourseAdmin(user, course)
 
 ###############################################################################
 
@@ -148,4 +146,4 @@ class CommentPermissions(permissions.BasePermission):
       if request.method == "PATCH":
         return isStaffOfSub(user, submission)
       if request.method == "GET":
-        return isStaffOfSub(user, submission) or isStudentOfSub(user, submission)
+        return SubmissionPermissions.has_object_permission(self, request, view, submission)
