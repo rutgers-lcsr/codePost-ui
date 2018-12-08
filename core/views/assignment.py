@@ -11,6 +11,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from core.permissions.permissions import AssignmentPermissions
+from core.permissions.helpers import returnNotAuthorized, returnForbidden, returnNotFound
+from core.permissions.helpers import isAuthenticated
+from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
+from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
 class AssignmentViewSet(ListProtectedViewSet):
   queryset = Assignment.objects.all()
@@ -20,7 +24,7 @@ class AssignmentViewSet(ListProtectedViewSet):
   # Extra functions
   #####################################################################################
 
-  @action(detail=True, methods=['patch'])
+  @action(detail=True, methods=['GET'])
   def drawUnassigned(self, request, pk=None):
     user = request.user
     if not isAuthenticated(user):
