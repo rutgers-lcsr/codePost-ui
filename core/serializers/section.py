@@ -1,11 +1,14 @@
 from rest_framework import serializers
-from core.models import Section
+from core.models import Section, User
 from core.permissions.helpers import isGrader, isStudent
 
 class SectionSerializer(serializers.ModelSerializer):
+  leaders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+
   class Meta:
     model = Section
-    fields = ('name', 'id', 'course', 'leaders')
+    fields = ('name', 'id', 'course', 'leaders', 'students')
 
   def validate(self, data):
     newData = super().validate(data)

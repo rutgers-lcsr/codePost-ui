@@ -1,9 +1,11 @@
 from rest_framework import serializers
-from core.models import Submission
+from core.models import Submission, User
 from core.serializers.file import FileSerializer, FileWithCommentsSerializer, FileWithCommentsAuthorsSerializer
 from core.permissions.helpers import isStudent, isGrader
 
 class SubmissionSerializer(serializers.ModelSerializer):
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+  grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
 
   class Meta:
     model = Submission
@@ -15,7 +17,16 @@ class SubmissionSerializer(serializers.ModelSerializer):
   # Pros: more self-documenting (permissions sit with objects)
   def validate(self, data):
     newData = super().validate(data)
-    assignment = newData['assignment']
+
+    # This code is a little shaky. One of these things should be true:
+    # (1) Assignment, as a required field, is present in data. This situation occurs on object creation.
+    # (2) Assignment is already specified, but potentially not present in data. This situation occurs on
+    #     a partial update.
+    if self.instance:
+      assignment = self.instance.assignment
+    elif 'assignment' in newData:
+      assignment = newData['assignment']
+
     course = assignment.course
 
     if 'students' in newData:
@@ -31,22 +42,25 @@ class SubmissionSerializer(serializers.ModelSerializer):
     return newData
 
 class SubmissionStatusSerializer(serializers.ModelSerializer):
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+
   class Meta:
     model = Submission
     fields = ('isFinalized', 'id', 'students')
 
 class SubmissionWithCommentsSerializer(serializers.ModelSerializer):
   files = FileWithCommentsSerializer(many=True)
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
 
   class Meta:
     model = Submission
     fields = ('isFinalized', 'dateFinalized', 'grade', 'files', 'id', 'students')
-    depth = 1
 
 class SubmissionWithCommentsAuthorsSerializer(serializers.ModelSerializer):
   files = FileWithCommentsAuthorsSerializer(many=True)
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+  grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
 
   class Meta:
     model = Submission
     fields = ('isFinalized', 'dateFinalized', 'grade', 'files', 'id', 'grader', 'students')
-    depth = 1

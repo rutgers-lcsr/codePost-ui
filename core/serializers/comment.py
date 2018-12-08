@@ -1,9 +1,11 @@
 from rest_framework import serializers
-from core.models import Comment
+from core.models import Comment, User
 from core.permissions.helpers import isGrader, isStudent
 import re
 
 class CommentSerializer(serializers.ModelSerializer):
+  author = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all())
+
   class Meta:
     model = Comment
     fields = ('id', 'text', 'pointDelta', 'startChar', 'endChar', 'startLine', 'endLine', 'file', 'rubricComment', 'author')

@@ -5,14 +5,14 @@ from core.serializers.comment import CommentSerializer, CommentWithAuthorSeriali
 class FileSerializer(serializers.ModelSerializer):
   class Meta:
     model = File
-    fields = ('name', 'code', 'extension')
+    fields = ('name', 'code', 'extension', 'submission', 'id')
 
 class FileWithCommentsSerializer(serializers.ModelSerializer):
   comments = CommentSerializer(many=True)
 
   class Meta:
     model = File
-    fields = ('name', 'code', 'extension', 'comments')
+    fields = ('name', 'code', 'extension', 'submission', 'comments', 'id')
     depth = 1
 
 class FileWithCommentsAuthorsSerializer(serializers.ModelSerializer):
@@ -20,5 +20,5 @@ class FileWithCommentsAuthorsSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = File
-    fields = ('name', 'code', 'extension', 'comments')
+    fields = ('name', 'code', 'extension', 'submission', 'comments', 'id')
     depth = 1
