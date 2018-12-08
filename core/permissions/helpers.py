@@ -36,8 +36,11 @@ def isGrader(user, course):
 def isCourseAdmin(user, course):
   return course in user.courseAdmin_courses.all()
 
+def isCourseStaff(user, course):
+  return isGrader(user, course) or isCourseAdmin(user, course)
+
 def isCourseMember(user, course):
-  return isStudent(user, course) or isGrader(user, course) or isCourseAdmin(user, course)
+  return isStudent(user, course) or isCourseStaff(user, course)
 
 def isStudentOfSub(user, submission):
   return user in submission.students.all()
