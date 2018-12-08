@@ -3,7 +3,6 @@ from core.models import *
 
 # Register your models here.
 admin.site.register(Organization)
-admin.site.register(Profile)
 admin.site.register(Course)
 admin.site.register(Section)
 admin.site.register(Assignment)
