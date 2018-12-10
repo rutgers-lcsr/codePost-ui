@@ -1,14 +1,14 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import Course, Organization, User
 from core.serializers.assignment import AssignmentSerializer
 
-class CourseSerializer(serializers.ModelSerializer):
-  assignments = AssignmentSerializer(many=True, read_only=True)
-
+class CourseSerializer(ModelSerializerWithPOSTCheck):
   class Meta:
     model = Course
-    fields = ('id', 'name', 'period', 'assignments', 'organization')
+    fields = ('id', 'name', 'period', 'organization', 'assignments', 'sections')
     read_only_fields = ('assignments',)
+    POST_permissions_fields = ('organization',)
 
   def create(self, validated_data):
     course = self.tempCreate()
@@ -16,7 +16,7 @@ class CourseSerializer(serializers.ModelSerializer):
     course.save()
     return course
 
-class CourseRosterSerializer(serializers.ModelSerializer):
+class CourseRosterSerializer(ModelSerializerWithPOSTCheck):
   students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   graders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   courseAdmins = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())

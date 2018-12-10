@@ -1,24 +1,9 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import File
-from core.serializers.comment import CommentSerializer, CommentWithAuthorSerializer
 
-class FileSerializer(serializers.ModelSerializer):
+class FileSerializer(ModelSerializerWithPOSTCheck):
   class Meta:
     model = File
-    fields = ('name', 'code', 'extension', 'submission', 'id')
-
-class FileWithCommentsSerializer(serializers.ModelSerializer):
-  comments = CommentSerializer(many=True)
-
-  class Meta:
-    model = File
-    fields = ('name', 'code', 'extension', 'submission', 'comments', 'id')
-    depth = 1
-
-class FileWithCommentsAuthorsSerializer(serializers.ModelSerializer):
-  comments = CommentWithAuthorSerializer(many=True)
-
-  class Meta:
-    model = File
-    fields = ('name', 'code', 'extension', 'submission', 'comments', 'id')
-    depth = 1
+    fields = ('name', 'code', 'extension', 'submission', 'id', 'comments')
+    POST_permissions_fields = ('submission',)

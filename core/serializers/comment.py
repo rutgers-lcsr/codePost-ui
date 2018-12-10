@@ -1,14 +1,23 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import Comment, User
 from core.permissions.helpers import isGrader, isStudent
 import re
 
-class CommentSerializer(serializers.ModelSerializer):
-  author = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all())
+class CommentSerializer(ModelSerializerWithPOSTCheck):
+  author = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
 
   class Meta:
     model = Comment
     fields = ('id', 'text', 'pointDelta', 'startChar', 'endChar', 'startLine', 'endLine', 'file', 'rubricComment', 'author')
+    read_only_fields = ('author',)
+    POST_permissions_fields = ('file',)
+
+  def create(self, validated_data):
+    obj = super().create(validated_data)
+    obj.author = self.context['request'].user
+    obj.save()
+    return obj
 
   def validate_startChar(self, data):
     if data < 0:
@@ -63,9 +72,3 @@ class CommentSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError("File and rubricComment must belong to the same assignment.")
 
     return newData
-
-class CommentWithAuthorSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Comment
-    fields = ('id', 'text', 'pointDelta', 'author', 'startChar', 'endChar', 'startLine', 'endLine')
-    depth = 1

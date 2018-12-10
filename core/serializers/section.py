@@ -1,14 +1,16 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import Section, User
 from core.permissions.helpers import isGrader, isStudent
 
-class SectionSerializer(serializers.ModelSerializer):
+class SectionSerializer(ModelSerializerWithPOSTCheck):
   leaders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
 
   class Meta:
     model = Section
     fields = ('name', 'id', 'course', 'leaders', 'students')
+    POST_permissions_fields = ('course',)
 
   def validate(self, data):
     newData = super().validate(data)
@@ -25,8 +27,3 @@ class SectionSerializer(serializers.ModelSerializer):
           raise serializers.ValidationError("This student is not a member of the specified course.")
 
     return newData
-
-class SectionWithStudentsSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Section
-    fields = ('name', 'id', 'students')

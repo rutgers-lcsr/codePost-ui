@@ -1,15 +1,17 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import Submission, User
-from core.serializers.file import FileSerializer, FileWithCommentsSerializer, FileWithCommentsAuthorsSerializer
+from core.serializers.file import FileSerializer
 from core.permissions.helpers import isStudent, isGrader
 
-class SubmissionSerializer(serializers.ModelSerializer):
+class SubmissionSerializer(ModelSerializerWithPOSTCheck):
   students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
 
   class Meta:
     model = Submission
-    fields = ('id', 'assignment', 'students', 'grader', 'isFinalized', 'dateFinalized', 'grade')
+    fields = ('id', 'assignment', 'students', 'grader', 'isFinalized', 'dateFinalized', 'grade', 'files')
+    POST_permissions_fields = ('assignment',)
 
   # We can't use validate_students, because we need information from the assignment (the course)
   # Note that we're not checking permissions here, though we could...
@@ -46,21 +48,4 @@ class SubmissionStatusSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Submission
-    fields = ('isFinalized', 'id', 'students')
-
-class SubmissionWithCommentsSerializer(serializers.ModelSerializer):
-  files = FileWithCommentsSerializer(many=True)
-  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
-
-  class Meta:
-    model = Submission
-    fields = ('isFinalized', 'dateFinalized', 'grade', 'files', 'id', 'students')
-
-class SubmissionWithCommentsAuthorsSerializer(serializers.ModelSerializer):
-  files = FileWithCommentsAuthorsSerializer(many=True)
-  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
-  grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
-
-  class Meta:
-    model = Submission
-    fields = ('isFinalized', 'dateFinalized', 'grade', 'files', 'id', 'grader', 'students')
+    fields = ('id', 'assignment', 'students', 'isFinalized',)
