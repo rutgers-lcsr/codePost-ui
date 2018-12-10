@@ -7,7 +7,14 @@ from core.models import Submission, File, Comment
 ## Create an organization, course, and assignment
 princeton = Organization.objects.create(name="Princeton University", shortname="Princeton")
 
-## Create some superusers
+## Create a superuser
+james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com')
+james.profile.organization = princeton
+james.set_password('rootabega')
+james.is_superuser = True
+james.save()
+
+## Create an admin
 adminuser = User.objects.create(username='admin@gmail.com', email='admin@gmail.com')
 adminuser.profile.organization = princeton
 adminuser.set_password('rootabega')
