@@ -42,6 +42,9 @@ def isCourseStaff(user, course):
 def isCourseMember(user, course):
   return isStudent(user, course) or isCourseStaff(user, course)
 
+def isSectionLeader(user, section):
+  return user in section.leaders
+
 def isStudentOfSub(user, submission):
   return user in submission.students.all()
 
@@ -58,13 +61,12 @@ def isStaffOfSub(user, submission):
       return False
 
     # This is expensive, but only performed if the user is a grader of the course
-    sections = Section.objects.filter(course=course, leader__in=[user])
+    sections = Section.objects.filter(course=course, leaders__in=[user])
     students = submission.students.all()
     for section in sections:
       for student in students:
         if student in section.students.all():
           return True
-
-    return False
+  return False
 
 
