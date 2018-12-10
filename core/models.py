@@ -68,7 +68,7 @@ class RubricCategory(models.Model):
 class RubricComment(models.Model):
   text = models.TextField()
   pointDelta = models.FloatField()
-  category = models.ForeignKey(RubricCategory, on_delete=models.CASCADE, related_name="rubicComments")
+  category = models.ForeignKey(RubricCategory, on_delete=models.CASCADE, related_name="rubricComments")
 
 ###############################################################################
 
