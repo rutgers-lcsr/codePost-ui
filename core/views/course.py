@@ -1,6 +1,6 @@
 from core.models import Course
 from core.serializers.course import CourseSerializer, CourseRosterSerializer
-from core.serializers.section import SectionWithStudentsSerializer
+from core.serializers.section import SectionSerializer
 from core.serializers.user import UserSerializer
 from core.views.template import ListProtectedViewSet
 
@@ -40,20 +40,5 @@ class CourseViewSet(ListProtectedViewSet):
       serializer.is_valid(raise_exception=True)
       self.perform_update(serializer)
       return Response(serializer.data)
-
-  @action(detail=True)
-  def sections(self, request, pk=None):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    course = Course.objects.get(id=pk)
-
-    if not isCourseAdmin(user, course) and not isGrader(user, course):
-      return returnForbidden()
-
-    sections = course.sections.all()
-    serializer = SectionWithStudentsSerializer(sections, many=True)
-    return Response(serializer.data)
 
 

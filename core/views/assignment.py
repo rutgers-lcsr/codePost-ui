@@ -1,6 +1,6 @@
 from core.models import Assignment
 from core.serializers.assignment import AssignmentSerializer
-from core.serializers.submission import SubmissionWithCommentsSerializer, SubmissionWithCommentsAuthorsSerializer, SubmissionStatusSerializer
+from core.serializers.submission import SubmissionStatusSerializer, SubmissionSerializer
 from django.contrib.auth.models import User
 
 from core.views.template import ListProtectedViewSet
@@ -30,7 +30,7 @@ class AssignmentViewSet(ListProtectedViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    assignment = Assignment.objects.get(id=pk)
+    assignment = self.get_object()
     course = assignment.course
 
     if not isGrader(user, course):
@@ -57,7 +57,7 @@ class AssignmentViewSet(ListProtectedViewSet):
       submission.grader = user
       submission.save()
 
-      serializer = SubmissionWithCommentsAuthorsSerializer(submission)
+      serializer = SubmissionSerializer(submission)
       return Response(serializer.data)
     else:
       return Response(status=status.HTTP_204_NO_CONTENT)
@@ -70,7 +70,7 @@ class AssignmentViewSet(ListProtectedViewSet):
     if not isAuthenticated(user):
       return returnNotAuthorized()
 
-    assignment = Assignment.objects.get(id=pk)
+    assignment = self.get_object()
     course = assignment.course
 
     if not isCourseMember(user, course):
@@ -129,19 +129,11 @@ class AssignmentViewSet(ListProtectedViewSet):
       filteredSubs = submissions
 
     # Only include comment authors in serialization if user is authorized to see them
-    serializer = SubmissionWithCommentsSerializer(filteredSubs, many=True)
+    serializer = SubmissionSerializer(filteredSubs, many=True)
     if studentParam is not None:
       if filteredSubs is not None and len(filteredSubs) > 1:
         return Response("Whoops, something went wrong", status=status.HTTP_500_SERVER_ERROR)
       elif len(filteredSubs) == 1:
         submission = filteredSubs[0]
-        if isStaffOfSub(user, submission):
-          serializer = SubmissionWithCommentsAuthorsSerializer(filteredSubs, many=True)
-        else:
-          if submission.isFinalized == False or assignment.isReleased == False:
-            serializer = SubmissionStatusSerializer(filteredSubs, many=True)
-          else:
-            serialzer = SubmissionWithCommentsSerializer(filteredSubs, many=True)
-
 
     return Response(serializer.data)
