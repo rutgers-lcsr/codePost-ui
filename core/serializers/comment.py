@@ -41,11 +41,29 @@ class CommentSerializer(ModelSerializerWithPOSTCheck):
 
   def validate(self, data):
     newData = super().validate(data)
-    startChar = newData['startChar']
-    endChar = newData['endChar']
-    startLine = newData['startLine']
-    endLine = newData['endLine']
-    file = newData['file']
+
+    if self.instance:
+      startChar = self.instance.startChar
+      endChar = self.instance.endChar
+      startLine = self.instance.startLine
+      endLine = self.instance.endLine
+      file = self.instance.file
+
+    # Need to use if, not elif, because we may be trying to modify the field after initialization
+    if 'startChar' in newData:
+      startChar = newData['startChar']
+
+    if 'endChar' in newData:
+      endChar = newData['endChar']
+
+    if 'startLine' in newData:
+      startLine = newData['startLine']
+
+    if 'endLine' in newData:
+      endLine = newData['endLine']
+
+    if 'file' in newData:
+      file = newData['file']
 
     if endChar < startChar:
       raise serializers.ValidationError("endChar cannot be < startChar")

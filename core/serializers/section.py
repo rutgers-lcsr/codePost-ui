@@ -14,7 +14,13 @@ class SectionSerializer(ModelSerializerWithPOSTCheck):
 
   def validate(self, data):
     newData = super().validate(data)
-    course = newData['course']
+
+    if self.instance:
+      course = self.instance.course
+
+    # Need to use if, not elif, because we may be trying to modify the field after initialization
+    if 'course' in newData:
+      course = newData['course']
 
     if 'leaders' in newData:
       for grader in newData['leaders']:
