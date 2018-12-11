@@ -46,13 +46,13 @@ class CoursePermissions(TemplatePermission):
     course = obj
 
     if request.method == "POST":
-      return isCourseAdmin(user, course)
+      return True
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
     if request.method == "PATCH":
       return isCourseAdmin(user, course)
     if request.method == "GET":
-      return isOrganizationMember(user, course.organization)
+      return isCourseMember(user, course)
 
 ################################################################################
 
@@ -70,7 +70,7 @@ class SectionPermissions(TemplatePermission):
     if request.method == "PATCH":
       return isCourseAdmin(user, course)
     if request.method == "GET":
-      return isSectionLeader(user, obj)
+      return isCourseAdmin(user, course) or isSectionLeader(user, obj)
 
 class AssignmentPermissions(TemplatePermission):
   def has_object_permission(self, request, view, obj):
