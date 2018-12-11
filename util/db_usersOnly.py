@@ -4,30 +4,62 @@ from core.models import Organization, Course
 from core.models import Section, Assignment
 from core.models import Submission, File, Comment
 
+# Create superuser
+james = User.objects.create(username="james@codepost.io", email="james@codepost.io")
+james.is_superuser = True
+james.set_password('rootabega')
+james.save()
+
 ## Create an organization, course, and assignment
 princeton = Organization.objects.create(name="Princeton University", shortname="Princeton")
 
-## Create a superuser
-james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com')
-james.profile.organization = princeton
-james.set_password('rootabega')
-james.is_superuser = True
-james.save()
-
-## Create an admin
-adminuser = User.objects.create(username='admin@gmail.com', email='admin@gmail.com')
-adminuser.profile.organization = princeton
-adminuser.set_password('rootabega')
-adminuser.save()
-
-## Create some students and add them to the course
-for i in range(0, 50):
-  username = "user" + str(i) + "@gmail.com"
+## Create admins
+for i in range(0, 2):
+  username = "admin" + str(i) + "@princeton.edu"
   tmpUser = User.objects.create(username=username, email=username, password="rootabega")
   tmpUser.profile.organization = princeton
   tmpUser.set_password("rootabega")
   tmpUser.save()
 
-# Make adminuser a courseAdmin for COS101
-cos101 = Course.objects.create(organization=princeton, period="Fall", name="COS101")
-cos101.courseAdmins.add(adminuser)
+## Create graders
+for i in range(0, 3):
+  username = "grader" + str(i) + "@princeton.edu"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = princeton
+  tmpUser.set_password("rootabega")
+  tmpUser.save()
+
+## Create students
+for i in range(0, 10):
+  username = "student" + str(i) + "@princeton.edu"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = princeton
+  tmpUser.set_password("rootabega")
+  tmpUser.save()
+
+## Create an organization, course, and assignment
+yale = Organization.objects.create(name="Yale University", shortname="Yale")
+
+## Create admins
+for i in range(0, 1):
+  username = "admin" + str(i) + "@yale.edu"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = yale
+  tmpUser.set_password("rootabega")
+  tmpUser.save()
+
+## Create graders
+for i in range(0, 1):
+  username = "grader" + str(i) + "@yale.edu"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = princeton
+  tmpUser.set_password("rootabega")
+  tmpUser.save()
+
+## Create students
+for i in range(0, 1):
+  username = "student" + str(i) + "@yale.edu"
+  tmpUser = User.objects.create(username=username, email=username, password="rootabega")
+  tmpUser.profile.organization = princeton
+  tmpUser.set_password("rootabega")
+  tmpUser.save()
