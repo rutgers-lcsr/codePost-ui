@@ -25,7 +25,7 @@ def isAuthenticated(user):
   return user.is_authenticated
 
 def isOrganizationMember(user, organization):
-  return (user.profile.organization.id == organization.id)
+  return (user.profile.organization == organization)
 
 def isStudent(user, course):
   return course in user.student_courses.all()
@@ -43,7 +43,7 @@ def isCourseMember(user, course):
   return isStudent(user, course) or isCourseStaff(user, course)
 
 def isSectionLeader(user, section):
-  return user in section.leaders
+  return user in section.leaders.all()
 
 def isStudentOfSub(user, submission):
   return user in submission.students.all()
