@@ -3,4 +3,5 @@ rm db.sqlite3
 
 python3 manage.py makemigrations core
 python3 manage.py migrate
-python3 manage.py shell < ./util/db.py
+
+python3 manage.py shell < ./util/$1

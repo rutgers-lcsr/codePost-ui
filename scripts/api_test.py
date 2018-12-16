@@ -1,267 +1,286 @@
 import requests
 
 BASE_URL = 'http://127.0.0.1:8000/api/'
-
-# Representative users
-COURSEADMIN_UN = 'james.alb.evans@gmail.com'
-GRADER_UN = 'vayyala@gmail.com'
-STUDENT_UN = 'user0@gmail.com'
-STUDENT_UN2 = 'user1@gmail.com'
-PASSWORD = 'rootabega'
-
-# Status Legend
-UNAUTHORIZED = 401
-FORBIDDEN = 403
-NOT_FOUND = 404
-SUCCESS = 200
-
-def testAs(url, userType=None):
-  r = None
-  if userType == "student":
-    r = requests.get(BASE_URL+url, auth=(STUDENT_UN, PASSWORD))
-  elif userType == "grader":
-    r = requests.get(BASE_URL+url, auth=(GRADER_UN, PASSWORD))
-  elif userType == "courseadmin":
-    r = requests.get(BASE_URL+url, auth=(COURSEADMIN_UN, PASSWORD))
-  else:
-    r = requests.get(BASE_URL+url)
-
-  return r
+ADMIN_EMAIL = 'admin@gmail.com'
+ADMIN_PWD = 'rootabega'
 
 ###############################################################################
 # Testing Code
 #
 ###############################################################################
 
-print('Preparing for colonoscopy...here we go')
-print('--------------------------------------')
 print('')
-
-###############################################################################
-# Users Endpoint
-###############################################################################
-
-print('Testing /users/ endpoint...')
-
-print('Test 1: /me/')
-TEST_URLS = ['users/me/']
-
-r = testAs(TEST_URLS[0], userType=None)
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-r = testAs(TEST_URLS[0], userType="courseadmin")
-if r.json()['email'] != COURSEADMIN_UN:
-  print('FAIL')
-
+print('Preparing for your physical...here we go')
 print('--------------------------------------')
-print('')
 
 ###############################################################################
-# Assignments Endpoint
+# Set up course toplogy for testing.
 ###############################################################################
 
-print('Testing /assignments/ endpoint...')
+print("Setting up course topology.")
 
-TEST_URLS = ['assignments/1/',
-'assignments/1/toggleReleased/',
-'assignments/1/drawUnassigned/',
-'assignments/1/submissions/',
-'assignments/1/submissions/?student=' + STUDENT_UN,
-'assignments/1/submissions/?student=' + "MALFORMED0x0",
-'assignments/1/submissions/?grader=' + GRADER_UN,
-'assignments/1/submissions/?grader=' + "MALFORMED0x0",
+# Get course information
+r = requests.get(BASE_URL+'courses/1/', auth=(ADMIN_EMAIL, ADMIN_PWD))
+if r.status_code == 200:
+  course = r.json()
+
+# Set up graders
+graders = ['user0@gmail.com', 'user1@gmail.com', 'user2@gmail.com']
+payload = {
+  'graders' : graders
+}
+
+r = requests.patch(BASE_URL+'courses/1/roster/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+if r.status_code == 200:
+  if not (r.json()['graders'] == graders):
+    print("FAILED: didn't add graders correctly")
+else:
+  print("FAILED: error adding graders")
+
+# Set up students
+students = []
+for i in range(3, 12):
+  students.append('user' + str(i) + '@gmail.com')
+
+payload = {
+  'students' : students
+}
+
+r = requests.patch(BASE_URL+'courses/1/roster/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+if r.status_code == 200:
+  if not (r.json()['students'] == students):
+    print("FAILED: didn't add students correctly")
+else:
+  print("FAILED: failed adding students")
+
+# Set up sections
+section0 = [student for student in students[0:3]]
+section1 = [student for student in students[3:6]]
+section2 = [student for student in students[6:9]]
+sections = [
+{'name' : "Section 0", 'students' : section0, 'grader' : graders[0]},
+{'name' : "Section 1", 'students' : section1, 'grader' : graders[1]},
+{'name' : "Section 2", 'students' : section2, 'grader' : graders[2]},
 ]
 
-print('Test 1: /toggleReleased/')
+for section in sections:
+  payload = {
+    'name' : section['name'],
+    'course' : course['id'],
+    'leaders' : section['grader'],
+    'students' : section['students'],
+  }
+  r = requests.post(BASE_URL+'sections/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+  if r.status_code == 201:
+    if not (r.json()['students'] == section['students']):
+      print("FAILED: didn't add students to sections correctly.")
+    if not (r.json()['leaders'] == [section['grader']]):
+      print("FAILED: didn't add leaders to sections correctly")
+  else:
+    print("FAILED: failed creating sections")
 
-r = requests.get(BASE_URL+TEST_URLS[0])
-isReleased = r.json()['isReleased']
+print("Test course permissions")
 
-# Try unauthorized login
-r = requests.patch(BASE_URL+TEST_URLS[1])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-
-# Try as student (unpermissioned)
-r = requests.patch(BASE_URL+TEST_URLS[1], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as grader (unpermissioned)
-r = requests.patch(BASE_URL+TEST_URLS[1], auth=(GRADER_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as course admin (ermissioned)
-r = requests.patch(BASE_URL+TEST_URLS[1], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if r.json()['isReleased'] is isReleased:
-  print('FAIL')
+# Testing GET
+r = requests.get(BASE_URL+'courses/1/', auth=(ADMIN_EMAIL, ADMIN_PWD))
+r = requests.get(BASE_URL+'courses/1/', auth=(graders[0], ADMIN_PWD))
+r = requests.get(BASE_URL+'courses/1/', auth=(students[0], ADMIN_PWD))
 
 ###############################################################################
-
-print('Test 2: /drawUnassigned/')
-
-# Try unauthorized login
-r = requests.patch(BASE_URL+TEST_URLS[2])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-
-# Try as student (unpermissioned)
-r = requests.patch(BASE_URL+TEST_URLS[2], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as grader (permissioned)
-r = requests.patch(BASE_URL+TEST_URLS[2], auth=(GRADER_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if r.json()['grader']['username'] != GRADER_UN:
-  print('FAIL')
-
-# Try as course admin (unpermissioned)
-r = requests.patch(BASE_URL+TEST_URLS[2], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
+# Set up an assignment for testing.
 ###############################################################################
 
-print('Test 3: /submissions/')
+print("Setting up test assignment.")
 
-# Try unauthorized login
-r = requests.get(BASE_URL+TEST_URLS[3])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
+helloworld = {
+  'name' : 'Hello World',
+  'points' : 20,
+  'course' : course['id'],
+}
 
-# Try as student (unpermissioned)
-r = requests.get(BASE_URL+TEST_URLS[3], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
+r = requests.post(BASE_URL+'assignments/', data=helloworld, auth=(ADMIN_EMAIL, ADMIN_PWD))
+if r.status_code != 201:
+  print("FAILED: failed creating assignment.")
+else:
+  assignment = r.json()
 
-# Try as grader (permissioned)
-r = requests.get(BASE_URL+TEST_URLS[3], auth=(GRADER_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
+rubric = {
+  'assignment' : assignment['id'],
+  'categories' : [
+    {
+      'name' : 'style',
+      'pointLimit' : 10,
+      'comments' : [
+        {
+          'text' : "Wrong indentation",
+          'pointDelta' : -1,
+        },
+        {
+          'text' : "Missing semi-colon",
+          'pointDelta' : -2,
+        },
+      ]
+    },
+    {
+      'name' : 'style',
+      'pointLimit' : 10,
+      'comments' : [
+        {
+          'text' : "Wrong indentation",
+          'pointDelta' : -1,
+        },
+        {
+          'text' : "Missing semi-colon",
+          'pointDelta' : -2,
+        },
+      ]
+    },
+  ],
+}
 
-# Try as course admin (unpermissioned)
-r = requests.get(BASE_URL+TEST_URLS[3], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if len(r.json()) != 50:
-  print('FAIL')
+for category in rubric['categories']:
+  payload = {
+    'assignment': rubric['assignment'],
+    'name': category['name'],
+    'pointLimit': category['pointLimit'],
+  }
 
-###############################################################################
+  r = requests.post(BASE_URL+'rubriccategories/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+  if r.status_code != 201:
+    print("FAILED: failed creating rubric category")
+    print(r.text)
+  else:
+    created = r.json()
+    for comment in category['comments']:
+      payload = {
+        'text': comment['text'],
+        'pointDelta' : comment['pointDelta'],
+        'category' : created['id'],
 
-print('Test 4: /submissions/?student={student}')
-
-# Try unauthorized login
-r = requests.get(BASE_URL+TEST_URLS[4])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-
-# Try as student we are querying about (permissioned)
-r = requests.get(BASE_URL+TEST_URLS[4], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if r.json()[0]['id'] != 1:
-  print('FAIL')
-if r.json()[0]['isFinalized'] != False:
-  print('FAIL')
-requests.patch(BASE_URL+TEST_URLS[1], auth=(COURSEADMIN_UN, PASSWORD))
-
-# Try as a different student (not permissioned)
-r = requests.get(BASE_URL+TEST_URLS[4], auth=(STUDENT_UN2, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as grader of this submission
-r = requests.get(BASE_URL+TEST_URLS[4], auth=(GRADER_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if r.json()[0]["id"] != 1:
-  print('FAIL')
-
-# Try as a courseadmin of this submission
-r = requests.get(BASE_URL+TEST_URLS[4], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-if r.json()[0]["id"] != 1:
-  print('FAIL')
-
-###############################################################################
-
-print('Test 5: /submissions/?student={student} - malformed input')
-
-# Try unauthorized login
-r = requests.get(BASE_URL+TEST_URLS[5])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-
-# Try as a student
-r = requests.get(BASE_URL+TEST_URLS[5], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as a grader
-r = requests.get(BASE_URL+TEST_URLS[5], auth=(GRADER_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as a courseadmin of this submission
-r = requests.get(BASE_URL+TEST_URLS[5], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != NOT_FOUND:
-  print('FAIL')
+      }
+      r2 = requests.post(BASE_URL+'rubriccomments/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+      if r2.status_code != 201:
+        print("FAILED: failed creating rubric comment")
 
 ###############################################################################
-
-print('Test 6: /submissions/?grader={grader}')
-
-# Try unauthorized login
-r = requests.get(BASE_URL+TEST_URLS[6])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
-
-# Try as student we are querying about (permissioned)
-r = requests.get(BASE_URL+TEST_URLS[6], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as the grader we are querying about
-r = requests.get(BASE_URL+TEST_URLS[6], auth=(GRADER_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-
-# Try as a courseadmin of this submission
-r = requests.get(BASE_URL+TEST_URLS[6], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != SUCCESS:
-  print('FAIL')
-
+# Create some submissions
 ###############################################################################
 
-print('Test 7: /submissions/?grader={grader} -- malformed input')
+print("Creating test submissions.")
 
-# Try unauthorized login
-r = requests.get(BASE_URL+TEST_URLS[7])
-if r.status_code != UNAUTHORIZED:
-  print('FAIL')
+for student in students:
+  file = {
+    'name' : 'hello.java',
+    'extension' : 'java',
+    'code' : "public static void main(String[] args) { System.out.println('Hello, I'm " + student + "!'); }",
+  }
 
-# Try as student we are querying about (permissioned)
-r = requests.get(BASE_URL+TEST_URLS[7], auth=(STUDENT_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
+  payload = {
+    'assignment' : assignment['id'],
+    'students' : [student],
+  }
 
-# Try as the grader we are querying about
-r = requests.get(BASE_URL+TEST_URLS[7], auth=(GRADER_UN, PASSWORD))
-if r.status_code != FORBIDDEN:
-  print('FAIL')
-
-# Try as a courseadmin of this submission
-r = requests.get(BASE_URL+TEST_URLS[7], auth=(COURSEADMIN_UN, PASSWORD))
-if r.status_code != NOT_FOUND:
-  print('FAIL')
+  r = requests.post(BASE_URL+'submissions/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+  if r.status_code == 201:
+    submission = r.json()
+    file['submission'] = submission['id']
+    r2 = requests.post(BASE_URL+'files/', data=file, auth=(ADMIN_EMAIL, ADMIN_PWD))
+    if r2.status_code != 201:
+      print("FAILED: failed to create file")
+  else:
+    print("FAILED: failed to create submission")
 
 ###############################################################################
+# Assign grader(s) to submissions
+###############################################################################
 
-print('--------------------------------------')
-print('')
+print("Assigning graders.")
+
+# Assign grader
+r = requests.get(BASE_URL+'assignments/' + str(assignment['id']) + '/submissions/', auth=(ADMIN_EMAIL, ADMIN_PWD))
+if r.status_code == 200:
+  submissions = r.json()
+else:
+  print("FAILED: failed to retrieve submissions from /submissions/")
+
+for submission in submissions:
+  payload = {
+    'grader' : graders[0],
+  }
+
+  r = requests.patch(BASE_URL+'submissions/' + str(submission['id']) + '/', data=payload, auth=(ADMIN_EMAIL, ADMIN_PWD))
+  if r.status_code != 200:
+    print("FAILED: failed to assign grader to submission")
+
+###############################################################################
+# Simulate grading process
+###############################################################################
+
+print("Simulating grading process.")
+
+# Grader comments on each assignment.
+comment = {
+  'text': "Boo",
+  'pointDelta': -1,
+  'startChar': 4,
+  'endChar': 9,
+  'startLine': 0,
+  'endLine': 0,
+}
+
+for submission in submissions:
+  comment['file'] = submission["files"][0]
+  r = requests.post(BASE_URL+'comments/', data=comment, auth=(graders[0], ADMIN_PWD))
+  if r.status_code != 201:
+    print("FAILED: failed to add comment to submission as grader")
+
+# Student tries to comment on each assignment.
+for submission in submissions:
+  comment['file'] = submission["files"][0]
+  r = requests.post(BASE_URL+'comments/', data=comment, auth=("user11@gmail.com", ADMIN_PWD))
+  print(r.text)
+
+# Section leader comments on each assignment.
+comment2 = {
+  'text': "Nice!",
+  'pointDelta': 1,
+  'startChar': 1,
+  'endChar': 2,
+  'startLine': 0,
+  'endLine': 0,
+}
+
+for submission in submissions:
+  comment2['file'] = submission["files"][0]
+  student = submission["students"][0]
+  if student in section0:
+    comment2['author'] = sections[0]["grader"]
+  elif student in section1:
+    comment2['author'] = sections[1]["grader"]
+  elif student in section2:
+    comment2['author'] = sections[2]["grader"]
+  r = requests.post(BASE_URL+'comments/', data=comment2, auth=(comment2["author"], ADMIN_PWD))
+  if r.status_code != 201:
+    print("FAILED: failed to add comment to submission as section leader")
+
+# Admin deletes all comments.
+for submission in submissions:
+  fileID = submission["files"][0]
+  r = requests.get(BASE_URL+'files/' + str(fileID) + '/', auth=(ADMIN_EMAIL, ADMIN_PWD))
+  if r.status_code != 200:
+    print("FAILED: failed to retrieve file")
+    print(r.text)
+  file = r.json()
+  for commentID in file["comments"]:
+    r2 = requests.delete(BASE_URL+'comments/' + str(commentID) + '/', auth=(ADMIN_EMAIL, ADMIN_PWD))
+    if r2.status_code != 204:
+      print("FAILED: failed to delete comment as courseAdmin")
+
+# Submissions are finalized.
+
+# Assignment is released.
+
+# Other big things to test.
+# - For each type of user: post, patch, get, delete.
+# - Malformed inputs.
+

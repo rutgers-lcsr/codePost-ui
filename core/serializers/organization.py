@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from core.serializers.template import ModelSerializerWithPOSTCheck
 from core.models import Organization
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class OrganizationSerializer(ModelSerializerWithPOSTCheck):
 
   class Meta:
     model = Organization
