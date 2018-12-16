@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import CodeViewer from './components/CodeViewer';
+import CodeViewer from './components/student/CodeViewer';
 import VerticalPane from './components/VerticalPane';
 
 import './styles/Student.scss';

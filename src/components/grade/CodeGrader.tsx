@@ -6,6 +6,8 @@ import EditableComment from './EditableComment';
 
 import { IComment, IFile, ISubmission } from '../../types/common';
 
+import CodeUtils from '../CodeUtils';
+
 interface IProps {
   deductions: number[];
   submission: ISubmission;
@@ -18,6 +20,14 @@ interface IProps {
 }
 
 class CodeGrader extends React.Component<IProps, {}> {
+  //////////////////////////////////////
+  // Lifecycle Methods
+  //////////////////////////////////////
+
+  //////////////////////////////////////
+  // Prop Methods
+  //////////////////////////////////////
+
   public addComment = (comment: IComment, file: IFile) => {
     const { addComment } = this.props;
     this.props.changeActive(comment.localId);
@@ -27,6 +37,27 @@ class CodeGrader extends React.Component<IProps, {}> {
   public changeActive = (id: number) => {
     this.props.changeActive(id);
   };
+
+  //////////////////////////////////////
+  // Helpers
+  //////////////////////////////////////
+
+  public getTabTitle = (name: string, deduction: number, numComments: number) => {
+    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+    const commentFlag =
+      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+
+    return (
+      <div className="tab-title">
+        {commentFlag}
+        <div className="tab-title">{name + deductionString}</div>
+      </div>
+    );
+  };
+
+  //////////////////////////////////////
+  // Main
+  //////////////////////////////////////
 
   public render() {
     const {
@@ -56,7 +87,7 @@ class CodeGrader extends React.Component<IProps, {}> {
               <TabPanel key={i}>
                 <div className="panel-box">
                   <CodeBox file={file} readOnly={readOnly} addComment={this.addComment} />
-                  <CommentBox
+                  <CommentList
                     file={file}
                     comments={file.comments}
                     readOnly={readOnly}
@@ -73,19 +104,6 @@ class CodeGrader extends React.Component<IProps, {}> {
       </div>
     );
   }
-
-  private getTabTitle = (name: string, deduction: number, numComments: number) => {
-    const deductionString = deduction > 0 ? `(-${deduction})` : '';
-    const commentFlag =
-      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
-
-    return (
-      <div className="tab-title">
-        {commentFlag}
-        <div className="tab-title">{name + deductionString}</div>
-      </div>
-    );
-  };
 }
 
 interface ICodeBoxProps {
@@ -96,17 +114,6 @@ interface ICodeBoxProps {
 
 const CodeBox = (props: ICodeBoxProps) => {
   const { file, readOnly } = props;
-
-  const sortedHighlights = props.file.comments.sort((a: IComment, b: IComment) => {
-    if (a.startLine === b.startLine) {
-      if (a.startChar > b.startChar) {
-        return 1;
-      }
-      return -1;
-    }
-    if (a.startLine > b.startLine) return 1;
-    return -1;
-  });
 
   const onMouseUp = (event: any) => {
     const selectedText = window.getSelection().toString();
@@ -211,59 +218,7 @@ const CodeBox = (props: ICodeBoxProps) => {
     props.addComment(newComment, file);
   };
 
-  const highlightText = (thetext: string, line: number) => {
-    for (const highlight of sortedHighlights) {
-      if (highlight.startLine < line && highlight.endLine > line) {
-        // this line sits between a multi-line highlight
-        return (
-          <strong id={line.toString()} className={highlight.localId}>
-            {thetext}
-          </strong>
-        );
-      }
-      if (highlight.startLine === line) {
-        let part1 = '';
-        let part2 = '';
-        let part3 = '';
-        // we may be in a partial highlight situation
-
-        // is the whole comment in one line?
-        if (highlight.endLine === highlight.startLine) {
-          part1 = thetext.substring(0, highlight.startChar);
-          part2 = thetext.substring(highlight.startChar, highlight.endChar);
-          part3 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
-          return (
-            <div id={line.toString()}>
-              {part1}
-              <strong className={highlight.localId}>{part2}</strong>
-              {part3}
-            </div>
-          );
-        }
-        part1 = thetext.substring(0, highlight.startChar);
-        part2 = thetext.substring(highlight.startChar, thetext.length).replace(/\s*$/, '');
-        return (
-          <div id={line.toString()}>
-            {part1}
-            <strong className={highlight.localId}>{part2}</strong>
-          </div>
-        );
-      }
-      if (highlight.endLine === line) {
-        const part1 = thetext.substring(0, highlight.endChar);
-        const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
-        return (
-          <div id={line.toString()}>
-            <strong className={highlight.localId}>{part1}</strong>
-            {part2}
-          </div>
-        );
-      }
-      // otherwise, the highlight ends before our line starts
-    }
-    return thetext;
-  };
-
+  const sortedHighlights = CodeUtils.sortHighlights(props.file.comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = readOnly
@@ -271,7 +226,7 @@ const CodeBox = (props: ICodeBoxProps) => {
       return (
         <div key={i} id={i.toString()}>
           {' '}
-          {highlightText(item, i)}{' '}
+          {CodeUtils.highlightText(sortedHighlights, item, i)}{' '}
         </div>
       );
     })
@@ -279,7 +234,7 @@ const CodeBox = (props: ICodeBoxProps) => {
       return (
         <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
           {' '}
-          {highlightText(item, i)}{' '}
+          {CodeUtils.highlightText(sortedHighlights, item, i)}{' '}
         </div>
       );
     });
@@ -298,39 +253,6 @@ const CodeBox = (props: ICodeBoxProps) => {
       <div className="line-numbers">{lineNumbers}</div>
       <div className="highlighted-area">{linesOfCode}</div>
     </div>
-  );
-};
-
-interface ICommentBoxProps {
-  file: IFile;
-  comments: IComment[];
-  readOnly: boolean;
-  activeCommentId?: number;
-  changeActive: any;
-  deleteComment: any;
-  updateComment: any;
-}
-
-const CommentBox = (props: ICommentBoxProps) => {
-  const {
-    activeCommentId,
-    changeActive,
-    comments,
-    deleteComment,
-    file,
-    readOnly,
-    updateComment,
-  } = props;
-  return (
-    <CommentList
-      file={file}
-      comments={comments}
-      readOnly={readOnly}
-      activeCommentId={activeCommentId}
-      changeActive={changeActive}
-      deleteComment={deleteComment}
-      updateComment={updateComment}
-    />
   );
 };
 
@@ -360,22 +282,18 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = (comment.startLine + 1) * 19; // Each line is 15px
+    let startAt = comment.startLine * CodeUtils.pixelsPerLine();
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
-
     for (const block of ranges) {
       if (startAt >= block[0] && startAt < block[1]) {
         startAt = block[1];
       }
     }
 
-    // Estimate the pixel size of a comment block
-    const dedLines = comment.pointDelta !== 0 ? 1 : 0;
-
-    const lines = (comment.text.length / 36 + 2 + dedLines) * 19;
-    const newBlock = [startAt, startAt + lines];
+    const heightOfComment = CodeUtils.heightOfComment(comment, activeCommentId);
+    const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 
     ranges.sort((a: any, b: any) => {
@@ -393,11 +311,9 @@ const CommentList = (props: ICommentListProps) => {
       isActive = true;
     }
 
-    if (readOnly) {
-      return <Comment key={comment.localId} comment={comment} style={style} />;
-    }
     return (
       <EditableComment
+        readOnly={readOnly}
         file={file}
         key={comment.localId}
         comment={comment}
@@ -411,45 +327,6 @@ const CommentList = (props: ICommentListProps) => {
   });
 
   return <div className="comment-box">{commentNodes}</div>;
-};
-
-interface ICommentProps {
-  key: number;
-  comment: IComment;
-  style: any;
-}
-
-const Comment = (props: ICommentProps) => {
-  const onMouseEnter = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#FAFF91';
-    });
-  };
-
-  const onMouseLeave = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#ffca93';
-    });
-  };
-
-  let deduction = '';
-  if (props.comment.pointDelta && props.comment.pointDelta !== 0) {
-    deduction = `(-${props.comment.pointDelta})`;
-  }
-
-  return (
-    <div
-      className="comment"
-      style={props.style}
-      onMouseEnter={onMouseEnter.bind(props, props.comment.localId.toString())}
-      onMouseLeave={onMouseLeave.bind(props, props.comment.localId.toString())}
-    >
-      <div className="comment-deduction">{deduction}</div>
-      {props.comment.text}
-    </div>
-  );
 };
 
 export default CodeGrader;

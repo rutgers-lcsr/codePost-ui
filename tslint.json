@@ -25,7 +25,9 @@
       "allow-pascal-case"
     ],
     "import-name": false,
-    "object-shorthand-properties-first": false
+    "object-shorthand-properties-first": false,
+    "jsx-boolean-value": ["never"],
+    "align": [true, "parameters", "statements", "members", "elements"]
   },
   "jsRules": {
     "object-literal-sort-keys": false //Disable for javascript

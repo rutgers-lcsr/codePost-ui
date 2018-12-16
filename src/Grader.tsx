@@ -71,6 +71,7 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public claimSubmission = (assignment: IAssignment): any => {
+    console.log('claim', assignment);
     return new Promise((resolve, reject) => {
       fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
         headers: {

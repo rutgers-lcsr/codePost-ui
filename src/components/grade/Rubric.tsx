@@ -33,6 +33,7 @@ class Rubric extends React.Component<IProps, IState> {
     });
   };
 
+  // Not used currently
   public onCancel = (event: any) => {
     this.setState({ searchTerm: '' });
   };
@@ -44,6 +45,7 @@ class Rubric extends React.Component<IProps, IState> {
   public render() {
     const { handleRubricCommentClick, rubric } = this.props;
     const { searchTerm, visibles } = this.state;
+
     return (
       <div className="container-rubric">
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
@@ -80,7 +82,10 @@ const RubricCategory = (props: IRubricCategoryProps) => {
 
   return (
     <div className="rubric-category">
-      <div className="container-category">
+      <div
+        className="container-category"
+        onClick={props.handleDropDown.bind(props, category, visible)}
+      >
         <div className="category-title">
           {category.name}
           <div
@@ -123,7 +128,6 @@ const RubricComment = (props: IRubricCommentProps) => {
   const { comment } = props;
 
   const onClick = (event: any) => {
-    console.log('rubric comment', event);
     props.handleRubricCommentClick(comment);
   };
 

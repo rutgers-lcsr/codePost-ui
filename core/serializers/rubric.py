@@ -2,7 +2,6 @@ from rest_framework import serializers
 from core.models import RubricCategory, RubricComment
 from core.serializers.assignment import AssignmentSerializer
 
-
 class RubricCommentSerializer(serializers.ModelSerializer):
   class Meta:
     model = RubricComment

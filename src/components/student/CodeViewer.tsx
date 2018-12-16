@@ -2,9 +2,13 @@ import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import 'react-tabs/style/react-tabs.css';
-import '../styles/Student.scss';
+import '../../styles/Student.scss';
 
-import { IAssignment, IComment, IFile, ISubmission } from '../types/common';
+import { Card, CardText, Chip } from 'react-md';
+
+import CodeUtils from '../CodeUtils';
+
+import { IAssignment, IComment, IFile, ISubmission } from '../../types/common';
 
 interface IProps {
   deductions: number[];
@@ -64,64 +68,11 @@ interface ICodeBoxProps {
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
-  const sortedHighlights = props.file.comments.sort((a: IComment, b: IComment) => {
-    return a.startLine > b.startLine ? 1 : -1;
-  });
-
-  const highlightText = (thetext: string, line: number) => {
-    for (const highlight of sortedHighlights) {
-      if (highlight.startLine < line && highlight.endLine > line) {
-        // this line sits between a multi-line highlight
-        return <strong className={highlight.id}>{thetext}</strong>;
-      }
-
-      if (highlight.startLine === line) {
-        let part1 = '';
-        let part2 = '';
-        let part3 = '';
-        // we may be in a partial highlight situation
-
-        // is the whole comment in one line?
-        if (highlight.endLine === highlight.startLine) {
-          part1 = thetext.substring(0, highlight.startChar);
-          part2 = thetext.substring(highlight.startChar, highlight.endChar);
-          part3 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
-          return (
-            <div>
-              {part1}
-              <strong className={highlight.id}>{part2}</strong>
-              {part3}
-            </div>
-          );
-        }
-        part1 = thetext.substring(0, highlight.startChar);
-        part2 = thetext.substring(highlight.startChar, thetext.length).replace(/\s*$/, '');
-        return (
-          <div>
-            {part1}
-            <strong className={highlight.id}>{part2}</strong>
-          </div>
-        );
-      }
-
-      if (highlight.endLine === line) {
-        const part1 = thetext.substring(0, highlight.endChar);
-        const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
-        return (
-          <div>
-            <strong className={highlight.id}>{part1}</strong>
-            {part2}
-          </div>
-        );
-      }
-      // otherwise, the highlight ends before our line starts
-    }
-    return thetext;
-  };
-
+  const sortedHighlights = CodeUtils.sortHighlights(props.file.comments);
   const splitCode = props.file.code.split('\n');
+
   const linesOfCode = splitCode.map((item: any, i: number) => {
-    return <div key={i}> {highlightText(item, i)} </div>;
+    return <div key={i}> {CodeUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
   const lineNumbers = splitCode.map((item: any, i: number) => {
@@ -168,7 +119,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = (comment.startLine + 1) * 19; // Each line is 15px
+    let startAt = comment.startLine * CodeUtils.pixelsPerLine(); // Each line is 15px
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -179,11 +130,8 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    // Estimate the pixel size of a comment block
-    const dedLines = comment.pointDelta !== 0 ? 1 : 0;
-
-    const lines = (comment.text.length / 36 + 1 + dedLines) * 19;
-    const newBlock = [startAt, startAt + lines];
+    const heightOfComment = CodeUtils.heightOfComment(comment, undefined);
+    const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 
     ranges.sort((a: any, b: any) => {
@@ -207,6 +155,8 @@ interface ICommentProps {
 }
 
 const Comment = (props: ICommentProps) => {
+  const { comment, style } = props;
+
   const onMouseEnter = (i: string, e: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
@@ -221,23 +171,26 @@ const Comment = (props: ICommentProps) => {
     });
   };
 
-  let deduction;
-  if (props.comment.pointDelta == null || props.comment.pointDelta === 0) {
-    deduction = '';
-  } else {
-    deduction = `(-${props.comment.pointDelta})`;
+  let pointDelta = '';
+  if (comment.pointDelta && comment.pointDelta !== 0) {
+    pointDelta = `-${comment.pointDelta}`;
   }
 
   return (
-    <div
+    <Card
       className="comment"
-      style={props.style}
-      onMouseEnter={onMouseEnter.bind(props, props.comment.id.toString())}
-      onMouseLeave={onMouseLeave.bind(props, props.comment.id.toString())}
+      style={style}
+      onMouseEnter={onMouseEnter.bind(props, comment.localId.toString())}
+      onMouseLeave={onMouseLeave.bind(props, comment.localId.toString())}
     >
-      <div>{deduction}</div>
-      {props.comment.text}
-    </div>
+      <CardText>
+        {pointDelta === '' ? null : <Chip label={pointDelta} />}
+        {comment.rubricComment ? (
+          <div className="comment-rubric">{comment.rubricComment.text}</div>
+        ) : null}
+        <div className="comment-text">{comment.text}</div>
+      </CardText>
+    </Card>
   );
 };
 export default CodeViewer;

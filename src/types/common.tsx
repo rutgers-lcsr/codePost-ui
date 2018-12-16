@@ -67,6 +67,7 @@ export interface IComment {
   endLine: number;
   pointDelta: number | string;
   text: string;
+  rubricComment: any;
 }
 
 export interface IProfile {
@@ -83,6 +84,7 @@ export interface IGrader {
 }
 
 export interface IRubricComment {
+  id: number;
   text: string;
   pointDelta: number;
 }

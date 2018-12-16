@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IStudent, ISubmission, IUser } from '../../types/common';
+import { IStudent, ISubmission } from '../../types/common';
 import Finalize from './Finalize';
 
 import pluralize from 'pluralize';
@@ -9,22 +9,17 @@ interface IPanelProps {
   toggleFinalized: any;
 }
 
-interface IPanelState {
-  me: IUser;
-}
+const Panel = (props: IPanelProps) => {
+  const { submission, toggleFinalized } = props;
 
-class Panel extends React.Component<IPanelProps, IPanelState> {
-  public render() {
-    const { submission, toggleFinalized } = this.props;
-    return (
-      <div className="container-info">
-        <SubmissionInfo submission={submission} />
-        <GradeBox submission={submission} />
-        <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="container-info">
+      <SubmissionInfo submission={submission} />
+      <GradeBox submission={submission} />
+      <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
+    </div>
+  );
+};
 
 interface ISubmissionInfoProps {
   submission: ISubmission;

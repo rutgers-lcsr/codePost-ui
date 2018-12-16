@@ -93,10 +93,20 @@
         position: relative;
 
         .comment {
-          background-color: #f7f7f7;
+          // background-color: #f7f7f7;
           border: 1px solid #dadada;
-          padding: 5px;
           position: absolute;
+          max-width: 400px;
+
+          .comment-rubric {
+            margin: 10px 0px 10px 0px;
+            padding: 5px 0px 5px 5px;
+            border-left: 2px solid blue;
+          }
+
+          .comment-text {
+            margin: 10px 0px 10px 0px;
+          }
         }
 
         .comment:hover {
