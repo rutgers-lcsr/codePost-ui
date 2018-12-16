@@ -4,6 +4,7 @@ from core.models import Comment, User
 from core.permissions.helpers import isGrader, isStudent
 import re
 
+
 class CommentSerializer(ModelSerializerWithPOSTCheck):
   author = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
 

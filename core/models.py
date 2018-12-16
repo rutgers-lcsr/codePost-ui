@@ -99,6 +99,7 @@ class Comment(models.Model):
   endChar = models.IntegerField()
   startLine = models.IntegerField()
   endLine = models.IntegerField()
+  localId = models.FloatField(blank=True, null=True)
 
 ###############################################################################
 

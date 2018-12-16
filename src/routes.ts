@@ -1,5 +1,6 @@
 // This is the actual url endpoints defined
 export const HOME = '/';
+export const GRADE = '/grade';
 export const GRADER = '/grader';
 export const STUDENT = '/student';
 export const RESET = '/password-reset';
@@ -11,5 +12,6 @@ export type ROUTES =
   | typeof STUDENT
   | typeof LANDING
   | typeof GRADER
+  | typeof GRADE
   | typeof RESET
   | typeof RESET_TOKEN;
