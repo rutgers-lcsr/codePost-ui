@@ -15,12 +15,18 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from core.serializers.user import UserSerializer, UserWithProfileSerializer
 from core.utils import emailUser, ValidateTokenForm, ChangePasswordForm
 
+from core.views.template import ListProtectedViewSet
+from rest_framework.permissions import IsAuthenticated
+
+from core.permissions.permissions import UserPermissions
+
 class BooleanSerialzier(serializers.Serializer):
   value = serializers.BooleanField()
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(ListProtectedViewSet):
   queryset = User.objects.all().order_by('-date_joined')
   serializer_class = UserSerializer
+  permission_classes = (IsAuthenticated, UserPermissions)
 
   @action(detail=False)
   def me(self, request):

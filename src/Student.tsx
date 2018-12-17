@@ -1,22 +1,22 @@
 import * as React from 'react';
-import { Redirect } from 'react-router-dom'
+import { Redirect } from 'react-router-dom';
 
-import CodeViewer from './components/CodeViewer'
-import VerticalPane from './components/VerticalPane'
-import './styles/index.scss';
+import CodeViewer from './components/student/CodeViewer';
+import VerticalPane from './components/VerticalPane';
+
 import './styles/Student.scss';
-import { IAssignment, ICourse, IOption, ISubmission } from './types/common'
 
+import { IAssignment, ICourse, IOption, ISubmission } from './types/common';
 
 interface IStudentState {
-  courses: ICourse[],
-  currentAssignment?: IAssignment,
-  currentCourse?: ICourse,
-  currentSubmission?: ISubmission,
-  email: string,
-  isLoggedIn: boolean,
-  isLoading: boolean,
-  redirect: boolean,
+  courses: ICourse[];
+  currentAssignment?: IAssignment;
+  currentCourse?: ICourse;
+  currentSubmission?: ISubmission;
+  email: string;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  redirect: boolean;
 }
 
 class Student extends React.Component<{}, IStudentState> {
@@ -29,7 +29,7 @@ class Student extends React.Component<{}, IStudentState> {
     isLoading: true,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
-  }
+  };
 
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
@@ -61,7 +61,7 @@ class Student extends React.Component<{}, IStudentState> {
     } else {
       this.setState({ currentSubmission: undefined });
     }
-  }
+  };
 
   public handleCourseChange = (option: IOption) => {
     const currentCourse = this.state.courses.filter((obj: ICourse) => {
@@ -71,33 +71,34 @@ class Student extends React.Component<{}, IStudentState> {
     this.setState({
       currentAssignment: undefined,
       currentCourse,
-      currentSubmission: undefined
+      currentSubmission: undefined,
     });
-  }
+  };
 
   public renderRedirect = () => {
     if (this.state.redirect) {
-      return <Redirect to='/' />
-    } else {
-      return;
+      return <Redirect to="/" />;
     }
-  }
+    return;
+  };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission } = this.state
+    const { courses, currentAssignment, currentCourse, currentSubmission, isLoading } = this.state;
     return (
-      <div className="App">
+      <div>
         {this.renderRedirect()}
-        <VerticalPane
-          currentTab={this.tabCurrentFormatter(currentAssignment)}
-          currentSelector={this.selectorCurrentFormatter(currentCourse)}
-          selectorItems={this.selectorItemsFormatter(courses)}
-          tabItems={this.tabItemsFormatter(currentCourse)}
-          handleTabChange={this.handleAssignmentChange}
-          handleSelectorChange={this.handleCourseChange}
-          isLoading={this.state.isLoading}
-        />
-        <ContentArea assignment={currentAssignment} submission={currentSubmission} />
+        <div className="container-main">
+          <VerticalPane
+            currentTab={this.tabCurrentFormatter(currentAssignment)}
+            currentSelector={this.selectorCurrentFormatter(currentCourse)}
+            selectorItems={this.selectorItemsFormatter(courses)}
+            tabItems={this.tabItemsFormatter(currentCourse)}
+            handleTabChange={this.handleAssignmentChange}
+            handleSelectorChange={this.handleCourseChange}
+            isLoading={isLoading}
+          />
+          <ContentArea assignment={currentAssignment} submission={currentSubmission} />
+        </div>
       </div>
     );
   }
@@ -105,26 +106,28 @@ class Student extends React.Component<{}, IStudentState> {
   private loadCourses = () => {
     fetch('/api/users/me/', {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`
-      }
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
     })
-      .then(res => {
-        return (res.json())
+      .then((res) => {
+        return res.json();
       })
-      .then(json => {
+      .then((json) => {
         const courses = 'studentCourses';
         this.setState({ courses: json[courses], isLoading: false, email: json.email });
       });
   };
 
   private loadSubmission = (id: string | number) => {
-    fetch('/api/assignments/' + id + '/submissions/?student=' + this.state.email, {
+    fetch(`/api/assignments/${id}/submissions/?student=${this.state.email}`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`
-      }
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
     })
-      .then(res => res.json())
-      .then(json => {
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
         if (json.length > 0 && json[0].isFinalized) {
           this.setState({ currentSubmission: json[0] });
         }
@@ -132,39 +135,38 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   private selectorItemsFormatter = (courses: ICourse[]) => {
-    return courses.map((course, i) => (
-      { 'value': course.id, 'label': course.name }
-    ));
-  }
+    return courses.map((course, i) => ({ value: course.id, label: course.name }));
+  };
 
   private selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
-    return { 'value': currentCourse.id, 'label': currentCourse.name };
-  }
+    return { value: currentCourse.id, label: currentCourse.name };
+  };
 
   private tabItemsFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse || !currentCourse.assignments) {
       return [];
     }
 
-    return currentCourse.assignments.map((assignment, i) => (
-      { 'value': assignment.id, 'label': assignment.name }
-    ));
-  }
+    return currentCourse.assignments.map((assignment, i) => ({
+      label: assignment.name,
+      value: assignment.id,
+    }));
+  };
 
   private tabCurrentFormatter = (currentAssignment: IAssignment | undefined) => {
     if (!currentAssignment) {
       return undefined;
     }
-    return { 'value': currentAssignment.id, 'label': currentAssignment.name }
-  }
+    return { value: currentAssignment.id, label: currentAssignment.name };
+  };
 }
 
 interface IContentAreaProps {
-  assignment?: IAssignment,
-  submission?: ISubmission
+  assignment?: IAssignment;
+  submission?: ISubmission;
 }
 
 const ContentArea = (props: IContentAreaProps) => {
@@ -180,36 +182,18 @@ const ContentArea = (props: IContentAreaProps) => {
       deductions.push(totalDeduction);
     }
     return deductions;
-  }
+  };
 
   if (submission && assignment) {
     const deductions = getDeductions(submission);
+    return <CodeViewer deductions={deductions} submission={submission!} assignment={assignment!} />;
+  }
+  if (assignment) {
     return (
-      <div className='content-container'>
-        <div className="grade-container">
-          {"Grade: " + submission!.grade + "/" + assignment.points}
-        </div>
-        <CodeViewer
-          deductions={deductions}
-          submission={submission!}
-        />
-      </div>
+      <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>
     );
   }
-  else if (assignment) {
-    return (
-      <div style={{ margin: '100px' }}>
-        Your {assignment.name} has not yet been graded.
-      </div>
-    );
-  }
-  else {
-    return (
-      <div style={{ margin: '100px' }}>
-        Select an assignment on the left!
-      </div>
-    );
-  }
-}
+  return <div className="container-code-viewer">Select an assignment on the left!</div>;
+};
 
 export default Student;

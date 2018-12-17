@@ -3,5 +3,7 @@ declare module 'react-markdown';
 declare module 'react-router-dom';
 declare module 'react-select';
 declare module 'react-tabs';
+declare module 'reactable';
 declare module 'node-sass';
 declare module 'sass-loader';
+declare module 'pluralize';

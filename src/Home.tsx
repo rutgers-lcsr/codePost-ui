@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ADMIN, GRADER, LANDING, STUDENT } from "./routes";
-import "./styles/App.scss";
+import './styles/index.scss';
 
 class Home extends React.Component {
   public render() {

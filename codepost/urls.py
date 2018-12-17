@@ -24,13 +24,13 @@ from core.views.course import CourseViewSet
 from core.views.submission import SubmissionViewSet
 from core.views.assignment import AssignmentViewSet
 from core.views.organization import OrganizationViewSet
-from core.views.profile import ProfileViewSet
 from core.views.section import SectionViewSet
-from core.views.student import StudentViewSet
-from core.views.grader import GraderViewSet
-from core.views.courseadmin import CourseAdminViewSet
 from core.views.comment import CommentViewSet
-from core.views.rubric import RubricViewSet, RubricCommentViewSet
+from core.views.rubricCategory import RubricCategoryViewSet
+from core.views.rubricComment import RubricCommentViewSet
+from core.views.file import FileViewSet
+from core.views.comment import CommentViewSet
+# from core.views.rubric import RubricViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -38,14 +38,13 @@ router.register(r'courses', CourseViewSet)
 router.register(r'submissions', SubmissionViewSet)
 router.register(r'assignments', AssignmentViewSet)
 router.register(r'organizations', OrganizationViewSet)
-router.register(r'profiles', ProfileViewSet)
 router.register(r'sections', SectionViewSet)
-router.register(r'students', StudentViewSet)
-router.register(r'graders', GraderViewSet)
-router.register(r'courseadmins', CourseAdminViewSet)
 router.register(r'comments', CommentViewSet)
-router.register(r'rubrics', RubricViewSet)
-router.register(r'rubricComments', RubricCommentViewSet)
+router.register(r'rubriccategories', RubricCategoryViewSet)
+router.register(r'rubriccomments', RubricCommentViewSet)
+router.register(r'files', FileViewSet)
+router.register(r'comments', CommentViewSet)
+# router.register(r'rubrics', RubricViewSet)
 
 urlpatterns = [
   path('admin/', admin.site.urls),

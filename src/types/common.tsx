@@ -8,10 +8,10 @@ export enum APPS {
   CourseAdmin
 }
 
-export enum ButtonState {
+export enum BUTTON_STATE {
   Active,
   Loading,
-  Inactive
+  Inactive,
 }
 
 export interface IUser {
@@ -52,9 +52,11 @@ export interface ISubmission {
   grade: number;
   grader?: IGrader;
   students: IStudent[];
+  assignment: IAssignment;
 }
 
 export interface IFile {
+  id: number;
   code: string;
   comments: any[];
   extension: string;
@@ -63,13 +65,15 @@ export interface IFile {
 
 export interface IComment {
   id: number;
+  localId: number;
   author: any;
   startChar: number;
   endChar: number;
   startLine: number;
   endLine: number;
-  pointDelta: number;
+  pointDelta: number | string;
   text: string;
+  rubricComment: any;
 }
 
 export interface IProfile {

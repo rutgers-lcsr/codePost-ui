@@ -22,45 +22,21 @@ class Organization(models.Model):
 # https://wsvincent.com/django-custom-user-model-tutorial/
 class Profile(models.Model):
   user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-  org = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
+  organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
 
   def __str__(self):
     return self.user.username
 
-class Student(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="student")
-
-  def __str__(self):
-    return self.profile.user.username
-
-class Grader(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="grader")
-
-  def __str__(self):
-    return self.profile.user.username
-
-class CourseAdmin(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="courseadmin")
-
-  def __str__(self):
-    return self.profile.user.username
-
-class CourseParent(models.Model):
-  name = models.CharField(max_length=32)
-  org = models.ForeignKey(Organization, on_delete=models.CASCADE)
-
-  def __str__(self):
-    return self.name + " | " + self.org.shortname
-
 class Course(models.Model):
-  parent = models.ForeignKey(CourseParent, on_delete=models.CASCADE)
+  name = models.CharField(max_length=16)
+  organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="courses")
   period = models.CharField(max_length=32)
-  students = models.ManyToManyField(Student, related_name="courses")
-  graders = models.ManyToManyField(Grader, related_name="courses")
-  courseAdmins = models.ManyToManyField(CourseAdmin, related_name="courses")
+  students = models.ManyToManyField(User, related_name="student_courses")
+  graders = models.ManyToManyField(User, related_name="grader_courses")
+  courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
   def __str__(self):
-    return str(self.parent) + " | " + self.period
+    return str(self.name) + " | " + self.period
 
 ################################################################################
 
@@ -69,27 +45,20 @@ class Course(models.Model):
 class Section(models.Model):
   name = models.CharField(max_length=16)
   course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-  leader = models.ManyToManyField(Grader, blank=True, related_name='sections')
-  students = models.ManyToManyField(Student)
+  leaders = models.ManyToManyField(User, blank=True, related_name='leader_sections')
+  students = models.ManyToManyField(User, related_name='student_sections')
 
   def __str__(self):
     return self.name + " | " + str(self.course)
 
-class AssignmentParent(models.Model):
-  name = models.CharField(max_length=32)
-  org = models.ForeignKey(Organization, on_delete=models.CASCADE)
-
-  def __str__(self):
-    return self.name + " | " + str(self.org)
-
 class Assignment(models.Model):
-  parent = models.ForeignKey(AssignmentParent, on_delete=models.CASCADE)
   course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='assignments')
+  name = models.CharField(max_length=16)
   isReleased = models.BooleanField(default=False)
   points = models.IntegerField()
 
   def __str__(self):
-    return str(self.parent) + " | " + str(self.course)
+    return str(self.name) + " | " + str(self.course)
 
 class RubricCategory(models.Model):
   assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="rubricCategories")
@@ -111,11 +80,11 @@ class RubricComment(models.Model):
 
 class Submission(models.Model):
   assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions")
-  students = models.ManyToManyField(Student, related_name="submissions")
-  grader = models.ForeignKey(Grader, null=True, on_delete=models.SET_NULL, related_name="submissions")
+  students = models.ManyToManyField(User, related_name="student_submissions")
+  grader = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name="grader_submissions")
   isFinalized = models.BooleanField(default=False)
   dateFinalized = models.DateTimeField(blank=True, null=True)
-  grade = models.FloatField(null=True, blank=True)
+  grade = models.FloatField(null=True, blank=True) # this is just a cache. Should we get rid of this?
 
 class File(models.Model):
   name = models.CharField(max_length=32)
@@ -127,12 +96,13 @@ class Comment(models.Model):
   text = models.TextField()
   pointDelta = models.FloatField(blank=True, null=True)
   rubricComment = models.ForeignKey(RubricComment, null=True, blank=True, on_delete=models.SET_NULL, related_name="comments")
-  author = models.ForeignKey(Grader, on_delete=models.SET_NULL, null=True)
+  author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
   file = models.ForeignKey(File, on_delete=models.CASCADE, related_name ="comments")
   startChar = models.IntegerField()
   endChar = models.IntegerField()
   startLine = models.IntegerField()
   endLine = models.IntegerField()
+  localId = models.FloatField(blank=True, null=True)
 
 ###############################################################################
 
@@ -141,10 +111,8 @@ class Comment(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
   if created:
+    # need to set organization here too, somehow
     profile = Profile.objects.create(user=instance)
-    Student.objects.create(profile=profile)
-    Grader.objects.create(profile=profile)
-    CourseAdmin.objects.create(profile=profile)
 
 # Throws RelatedObjectDoesNotExist Exceptions
 # Temp fix --> hasattr(instance.profile, 'student')
@@ -153,10 +121,3 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
   instance.profile.save()
-
-  if hasattr(instance.profile, 'student'):
-    instance.profile.student.save()
-  if hasattr(instance.profile, 'grader'):
-    instance.profile.grader.save()
-  if hasattr(instance.profile, 'courseadmin'):
-    instance.profile.courseadmin.save()

@@ -1,37 +1,39 @@
-import * as React from "react"
+import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import '../styles/Auth.scss';
+
 interface ILoginFormProps {
-  handleLogin: (e: any, data: any) => void
+  handleLogin: (e: any, data: any) => void;
 }
 
 const initialState = {
   password: '',
   username: '',
-}
+};
 
 type State = Readonly<typeof initialState>;
 
 class LoginForm extends React.Component<ILoginFormProps, State> {
-  public readonly state: State = initialState
+  public readonly state: State = initialState;
 
   public handleChange = (e: any) => {
     const name = e.target.name;
     const value = e.target.value;
-    this.setState(prevstate => {
+    this.setState((prevstate) => {
       const newState = { ...prevstate };
       newState[name] = value;
       return newState;
     });
-  }
+  };
 
   public handleLogin = (e: any) => {
     return this.props.handleLogin(e, this.state);
-  }
+  };
 
   public render() {
     return (
-      <form onSubmit={this.handleLogin}>
+      <form onSubmit={this.handleLogin} className="container-login">
         <h4>Log In</h4>
         <label htmlFor="username">Username</label>
         <input
