@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Button,
   CircularProgress,
@@ -8,18 +8,18 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  TextField
-} from "react-md";
-import "../../styles/index.scss";
+  TextField,
+} from 'react-md';
+import '../../styles/index.scss';
 import {
   IAssignment,
   IAssignmentSubmissionsMap,
   ICourse,
   IOptionNumber,
-  IRubricCategory,
+  IRubricCategory3,
   IRubricComment,
-  ISubmission
-} from "../../types/common";
+  ISubmission,
+} from '../../types/common';
 
 interface IProps {
   submissionsByAssignment: IAssignmentSubmissionsMap;
@@ -34,48 +34,36 @@ interface IProps {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | undefined,
-    newComments: IRubricComment[]
+    newComments: IRubricComment[],
   ) => void;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string
-  ) => void;
+  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => void;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
     text: string,
-    pointDelta: number
+    pointDelta: number,
   ) => void;
-  deleteRubricComment: (
-    assignmentID: number,
-    categoryID: number,
-    commentID: number
-  ) => void;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => void;
   updateRubricComment: (
     assignmentID: number,
     categoryID: number,
     commentID: number,
     text: string,
-    pointDelta: number
+    pointDelta: number,
   ) => void;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined
+    categoryPointLimit: number | undefined,
   ) => void;
-  updateAssignment: (
-    assignnmentID: number,
-    name: string,
-    points: number
-  ) => void;
+  updateAssignment: (assignnmentID: number, name: string, points: number) => void;
 }
 
 interface IState {
   activeAssignment: IAssignment | undefined;
-  activeRubric: IRubricCategory[] | undefined;
-  addedCategories: IRubricCategory[];
+  activeRubric: IRubricCategory3[] | undefined;
+  addedCategories: IRubricCategory3[];
   deletedCategories: IOptionNumber[];
   deletedComments: number[];
 }
@@ -86,7 +74,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     activeRubric: undefined,
     addedCategories: [],
     deletedCategories: [],
-    deletedComments: []
+    deletedComments: [],
   };
 
   public assignmentNameField: any;
@@ -103,7 +91,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
       const rubric = JSON.parse(JSON.stringify(assignment.rubric));
       this.setState({
         activeAssignment: assignment,
-        activeRubric: rubric
+        activeRubric: rubric,
       });
     } else {
       this.setState({ activeAssignment: undefined, activeRubric: undefined });
@@ -116,60 +104,58 @@ class ManageAssignments extends React.Component<IProps, {}> {
     if (activeRubric && activeAssignment && activeAssignment.rubric) {
       const oldRubric = activeAssignment.rubric;
 
-      activeRubric.forEach(cat => {
+      activeRubric.forEach((cat) => {
         // If new category, create category and comments
-        const catIndex = oldRubric.map(i => i.id).indexOf(cat.id);
+        const catIndex = oldRubric
+          .map((i) => {
+            return i.id;
+          })
+          .indexOf(cat.id);
 
         if (catIndex === -1) {
-          this.props.createRubricCategory(
-            cat.assignment,
-            cat.name,
-            cat.pointLimit,
-            cat.comments
-          );
+          this.props.createRubricCategory(cat.assignment, cat.name, cat.pointLimit, cat.comments);
         } else {
           // If new comment for an existing category, create commnet
 
-          cat.comments.forEach(comment => {
+          cat.comments.forEach((comment) => {
             if (comment.id === -1) {
               this.props.createRubricComment(
                 cat.assignment,
                 cat.id,
                 comment.text,
-                comment.pointDelta
+                comment.pointDelta,
               );
             } else {
               // If existing comment, and either text or points have changed, update comment
               const comIndex = oldRubric[catIndex].comments
-                .map(i => i.id)
+                .map((i) => {
+                  return i.id;
+                })
                 .indexOf(comment.id);
               if (
                 comIndex !== -1 &&
                 (oldRubric[catIndex].comments[comIndex].text !== comment.text ||
-                  oldRubric[catIndex].comments[comIndex].pointDelta !==
-                    comment.pointDelta)
+                  oldRubric[catIndex].comments[comIndex].pointDelta !== comment.pointDelta)
               ) {
                 this.props.updateRubricComment(
                   cat.assignment,
                   cat.id,
                   comment.id,
                   comment.text,
-                  comment.pointDelta
+                  comment.pointDelta,
                 );
               }
             }
           });
           // If a rubric comment has been deleted, delete it
-          oldRubric[catIndex].comments.forEach(oldComment => {
+          oldRubric[catIndex].comments.forEach((oldComment) => {
             const checkDelete = cat.comments
-              .map(i => i.id)
+              .map((i) => {
+                return i.id;
+              })
               .indexOf(oldComment.id);
             if (checkDelete === -1) {
-              this.props.deleteRubricComment(
-                cat.assignment,
-                cat.id,
-                oldComment.id
-              );
+              this.props.deleteRubricComment(cat.assignment, cat.id, oldComment.id);
             }
           });
           // If a category name or pointLimit has been changed, update it
@@ -178,22 +164,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
             oldRubric[catIndex].pointLimit !== cat.pointLimit
           ) {
             // Reminder -- need to decide as a team if we can allow pointLimit to be null
-            this.props.updateRubricCategory(
-              cat.assignment,
-              cat.id,
-              cat.name,
-              cat.pointLimit
-            );
+            this.props.updateRubricCategory(cat.assignment, cat.id, cat.name, cat.pointLimit);
           }
         }
       });
       // Delete deleted categories
-      deletedCategories.forEach(cat => {
-        this.props.deleteRubricCategory(
-          activeAssignment.id,
-          cat.value,
-          cat.label
-        );
+      deletedCategories.forEach((cat) => {
+        this.props.deleteRubricCategory(activeAssignment.id, cat.value, cat.label);
         this.setState({ deletedCategories: [] });
       });
       this.setState({ activeRubric });
@@ -202,23 +179,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
       // Update assignment name and points if necessary
       const newName = this.assignmentNameField.getField().value;
       const newPoints = this.assignmentPointsField.getField().value;
-      if (
-        newName !== activeAssignment.name ||
-        newPoints !== activeAssignment.points
-      ) {
+      if (newName !== activeAssignment.name || newPoints !== activeAssignment.points) {
         this.props.updateAssignment(activeAssignment.id, newName, newPoints);
       }
     }
 
-    this.props.addToast("Rubric has been updated.", undefined);
+    this.props.addToast('Rubric has been updated.', undefined);
   };
 
   // ------------------- Functions to modify category -------------------
-  public deleteCategory = (
-    categoryIndex: number,
-    categoryID: number,
-    categoryName: string
-  ) => {
+  public deleteCategory = (categoryIndex: number, categoryID: number, categoryName: string) => {
     const { activeRubric, deletedCategories } = this.state;
     if (activeRubric) {
       const newRubric = activeRubric.filter((_, i) => i !== categoryIndex);
@@ -232,11 +202,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
     if (activeRubric && activeAssignment) {
       activeRubric.push({
         id: -1,
-        name: "",
+        name: '',
         pointLimit: undefined,
         comments: [],
         assignment: activeAssignment.id,
-        rubricComments: []
+        rubricComments: [],
       });
       this.setState({ activeRubric });
     }
@@ -265,18 +235,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
       activeRubric[categoryIndex].comments.push({
         // id -1 indicates new comment
         id: -1,
-        text: "",
-        pointDelta: 0
+        text: '',
+        pointDelta: 0,
       });
       this.setState({ activeRubric });
     }
   };
 
-  public commentTextChange = (
-    categoryIndex: number,
-    commentIndex: number,
-    newText: string
-  ) => {
+  public commentTextChange = (categoryIndex: number, commentIndex: number, newText: string) => {
     const { activeRubric } = this.state;
     if (activeRubric) {
       activeRubric[categoryIndex].comments[commentIndex].text = newText;
@@ -284,16 +250,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubric });
   };
 
-  public commentDeltaChange = (
-    categoryIndex: number,
-    commentIndex: number,
-    newDelta: number
-  ) => {
+  public commentDeltaChange = (categoryIndex: number, commentIndex: number, newDelta: number) => {
     const { activeRubric } = this.state;
     if (activeRubric) {
-      activeRubric[categoryIndex].comments[commentIndex].pointDelta = Number(
-        newDelta
-      );
+      activeRubric[categoryIndex].comments[commentIndex].pointDelta = Number(newDelta);
     }
     this.setState({ activeRubric });
   };
@@ -301,9 +261,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public deleteComment = (categoryIndex: number, commentIndex: number) => {
     const { activeRubric } = this.state;
     if (activeRubric) {
-      const newComments = activeRubric[categoryIndex].comments.filter(
-        (_, i) => i !== commentIndex
-      );
+      const newComments = activeRubric[categoryIndex].comments.filter((_, i) => i !== commentIndex);
       activeRubric[categoryIndex].comments = newComments;
       this.setState({ activeRubric });
     }
@@ -316,12 +274,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
       submissionsByAssignmentLoadComplete,
       lockedAssignmentChange,
       assignments,
-      assignmentRubricLoadComplete
+      assignmentRubricLoadComplete,
     } = this.props;
 
     const { activeAssignment } = this.state;
 
-    const lockIcon = lockedAssignmentChange ? "lock" : "lock_open";
+    const lockIcon = lockedAssignmentChange ? 'lock' : 'lock_open';
 
     if (
       submissionsByAssignmentLoadComplete &&
@@ -340,46 +298,40 @@ class ManageAssignments extends React.Component<IProps, {}> {
             >
               <TableHeader>
                 <TableRow>
-                  <TableColumn key={"AssignmentName"}>
-                    Assignment name
-                  </TableColumn>
-                  <TableColumn key={"SubNumber"}># of submissions</TableColumn>
-                  <TableColumn key={"GradedNumber"}># graded</TableColumn>
-                  <TableColumn key={"UngradedNumber"}># ungraded</TableColumn>
-                  <TableColumn key={"UnclaimedNumber"}># unclaimed</TableColumn>
+                  <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
+                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
+                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
+                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
+                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.keys(submissionsByAssignment).map(assignmentID => {
-                  const submissions =
-                    submissionsByAssignment[assignmentID].submissions;
+                {Object.keys(submissionsByAssignment).map((assignmentID) => {
+                  const submissions = submissionsByAssignment[assignmentID].submissions;
                   const name = submissionsByAssignment[assignmentID].name;
                   const numSubmissions = submissions.length;
                   let numGraded = 0;
                   let numUngraded = 0;
                   let numUnclaimed = 0;
 
-                  const assignment = assignments.filter(assn => {
+                  const assignment = assignments.filter((assn) => {
                     return assn.id === Number(assignmentID);
                   })[0];
 
                   submissions.forEach((submission: ISubmission) => {
                     if (submission.isFinalized) {
-                      numGraded++;
+                      numGraded += 1;
                     } else if (submission.grader) {
-                      numUngraded++;
+                      numUngraded += 1;
                     } else {
-                      numUnclaimed++;
+                      numUnclaimed += 1;
                     }
                   });
 
                   return (
                     <TableRow
                       key={assignmentID}
-                      onClick={this.changeActiveAssignment.bind(
-                        this.props,
-                        assignment
-                      )}
+                      onClick={this.changeActiveAssignment.bind(this.props, assignment)}
                     >
                       <TableColumn>{name}</TableColumn>
                       <TableColumn>{numSubmissions}</TableColumn>
@@ -404,26 +356,20 @@ class ManageAssignments extends React.Component<IProps, {}> {
               <div key={item.id}>
                 <TextField
                   defaultValue={item.name}
-                  label={"Category Name"}
+                  label={'Category Name'}
                   fullWidth={false}
-                  onChange={this.categoryNameChange.bind(
-                    this.props,
-                    categoryIndex
-                  )}
+                  onChange={this.categoryNameChange.bind(this.props, categoryIndex)}
                   disabled={lockedAssignmentChange}
                 />
                 <TextField
                   defaultValue={item.pointLimit}
-                  label={"Category points cap"}
+                  label={'Category points cap'}
                   fullWidth={false}
                   step={0.5}
                   pattern="^d+(\.|\,)\d{1}"
                   type="number"
                   min={0}
-                  onChange={this.categoryCapChange.bind(
-                    this.props,
-                    categoryIndex
-                  )}
+                  onChange={this.categoryCapChange.bind(this.props, categoryIndex)}
                   disabled={lockedAssignmentChange}
                 />
                 <Button
@@ -432,12 +378,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                   icon={true}
                   fullWidth={false}
                   disabled={lockedAssignmentChange}
-                  onClick={this.deleteCategory.bind(
-                    this.props,
-                    categoryIndex,
-                    item.id,
-                    item.name
-                  )}
+                  onClick={this.deleteCategory.bind(this.props, categoryIndex, item.id, item.name)}
                 >
                   delete
                 </Button>
@@ -449,11 +390,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 >
                   <TableHeader>
                     <TableRow>
-                      <TableColumn key={"CommentText"}>
-                        Comment text
-                      </TableColumn>
-                      <TableColumn key={"Deduction"}>Deduction</TableColumn>
-                      <TableColumn key={"Delete"}>Delete</TableColumn>
+                      <TableColumn key={'CommentText'}>Comment text</TableColumn>
+                      <TableColumn key={'Deduction'}>Deduction</TableColumn>
+                      <TableColumn key={'Delete'}>Delete</TableColumn>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -470,7 +409,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                               onChange={this.commentTextChange.bind(
                                 this.props,
                                 categoryIndex,
-                                commentIndex
+                                commentIndex,
                               )}
                             />
                           </TableColumn>
@@ -488,7 +427,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                               onChange={this.commentDeltaChange.bind(
                                 this.props,
                                 categoryIndex,
-                                commentIndex
+                                commentIndex,
                               )}
                             />
                           </TableColumn>
@@ -502,7 +441,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                               onClick={this.deleteComment.bind(
                                 this.props,
                                 categoryIndex,
-                                commentIndex
+                                commentIndex,
                               )}
                             >
                               delete
@@ -515,7 +454,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 </DataTable>
                 <Button
                   className="Btn"
-                  iconChildren={"playlist_add"}
+                  iconChildren={'playlist_add'}
                   disabled={lockedAssignmentChange}
                   onClick={this.addEmptyComment.bind(this.props, categoryIndex)}
                 >
@@ -551,8 +490,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
             <div>
               <TextField
                 defaultValue={activeAssignment.name}
-                ref={field => (this.assignmentNameField = field)}
-                label={"Assignment Name"}
+                ref={(field) => {
+                  this.assignmentNameField = field;
+                }}
+                label={'Assignment Name'}
                 fullWidth={false}
                 disabled={lockedAssignmentChange}
               />
@@ -562,8 +503,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 pattern="^d+(\.|\,)\d{1}"
                 type="number"
                 min={0}
-                ref={field => (this.assignmentPointsField = field)}
-                label={"Total Points"}
+                ref={(field) => {
+                  this.assignmentPointsField = field;
+                }}
+                label={'Total Points'}
                 fullWidth={false}
                 disabled={lockedAssignmentChange}
               />
@@ -580,7 +523,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             {categoryTables}
             <Button
               className="Btn"
-              iconChildren={"playlist_add"}
+              iconChildren={'playlist_add'}
               disabled={lockedAssignmentChange}
               onClick={this.addEmptyCategory}
             >

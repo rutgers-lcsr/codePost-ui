@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Button,
   CircularProgress,
@@ -9,10 +9,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  TextField
-} from "react-md";
-import "../../styles/index.scss";
-import { ICourse, IGrader, ISection } from "../../types/common";
+  TextField,
+} from 'react-md';
+import '../../styles/index.scss';
+import { ICourse, IGrader, ISection } from '../../types/common';
 
 interface IProps {
   sections: ISection[];
@@ -34,7 +34,7 @@ interface IState {
 class ManageSections extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newSectionField: undefined,
-    changedSections: {}
+    changedSections: {},
   };
 
   public newSectionFieldOnChange = (value: string) => {
@@ -52,7 +52,7 @@ class ManageSections extends React.Component<IProps, {}> {
     const { changedSections } = this.state;
     const { addLeader } = this.props;
     // Reminder -- do some check through the existing sections to only keep tabs on what changed
-    Object.keys(changedSections).forEach(sectionID => {
+    Object.keys(changedSections).forEach((sectionID) => {
       const leaderEmail = changedSections[sectionID];
       addLeader(Number(sectionID), leaderEmail);
     });
@@ -66,22 +66,20 @@ class ManageSections extends React.Component<IProps, {}> {
       lockedSectionChange,
       sections,
       createSection,
-      graders
+      graders,
     } = this.props;
     const { newSectionField, changedSections } = this.state;
 
-    const lockIcon = lockedSectionChange ? "lock" : "lock_open";
+    const lockIcon = lockedSectionChange ? 'lock' : 'lock_open';
     const iconChanged = <FontIcon>track_changes</FontIcon>;
 
     const allowAddSection =
-      newSectionField &&
-      0 < newSectionField.length &&
-      newSectionField.length <= 16;
+      newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
-    const leaderMenuItems = graders.map(grader => {
+    const leaderMenuItems = graders.map((grader) => {
       return {
         label: grader.profile.username,
-        value: grader.profile.username
+        value: grader.profile.username,
       };
     });
 
@@ -110,32 +108,24 @@ class ManageSections extends React.Component<IProps, {}> {
           <Button
             iconChildren="done"
             className="save-Btn"
-            disabled={
-              lockedSectionChange || Object.keys(changedSections).length === 0
-            }
+            disabled={lockedSectionChange || Object.keys(changedSections).length === 0}
             onClick={this.triggerLeaderChanges}
           >
             Save new Section Leaders
           </Button>
           <hr />
-          <DataTable
-            className="Manage-sections-table"
-            baseId="Manage-sections-table"
-            plain={true}
-          >
+          <DataTable className="Manage-sections-table" baseId="Manage-sections-table" plain={true}>
             <TableHeader>
               <TableRow>
-                <TableColumn key={"sectionName"}>Section Name</TableColumn>
-                <TableColumn key={"sectionLeader"}>Leader</TableColumn>
+                <TableColumn key={'sectionName'}>Section Name</TableColumn>
+                <TableColumn key={'sectionLeader'}>Leader</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sections.map(section => {
+              {sections.map((section) => {
                 // Reminder - need to change to represent multiple leaders
                 let currentLeader =
-                  section.leader && section.leader[0]
-                    ? section.leader[0].profile.username
-                    : "";
+                  section.leader && section.leader[0] ? section.leader[0].profile.username : '';
                 let dropDown;
                 if (section.id in changedSections) {
                   currentLeader = changedSections[section.id];
@@ -151,10 +141,7 @@ class ManageSections extends React.Component<IProps, {}> {
                       value={currentLeader}
                       menuItems={leaderMenuItems}
                       disabled={lockedSectionChange}
-                      onChange={this.rowLeaderChange.bind(
-                        this.props,
-                        section.id
-                      )}
+                      onChange={this.rowLeaderChange.bind(this.props, section.id)}
                     />
                   </TableRow>
                 );
@@ -173,14 +160,13 @@ class ManageSections extends React.Component<IProps, {}> {
           </Button>
         </div>
       );
-    } else {
-      return (
-        <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
-      );
     }
+    return (
+      <div>
+        <hr />
+        <CircularProgress id="circle" className="progressCircle" />
+      </div>
+    );
   }
 }
 

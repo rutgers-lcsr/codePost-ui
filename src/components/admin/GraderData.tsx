@@ -1,18 +1,7 @@
-import * as React from "react";
-import {
-  Button,
-  DataTable,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow
-} from "react-md";
-import "../../styles/index.scss";
-import {
-  IAssignment,
-  ISubmission,
-  IUserSubmissionsMap
-} from "../../types/common";
+import * as React from 'react';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import '../../styles/index.scss';
+import { IAssignment, ISubmission, IUserSubmissionsMap } from '../../types/common';
 
 interface IPropsGraderOverview {
   assignments: IAssignment[];
@@ -25,18 +14,15 @@ interface IPropsGraderOverview {
 class GraderData extends React.Component<IPropsGraderOverview, {}> {
   public renderSubmissionRow(submission: ISubmission, assignment: IAssignment) {
     const { openSubmission } = this.props;
-    let grade = "Not submitted";
+    let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
       grade = String(submission.grade);
     } else if (submission) {
-      grade = "Not graded";
+      grade = 'Not graded';
     }
 
     return (
-      <TableRow
-        key={submission.id}
-        onClick={openSubmission.bind(this.props, submission.id)}
-      >
+      <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
         <TableColumn>{assignment.name}</TableColumn>
         <TableColumn>"students"</TableColumn>
         <TableColumn>{grade}</TableColumn>
@@ -45,43 +31,31 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
   }
 
   public render() {
-    const {
-      submissionsByGrader,
-      assignments,
-      activeGrader,
-      changeActiveGrader
-    } = this.props;
+    const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
 
     const headers = this.props.assignments.map((assignment: IAssignment) => {
       return assignment.name;
     });
-    headers.unshift("Grader");
+    headers.unshift('Grader');
 
     if (!activeGrader) {
       return (
         <DataTable plain={true}>
           <TableHeader>
             <TableRow>
-              {headers.map(header => {
+              {headers.map((header) => {
                 return <TableColumn key={header}>{header}</TableColumn>;
               })}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Object.keys(submissionsByGrader).map(graderID => {
+            {Object.keys(submissionsByGrader).map((graderID) => {
               return (
-                <TableRow
-                  key={graderID}
-                  onClick={changeActiveGrader.bind(this.props, graderID)}
-                >
-                  <TableColumn>
-                    {submissionsByGrader[graderID].profile.username}
-                  </TableColumn>
-                  {assignments.map(assignment => {
+                <TableRow key={graderID} onClick={changeActiveGrader.bind(this.props, graderID)}>
+                  <TableColumn>{submissionsByGrader[graderID].profile.username}</TableColumn>
+                  {assignments.map((assignment) => {
                     const submissions =
-                      submissionsByGrader[graderID].submissionsByAssignment[
-                        assignment.id
-                      ];
+                      submissionsByGrader[graderID].submissionsByAssignment[assignment.id];
                     if (submissions) {
                       return <TableColumn>{submissions.length}</TableColumn>;
                     } else {
@@ -96,11 +70,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       );
     } else {
       const tablemap: any = [];
-      assignments.forEach(assignment => {
+      assignments.forEach((assignment) => {
         const submissions =
-          submissionsByGrader[activeGrader].submissionsByAssignment[
-            assignment.id
-          ];
+          submissionsByGrader[activeGrader].submissionsByAssignment[assignment.id];
         submissions.forEach((submission: ISubmission) => {
           tablemap.push(this.renderSubmissionRow(submission, assignment));
         });
@@ -123,9 +95,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
           <DataTable plain={true}>
             <TableHeader>
               <TableRow>
-                <TableColumn key={"Assignment"}>{"Assignment"}</TableColumn>
-                <TableColumn key={"Student"}>{"Student"}</TableColumn>
-                <TableColumn key={"Grade"}>{"Grade"}</TableColumn>
+                <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
+                <TableColumn key={'Student'}>{'Student'}</TableColumn>
+                <TableColumn key={'Grade'}>{'Grade'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tablemap}</TableBody>

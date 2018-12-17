@@ -1,15 +1,15 @@
-import * as React from "react";
-import { CircularProgress, Tab, Tabs, TabsContainer } from "react-md";
-import "../../styles/index.scss";
+import * as React from 'react';
+import { CircularProgress, Tab, Tabs, TabsContainer } from 'react-md';
+import '../../styles/index.scss';
 import {
   IAssignment,
   IAssignmentSubmissionsMap,
   IGrader,
   IStudent,
-  IUserSubmissionsMap
-} from "../../types/common";
-import GraderData from "./GraderData";
-import StudentData from "./StudentData";
+  IUserSubmissionsMap,
+} from '../../types/common';
+import GraderData from './GraderData';
+import StudentData from './StudentData';
 
 interface IPropsCourseData {
   assignments: IAssignment[];
@@ -35,18 +35,15 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
   public state: Readonly<IState> = {
     activeTabIndex: 0,
     activeStudent: undefined,
-    activeGrader: undefined
+    activeGrader: undefined,
   };
 
   public openSubmission = (submissionID: number | string) => {
     if (window) {
       window.open(
-        "/grade/" + submissionID,
-        "test",
-        "width=" +
-          screen.availWidth * 0.9 +
-          ",height=" +
-          screen.availHeight * 0.9
+        `/grade/${submissionID}`,
+        'test',
+        `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`,
       );
     }
   };
@@ -76,7 +73,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       submissionsByStudentLoadComplete,
       assignments,
       submissionsByStudent,
-      submissionsByGrader
+      submissionsByGrader,
     } = this.props;
     const { activeStudent, activeGrader } = this.state;
 
@@ -86,7 +83,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
           <hr />
           <TabsContainer onTabChange={this.onTabChange}>
             <Tabs tabId="simple-tab">
-              <Tab label="Students" style={{ color: "#000000" }}>
+              <Tab label="Students" style={{ color: '#000000' }}>
                 <StudentData
                   assignments={assignments}
                   submissionsByStudent={submissionsByStudent}
@@ -95,7 +92,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
                   openSubmission={this.openSubmission}
                 />
               </Tab>
-              <Tab label="Graders" style={{ color: "#000000" }}>
+              <Tab label="Graders" style={{ color: '#000000' }}>
                 <GraderData
                   assignments={assignments}
                   submissionsByGrader={submissionsByGrader}

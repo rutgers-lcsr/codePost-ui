@@ -1,18 +1,18 @@
-import * as React from "react";
-import { Route, Switch } from "react-router-dom";
+import * as React from 'react';
+import { Route, Switch } from 'react-router-dom';
 
-import Admin from "./Admin";
+import Admin from './Admin';
 
-import IndexManager from "./components/IndexManager";
-import TopBar from "./components/TopBar";
+import IndexManager from './components/IndexManager';
+import TopBar from './components/TopBar';
 
 import Grade from './Grade';
-import Grader from "./Grader";
-import Home from "./Home";
-import { ADMIN, GRADE, GRADER, HOME, STUDENT } from "./routes";
-import Student from "./Student";
+import Grader from './Grader';
+import Home from './Home';
+import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
+import Student from './Student';
 import './styles/index.scss';
-import { IUser } from "./types/common";
+import { IUser } from './types/common';
 
 interface IStudentState {
   error: string;
@@ -32,7 +32,7 @@ class App extends React.Component<{}, IStudentState> {
 
   public componentDidMount() {
     if (this.state.logged_in) {
-      fetch("http://localhost:8000/core/current_user/", {
+      fetch('http://localhost:8000/core/current_user/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
         },
@@ -78,7 +78,7 @@ class App extends React.Component<{}, IStudentState> {
       headers: {
         'Content-Type': 'application/json',
       },
-      method: "POST"
+      method: 'POST',
     })
       .then((res) => {
         if (res.ok) {
@@ -97,12 +97,12 @@ class App extends React.Component<{}, IStudentState> {
 
   public handleLogin = (e: any, data: any) => {
     e.preventDefault();
-    fetch("http://localhost:8000/token-auth/", {
+    fetch('http://localhost:8000/token-auth/', {
       body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json',
       },
-      method: "POST"
+      method: 'POST',
     })
       .then((res) => {
         if (res.ok) {
@@ -113,7 +113,7 @@ class App extends React.Component<{}, IStudentState> {
       .then((json) => {
         localStorage.setItem('token', json.token);
         this.setState({
-          error: "",
+          error: '',
           logged_in: true,
           user: json.user,
         });

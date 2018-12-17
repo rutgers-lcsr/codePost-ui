@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Button,
   CircularProgress,
@@ -7,10 +7,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  TextField
-} from "react-md";
-import "../../styles/index.scss";
-import { ICourse, ICourseAdmin, UserEnum } from "../../types/common";
+  TextField,
+} from 'react-md';
+import '../../styles/index.scss';
+import { ICourse, ICourseAdmin, UserEnum } from '../../types/common';
 
 interface IProps {
   admins: ICourseAdmin[];
@@ -31,7 +31,7 @@ interface IState {
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newAdminField: undefined,
-    selectedAdmins: []
+    selectedAdmins: [],
   };
 
   public triggerUnEnrollAdmins = () => {
@@ -42,7 +42,8 @@ class ManageStudents extends React.Component<IProps, {}> {
 
     if (selectedAdmins) {
       unEnrollUsers(selectedAdmins, adminType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails to delete one of the selected ids and it looks selected but no longer is on the backend
+        // Reminder to fix: Potentially could create problems if parent fails
+        // to delete one of the selected ids and it looks selected but no longer is on the backend
         this.setState({ selectedAdmins: [] });
       });
     }
@@ -53,9 +54,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     if (checked) {
       selectedAdmins.push(adminEmail);
       this.setState({ selectedAdmins });
-      // Reminder: We should throw an error if the numSelected is different than our array at any point
+      // Reminder: We should throw an error if the numSelected is different than
+      // our array at any point
     } else {
-      const newSelectedAdmins = selectedAdmins.filter(value => {
+      const newSelectedAdmins = selectedAdmins.filter((value) => {
         return value !== adminEmail;
       });
       this.setState({ selectedAdmins: newSelectedAdmins });
@@ -67,17 +69,12 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const {
-      adminsLoadComplete,
-      lockedAdminChange,
-      enrollUser,
-      admins
-    } = this.props;
+    const { adminsLoadComplete, lockedAdminChange, enrollUser, admins } = this.props;
     const { newAdminField, selectedAdmins } = this.state;
 
-    const lockIcon = lockedAdminChange ? "lock" : "lock_open";
+    const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
-    const showSaveNewAdminButton = newAdminField && newAdminField.includes("@");
+    const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
     const adminType = UserEnum.CourseAdmin;
 
     if (adminsLoadComplete && admins) {
@@ -110,25 +107,19 @@ class ManageStudents extends React.Component<IProps, {}> {
             Unenroll selected
           </Button>
           <hr />
-          <DataTable
-            className="Manage-admins-table"
-            baseId="Manage-admins-table"
-          >
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={"Filler"} />
-                <TableColumn key={"Admin"}>Admin name</TableColumn>
+                <TableColumn key={'Filler'} />
+                <TableColumn key={'Admin'}>Admin name</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {admins.map(admin => {
+              {admins.map((admin) => {
                 return (
                   <TableRow
                     key={admin.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(
-                      this.props,
-                      admin.profile.username
-                    )}
+                    onCheckboxClick={this.rowSelect.bind(this.props, admin.profile.username)}
                   >
                     <TableColumn>{admin.profile.username}</TableColumn>
                   </TableRow>

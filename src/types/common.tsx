@@ -5,7 +5,7 @@
 export enum APPS {
   Student,
   Grader,
-  CourseAdmin
+  CourseAdmin,
 }
 
 export enum BUTTON_STATE {
@@ -124,6 +124,17 @@ export interface IRubricCategory {
   // reminder - need to fix this, it's disgusting
   rubricComments: number[];
   comments: IRubricComment[];
+  categoryComments: IRubricComment[];
+  assignment: number;
+}
+
+export interface IRubricCategory3 {
+  id: number;
+  name: string;
+  pointLimit: number | undefined;
+  // reminder - need to fix this, it's disgusting
+  rubricComments: number[];
+  comments: IRubricComment[];
   assignment: number;
 }
 
@@ -145,7 +156,7 @@ export interface ISectionNoStudents {
 }
 
 export enum UserEnum {
-  Student = "Student",
-  Grader = "Grader",
-  CourseAdmin = "CourseAdmin"
+  Student = 'Student',
+  Grader = 'Grader',
+  CourseAdmin = 'CourseAdmin',
 }

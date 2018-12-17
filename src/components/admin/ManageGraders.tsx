@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Button,
   CircularProgress,
@@ -7,10 +7,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  TextField
-} from "react-md";
-import "../../styles/index.scss";
-import { ICourse, IGrader, UserEnum } from "../../types/common";
+  TextField,
+} from 'react-md';
+import '../../styles/index.scss';
+import { ICourse, IGrader, UserEnum } from '../../types/common';
 
 interface IProps {
   graders: IGrader[];
@@ -31,7 +31,7 @@ interface IState {
 class ManageGraders extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newField: undefined,
-    selectedUsers: []
+    selectedUsers: [],
   };
 
   public triggerUnEnrollUsers = () => {
@@ -42,7 +42,8 @@ class ManageGraders extends React.Component<IProps, {}> {
 
     if (selectedUsers) {
       unEnrollUsers(selectedUsers, adminType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails to delete one of the selected ids and it looks selected but no longer is on the backend
+        // Reminder to fix: Potentially could create problems if parent fails
+        // to delete one of the selected ids and it looks selected but no longer is on the backend
         this.setState({ selectedUsers: [] });
       });
     }
@@ -53,9 +54,10 @@ class ManageGraders extends React.Component<IProps, {}> {
     if (checked) {
       selectedUsers.push(graderEmail);
       this.setState({ selectedUsers });
-      // Reminder: We should throw an error if the numSelected is different than our array at any point
+      // Reminder: We should throw an error if the numSelected is different
+      // than our array at any point
     } else {
-      const newSelectedUsers = selectedUsers.filter(value => {
+      const newSelectedUsers = selectedUsers.filter((value) => {
         return value !== graderEmail;
       });
       this.setState({ selectedUsers: newSelectedUsers });
@@ -67,17 +69,12 @@ class ManageGraders extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const {
-      gradersLoadComplete,
-      lockedGraderChange,
-      enrollUser,
-      graders
-    } = this.props;
+    const { gradersLoadComplete, lockedGraderChange, enrollUser, graders } = this.props;
     const { newField, selectedUsers } = this.state;
 
-    const lockIcon = lockedGraderChange ? "lock" : "lock_open";
+    const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
-    const showSaveNewButton = newField && newField.includes("@");
+    const showSaveNewButton = newField && newField.includes('@');
     const graderType = UserEnum.Grader;
 
     if (gradersLoadComplete && graders) {
@@ -110,25 +107,19 @@ class ManageGraders extends React.Component<IProps, {}> {
             Unenroll selected
           </Button>
           <hr />
-          <DataTable
-            className="Manage-admins-table"
-            baseId="Manage-admins-table"
-          >
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={"Filler"} />
-                <TableColumn key={"Grader"}>Grader name</TableColumn>
+                <TableColumn key={'Filler'} />
+                <TableColumn key={'Grader'}>Grader name</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {graders.map(grader => {
+              {graders.map((grader) => {
                 return (
                   <TableRow
                     key={grader.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(
-                      this.props,
-                      grader.profile.username
-                    )}
+                    onCheckboxClick={this.rowSelect.bind(this.props, grader.profile.username)}
                   >
                     <TableColumn>{grader.profile.username}</TableColumn>
                   </TableRow>
@@ -148,14 +139,13 @@ class ManageGraders extends React.Component<IProps, {}> {
           </Button>
         </div>
       );
-    } else {
-      return (
-        <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
-      );
     }
+    return (
+      <div>
+        <hr />
+        <CircularProgress id="circle" className="progressCircle" />
+      </div>
+    );
   }
 }
 

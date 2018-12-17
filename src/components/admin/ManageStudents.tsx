@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Button,
   CircularProgress,
@@ -9,16 +9,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  TextField
-} from "react-md";
-import "../../styles/index.scss";
-import {
-  ICourse,
-  ISection,
-  ISectionNoStudents,
-  IStudent,
-  UserEnum
-} from "../../types/common";
+  TextField,
+} from 'react-md';
+import '../../styles/index.scss';
+import { ICourse, ISection, ISectionNoStudents, IStudent, UserEnum } from '../../types/common';
 
 interface IProps {
   sections: ISection[];
@@ -44,7 +38,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
     selectedStudents: [],
-    changedSections: {}
+    changedSections: {},
   };
 
   public triggerUnEnrollStudents = () => {
@@ -55,18 +49,20 @@ class ManageStudents extends React.Component<IProps, {}> {
 
     if (selectedStudents) {
       unEnrollUsers(selectedStudents, studentType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails to delete one of the selected ids and it looks selected but no longer is on the backend
+        // Reminder to fix: Potentially could create problems if parent fails
+        // to delete one of the selected ids and it looks selected but no longer is on the backend
         this.setState({ selectedStudents: [] });
       });
     }
   };
 
   public triggerAddStudentsToSections = () => {
-    // Reminder --- calling this for multiple students triggers  alock in the database... need to fix
+    // Reminder --- calling this for multiple students triggers
+    // alock in the database... need to fix
     const { changedSections } = this.state;
     const { addStudentToSection } = this.props;
 
-    Object.keys(changedSections).forEach(studentEmail => {
+    Object.keys(changedSections).forEach((studentEmail) => {
       const sectionID = changedSections[studentEmail];
       addStudentToSection(Number(sectionID), studentEmail);
     });
@@ -85,9 +81,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     if (checked) {
       selectedStudents.push(studentID);
       this.setState({ selectedStudents });
-      // Reminder: We should throw an error if the numSelected is different than our array at any point
+      // Reminder: We should throw an error if the numSelected is
+      // different than our array at any point
     } else {
-      const newSelectedStudents = selectedStudents.filter(value => {
+      const newSelectedStudents = selectedStudents.filter((value) => {
         return value !== studentID;
       });
       this.setState({ selectedStudents: newSelectedStudents });
@@ -105,16 +102,15 @@ class ManageStudents extends React.Component<IProps, {}> {
       enrollUser,
       students,
       sections,
-      sectionsByStudent
+      sectionsByStudent,
     } = this.props;
     const { newStudentField, selectedStudents, changedSections } = this.state;
 
-    const lockIcon = lockedStudentChange ? "lock" : "lock_open";
+    const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
-    const showSaveNewStudentButton =
-      newStudentField && newStudentField.includes("@");
+    const showSaveNewStudentButton = newStudentField && newStudentField.includes('@');
 
-    const sectionMenuItems = sections.map(section => {
+    const sectionMenuItems = sections.map((section) => {
       return { label: section.name, value: section.id };
     });
 
@@ -145,9 +141,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           <Button
             iconChildren="done"
             className="save-Btn"
-            disabled={
-              lockedStudentChange || Object.keys(changedSections).length === 0
-            }
+            disabled={lockedStudentChange || Object.keys(changedSections).length === 0}
             onClick={this.triggerAddStudentsToSections}
           >
             Save sections
@@ -161,22 +155,19 @@ class ManageStudents extends React.Component<IProps, {}> {
             Unenroll selected
           </Button>
           <hr />
-          <DataTable
-            className="Enroll-students-table"
-            baseId="Enroll-students-table"
-          >
+          <DataTable className="Enroll-students-table" baseId="Enroll-students-table">
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={"Filler"} />
-                <TableColumn key={"Student"}>Student</TableColumn>
-                <TableColumn key={"Section"}>Section</TableColumn>
+                <TableColumn key={'Filler'} />
+                <TableColumn key={'Student'}>Student</TableColumn>
+                <TableColumn key={'Section'}>Section</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map(student => {
+              {students.map((student) => {
                 const section = sectionsByStudent[student.profile.username];
 
-                let sectionID = section ? section.id : "";
+                let sectionID = section ? section.id : '';
 
                 let dropDown;
 
@@ -190,10 +181,7 @@ class ManageStudents extends React.Component<IProps, {}> {
                 return (
                   <TableRow
                     key={student.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(
-                      this.props,
-                      student.profile.username
-                    )}
+                    onCheckboxClick={this.rowSelect.bind(this.props, student.profile.username)}
                   >
                     <TableColumn>{student.profile.username}</TableColumn>
                     <SelectFieldColumn
@@ -201,10 +189,7 @@ class ManageStudents extends React.Component<IProps, {}> {
                       value={sectionID}
                       menuItems={sectionMenuItems}
                       disabled={lockedStudentChange}
-                      onChange={this.rowSectionChange.bind(
-                        this.props,
-                        student.profile.username
-                      )}
+                      onChange={this.rowSectionChange.bind(this.props, student.profile.username)}
                     />
                   </TableRow>
                 );
@@ -223,14 +208,13 @@ class ManageStudents extends React.Component<IProps, {}> {
           </Button>
         </div>
       );
-    } else {
-      return (
-        <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
-      );
     }
+    return (
+      <div>
+        <hr />
+        <CircularProgress id="circle" className="progressCircle" />
+      </div>
+    );
   }
 }
 
