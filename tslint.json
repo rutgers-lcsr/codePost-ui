@@ -16,6 +16,7 @@
   },
   "rules": {
     "no-console": false,
+    "no-else-after-return": false,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
     "variable-name": [
       true,
