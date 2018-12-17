@@ -96,10 +96,13 @@ class RubricCategory(models.Model):
   name = models.CharField(max_length=32)
   pointLimit = models.IntegerField()
 
+  def __str__(self):
+      return self.name + " | " + str(self.course)
+
 class RubricComment(models.Model):
   text = models.TextField()
   pointDelta = models.FloatField()
-  category = models.ForeignKey(RubricCategory, on_delete=models.CASCADE, related_name="rubicComments")
+  category = models.ForeignKey(RubricCategory, on_delete=models.CASCADE, related_name="rubricComments")
 
 ###############################################################################
 
@@ -157,4 +160,3 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.grader.save()
   if hasattr(instance.profile, 'courseadmin'):
     instance.profile.courseadmin.save()
-

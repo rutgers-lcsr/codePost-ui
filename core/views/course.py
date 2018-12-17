@@ -1,9 +1,11 @@
 from core.models import Course
+from core.serializers.course import AssignmentSerializer
 from core.serializers.course import CourseSerializer
 from core.serializers.section import SectionWithStudentsSerializer
 from core.serializers.student import StudentSerializer
 from core.serializers.grader import GraderSerializer
 from core.serializers.courseadmin import CourseAdminSerializer
+from core.serializers.rubric import RubricCategorySerializer, RubricCommentSerializer
 
 from rest_framework import status
 from rest_framework import viewsets, generics
@@ -16,8 +18,8 @@ from core.permissions.helpers import isAuthenticated
 from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
 from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
-from core.models import User
-from core.utils import EmailForm, EnrollForm, sendMail
+from core.models import User, RubricCategory, RubricComment, Assignment
+from core.utils import EmailForm, EnrollForm, sendMail, IDForm, CommentForm
 
 class CourseViewSet(viewsets.ModelViewSet):
   queryset = Course.objects.all()
@@ -270,3 +272,129 @@ class CourseViewSet(viewsets.ModelViewSet):
     return Response(serializer.data)
 
 
+  @action(detail=True, methods=['patch'])
+  def deleteRubricCategory(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = IDForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        category = RubricCategory.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Category doesn't exist")
+
+      category.delete()
+      return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  @action(detail=True, methods=['patch'])
+  def deleteRubricComment(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = IDForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        comment = RubricComment.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Comment doesn't exist")
+
+      comment.delete()
+      return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  @action(detail=True, methods=['patch'])
+  def updateRubricComment(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = CommentForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        comment = RubricComment.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Comment doesn't exist")
+
+      comment.text = form.cleaned_data['text']
+      comment.pointDelta = float(form.cleaned_data['pointDelta'])
+      comment.save()
+
+      serializer = RubricCommentSerializer(comment)
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  @action(detail=True, methods=['patch'])
+  def updateRubricCategory(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = CommentForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        category = RubricCategory.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Comment doesn't exist")
+
+      category.name = form.cleaned_data['text']
+      category.pointLimit = int(form.cleaned_data['pointDelta'])
+      category.save()
+
+      serializer = RubricCategorySerializer(category)
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  @action(detail=True, methods=['patch'])
+  # Need to add isReleased
+  def updateAssignment(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = CommentForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        assignment = Assignment.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Assignment doesn't exist")
+
+      assignment.points = int(form.cleaned_data['pointDelta'])
+      assignment.save()
+
+      serializer = AssignmentSerializer(assignment)
+      return Response(serializer.data)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -5,7 +5,7 @@
 export enum APPS {
   Student,
   Grader,
-  CourseAdmin,
+  CourseAdmin
 }
 
 export enum ButtonState {
@@ -13,63 +13,135 @@ export enum ButtonState {
   Loading,
   Inactive
 }
-  
+
 export interface IUser {
-  email: string,
-  id: number
+  email: string;
+  id: number;
 }
 
 export interface IOption {
-  label: string,
-  value: string | number
+  label: string;
+  value: string | number;
+}
+
+export interface IOptionNumber {
+  label: string;
+  value: number;
 }
 
 export interface IAssignment {
-  id: number,
-  name: string,
-  points: number,
-  isReleased: boolean,
+  id: number;
+  name: string;
+  points: number;
+  isReleased: boolean;
+  rubric?: IRubricCategory[];
 }
 
 export interface ICourse {
-  id: number,
-  name: string,
-  period: string,
-  assignments?: IAssignment[]
+  id: number;
+  name: string;
+  period: string;
+  assignments: IAssignment[];
 }
 
 export interface ISubmission {
-  id: number,
-  isFinalized: any,
-  dateFinalized?: any,
-  files: any[],
-  grade: number,
-  students?: IStudent[]
+  id: number;
+  isFinalized: any;
+  dateFinalized?: any;
+  files: any[];
+  grade: number;
+  grader?: IGrader;
+  students: IStudent[];
 }
 
 export interface IFile {
-  code: string,
-  comments: any[],
-  extension: string,
-  name: string
+  code: string;
+  comments: any[];
+  extension: string;
+  name: string;
 }
 
 export interface IComment {
-  id: number,
-  author: any,
-  startChar: number,
-  endChar: number,
-  startLine: number,
-  endLine: number,
-  pointDelta: number,
-  text: string
+  id: number;
+  author: any;
+  startChar: number;
+  endChar: number;
+  startLine: number;
+  endLine: number;
+  pointDelta: number;
+  text: string;
 }
 
 export interface IProfile {
-  id: number,
-  username: string
+  id: number;
+  username: string;
 }
 
 export interface IStudent {
-  profile: IProfile
+  profile: IProfile;
+}
+
+export interface IGrader {
+  profile: IProfile;
+}
+
+export interface ICourseAdmin {
+  profile: IProfile;
+}
+
+export interface IAssignmentSubmissionsMap {
+  [id: number]: {
+    name: string;
+    points: number;
+    isReleased: boolean;
+    submissions: ISubmission[];
+  };
+}
+
+export interface IUserSubmissionsMap {
+  [id: number]: {
+    profile: IProfile;
+    submissionsByAssignment: {
+      [id: number]: ISubmission;
+    };
+  };
+}
+
+export interface IRubricComment {
+  id: number;
+  text: string;
+  pointDelta: number;
+}
+
+export interface IRubricCategory {
+  id: number;
+  name: string;
+  pointLimit: number | undefined;
+  // reminder - need to fix this, it's disgusting
+  rubricComments: number[];
+  comments: IRubricComment[];
+  assignment: number;
+}
+
+export interface IToast {
+  text: string;
+  action: string | undefined;
+}
+
+export interface ISection {
+  name: string;
+  id: number;
+  students: IStudent[];
+  leader?: IGrader[];
+}
+
+export interface ISectionNoStudents {
+  name: string;
+  id: number;
+}
+
+export enum UserEnum {
+  Student = "Student",
+  Grader = "Grader",
+  CourseAdmin = "CourseAdmin"
 }
