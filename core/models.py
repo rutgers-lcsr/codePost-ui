@@ -25,7 +25,7 @@ class Profile(models.Model):
   organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
 
   def __str__(self):
-    return self.user.username
+    return self.user.email
 
 class Course(models.Model):
   name = models.CharField(max_length=16)
