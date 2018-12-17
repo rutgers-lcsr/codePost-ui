@@ -30,7 +30,7 @@ from core.views.rubricCategory import RubricCategoryViewSet
 from core.views.rubricComment import RubricCommentViewSet
 from core.views.file import FileViewSet
 from core.views.comment import CommentViewSet
-from core.views.rubric import RubricViewSet
+# from core.views.rubric import RubricViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -44,7 +44,7 @@ router.register(r'rubriccategories', RubricCategoryViewSet)
 router.register(r'rubriccomments', RubricCommentViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'comments', CommentViewSet)
-router.register(r'rubrics', RubricViewSet)
+# router.register(r'rubrics', RubricViewSet)
 
 urlpatterns = [
   path('admin/', admin.site.urls),

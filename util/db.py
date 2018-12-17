@@ -59,33 +59,3 @@ for user in users:
   user.profile.organization = princeton
   user.save()
 
-## Add some extra objects
-cos126f2019 = Course.objects.create(parent=cos126, period="F2019")
-
-cos226 = CourseParent.objects.create(name='COS226', org=princeton)
-cos226s2020 = Course.objects.create(parent=cos226, period="S2020")
-hellof2019 = Assignment.objects.create(parent=hello, course=cos126f2019, points=20)
-
-nbody = AssignmentParent.objects.create(name="NBody", org=princeton)
-nbodys2019 = Assignment.objects.create(parent=nbody, course=cos126s2019, points=20)
-nbodyf2019 = Assignment.objects.create(parent=nbody, course=cos126f2019, points=20)
-
-percolation = AssignmentParent.objects.create(name="Percolation", org=princeton)
-percolations2020 = Assignment.objects.create(parent=percolation, course=cos226s2020, points=20)
-
-
-cos126s2019.students.add(richard.profile.student)
-cos126f2019.students.add(richard.profile.student)
-cos226s2020.students.add(richard.profile.student)
-
-
-sub = Submission.objects.create(assignment=hellos2019)
-sub.students.add(richard.profile.student)
-# code = "System.out.println('hello world, my name is \nabcd abcd\nthereis more code here\n"
-tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
-Comment.objects.create(text="good job, " + username, author=vinay.profile.grader, file=tmpFile, startChar=1, endChar=8, startLine=1, endLine=1, pointDelta=3, localId=1)
-Comment.objects.create(text="this is so terrible. also a really realy reallly long comment. that keeps going on and on without line breaks.", author=vinay.profile.grader, file=tmpFile, startChar=4, endChar=10, startLine=2, endLine=2, localId=2)
-Comment.objects.create(text="this is even worse", author=vinay.profile.grader, file=tmpFile, startChar=4, endChar=10, startLine=13, endLine=13, pointDelta=2, localId=3)
-sub.isFinalized = True
-sub.grade = 20
-sub.save()
