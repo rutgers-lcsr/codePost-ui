@@ -17,18 +17,20 @@ interface IFileToCommentsMap {
 }
 
 interface IStudentState {
-  currentAssignment?: IAssignment;
+  courses: ICourse2[];
+  assignments: ICourseToAssignmentMap;
+  files: IFile2[];
+  comments: IFileToCommentsMap;
+
   currentCourse?: ICourse2;
+  currentAssignment?: IAssignment;
   currentSubmission?: ISubmission2;
+
   email: string;
   isLoading: boolean;
   isLoadingSubmission: boolean;
   isLoggedIn: boolean;
   redirect: boolean;
-  courses: ICourse2[];
-  assignments: ICourseToAssignmentMap;
-  files: IFile2[];
-  comments: IFileToCommentsMap;
 }
 
 class Student extends React.Component<{}, IStudentState> {
@@ -44,7 +46,6 @@ class Student extends React.Component<{}, IStudentState> {
     isLoading: true,
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
-
     redirect: false,
   };
 
@@ -104,10 +105,10 @@ class Student extends React.Component<{}, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return this.fetchSubmission(assignment.id).then((submission) => {
-      return this.loadFiles(submission).then(() => {
-        console.log('saving submission: ', submission);
-        this.setState({ currentSubmission: submission });
+    return this.fetchSubmission(assignment.id).then((currentSubmission) => {
+      return this.loadFiles(currentSubmission).then(() => {
+        console.log('3 - saving submission: ', currentSubmission);
+        this.setState({ currentSubmission });
       });
     });
   };
@@ -117,7 +118,7 @@ class Student extends React.Component<{}, IStudentState> {
       submission.files.map((fileId: number) => {
         return this.fetchFile(fileId).then((file: IFile2) => {
           return this.loadComments(file).then(() => {
-            console.log('saving file:', file);
+            console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
           });
         });
@@ -129,7 +130,7 @@ class Student extends React.Component<{}, IStudentState> {
     return Promise.all(
       file.comments.map((commentId: number) => {
         return this.fetchComment(commentId).then((comment: IComment) => {
-          console.log('saving comment:', comment);
+          console.log('1 - saving comment:', comment);
           let comments = [comment];
           if (this.state.comments[file.id]) {
             comments = [...this.state.comments[file.id], comment];
@@ -247,8 +248,8 @@ class Student extends React.Component<{}, IStudentState> {
       this.loadSubmission(currentAssignment)
         .then(() => {
           this.setState({ currentAssignment });
-          console.log('save assignment', currentAssignment);
-          console.log('all done');
+          console.log('4 - saving assignment', currentAssignment);
+          console.log('~fin~');
         })
         .then(() => {
           this.setState({ isLoadingSubmission: false });
