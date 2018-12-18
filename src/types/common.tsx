@@ -96,3 +96,29 @@ export interface IRubricCategory {
   pointLimit: number;
   categoryComments: IRubricComment[];
 }
+
+export interface ICourse2 {
+  id: number;
+  name: string;
+  period: string;
+  assignments: number[];
+}
+
+export interface ISubmission2 {
+  id: number;
+  isFinalized: any;
+  dateFinalized: any;
+  files: number[];
+  grade: number;
+  grader?: string;
+  students: string[];
+  assignment: number;
+}
+
+export interface IFile2 {
+  id: number;
+  code: string;
+  comments: number[];
+  extension: string;
+  name: string;
+}
