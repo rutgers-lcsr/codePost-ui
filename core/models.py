@@ -35,6 +35,9 @@ class Course(models.Model):
   graders = models.ManyToManyField(User, related_name="grader_courses")
   courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
+  class Meta:
+    unique_together = ('name', 'organization')
+
   def __str__(self):
     return str(self.name) + " | " + self.period
 
@@ -48,6 +51,9 @@ class Section(models.Model):
   leaders = models.ManyToManyField(User, blank=True, related_name='leader_sections')
   students = models.ManyToManyField(User, related_name='student_sections')
 
+  class Meta:
+    unique_together = ('name', 'course')
+
   def __str__(self):
     return self.name + " | " + str(self.course)
 
@@ -60,10 +66,16 @@ class Assignment(models.Model):
   def __str__(self):
     return str(self.name) + " | " + str(self.course)
 
+  class Meta:
+    unique_together = ('name', 'course')
+
 class RubricCategory(models.Model):
   assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="rubricCategories")
   name = models.CharField(max_length=32)
   pointLimit = models.IntegerField()
+
+  class Meta:
+    unique_together = ('name', 'assignment')
 
 class RubricComment(models.Model):
   text = models.TextField()
@@ -88,6 +100,9 @@ class File(models.Model):
   code = models.TextField()
   submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name="files")
   extension = models.CharField(max_length=8, null=True, blank=True)
+
+  class Meta:
+    unique_together = ('name', 'submission')
 
 class Comment(models.Model):
   text = models.TextField()
