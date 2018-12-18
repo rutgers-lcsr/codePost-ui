@@ -84,35 +84,32 @@ class AssignmentViewSet(ListProtectedViewSet):
   @action(detail=True)
   def submissions(self, request, pk=None):
     user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    assignment = self.get_object()
+    assignment = self.get_object() # => this endpoint has permissions at least as strict
     course = assignment.course
-
-    if not isCourseMember(user, course):
-      return returnForbidden()
 
     student = self.request.query_params.get('student', None)
     grader = self.request.query_params.get('grader', None)
     submissions = assignment.submissions.all()
 
-    # If you want to filter by grader, you must be that grader or a courseadmin
     isThisGrader = isGrader(user, course) and user.username == grader
     isThisStudent = isStudent(user, course) and user.username == student
 
-    if student is None and grader is None:
-      if not isCourseAdmin(user, course):
-        return returnForbidden()
-
+    # If you want to filter by grader, you must be that grader or a courseadmin
     if grader is not None:
       if not isCourseAdmin(user, course) and not isThisGrader:
         return returnForbidden()
 
+    # If you want all of the submissions, you must be a courseAdmin
+    if student is None and grader is None:
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+    # If you want to filter by student, you must be a grader, courseAdmin, or that student
     if student is not None:
       if not isThisStudent and not isGrader(user, course) and not isCourseAdmin(user, course):
         return returnForbidden()
 
+    # Retrieve student
     studentParam = None
     if student is not None:
       try:
@@ -123,6 +120,7 @@ class AssignmentViewSet(ListProtectedViewSet):
         else:
           return returnForbidden()
 
+    # Retrieve grader
     graderParam = None
     if grader is not None:
       try:
@@ -145,12 +143,16 @@ class AssignmentViewSet(ListProtectedViewSet):
     else:
       filteredSubs = submissions
 
-    # Only include comment authors in serialization if user is authorized to see them
-    serializer = SubmissionSerializer(filteredSubs, many=True)
+    # If filtering for a student, only give back single submission (instead of length-1 array)
     if studentParam is not None:
       if filteredSubs is not None and len(filteredSubs) > 1:
         return Response("Whoops, something went wrong", status=status.HTTP_500_SERVER_ERROR)
       elif len(filteredSubs) == 1:
         submission = filteredSubs[0]
+        serializer = SubmissionSerializer(submission)
+        return Response(serializer.data)
+      else:
+        return Response([])
 
+    serializer = SubmissionSerializer(filteredSubs, many=True)
     return Response(serializer.data)
