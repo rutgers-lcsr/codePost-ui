@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment, ISubmission, IUserSubmissionsMap } from '../../types/common';
+import { IAssignment3, IGraderSubmissionsDataTable, ISubmission3 } from '../../types/common';
 
 interface IPropsGraderOverview {
-  assignments: IAssignment[];
-  submissionsByGrader: IUserSubmissionsMap;
+  assignments: IAssignment3[];
+  submissionsByGrader: IGraderSubmissionsDataTable;
   activeGrader: string | undefined;
   changeActiveGrader: (grader: string | undefined) => void;
   openSubmission: (submissionID: number | string) => void;
 }
 
 class GraderData extends React.Component<IPropsGraderOverview, {}> {
-  public renderSubmissionRow(submission: ISubmission, assignment: IAssignment) {
+  public renderSubmissionRow(submission: ISubmission3, assignmentID: number) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
@@ -23,8 +23,8 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn>{assignment.name}</TableColumn>
-        <TableColumn>"students"</TableColumn>
+        <TableColumn>{assignmentID}</TableColumn>
+        <TableColumn>{submission.students.toString()}</TableColumn>
         <TableColumn>{grade}</TableColumn>
       </TableRow>
     );
@@ -33,7 +33,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
   public render() {
     const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
 
-    const headers = this.props.assignments.map((assignment: IAssignment) => {
+    const headers = this.props.assignments.map((assignment: IAssignment3) => {
       return assignment.name;
     });
     headers.unshift('Grader');
@@ -49,13 +49,15 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Object.keys(submissionsByGrader).map((graderID) => {
+            {Object.keys(submissionsByGrader).map((graderEmail) => {
               return (
-                <TableRow key={graderID} onClick={changeActiveGrader.bind(this.props, graderID)}>
-                  <TableColumn>{submissionsByGrader[graderID].profile.username}</TableColumn>
+                <TableRow
+                  key={graderEmail}
+                  onClick={changeActiveGrader.bind(this.props, graderEmail)}
+                >
+                  <TableColumn>{graderEmail}</TableColumn>
                   {assignments.map((assignment) => {
-                    const submissions =
-                      submissionsByGrader[graderID].submissionsByAssignment[assignment.id];
+                    const submissions = submissionsByGrader[graderEmail][assignment.id];
                     if (submissions) {
                       return <TableColumn>{submissions.length}</TableColumn>;
                     } else {
@@ -70,11 +72,10 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       );
     } else {
       const tablemap: any = [];
-      assignments.forEach((assignment) => {
-        const submissions =
-          submissionsByGrader[activeGrader].submissionsByAssignment[assignment.id];
-        submissions.forEach((submission: ISubmission) => {
-          tablemap.push(this.renderSubmissionRow(submission, assignment));
+      Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
+        const submissions = submissionsByGrader[activeGrader][assignmentID];
+        submissions.forEach((submission: ISubmission3) => {
+          tablemap.push(this.renderSubmissionRow(submission, Number(assignmentID)));
         });
       });
       return (
@@ -90,7 +91,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
             arrow_back
           </Button>
           <hr />
-          <div>{submissionsByGrader[activeGrader].profile.username}</div>
+          <div>{activeGrader}</div>
           <hr />
           <DataTable plain={true}>
             <TableHeader>

@@ -2,26 +2,26 @@ import * as React from 'react';
 import { CircularProgress, Tab, Tabs, TabsContainer } from 'react-md';
 import '../../styles/index.scss';
 import {
-  IAssignment,
-  IAssignmentSubmissionsMap,
-  IGrader,
-  IStudent,
-  IUserSubmissionsMap,
+  IAssignment3,
+  IGraderSubmissionsDataTable,
+  IStudentSubmissionsDataTable,
+  ISubmissionsByAssignment,
 } from '../../types/common';
 import GraderData from './GraderData';
 import StudentData from './StudentData';
 
 interface IPropsCourseData {
-  assignments: IAssignment[];
-  students: IStudent[];
+  assignments: IAssignment3[];
+  assignmentsLoadComplete: boolean;
+  students: string[];
   studentsLoadComplete: boolean;
-  graders: IGrader[];
+  graders: string[];
   gradersLoadComplete: boolean;
-  submissionsByStudentLoadComplete: boolean;
-  submissionsByAssignment: IAssignmentSubmissionsMap;
-  submissionsByAssignmentLoadComplete: boolean;
-  submissionsByStudent: IUserSubmissionsMap;
-  submissionsByGrader: IUserSubmissionsMap;
+  submissionsbyUserLoadComplete: boolean;
+  submissions: ISubmissionsByAssignment;
+  submissionsLoadComplete: boolean;
+  submissionsByStudent: IStudentSubmissionsDataTable;
+  submissionsByGrader: IGraderSubmissionsDataTable;
   addToast: (text: string, action: string | undefined) => void;
 }
 
@@ -70,14 +70,15 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
   public render() {
     const {
-      submissionsByStudentLoadComplete,
+      assignmentsLoadComplete,
+      submissionsbyUserLoadComplete,
       assignments,
       submissionsByStudent,
       submissionsByGrader,
     } = this.props;
     const { activeStudent, activeGrader } = this.state;
 
-    if (submissionsByStudentLoadComplete) {
+    if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
       return (
         <div>
           <hr />

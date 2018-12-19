@@ -22,7 +22,7 @@ class OrganizationPermissions(TemplatePermission):
       # we should only allow deletion of an organization object from the terminal.
       # Maybe we can protect it with a confirm pattern.
       return False
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return user.is_superuser
     if request.method == "GET":
       return user.is_superuser
@@ -35,7 +35,7 @@ class UserPermissions(TemplatePermission):
       return user.is_superuser
     if request.method == "DELETE":
       return user.is_superuser
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return user.is_superuser
     if request.method == "GET":
       return user.is_superuser or user == obj
@@ -49,7 +49,7 @@ class CoursePermissions(TemplatePermission):
       return True
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isCourseMember(user, course)
@@ -67,7 +67,7 @@ class SectionPermissions(TemplatePermission):
       return isCourseAdmin(user, course)
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isCourseAdmin(user, course) or isSectionLeader(user, obj)
@@ -81,7 +81,7 @@ class AssignmentPermissions(TemplatePermission):
       return isCourseAdmin(user, course)
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isCourseMember(user, course)
@@ -95,7 +95,7 @@ class RubricCategoryPermissions(TemplatePermission):
       return isCourseAdmin(user, course)
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isCourseStaff(user, course)
@@ -109,7 +109,7 @@ class RubricCommentPermissions(TemplatePermission):
       return isCourseAdmin(user, course)
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isCourseStaff(user, course)
@@ -127,7 +127,7 @@ class SubmissionPermissions(TemplatePermission):
       return isCourseAdmin(user, course)
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isCourseAdmin(user, course)
     if request.method == "GET":
       return isStaffOfSub(user, obj) or isStudentOfSub(user, obj)
@@ -145,7 +145,7 @@ class CommentPermissions(TemplatePermission):
       return isStaffOfSub(user, submission)
     if request.method == "DELETE":
       return isStaffOfSub(user, submission)
-    if request.method == "PATCH":
+    if request.method == "PATCH" or "PUT":
       return isStaffOfSub(user, submission)
     if request.method == "GET":
       return SubmissionPermissions.has_object_permission(self, request, view, submission)

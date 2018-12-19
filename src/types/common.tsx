@@ -115,6 +115,7 @@ export interface IRubricComment {
   id: number;
   text: string;
   pointDelta: number;
+  category: number;
 }
 
 export interface IRubricCategory {
@@ -125,16 +126,6 @@ export interface IRubricCategory {
   rubricComments: number[];
   comments: IRubricComment[];
   categoryComments: IRubricComment[];
-  assignment: number;
-}
-
-export interface IRubricCategory3 {
-  id: number;
-  name: string;
-  pointLimit: number | undefined;
-  // reminder - need to fix this, it's disgusting
-  rubricComments: number[];
-  comments: IRubricComment[];
   assignment: number;
 }
 
@@ -159,4 +150,78 @@ export enum UserEnum {
   Student = 'Student',
   Grader = 'Grader',
   CourseAdmin = 'CourseAdmin',
+}
+
+// New interfaces for Admin panel -- to merge
+
+export interface IRubricCategory3 {
+  id: number;
+  name: string;
+  pointLimit: number | undefined;
+  // reminder - need to fix this, it's disgusting
+  rubricComments: number[];
+  assignment: number;
+}
+
+export interface ISection3 {
+  name: string;
+  id: number;
+  students: string[];
+  leader: string[];
+}
+
+// Making a separate data table to ensure that each
+// student has only one submission for an assignment
+
+export interface IStudentSubmissionsDataTable {
+  [userEmail: string]: {
+    [assignmentID: number]: ISubmission3;
+  };
+}
+
+export interface IGraderSubmissionsDataTable {
+  [userEmail: string]: ISubmissionsByAssignment;
+}
+
+export interface IAssignment3 {
+  id: number;
+  name: string;
+  points: number;
+  isReleased: boolean;
+  rubricCategories: number[];
+}
+
+export interface ICourse3 {
+  id: number;
+  name: string;
+  period: string;
+  assignments: number[];
+  sections: number[];
+}
+
+export interface ISubmission3 {
+  id: number;
+  isFinalized: any;
+  dateFinalized?: any;
+  files: number[];
+  grade: number;
+  grader?: string;
+  students: string[];
+  assignment: IAssignment;
+}
+
+export interface IAssignmentsByCourse {
+  [courseID: number]: IAssignment3[];
+}
+
+export interface ISubmissionsByAssignment {
+  [assignmentID: number]: ISubmission3[];
+}
+
+export interface IRubricCategoriesByAssignment {
+  [assignmentID: number]: IRubricCategory3[];
+}
+
+export interface IRubricCommentsByCategory {
+  [categoryID: number]: IRubricComment[];
 }

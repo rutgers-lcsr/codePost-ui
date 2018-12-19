@@ -12,18 +12,18 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, ISection, ISectionNoStudents, IStudent, UserEnum } from '../../types/common';
+import { ICourse3, ISection3, ISectionNoStudents, UserEnum } from '../../types/common';
 
 interface IProps {
-  sections: ISection[];
-  students: IStudent[];
+  sections: ISection3[];
+  students: string[];
   studentsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: ICourse3 | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => Promise<{}>;
+  unEnrollUsers: (emails: string[], type: UserEnum) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   addStudentToSection: (sectionID: number, studentEmail: string) => void;
 }
@@ -31,7 +31,7 @@ interface IProps {
 interface IState {
   newStudentField: string | undefined;
   selectedStudents: string[];
-  changedSections: { [studentID: number]: number };
+  changedSections: { [studentEmail: string]: number };
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
@@ -48,11 +48,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     const studentType = UserEnum.Student;
 
     if (selectedStudents) {
-      unEnrollUsers(selectedStudents, studentType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails
-        // to delete one of the selected ids and it looks selected but no longer is on the backend
-        this.setState({ selectedStudents: [] });
-      });
+      unEnrollUsers(selectedStudents, studentType);
+      // Reminder to fix: Potentially could create problems if parent fails
+      // to delete one of the selected ids and it looks selected but no longer is on the backend
+      this.setState({ selectedStudents: [] });
     }
   };
 
@@ -165,14 +164,14 @@ class ManageStudents extends React.Component<IProps, {}> {
             </TableHeader>
             <TableBody>
               {students.map((student) => {
-                const section = sectionsByStudent[student.profile.username];
+                const section = sectionsByStudent[student];
 
                 let sectionID = section ? section.id : '';
 
                 let dropDown;
 
-                if (student.profile.username in changedSections) {
-                  sectionID = changedSections[student.profile.username];
+                if (student in changedSections) {
+                  sectionID = changedSections[student];
                   dropDown = iconChanged;
                 } else {
                   dropDown = undefined;
@@ -180,16 +179,16 @@ class ManageStudents extends React.Component<IProps, {}> {
 
                 return (
                   <TableRow
-                    key={student.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(this.props, student.profile.username)}
+                    key={student}
+                    onCheckboxClick={this.rowSelect.bind(this.props, student)}
                   >
-                    <TableColumn>{student.profile.username}</TableColumn>
+                    <TableColumn>{student}</TableColumn>
                     <SelectFieldColumn
                       dropdownIcon={dropDown}
                       value={sectionID}
                       menuItems={sectionMenuItems}
                       disabled={lockedStudentChange}
-                      onChange={this.rowSectionChange.bind(this.props, student.profile.username)}
+                      onChange={this.rowSectionChange.bind(this.props, student)}
                     />
                   </TableRow>
                 );

@@ -54,6 +54,10 @@ cos126s2019.courseAdmins.add(james)
 cos126s2019.courseAdmins.add(vinay)
 cos126s2019.save()
 
+section1 = Section.objects.create(name="P01", course=cos126s2019)
+section1.leaders.add(vinay)
+section1.save()
+
 ## Create some students and add them to the course
 for i in range(0, 50):
   username = "user" + str(i) + "@gmail.com"
@@ -73,17 +77,30 @@ for i in range(0, 50):
       sub.grade = random.randint(0,20)
       if (i % 2 == 0):
           sub.grader = richard
+          section1.students.add(tmpUser)
+          section1.save()
       else:
           sub.grader = vinay
       sub.save()
 
-  rubricCategory = RubricCategory.objects.create(assignment=hellos2019,name="General",pointLimit=10)
-  rubricComment1 = RubricComment.objects.create(text='Missing a semicolon', pointDelta=2, category=rubricCategory)
-  rubricComment2 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory)
+for i in range(0, 2):
+    name = "general"+str(i)
+    rubricCategory = RubricCategory.objects.create(assignment=hellos2019,name=name,pointLimit=10)
+    rubricComment1 = RubricComment.objects.create(text='Missing a semicolon', pointDelta=2, category=rubricCategory)
+    rubricComment2 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory)
+    rubricComment3 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory)
+    rubricComment4 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory)
+    rubricComment5 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory)
 
-  rubricCategory2 = RubricCategory.objects.create(assignment=hellos2019,name="Algorithms",pointLimit=20)
-  rubricComment1 = RubricComment.objects.create(text='Nested loopkl jasldfkjlksa jlkfasdj flkjdklsjfklasjflk asj dfjklasjdflkkas jklfasj flkdj lsajf sjfdlkaj skldf', pointDelta=2, category=rubricCategory2)
-  rubricComment2 = RubricComment.objects.create(text='n! complexity\nalskdfj ls\nlskdjf lasf\n', pointDelta=3, category=rubricCategory2)
+    name2="algos"+str(i)
+    rubricCategory2 = RubricCategory.objects.create(assignment=hellos2019,name=name2,pointLimit=20)
+    rubricComment1 = RubricComment.objects.create(text='Missing a semicolon', pointDelta=2, category=rubricCategory2)
+    rubricComment2 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory2)
+    rubricComment3 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory2)
+    rubricComment4 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory2)
+    rubricComment5 = RubricComment.objects.create(text='Need more comments', pointDelta=3, category=rubricCategory2)
+
+
 
 users = User.objects.all()
 for user in users:

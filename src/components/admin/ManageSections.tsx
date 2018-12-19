@@ -12,18 +12,18 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, IGrader, ISection } from '../../types/common';
+import { ICourse3, ISection3 } from '../../types/common';
 
 interface IProps {
-  sections: ISection[];
+  sections: ISection3[];
   sectionsLoadComplete: boolean;
   lockedSectionChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: ICourse3 | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => void;
-  graders: IGrader[];
+  graders: string[];
 }
 
 interface IState {
@@ -77,9 +77,10 @@ class ManageSections extends React.Component<IProps, {}> {
       newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
     const leaderMenuItems = graders.map((grader) => {
+      // Reminder -- fix this to simplify
       return {
-        label: grader.profile.username,
-        value: grader.profile.username,
+        label: grader,
+        value: grader,
       };
     });
 
@@ -124,8 +125,7 @@ class ManageSections extends React.Component<IProps, {}> {
             <TableBody>
               {sections.map((section) => {
                 // Reminder - need to change to represent multiple leaders
-                let currentLeader =
-                  section.leader && section.leader[0] ? section.leader[0].profile.username : '';
+                let currentLeader = section.leader && section.leader[0] ? section.leader[0] : '';
                 let dropDown;
                 if (section.id in changedSections) {
                   currentLeader = changedSections[section.id];

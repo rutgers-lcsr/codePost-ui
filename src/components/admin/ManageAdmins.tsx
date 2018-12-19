@@ -10,17 +10,17 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, ICourseAdmin, UserEnum } from '../../types/common';
+import { ICourse3, UserEnum } from '../../types/common';
 
 interface IProps {
-  admins: ICourseAdmin[];
+  admins: string[];
   adminsLoadComplete: boolean;
   lockedAdminChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: ICourse3 | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => Promise<{}>;
+  unEnrollUsers: (emails: string[], type: UserEnum) => void;
 }
 
 interface IState {
@@ -41,11 +41,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     const adminType = UserEnum.CourseAdmin;
 
     if (selectedAdmins) {
-      unEnrollUsers(selectedAdmins, adminType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails
-        // to delete one of the selected ids and it looks selected but no longer is on the backend
-        this.setState({ selectedAdmins: [] });
-      });
+      unEnrollUsers(selectedAdmins, adminType);
+      // Reminder to fix: Potentially could create problems if parent fails
+      // to delete one of the selected ids and it looks selected but no longer is on the backend
+      this.setState({ selectedAdmins: [] });
     }
   };
 
@@ -117,11 +116,8 @@ class ManageStudents extends React.Component<IProps, {}> {
             <TableBody>
               {admins.map((admin) => {
                 return (
-                  <TableRow
-                    key={admin.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(this.props, admin.profile.username)}
-                  >
-                    <TableColumn>{admin.profile.username}</TableColumn>
+                  <TableRow key={admin} onCheckboxClick={this.rowSelect.bind(this.props, admin)}>
+                    <TableColumn>{admin}</TableColumn>
                   </TableRow>
                 );
               })}

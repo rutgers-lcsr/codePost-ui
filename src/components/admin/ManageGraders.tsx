@@ -10,17 +10,17 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, IGrader, UserEnum } from '../../types/common';
+import { ICourse3, UserEnum } from '../../types/common';
 
 interface IProps {
-  graders: IGrader[];
+  graders: string[];
   gradersLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: ICourse3 | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => Promise<{}>;
+  unEnrollUsers: (emails: string[], type: UserEnum) => void;
 }
 
 interface IState {
@@ -41,11 +41,10 @@ class ManageGraders extends React.Component<IProps, {}> {
     const adminType = UserEnum.CourseAdmin;
 
     if (selectedUsers) {
-      unEnrollUsers(selectedUsers, adminType).then((resp: string[]) => {
-        // Reminder to fix: Potentially could create problems if parent fails
-        // to delete one of the selected ids and it looks selected but no longer is on the backend
-        this.setState({ selectedUsers: [] });
-      });
+      unEnrollUsers(selectedUsers, adminType);
+      // Reminder to fix: Potentially could create problems if parent fails
+      // to delete one of the selected ids and it looks selected but no longer is on the backend
+      this.setState({ selectedUsers: [] });
     }
   };
 
@@ -117,11 +116,8 @@ class ManageGraders extends React.Component<IProps, {}> {
             <TableBody>
               {graders.map((grader) => {
                 return (
-                  <TableRow
-                    key={grader.profile.id}
-                    onCheckboxClick={this.rowSelect.bind(this.props, grader.profile.username)}
-                  >
-                    <TableColumn>{grader.profile.username}</TableColumn>
+                  <TableRow key={grader} onCheckboxClick={this.rowSelect.bind(this.props, grader)}>
+                    <TableColumn>{grader}</TableColumn>
                   </TableRow>
                 );
               })}
