@@ -17,6 +17,7 @@ class SubmissionSerializer(ModelSerializerWithPOSTCheck):
   class Meta:
     model = Submission
     fields = ('id', 'assignment', 'students', 'grader', 'isFinalized', 'dateFinalized', 'grade', 'files')
+    read_only_fields = ('files',)
     POST_permissions_fields = ('assignment',)
 
   # We can't use validate_students, because we need information from the assignment (the course)
@@ -34,6 +35,10 @@ class SubmissionSerializer(ModelSerializerWithPOSTCheck):
       assignment = self.instance.assignment
       students = self.instance.students.all()
       grader = self.instance.grader
+    else:
+      assignment = None
+      students = None
+      grader = None
 
     # If we are trying to overwrite assignment, we should use this value, not the old one
     if 'assignment' in newData:
@@ -57,14 +62,14 @@ class SubmissionSerializer(ModelSerializerWithPOSTCheck):
       raise serializers.ValidationError(message)
 
     # # Check that students are not already tied to other submissions in this course
-    # badList = []
-    # for student in students:
-    #   otherSubs = Submission.objects.filter(assignment=assignment, students__in=[student])
-    #   if len(otherSubs) > 0:
-    #     badList.append(student)
-    # if len(badList) > 0:
-    #   message = formErrorMessage("The following students already have submissions for this assignment", badList)
-    #   raise serializers.ValidationError(message)
+    badList = []
+    for student in students:
+      otherSubs = Submission.objects.filter(assignment=assignment, students__in=[student])
+      if len(otherSubs) > 1 or (len(otherSubs) == 1 and not self.instance):
+        badList.append(student)
+    if len(badList) > 0:
+      message = formErrorMessage("The following students already have submissions for this assignment", badList)
+      raise serializers.ValidationError(message)
 
     # Check that the specified students belong to the grader's course
     if grader and not isGrader(grader, course):
