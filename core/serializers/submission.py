@@ -11,8 +11,8 @@ def formErrorMessage(message, users):
   return toRet[:-2]
 
 class SubmissionSerializer(ModelSerializerWithPOSTCheck):
-  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
-  grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False)
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
+  grader = serializers.SlugRelatedField(many=False, slug_field='email', queryset=User.objects.all(), required=False, allow_null=True)
 
   class Meta:
     model = Submission
@@ -56,18 +56,18 @@ class SubmissionSerializer(ModelSerializerWithPOSTCheck):
       message = formErrorMessage("The following students are not members of the specified course", badList)
       raise serializers.ValidationError(message)
 
-    # Check that students are not already tied to other submissions in this course
-    badList = []
-    for student in students:
-      otherSubs = Submission.objects.filter(assignment=assignment, students__in=[student])
-      if len(otherSubs) > 0:
-        badList.append(student)
-    if len(badList) > 0:
-      message = formErrorMessage("The following students already have submissions for this assignment", badList)
-      raise serializers.ValidationError(message)
+    # # Check that students are not already tied to other submissions in this course
+    # badList = []
+    # for student in students:
+    #   otherSubs = Submission.objects.filter(assignment=assignment, students__in=[student])
+    #   if len(otherSubs) > 0:
+    #     badList.append(student)
+    # if len(badList) > 0:
+    #   message = formErrorMessage("The following students already have submissions for this assignment", badList)
+    #   raise serializers.ValidationError(message)
 
     # Check that the specified students belong to the grader's course
-    if not isGrader(grader, course):
+    if grader and not isGrader(grader, course):
       raise serializers.ValidationError(grader.email + " is not a grader of the specified course.")
 
     return newData
