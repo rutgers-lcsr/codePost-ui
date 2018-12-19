@@ -128,7 +128,7 @@ class SubmissionPermissions(TemplatePermission):
     if request.method == "DELETE":
       return isCourseAdmin(user, course)
     if request.method == "PATCH":
-      return isCourseAdmin(user, course)
+      return isCourseAdmin(user, course) or isStaffOfSub(user, obj)
     if request.method == "GET":
       return isStaffOfSub(user, obj) or isStudentOfSub(user, obj)
 
