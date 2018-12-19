@@ -38,10 +38,10 @@ class ManageGraders extends React.Component<IProps, {}> {
     const { selectedUsers } = this.state;
     const { unEnrollUsers } = this.props;
 
-    const adminType = UserEnum.CourseAdmin;
+    const graderType = UserEnum.Grader;
 
     if (selectedUsers) {
-      unEnrollUsers(selectedUsers, adminType);
+      unEnrollUsers(selectedUsers, graderType);
       // Reminder to fix: Potentially could create problems if parent fails
       // to delete one of the selected ids and it looks selected but no longer is on the backend
       this.setState({ selectedUsers: [] });

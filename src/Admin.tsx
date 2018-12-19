@@ -492,12 +492,19 @@ class Admin extends React.Component<{}, IAdminState> {
             .then((res) => {
               return res.json();
             })
-            .then((json) => {
+            .then((json: ISection3) => {
               // Reminder --- should really filter out if the
               // section is already there to eliminate duplicates
-              const sections = this.state.sections;
+              const { sections, sectionsByStudent } = this.state;
               sections.push(json);
-              this.setState({ sections }, () => resolve(json));
+
+              json.students.forEach((studentEmail: string) => {
+                sectionsByStudent[studentEmail] = {
+                  name: json.name,
+                  id: json.id,
+                };
+              });
+              this.setState({ sections, sectionsByStudent }, () => resolve(json));
             });
         });
       });
@@ -569,6 +576,7 @@ class Admin extends React.Component<{}, IAdminState> {
           return undefined;
         })
         .then((json) => {
+          console.log(json);
           if (json) {
             if (userType === UserEnum.Student) {
               console.log(json);
@@ -600,19 +608,21 @@ class Admin extends React.Component<{}, IAdminState> {
         const newStudents = students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
-        this.changeRoster(newStudents, UserEnum.Student);
+        this.changeRoster(newStudents, userType);
       } else if (userType === UserEnum.Grader) {
         const { graders } = this.state;
+        console.log(selectedUserEmails);
         const newGraders = graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        this.changeRoster(newGraders, UserEnum.Grader);
+        console.log(newGraders);
+        this.changeRoster(newGraders, userType);
       } else if (userType === UserEnum.CourseAdmin) {
         const { admins } = this.state;
         const newAdmins = admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
-        this.changeRoster(newAdmins, UserEnum.CourseAdmin);
+        this.changeRoster(newAdmins, userType);
       }
     }
   };
@@ -623,13 +633,13 @@ class Admin extends React.Component<{}, IAdminState> {
     if (currentCourse) {
       if (userType === UserEnum.Student) {
         students.push(userEmail);
-        this.changeRoster(students, UserEnum.Student);
+        this.changeRoster(students, userType);
       } else if (userType === UserEnum.Grader) {
         graders.push(userEmail);
-        this.changeRoster(graders, UserEnum.Student);
+        this.changeRoster(graders, userType);
       } else if (userType === UserEnum.CourseAdmin) {
         admins.push(userEmail);
-        this.changeRoster(admins, UserEnum.Student);
+        this.changeRoster(admins, userType);
       }
       // this.addToast(`New ${userType} ${json.profile.username} added`, undefined);
     }
@@ -680,18 +690,21 @@ class Admin extends React.Component<{}, IAdminState> {
     const { sections, sectionsByStudent } = this.state;
 
     if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'email';
-      const key2 = 'activate';
-      payload.append(key1, studentEmail);
-      payload.append(key2, 'true');
+      const thisSection = sections.filter((section) => {
+        return section.id === sectionID;
+      })[0];
+      const newStudents = thisSection.students;
+      newStudents.push(studentEmail);
 
-      fetch(`/api/sections/${sectionID}/addStudent/`, {
+      const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
+
+      fetch(`/api/sections/${sectionID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'PATCH',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 200) {
@@ -700,24 +713,22 @@ class Admin extends React.Component<{}, IAdminState> {
           this.addToast('Something went wrong. Please ensure the email is valid.', undefined);
           return undefined;
         })
-        .then((json) => {
+        .then((json: ISection3) => {
           if (json) {
-            let name = '';
             const newSections = sections.map((section) => {
-              if (section.id === sectionID) {
-                // Reminder--check this to make sure it works
-                section.students.push(json);
-                name = section.name;
-                sectionsByStudent[json] = {
-                  name: section.name,
-                  id: section.id,
-                };
+              if (section.id === json.id) {
+                section.students = json.students;
               }
               return section;
             });
 
+            sectionsByStudent[studentEmail] = {
+              name: json.name,
+              id: json.id,
+            };
+
             this.setState({ sections: newSections, sectionsByStudent }, () =>
-              this.addToast(`Student ${json} added to section ${name}`, undefined),
+              this.addToast(`Student ${studentEmail} added to section ${name}`, undefined),
             );
           }
         });
@@ -729,18 +740,15 @@ class Admin extends React.Component<{}, IAdminState> {
     const { sections } = this.state;
 
     if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'email';
-      const key2 = 'activate';
-      payload.append(key1, leaderEmail);
-      payload.append(key2, 'true');
+      const payload = { id: sectionID, leaders: [leaderEmail] };
 
-      fetch(`/api/sections/${sectionID}/addLeader/`, {
+      fetch(`/api/sections/${sectionID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'PATCH',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 200) {
@@ -759,7 +767,7 @@ class Admin extends React.Component<{}, IAdminState> {
                 // if (section.leader) {
                 //   section.leader.push(json);
                 // } else {
-                section.leader = [json];
+                section.leaders = json.leaders;
                 // }
                 name = section.name;
               }
@@ -767,7 +775,7 @@ class Admin extends React.Component<{}, IAdminState> {
             });
 
             this.setState({ sections: newSections }, () =>
-              this.addToast(`${json} set as leader of section ${name}`, undefined),
+              this.addToast(`${json.leaders[0]} set as leader of section ${name}`, undefined),
             );
           }
         });

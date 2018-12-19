@@ -167,7 +167,7 @@ export interface ISection3 {
   name: string;
   id: number;
   students: string[];
-  leader: string[];
+  leaders: string[];
 }
 
 // Making a separate data table to ensure that each

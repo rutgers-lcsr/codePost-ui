@@ -125,7 +125,7 @@ class ManageSections extends React.Component<IProps, {}> {
             <TableBody>
               {sections.map((section) => {
                 // Reminder - need to change to represent multiple leaders
-                let currentLeader = section.leader && section.leader[0] ? section.leader[0] : '';
+                let currentLeader = section.leaders && section.leaders[0] ? section.leaders[0] : '';
                 let dropDown;
                 if (section.id in changedSections) {
                   currentLeader = changedSections[section.id];
