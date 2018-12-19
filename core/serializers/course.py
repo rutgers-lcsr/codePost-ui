@@ -46,9 +46,9 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
     return obj
 
 class CourseRosterSerializer(ModelSerializerWithPOSTCheck):
-  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), set_null=True)
-  graders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), set_null=True)
-  courseAdmins = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), set_null=True)
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
+  graders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
+  courseAdmins = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
 
   class Meta:
     model = Course
