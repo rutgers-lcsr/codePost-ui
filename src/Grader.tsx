@@ -12,18 +12,18 @@ interface ICourseToAssignmentMap {
 }
 
 interface IGraderState {
-  // courses: ICourse[];
+  courses: ICourse2[];
+  assignments: ICourseToAssignmentMap;
+  isLoadingSubmissions: boolean;
+
   currentAssignment?: IAssignment;
   currentCourse?: ICourse2;
   currentSubmissions: ISubmission2[];
+
   email: string;
   isLoggedIn: boolean;
   isLoading: boolean;
   redirect: boolean;
-
-  courses: ICourse2[];
-  assignments: ICourseToAssignmentMap;
-  isLoadingSubmissions: boolean;
 }
 
 class Grader extends React.Component<{}, IGraderState> {
@@ -218,7 +218,6 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public claimSubmission = (assignment: IAssignment): any => {
-    console.log('claim', assignment);
     return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -231,7 +230,6 @@ class Grader extends React.Component<{}, IGraderState> {
         return res.json();
       })
       .then((json) => {
-        console.log('json', json);
         if (json) {
           this.setState({
             currentSubmissions: [...this.state.currentSubmissions, json],
@@ -242,13 +240,12 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public releaseSubmission = (submission: ISubmission2): any => {
-    // submission.grader = null;
-    const tosend = {
+    const payload = {
       grader: '',
     };
-    console.log('patch sub', tosend);
+
     return fetch(`/api/submissions/${submission.id}/`, {
-      body: JSON.stringify(tosend),
+      body: JSON.stringify(payload),
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json',

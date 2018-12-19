@@ -47,6 +47,7 @@ class GradedTab extends React.Component<IProps, {}> {
   public releaseSubmission = (submission: ISubmission2) => {
     this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission2) => {
       console.log('released', submission.id, releasedSubmission);
+      this.setState({ buttonState: BUTTON_STATE.Active });
     });
   };
 
