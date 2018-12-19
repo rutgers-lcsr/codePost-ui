@@ -15,7 +15,7 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
     newData = super().validate(data)
 
     if self.instance:
-      organization = self.instance.assignment
+      organization = self.instance.organization
       name = self.instance.name
     else:
       courseAdmin = self.context['request'].user

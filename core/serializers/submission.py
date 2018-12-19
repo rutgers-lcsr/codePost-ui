@@ -32,7 +32,7 @@ class SubmissionSerializer(ModelSerializerWithPOSTCheck):
     #     a partial update.
     if self.instance:
       assignment = self.instance.assignment
-      students = self.instance.students
+      students = self.instance.students.all()
       grader = self.instance.grader
 
     # If we are trying to overwrite assignment, we should use this value, not the old one
