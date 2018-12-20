@@ -15,19 +15,20 @@ interface IPropsRubricComment {
   commentID: number;
   categoryID: number;
   commentIndex: number;
-  commentTextChange: (categoryID: number, commentIndex: number, newText: string) => void;
-  commentDeltaChange: (categoryID: number, commentIndex: number, newDelta: number) => void;
+  changeCommentText: (categoryID: number, commentIndex: number, newText: string) => void;
+  changeCommentDelta: (categoryID: number, commentIndex: number, newDelta: number) => void;
   defaultText: string;
   defaultDelta: number;
   isDisabled: boolean;
-  deleteCommentFunction: (categoryID: number, commentIndex: number) => void;
+  deleteComment: (categoryID: number, commentIndex: number) => void;
 }
 interface IPropsRubricCategory {
   categoryID: number;
+  categoryIndex: number;
   // CommentFunctions
-  commentTextChange: (categoryID: number, commentIndex: number, newText: string) => void;
-  commentDeltaChange: (categoryID: number, commentIndex: number, newDelta: number) => void;
-  deleteCommentFunction: (categoryID: number, commentIndex: number) => void;
+  changeCommentText: (categoryID: number, commentIndex: number, newText: string) => void;
+  changeCommentDelta: (categoryID: number, commentIndex: number, newDelta: number) => void;
+  deleteComment: (categoryID: number, commentIndex: number) => void;
 
   // Category props
   comments: IRubricComment[];
@@ -47,22 +48,29 @@ interface IPropsRubricCategory {
 // Creating a new class to render RubricCommentRows in the admin panel, in order
 // to avoid binds and improve performance
 const RubricCommentRow = (props: IPropsRubricComment) => {
+  const {
+    categoryID,
+    commentIndex,
+    commentID,
+    isDisabled,
+    defaultText,
+    defaultDelta,
+    changeCommentText,
+    changeCommentDelta,
+    deleteComment,
+  } = props;
+
   const changeThisCommentText = (newText: string) => {
-    const { categoryID, commentIndex, commentTextChange } = props;
-    commentTextChange(categoryID, commentIndex, newText);
+    changeCommentText(categoryID, commentIndex, newText);
   };
 
   const changeThisCommentDelta = (newDelta: number) => {
-    const { categoryID, commentIndex, commentDeltaChange } = props;
-    commentDeltaChange(categoryID, commentIndex, newDelta);
+    changeCommentDelta(categoryID, commentIndex, newDelta);
   };
 
   const deleteThisComment = () => {
-    const { categoryID, commentIndex, deleteCommentFunction } = props;
-    deleteCommentFunction(categoryID, commentIndex);
+    deleteComment(categoryID, commentIndex);
   };
-
-  const { commentID, isDisabled, defaultText, defaultDelta } = props;
 
   return (
     <TableRow key={commentID}>
@@ -112,9 +120,10 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     categoryPointLimit,
     comments,
     categoryID,
-    commentTextChange,
-    commentDeltaChange,
-    deleteCommentFunction,
+    categoryIndex,
+    changeCommentText,
+    changeCommentDelta,
+    deleteComment,
     isDisabled,
     changeCategoryName,
     changeCategoryCap,
@@ -123,11 +132,11 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   } = props;
 
   const changeThisCategoryText = (newText: string) => {
-    changeCategoryName(categoryID, newText);
+    changeCategoryName(categoryIndex, newText);
   };
 
   const changeThisCategoryCap = (newCap: number) => {
-    changeCategoryCap(categoryID, newCap);
+    changeCategoryCap(categoryIndex, newCap);
   };
 
   const deleteThisCategory = () => {
@@ -147,9 +156,9 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             commentID={comm.id}
             categoryID={categoryID}
             commentIndex={commIndex}
-            commentTextChange={commentTextChange}
-            commentDeltaChange={commentDeltaChange}
-            deleteCommentFunction={deleteCommentFunction}
+            changeCommentText={changeCommentText}
+            changeCommentDelta={changeCommentDelta}
+            deleteComment={deleteComment}
             defaultText={comm.text}
             defaultDelta={comm.pointDelta}
             isDisabled={isDisabled}
