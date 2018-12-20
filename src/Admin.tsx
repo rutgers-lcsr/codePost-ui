@@ -71,12 +71,6 @@ interface IAdminState {
   lockManageSection: boolean;
   lockManageAssignment: boolean;
 
-  // props for courseManagement
-  courseManagement_tabIndex: number;
-  courseMangement_selectedStudent?: string;
-  courseManagement_hideInactiveStudents: boolean;
-  courseMangement_selectedGrader?: string;
-
   email: string;
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -132,11 +126,6 @@ class Admin extends React.Component<{}, IAdminState> {
     lockManageAssignment: true,
     // Enroll_checkedAdmins: [],
 
-    // props for courseManagement
-    courseManagement_tabIndex: 0,
-    courseMangement_selectedStudent: undefined,
-    courseManagement_hideInactiveStudents: false,
-    courseMangement_selectedGrader: undefined,
     email: '',
     isLoading: true,
     isLoggedIn: localStorage.getItem('token') ? true : false,
@@ -188,6 +177,50 @@ class Admin extends React.Component<{}, IAdminState> {
       {
         // reminder: set students graders everything to undefined
         currentCourse,
+        loadedPanel: 0, // Which active_panel to load, enum
+
+        // student, grader, admin, sections data
+        students: [],
+        studentsLoadComplete: false,
+        graders: [],
+        gradersLoadComplete: false,
+        admins: [],
+        adminsLoadComplete: false,
+
+        sections: [],
+        sectionsByStudent: {},
+        sectionsLoadComplete: false,
+        submissionsbyUserLoadComplete: false,
+
+        submissions: {},
+        submissionsLoadComplete: false,
+
+        assignments: [],
+        assignmentsLoadComplete: false,
+
+        rubricCategories: {},
+        rubricComments: {},
+
+        assignmentRubricLoadComplete: false,
+
+        // Props for Enroll panels
+        lockManageAdmin: true,
+        lockManageStudent: true,
+        lockManageGrader: true,
+        lockManageSection: true,
+        lockManageAssignment: true,
+        // Enroll_checkedAdmins: [],
+
+        // props for courseManagement
+        email: '',
+        isLoading: true,
+        isLoggedIn: localStorage.getItem('token') ? true : false,
+        redirect: false,
+
+        submissionsByStudent: {},
+        submissionsByGrader: {},
+
+        toasts: [],
       },
       () => {
         this.loadAllCourseData();
@@ -842,7 +875,6 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryID: number,
     categoryName: string,
   ) => {
-    // Reminder - remove the category from the current rubric
     const { currentCourse, assignments, rubricCategories } = this.state;
 
     if (currentCourse) {
@@ -860,7 +892,6 @@ class Admin extends React.Component<{}, IAdminState> {
         if (res.status === 204) {
           this.addToast(`Category ${categoryName} deleted`, undefined);
           assignments.forEach((assn) => {
-            // Add an empty set of comments to the returned category, Api only returns category ids
             if (assn.id === assignmentID) {
               assn.rubricCategories = assn.rubricCategories.filter((catID) => {
                 return catID !== categoryID;
@@ -884,7 +915,6 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryName: string,
     categoryPointLimit: number | undefined,
   ) => {
-    // Reminder - remove the category from the current rubric
     const { currentCourse, rubricCategories } = this.state;
 
     if (currentCourse) {
@@ -966,7 +996,6 @@ class Admin extends React.Component<{}, IAdminState> {
         .then((json: IRubricComment) => {
           if (json) {
             rubricCategories[assignmentID].forEach((cat) => {
-              // Should check the json
               if (cat.id === categoryID) {
                 cat.rubricComments.push(json.id);
               }
@@ -1061,7 +1090,6 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public updateAssignment = (assignmentID: number, name: string, points: number) => {
-    // Reminder - remove the category from the current rubric
     const { currentCourse, assignments } = this.state;
 
     if (currentCourse) {
@@ -1093,8 +1121,6 @@ class Admin extends React.Component<{}, IAdminState> {
         .then((json) => {
           if (json) {
             assignments.forEach((assn) => {
-              // Add an empty set of comments to the returned category,
-              // Api only returns category ids
               if (assn.id === assignmentID) {
                 assn.name = json.name;
                 assn.points = json.points;
