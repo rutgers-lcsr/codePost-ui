@@ -46,7 +46,8 @@ interface IAdminState {
   admins: string[];
   adminsLoadComplete: boolean;
   sections: ISection3[];
-  // Need to get rid of ISectionNoStudents
+
+  // Reminer - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   sectionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
@@ -62,7 +63,6 @@ interface IAdminState {
   rubricComments: IRubricCommentsByCategory;
 
   assignmentRubricLoadComplete: boolean;
-  // Assignment to drill down on in assignments tab
 
   // Props for Enroll panels
   lockManageAdmin: boolean;
@@ -100,8 +100,7 @@ class Admin extends React.Component<{}, IAdminState> {
     gradersLoadComplete: false,
     admins: [],
     adminsLoadComplete: false,
-    // Admins: [],
-    // adminsLoadComplete: false,
+
     sections: [],
     sectionsByStudent: {},
     sectionsLoadComplete: false,
@@ -124,7 +123,6 @@ class Admin extends React.Component<{}, IAdminState> {
     lockManageGrader: true,
     lockManageSection: true,
     lockManageAssignment: true,
-    // Enroll_checkedAdmins: [],
 
     email: '',
     isLoading: true,
@@ -175,11 +173,9 @@ class Admin extends React.Component<{}, IAdminState> {
 
     this.setState(
       {
-        // reminder: set students graders everything to undefined
         currentCourse,
-        loadedPanel: 0, // Which active_panel to load, enum
+        loadedPanel: 0,
 
-        // student, grader, admin, sections data
         students: [],
         studentsLoadComplete: false,
         graders: [],
@@ -209,9 +205,7 @@ class Admin extends React.Component<{}, IAdminState> {
         lockManageGrader: true,
         lockManageSection: true,
         lockManageAssignment: true,
-        // Enroll_checkedAdmins: [],
 
-        // props for courseManagement
         email: '',
         isLoading: true,
         isLoggedIn: localStorage.getItem('token') ? true : false,
@@ -823,7 +817,7 @@ class Admin extends React.Component<{}, IAdminState> {
     pointLimit: number | undefined,
     newComments: IRubricComment[],
   ) => {
-    const { currentCourse, assignments, rubricCategories } = this.state;
+    const { currentCourse, assignments, rubricCategories, rubricComments } = this.state;
 
     if (currentCourse) {
       const payload = new URLSearchParams();
@@ -859,8 +853,9 @@ class Admin extends React.Component<{}, IAdminState> {
               }
             });
             rubricCategories[assignmentID].push(json);
+            rubricComments[json.id] = [];
             this.addToast(`New Rubric Category ${json.name} created`, undefined);
-            this.setState({ assignments, rubricCategories }, () => {
+            this.setState({ assignments, rubricCategories, rubricComments }, () => {
               newComments.forEach((comment) => {
                 this.createRubricComment(assignmentID, json.id, comment.text, comment.pointDelta);
               });
@@ -951,7 +946,7 @@ class Admin extends React.Component<{}, IAdminState> {
               })
               .indexOf(categoryID);
             if (catIndex !== -1) {
-              // Reminder --- check the datat that gest back to see if you can just set to = json
+              // Reminder --- add checks for the data received
               rubricCategories[assignmentID][catIndex].name = json.name;
               rubricCategories[assignmentID][catIndex].pointLimit = json.pointLimit;
             }
@@ -1029,7 +1024,7 @@ class Admin extends React.Component<{}, IAdminState> {
             })
             .indexOf(categoryID);
           if (catIndex !== -1) {
-            rubricComments[catIndex] = rubricComments[catIndex].filter((com) => {
+            rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
               return com.id !== commentID;
             });
           }

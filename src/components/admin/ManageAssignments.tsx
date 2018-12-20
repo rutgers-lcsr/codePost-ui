@@ -227,9 +227,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   // ------------------- Functions to modify category -------------------
+  // Reminder need to add checks to make sure cateogries can't be added
+  //  with the same name as existing categories.
   public addEmptyCategory = () => {
-    const { activeRubricCategories, activeAssignment, newCategoryCounter } = this.state;
-    if (activeRubricCategories && activeAssignment) {
+    const {
+      activeRubricCategories,
+      activeRubricComments,
+      activeAssignment,
+      newCategoryCounter,
+    } = this.state;
+    if (activeRubricCategories && activeAssignment && activeRubricComments) {
       activeRubricCategories.push({
         id: newCategoryCounter,
         name: '',
@@ -239,7 +246,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
         rubricComments: [],
         categoryComments: [],
       });
-      this.setState({ activeRubricCategories, newCategoryCounter: newCategoryCounter - 1 });
+      activeRubricComments[newCategoryCounter] = [];
+      this.setState({
+        activeRubricCategories,
+        activeRubricComments,
+        newCategoryCounter: newCategoryCounter - 1,
+      });
     }
   };
 
@@ -250,11 +262,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
         return i.id !== categoryID;
       });
       deletedCategories.push({ label: categoryName, value: categoryID });
-      this.setState({ activeCategories: newCategories, deletedCategories });
+      this.setState({ activeRubricCategories: newCategories, deletedCategories });
     }
   };
 
-  public categoryNameChange = (categoryIndex: number, newText: string) => {
+  public changeCategoryName = (categoryIndex: number, newText: string) => {
     const { activeRubricCategories } = this.state;
     if (activeRubricCategories) {
       activeRubricCategories[categoryIndex].name = newText;
@@ -262,7 +274,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricCategories });
   };
 
-  public categoryCapChange = (categoryIndex: number, newCap: number) => {
+  public changeCategoryCap = (categoryIndex: number, newCap: number) => {
     const { activeRubricCategories } = this.state;
     if (activeRubricCategories) {
       activeRubricCategories[categoryIndex].pointLimit = Number(newCap);
@@ -285,7 +297,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  public commentTextChange = (categoryID: number, commentIndex: number, newText: string) => {
+  public changeCommentText = (categoryID: number, commentIndex: number, newText: string) => {
     const { activeRubricComments } = this.state;
     if (activeRubricComments) {
       console.log('in here');
@@ -296,7 +308,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricComments });
   };
 
-  public commentDeltaChange = (categoryID: number, commentIndex: number, newDelta: number) => {
+  public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
     const { activeRubricComments } = this.state;
     if (activeRubricComments) {
       activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
@@ -396,16 +408,17 @@ class ManageAssignments extends React.Component<IProps, {}> {
               <RubricCategoryTable
                 key={cat.id}
                 categoryID={cat.id}
-                comments={activeRubricComments[catIndex]}
+                categoryIndex={catIndex}
+                comments={activeRubricComments[cat.id]}
                 categoryName={cat.name}
                 categoryPointLimit={cat.pointLimit}
                 deleteCategory={this.deleteCategory}
-                changeCategoryName={this.categoryNameChange}
-                changeCategoryCap={this.categoryCapChange}
+                changeCategoryName={this.changeCategoryName}
+                changeCategoryCap={this.changeCategoryCap}
                 addEmptyComment={this.addEmptyComment}
-                commentTextChange={this.commentTextChange}
-                commentDeltaChange={this.commentDeltaChange}
-                deleteCommentFunction={this.deleteComment}
+                changeCommentText={this.changeCommentText}
+                changeCommentDelta={this.changeCommentDelta}
+                deleteComment={this.deleteComment}
                 isDisabled={lockManageAssignment}
               />
             );
