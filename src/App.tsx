@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { Route, Switch } from 'react-router-dom';
 
+import Admin from './Admin';
+
 import IndexManager from './components/IndexManager';
 import TopBar from './components/TopBar';
 
 import Grade from './Grade';
 import Grader from './Grader';
 import Home from './Home';
-import { GRADE, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
-
 import './styles/index.scss';
-
 import { IUser } from './types/common';
 
 interface IStudentState {
@@ -136,8 +136,9 @@ class App extends React.Component<{}, IStudentState> {
               <Switch>
                 <Route exact={true} path={STUDENT} component={Student} />
                 <Route exact={true} path={GRADER} component={Grader} />
-                <Route exact={true} path={`${GRADE}/:subID`} component={Grade} />
                 <Route exact={true} path={HOME} component={Home} />
+                <Route exact={true} path={ADMIN} component={Admin} />
+                <Route exact={true} path={`${GRADE}/:subID`} component={Grade} />
               </Switch>
             </div>
           </div>

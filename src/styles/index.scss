@@ -1,12 +1,18 @@
-@import 'globals';
+@import "globals";
+$material-icons-font-path: "~material-icons/iconfont/";
 
+$primary-color: #2ecd70;
+$md-primary-color: #2ecd70;
+$md-secondary-color: #ffcdd2;
+
+@import "~material-icons/iconfont/material-icons.scss";
 @include react-md-everything;
+@include react-md-theme-everything($primary-color, $md-secondary-color);
 
 ///////////////
 // Theme
 ///////////////
 
-$primary-color: #2ecd70;
 $primary-font: roboto;
 
 ///////////////
@@ -20,6 +26,18 @@ body {
 
 .App {
   width: 100%;
+}
+
+.progressCircle {
+  @include react-md-progress-circular($primary-color);
+}
+
+.Enroll-students-table {
+  width: 800px;
+}
+
+.padding {
+  height: 50px;
 }
 
 .App-intro {

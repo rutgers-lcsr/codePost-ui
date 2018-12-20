@@ -42,3 +42,25 @@ class CourseViewSet(ListProtectedViewSet):
       return Response(serializer.data)
 
 
+  @action(detail=True, methods=['patch'])
+  def deleteRubricCategory(self, request, pk=None):
+    user = request.user
+    if not isAuthenticated(user):
+      return returnNotAuthorized()
+
+    form = IDForm(request.POST)
+    if (form.is_valid()):
+      course = Course.objects.get(id=pk)
+
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+      try:
+        category = RubricCategory.objects.get(id=form.cleaned_data['id'])
+      except:
+        return returnNotFound(message="Category doesn't exist")
+
+      category.delete()
+      return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+      return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
