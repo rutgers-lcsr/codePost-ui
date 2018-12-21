@@ -32,6 +32,7 @@ class Course(models.Model):
   organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="courses")
   period = models.CharField(max_length=32)
   students = models.ManyToManyField(User, related_name="student_courses")
+  inactive_students = models.ManyToManyField(User, related_name="student_inactive_courses")
   graders = models.ManyToManyField(User, related_name="grader_courses")
   courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
