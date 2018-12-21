@@ -7,7 +7,7 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
   class Meta:
     model = Course
     fields = ('id', 'name', 'period', 'organization', 'assignments', 'sections')
-    read_only_fields = ('assignments', 'organization')
+    read_only_fields = ('assignments', 'organization', 'sections')
     POST_permissions_fields = ()
 
   def create(self, validated_data):
@@ -25,10 +25,11 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
 
 class CourseRosterSerializer(ModelSerializerWithPOSTCheck):
   students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+  inactive_students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   graders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
   courseAdmins = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
 
   class Meta:
     model = Course
-    fields = ('id', 'name', 'period', 'students', 'graders', 'courseAdmins')
+    fields = ('id', 'name', 'period', 'students', 'inactive_students', 'graders', 'courseAdmins')
 
