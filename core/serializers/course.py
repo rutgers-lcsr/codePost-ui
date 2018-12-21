@@ -8,7 +8,7 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
   class Meta:
     model = Course
     fields = ('id', 'name', 'period', 'organization', 'assignments', 'sections')
-    read_only_fields = ('assignments', 'organization')
+    read_only_fields = ('assignments', 'organization', 'sections')
     POST_permissions_fields = ()
 
   def validate(self, data):
