@@ -6,7 +6,7 @@ import EditableComment from './EditableComment';
 
 import { IComment, IFile, IFile2, ISubmission2 } from '../../types/common';
 
-import CodeUtils from '../CodeUtils';
+import CodeBoxUtils from '../CodeBoxUtils';
 
 interface IFileToCommentsMap {
   [fileId: number]: IComment[];
@@ -231,7 +231,7 @@ const CodeBox = (props: ICodeBoxProps) => {
     props.addComment(newComment, file);
   };
 
-  const sortedHighlights = CodeUtils.sortHighlights(props.file.comments);
+  const sortedHighlights = CodeBoxUtils.sortHighlights(props.file.comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = readOnly
@@ -239,7 +239,7 @@ const CodeBox = (props: ICodeBoxProps) => {
       return (
         <div key={i} id={i.toString()}>
           {' '}
-          {CodeUtils.highlightText(sortedHighlights, item, i)}{' '}
+          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
         </div>
       );
     })
@@ -247,7 +247,7 @@ const CodeBox = (props: ICodeBoxProps) => {
       return (
         <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
           {' '}
-          {CodeUtils.highlightText(sortedHighlights, item, i)}{' '}
+          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
         </div>
       );
     });
@@ -304,7 +304,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodeUtils.pixelsPerLine();
+    let startAt = comment.startLine * CodeBoxUtils.pixelsPerLine();
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -314,7 +314,11 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeUtils.heightOfComment(comment, getRubricComment, activeCommentId);
+    const heightOfComment = CodeBoxUtils.heightOfComment(
+      comment,
+      getRubricComment,
+      activeCommentId,
+    );
     const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 

@@ -6,7 +6,7 @@ import '../../styles/Student.scss';
 
 import { Card, CardText, Chip } from 'react-md';
 
-import CodeUtils from '../CodeUtils';
+import CodeBoxUtils from '../CodeBoxUtils';
 
 import { IAssignment, IComment, IFile2, ISubmission2 } from '../../types/common';
 
@@ -75,11 +75,11 @@ interface ICodeBoxProps {
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
-  const sortedHighlights = CodeUtils.sortHighlights(props.comments);
+  const sortedHighlights = CodeBoxUtils.sortHighlights(props.comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = splitCode.map((item: any, i: number) => {
-    return <div key={i}> {CodeUtils.highlightText(sortedHighlights, item, i)} </div>;
+    return <div key={i}> {CodeBoxUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
   const lineNumbers = splitCode.map((item: any, i: number) => {
@@ -126,7 +126,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodeUtils.pixelsPerLine(); // Each line is 15px
+    let startAt = comment.startLine * CodeBoxUtils.pixelsPerLine(); // Each line is 15px
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -137,7 +137,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeUtils.heightOfComment(comment, undefined);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, undefined);
     const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 

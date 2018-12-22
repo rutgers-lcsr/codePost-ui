@@ -3,7 +3,7 @@ import { IComment } from '../types/common';
 
 const PIXELS_PER_LINE = 19;
 
-export default class CodeUtils {
+export default class CodeBoxUtils {
   public static pixelsPerLine = (): number => {
     return PIXELS_PER_LINE;
   };
