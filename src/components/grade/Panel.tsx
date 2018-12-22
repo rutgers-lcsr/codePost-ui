@@ -1,42 +1,44 @@
 import * as React from 'react';
-import { IStudent, ISubmission } from '../../types/common';
+import { IAssignment, ISubmission2 } from '../../types/common';
 import Finalize from './Finalize';
 
 import pluralize from 'pluralize';
 
 interface IPanelProps {
-  submission: ISubmission;
+  submission: ISubmission2;
+  assignment: IAssignment;
   toggleFinalized: any;
 }
 
 const Panel = (props: IPanelProps) => {
-  const { submission, toggleFinalized } = props;
+  const { assignment, submission, toggleFinalized } = props;
 
   return (
     <div className="container-info">
-      <SubmissionInfo submission={submission} />
-      <GradeBox submission={submission} />
+      <SubmissionInfo submission={submission} assignment={assignment} />
+      <GradeBox submission={submission} assignment={assignment} />
       <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
     </div>
   );
 };
 
 interface ISubmissionInfoProps {
-  submission: ISubmission;
+  submission: ISubmission2;
+  assignment: IAssignment;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
-  const { submission } = props;
+  const { assignment, submission } = props;
 
-  const students = submission.students
-    ? submission.students.map((student: IStudent) => student.profile.username)
-    : [];
-  const studentString = `${pluralize('Student', students.length)}: ${students.join(',')}`;
+  const studentString = `${pluralize(
+    'Student',
+    submission.students.length,
+  )}: ${submission.students.join(',')}`;
 
-  const grader = submission.grader ? submission.grader.profile.username : '';
+  const grader = submission.grader ? submission.grader : '';
   const graderString = `Grader: ${grader}`;
 
-  const assignmentString = `Assignment: ${submission.assignment.name}`;
+  const assignmentString = `Assignment: ${assignment.name}`;
 
   return (
     <div className="container-subinfo">
@@ -48,19 +50,19 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 };
 
 interface IGradeBoxProps {
-  submission: ISubmission;
+  submission: ISubmission2;
+  assignment: IAssignment;
 }
 
 const GradeBox = (props: IGradeBoxProps) => {
-  const { submission } = props;
+  const { submission, assignment } = props;
 
-  const gradeString = `Grade: ${submission.grade} / ${submission.assignment.points}`;
-
+  const gradeString = `Grade: ${submission.grade} / ${assignment.points}`;
   return <div className="container-grade">{gradeString}</div>;
 };
 
 interface IGradeActionsProps {
-  submission: ISubmission;
+  submission: ISubmission2;
   toggleFinalized: any;
 }
 

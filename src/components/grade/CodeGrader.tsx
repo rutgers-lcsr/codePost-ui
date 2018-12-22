@@ -4,19 +4,26 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import { IComment, IFile, ISubmission } from '../../types/common';
+import { IComment, IFile, IFile2, ISubmission2 } from '../../types/common';
 
 import CodeUtils from '../CodeUtils';
 
+interface IFileToCommentsMap {
+  [fileId: number]: IComment[];
+}
+
 interface IProps {
   deductions: number[];
-  submission: ISubmission;
+  submission: ISubmission2;
+  files: IFile2[];
+  comments: IFileToCommentsMap;
   readOnly: boolean;
   addComment: any;
   activeCommentId?: number;
   changeActive: any;
   deleteComment: any;
   updateComment: any;
+  getRubricComment: any;
 }
 
 class CodeGrader extends React.Component<IProps, {}> {
@@ -65,15 +72,17 @@ class CodeGrader extends React.Component<IProps, {}> {
       deductions,
       deleteComment,
       readOnly,
-      submission,
+      files,
+      comments,
       updateComment,
+      getRubricComment,
     } = this.props;
 
     return (
       <div className="container-code-grader">
         <Tabs>
           <TabList>
-            {submission.files.map((file: IFile, i: number) => {
+            {files.map((file: IFile2, i: number) => {
               const tabTitle = this.getTabTitle(file.name, deductions[i], file.comments.length);
               return (
                 <Tab id="{i}" key={i}>
@@ -82,19 +91,20 @@ class CodeGrader extends React.Component<IProps, {}> {
               );
             })}
           </TabList>
-          {submission.files.map((file: IFile, i: number) => {
+          {files.map((file: IFile2, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
                   <CodeBox file={file} readOnly={readOnly} addComment={this.addComment} />
                   <CommentList
                     file={file}
-                    comments={file.comments}
+                    comments={comments[file.id]}
                     readOnly={readOnly}
                     activeCommentId={activeCommentId}
                     changeActive={this.changeActive}
                     deleteComment={deleteComment}
                     updateComment={updateComment}
+                    getRubricComment={getRubricComment}
                   />
                 </div>
               </TabPanel>
@@ -264,10 +274,19 @@ interface ICommentListProps {
   changeActive: any;
   deleteComment: any;
   updateComment: any;
+  getRubricComment: any;
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment } = props;
+  const {
+    activeCommentId,
+    changeActive,
+    deleteComment,
+    file,
+    readOnly,
+    updateComment,
+    getRubricComment,
+  } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const ranges: any[] = [];
 
@@ -292,7 +311,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeUtils.heightOfComment(comment, activeCommentId);
+    const heightOfComment = CodeUtils.heightOfComment(comment, getRubricComment, activeCommentId);
     const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 
@@ -322,6 +341,7 @@ const CommentList = (props: ICommentListProps) => {
         changeActive={changeActive}
         deleteComment={deleteComment}
         updateComment={updateComment}
+        getRubricComment={getRubricComment}
       />
     );
   });

@@ -8,10 +8,14 @@ export default class CodeUtils {
     return PIXELS_PER_LINE;
   };
 
-  public static heightOfComment = (comment: IComment, activeCommentId?: number): number => {
+  public static heightOfComment = (
+    comment: IComment,
+    getRubricComment: any,
+    activeCommentId?: number,
+  ): number => {
     const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
     const linesRubricComment = comment.rubricComment
-      ? comment.rubricComment.text.length / 30 + 1
+      ? getRubricComment(comment.rubricComment).text.length / 30 + 1
       : 0;
     const linesComment = comment.text.length / 36;
     const linesButtons = activeCommentId === comment.localId ? 4 : 0;

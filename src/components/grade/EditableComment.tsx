@@ -13,6 +13,7 @@ interface IProps {
   changeActive: any;
   deleteComment: any;
   updateComment: any;
+  getRubricComment: any;
 }
 
 interface IState {
@@ -75,13 +76,13 @@ class EditableComment extends React.Component<IProps, IState> {
       // Temp fix until API
       // Boilerplate PATCH can't handle nested objects
       // Should update API to handle
-      const tosend = {
+      const payload = {
         endChar: comment.endChar,
         endLine: comment.endLine,
         id: comment.id,
         localId: comment.localId,
         pointDelta: comment.pointDelta,
-        rubricComment: comment.rubricComment ? comment.rubricComment.id : null,
+        rubricComment: comment.rubricComment,
         startChar: comment.startChar,
         startLine: comment.startLine,
         text: comment.text,
@@ -89,7 +90,7 @@ class EditableComment extends React.Component<IProps, IState> {
 
       console.log('PATCH', JSON.stringify(comment));
       fetch(`/api/comments/${comment.id}/`, {
-        body: JSON.stringify(tosend),
+        body: JSON.stringify(payload),
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -174,7 +175,7 @@ class EditableComment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { active, comment, file, deleteComment, readOnly, style } = this.props;
+    const { active, comment, file, deleteComment, readOnly, style, getRubricComment } = this.props;
     const { savingClass } = this.state;
 
     let pointDelta = '';
@@ -195,7 +196,7 @@ class EditableComment extends React.Component<IProps, IState> {
             <div className={savingClass} />
             <Chip label={pointDelta} />
             <div className="comment-rubric">
-              {comment.rubricComment ? comment.rubricComment.text : 'no standard'}
+              {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
             </div>
             {comment.text}
           </CardText>
@@ -228,7 +229,7 @@ class EditableComment extends React.Component<IProps, IState> {
             />
 
             {comment.rubricComment ? (
-              <div className="comment-rubric">{comment.rubricComment.text}</div>
+              <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
             ) : null}
 
             <textarea
@@ -261,7 +262,7 @@ class EditableComment extends React.Component<IProps, IState> {
           {pointDelta === '' ? null : <Chip label={pointDelta} />}
 
           {comment.rubricComment ? (
-            <div className="comment-rubric">{comment.rubricComment.text}</div>
+            <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
           ) : null}
           <div className="comment-text">{comment.text}</div>
           <div>

@@ -97,6 +97,14 @@ export interface IRubricCategory {
   categoryComments: IRubricComment[];
 }
 
+export interface IRubricCategory2 {
+  id: number;
+  assignment: IAssignment;
+  name: string;
+  pointLimit: number;
+  rubricComments: number[];
+}
+
 export interface ICourse2 {
   id: number;
   name: string;

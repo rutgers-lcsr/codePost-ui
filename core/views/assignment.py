@@ -1,6 +1,7 @@
 from core.models import Assignment, RubricCategory
 from core.serializers.assignment import AssignmentSerializer
 from core.serializers.submission import SubmissionStatusSerializer, SubmissionSerializer
+from core.serializers.rubricCategory import RubricCategorySerializer
 from django.contrib.auth.models import User
 
 from core.views.template import ListProtectedViewSet
