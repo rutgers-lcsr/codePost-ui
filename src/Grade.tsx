@@ -316,10 +316,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       return;
     }
 
-    // const commentsCopy = comments[file.id]
     const index = comments[file.id].findIndex((c: IComment) => c.localId === comment.localId);
-    // const commentsCopy = submission.files.find((f: IFile) => f.id === file.id).comments;
-    // const index = commentsCopy.findIndex((c: IComment) => c.localId === comment.localId);
 
     comments[file.id][index] = comment;
     this.setState({ comments });
@@ -333,8 +330,6 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       return;
     }
 
-    // const commentsCopy = submission.files.find((f: IFile) => f.id === file.id).comments;
-    // const index = commentsCopy.findIndex((c: IComment) => c.id === comment.id);
     const index = comments[file.id].findIndex((c: IComment) => c.localId === comment.localId);
 
     comments[file.id] = [
@@ -344,15 +339,18 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
 
     this.setState({ comments });
 
-    // Add promise
+    // Think about how to handle this case
+    // Options:
+    // - Leave as is. If the DELETE fails, it's not that big of a deal. Just annoying.
+    // - Keep comment rendered until DELETE completes
+    // - Remove comment render, add in a global page loading icon.
     fetch(`/api/comments/${comment.id}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
       method: 'DELETE',
     }).then((res) => {
-      // Returning '204 No Content' on success
-      // Is that correct?
+      // Returns '204 No Content' on success
       console.log('res', res);
     });
   };
@@ -408,7 +406,6 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       comments,
       isLoading,
     } = this.state;
-    const deductions: number[] = [];
 
     if (isLoading) {
       return <div>Loading...</div>;
@@ -435,7 +432,6 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
             handleRubricCommentClick={this.handleRubricCommentClick}
           />
           <CodeGrader
-            deductions={deductions}
             submission={submission}
             files={files}
             comments={comments}

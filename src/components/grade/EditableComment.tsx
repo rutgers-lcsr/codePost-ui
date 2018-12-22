@@ -178,7 +178,7 @@ class EditableComment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, getRubricComment } = this.props;
     const { savingClass } = this.state;
 
-    let pointDelta = '';
+    let pointDelta = '-0';
     if (comment.pointDelta && comment.pointDelta !== 0) {
       pointDelta = `-${comment.pointDelta}`;
     }
@@ -194,7 +194,7 @@ class EditableComment extends React.Component<IProps, IState> {
         >
           <CardText>
             <div className={savingClass} />
-            <Chip label={pointDelta} />
+            {pointDelta === '-0' ? null : <Chip label={pointDelta} />}
             <div className="comment-rubric">
               {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
             </div>
@@ -259,7 +259,7 @@ class EditableComment extends React.Component<IProps, IState> {
       >
         <CardText>
           <div className={savingClass} />
-          {pointDelta === '' ? null : <Chip label={pointDelta} />}
+          {pointDelta === '-0' ? null : <Chip label={pointDelta} />}
 
           {comment.rubricComment ? (
             <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
