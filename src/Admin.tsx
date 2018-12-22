@@ -819,6 +819,11 @@ class Admin extends React.Component<{}, IAdminState> {
   ) => {
     const { currentCourse, assignments, rubricCategories, rubricComments } = this.state;
 
+    if (categoryName.length === 0) {
+      this.addToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+      return;
+    }
+
     if (currentCourse) {
       const payload = new URLSearchParams();
       const key1 = 'name';
@@ -911,6 +916,10 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryPointLimit: number | undefined,
   ) => {
     const { currentCourse, rubricCategories } = this.state;
+    if (categoryName.length === 0) {
+      this.addToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+      return;
+    }
 
     if (currentCourse) {
       const payload = new URLSearchParams();
@@ -963,6 +972,10 @@ class Admin extends React.Component<{}, IAdminState> {
     commentDelta: number,
   ) => {
     const { currentCourse, rubricCategories, rubricComments } = this.state;
+    if (commentText.length === 0) {
+      this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
+      return;
+    }
 
     if (currentCourse) {
       const payload = new URLSearchParams();
@@ -1043,6 +1056,11 @@ class Admin extends React.Component<{}, IAdminState> {
     commentDelta: number,
   ) => {
     const { currentCourse, rubricComments } = this.state;
+
+    if (commentText.length === 0) {
+      this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
+      return;
+    }
 
     if (currentCourse) {
       const payload = new URLSearchParams();
