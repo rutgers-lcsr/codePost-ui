@@ -177,10 +177,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
               ) {
                 console.log('update');
                 this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta);
-              } else {
-                console.log(com.text);
-                console.log(com.pointDelta);
-                console.log(oldComments[cat.id][comIndex]);
               }
             }
           });
@@ -210,7 +206,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.props.deleteRubricCategory(activeAssignment.id, cat.value, cat.label);
         this.setState({ deletedCategories: [] });
       });
-      this.props.toggleLock();
 
       // Update assignment name and points if necessary
       const newName = this.assignmentNameField.getField().value;
@@ -222,8 +217,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.props.updateAssignment(activeAssignment.id, newName, newPoints);
       }
     }
-
-    this.props.addToast('Rubric has been updated.', undefined);
   };
 
   // ------------------- Functions to modify category -------------------

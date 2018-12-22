@@ -976,6 +976,7 @@ class Admin extends React.Component<{}, IAdminState> {
       this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return;
     }
+    console.log(commentText);
 
     if (currentCourse) {
       const payload = new URLSearchParams();
@@ -1195,7 +1196,7 @@ class Admin extends React.Component<{}, IAdminState> {
             id="snackbar"
             toasts={toasts}
             autohide={true}
-            autohideTimeout={1000}
+            autohideTimeout={1500}
             onDismiss={this.dismissToast}
           />
         </div>
