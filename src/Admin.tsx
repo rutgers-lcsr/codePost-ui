@@ -607,19 +607,28 @@ class Admin extends React.Component<{}, IAdminState> {
           if (json) {
             if (userType === UserEnum.Student) {
               console.log(json);
-              this.setState({
-                students: json.students,
-              });
+              this.setState(
+                {
+                  students: json.students,
+                },
+                () => this.addToast('Student roster successfully updated.', undefined),
+              );
             } else if (userType === UserEnum.Grader) {
               console.log(json);
-              this.setState({
-                graders: json.graders,
-              });
+              this.setState(
+                {
+                  graders: json.graders,
+                },
+                () => this.addToast('Grader roster successfully updated.', undefined),
+              );
             } else if (userType === UserEnum.CourseAdmin) {
               console.log(json);
-              this.setState({
-                admins: json.courseAdmins,
-              });
+              this.setState(
+                {
+                  admins: json.courseAdmins,
+                },
+                () => this.addToast('Admin roster successfully updated.', undefined),
+              );
             }
           }
         });
@@ -659,14 +668,35 @@ class Admin extends React.Component<{}, IAdminState> {
     const { students, graders, admins } = this.state;
     if (currentCourse) {
       if (userType === UserEnum.Student) {
-        students.push(userEmail);
-        this.changeRoster(students, userType);
+        if (students.indexOf(userEmail) !== -1) {
+          this.addToast('Student is already enrolled in course', undefined);
+          return;
+        }
+        // Need to do a deep copy of state array in case adding fails, we don't
+        // want to update the state
+        const newStudents = JSON.parse(JSON.stringify(students));
+        newStudents.push(userEmail);
+        this.changeRoster(newStudents, userType);
       } else if (userType === UserEnum.Grader) {
-        graders.push(userEmail);
-        this.changeRoster(graders, userType);
+        if (graders.indexOf(userEmail) !== -1) {
+          this.addToast('Grader is already enrolled in course', undefined);
+          return;
+        }
+        // Need to do a deep copy of state array in case adding fails, we don't
+        // want to update the state
+        const newGraders = JSON.parse(JSON.stringify(graders));
+        newGraders.push(userEmail);
+        this.changeRoster(newGraders, userType);
       } else if (userType === UserEnum.CourseAdmin) {
-        admins.push(userEmail);
-        this.changeRoster(admins, userType);
+        if (admins.indexOf(userEmail) !== -1) {
+          this.addToast('Admin is already enrolled in course', undefined);
+          return;
+        }
+        // Need to do a deep copy of state array in case adding fails, we don't
+        // want to update the state
+        const newAdmins = JSON.parse(JSON.stringify(admins));
+        newAdmins.push(userEmail);
+        this.changeRoster(newAdmins, userType);
       }
       // this.addToast(`New ${userType} ${json.profile.username} added`, undefined);
     }

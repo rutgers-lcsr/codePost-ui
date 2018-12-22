@@ -48,6 +48,11 @@ class ManageStudents extends React.Component<IProps, {}> {
     }
   };
 
+  public triggerEnrollUser = (newUserEmail: string, userType: UserEnum) => {
+    this.props.enrollUser(newUserEmail, userType);
+    this.setState({ newAdminField: '' });
+  };
+
   public rowSelect = (adminEmail: string, rowID: number, checked: boolean) => {
     const { selectedAdmins } = this.state;
     if (checked) {
@@ -68,7 +73,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { adminsLoadComplete, lockedAdminChange, enrollUser, admins } = this.props;
+    const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
     const { newAdminField, selectedAdmins } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
@@ -93,7 +98,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewAdminButton || lockedAdminChange}
-            onClick={enrollUser.bind(this.props, newAdminField, adminType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newAdminField, adminType)}
           >
             Save new admin
           </Button>

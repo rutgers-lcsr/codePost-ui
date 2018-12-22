@@ -48,6 +48,11 @@ class ManageGraders extends React.Component<IProps, {}> {
     }
   };
 
+  public triggerEnrollUser = (newUserEmail: string, userType: UserEnum) => {
+    this.props.enrollUser(newUserEmail, userType);
+    this.setState({ newField: '' });
+  };
+
   public rowSelect = (graderEmail: string, rowID: number, checked: boolean) => {
     const { selectedUsers } = this.state;
     if (checked) {
@@ -68,7 +73,7 @@ class ManageGraders extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { gradersLoadComplete, lockedGraderChange, enrollUser, graders } = this.props;
+    const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
     const { newField, selectedUsers } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
@@ -93,7 +98,7 @@ class ManageGraders extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewButton || lockedGraderChange}
-            onClick={enrollUser.bind(this.props, newField, graderType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
           >
             Save new grader
           </Button>

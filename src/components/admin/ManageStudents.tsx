@@ -69,6 +69,11 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ changedSections: {} });
   };
 
+  public triggerEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
+    this.props.enrollUser(newStudentEmail, studentType);
+    this.setState({ newStudentField: '' });
+  };
+
   public rowSectionChange = (studentEmail: string, value: number) => {
     const { changedSections } = this.state;
     changedSections[studentEmail] = value;
@@ -98,7 +103,6 @@ class ManageStudents extends React.Component<IProps, {}> {
     const {
       studentsLoadComplete,
       lockedStudentChange,
-      enrollUser,
       students,
       sections,
       sectionsByStudent,
@@ -133,7 +137,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewStudentButton || lockedStudentChange}
-            onClick={enrollUser.bind(this.props, newStudentField, studentType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
           >
             Save new student
           </Button>
