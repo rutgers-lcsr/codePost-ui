@@ -743,10 +743,9 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public addStudentToSection = (sectionID: number, studentEmail: string) => {
-    const { currentCourse } = this.state;
     const { sections, sectionsByStudent } = this.state;
 
-    if (currentCourse) {
+    return new Promise((resolve) => {
       const thisSection = sections.filter((section) => {
         return section.id === sectionID;
       })[0];
@@ -784,19 +783,19 @@ class Admin extends React.Component<{}, IAdminState> {
               id: json.id,
             };
 
-            this.setState({ sections: newSections, sectionsByStudent }, () =>
-              this.addToast(`Student ${studentEmail} added to section ${name}`, undefined),
-            );
+            this.setState({ sections: newSections, sectionsByStudent }, () => {
+              this.addToast(`Student ${studentEmail} added to section ${name}`, undefined);
+              return resolve(json.id);
+            });
           }
         });
-    }
+    });
   };
 
   public addLeaderToSection = (sectionID: number, leaderEmail: string) => {
-    const { currentCourse } = this.state;
     const { sections } = this.state;
 
-    if (currentCourse) {
+    return new Promise((resolve) => {
       const payload = { id: sectionID, leaders: [leaderEmail] };
 
       fetch(`/api/sections/${sectionID}/`, {
@@ -819,24 +818,19 @@ class Admin extends React.Component<{}, IAdminState> {
             let name = '';
             const newSections = sections.map((section) => {
               if (section.id === sectionID) {
-                // Reminder-- this currently works for a single leader per section.
-                // Once we change the front end to be flexible, this needs to be uncommented
-                // if (section.leader) {
-                //   section.leader.push(json);
-                // } else {
                 section.leaders = json.leaders;
-                // }
                 name = section.name;
               }
               return section;
             });
 
-            this.setState({ sections: newSections }, () =>
-              this.addToast(`${json.leaders[0]} set as leader of section ${name}`, undefined),
-            );
+            this.setState({ sections: newSections }, () => {
+              this.addToast(`${json.leaders[0]} set as leader of section ${name}`, undefined);
+              return resolve(json.leaders);
+            });
           }
         });
-    }
+    });
   };
 
   // ------------------- Manage assignments API calls  ------------------

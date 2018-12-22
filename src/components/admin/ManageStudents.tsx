@@ -25,20 +25,20 @@ interface IProps {
   enrollUser: (email: string, type: UserEnum) => void;
   unEnrollUsers: (emails: string[], type: UserEnum) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  addStudentToSection: (sectionID: number, studentEmail: string) => void;
+  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<{}>;
 }
 
 interface IState {
   newStudentField: string | undefined;
   selectedStudents: string[];
-  changedSections: { [studentEmail: string]: number };
+  changedSectionStudents: string[];
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
     selectedStudents: [],
-    changedSections: {},
+    changedSectionStudents: [],
   };
 
   public triggerUnEnrollStudents = () => {
@@ -55,29 +55,24 @@ class ManageStudents extends React.Component<IProps, {}> {
     }
   };
 
-  public triggerAddStudentsToSections = () => {
-    // Reminder --- calling this for multiple students triggers
-    // alock in the database... need to fix
-    const { changedSections } = this.state;
-    const { addStudentToSection } = this.props;
-
-    Object.keys(changedSections).forEach((studentEmail) => {
-      const sectionID = changedSections[studentEmail];
-      addStudentToSection(Number(sectionID), studentEmail);
-    });
-
-    this.setState({ changedSections: {} });
-  };
-
   public triggerEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
     this.props.enrollUser(newStudentEmail, studentType);
     this.setState({ newStudentField: '' });
   };
 
   public rowSectionChange = (studentEmail: string, value: number) => {
-    const { changedSections } = this.state;
-    changedSections[studentEmail] = value;
-    this.setState({ changedSections });
+    let { changedSectionStudents } = this.state;
+    const { addStudentToSection } = this.props;
+
+    changedSectionStudents.push(studentEmail);
+    this.setState({ changedSectionStudents });
+
+    addStudentToSection(value, studentEmail).then(() => {
+      changedSectionStudents = changedSectionStudents.filter((i) => {
+        return i !== studentEmail;
+      });
+      this.setState({ changedSectionStudents });
+    });
   };
 
   public rowSelect = (studentID: string, rowID: number, checked: boolean) => {
@@ -107,7 +102,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       sections,
       sectionsByStudent,
     } = this.props;
-    const { newStudentField, selectedStudents, changedSections } = this.state;
+    const { newStudentField, selectedStudents, changedSectionStudents } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -142,14 +137,6 @@ class ManageStudents extends React.Component<IProps, {}> {
             Save new student
           </Button>
           <Button
-            iconChildren="done"
-            className="save-Btn"
-            disabled={lockedStudentChange || Object.keys(changedSections).length === 0}
-            onClick={this.triggerAddStudentsToSections}
-          >
-            Save sections
-          </Button>
-          <Button
             iconChildren="delete"
             className="delete-Btn"
             disabled={lockedStudentChange || selectedStudents.length === 0}
@@ -169,14 +156,14 @@ class ManageStudents extends React.Component<IProps, {}> {
             <TableBody>
               {students.map((student) => {
                 const section = sectionsByStudent[student];
-
-                let sectionID = section ? section.id : '';
+                const sectionID = section ? section.id : '';
 
                 let dropDown;
+                let sectionDisable = false;
 
-                if (student in changedSections) {
-                  sectionID = changedSections[student];
+                if (changedSectionStudents.indexOf(student) !== -1) {
                   dropDown = iconChanged;
+                  sectionDisable = true;
                 } else {
                   dropDown = undefined;
                 }
@@ -191,7 +178,7 @@ class ManageStudents extends React.Component<IProps, {}> {
                       dropdownIcon={dropDown}
                       value={sectionID}
                       menuItems={sectionMenuItems}
-                      disabled={lockedStudentChange}
+                      disabled={lockedStudentChange || sectionDisable}
                       onChange={this.rowSectionChange.bind(this.props, student)}
                     />
                   </TableRow>
