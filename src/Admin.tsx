@@ -1056,17 +1056,15 @@ class Admin extends React.Component<{}, IAdminState> {
         body: payload,
       }).then((res) => {
         if (res.status === 204) {
-          const catIndex = rubricCategories[assignmentID]
-            .map((cat) => {
-              return cat.id;
-            })
-            .indexOf(categoryID);
-          if (catIndex !== -1) {
-            rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
-              return com.id !== commentID;
-            });
-          }
-          this.setState({ rubricCategories, rubricComments });
+          rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
+            console.log(com.id);
+            console.log(commentID);
+            return com.id !== commentID;
+          });
+          console.log(rubricComments[categoryID]);
+          this.setState({ rubricCategories, rubricComments }, () =>
+            this.addToast('Comment Deleted.', undefined),
+          );
         } else {
           this.addToast('Something went wrong.', undefined);
         }
@@ -1080,51 +1078,49 @@ class Admin extends React.Component<{}, IAdminState> {
     commentText: string,
     commentDelta: number,
   ) => {
-    const { currentCourse, rubricComments } = this.state;
+    const { rubricComments } = this.state;
+
+    const payload = { id: commentID };
 
     if (commentText.length === 0) {
       this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return;
     }
+    const key1 = 'text';
+    payload[key1] = commentText;
 
-    if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'id';
-      const key2 = 'text';
-      const key3 = 'pointDelta';
-      payload.append(key1, String(commentID));
-      payload.append(key2, commentText);
-      payload.append(key3, String(commentDelta));
+    const key2 = 'pointDelta';
+    payload[key2] = commentDelta;
 
-      fetch(`/api/rubriccomments/${commentID}/`, {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-        },
-        method: 'PATCH',
-        body: payload,
+    fetch(`/api/rubriccomments/${commentID}/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        } else {
+          this.addToast('Something went wrong.', undefined);
+          return undefined;
+        }
       })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json();
-          } else {
-            this.addToast('Something went wrong.', undefined);
-            return undefined;
+      .then((json) => {
+        if (json) {
+          const comIndex = rubricComments[categoryID]
+            .map((com) => {
+              return com.id;
+            })
+            .indexOf(commentID);
+          if (comIndex !== -1) {
+            rubricComments[categoryID][comIndex] = json;
           }
-        })
-        .then((json) => {
-          if (json) {
-            const comIndex = rubricComments[categoryID]
-              .map((com) => {
-                return com.id;
-              })
-              .indexOf(commentID);
-            if (comIndex !== -1) {
-              rubricComments[categoryID][comIndex] = json;
-            }
-            this.setState({ rubricComments });
-          }
-        });
-    }
+          this.setState({ rubricComments }, () => this.addToast('Comment updated.', undefined));
+        }
+      });
   };
 
   public updateAssignment = (

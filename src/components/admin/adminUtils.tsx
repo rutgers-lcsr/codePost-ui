@@ -21,6 +21,7 @@ interface IPropsRubricComment {
   defaultDelta: number;
   isDisabled: boolean;
   deleteComment: (categoryID: number, commentIndex: number) => void;
+  updateComment: (categoryID: number, commentIndex: number) => void;
 }
 interface IPropsRubricCategory {
   categoryID: number;
@@ -29,6 +30,7 @@ interface IPropsRubricCategory {
   changeCommentText: (categoryID: number, commentIndex: number, newText: string) => void;
   changeCommentDelta: (categoryID: number, commentIndex: number, newDelta: number) => void;
   deleteComment: (categoryID: number, commentIndex: number) => void;
+  updateComment: (categoryID: number, commentIndex: number) => void;
 
   // Category props
   comments: IRubricComment[];
@@ -58,6 +60,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     changeCommentText,
     changeCommentDelta,
     deleteComment,
+    updateComment,
   } = props;
 
   const changeThisCommentText = (newText: string) => {
@@ -72,6 +75,10 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     deleteComment(categoryID, commentIndex);
   };
 
+  const updateThisComment = () => {
+    updateComment(categoryID, commentIndex);
+  };
+
   return (
     <TableRow key={commentID}>
       <TableColumn>
@@ -82,6 +89,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
           noIcon={isDisabled}
           centered={true}
           onChange={changeThisCommentText}
+          onBlur={updateThisComment}
         />
       </TableColumn>
       <TableColumn>
@@ -96,6 +104,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
           noIcon={isDisabled}
           centered={true}
           onChange={changeThisCommentDelta}
+          onBlur={updateThisComment}
         />
       </TableColumn>
       <TableColumn>
@@ -129,6 +138,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     changeCategoryCap,
     deleteCategory,
     addEmptyComment,
+    updateComment,
   } = props;
 
   const changeThisCategoryText = (newText: string) => {
@@ -162,6 +172,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             defaultText={comm.text}
             defaultDelta={comm.pointDelta}
             isDisabled={isDisabled}
+            updateComment={updateComment}
           />
         );
       });
