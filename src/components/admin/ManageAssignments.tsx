@@ -3,6 +3,7 @@ import {
   Button,
   CircularProgress,
   DataTable,
+  SelectionControl,
   TableBody,
   TableColumn,
   TableHeader,
@@ -60,7 +61,12 @@ interface IProps {
     categoryName: string,
     categoryPointLimit: number | undefined,
   ) => void;
-  updateAssignment: (assignnmentID: number, name: string, points: number) => void;
+  updateAssignment: (
+    assignnmentID: number,
+    name: string | undefined,
+    points: number | undefined,
+    isReleased: boolean | undefined,
+  ) => void;
 }
 
 interface IState {
@@ -214,7 +220,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
         newName !== activeAssignment.name ||
         Number(newPoints) !== Number(activeAssignment.points)
       ) {
-        this.props.updateAssignment(activeAssignment.id, newName, newPoints);
+        this.props.updateAssignment(
+          activeAssignment.id,
+          newName,
+          newPoints,
+          activeAssignment.isReleased,
+        );
       }
     }
   };
@@ -451,6 +462,21 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 label={'Total Points'}
                 fullWidth={false}
                 disabled={lockManageAssignment}
+              />
+              <SelectionControl
+                id="assignment-release-checkbox"
+                name="assignment-release-checkbox"
+                type="checkbox"
+                label="released"
+                defaultChecked={activeAssignment.isReleased}
+                disabled={lockManageAssignment}
+                onChange={this.props.updateAssignment.bind(
+                  this.props,
+                  activeAssignment.id,
+                  undefined,
+                  undefined,
+                  !activeAssignment.isReleased,
+                )}
               />
               <Button
                 iconChildren="done"
