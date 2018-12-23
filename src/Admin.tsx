@@ -1133,8 +1133,8 @@ class Admin extends React.Component<{}, IAdminState> {
     if (currentCourse) {
       const payload = new URLSearchParams();
       const key1 = 'id';
-      const key2 = 'text';
-      const key3 = 'pointDelta';
+      const key2 = 'name';
+      const key3 = 'points';
       const key4 = 'course';
       payload.append(key1, String(assignmentID));
       payload.append(key2, name);
