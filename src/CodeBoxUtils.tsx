@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IComment } from '../types/common';
+import { IComment } from './types/common';
 
 const PIXELS_PER_LINE = 19;
 

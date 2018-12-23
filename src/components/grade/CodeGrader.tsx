@@ -6,7 +6,7 @@ import EditableComment from './EditableComment';
 
 import { IComment, IFile, IFile2, ISubmission2 } from '../../types/common';
 
-import CodeBoxUtils from '../CodeBoxUtils';
+import CodeBoxUtils from '../../CodeBoxUtils';
 
 interface IFileToCommentsMap {
   [fileId: number]: IComment[];

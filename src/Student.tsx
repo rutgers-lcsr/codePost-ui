@@ -8,6 +8,8 @@ import './styles/Student.scss';
 
 import { IAssignment, IComment, ICourse2, IFile2, IOption, ISubmission2 } from './types/common';
 
+import APIUtils from './APIUtils';
+
 interface ICourseToAssignmentMap {
   [courseId: number]: IAssignment[];
 }
@@ -83,7 +85,7 @@ class Student extends React.Component<{}, IStudentState> {
   public loadAssignments = (course: ICourse2) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
-        return this.fetchAssignment(assignmentId).then((assignment) => {
+        return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
           let assignments = [assignment];
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
@@ -116,7 +118,7 @@ class Student extends React.Component<{}, IStudentState> {
   public loadFiles = (submission: ISubmission2) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return this.fetchFile(fileId).then((file: IFile2) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile2) => {
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -129,7 +131,7 @@ class Student extends React.Component<{}, IStudentState> {
   public loadComments = (file: IFile2) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
-        return this.fetchComment(commentId).then((comment: IComment) => {
+        return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
           let comments = [comment];
           if (this.state.comments[file.id]) {
@@ -166,20 +168,6 @@ class Student extends React.Component<{}, IStudentState> {
       });
   };
 
-  public fetchAssignment = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
   public fetchSubmission = (id: string | number) => {
     return fetch(`/api/assignments/${id}/submissions/?student=${this.state.email}`, {
       headers: {
@@ -196,34 +184,6 @@ class Student extends React.Component<{}, IStudentState> {
         // should not happen, should be an error
         // right now just avoiding the null check in loadSubmissions
         return json[0];
-      });
-  };
-
-  public fetchFile = (id: string | number) => {
-    return fetch(`/api/files/${id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchComment = (id: number) => {
-    return fetch(`/api/comments/${id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
       });
   };
 

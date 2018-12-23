@@ -7,6 +7,8 @@ import Rubric from './components/grade/Rubric';
 
 import './styles/Grade.scss';
 
+import APIUtils from './APIUtils';
+
 import {
   IAssignment,
   IComment,
@@ -40,7 +42,10 @@ interface IGradeState {
   comments: IFileToCommentsMap;
 }
 
-class Grade extends React.Component<{ match: { params: { subID: typeof Number } } }, IGradeState> {
+class Grade extends React.Component<
+  { match: { params: { submissionId: typeof Number } } },
+  IGradeState
+  > {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
@@ -84,7 +89,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   ///////////////////////////////////////
 
   public loadAssignment = (assignmentId: number) => {
-    return this.fetchAssignment(assignmentId).then((assignment: any) => {
+    return APIUtils.fetchAssignment(assignmentId).then((assignment: any) => {
       console.log('4.1 - saving assignment: ', assignment);
       this.setState({ assignment });
       return assignment;
@@ -92,8 +97,8 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   };
 
   public loadSubmission = () => {
-    const subID: number = +this.props.match.params.subID.valueOf();
-    return this.fetchSubmission(subID).then((submission: any) => {
+    const submissionId: number = +this.props.match.params.submissionId.valueOf();
+    return APIUtils.fetchSubmission(submissionId).then((submission: any) => {
       return this.loadFiles(submission).then(() => {
         console.log('3 - saving submission: ', submission);
         this.setState({ submission });
@@ -105,7 +110,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   public loadFiles = (submission: ISubmission2) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return this.fetchFile(fileId).then((file: IFile2) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile2) => {
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -118,7 +123,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   public loadComments = (file: IFile2) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
-        return this.fetchComment(commentId).then((comment: IComment) => {
+        return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
           let comments = [comment];
           if (this.state.comments[file.id]) {
@@ -136,7 +141,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   };
 
   public loadRubricCategories = (assignmentId: number) => {
-    return this.fetchRubricCategories(assignmentId).then((rubricCategories) => {
+    return APIUtils.fetchRubricCategories(assignmentId).then((rubricCategories) => {
       return Promise.all(
         rubricCategories.map((rubricCategory: IRubricCategory2) => {
           return this.loadRubricComments(rubricCategory);
@@ -152,19 +157,21 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   public loadRubricComments = (rubricCategory: IRubricCategory2) => {
     return Promise.all(
       rubricCategory.rubricComments.map((rubricCommentId: number) => {
-        return this.fetchRubricComment(rubricCommentId).then((rubricComment: IRubricComment) => {
-          console.log('4.11 - saving rubricComment:', rubricComment);
-          let rubricComments = [rubricComment];
-          if (this.state.rubricComments[rubricCategory.id]) {
-            rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
-          }
-          this.setState({
-            rubricComments: {
-              ...this.state.rubricComments,
-              [rubricCategory.id]: rubricComments,
-            },
-          });
-        });
+        return APIUtils.fetchRubricComment(rubricCommentId).then(
+          (rubricComment: IRubricComment) => {
+            console.log('4.11 - saving rubricComment:', rubricComment);
+            let rubricComments = [rubricComment];
+            if (this.state.rubricComments[rubricCategory.id]) {
+              rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
+            }
+            this.setState({
+              rubricComments: {
+                ...this.state.rubricComments,
+                [rubricCategory.id]: rubricComments,
+              },
+            });
+          },
+        );
       }),
     );
   };
@@ -172,94 +179,6 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   ///////////////////////////////////////
   // Fetch requests
   ///////////////////////////////////////
-
-  public fetchAssignment = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchComment = (id: number) => {
-    return fetch(`/api/comments/${id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchFile = (id: string | number) => {
-    return fetch(`/api/files/${id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchSubmission = (id: number) => {
-    return fetch(`/api/submissions/${id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        if (json.detail === 'Not found.') {
-          return undefined;
-        } else {
-          return json;
-        }
-      });
-  };
-
-  public fetchRubricCategories = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/rubric/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchRubricComment = (rubricCommentId: number) => {
-    return fetch(`/api/rubricComments/${rubricCommentId}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
 
   ///////////////////////////////////////
   // Handlers

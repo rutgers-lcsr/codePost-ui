@@ -7,6 +7,8 @@ import './styles/Grader.scss';
 
 import { IAssignment, ICourse2, IOption, ISubmission2 } from './types/common';
 
+import APIUtils from './APIUtils';
+
 interface ICourseToAssignmentMap {
   [courseId: number]: IAssignment[];
 }
@@ -74,7 +76,7 @@ class Grader extends React.Component<{}, IGraderState> {
   public loadAssignments = (course: ICourse2) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
-        return this.fetchAssignment(assignmentId).then((assignment) => {
+        return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
           let assignments = [assignment];
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
@@ -91,10 +93,12 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public loadSubmissions = (assignment: IAssignment) => {
-    return this.fetchSubmissions(assignment.id).then((currentSubmissions) => {
-      console.log('1 - saving submissions', currentSubmissions);
-      this.setState({ currentSubmissions });
-    });
+    return APIUtils.fetchSubmissions(assignment.id, `grader=${this.state.email}`).then(
+      (currentSubmissions: any) => {
+        console.log('1 - saving submissions', currentSubmissions);
+        this.setState({ currentSubmissions });
+      },
+    );
   };
 
   ///////////////////////////////////////
@@ -114,34 +118,6 @@ class Grader extends React.Component<{}, IGraderState> {
         this.setState({ email: json.email });
         const graderCourses = 'graderCourses';
         return json[graderCourses];
-      });
-  };
-
-  public fetchAssignment = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public fetchSubmissions = (id: number) => {
-    return fetch(`/api/assignments/${id}/submissions/?grader=${this.state.email}`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        return json;
       });
   };
 
@@ -166,7 +142,7 @@ class Grader extends React.Component<{}, IGraderState> {
       this.loadSubmissions(currentAssignment)
         .then(() => {
           this.setState({ currentAssignment });
-          console.log('2 - saving assignment', currentAssignment);
+          console.log('2 - saving current assignment', currentAssignment);
           console.log('~fin~');
         })
         .then(() => {

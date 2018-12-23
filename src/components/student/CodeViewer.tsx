@@ -6,7 +6,7 @@ import '../../styles/Student.scss';
 
 import { Card, CardText, Chip } from 'react-md';
 
-import CodeBoxUtils from '../CodeBoxUtils';
+import CodeBoxUtils from '../../CodeBoxUtils';
 
 import { IAssignment, IComment, IFile2, ISubmission2 } from '../../types/common';
 
