@@ -59,13 +59,12 @@ export interface IFile {
 
 export interface IComment {
   id: number;
-  localId: number;
   author: any;
   startChar: number;
   endChar: number;
   startLine: number;
   endLine: number;
-  pointDelta: number | string;
+  pointDelta: number;
   text: string;
   rubricComment: any;
   file: number;

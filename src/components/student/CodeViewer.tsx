@@ -187,8 +187,8 @@ const Comment = (props: ICommentProps) => {
     <Card
       className="comment"
       style={style}
-      onMouseEnter={onMouseEnter.bind(props, comment.localId.toString())}
-      onMouseLeave={onMouseLeave.bind(props, comment.localId.toString())}
+      onMouseEnter={onMouseEnter.bind(props, comment.id.toString())}
+      onMouseLeave={onMouseLeave.bind(props, comment.id.toString())}
     >
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}

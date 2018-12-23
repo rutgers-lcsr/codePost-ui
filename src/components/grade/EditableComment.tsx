@@ -158,10 +158,8 @@ class EditableComment extends React.Component<IProps, IState> {
 
   public validateSave = () => {
     const { comment, file, updateComment } = this.props;
-    if (comment.pointDelta === '') {
-      comment.pointDelta = 0;
-      updateComment(comment.id, comment, file);
-    }
+
+    updateComment(comment.id, comment, file);
 
     // if (isNaN(comment.pointDelta)) {
     //   this.setState({ saveWarning: true });
@@ -200,10 +198,7 @@ class EditableComment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, getRubricComment } = this.props;
     const { savingClass } = this.state;
 
-    let pointDelta = '-0';
-    if (comment.pointDelta && comment.pointDelta !== 0) {
-      pointDelta = `-${comment.pointDelta}`;
-    }
+    const pointDeltaLabel = `-${comment.pointDelta}`;
 
     let className = 'comment';
     if (comment.id < 0) {
@@ -221,7 +216,7 @@ class EditableComment extends React.Component<IProps, IState> {
         >
           <CardText>
             <div className={savingClass} />
-            {pointDelta === '-0' ? null : <Chip label={pointDelta} />}
+            {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
             <div className="comment-rubric">
               {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
             </div>
@@ -248,13 +243,15 @@ class EditableComment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment-pointdelta-field"
-              lineDirection="center"
-              label="Deduction"
-              placeholder="0"
+              defaultValue={comment.pointDelta}
+              step={0.5}
+              pattern="^d+(\.|\,)\d{1}"
+              type="number"
+              min={0}
+              label={'Deduction'}
+              fullWidth={true}
               onChange={this.updateDeduction}
-              value={comment.pointDelta}
             />
-
             {comment.rubricComment ? (
               <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
             ) : null}
@@ -286,7 +283,7 @@ class EditableComment extends React.Component<IProps, IState> {
       >
         <CardText>
           <div className={savingClass} />
-          {pointDelta === '-0' ? null : <Chip label={pointDelta} />}
+          {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
 
           {comment.rubricComment ? (
             <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
