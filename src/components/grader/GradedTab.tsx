@@ -6,6 +6,7 @@ import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 interface IProps {
   assignment?: IAssignment;
   submissions: ISubmission2[];
+  isLoadingSubmissions: boolean;
   claimSubmission: (assignment: IAssignment) => any;
   releaseSubmission: (submission: ISubmission2) => any;
 }
@@ -52,7 +53,7 @@ class GradedTab extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { assignment, submissions } = this.props;
+    const { assignment, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
@@ -61,7 +62,10 @@ class GradedTab extends React.Component<IProps, {}> {
       cursor: 'pointer',
     };
 
-    console.log('submissions', submissions);
+    if (isLoadingSubmissions) {
+      return <div className="container-graded-tab">Loading..</div>;
+    }
+
     if (assignment && submissions.length > 0) {
       return (
         <div className="container-graded-tab">

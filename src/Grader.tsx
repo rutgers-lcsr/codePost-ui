@@ -277,7 +277,13 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmissions } = this.state;
+    const {
+      courses,
+      currentAssignment,
+      currentCourse,
+      currentSubmissions,
+      isLoadingSubmissions,
+    } = this.state;
     return (
       <div>
         {this.renderRedirect()}
@@ -296,6 +302,7 @@ class Grader extends React.Component<{}, IGraderState> {
             releaseSubmission={this.releaseSubmission}
             assignment={currentAssignment}
             submissions={currentSubmissions}
+            isLoadingSubmissions={isLoadingSubmissions}
           />
         </div>
       </div>
