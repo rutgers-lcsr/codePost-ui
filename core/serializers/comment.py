@@ -10,7 +10,7 @@ class CommentSerializer(ModelSerializerWithPOSTCheck):
 
   class Meta:
     model = Comment
-    fields = ('id', 'text', 'pointDelta', 'startChar', 'endChar', 'startLine', 'endLine', 'file', 'rubricComment', 'author', 'localId')
+    fields = ('id', 'text', 'pointDelta', 'startChar', 'endChar', 'startLine', 'endLine', 'file', 'rubricComment', 'author')
     read_only_fields = ('author',)
     POST_permissions_fields = ('file',)
 

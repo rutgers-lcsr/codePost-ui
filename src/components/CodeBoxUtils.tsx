@@ -18,7 +18,7 @@ export default class CodeBoxUtils {
       ? getRubricComment(comment.rubricComment).text.length / 30 + 1
       : 0;
     const linesComment = comment.text.length / 36;
-    const linesButtons = activeCommentId === comment.localId ? 4 : 0;
+    const linesButtons = activeCommentId === comment.id ? 4 : 0;
     const buffer = 6;
 
     const totalLines = linesDeduction + linesRubricComment + linesComment + linesButtons + buffer;
@@ -48,7 +48,7 @@ export default class CodeBoxUtils {
       if (highlight.startLine < line && highlight.endLine > line) {
         // this line sits between a multi-line highlight
         return (
-          <strong id={line.toString()} className={highlight.localId.toString()}>
+          <strong id={line.toString()} className={highlight.id.toString()}>
             {thetext}
           </strong>
         );
@@ -67,7 +67,7 @@ export default class CodeBoxUtils {
           return (
             <div id={line.toString()}>
               {part1}
-              <strong className={highlight.localId.toString()}>{part2}</strong>
+              <strong className={highlight.id.toString()}>{part2}</strong>
               {part3}
             </div>
           );
@@ -77,7 +77,7 @@ export default class CodeBoxUtils {
         return (
           <div id={line.toString()}>
             {part1}
-            <strong className={highlight.localId.toString()}>{part2}</strong>
+            <strong className={highlight.id.toString()}>{part2}</strong>
           </div>
         );
       }
@@ -86,7 +86,7 @@ export default class CodeBoxUtils {
         const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
         return (
           <div id={line.toString()}>
-            <strong className={highlight.localId.toString()}>{part1}</strong>
+            <strong className={highlight.id.toString()}>{part1}</strong>
             {part2}
           </div>
         );

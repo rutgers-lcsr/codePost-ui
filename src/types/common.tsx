@@ -68,6 +68,7 @@ export interface IComment {
   pointDelta: number | string;
   text: string;
   rubricComment: any;
+  file: number;
 }
 
 export interface IProfile {

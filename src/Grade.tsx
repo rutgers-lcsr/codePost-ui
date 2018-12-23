@@ -273,7 +273,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
     }
 
     for (const file of files) {
-      const index = comments[file.id].findIndex((c: IComment) => c.localId === activeCommentId);
+      const index = comments[file.id].findIndex((c: IComment) => c.id === activeCommentId);
       if (index !== -1) {
         comments[file.id][index].rubricComment = rubricComment.id;
         this.setState({ comments });
@@ -310,15 +310,16 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
     this.setState({ comments });
   };
 
-  public updateComment = (comment: IComment, file: IFile) => {
+  public updateComment = (commentId: number, newComment: IComment, file: IFile) => {
     const { submission, comments } = this.state;
     if (!submission) {
       return;
     }
 
-    const index = comments[file.id].findIndex((c: IComment) => c.localId === comment.localId);
+    const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentId);
 
-    comments[file.id][index] = comment;
+    comments[file.id][index] = newComment;
+
     this.setState({ comments });
   };
 
@@ -330,7 +331,7 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       return;
     }
 
-    const index = comments[file.id].findIndex((c: IComment) => c.localId === comment.localId);
+    const index = comments[file.id].findIndex((c: IComment) => c.id === comment.id);
 
     comments[file.id] = [
       ...comments[file.id].slice(0, index),
@@ -344,15 +345,17 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
     // - Leave as is. If the DELETE fails, it's not that big of a deal. Just annoying.
     // - Keep comment rendered until DELETE completes
     // - Remove comment render, add in a global page loading icon.
-    fetch(`/api/comments/${comment.id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-      method: 'DELETE',
-    }).then((res) => {
-      // Returns '204 No Content' on success
-      console.log('res', res);
-    });
+    if (comment.id > 0) {
+      fetch(`/api/comments/${comment.id}/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+        },
+        method: 'DELETE',
+      }).then((res) => {
+        // Returns '204 No Content' on success
+        console.log('res', res);
+      });
+    }
   };
 
   public toggleFinalized = () => {

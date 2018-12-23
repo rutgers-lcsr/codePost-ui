@@ -25,7 +25,14 @@ interface IProps {
   getRubricComment: any;
 }
 
-class CodeGrader extends React.Component<IProps, {}> {
+interface IState {
+  commentCounter: number;
+}
+
+class CodeGrader extends React.Component<IProps, IState> {
+  public state: Readonly<IState> = {
+    commentCounter: -1,
+  };
   //////////////////////////////////////
   // Lifecycle Methods
   //////////////////////////////////////
@@ -36,12 +43,16 @@ class CodeGrader extends React.Component<IProps, {}> {
 
   public addComment = (comment: IComment, file: IFile) => {
     const { addComment } = this.props;
-    this.props.changeActive(comment.localId);
+    this.props.changeActive(comment.id);
     addComment(comment, file);
   };
 
   public changeActive = (id: number) => {
     this.props.changeActive(id);
+  };
+
+  public updateCommentCounter = () => {
+    this.setState({ commentCounter: this.state.commentCounter - 1 });
   };
 
   //////////////////////////////////////
@@ -81,6 +92,8 @@ class CodeGrader extends React.Component<IProps, {}> {
       getRubricComment,
     } = this.props;
 
+    const { commentCounter } = this.state;
+
     return (
       <div className="container-code-grader">
         <Tabs>
@@ -98,7 +111,14 @@ class CodeGrader extends React.Component<IProps, {}> {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
-                  <CodeBox file={file} readOnly={readOnly} addComment={this.addComment} />
+                  <CodeBox
+                    file={file}
+                    readOnly={readOnly}
+                    addComment={this.addComment}
+                    commentCounter={commentCounter}
+                    updateCommentCounter={this.updateCommentCounter}
+                    comments={comments[file.id]}
+                  />
                   <CommentList
                     file={file}
                     comments={comments[file.id]}
@@ -121,12 +141,15 @@ class CodeGrader extends React.Component<IProps, {}> {
 
 interface ICodeBoxProps {
   file: IFile;
+  comments: IComment[];
   readOnly: boolean;
   addComment: any;
+  commentCounter: number;
+  updateCommentCounter: any;
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
-  const { file, readOnly } = props;
+  const { file, readOnly, commentCounter, updateCommentCounter, addComment, comments } = props;
 
   const onMouseUp = (event: any) => {
     const selectedText = window.getSelection().toString();
@@ -220,18 +243,17 @@ const CodeBox = (props: ICodeBoxProps) => {
       endChar: endIndex,
       endLine: endline,
       file: file.id,
-      id: undefined,
-      localId: new Date().getTime() / 1000,
+      id: commentCounter,
       pointDelta: 0.0,
       startChar: startIndex,
       startLine: startline,
       text: '',
     };
-
-    props.addComment(newComment, file);
+    updateCommentCounter();
+    addComment(newComment, file);
   };
 
-  const sortedHighlights = CodeBoxUtils.sortHighlights(props.file.comments);
+  const sortedHighlights = CodeBoxUtils.sortHighlights(comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = readOnly
@@ -333,7 +355,7 @@ const CommentList = (props: ICommentListProps) => {
     };
 
     let isActive = false;
-    if (activeCommentId === comment.localId) {
+    if (activeCommentId === comment.id) {
       isActive = true;
     }
 
@@ -341,7 +363,7 @@ const CommentList = (props: ICommentListProps) => {
       <EditableComment
         readOnly={readOnly}
         file={file}
-        key={comment.localId}
+        key={comment.id}
         comment={comment}
         style={style}
         active={isActive}
