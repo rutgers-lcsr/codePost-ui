@@ -213,20 +213,20 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.setState({ deletedCategories: [] });
       });
 
-      // Update assignment name and points if necessary
-      const newName = this.assignmentNameField.getField().value;
-      const newPoints = this.assignmentPointsField.getField().value;
-      if (
-        newName !== activeAssignment.name ||
-        Number(newPoints) !== Number(activeAssignment.points)
-      ) {
-        this.props.updateAssignment(
-          activeAssignment.id,
-          newName,
-          newPoints,
-          activeAssignment.isReleased,
-        );
-      }
+      // // Update assignment name and points if necessary
+      // const newName = this.assignmentNameField.getField().value;
+      // const newPoints = this.assignmentPointsField.getField().value;
+      // if (
+      //   newName !== activeAssignment.name ||
+      //   Number(newPoints) !== Number(activeAssignment.points)
+      // ) {
+      //   this.props.updateAssignment(
+      //     activeAssignment.id,
+      //     newName,
+      //     newPoints,
+      //     activeAssignment.isReleased,
+      //   );
+      // }
     }
   };
 
@@ -326,6 +326,31 @@ class ManageAssignments extends React.Component<IProps, {}> {
       const newComments = activeRubricComments[categoryID].filter((_, i) => i !== commentIndex);
       activeRubricComments[categoryID] = newComments;
       this.setState({ activeRubricComments });
+    }
+  };
+
+  public updateAssignmentName = () => {
+    const { activeAssignment } = this.state;
+    console.log(this.assignmentNameField);
+    if (activeAssignment) {
+      this.props.updateAssignment(
+        activeAssignment.id,
+        this.assignmentNameField.getField().value,
+        undefined,
+        undefined,
+      );
+    }
+  };
+
+  public updateAssignmentPoints = () => {
+    const { activeAssignment } = this.state;
+    if (activeAssignment) {
+      this.props.updateAssignment(
+        activeAssignment.id,
+        undefined,
+        this.assignmentPointsField.getField().value,
+        undefined,
+      );
     }
   };
 
@@ -449,6 +474,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 label={'Assignment Name'}
                 fullWidth={false}
                 disabled={lockManageAssignment}
+                onBlur={this.updateAssignmentName}
               />
               <TextField
                 defaultValue={activeAssignment.points}
@@ -462,6 +488,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 label={'Total Points'}
                 fullWidth={false}
                 disabled={lockManageAssignment}
+                onBlur={this.updateAssignmentPoints}
               />
               <SelectionControl
                 id="assignment-release-checkbox"

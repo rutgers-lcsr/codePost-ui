@@ -1143,6 +1143,7 @@ class Admin extends React.Component<{}, IAdminState> {
       if (name) {
         const key = 'name';
         payload[key] = name;
+        console.log(name);
       }
       if (points) {
         const key = 'points';
@@ -1178,7 +1179,9 @@ class Admin extends React.Component<{}, IAdminState> {
                 assn.isReleased = json.isReleased;
               }
             });
-            this.setState({ assignments });
+            this.setState({ assignments }, () =>
+              this.addToast('Assignment has been updated', undefined),
+            );
           }
         });
     }
@@ -1236,6 +1239,7 @@ class Admin extends React.Component<{}, IAdminState> {
             autohide={true}
             autohideTimeout={1500}
             onDismiss={this.dismissToast}
+            lastChild={true}
           />
         </div>
       );
