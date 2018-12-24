@@ -4,8 +4,8 @@ from core.models import Section, User
 from core.permissions.helpers import isGrader, isStudent
 
 class SectionSerializer(ModelSerializerWithPOSTCheck):
-  leaders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
-  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all())
+  leaders = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
+  students = serializers.SlugRelatedField(many=True, slug_field='email', queryset=User.objects.all(), allow_null=True)
 
   class Meta:
     model = Section
