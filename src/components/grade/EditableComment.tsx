@@ -200,6 +200,11 @@ class EditableComment extends React.Component<IProps, IState> {
 
     const pointDeltaLabel = `-${comment.pointDelta}`;
 
+    let pointDeltaElement = null;
+    if (comment.pointDelta && comment.pointDelta === 0) {
+      pointDeltaElement = <Chip label={pointDeltaLabel} />;
+    }
+
     let className = 'comment';
     if (comment.id < 0) {
       className += ' comment-unsaved';
@@ -216,7 +221,7 @@ class EditableComment extends React.Component<IProps, IState> {
         >
           <CardText>
             <div className={savingClass} />
-            {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
+            {pointDeltaElement}
             <div className="comment-rubric">
               {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
             </div>
@@ -283,8 +288,7 @@ class EditableComment extends React.Component<IProps, IState> {
       >
         <CardText>
           <div className={savingClass} />
-          {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
-
+          {pointDeltaElement}
           {comment.rubricComment ? (
             <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
           ) : null}
@@ -293,11 +297,7 @@ class EditableComment extends React.Component<IProps, IState> {
             <Button flat className="comment-button" onClick={this.toggleActive}>
               Edit
             </Button>
-            <Button
-              flat
-              className="comment-button"
-              onClick={deleteComment.bind(this, comment, file)}
-            >
+            <Button flat className="comment-button" onClick={deleteComment.bind(this, comment, file)}>
               Delete
             </Button>
           </div>

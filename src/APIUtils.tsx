@@ -127,7 +127,10 @@ export default class APIUtils {
         return res.json();
       })
       .then((json) => {
-        return json;
+        console.log('json', json);
+        // temp fix to conform to new api
+        const categories = 'categories';
+        return json[categories];
       });
   };
 
