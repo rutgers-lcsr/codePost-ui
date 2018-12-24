@@ -1,11 +1,11 @@
-@import "globals";
-$material-icons-font-path: "~material-icons/iconfont/";
+@import 'globals';
+$material-icons-font-path: '~material-icons/iconfont/';
 
 $primary-color: #2ecd70;
 $md-primary-color: #2ecd70;
 $md-secondary-color: #ffcdd2;
-
-@import "~material-icons/iconfont/material-icons.scss";
+$md-snackbar-color: $primary-color;
+@import '~material-icons/iconfont/material-icons.scss';
 @include react-md-everything;
 @include react-md-theme-everything($primary-color, $md-secondary-color);
 
@@ -26,6 +26,17 @@ body {
 
 .App {
   width: 100%;
+}
+
+.snackbar {
+  width: 100%;
+  font-weight: 500;
+  color: red;
+  max-width: 100;
+  // $md-snackbar-desktop-max-width: 100%;
+  //
+  // @include react-md-snackbars-desktop;
+  // @include react-md-snackbars;
 }
 
 .progressCircle {

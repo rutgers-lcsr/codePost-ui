@@ -80,6 +80,7 @@ interface IAdminState {
   submissionsByGrader: IGraderSubmissionsDataTable;
 
   toasts: IToast[];
+  errorToasts: IToast[];
 }
 
 class Admin extends React.Component<{}, IAdminState> {
@@ -133,6 +134,7 @@ class Admin extends React.Component<{}, IAdminState> {
     submissionsByGrader: {},
 
     toasts: [],
+    errorToasts: [],
   };
 
   public panels: { [key: string]: string } = {
@@ -144,6 +146,21 @@ class Admin extends React.Component<{}, IAdminState> {
     5: 'Manage Admins',
   };
 
+  public snackBarStyle = {
+    width: '100%',
+    fontWeight: 500,
+    fontSize: 14,
+    backgroundColor: '#2ecd70',
+    maxWidth: '100%',
+  };
+
+  public errorSnackBarStyl4e = {
+    width: '100%',
+    fontWeight: 500,
+    fontSize: 14,
+    backgroundColor: 'red',
+    maxWidth: '100%',
+  };
   // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
@@ -287,11 +304,21 @@ class Admin extends React.Component<{}, IAdminState> {
     this.setState({ toasts });
   };
 
+  public addErrorToast = (text: string, action: string | undefined) => {
+    const errorToasts = this.state.errorToasts.slice();
+    errorToasts.push({ text, action });
+    this.setState({ errorToasts });
+  };
+
   public dismissToast = () => {
     const [, ...toasts] = this.state.toasts;
     this.setState({ toasts });
   };
 
+  public dismissErrorToast = () => {
+    const [, ...errorToasts] = this.state.errorToasts;
+    this.setState({ errorToasts });
+  };
   // ------------------- Initial data load functions  -------------------
   public loadAllCourseData = () => {
     this.loadSubmissions();
@@ -599,7 +626,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 200) {
             return res.json();
           }
-          this.addToast('Something went wrong', undefined);
+          this.addErrorToast('Something went wrong', undefined);
           return undefined;
         })
         .then((json) => {
@@ -669,7 +696,7 @@ class Admin extends React.Component<{}, IAdminState> {
     if (currentCourse) {
       if (userType === UserEnum.Student) {
         if (students.indexOf(userEmail) !== -1) {
-          this.addToast('Student is already enrolled in course', undefined);
+          this.addErrorToast('Student is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't
@@ -679,7 +706,7 @@ class Admin extends React.Component<{}, IAdminState> {
         this.changeRoster(newStudents, userType);
       } else if (userType === UserEnum.Grader) {
         if (graders.indexOf(userEmail) !== -1) {
-          this.addToast('Grader is already enrolled in course', undefined);
+          this.addErrorToast('Grader is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't
@@ -689,7 +716,7 @@ class Admin extends React.Component<{}, IAdminState> {
         this.changeRoster(newGraders, userType);
       } else if (userType === UserEnum.CourseAdmin) {
         if (admins.indexOf(userEmail) !== -1) {
-          this.addToast('Admin is already enrolled in course', undefined);
+          this.addErrorToast('Admin is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't
@@ -725,7 +752,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 201) {
             return res.json();
           }
-          this.addToast(
+          this.addErrorToast(
             'Something went wrong. Please ensure the section name is valid.',
             undefined,
           );
@@ -766,7 +793,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 200) {
             return res.json();
           }
-          this.addToast('Something went wrong. Please ensure the email is valid.', undefined);
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
           return undefined;
         })
         .then((json: ISection3) => {
@@ -810,7 +837,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 200) {
             return res.json();
           }
-          this.addToast('Something went wrong. Please ensure the email is valid.', undefined);
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
           return undefined;
         })
         .then((json) => {
@@ -841,14 +868,13 @@ class Admin extends React.Component<{}, IAdminState> {
     pointLimit: number | undefined,
     newComments: IRubricComment[],
   ) => {
-    const { currentCourse, assignments, rubricCategories, rubricComments } = this.state;
+    const { assignments, rubricCategories, rubricComments } = this.state;
 
-    if (categoryName.length === 0) {
-      this.addToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return;
-    }
-
-    if (currentCourse) {
+    return new Promise<IRubricCategory3>((resolve) => {
+      if (categoryName.length === 0) {
+        this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+        return resolve(undefined);
+      }
       const payload = new URLSearchParams();
       const key1 = 'name';
       const key2 = 'assignment';
@@ -868,8 +894,11 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 201) {
             return res.json();
           } else {
-            this.addToast(`Something went wrong when trying to update ${categoryName}`, undefined);
-            return undefined;
+            this.addErrorToast(
+              `Something went wrong when trying to update ${categoryName}`,
+              undefined,
+            );
+            return resolve(undefined);
           }
         })
         .then((json: IRubricCategory3) => {
@@ -888,10 +917,11 @@ class Admin extends React.Component<{}, IAdminState> {
               newComments.forEach((comment) => {
                 this.createRubricComment(assignmentID, json.id, comment.text, comment.pointDelta);
               });
+              return resolve(json);
             });
           }
         });
-    }
+    });
   };
 
   public deleteRubricCategory = (
@@ -899,9 +929,9 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryID: number,
     categoryName: string,
   ) => {
-    const { currentCourse, assignments, rubricCategories } = this.state;
+    const { assignments, rubricCategories, rubricComments } = this.state;
 
-    if (currentCourse) {
+    return new Promise((resolve) => {
       const payload = new URLSearchParams();
       const key1 = 'id';
       payload.append(key1, String(categoryID));
@@ -914,23 +944,31 @@ class Admin extends React.Component<{}, IAdminState> {
         body: payload,
       }).then((res) => {
         if (res.status === 204) {
-          this.addToast(`Category ${categoryName} deleted`, undefined);
           assignments.forEach((assn) => {
             if (assn.id === assignmentID) {
               assn.rubricCategories = assn.rubricCategories.filter((catID) => {
                 return catID !== categoryID;
               });
             }
+            console.log(rubricCategories);
             rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
               return cat.id !== categoryID;
             });
+            delete rubricComments[categoryID];
           });
-          this.setState({ assignments, rubricCategories });
+          this.setState({ assignments, rubricCategories, rubricComments }, () => {
+            this.addToast(`Category ${categoryName} deleted`, undefined);
+            return resolve('done');
+          });
         } else {
-          this.addToast(`Something went wrong when trying to delete ${categoryName}`, undefined);
+          this.addErrorToast(
+            `Something went wrong when trying to delete ${categoryName}`,
+            undefined,
+          );
+          return resolve(undefined);
         }
       });
-    }
+    });
   };
 
   public updateRubricCategory = (
@@ -941,7 +979,7 @@ class Admin extends React.Component<{}, IAdminState> {
   ) => {
     const { currentCourse, rubricCategories } = this.state;
     if (categoryName.length === 0) {
-      this.addToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+      this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
       return;
     }
 
@@ -967,7 +1005,10 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 200) {
             return res.json();
           } else {
-            this.addToast(`Something went wrong when trying to update ${categoryName}.`, undefined);
+            this.addErrorToast(
+              `Something went wrong when trying to update ${categoryName}.`,
+              undefined,
+            );
             return undefined;
           }
         })
@@ -983,7 +1024,7 @@ class Admin extends React.Component<{}, IAdminState> {
               rubricCategories[assignmentID][catIndex].name = json.name;
               rubricCategories[assignmentID][catIndex].pointLimit = json.pointLimit;
             }
-            this.setState({ rubricCategories });
+            this.setState({ rubricCategories }, () => this.addToast('Category updated', undefined));
           }
         });
     }
@@ -995,14 +1036,13 @@ class Admin extends React.Component<{}, IAdminState> {
     commentText: string,
     commentDelta: number,
   ) => {
-    const { currentCourse, rubricCategories, rubricComments } = this.state;
-    if (commentText.length === 0) {
-      this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return;
-    }
-    console.log(commentText);
+    const { rubricCategories, rubricComments } = this.state;
+    return new Promise<IRubricComment>((resolve) => {
+      if (commentText.length === 0) {
+        this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
+        return resolve(undefined);
+      }
 
-    if (currentCourse) {
       const payload = new URLSearchParams();
       const key1 = 'text';
       const key2 = 'category';
@@ -1022,8 +1062,8 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 201) {
             return res.json();
           } else {
-            this.addToast('Something went wrong.', undefined);
-            return undefined;
+            this.addErrorToast('Something went wrong.', undefined);
+            return resolve(undefined);
           }
         })
         .then((json: IRubricComment) => {
@@ -1034,10 +1074,13 @@ class Admin extends React.Component<{}, IAdminState> {
               }
             });
             rubricComments[categoryID].push(json);
-            this.setState({ rubricCategories, rubricComments });
+            this.setState({ rubricCategories, rubricComments }, () => {
+              this.addToast('Comment created', undefined);
+              return resolve(json);
+            });
           }
         });
-    }
+    });
   };
 
   public deleteRubricComment = (assignmentID: number, categoryID: number, commentID: number) => {
@@ -1061,12 +1104,19 @@ class Admin extends React.Component<{}, IAdminState> {
             console.log(commentID);
             return com.id !== commentID;
           });
-          console.log(rubricComments[categoryID]);
+          rubricCategories[assignmentID].forEach((cat) => {
+            if (cat.id === categoryID) {
+              const newComments = cat.rubricComments.filter((i) => {
+                return i !== commentID;
+              });
+              cat.rubricComments = newComments;
+            }
+          });
           this.setState({ rubricCategories, rubricComments }, () =>
-            this.addToast('Comment Deleted.', undefined),
+            this.addErrorToast('Comment Deleted.', undefined),
           );
         } else {
-          this.addToast('Something went wrong.', undefined);
+          this.addErrorToast('Something went wrong.', undefined);
         }
       });
     }
@@ -1083,7 +1133,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const payload = { id: commentID };
 
     if (commentText.length === 0) {
-      this.addToast('Cannot save comment. Comment text cannot be empty.', undefined);
+      this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return;
     }
     const key1 = 'text';
@@ -1104,7 +1154,7 @@ class Admin extends React.Component<{}, IAdminState> {
         if (res.status === 200) {
           return res.json();
         } else {
-          this.addToast('Something went wrong.', undefined);
+          this.addErrorToast('Something went wrong.', undefined);
           return undefined;
         }
       })
@@ -1162,7 +1212,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 200) {
             return res.json();
           } else {
-            this.addToast('Something went wrong when trying to update assignment', undefined);
+            this.addErrorToast('Something went wrong when trying to update assignment', undefined);
             return undefined;
           }
         })
@@ -1184,7 +1234,7 @@ class Admin extends React.Component<{}, IAdminState> {
   };
   // ------------------- Render -------------------
   public render() {
-    const { courses, currentCourse, loadedPanel, toasts } = this.state;
+    const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
 
     let courseManagementPanel = null;
 
@@ -1219,6 +1269,7 @@ class Admin extends React.Component<{}, IAdminState> {
             toggleLock={this.toggleAssignmentLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
+            addErrorToast={this.addErrorToast}
             assignments={this.state.assignments}
             assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
             createRubricCategory={this.createRubricCategory}
@@ -1228,14 +1279,6 @@ class Admin extends React.Component<{}, IAdminState> {
             updateRubricComment={this.updateRubricComment}
             updateRubricCategory={this.updateRubricCategory}
             updateAssignment={this.updateAssignment}
-          />
-          <Snackbar
-            id="snackbar"
-            toasts={toasts}
-            autohide={true}
-            autohideTimeout={1500}
-            onDismiss={this.dismissToast}
-            lastChild={true}
           />
         </div>
       );
@@ -1255,12 +1298,6 @@ class Admin extends React.Component<{}, IAdminState> {
             sectionsByStudent={this.state.sectionsByStudent}
             addStudentToSection={this.addStudentToSection}
           />
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
         </div>
       );
     } else if (currentCourse && loadedPanel === 3) {
@@ -1275,13 +1312,6 @@ class Admin extends React.Component<{}, IAdminState> {
             addToast={this.addToast}
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
-          />
-
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
           />
         </div>
       );
@@ -1299,13 +1329,6 @@ class Admin extends React.Component<{}, IAdminState> {
             graders={this.state.graders}
             addLeader={this.addLeaderToSection}
           />
-
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
         </div>
       );
     } else if (currentCourse && loadedPanel === 5) {
@@ -1320,13 +1343,6 @@ class Admin extends React.Component<{}, IAdminState> {
             addToast={this.addToast}
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
-          />
-
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
           />
         </div>
       );
@@ -1346,10 +1362,22 @@ class Admin extends React.Component<{}, IAdminState> {
             isLoading={this.state.isLoading}
           />
           <Snackbar
-            id="example-snackbar"
+            id="snackbar"
+            className="snackbar"
             toasts={toasts}
             autohide={true}
+            autohideTimeout={1500}
             onDismiss={this.dismissToast}
+            style={this.snackBarStyle}
+          />
+          <Snackbar
+            id="error-snackbar"
+            className="error-snackbar"
+            toasts={errorToasts}
+            autohide={true}
+            autohideTimeout={1500}
+            onDismiss={this.dismissErrorToast}
+            style={this.errorSnackBarStyl4e}
           />
         </div>
         {courseManagementPanel}

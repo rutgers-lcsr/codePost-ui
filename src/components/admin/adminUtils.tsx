@@ -42,6 +42,7 @@ interface IPropsRubricCategory {
   changeCategoryName: (categoryIndex: number, newText: string) => void;
   changeCategoryCap: (categoryIndex: number, newCap: number) => void;
   addEmptyComment: (categoryIndex: number) => void;
+  updateCategory: (catetgoryIndex: number) => void;
 
   // General props
   isDisabled: boolean;
@@ -79,6 +80,22 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     updateComment(categoryID, commentIndex);
   };
 
+  let deleteCommentColumn;
+  if (!isDisabled) {
+    deleteCommentColumn = (
+      <Button
+        key="Delete"
+        className="Btn"
+        flat={true}
+        icon={true}
+        disabled={isDisabled}
+        onClick={deleteThisComment}
+      >
+        delete
+      </Button>
+    );
+  }
+
   return (
     <TableRow key={commentID}>
       <TableColumn>
@@ -107,18 +124,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
           onBlur={updateThisComment}
         />
       </TableColumn>
-      <TableColumn>
-        <Button
-          key="Delete"
-          className="Btn"
-          flat={true}
-          icon={true}
-          disabled={isDisabled}
-          onClick={deleteThisComment}
-        >
-          delete
-        </Button>
-      </TableColumn>
+      {deleteCommentColumn}
     </TableRow>
   );
 };
@@ -139,6 +145,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     deleteCategory,
     addEmptyComment,
     updateComment,
+    updateCategory,
   } = props;
 
   const changeThisCategoryText = (newText: string) => {
@@ -157,12 +164,16 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     addEmptyComment(categoryID);
   };
 
+  const updateThisCategory = () => {
+    updateCategory(categoryIndex);
+  };
+
   const renderCommentRows = () => {
     if (comments) {
       return comments.map((comm, commIndex) => {
         return (
           <RubricCommentRow
-            key={comm.id}
+            key={commIndex}
             commentID={comm.id}
             categoryID={categoryID}
             commentIndex={commIndex}
@@ -180,6 +191,24 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     return <div />;
   };
 
+  let deleteCategoryButton;
+  let deleteCommentHeader;
+  if (!isDisabled) {
+    deleteCategoryButton = (
+      <Button
+        key="Delete"
+        className="Btn"
+        icon={true}
+        fullWidth={false}
+        disabled={isDisabled}
+        onClick={deleteThisCategory}
+      >
+        delete
+      </Button>
+    );
+    deleteCommentHeader = <TableColumn key={'Delete'}>Delete</TableColumn>;
+  }
+
   return (
     <div key={categoryID}>
       <TextField
@@ -188,6 +217,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         fullWidth={false}
         onChange={changeThisCategoryText}
         disabled={isDisabled}
+        onBlur={updateThisCategory}
       />
       <TextField
         defaultValue={categoryPointLimit}
@@ -199,17 +229,9 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         min={0}
         onChange={changeThisCategoryCap}
         disabled={isDisabled}
+        onBlur={updateThisCategory}
       />
-      <Button
-        key="Delete"
-        className="Btn"
-        icon={true}
-        fullWidth={false}
-        disabled={isDisabled}
-        onClick={deleteThisCategory}
-      >
-        delete
-      </Button>
+      {deleteCategoryButton}
       <DataTable
         key={categoryID}
         className="edit-rubric-table"
@@ -220,7 +242,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           <TableRow>
             <TableColumn key={'CommentText'}>Comment text</TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
-            <TableColumn key={'Delete'}>Delete</TableColumn>
+            {deleteCommentHeader}
           </TableRow>
         </TableHeader>
         <TableBody>{renderCommentRows()}</TableBody>
