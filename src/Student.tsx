@@ -6,7 +6,15 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Student.scss';
 
-import { IAssignment, IComment, ICourse2, IFile2, IOption, ISubmission2 } from './types/common';
+import {
+  APP,
+  IAssignment,
+  IComment,
+  ICourse2,
+  IFile2,
+  IOption,
+  ISubmission2,
+} from './types/common';
 
 import APIUtils from './APIUtils';
 
@@ -72,8 +80,8 @@ class Student extends React.Component<{}, IStudentState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return this.fetchCourses().then((courses) => {
-      this.setState({ courses });
+    return APIUtils.fetchUser(APP.Student).then(([email, courses]) => {
+      this.setState({ email, courses });
       return Promise.all(
         courses.map((course: ICourse2) => {
           return this.loadAssignments(course);
@@ -151,22 +159,6 @@ class Student extends React.Component<{}, IStudentState> {
   ///////////////////////////////////////
   // Fetch requests
   ///////////////////////////////////////
-
-  public fetchCourses = () => {
-    return fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ email: json.email });
-        const studentCourses = 'studentCourses';
-        return json[studentCourses];
-      });
-  };
 
   public fetchSubmission = (id: string | number) => {
     return fetch(`/api/assignments/${id}/submissions/?student=${this.state.email}`, {

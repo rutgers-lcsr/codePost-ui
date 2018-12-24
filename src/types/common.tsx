@@ -2,7 +2,7 @@
  * Common Types
  */
 
-export enum APPS {
+export enum APP {
   Student,
   Grader,
   CourseAdmin,

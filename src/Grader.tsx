@@ -5,7 +5,7 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Grader.scss';
 
-import { IAssignment, ICourse2, IOption, ISubmission2 } from './types/common';
+import { APP, IAssignment, ICourse2, IOption, ISubmission2 } from './types/common';
 
 import APIUtils from './APIUtils';
 
@@ -63,8 +63,8 @@ class Grader extends React.Component<{}, IGraderState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return this.fetchCourses().then((courses) => {
-      this.setState({ courses });
+    return APIUtils.fetchUser(APP.Grader).then(([email, courses]) => {
+      this.setState({ email, courses });
       return Promise.all(
         courses.map((course: ICourse2) => {
           return this.loadAssignments(course);
@@ -99,26 +99,6 @@ class Grader extends React.Component<{}, IGraderState> {
         this.setState({ currentSubmissions });
       },
     );
-  };
-
-  ///////////////////////////////////////
-  // Fetch requests
-  ///////////////////////////////////////
-
-  public fetchCourses = () => {
-    return fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ email: json.email });
-        const graderCourses = 'graderCourses';
-        return json[graderCourses];
-      });
   };
 
   ///////////////////////////////////////

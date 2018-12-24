@@ -1,7 +1,35 @@
 // import * as React from 'react';
-// import { IComment } from '../types/common';
+import { APP } from './types/common';
 
 export default class APIUtils {
+  // Unique fetch in that it returns a tuple: [email, courses]
+  public static fetchUser = (app: APP) => {
+    let courses: string;
+    switch (app) {
+      case APP.Student:
+        courses = 'studentCourses';
+        break;
+      case APP.Grader:
+        courses = 'graderCourses';
+        break;
+      case APP.CourseAdmin:
+        courses = 'adminCourses';
+        break;
+    }
+
+    return fetch('/api/users/me/', {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        return [json.email, json[courses]];
+      });
+  };
+
   public static fetchAssignment = (assignmentId: number) => {
     return fetch(`/api/assignments/${assignmentId}/`, {
       headers: {
