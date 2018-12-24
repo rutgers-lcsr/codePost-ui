@@ -115,12 +115,14 @@ class Student extends React.Component<{}, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return this.fetchSubmission(assignment.id).then((currentSubmission) => {
-      return this.loadFiles(currentSubmission).then(() => {
-        console.log('3 - saving submission: ', currentSubmission);
-        this.setState({ currentSubmission });
-      });
-    });
+    return APIUtils.fetchSubmissions(assignment.id, APP.Student, this.state.email).then(
+      (currentSubmission) => {
+        return this.loadFiles(currentSubmission).then(() => {
+          console.log('3 - saving submission: ', currentSubmission);
+          this.setState({ currentSubmission });
+        });
+      },
+    );
   };
 
   public loadFiles = (submission: ISubmission2) => {
@@ -154,29 +156,6 @@ class Student extends React.Component<{}, IStudentState> {
         });
       }),
     );
-  };
-
-  ///////////////////////////////////////
-  // Fetch requests
-  ///////////////////////////////////////
-
-  public fetchSubmission = (id: string | number) => {
-    return fetch(`/api/assignments/${id}/submissions/?student=${this.state.email}`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        if (json.length > 0 && json[0].isFinalized) {
-          return json[0];
-        }
-        // should not happen, should be an error
-        // right now just avoiding the null check in loadSubmissions
-        return json[0];
-      });
   };
 
   ///////////////////////////////////////

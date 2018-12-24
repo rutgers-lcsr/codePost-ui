@@ -44,7 +44,20 @@ export default class APIUtils {
       });
   };
 
-  public static fetchSubmissions = (assignmentId: number, identifier: string) => {
+  public static fetchSubmissions = (assignmentId: number, app: APP, email: string) => {
+    let identifier: string = '';
+    switch (app) {
+      case APP.Student:
+        identifier = `student=${email}`;
+        break;
+      case APP.Grader:
+        identifier = `grader=${email}`;
+        break;
+      case APP.CourseAdmin:
+        identifier = `admin=${email}`;
+        break;
+    }
+
     return fetch(`/api/assignments/${assignmentId}/submissions/?${identifier}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,

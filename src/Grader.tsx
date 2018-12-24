@@ -93,7 +93,7 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public loadSubmissions = (assignment: IAssignment) => {
-    return APIUtils.fetchSubmissions(assignment.id, `grader=${this.state.email}`).then(
+    return APIUtils.fetchSubmissions(assignment.id, APP.Grader, this.state.email).then(
       (currentSubmissions: any) => {
         console.log('1 - saving submissions', currentSubmissions);
         this.setState({ currentSubmissions });
