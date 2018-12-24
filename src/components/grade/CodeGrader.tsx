@@ -4,17 +4,13 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import { IComment, IFile, IFile2, ISubmission2 } from '../../types/common';
+import { IComment, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
-
 interface IProps {
-  submission: ISubmission2;
-  files: IFile2[];
+  submission: ISubmission;
+  files: IFile[];
   comments: IFileToCommentsMap;
   readOnly: boolean;
   addComment: any;
@@ -59,15 +55,14 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: IFile2, comments: IComment[]) => {
+  public getTabTitle = (file: IFile, comments: IComment[]) => {
     const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
       return accumulator + currentValue.pointDelta;
     }, 0);
     const deductionString = deduction > 0 ? `(-${deduction})` : '';
 
     const numComments = comments.length;
-    const commentFlag =
-      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
 
     return (
       <div className="tab-title">
@@ -82,15 +77,7 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const {
-      activeCommentId,
-      deleteComment,
-      readOnly,
-      files,
-      comments,
-      updateComment,
-      getRubricComment,
-    } = this.props;
+    const { activeCommentId, deleteComment, readOnly, files, comments, updateComment, getRubricComment } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -98,7 +85,7 @@ class CodeGrader extends React.Component<IProps, IState> {
       <div className="container-code-grader">
         <Tabs>
           <TabList>
-            {files.map((file: IFile2, i: number) => {
+            {files.map((file: IFile, i: number) => {
               const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
@@ -107,7 +94,7 @@ class CodeGrader extends React.Component<IProps, IState> {
               );
             })}
           </TabList>
-          {files.map((file: IFile2, i: number) => {
+          {files.map((file: IFile, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
@@ -303,15 +290,7 @@ interface ICommentListProps {
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const {
-    activeCommentId,
-    changeActive,
-    deleteComment,
-    file,
-    readOnly,
-    updateComment,
-    getRubricComment,
-  } = props;
+  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, getRubricComment } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const ranges: any[] = [];
 
@@ -336,11 +315,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(
-      comment,
-      getRubricComment,
-      activeCommentId,
-    );
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, getRubricComment, activeCommentId);
     const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 

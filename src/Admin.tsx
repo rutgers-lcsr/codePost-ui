@@ -11,27 +11,27 @@ import VerticalPane from './components/VerticalPane';
 import './styles/index.scss';
 import './styles/Student.scss';
 import {
-  IAssignment3,
-  ICourse3,
+  IAssignment,
+  IAssignmentToRubricCategories,
+  IAssignmentToSubmissionsMap,
+  ICourse,
   IGraderSubmissionsDataTable,
   IOptionNumber,
-  IRubricCategoriesByAssignment,
-  IRubricCategory3,
+  IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
-  IRubricCommentsByCategory,
-  ISection3,
+  ISection,
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
-  ISubmission3,
-  ISubmissionsByAssignment,
+  ISubmission,
   IToast,
   UserEnum,
 } from './types/common';
 
 interface IAdminState {
-  currentCourse?: ICourse3; // Course for selector
+  currentCourse?: ICourse; // Course for selector
   loadedPanel: number; // Which active_panel to load, enum
-  courses: ICourse3[]; // Set of courses for the admin for the selector
+  courses: ICourse[]; // Set of courses for the admin for the selector
 
   // general state items
   isShowingSnackBar: boolean;
@@ -45,22 +45,22 @@ interface IAdminState {
   gradersLoadComplete: boolean;
   admins: string[];
   adminsLoadComplete: boolean;
-  sections: ISection3[];
+  sections: ISection[];
 
   // Reminer - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   sectionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
 
-  submissions: ISubmissionsByAssignment;
+  submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
 
   // Props for Assignments panel
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   assignmentsLoadComplete: boolean;
 
-  rubricCategories: IRubricCategoriesByAssignment;
-  rubricComments: IRubricCommentsByCategory;
+  rubricCategories: IAssignmentToRubricCategories;
+  rubricComments: IRubricCategoryToRubricCommentsMap;
 
   assignmentRubricLoadComplete: boolean;
 
@@ -167,7 +167,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Vertical pane selector functions  -------------------
   public update = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: ICourse3) => {
+    const currentCourse = this.state.courses.filter((course: ICourse) => {
       return course.id === option.value;
     })[0];
 
@@ -224,7 +224,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // Course Selector functions
   public handleCourseChange = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: ICourse3) => {
+    const currentCourse = this.state.courses.filter((course: ICourse) => {
       return course.id === option.value;
     })[0];
 
@@ -251,14 +251,14 @@ class Admin extends React.Component<{}, IAdminState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse3[]) => {
+  public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({
       value: course.id,
       label: course.name,
     }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse3 | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
@@ -372,7 +372,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
         Object.keys(submissions).forEach((assignmentID) => {
           const assignmentSubs = submissions[assignmentID];
-          assignmentSubs.forEach((submission: ISubmission3) => {
+          assignmentSubs.forEach((submission: ISubmission) => {
             submission.students.forEach((student: string) => {
               // If a student is un enrolled, the submission won't be deleted,
               // so need to check to make sure it's in the subsByStudent
@@ -433,7 +433,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const { currentCourse, assignments } = this.state;
     this.setState({ assignmentRubricLoadComplete: false });
     if (currentCourse && assignments) {
-      const getData = assignments.map((assignment: IAssignment3) => {
+      const getData = assignments.map((assignment: IAssignment) => {
         return this.loadAssignmentRubric(assignment.id);
       });
       Promise.all(getData).then(() => {
@@ -519,7 +519,7 @@ class Admin extends React.Component<{}, IAdminState> {
             .then((res) => {
               return res.json();
             })
-            .then((json: ISection3) => {
+            .then((json: ISection) => {
               // Reminder --- should really filter out if the
               // section is already there to eliminate duplicates
               const { sections, sectionsByStudent } = this.state;
@@ -695,10 +695,7 @@ class Admin extends React.Component<{}, IAdminState> {
           if (res.status === 201) {
             return res.json();
           }
-          this.addToast(
-            'Something went wrong. Please ensure the section name is valid.',
-            undefined,
-          );
+          this.addToast('Something went wrong. Please ensure the section name is valid.', undefined);
           return undefined;
         })
         .then((json) => {
@@ -740,7 +737,7 @@ class Admin extends React.Component<{}, IAdminState> {
           this.addToast('Something went wrong. Please ensure the email is valid.', undefined);
           return undefined;
         })
-        .then((json: ISection3) => {
+        .then((json: ISection) => {
           if (json) {
             const newSections = sections.map((section) => {
               if (section.id === json.id) {
@@ -843,7 +840,7 @@ class Admin extends React.Component<{}, IAdminState> {
             return undefined;
           }
         })
-        .then((json: IRubricCategory3) => {
+        .then((json: IRubricCategory) => {
           if (json) {
             assignments.forEach((assn) => {
               // Add an empty set of comments to the returned
@@ -865,11 +862,7 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public deleteRubricCategory = (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => {
+  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
     const { currentCourse, assignments, rubricCategories } = this.state;
 
     if (currentCourse) {
@@ -938,7 +931,7 @@ class Admin extends React.Component<{}, IAdminState> {
             return undefined;
           }
         })
-        .then((json: IRubricCategory3) => {
+        .then((json: IRubricCategory) => {
           if (json) {
             const catIndex = rubricCategories[assignmentID]
               .map((cat) => {
@@ -1036,12 +1029,7 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public updateRubricComment = (
-    categoryID: number,
-    commentID: number,
-    commentText: string,
-    commentDelta: number,
-  ) => {
+  public updateRubricComment = (categoryID: number, commentID: number, commentText: string, commentDelta: number) => {
     const { currentCourse, rubricComments } = this.state;
 
     if (currentCourse) {
@@ -1198,12 +1186,7 @@ class Admin extends React.Component<{}, IAdminState> {
             sectionsByStudent={this.state.sectionsByStudent}
             addStudentToSection={this.addStudentToSection}
           />
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
+          <Snackbar id="example-snackbar" toasts={toasts} autohide={true} onDismiss={this.dismissToast} />
         </div>
       );
     } else if (currentCourse && loadedPanel === 3) {
@@ -1220,12 +1203,7 @@ class Admin extends React.Component<{}, IAdminState> {
             unEnrollUsers={this.unEnrollUsers}
           />
 
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
+          <Snackbar id="example-snackbar" toasts={toasts} autohide={true} onDismiss={this.dismissToast} />
         </div>
       );
     } else if (currentCourse && loadedPanel === 4) {
@@ -1243,12 +1221,7 @@ class Admin extends React.Component<{}, IAdminState> {
             addLeader={this.addLeaderToSection}
           />
 
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
+          <Snackbar id="example-snackbar" toasts={toasts} autohide={true} onDismiss={this.dismissToast} />
         </div>
       );
     } else if (currentCourse && loadedPanel === 5) {
@@ -1265,12 +1238,7 @@ class Admin extends React.Component<{}, IAdminState> {
             unEnrollUsers={this.unEnrollUsers}
           />
 
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
+          <Snackbar id="example-snackbar" toasts={toasts} autohide={true} onDismiss={this.dismissToast} />
         </div>
       );
     }
@@ -1288,12 +1256,7 @@ class Admin extends React.Component<{}, IAdminState> {
             handleSelectorChange={this.handleCourseChange}
             isLoading={this.state.isLoading}
           />
-          <Snackbar
-            id="example-snackbar"
-            toasts={toasts}
-            autohide={true}
-            onDismiss={this.dismissToast}
-          />
+          <Snackbar id="example-snackbar" toasts={toasts} autohide={true} onDismiss={this.dismissToast} />
         </div>
         {courseManagementPanel}
       </div>

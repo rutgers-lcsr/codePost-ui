@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment3, IStudentSubmissionsDataTable } from '../../types/common';
+import { IAssignment, IStudentSubmissionsDataTable } from '../../types/common';
 
 interface IPropsStudentOverview {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   submissionsByStudent: IStudentSubmissionsDataTable;
   activeStudent: string | undefined;
   changeActiveStudent: (student: string | undefined) => void;
@@ -13,14 +13,8 @@ interface IPropsStudentOverview {
 
 class StudentData extends React.Component<IPropsStudentOverview, {}> {
   public render() {
-    const {
-      submissionsByStudent,
-      assignments,
-      activeStudent,
-      openSubmission,
-      changeActiveStudent,
-    } = this.props;
-    const headers = assignments.map((assignment: IAssignment3) => {
+    const { submissionsByStudent, assignments, activeStudent, openSubmission, changeActiveStudent } = this.props;
+    const headers = assignments.map((assignment: IAssignment) => {
       return assignment.name;
     });
     headers.unshift('Student');
@@ -38,10 +32,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           <TableBody>
             {Object.keys(submissionsByStudent).map((studentEmail) => {
               return (
-                <TableRow
-                  key={studentEmail}
-                  onClick={changeActiveStudent.bind(this.props, studentEmail)}
-                >
+                <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
                   <TableColumn>{studentEmail}</TableColumn>
                   {this.props.assignments.map((assignment) => {
                     const submission = submissionsByStudent[studentEmail][assignment.id];
@@ -112,10 +103,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                   grade = 'Not graded';
                 }
                 return (
-                  <TableRow
-                    key={submission.id}
-                    onClick={openSubmission.bind(this.props, submission.id)}
-                  >
+                  <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
                     <TableColumn>{assignmentID}</TableColumn>
                     <TableColumn>{grade}</TableColumn>
                   </TableRow>

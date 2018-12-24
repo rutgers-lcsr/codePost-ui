@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment3, IGraderSubmissionsDataTable, ISubmission3 } from '../../types/common';
+import { IAssignment, IGraderSubmissionsDataTable, ISubmission } from '../../types/common';
 
 interface IPropsGraderOverview {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   submissionsByGrader: IGraderSubmissionsDataTable;
   activeGrader: string | undefined;
   changeActiveGrader: (grader: string | undefined) => void;
@@ -12,7 +12,7 @@ interface IPropsGraderOverview {
 }
 
 class GraderData extends React.Component<IPropsGraderOverview, {}> {
-  public renderSubmissionRow(submission: ISubmission3, assignmentID: number) {
+  public renderSubmissionRow(submission: ISubmission, assignmentID: number) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
@@ -33,7 +33,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
   public render() {
     const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
 
-    const headers = this.props.assignments.map((assignment: IAssignment3) => {
+    const headers = this.props.assignments.map((assignment: IAssignment) => {
       return assignment.name;
     });
     headers.unshift('Grader');
@@ -51,10 +51,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
           <TableBody>
             {Object.keys(submissionsByGrader).map((graderEmail) => {
               return (
-                <TableRow
-                  key={graderEmail}
-                  onClick={changeActiveGrader.bind(this.props, graderEmail)}
-                >
+                <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
                   <TableColumn>{graderEmail}</TableColumn>
                   {assignments.map((assignment) => {
                     const submissions = submissionsByGrader[graderEmail][assignment.id];
@@ -74,7 +71,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       const tablemap: any = [];
       Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
-        submissions.forEach((submission: ISubmission3) => {
+        submissions.forEach((submission: ISubmission) => {
           tablemap.push(this.renderSubmissionRow(submission, Number(assignmentID)));
         });
       });

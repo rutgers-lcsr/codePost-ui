@@ -10,14 +10,14 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, UserEnum } from '../../types/common';
+import { ICourse, UserEnum } from '../../types/common';
 
 interface IProps {
   admins: string[];
   adminsLoadComplete: boolean;
   lockedAdminChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: UserEnum) => void;
   unEnrollUsers: (emails: string[], type: UserEnum) => void;
@@ -123,14 +123,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
+          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>
         </div>
