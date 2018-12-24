@@ -121,7 +121,6 @@ for i in range(0, 5):
   for assn in assignments:
     sub = Submission.objects.create(assignment=assn)
     sub.students.add(tmpUser)
-    code = "System.out.println('hello world, my name is " + username + "!')"
     tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
     Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
     sub.isFinalized = True
@@ -162,10 +161,8 @@ cos126s2019.students.add(vinay)
 vinay.save()
 cos126s2019.save()
 sub.students.set([vinay])
-# code = "System.out.println('hello world, my name is!')"
 tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
 Comment.objects.create(text="good job,", author=vinay, file=tmpFile, pointDelta=1, startChar=1, endChar=4, startLine=1, endLine=1)
 sub.isFinalized = True
 sub.grade = 20
 sub.save()
->>>>>>> Stashed changes

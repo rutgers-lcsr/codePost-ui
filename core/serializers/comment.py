@@ -85,9 +85,9 @@ class CommentSerializer(ModelSerializerWithPOSTCheck):
         raise serializers.ValidationError("Grader must be a valid grader in the same course as the specified file.")
 
     # Check that rubricComment and file belong to the same assignment
-    # if 'rubricComment' in newData:
-    #   rubricComment = newData['rubricComment']
-    #   if rubricComment.category.assignment != file.submission.assignment:
-    #     raise serializers.ValidationError("File and rubricComment must belong to the same assignment.")
+    if 'rubricComment' in newData:
+      rubricComment = newData['rubricComment']
+      if rubricComment.category.assignment != file.submission.assignment:
+        raise serializers.ValidationError("File and rubricComment must belong to the same assignment.")
 
     return newData
