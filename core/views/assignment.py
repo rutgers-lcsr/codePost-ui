@@ -1,7 +1,8 @@
-from core.models import Assignment, RubricCategory
+from core.models import Assignment, RubricCategory, RubricComment
 from core.serializers.assignment import AssignmentSerializer
 from core.serializers.submission import SubmissionStatusSerializer, SubmissionSerializer
 from core.serializers.rubricCategory import RubricCategorySerializer
+from core.serializers.rubricComment import RubricCommentSerializer
 from django.contrib.auth.models import User
 
 from core.views.template import ListProtectedViewSet
@@ -14,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions.permissions import AssignmentPermissions
 from core.permissions.helpers import returnNotAuthorized, returnForbidden, returnNotFound
 from core.permissions.helpers import isAuthenticated
-from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember
+from core.permissions.helpers import isStudent, isGrader, isCourseAdmin, isCourseMember, isCourseStaff
 from core.permissions.helpers import isStudentOfSub, isStaffOfSub
 
 class AssignmentViewSet(ListProtectedViewSet):
@@ -25,12 +26,28 @@ class AssignmentViewSet(ListProtectedViewSet):
   # Extra functions
   #####################################################################################
 
+  #Returns the serialized rubric for this assignment
+  @action(detail=True)
+  def rubric(self, request, pk=None):
+    assignment = self.get_object()
+    course = assignment.course
+
+    categories = RubricCategory.objects.filter(assignment=assignment)
+    categorySerializer = RubricCategorySerializer(categories, many=True)
+
+    comments = RubricComment.objects.filter(category__assignment=assignment)
+    commentSerializer = RubricCommentSerializer(comments, many=True)
+
+    toRet = {
+      'categories' : categorySerializer.data,
+      'comments' : commentSerializer.data,
+    }
+
+    return Response(toRet)
+
   @action(detail=True, methods=['GET'])
   def drawUnassigned(self, request, pk=None):
     user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
     assignment = self.get_object()
     course = assignment.course
 
@@ -39,7 +56,6 @@ class AssignmentViewSet(ListProtectedViewSet):
 
     section = self.request.query_params.get('section', None)
 
-    print (assignment)
     # Use system ordering to pull random unassigned submission
     submissions = assignment.submissions.filter(grader=None)
     if section is not None:
@@ -68,35 +84,32 @@ class AssignmentViewSet(ListProtectedViewSet):
   @action(detail=True)
   def submissions(self, request, pk=None):
     user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    assignment = self.get_object()
+    assignment = self.get_object() # => this endpoint has permissions at least as strict
     course = assignment.course
-
-    if not isCourseMember(user, course):
-      return returnForbidden()
 
     student = self.request.query_params.get('student', None)
     grader = self.request.query_params.get('grader', None)
     submissions = assignment.submissions.all()
 
-    # If you want to filter by grader, you must be that grader or a courseadmin
     isThisGrader = isGrader(user, course) and user.username == grader
     isThisStudent = isStudent(user, course) and user.username == student
 
-    if student is None and grader is None:
-      if not isCourseAdmin(user, course):
-        return returnForbidden()
-
+    # If you want to filter by grader, you must be that grader or a courseadmin
     if grader is not None:
       if not isCourseAdmin(user, course) and not isThisGrader:
         return returnForbidden()
 
+    # If you want all of the submissions, you must be a courseAdmin
+    if student is None and grader is None:
+      if not isCourseAdmin(user, course):
+        return returnForbidden()
+
+    # If you want to filter by student, you must be a grader, courseAdmin, or that student
     if student is not None:
       if not isThisStudent and not isGrader(user, course) and not isCourseAdmin(user, course):
         return returnForbidden()
 
+    # Retrieve student
     studentParam = None
     if student is not None:
       try:
@@ -107,6 +120,7 @@ class AssignmentViewSet(ListProtectedViewSet):
         else:
           return returnForbidden()
 
+    # Retrieve grader
     graderParam = None
     if grader is not None:
       try:
@@ -129,30 +143,16 @@ class AssignmentViewSet(ListProtectedViewSet):
     else:
       filteredSubs = submissions
 
-    # Only include comment authors in serialization if user is authorized to see them
-    serializer = SubmissionSerializer(filteredSubs, many=True)
+    # If filtering for a student, only give back single submission (instead of length-1 array)
     if studentParam is not None:
       if filteredSubs is not None and len(filteredSubs) > 1:
         return Response("Whoops, something went wrong", status=status.HTTP_500_SERVER_ERROR)
       elif len(filteredSubs) == 1:
         submission = filteredSubs[0]
+        serializer = SubmissionSerializer(submission)
+        return Response(serializer.data)
+      else:
+        return Response([])
 
-    return Response(serializer.data)
-
-#Returns the serialized rubric for this assignment
-  @action(detail=True)
-  def rubric(self, request, pk=None):
-    user = request.user
-    if not isAuthenticated(user):
-      return returnNotAuthorized()
-
-    assignment = Assignment.objects.get(id=pk)
-    course = assignment.course
-
-    if not isCourseMember(user, course):
-      return returnForbidden()
-
-    rubric = RubricCategory.objects.filter(assignment=assignment)
-
-    serializer = RubricCategorySerializer(rubric, many=True)
+    serializer = SubmissionSerializer(filteredSubs, many=True)
     return Response(serializer.data)
