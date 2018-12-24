@@ -34,7 +34,9 @@ export default class CodeBoxUtils {
         }
         return -1;
       }
-      if (a.startLine > b.startLine) return 1;
+      if (a.startLine > b.startLine) {
+        return 1;
+      }
       return -1;
     });
   };

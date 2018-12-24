@@ -86,3 +86,12 @@ class EnrollForm(forms.Form):
 
 class EmailForm(forms.Form):
   email = forms.EmailField()
+
+# @James --- am I using this right?
+class IDForm(forms.Form):
+  id = forms.CharField()
+
+class CommentForm(forms.Form):
+  id = forms.CharField()
+  text = forms.CharField()
+  pointDelta = forms.CharField()
