@@ -7,6 +7,7 @@ import ManageAssignments from './components/admin/ManageAssignments';
 import ManageGraders from './components/admin/ManageGraders';
 import ManageSections from './components/admin/ManageSections';
 import ManageStudents from './components/admin/ManageStudents';
+import NewCourseDialog from './components/admin/NewCourseDialog';
 import VerticalPane from './components/VerticalPane';
 import './styles/index.scss';
 import './styles/Student.scss';
@@ -184,59 +185,61 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Vertical pane selector functions  -------------------
   public update = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: ICourse3) => {
-      return course.id === option.value;
-    })[0];
+    this.loadCourses().then(() => {
+      const currentCourse = this.state.courses.filter((course: ICourse3) => {
+        return course.id === option.value;
+      })[0];
 
-    this.setState(
-      {
-        currentCourse,
-        loadedPanel: 0,
+      this.setState(
+        {
+          currentCourse,
+          loadedPanel: 0,
 
-        students: [],
-        studentsLoadComplete: false,
-        graders: [],
-        gradersLoadComplete: false,
-        admins: [],
-        adminsLoadComplete: false,
+          students: [],
+          studentsLoadComplete: false,
+          graders: [],
+          gradersLoadComplete: false,
+          admins: [],
+          adminsLoadComplete: false,
 
-        sections: [],
-        sectionsByStudent: {},
-        sectionsLoadComplete: false,
-        submissionsbyUserLoadComplete: false,
+          sections: [],
+          sectionsByStudent: {},
+          sectionsLoadComplete: false,
+          submissionsbyUserLoadComplete: false,
 
-        submissions: {},
-        submissionsLoadComplete: false,
+          submissions: {},
+          submissionsLoadComplete: false,
 
-        assignments: [],
-        assignmentsLoadComplete: false,
+          assignments: [],
+          assignmentsLoadComplete: false,
 
-        rubricCategories: {},
-        rubricComments: {},
+          rubricCategories: {},
+          rubricComments: {},
 
-        assignmentRubricLoadComplete: false,
+          assignmentRubricLoadComplete: false,
 
-        // Props for Enroll panels
-        lockManageAdmin: true,
-        lockManageStudent: true,
-        lockManageGrader: true,
-        lockManageSection: true,
-        lockManageAssignment: true,
+          // Props for Enroll panels
+          lockManageAdmin: true,
+          lockManageStudent: true,
+          lockManageGrader: true,
+          lockManageSection: true,
+          lockManageAssignment: true,
 
-        email: '',
-        isLoading: true,
-        isLoggedIn: localStorage.getItem('token') ? true : false,
-        redirect: false,
+          email: '',
+          isLoading: true,
+          isLoggedIn: localStorage.getItem('token') ? true : false,
+          redirect: false,
 
-        submissionsByStudent: {},
-        submissionsByGrader: {},
+          submissionsByStudent: {},
+          submissionsByGrader: {},
 
-        toasts: [],
-      },
-      () => {
-        this.loadAllCourseData();
-      },
-    );
+          toasts: [],
+        },
+        () => {
+          this.loadAllCourseData();
+        },
+      );
+    });
   };
 
   // Course Selector functions
@@ -251,7 +254,7 @@ class Admin extends React.Component<{}, IAdminState> {
         currentCourse,
       },
       () => {
-        this.loadAllCourseData();
+        this.update(option);
       },
     );
   };
@@ -329,22 +332,27 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public loadCourses = () => {
-    fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
+    return new Promise<{}>((resolve) => {
+      fetch('/api/users/me/', {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+        },
       })
-      .then((json) => {
-        const admin = 'courseadminCourses';
-        this.setState({
-          courses: json[admin],
-          isLoading: false,
-          email: json.email,
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => {
+          const admin = 'courseadminCourses';
+          this.setState(
+            {
+              courses: json[admin],
+              isLoading: false,
+              email: json.email,
+            },
+            () => resolve('done'),
+          );
         });
-      });
+    });
   };
 
   public loadAssignments = () => {
@@ -762,8 +770,10 @@ class Admin extends React.Component<{}, IAdminState> {
           if (json) {
             // Check this --- json.students = [];
             sections.push(json);
-            this.addToast(`New section ${json.name} created`, undefined);
-            this.setState({ sections });
+            currentCourse.sections.push(json.id);
+            this.setState({ sections, currentCourse }, () =>
+              this.addToast(`New section ${json.name} created`, undefined),
+            );
           }
         });
     }
@@ -1277,6 +1287,43 @@ class Admin extends React.Component<{}, IAdminState> {
       }
     });
   };
+
+  public createCourse = (courseName: string, coursePeriod: string) => {
+    const { currentCourse, courses } = this.state;
+    return new Promise<ICourse3>((resolve) => {
+      if (currentCourse) {
+        const payload = {
+          name: courseName,
+          period: coursePeriod,
+        };
+
+        fetch('/api/courses/', {
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+          .then((res) => {
+            if (res.status === 201) {
+              return res.json();
+            } else {
+              this.addErrorToast('Something went wrong.', undefined);
+              return resolve(undefined);
+            }
+          })
+          .then((json: ICourse3) => {
+            if (json) {
+              courses.push(json);
+              this.addToast(`Course ${json.name} successfully created.`, undefined);
+              return resolve(json);
+            }
+          });
+      }
+    });
+  };
+
   // ------------------- Render -------------------
   public render() {
     const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
@@ -1412,7 +1459,7 @@ class Admin extends React.Component<{}, IAdminState> {
             className="snackbar"
             toasts={toasts}
             autohide={true}
-            autohideTimeout={1500}
+            autohideTimeout={2000}
             onDismiss={this.dismissToast}
             style={this.snackBarStyle}
           />
@@ -1421,9 +1468,14 @@ class Admin extends React.Component<{}, IAdminState> {
             className="error-snackbar"
             toasts={errorToasts}
             autohide={true}
-            autohideTimeout={1500}
+            autohideTimeout={2000}
             onDismiss={this.dismissErrorToast}
             style={this.errorSnackBarStyl4e}
+          />
+          <NewCourseDialog
+            courses={this.state.courses}
+            addErrorToast={this.addErrorToast}
+            createCourse={this.createCourse}
           />
         </div>
         {courseManagementPanel}
