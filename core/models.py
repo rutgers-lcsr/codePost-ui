@@ -73,7 +73,7 @@ class Assignment(models.Model):
 class RubricCategory(models.Model):
   assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="rubricCategories")
   name = models.CharField(max_length=32)
-  pointLimit = models.IntegerField()
+  pointLimit = models.IntegerField(blank=True, null=True)
 
   class Meta:
     unique_together = ('name', 'assignment')
