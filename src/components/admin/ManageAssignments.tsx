@@ -3,7 +3,6 @@ import {
   Button,
   CircularProgress,
   DataTable,
-  DialogContainer,
   SelectionControl,
   TableBody,
   TableColumn,
@@ -23,6 +22,7 @@ import {
   ISubmissionsByAssignment,
 } from '../../types/common';
 import RubricCategoryTable from './adminUtils';
+import NewAssignmentDialog from './NewAssignmentDialog';
 
 interface IProps {
   submissions: ISubmissionsByAssignment;
@@ -80,9 +80,6 @@ interface IState {
   activeRubricCategories: IRubricCategory3[] | undefined;
   activeRubricComments: IRubricCommentsByCategory | undefined;
   newCategoryCounter: number;
-  newAssignmentDialogVisible: boolean;
-  newAssignmentTextField: string;
-  newAssignmentPointsField: number;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -91,9 +88,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     activeRubricCategories: undefined,
     activeRubricComments: undefined,
     newCategoryCounter: -1,
-    newAssignmentDialogVisible: false,
-    newAssignmentTextField: '',
-    newAssignmentPointsField: 0,
   };
 
   public assignmentNameField: any;
@@ -348,52 +342,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  // ------------------- Add a new assignment functions -------------------
-  public toggleNewAssignmentDialog = () => {
-    const { newAssignmentDialogVisible } = this.state;
-    this.setState({
-      newAssignmentDialogVisible: !newAssignmentDialogVisible,
-      newAssignmentTextField: '',
-    });
-  };
-
-  public changeNewAssignmentText = (newName: string) => {
-    this.setState({ newAssignmentTextField: newName });
-  };
-
-  public changeNewAssignmentPoints = (newPoints: number) => {
-    this.setState({ newAssignmentPointsField: newPoints });
-  };
-
-  public createNewAssignment = () => {
-    const { newAssignmentTextField, newAssignmentPointsField } = this.state;
-    const { assignments } = this.props;
-    if (newAssignmentTextField.length < 4) {
-      this.props.addErrorToast('Assignment name must be longer than 4 characters', undefined);
-      return;
-    }
-    if (
-      assignments
-        .map((i) => {
-          return i.name.toLowerCase();
-        })
-        .indexOf(newAssignmentTextField.toLowerCase()) !== -1
-    ) {
-      this.props.addErrorToast(
-        'Assignment name must be distinct from other assignments in course.',
-        undefined,
-      );
-      return;
-    }
-    if (newAssignmentPointsField < 1) {
-      this.props.addErrorToast('Assignment total points must be greater than 0', undefined);
-      return;
-    }
-    this.props.createAssignment(newAssignmentTextField, newAssignmentPointsField).then(() => {
-      this.toggleNewAssignmentDialog();
-    });
-  };
-
   // ------------------- Render -------------------
   public render() {
     const {
@@ -404,55 +352,20 @@ class ManageAssignments extends React.Component<IProps, {}> {
       assignmentRubricLoadComplete,
     } = this.props;
 
-    const { activeAssignment, newAssignmentDialogVisible } = this.state;
+    const { activeAssignment } = this.state;
 
     const lockIcon = lockManageAssignment ? 'lock' : 'lock_open';
-
-    // Defining the actions in the 'Add assignment' dialog
-    const assignmentDialogActions = [];
-    assignmentDialogActions.push({
-      secondary: true,
-      children: 'Cancel',
-      onClick: this.toggleNewAssignmentDialog,
-    });
-    assignmentDialogActions.push(
-      <Button flat primary onClick={this.createNewAssignment}>
-        Create
-      </Button>,
-    );
 
     if (submissions && submissionsLoadComplete && assignmentRubricLoadComplete && assignments) {
       if (!activeAssignment) {
         return (
           <div>
             <div className="padding" />
-            <Button raised onClick={this.toggleNewAssignmentDialog}>
-              Add a new assignment
-            </Button>
-            <DialogContainer
-              id="newAssignment-dialog"
-              visible={newAssignmentDialogVisible}
-              title="Add new assignmentt"
-              onHide={this.toggleNewAssignmentDialog}
-              actions={assignmentDialogActions}
-              modal
-            >
-              <TextField
-                id="newAssignment-name"
-                label="New Assignment name"
-                defaultValue=""
-                onChange={this.changeNewAssignmentText}
-              />
-              <TextField
-                id="newAssignment-points"
-                label="Total points"
-                pattern="^d+(\.|\,)\d{1}"
-                type="number"
-                min={0}
-                defaultValue=""
-                onChange={this.changeNewAssignmentPoints}
-              />
-            </DialogContainer>
+            <NewAssignmentDialog
+              assignments={this.props.assignments}
+              addErrorToast={this.props.addErrorToast}
+              createAssignment={this.props.createAssignment}
+            />
             <div className="padding" />
             <DataTable
               className="Manage-assignments-table"
