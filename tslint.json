@@ -1,37 +1,27 @@
 {
-	"extends": [
-		"tslint:recommended",
-		"tslint-react",
-		"tslint-config-prettier",
-		"tslint-config-airbnb"
-	],
-	"rulesDirectory": ["tslint-plugin-prettier"],
-	"linterOptions": {
-		"exclude": [
-			"config/**/*.js",
-			"node_modules/**/*.ts",
-			"coverage/lcov-report/*.js",
-			"venv/**/*.ts"
-		]
-	},
-	"rules": {
-		"no-console": false,
-		"no-else-after-return": false,
-		"object-literal-sort-keys": false,
-		"semicolon": [true, "always", "ignore-bound-class-methods"],
-		"variable-name": [
-			true,
-			"check-format",
-			"allow-leading-underscore",
-			"allow-trailing-underscore",
-			"allow-pascal-case"
-		],
-		"import-name": false,
-		"object-shorthand-properties-first": false,
-		"jsx-boolean-value": ["never"],
-		"align": [true, "parameters", "statements", "members", "elements"]
-	},
-	"jsRules": {
-		"object-literal-sort-keys": false
-	}
+  "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier", "tslint-config-airbnb"],
+  "rulesDirectory": ["tslint-plugin-prettier"],
+  "linterOptions": {
+    "exclude": ["config/**/*.js", "node_modules/**/*.ts", "coverage/lcov-report/*.js", "venv/**/*.ts"]
+  },
+  "rules": {
+    "no-console": false,
+    "no-else-after-return": false,
+    "object-literal-sort-keys": false,
+    "semicolon": [true, "always", "ignore-bound-class-methods"],
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore",
+      "allow-trailing-underscore",
+      "allow-pascal-case"
+    ],
+    "import-name": false,
+    "object-shorthand-properties-first": false,
+    "jsx-boolean-value": ["never"],
+    "align": [true, "parameters", "statements", "members", "elements"]
+  },
+  "jsRules": {
+    "object-literal-sort-keys": false
+  }
 }

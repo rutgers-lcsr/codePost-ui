@@ -2,7 +2,7 @@
  * Common Types
  */
 
-export enum APPS {
+export enum APP {
   Student,
   Grader,
   CourseAdmin,
@@ -65,15 +65,15 @@ export interface IFile {
 
 export interface IComment {
   id: number;
-  localId: number;
   author: any;
   startChar: number;
   endChar: number;
   startLine: number;
   endLine: number;
-  pointDelta: number | string;
+  pointDelta: number;
   text: string;
   rubricComment: any;
+  file: number;
 }
 
 export interface IProfile {
@@ -224,4 +224,38 @@ export interface IRubricCategoriesByAssignment {
 
 export interface IRubricCommentsByCategory {
   [categoryID: number]: IRubricComment[];
+}
+
+export interface IRubricCategory2 {
+  id: number;
+  assignment: IAssignment;
+  name: string;
+  pointLimit: number;
+  rubricComments: number[];
+}
+
+export interface ICourse2 {
+  id: number;
+  name: string;
+  period: string;
+  assignments: number[];
+}
+
+export interface ISubmission2 {
+  id: number;
+  isFinalized: any;
+  dateFinalized: any;
+  files: number[];
+  grade: number;
+  grader?: string;
+  students: string[];
+  assignment: number;
+}
+
+export interface IFile2 {
+  id: number;
+  code: string;
+  comments: number[];
+  extension: string;
+  name: string;
 }

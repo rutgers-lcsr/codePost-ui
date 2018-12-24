@@ -32,7 +32,7 @@ class Course(models.Model):
   organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="courses")
   period = models.CharField(max_length=32)
   students = models.ManyToManyField(User, related_name="student_courses")
-  inactive_students = models.ManyToManyField(User, related_name="student_inactive_courses")
+  inactive_students = models.ManyToManyField(User, related_name="inactive_student_courses")
   graders = models.ManyToManyField(User, related_name="grader_courses")
   courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
@@ -73,7 +73,7 @@ class Assignment(models.Model):
 class RubricCategory(models.Model):
   assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="rubricCategories")
   name = models.CharField(max_length=32)
-  pointLimit = models.IntegerField()
+  pointLimit = models.IntegerField(blank=True, null=True)
 
   class Meta:
     unique_together = ('name', 'assignment')
@@ -115,7 +115,6 @@ class Comment(models.Model):
   endChar = models.IntegerField()
   startLine = models.IntegerField()
   endLine = models.IntegerField()
-  localId = models.FloatField(blank=True, null=True)
 
 ###############################################################################
 
