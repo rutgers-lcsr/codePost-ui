@@ -1232,6 +1232,51 @@ class Admin extends React.Component<{}, IAdminState> {
         });
     }
   };
+
+  public createAssignment = (assignmentName: string, assignmentPoints: number) => {
+    const { currentCourse } = this.state;
+    return new Promise<IAssignment3>((resolve) => {
+      if (currentCourse) {
+        const payload = {
+          course: currentCourse.id,
+          name: assignmentName,
+          points: assignmentPoints,
+          isReleased: false,
+          rubricCategories: [],
+        };
+
+        fetch('/api/assignments/', {
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+          .then((res) => {
+            if (res.status === 201) {
+              return res.json();
+            } else {
+              this.addErrorToast('Something went wrong.', undefined);
+              return resolve(undefined);
+            }
+          })
+          .then((json: IAssignment3) => {
+            const { submissions, rubricCategories, assignments } = this.state;
+            if (json) {
+              currentCourse.assignments.push(json.id);
+              submissions[json.id] = [];
+              rubricCategories[json.id] = [];
+              assignments.push(json);
+              this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
+                this.addToast(`Assignment ${json.name} successfully created.`, undefined);
+                return resolve(json);
+              });
+            }
+          });
+      }
+    });
+  };
   // ------------------- Render -------------------
   public render() {
     const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
@@ -1279,6 +1324,7 @@ class Admin extends React.Component<{}, IAdminState> {
             updateRubricComment={this.updateRubricComment}
             updateRubricCategory={this.updateRubricCategory}
             updateAssignment={this.updateAssignment}
+            createAssignment={this.createAssignment}
           />
         </div>
       );
