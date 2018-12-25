@@ -32,6 +32,7 @@ interface IState {
   newStudentField: string | undefined;
   changedSectionStudents: string[];
   studentSortAscending: boolean;
+  searchTerm: string;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
@@ -39,6 +40,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     newStudentField: undefined,
     changedSectionStudents: [],
     studentSortAscending: true,
+    searchTerm: '',
   };
 
   public triggerUnEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
@@ -75,6 +77,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ studentSortAscending: !this.state.studentSortAscending });
   };
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const {
       studentsLoadComplete,
@@ -83,7 +89,12 @@ class ManageStudents extends React.Component<IProps, {}> {
       sections,
       sectionsByStudent,
     } = this.props;
-    const { newStudentField, changedSectionStudents, studentSortAscending } = this.state;
+    const {
+      newStudentField,
+      changedSectionStudents,
+      studentSortAscending,
+      searchTerm,
+    } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -124,6 +135,13 @@ class ManageStudents extends React.Component<IProps, {}> {
             Save new student
           </Button>
           <hr />
+          <TextField
+            id="search-manageStudents"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
           <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
@@ -138,6 +156,14 @@ class ManageStudents extends React.Component<IProps, {}> {
               {students.map((student) => {
                 const section = sectionsByStudent[student];
                 const sectionID = section ? section.id : '';
+                const sectionName = section ? section.name : '';
+
+                if (
+                  student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
+                  sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
+                ) {
+                  return <div />;
+                }
 
                 let dropDown;
                 let sectionDisable = false;

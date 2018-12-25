@@ -25,11 +25,13 @@ interface IProps {
 
 interface IState {
   newField: string | undefined;
+  searchTerm: string;
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newField: undefined,
+    searchTerm: '',
   };
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: UserEnum) => {
@@ -46,9 +48,13 @@ class ManageGraders extends React.Component<IProps, {}> {
     this.setState({ newField: value });
   };
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
-    const { newField } = this.state;
+    const { newField, searchTerm } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
@@ -77,6 +83,13 @@ class ManageGraders extends React.Component<IProps, {}> {
             Save new grader
           </Button>
           <hr />
+          <TextField
+            id="search-manageGraders"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
           <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow>
@@ -86,6 +99,9 @@ class ManageGraders extends React.Component<IProps, {}> {
             </TableHeader>
             <TableBody>
               {graders.map((grader) => {
+                if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
                 return (
                   <TableRow key={grader}>
                     <TableColumn>{grader}</TableColumn>

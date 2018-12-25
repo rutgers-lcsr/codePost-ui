@@ -25,11 +25,13 @@ interface IProps {
 
 interface IState {
   newAdminField: string | undefined;
+  searchTerm: string;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newAdminField: undefined,
+    searchTerm: '',
   };
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: UserEnum) => {
@@ -46,9 +48,13 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ newAdminField: value });
   };
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
-    const { newAdminField } = this.state;
+    const { newAdminField, searchTerm } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
@@ -77,6 +83,13 @@ class ManageStudents extends React.Component<IProps, {}> {
             Save new admin
           </Button>
           <hr />
+          <TextField
+            id="search-manageAdmins"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
           <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
@@ -86,6 +99,9 @@ class ManageStudents extends React.Component<IProps, {}> {
             </TableHeader>
             <TableBody>
               {admins.map((admin) => {
+                if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
                 return (
                   <TableRow key={admin}>
                     <TableColumn>{admin}</TableColumn>
