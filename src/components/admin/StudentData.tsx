@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import {
+  Button,
+  DataTable,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../styles/index.scss';
 import { IAssignment3, IStudentSubmissionsDataTable } from '../../types/common';
 
@@ -13,11 +21,13 @@ interface IPropsStudentOverview {
 
 interface IState {
   sortedIndex: { [index: string]: boolean | undefined };
+  searchTerm: string;
 }
 
 class StudentData extends React.Component<IPropsStudentOverview, {}> {
   public state: Readonly<IState> = {
     sortedIndex: {},
+    searchTerm: '',
   };
 
   public studentHeader = 'student';
@@ -29,7 +39,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       sortedIndex[assn.id] = false;
     });
     sortedIndex[this.studentHeader] = true;
-    this.state = { sortedIndex };
+    this.state = { sortedIndex, searchTerm: '' };
   }
 
   public toggleSort = (assignmentName: string) => {
@@ -93,6 +103,10 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     }
   };
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const {
       submissionsByStudent,
@@ -101,7 +115,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       openSubmission,
       changeActiveStudent,
     } = this.props;
-    const { sortedIndex } = this.state;
+    const { sortedIndex, searchTerm } = this.state;
     const headers = assignments.map((assignment: IAssignment3) => {
       return String(assignment.id);
     });
@@ -111,45 +125,57 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       const students = Object.keys(submissionsByStudent);
       students.sort(this.sortFunction);
       return (
-        <DataTable plain={true}>
-          <TableHeader>
-            <TableRow>
-              {headers.map((header) => {
+        <div>
+          <TextField
+            id="search-manageAdmins"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
+          <DataTable plain={true}>
+            <TableHeader>
+              <TableRow>
+                {headers.map((header) => {
+                  return (
+                    <TableColumn
+                      sorted={sortedIndex[header]}
+                      onClick={this.toggleSort.bind(this.props, header)}
+                      key={header}
+                    >
+                      {header}
+                    </TableColumn>
+                  );
+                })}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {students.map((studentEmail) => {
+                if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
                 return (
-                  <TableColumn
-                    sorted={sortedIndex[header]}
-                    onClick={this.toggleSort.bind(this.props, header)}
-                    key={header}
+                  <TableRow
+                    key={studentEmail}
+                    onClick={changeActiveStudent.bind(this.props, studentEmail)}
                   >
-                    {header}
-                  </TableColumn>
+                    <TableColumn>{studentEmail}</TableColumn>
+                    {this.props.assignments.map((assignment) => {
+                      const submission = submissionsByStudent[studentEmail][assignment.id];
+                      if (submission && submission.isFinalized) {
+                        return <TableColumn>{submission.grade}</TableColumn>;
+                      } else if (submission) {
+                        return <TableColumn>Not graded</TableColumn>;
+                      } else {
+                        return <TableColumn>Not submitted</TableColumn>;
+                      }
+                    })}
+                  </TableRow>
                 );
               })}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.map((studentEmail) => {
-              return (
-                <TableRow
-                  key={studentEmail}
-                  onClick={changeActiveStudent.bind(this.props, studentEmail)}
-                >
-                  <TableColumn>{studentEmail}</TableColumn>
-                  {this.props.assignments.map((assignment) => {
-                    const submission = submissionsByStudent[studentEmail][assignment.id];
-                    if (submission && submission.isFinalized) {
-                      return <TableColumn>{submission.grade}</TableColumn>;
-                    } else if (submission) {
-                      return <TableColumn>Not graded</TableColumn>;
-                    } else {
-                      return <TableColumn>Not submitted</TableColumn>;
-                    }
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </DataTable>
+            </TableBody>
+          </DataTable>
+        </div>
       );
     } else {
       // const submissionRows: any = [];
