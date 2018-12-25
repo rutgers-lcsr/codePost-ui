@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import {
+  Button,
+  DataTable,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../styles/index.scss';
 import { IAssignment3, IGraderSubmissionsDataTable, ISubmission3 } from '../../types/common';
 
@@ -11,7 +19,15 @@ interface IPropsGraderOverview {
   openSubmission: (submissionID: number | string) => void;
 }
 
+interface IState {
+  searchTerm: string;
+}
+
 class GraderData extends React.Component<IPropsGraderOverview, {}> {
+  public state: Readonly<IState> = {
+    searchTerm: '',
+  };
+
   public renderSubmissionRow(submission: ISubmission3, assignmentID: number) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
@@ -30,8 +46,13 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     );
   }
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
+    const { searchTerm } = this.state;
 
     const headers = this.props.assignments.map((assignment: IAssignment3) => {
       return assignment.name;
@@ -40,35 +61,47 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     if (!activeGrader) {
       return (
-        <DataTable plain={true}>
-          <TableHeader>
-            <TableRow>
-              {headers.map((header) => {
-                return <TableColumn key={header}>{header}</TableColumn>;
+        <div>
+          <TextField
+            id="search-graderData"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
+          <DataTable plain={true}>
+            <TableHeader>
+              <TableRow>
+                {headers.map((header) => {
+                  return <TableColumn key={header}>{header}</TableColumn>;
+                })}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.keys(submissionsByGrader).map((graderEmail) => {
+                if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
+                return (
+                  <TableRow
+                    key={graderEmail}
+                    onClick={changeActiveGrader.bind(this.props, graderEmail)}
+                  >
+                    <TableColumn>{graderEmail}</TableColumn>
+                    {assignments.map((assignment) => {
+                      const submissions = submissionsByGrader[graderEmail][assignment.id];
+                      if (submissions) {
+                        return <TableColumn>{submissions.length}</TableColumn>;
+                      } else {
+                        return <TableColumn> - </TableColumn>;
+                      }
+                    })}
+                  </TableRow>
+                );
               })}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Object.keys(submissionsByGrader).map((graderEmail) => {
-              return (
-                <TableRow
-                  key={graderEmail}
-                  onClick={changeActiveGrader.bind(this.props, graderEmail)}
-                >
-                  <TableColumn>{graderEmail}</TableColumn>
-                  {assignments.map((assignment) => {
-                    const submissions = submissionsByGrader[graderEmail][assignment.id];
-                    if (submissions) {
-                      return <TableColumn>{submissions.length}</TableColumn>;
-                    } else {
-                      return <TableColumn> - </TableColumn>;
-                    }
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </DataTable>
+            </TableBody>
+          </DataTable>
+        </div>
       );
     } else {
       const tablemap: any = [];

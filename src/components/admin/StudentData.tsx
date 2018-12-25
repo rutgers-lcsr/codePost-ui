@@ -127,7 +127,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       return (
         <div>
           <TextField
-            id="search-manageAdmins"
+            id="search-studentData"
             label="Search"
             lineDirection="center"
             className="md-cell md-cell--bottom"
