@@ -418,10 +418,12 @@ class Admin extends React.Component<{}, IAdminState> {
               }
             });
             if (submission.grader) {
-              if (subsByGrader[submission.grader][assignmentID]) {
-                subsByGrader[submission.grader][assignmentID].push(submission);
-              } else {
-                subsByGrader[submission.grader][assignmentID] = [submission];
+              if (submission.grader in subsByGrader) {
+                if (subsByGrader[submission.grader][assignmentID]) {
+                  subsByGrader[submission.grader][assignmentID].push(submission);
+                } else {
+                  subsByGrader[submission.grader][assignmentID] = [submission];
+                }
               }
             }
           });
@@ -656,14 +658,20 @@ class Admin extends React.Component<{}, IAdminState> {
                   students: json.students,
                   inactiveStudents: json.inactive_students,
                 },
-                () => this.addToast('Student roster successfully updated.', undefined),
+                () => {
+                  this.addToast('Student roster successfully updated.', undefined);
+                  this.generateSubmissionsByStudent();
+                },
               );
             } else if (userType === UserEnum.Grader) {
               this.setState(
                 {
                   graders: json.graders,
                 },
-                () => this.addToast('Grader roster successfully updated.', undefined),
+                () => {
+                  this.addToast('Grader roster successfully updated.', undefined);
+                  this.generateSubmissionsByStudent();
+                },
               );
             } else if (userType === UserEnum.CourseAdmin) {
               this.setState(
