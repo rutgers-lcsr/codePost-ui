@@ -30,29 +30,19 @@ interface IProps {
 
 interface IState {
   newStudentField: string | undefined;
-  selectedStudents: string[];
   changedSectionStudents: string[];
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
-    selectedStudents: [],
     changedSectionStudents: [],
   };
 
-  public triggerUnEnrollStudents = () => {
-    const { selectedStudents } = this.state;
+  public triggerUnEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
     const { unEnrollUsers } = this.props;
 
-    const studentType = UserEnum.Student;
-
-    if (selectedStudents) {
-      unEnrollUsers(selectedStudents, studentType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedStudents: [] });
-    }
+    unEnrollUsers([newStudentEmail], studentType);
   };
 
   public triggerEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
@@ -75,21 +65,6 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
   };
 
-  public rowSelect = (studentID: string, rowID: number, checked: boolean) => {
-    const { selectedStudents } = this.state;
-    if (checked) {
-      selectedStudents.push(studentID);
-      this.setState({ selectedStudents });
-      // Reminder: We should throw an error if the numSelected is
-      // different than our array at any point
-    } else {
-      const newSelectedStudents = selectedStudents.filter((value) => {
-        return value !== studentID;
-      });
-      this.setState({ selectedStudents: newSelectedStudents });
-    }
-  };
-
   public newStudentFieldOnChange = (value: string) => {
     this.setState({ newStudentField: value });
   };
@@ -102,7 +77,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       sections,
       sectionsByStudent,
     } = this.props;
-    const { newStudentField, selectedStudents, changedSectionStudents } = this.state;
+    const { newStudentField, changedSectionStudents } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -136,21 +111,13 @@ class ManageStudents extends React.Component<IProps, {}> {
           >
             Save new student
           </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedStudentChange || selectedStudents.length === 0}
-            onClick={this.triggerUnEnrollStudents}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Enroll-students-table" baseId="Enroll-students-table">
+          <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
                 <TableColumn key={'Student'}>Student</TableColumn>
                 <TableColumn key={'Section'}>Section</TableColumn>
+                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,10 +136,7 @@ class ManageStudents extends React.Component<IProps, {}> {
                 }
 
                 return (
-                  <TableRow
-                    key={student}
-                    onCheckboxClick={this.rowSelect.bind(this.props, student)}
-                  >
+                  <TableRow key={student}>
                     <TableColumn>{student}</TableColumn>
                     <SelectFieldColumn
                       dropdownIcon={dropDown}
@@ -181,6 +145,19 @@ class ManageStudents extends React.Component<IProps, {}> {
                       disabled={lockedStudentChange || sectionDisable}
                       onChange={this.rowSectionChange.bind(this.props, student)}
                     />
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedStudentChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}

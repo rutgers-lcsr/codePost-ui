@@ -25,47 +25,21 @@ interface IProps {
 
 interface IState {
   newField: string | undefined;
-  selectedUsers: string[];
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newField: undefined,
-    selectedUsers: [],
   };
 
-  public triggerUnEnrollUsers = () => {
-    const { selectedUsers } = this.state;
+  public triggerUnEnrollUser = (newUserEmail: string, userType: UserEnum) => {
     const { unEnrollUsers } = this.props;
-
-    const graderType = UserEnum.Grader;
-
-    if (selectedUsers) {
-      unEnrollUsers(selectedUsers, graderType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedUsers: [] });
-    }
+    unEnrollUsers([newUserEmail], userType);
   };
 
   public triggerEnrollUser = (newUserEmail: string, userType: UserEnum) => {
     this.props.enrollUser(newUserEmail, userType);
     this.setState({ newField: '' });
-  };
-
-  public rowSelect = (graderEmail: string, rowID: number, checked: boolean) => {
-    const { selectedUsers } = this.state;
-    if (checked) {
-      selectedUsers.push(graderEmail);
-      this.setState({ selectedUsers });
-      // Reminder: We should throw an error if the numSelected is different
-      // than our array at any point
-    } else {
-      const newSelectedUsers = selectedUsers.filter((value) => {
-        return value !== graderEmail;
-      });
-      this.setState({ selectedUsers: newSelectedUsers });
-    }
   };
 
   public newFieldOnChange = (value: string) => {
@@ -74,7 +48,7 @@ class ManageGraders extends React.Component<IProps, {}> {
 
   public render() {
     const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
-    const { newField, selectedUsers } = this.state;
+    const { newField } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
@@ -102,27 +76,32 @@ class ManageGraders extends React.Component<IProps, {}> {
           >
             Save new grader
           </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedGraderChange || selectedUsers.length === 0}
-            onClick={this.triggerUnEnrollUsers}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
-              <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
+              <TableRow>
                 <TableColumn key={'Grader'}>Grader name</TableColumn>
+                <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
               {graders.map((grader) => {
                 return (
-                  <TableRow key={grader} onCheckboxClick={this.rowSelect.bind(this.props, grader)}>
+                  <TableRow key={grader}>
                     <TableColumn>{grader}</TableColumn>
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedGraderChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, grader, graderType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}

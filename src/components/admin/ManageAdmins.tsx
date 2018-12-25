@@ -25,47 +25,21 @@ interface IProps {
 
 interface IState {
   newAdminField: string | undefined;
-  selectedAdmins: string[];
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newAdminField: undefined,
-    selectedAdmins: [],
   };
 
-  public triggerUnEnrollAdmins = () => {
-    const { selectedAdmins } = this.state;
+  public triggerUnEnrollUser = (newUserEmail: string, userType: UserEnum) => {
     const { unEnrollUsers } = this.props;
-
-    const adminType = UserEnum.CourseAdmin;
-
-    if (selectedAdmins) {
-      unEnrollUsers(selectedAdmins, adminType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedAdmins: [] });
-    }
+    unEnrollUsers([newUserEmail], userType);
   };
 
   public triggerEnrollUser = (newUserEmail: string, userType: UserEnum) => {
     this.props.enrollUser(newUserEmail, userType);
     this.setState({ newAdminField: '' });
-  };
-
-  public rowSelect = (adminEmail: string, rowID: number, checked: boolean) => {
-    const { selectedAdmins } = this.state;
-    if (checked) {
-      selectedAdmins.push(adminEmail);
-      this.setState({ selectedAdmins });
-      // Reminder: We should throw an error if the numSelected is different than
-      // our array at any point
-    } else {
-      const newSelectedAdmins = selectedAdmins.filter((value) => {
-        return value !== adminEmail;
-      });
-      this.setState({ selectedAdmins: newSelectedAdmins });
-    }
   };
 
   public newAdminFieldOnChange = (value: string) => {
@@ -74,7 +48,7 @@ class ManageStudents extends React.Component<IProps, {}> {
 
   public render() {
     const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
-    const { newAdminField, selectedAdmins } = this.state;
+    const { newAdminField } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
@@ -102,27 +76,32 @@ class ManageStudents extends React.Component<IProps, {}> {
           >
             Save new admin
           </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedAdminChange || selectedAdmins.length === 0}
-            onClick={this.triggerUnEnrollAdmins}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
                 <TableColumn key={'Admin'}>Admin name</TableColumn>
+                <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
               {admins.map((admin) => {
                 return (
-                  <TableRow key={admin} onCheckboxClick={this.rowSelect.bind(this.props, admin)}>
+                  <TableRow key={admin}>
                     <TableColumn>{admin}</TableColumn>
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedAdminChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, admin, adminType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}
