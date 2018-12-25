@@ -42,6 +42,7 @@ interface IAdminState {
   // student, grader, admin, sections data
   students: string[];
   studentsLoadComplete: boolean;
+  inactiveStudents: string[];
   graders: string[];
   gradersLoadComplete: boolean;
   admins: string[];
@@ -98,6 +99,7 @@ class Admin extends React.Component<{}, IAdminState> {
     // student, grader, admin, sections data
     students: [],
     studentsLoadComplete: false,
+    inactiveStudents: [],
     graders: [],
     gradersLoadComplete: false,
     admins: [],
@@ -527,6 +529,7 @@ class Admin extends React.Component<{}, IAdminState> {
               students: json.students,
               graders: json.graders,
               admins: json.courseAdmins,
+              inactiveStudents: json.inactive_students,
               studentsLoadComplete: true,
               gradersLoadComplete: true,
               adminsLoadComplete: true,
@@ -609,13 +612,21 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (newRoster: string[], userType: UserEnum) => {
+  public changeRoster = (
+    newRoster: string[],
+    userType: UserEnum,
+    inactiveStudents: string[] | undefined,
+  ) => {
     const { currentCourse } = this.state;
 
     if (currentCourse) {
       let payload;
       if (userType === UserEnum.Student) {
-        payload = { students: newRoster };
+        if (inactiveStudents) {
+          payload = { students: newRoster, inactive_students: inactiveStudents };
+        } else {
+          payload = { students: newRoster };
+        }
       } else if (userType === UserEnum.Grader) {
         payload = { graders: newRoster };
       } else if (userType === UserEnum.CourseAdmin) {
@@ -638,18 +649,16 @@ class Admin extends React.Component<{}, IAdminState> {
           return undefined;
         })
         .then((json) => {
-          console.log(json);
           if (json) {
             if (userType === UserEnum.Student) {
-              console.log(json);
               this.setState(
                 {
                   students: json.students,
+                  inactiveStudents: json.inactive_students,
                 },
                 () => this.addToast('Student roster successfully updated.', undefined),
               );
             } else if (userType === UserEnum.Grader) {
-              console.log(json);
               this.setState(
                 {
                   graders: json.graders,
@@ -657,7 +666,6 @@ class Admin extends React.Component<{}, IAdminState> {
                 () => this.addToast('Grader roster successfully updated.', undefined),
               );
             } else if (userType === UserEnum.CourseAdmin) {
-              console.log(json);
               this.setState(
                 {
                   admins: json.courseAdmins,
@@ -679,21 +687,19 @@ class Admin extends React.Component<{}, IAdminState> {
         const newStudents = students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
-        this.changeRoster(newStudents, userType);
+        this.changeRoster(newStudents, userType, selectedUserEmails);
       } else if (userType === UserEnum.Grader) {
         const { graders } = this.state;
-        console.log(selectedUserEmails);
         const newGraders = graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        console.log(newGraders);
-        this.changeRoster(newGraders, userType);
+        this.changeRoster(newGraders, userType, undefined);
       } else if (userType === UserEnum.CourseAdmin) {
         const { admins } = this.state;
         const newAdmins = admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
-        this.changeRoster(newAdmins, userType);
+        this.changeRoster(newAdmins, userType, undefined);
       }
     }
   };
@@ -711,7 +717,16 @@ class Admin extends React.Component<{}, IAdminState> {
         // want to update the state
         const newStudents = JSON.parse(JSON.stringify(students));
         newStudents.push(userEmail);
-        this.changeRoster(newStudents, userType);
+
+        // Check if the student is in the inactives for the course, and remove them if so
+        if (this.state.inactiveStudents.indexOf(userEmail) !== -1) {
+          const newInactives = this.state.inactiveStudents.filter((i) => {
+            return i !== userEmail;
+          });
+          this.changeRoster(newStudents, userType, newInactives);
+        } else {
+          this.changeRoster(newStudents, userType, undefined);
+        }
       } else if (userType === UserEnum.Grader) {
         if (graders.indexOf(userEmail) !== -1) {
           this.addErrorToast('Grader is already enrolled in course', undefined);
@@ -721,7 +736,7 @@ class Admin extends React.Component<{}, IAdminState> {
         // want to update the state
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
-        this.changeRoster(newGraders, userType);
+        this.changeRoster(newGraders, userType, undefined);
       } else if (userType === UserEnum.CourseAdmin) {
         if (admins.indexOf(userEmail) !== -1) {
           this.addErrorToast('Admin is already enrolled in course', undefined);
@@ -731,7 +746,7 @@ class Admin extends React.Component<{}, IAdminState> {
         // want to update the state
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
-        this.changeRoster(newAdmins, userType);
+        this.changeRoster(newAdmins, userType, undefined);
       }
       // this.addToast(`New ${userType} ${json.profile.username} added`, undefined);
     }
@@ -743,18 +758,15 @@ class Admin extends React.Component<{}, IAdminState> {
     const { sections } = this.state;
 
     if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'name';
-      const key2 = 'course';
-      payload.append(key1, newSection);
-      payload.append(key2, String(currentCourse.id));
+      const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [] };
 
       fetch('/api/sections/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'POST',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 201) {
@@ -870,7 +882,7 @@ class Admin extends React.Component<{}, IAdminState> {
     });
   };
 
-  // ------------------- Manage assignments API calls  ------------------
+  // ------------------- Manage rubric API calls  ------------------
 
   public createRubricCategory = (
     assignmentID: number,
@@ -885,20 +897,15 @@ class Admin extends React.Component<{}, IAdminState> {
         this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
         return resolve(undefined);
       }
-      const payload = new URLSearchParams();
-      const key1 = 'name';
-      const key2 = 'assignment';
-      const key3 = 'pointLimit';
-      payload.append(key1, categoryName);
-      payload.append(key2, String(assignmentID));
-      payload.append(key3, String(pointLimit));
+      const payload = { name: categoryName, assignment: assignmentID, pointLimit };
 
       fetch('/api/rubriccategories/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'POST',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 201) {
@@ -942,16 +949,15 @@ class Admin extends React.Component<{}, IAdminState> {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     return new Promise((resolve) => {
-      const payload = new URLSearchParams();
-      const key1 = 'id';
-      payload.append(key1, String(categoryID));
+      const payload = { id: categoryID };
 
       fetch(`/api/rubriccategories/${categoryID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'DELETE',
-        body: payload,
+        body: JSON.stringify(payload),
       }).then((res) => {
         if (res.status === 204) {
           assignments.forEach((assn) => {
@@ -960,7 +966,6 @@ class Admin extends React.Component<{}, IAdminState> {
                 return catID !== categoryID;
               });
             }
-            console.log(rubricCategories);
             rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
               return cat.id !== categoryID;
             });
@@ -994,22 +999,20 @@ class Admin extends React.Component<{}, IAdminState> {
     }
 
     if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'id';
-      const key2 = 'text';
-      const key3 = 'pointDelta';
-      const key4 = 'assignment';
-      payload.append(key1, String(categoryID));
-      payload.append(key2, categoryName);
-      payload.append(key3, String(categoryPointLimit));
-      payload.append(key4, String(assignmentID));
+      const payload = {
+        id: categoryID,
+        text: categoryName,
+        pointDelta: categoryPointLimit,
+        assignment: assignmentID,
+      };
 
       fetch(`/api/rubriccategories/${categoryID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'PATCH',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 200) {
@@ -1053,20 +1056,14 @@ class Admin extends React.Component<{}, IAdminState> {
         return resolve(undefined);
       }
 
-      const payload = new URLSearchParams();
-      const key1 = 'text';
-      const key2 = 'category';
-      const key3 = 'pointDelta';
-      payload.append(key1, commentText);
-      payload.append(key2, String(categoryID));
-      payload.append(key3, String(commentDelta));
-
+      const payload = { text: commentText, category: categoryID, pointDelta: commentDelta };
       fetch('/api/rubriccomments/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'POST',
-        body: payload,
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.status === 201) {
@@ -1097,21 +1094,18 @@ class Admin extends React.Component<{}, IAdminState> {
     const { currentCourse, rubricCategories, rubricComments } = this.state;
 
     if (currentCourse) {
-      const payload = new URLSearchParams();
-      const key1 = 'id';
-      payload.append(key1, String(commentID));
+      const payload = { id: commentID };
 
       fetch(`/api/rubriccomments/${commentID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
         method: 'DELETE',
-        body: payload,
+        body: JSON.stringify(payload),
       }).then((res) => {
         if (res.status === 204) {
           rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
-            console.log(com.id);
-            console.log(commentID);
             return com.id !== commentID;
           });
           rubricCategories[assignmentID].forEach((cat) => {
@@ -1183,6 +1177,7 @@ class Admin extends React.Component<{}, IAdminState> {
       });
   };
 
+  // ------------------- Manage assignments API calls  ------------------
   public updateAssignment = (
     assignmentID: number,
     name: string | undefined,
@@ -1199,7 +1194,6 @@ class Admin extends React.Component<{}, IAdminState> {
       if (name) {
         const key = 'name';
         payload[key] = name;
-        console.log(name);
       }
       if (points) {
         const key = 'points';
@@ -1288,6 +1282,7 @@ class Admin extends React.Component<{}, IAdminState> {
     });
   };
 
+  // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
     const { currentCourse, courses } = this.state;
     return new Promise<ICourse3>((resolve) => {
