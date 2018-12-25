@@ -31,12 +31,14 @@ interface IProps {
 interface IState {
   newStudentField: string | undefined;
   changedSectionStudents: string[];
+  studentSortAscending: boolean;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
     changedSectionStudents: [],
+    studentSortAscending: true,
   };
 
   public triggerUnEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
@@ -69,6 +71,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ newStudentField: value });
   };
 
+  public toggleStudentSort = () => {
+    this.setState({ studentSortAscending: !this.state.studentSortAscending });
+  };
+
   public render() {
     const {
       studentsLoadComplete,
@@ -77,7 +83,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       sections,
       sectionsByStudent,
     } = this.props;
-    const { newStudentField, changedSectionStudents } = this.state;
+    const { newStudentField, changedSectionStudents, studentSortAscending } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -91,6 +97,12 @@ class ManageStudents extends React.Component<IProps, {}> {
     const studentType = UserEnum.Student;
 
     if (studentsLoadComplete && students) {
+      const sortedStudents = students;
+      if (studentSortAscending) {
+        sortedStudents.sort();
+      } else {
+        sortedStudents.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -115,7 +127,9 @@ class ManageStudents extends React.Component<IProps, {}> {
           <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Student'}>Student</TableColumn>
+                <TableColumn key={'Student'} sorted={true} onClick={this.toggleStudentSort}>
+                  Student
+                </TableColumn>
                 <TableColumn key={'Section'}>Section</TableColumn>
                 <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
               </TableRow>

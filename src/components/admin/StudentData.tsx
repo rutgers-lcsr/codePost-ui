@@ -11,7 +11,88 @@ interface IPropsStudentOverview {
   openSubmission: (submissionID: number | string) => void;
 }
 
+interface IState {
+  sortedIndex: { [index: string]: boolean | undefined };
+}
+
 class StudentData extends React.Component<IPropsStudentOverview, {}> {
+  public state: Readonly<IState> = {
+    sortedIndex: {},
+  };
+
+  public studentHeader = 'student';
+
+  public constructor(props: any) {
+    super(props);
+    const sortedIndex = {};
+    this.props.assignments.forEach((assn) => {
+      sortedIndex[assn.id] = false;
+    });
+    sortedIndex[this.studentHeader] = true;
+    this.state = { sortedIndex };
+  }
+
+  public toggleSort = (assignmentName: string) => {
+    const { sortedIndex } = this.state;
+    Object.keys(sortedIndex).map((key) => {
+      if (key === assignmentName) {
+        if (typeof sortedIndex[key] === 'undefined') {
+          sortedIndex[key] = true;
+        } else {
+          sortedIndex[key] = !sortedIndex[key];
+        }
+      } else {
+        sortedIndex[key] = undefined;
+      }
+    });
+    this.setState({ sortedIndex });
+  };
+
+  public sortFunction = (a: string, b: string) => {
+    const { sortedIndex } = this.state;
+    const { submissionsByStudent } = this.props;
+    if (typeof sortedIndex[this.studentHeader] !== 'undefined') {
+      if (sortedIndex[this.studentHeader] === true) {
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+      } else {
+        if (a < b) return 1;
+        if (a > b) return -1;
+        return 0;
+      }
+    } else {
+      const assignmentID = Object.keys(sortedIndex).filter((key) => {
+        return typeof sortedIndex[key] !== 'undefined';
+      })[0];
+      const studentAsub = submissionsByStudent[a][assignmentID];
+      const studentBsub = submissionsByStudent[b][assignmentID];
+      if (sortedIndex[assignmentID]) {
+        if (!studentAsub && studentBsub) return -1;
+        if (studentAsub && !studentBsub) return 1;
+        if (!studentAsub && !studentBsub) return 0;
+        if (studentAsub.isFinalized && studentBsub.isFinalized) {
+          if (studentAsub.grade < studentBsub.grade) return -1;
+          if (studentAsub.grade > studentBsub.grade) return 1;
+          return 0;
+        } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return 1;
+        else if (!studentAsub.isFinalized && studentBsub.isFinalized) return -1;
+        return 0;
+      } else {
+        if (!studentAsub && studentBsub) return 1;
+        if (studentAsub && !studentBsub) return -1;
+        if (!studentAsub && !studentBsub) return 0;
+        if (studentAsub.isFinalized && studentBsub.isFinalized) {
+          if (studentAsub.grade < studentBsub.grade) return 1;
+          if (studentAsub.grade > studentBsub.grade) return -1;
+          return 0;
+        } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return -1;
+        else if (!studentAsub.isFinalized && studentBsub.isFinalized) return 1;
+        return 0;
+      }
+    }
+  };
+
   public render() {
     const {
       submissionsByStudent,
@@ -20,23 +101,34 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       openSubmission,
       changeActiveStudent,
     } = this.props;
+    const { sortedIndex } = this.state;
     const headers = assignments.map((assignment: IAssignment3) => {
-      return assignment.name;
+      return String(assignment.id);
     });
-    headers.unshift('Student');
+    headers.unshift(this.studentHeader);
 
     if (!activeStudent) {
+      const students = Object.keys(submissionsByStudent);
+      students.sort(this.sortFunction);
       return (
         <DataTable plain={true}>
           <TableHeader>
             <TableRow>
               {headers.map((header) => {
-                return <TableColumn key={header}>{header}</TableColumn>;
+                return (
+                  <TableColumn
+                    sorted={sortedIndex[header]}
+                    onClick={this.toggleSort.bind(this.props, header)}
+                    key={header}
+                  >
+                    {header}
+                  </TableColumn>
+                );
               })}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Object.keys(submissionsByStudent).map((studentEmail) => {
+            {students.map((studentEmail) => {
               return (
                 <TableRow
                   key={studentEmail}
