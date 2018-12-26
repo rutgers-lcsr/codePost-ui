@@ -23,6 +23,7 @@ import {
 } from '../../types/common';
 import RubricCategoryTable from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
+import RubricFileDialog from './RubricFileDialog';
 
 interface IProps {
   submissions: ISubmissionsByAssignment;
@@ -501,6 +502,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
                   undefined,
                   !activeAssignment.isReleased,
                 )}
+              />
+              <RubricFileDialog
+                activeRubricComments={this.state.activeRubricComments}
+                activeRubricCategories={this.state.activeRubricCategories}
+                addErrorToast={this.props.addErrorToast}
+                addToast={this.props.addToast}
               />
             </div>
             <div className="padding" />
