@@ -90,7 +90,7 @@ class Grader extends React.Component<{}, IGraderState> {
 
   public loadSubmissions = (assignment: IAssignment) => {
     return APIUtils.fetchSubmissions(assignment.id, USER_APP.Grader, this.state.email).then(
-      (currentSubmissions: any) => {
+      (currentSubmissions: ISubmission[]) => {
         console.log('1 - saving submissions', currentSubmissions);
         this.setState({ currentSubmissions });
       },
@@ -169,7 +169,7 @@ class Grader extends React.Component<{}, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: IAssignment): any => {
+  public claimSubmission = (assignment: IAssignment): Promise<ISubmission> => {
     return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -191,7 +191,7 @@ class Grader extends React.Component<{}, IGraderState> {
       });
   };
 
-  public releaseSubmission = (submission: ISubmission): any => {
+  public releaseSubmission = (submission: ISubmission): Promise<ISubmission> => {
     const payload = {
       grader: '',
     };

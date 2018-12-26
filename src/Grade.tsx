@@ -255,10 +255,10 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     }
   };
 
-  public toggleFinalized = () => {
+  public toggleFinalized = (): Promise<any> => {
     const { submission } = this.state;
     if (!submission) {
-      return;
+      return Promise.resolve();
     }
 
     const payload = {
