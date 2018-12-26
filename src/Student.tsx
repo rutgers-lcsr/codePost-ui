@@ -121,6 +121,12 @@ class Student extends React.Component<{}, IStudentState> {
     return Promise.all(
       submission.files.map((fileId: number) => {
         return APIUtils.fetchFile(fileId).then((file: IFile) => {
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: [],
+            },
+          });
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -135,10 +141,7 @@ class Student extends React.Component<{}, IStudentState> {
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
-          let comments = [comment];
-          if (this.state.comments[file.id]) {
-            comments = [...this.state.comments[file.id], comment];
-          }
+          const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
               ...this.state.comments,
