@@ -5,7 +5,7 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Grader.scss';
 
-import { APP, IAssignment, ICourse, ICourseToAssignmentMap, IOption, ISubmission } from './types/common';
+import { IAssignment, ICourse, ICourseToAssignmentMap, IOption, ISubmission, USER_APP } from './types/common';
 
 import APIUtils from './APIUtils';
 
@@ -59,7 +59,7 @@ class Grader extends React.Component<{}, IGraderState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return APIUtils.fetchUser(APP.Grader).then(([email, courses]) => {
+    return APIUtils.fetchUser(USER_APP.Grader).then(([email, courses]) => {
       this.setState({ email, courses });
       return Promise.all(
         courses.map((course: ICourse) => {
@@ -89,10 +89,12 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public loadSubmissions = (assignment: IAssignment) => {
-    return APIUtils.fetchSubmissions(assignment.id, APP.Grader, this.state.email).then((currentSubmissions: any) => {
-      console.log('1 - saving submissions', currentSubmissions);
-      this.setState({ currentSubmissions });
-    });
+    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Grader, this.state.email).then(
+      (currentSubmissions: any) => {
+        console.log('1 - saving submissions', currentSubmissions);
+        this.setState({ currentSubmissions });
+      },
+    );
   };
 
   ///////////////////////////////////////

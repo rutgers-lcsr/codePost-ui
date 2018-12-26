@@ -10,7 +10,7 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, UserEnum } from '../../types/common';
+import { ICourse, USER_APP } from '../../types/common';
 
 interface IProps {
   admins: string[];
@@ -19,8 +19,8 @@ interface IProps {
   toggleLock: () => void;
   currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
 }
 
 interface IState {
@@ -38,7 +38,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const { selectedAdmins } = this.state;
     const { unEnrollUsers } = this.props;
 
-    const adminType = UserEnum.CourseAdmin;
+    const adminType = USER_APP.CourseAdmin;
 
     if (selectedAdmins) {
       unEnrollUsers(selectedAdmins, adminType);
@@ -74,7 +74,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
-    const adminType = UserEnum.CourseAdmin;
+    const adminType = USER_APP.CourseAdmin;
 
     if (adminsLoadComplete && admins) {
       return (

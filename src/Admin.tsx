@@ -25,7 +25,7 @@ import {
   IStudentSubmissionsDataTable,
   ISubmission,
   IToast,
-  UserEnum,
+  USER_APP,
 } from './types/common';
 
 interface IAdminState {
@@ -574,16 +574,16 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (newRoster: string[], userType: UserEnum) => {
+  public changeRoster = (newRoster: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
     if (currentCourse) {
       let payload;
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         payload = { students: newRoster };
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         payload = { graders: newRoster };
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         payload = { courseAdmins: newRoster };
       }
 
@@ -605,17 +605,17 @@ class Admin extends React.Component<{}, IAdminState> {
         .then((json) => {
           console.log(json);
           if (json) {
-            if (userType === UserEnum.Student) {
+            if (userType === USER_APP.Student) {
               console.log(json);
               this.setState({
                 students: json.students,
               });
-            } else if (userType === UserEnum.Grader) {
+            } else if (userType === USER_APP.Grader) {
               console.log(json);
               this.setState({
                 graders: json.graders,
               });
-            } else if (userType === UserEnum.CourseAdmin) {
+            } else if (userType === USER_APP.CourseAdmin) {
               console.log(json);
               this.setState({
                 admins: json.courseAdmins,
@@ -626,17 +626,17 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public unEnrollUsers = (selectedUserEmails: string[], userType: UserEnum) => {
+  public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
     if (currentCourse) {
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         const { students } = this.state;
         const newStudents = students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
         this.changeRoster(newStudents, userType);
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         const { graders } = this.state;
         console.log(selectedUserEmails);
         const newGraders = graders.filter((grader) => {
@@ -644,7 +644,7 @@ class Admin extends React.Component<{}, IAdminState> {
         });
         console.log(newGraders);
         this.changeRoster(newGraders, userType);
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         const { admins } = this.state;
         const newAdmins = admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
@@ -654,17 +654,17 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public enrollUser = (userEmail: string, userType: UserEnum) => {
+  public enrollUser = (userEmail: string, userType: USER_APP) => {
     const { currentCourse } = this.state;
     const { students, graders, admins } = this.state;
     if (currentCourse) {
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         students.push(userEmail);
         this.changeRoster(students, userType);
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         graders.push(userEmail);
         this.changeRoster(graders, userType);
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         admins.push(userEmail);
         this.changeRoster(admins, userType);
       }

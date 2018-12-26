@@ -12,7 +12,7 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, ISection, ISectionNoStudents, UserEnum } from '../../types/common';
+import { ICourse, ISection, ISectionNoStudents, USER_APP } from '../../types/common';
 
 interface IProps {
   sections: ISection[];
@@ -22,8 +22,8 @@ interface IProps {
   toggleLock: () => void;
   currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   addStudentToSection: (sectionID: number, studentEmail: string) => void;
 }
@@ -45,7 +45,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const { selectedStudents } = this.state;
     const { unEnrollUsers } = this.props;
 
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (selectedStudents) {
       unEnrollUsers(selectedStudents, studentType);
@@ -107,7 +107,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
 
     const iconChanged = <FontIcon>track_changes</FontIcon>;
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (studentsLoadComplete && students) {
       return (

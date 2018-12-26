@@ -7,7 +7,6 @@ import VerticalPane from './components/VerticalPane';
 import './styles/Student.scss';
 
 import {
-  APP,
   IAssignment,
   IComment,
   ICourse,
@@ -16,6 +15,7 @@ import {
   IFileToCommentsMap,
   IOption,
   ISubmission,
+  USER_APP,
 } from './types/common';
 
 import APIUtils from './APIUtils';
@@ -74,7 +74,7 @@ class Student extends React.Component<{}, IStudentState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return APIUtils.fetchUser(APP.Student).then(([email, courses]) => {
+    return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
       this.setState({ email, courses });
       return Promise.all(
         courses.map((course: ICourse) => {
@@ -109,7 +109,7 @@ class Student extends React.Component<{}, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return APIUtils.fetchSubmissions(assignment.id, APP.Student, this.state.email).then((currentSubmission) => {
+    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Student, this.state.email).then((currentSubmission) => {
       return this.loadFiles(currentSubmission).then(() => {
         console.log('3 - saving submission: ', currentSubmission);
         this.setState({ currentSubmission });

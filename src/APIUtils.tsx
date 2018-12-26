@@ -1,18 +1,18 @@
 // import * as React from 'react';
-import { APP } from './types/common';
+import { USER_APP } from './types/common';
 
 export default class APIUtils {
   // Unique fetch in that it returns a tuple: [email, courses]
-  public static fetchUser = (app: APP) => {
+  public static fetchUser = (UserApp: USER_APP) => {
     let courses: string;
-    switch (app) {
-      case APP.Student:
+    switch (UserApp) {
+      case USER_APP.Student:
         courses = 'studentCourses';
         break;
-      case APP.Grader:
+      case USER_APP.Grader:
         courses = 'graderCourses';
         break;
-      case APP.CourseAdmin:
+      case USER_APP.CourseAdmin:
         courses = 'adminCourses';
         break;
     }
@@ -44,16 +44,16 @@ export default class APIUtils {
       });
   };
 
-  public static fetchSubmissions = (assignmentId: number, app: APP, email: string) => {
+  public static fetchSubmissions = (assignmentId: number, UserApp: USER_APP, email: string) => {
     let identifier: string = '';
-    switch (app) {
-      case APP.Student:
+    switch (UserApp) {
+      case USER_APP.Student:
         identifier = `student=${email}`;
         break;
-      case APP.Grader:
+      case USER_APP.Grader:
         identifier = `grader=${email}`;
         break;
-      case APP.CourseAdmin:
+      case USER_APP.CourseAdmin:
         identifier = `admin=${email}`;
         break;
     }

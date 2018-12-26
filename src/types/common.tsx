@@ -2,7 +2,7 @@
  * Common Types
  */
 
-export enum APP {
+export enum USER_APP {
   Student,
   Grader,
   CourseAdmin,
@@ -114,12 +114,6 @@ export interface IRubricComment {
 export interface IToast {
   text: string;
   action: string | undefined;
-}
-
-export enum UserEnum {
-  Student = 'Student',
-  Grader = 'Grader',
-  CourseAdmin = 'CourseAdmin',
 }
 
 // New interfaces for Admin panel -- to merge
