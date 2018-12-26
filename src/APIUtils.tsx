@@ -30,8 +30,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchAssignment = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/`, {
+  public static fetchAssignment = (assignmentID: number) => {
+    return fetch(`/api/assignments/${assignmentID}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -44,7 +44,7 @@ export default class APIUtils {
       });
   };
 
-  public static fetchSubmissions = (assignmentId: number, UserApp: USER_APP, email: string) => {
+  public static fetchSubmissions = (assignmentID: number, UserApp: USER_APP, email: string) => {
     let identifier: string = '';
     switch (UserApp) {
       case USER_APP.Student:
@@ -58,7 +58,7 @@ export default class APIUtils {
         break;
     }
 
-    return fetch(`/api/assignments/${assignmentId}/submissions/?${identifier}`, {
+    return fetch(`/api/assignments/${assignmentID}/submissions/?${identifier}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -71,8 +71,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchSubmission = (submissionId: number) => {
-    return fetch(`/api/submissions/${submissionId}/`, {
+  public static fetchSubmission = (submissionID: number) => {
+    return fetch(`/api/submissions/${submissionID}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -89,8 +89,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchFile = (fileId: number) => {
-    return fetch(`/api/files/${fileId}/`, {
+  public static fetchFile = (fileID: number) => {
+    return fetch(`/api/files/${fileID}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -103,8 +103,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchComment = (commentId: number) => {
-    return fetch(`/api/comments/${commentId}/`, {
+  public static fetchComment = (commentID: number) => {
+    return fetch(`/api/comments/${commentID}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -117,8 +117,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchRubricCategories = (assignmentId: number) => {
-    return fetch(`/api/assignments/${assignmentId}/rubric/`, {
+  public static fetchRubricCategories = (assignmentID: number) => {
+    return fetch(`/api/assignments/${assignmentID}/rubric/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -134,8 +134,8 @@ export default class APIUtils {
       });
   };
 
-  public static fetchRubricComment = (rubricCommentId: number) => {
-    return fetch(`/api/rubricComments/${rubricCommentId}/`, {
+  public static fetchRubricComment = (rubricCommentID: number) => {
+    return fetch(`/api/rubricComments/${rubricCommentID}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
