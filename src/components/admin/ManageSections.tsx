@@ -12,14 +12,14 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, ISection3 } from '../../types/common';
+import { ICourse, ISection } from '../../types/common';
 
 interface IProps {
-  sections: ISection3[];
+  sections: ISection[];
   sectionsLoadComplete: boolean;
   lockedSectionChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => void;
@@ -61,20 +61,13 @@ class ManageSections extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const {
-      sectionsLoadComplete,
-      lockedSectionChange,
-      sections,
-      createSection,
-      graders,
-    } = this.props;
+    const { sectionsLoadComplete, lockedSectionChange, sections, createSection, graders } = this.props;
     const { newSectionField, changedSections } = this.state;
 
     const lockIcon = lockedSectionChange ? 'lock' : 'lock_open';
     const iconChanged = <FontIcon>track_changes</FontIcon>;
 
-    const allowAddSection =
-      newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
+    const allowAddSection = newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
     const leaderMenuItems = graders.map((grader) => {
       // Reminder -- fix this to simplify
@@ -148,14 +141,7 @@ class ManageSections extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
+          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>
         </div>

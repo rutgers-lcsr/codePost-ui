@@ -69,7 +69,7 @@ class EditableComment extends React.Component<IProps, IState> {
     this.setState({ savingClass: 'comment-saving' });
 
     // If this is a new comment being edited, then it doesn't have an id yet
-    // The new comments get initalized in CodeGrader:onMouseUp (with id undefined)
+    // The new comments get initalized in CodeGrader:onMouseUp (with negative)
     // New comments should be a POST request
     // Else PATCH
     if (comment.id < 0) {
@@ -97,6 +97,7 @@ class EditableComment extends React.Component<IProps, IState> {
           return res.json();
         })
         .then((json) => {
+          // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);
@@ -112,20 +113,6 @@ class EditableComment extends React.Component<IProps, IState> {
           return true;
         });
     } else {
-      // Temp fix until API
-      // Boilerplate PATCH can't handle nested objects
-      // Should update API to handle
-      // const payload = {
-      //   endChar: comment.endChar,
-      //   endLine: comment.endLine,
-      //   id: comment.id,
-      //   pointDelta: comment.pointDelta,
-      //   rubricComment: comment.rubricComment,
-      //   startChar: comment.startChar,
-      //   startLine: comment.startLine,
-      //   text: comment.text,
-      // };
-
       console.log('PATCH', JSON.stringify(comment));
       return fetch(`/api/comments/${comment.id}/`, {
         body: JSON.stringify(comment),
@@ -139,6 +126,7 @@ class EditableComment extends React.Component<IProps, IState> {
           return res.json();
         })
         .then((json) => {
+          // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);

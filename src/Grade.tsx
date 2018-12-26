@@ -13,19 +13,12 @@ import {
   IAssignment,
   IComment,
   IFile,
-  IFile2,
-  IRubricCategory2,
+  IFileToCommentsMap,
+  IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
-  ISubmission2,
+  ISubmission,
 } from './types/common';
-
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
-
-interface IRubricCateogoryToRubricCommentsMap {
-  [rubricCategoryId: number]: IRubricComment[];
-}
 
 interface IGradeState {
   email: string;
@@ -33,19 +26,16 @@ interface IGradeState {
   isLoading: boolean;
   redirect: boolean;
   assignment?: IAssignment;
-  submission?: ISubmission2;
-  rubricCategories: IRubricCategory2[];
-  rubricComments: IRubricCateogoryToRubricCommentsMap;
+  submission?: ISubmission;
+  rubricCategories: IRubricCategory[];
+  rubricComments: IRubricCategoryToRubricCommentsMap;
   activeCommentId?: number;
 
-  files: IFile2[];
+  files: IFile[];
   comments: IFileToCommentsMap;
 }
 
-class Grade extends React.Component<
-  { match: { params: { submissionId: typeof Number } } },
-  IGradeState
-  > {
+class Grade extends React.Component<{ match: { params: { submissionId: typeof Number } } }, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
@@ -107,10 +97,16 @@ class Grade extends React.Component<
     });
   };
 
-  public loadFiles = (submission: ISubmission2) => {
+  public loadFiles = (submission: ISubmission) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return APIUtils.fetchFile(fileId).then((file: IFile2) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile) => {
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: [],
+            },
+          });
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -120,15 +116,12 @@ class Grade extends React.Component<
     );
   };
 
-  public loadComments = (file: IFile2) => {
+  public loadComments = (file: IFile) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
-          let comments = [comment];
-          if (this.state.comments[file.id]) {
-            comments = [...this.state.comments[file.id], comment];
-          }
+          const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
               ...this.state.comments,
@@ -143,7 +136,7 @@ class Grade extends React.Component<
   public loadRubricCategories = (assignmentId: number) => {
     return APIUtils.fetchRubricCategories(assignmentId).then((rubricCategories) => {
       return Promise.all(
-        rubricCategories.map((rubricCategory: IRubricCategory2) => {
+        rubricCategories.map((rubricCategory: IRubricCategory) => {
           return this.loadRubricComments(rubricCategory);
         }),
       ).then(() => {
@@ -154,24 +147,22 @@ class Grade extends React.Component<
     });
   };
 
-  public loadRubricComments = (rubricCategory: IRubricCategory2) => {
+  public loadRubricComments = (rubricCategory: IRubricCategory) => {
     return Promise.all(
       rubricCategory.rubricComments.map((rubricCommentId: number) => {
-        return APIUtils.fetchRubricComment(rubricCommentId).then(
-          (rubricComment: IRubricComment) => {
-            console.log('4.11 - saving rubricComment:', rubricComment);
-            let rubricComments = [rubricComment];
-            if (this.state.rubricComments[rubricCategory.id]) {
-              rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
-            }
-            this.setState({
-              rubricComments: {
-                ...this.state.rubricComments,
-                [rubricCategory.id]: rubricComments,
-              },
-            });
-          },
-        );
+        return APIUtils.fetchRubricComment(rubricCommentId).then((rubricComment: IRubricComment) => {
+          console.log('4.11 - saving rubricComment:', rubricComment);
+          let rubricComments = [rubricComment];
+          if (this.state.rubricComments[rubricCategory.id]) {
+            rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
+          }
+          this.setState({
+            rubricComments: {
+              ...this.state.rubricComments,
+              [rubricCategory.id]: rubricComments,
+            },
+          });
+        });
       }),
     );
   };
@@ -201,9 +192,7 @@ class Grade extends React.Component<
     const { rubricComments } = this.state;
 
     for (const rubricCategoryId of Object.keys(rubricComments)) {
-      const rubricComment = rubricComments[rubricCategoryId].find(
-        (rc: IRubricComment) => rc.id === rubricCommentId,
-      );
+      const rubricComment = rubricComments[rubricCategoryId].find((rc: IRubricComment) => rc.id === rubricCommentId);
       if (rubricComment) {
         return rubricComment;
       }
@@ -232,9 +221,7 @@ class Grade extends React.Component<
     }
 
     const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentId);
-
     comments[file.id][index] = newComment;
-
     this.setState({ comments });
   };
 
@@ -247,12 +234,7 @@ class Grade extends React.Component<
     }
 
     const index = comments[file.id].findIndex((c: IComment) => c.id === comment.id);
-
-    comments[file.id] = [
-      ...comments[file.id].slice(0, index),
-      ...comments[file.id].slice(index + 1),
-    ];
-
+    comments[file.id] = [...comments[file.id].slice(0, index), ...comments[file.id].slice(index + 1)];
     this.setState({ comments });
 
     // Think about how to handle this case
@@ -283,23 +265,12 @@ class Grade extends React.Component<
       isFinalized: !submission.isFinalized,
     };
 
-    return fetch(`/api/submissions/${submission.id}/`, {
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({
-          submission: json,
-        });
-        return json;
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        submission: json,
       });
+      return json;
+    });
   };
 
   //////////////////////////////////////
@@ -338,11 +309,7 @@ class Grade extends React.Component<
       <div>
         {this.renderRedirect()}
 
-        <Panel
-          submission={submission}
-          assignment={assignment}
-          toggleFinalized={this.toggleFinalized}
-        />
+        <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="container-main">
           <Rubric
             rubricCategories={rubricCategories}

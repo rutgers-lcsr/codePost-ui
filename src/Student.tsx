@@ -7,34 +7,28 @@ import VerticalPane from './components/VerticalPane';
 import './styles/Student.scss';
 
 import {
-  APP,
   IAssignment,
   IComment,
-  ICourse2,
-  IFile2,
+  ICourse,
+  ICourseToAssignmentMap,
+  IFile,
+  IFileToCommentsMap,
   IOption,
-  ISubmission2,
+  ISubmission,
+  USER_APP,
 } from './types/common';
 
 import APIUtils from './APIUtils';
 
-interface ICourseToAssignmentMap {
-  [courseId: number]: IAssignment[];
-}
-
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
-
 interface IStudentState {
-  courses: ICourse2[];
+  courses: ICourse[];
   assignments: ICourseToAssignmentMap;
-  files: IFile2[];
+  files: IFile[];
   comments: IFileToCommentsMap;
 
-  currentCourse?: ICourse2;
+  currentCourse?: ICourse;
   currentAssignment?: IAssignment;
-  currentSubmission?: ISubmission2;
+  currentSubmission?: ISubmission;
 
   email: string;
   isLoading: boolean;
@@ -80,17 +74,17 @@ class Student extends React.Component<{}, IStudentState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return APIUtils.fetchUser(APP.Student).then(([email, courses]) => {
+    return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
       this.setState({ email, courses });
       return Promise.all(
-        courses.map((course: ICourse2) => {
+        courses.map((course: ICourse) => {
           return this.loadAssignments(course);
         }),
       );
     });
   };
 
-  public loadAssignments = (course: ICourse2) => {
+  public loadAssignments = (course: ICourse) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
         return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
@@ -115,20 +109,24 @@ class Student extends React.Component<{}, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return APIUtils.fetchSubmissions(assignment.id, APP.Student, this.state.email).then(
-      (currentSubmission) => {
-        return this.loadFiles(currentSubmission).then(() => {
-          console.log('3 - saving submission: ', currentSubmission);
-          this.setState({ currentSubmission });
-        });
-      },
-    );
+    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Student, this.state.email).then((currentSubmission) => {
+      return this.loadFiles(currentSubmission).then(() => {
+        console.log('3 - saving submission: ', currentSubmission);
+        this.setState({ currentSubmission });
+      });
+    });
   };
 
-  public loadFiles = (submission: ISubmission2) => {
+  public loadFiles = (submission: ISubmission) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return APIUtils.fetchFile(fileId).then((file: IFile2) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile) => {
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: [],
+            },
+          });
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -138,15 +136,12 @@ class Student extends React.Component<{}, IStudentState> {
     );
   };
 
-  public loadComments = (file: IFile2) => {
+  public loadComments = (file: IFile) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
-          let comments = [comment];
-          if (this.state.comments[file.id]) {
-            comments = [...this.state.comments[file.id], comment];
-          }
+          const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
               ...this.state.comments,
@@ -189,7 +184,7 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: ICourse2) => {
+    const currentCourse = this.state.courses.filter((obj: ICourse) => {
       return obj.id === option.value;
     })[0];
 
@@ -200,18 +195,18 @@ class Student extends React.Component<{}, IStudentState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse2[]) => {
+  public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({ value: course.id, label: course.name }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse2 | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
     return { value: currentCourse.id, label: currentCourse.name };
   };
 
-  public tabItemsFormatter = (currentCourse: ICourse2 | undefined) => {
+  public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
     const { assignments } = this.state;
     if (!currentCourse) {
       return [];
@@ -242,15 +237,7 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public render() {
-    const {
-      courses,
-      currentAssignment,
-      currentCourse,
-      currentSubmission,
-      isLoading,
-      files,
-      comments,
-    } = this.state;
+    const { courses, currentAssignment, currentCourse, currentSubmission, isLoading, files, comments } = this.state;
     return (
       <div>
         {this.renderRedirect()}
@@ -278,8 +265,8 @@ class Student extends React.Component<{}, IStudentState> {
 
 interface IContentAreaProps {
   assignment?: IAssignment;
-  submission?: ISubmission2;
-  files: IFile2[];
+  submission?: ISubmission;
+  files: IFile[];
   comments: IFileToCommentsMap;
 }
 
@@ -319,9 +306,7 @@ const ContentArea = (props: IContentAreaProps) => {
     );
   }
   if (assignment) {
-    return (
-      <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>
-    );
+    return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
   }
   return <div className="container-code-viewer">Select an assignment on the left!</div>;
 };

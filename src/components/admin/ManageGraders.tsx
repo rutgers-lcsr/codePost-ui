@@ -10,17 +10,17 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, UserEnum } from '../../types/common';
+import { ICourse, USER_APP } from '../../types/common';
 
 interface IProps {
   graders: string[];
   gradersLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
 }
 
 interface IState {
@@ -38,7 +38,7 @@ class ManageGraders extends React.Component<IProps, {}> {
     const { selectedUsers } = this.state;
     const { unEnrollUsers } = this.props;
 
-    const graderType = UserEnum.Grader;
+    const graderType = USER_APP.Grader;
 
     if (selectedUsers) {
       unEnrollUsers(selectedUsers, graderType);
@@ -74,7 +74,7 @@ class ManageGraders extends React.Component<IProps, {}> {
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
     const showSaveNewButton = newField && newField.includes('@');
-    const graderType = UserEnum.Grader;
+    const graderType = USER_APP.Grader;
 
     if (gradersLoadComplete && graders) {
       return (
@@ -123,14 +123,7 @@ class ManageGraders extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
+          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>
         </div>

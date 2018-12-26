@@ -12,18 +12,18 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, ISection3, ISectionNoStudents, UserEnum } from '../../types/common';
+import { ICourse, ISection, ISectionNoStudents, USER_APP } from '../../types/common';
 
 interface IProps {
-  sections: ISection3[];
+  sections: ISection[];
   students: string[];
   studentsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   addStudentToSection: (sectionID: number, studentEmail: string) => void;
 }
@@ -45,7 +45,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const { selectedStudents } = this.state;
     const { unEnrollUsers } = this.props;
 
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (selectedStudents) {
       unEnrollUsers(selectedStudents, studentType);
@@ -95,14 +95,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const {
-      studentsLoadComplete,
-      lockedStudentChange,
-      enrollUser,
-      students,
-      sections,
-      sectionsByStudent,
-    } = this.props;
+    const { studentsLoadComplete, lockedStudentChange, enrollUser, students, sections, sectionsByStudent } = this.props;
     const { newStudentField, selectedStudents, changedSections } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
@@ -114,7 +107,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
 
     const iconChanged = <FontIcon>track_changes</FontIcon>;
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (studentsLoadComplete && students) {
       return (
@@ -178,10 +171,7 @@ class ManageStudents extends React.Component<IProps, {}> {
                 }
 
                 return (
-                  <TableRow
-                    key={student}
-                    onCheckboxClick={this.rowSelect.bind(this.props, student)}
-                  >
+                  <TableRow key={student} onCheckboxClick={this.rowSelect.bind(this.props, student)}>
                     <TableColumn>{student}</TableColumn>
                     <SelectFieldColumn
                       dropdownIcon={dropDown}
@@ -195,14 +185,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
+          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>
         </div>

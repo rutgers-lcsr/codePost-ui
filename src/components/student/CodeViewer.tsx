@@ -8,17 +8,13 @@ import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-import { IAssignment, IComment, IFile2, ISubmission2 } from '../../types/common';
-
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
+import { IAssignment, IComment, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
 
 interface IProps {
   deductions: number[];
-  submission: ISubmission2;
+  submission: ISubmission;
   assignment: IAssignment;
-  files: IFile2[];
+  files: IFile[];
   comments: IFileToCommentsMap;
 }
 
@@ -31,7 +27,7 @@ class CodeViewer extends React.Component<IProps, {}> {
         <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
-            {files.map((file: IFile2, i: number) => {
+            {files.map((file: IFile, i: number) => {
               const tabTitle = this.getTabTitle(file.name, deductions[i], comments[file.id].length);
               return (
                 <Tab id="{i}" key={i}>
@@ -40,7 +36,7 @@ class CodeViewer extends React.Component<IProps, {}> {
               );
             })}
           </TabList>
-          {files.map((file: IFile2, i: number) => {
+          {files.map((file: IFile, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
@@ -57,8 +53,7 @@ class CodeViewer extends React.Component<IProps, {}> {
 
   private getTabTitle = (name: string, deduction: number, numComments: number) => {
     const deductionString = deduction > 0 ? `(-${deduction})` : '';
-    const commentFlag =
-      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
 
     return (
       <div className="tab-title">
@@ -70,7 +65,7 @@ class CodeViewer extends React.Component<IProps, {}> {
 }
 
 interface ICodeBoxProps {
-  file: IFile2;
+  file: IFile;
   comments: IComment[];
 }
 
@@ -192,9 +187,8 @@ const Comment = (props: ICommentProps) => {
     >
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}
-        {comment.rubricComment ? (
-          <div className="comment-rubric">{comment.rubricComment.text}</div>
-        ) : null}
+        {/*// should make slug related rubricComment slug related on text*/}
+        {comment.rubricComment ? <div className="comment-rubric">{comment.rubricComment}</div> : null}
         <div className="comment-text">{comment.text}</div>
       </CardText>
     </Card>
