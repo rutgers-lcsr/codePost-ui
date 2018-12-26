@@ -221,9 +221,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     }
 
     const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentId);
-
     comments[file.id][index] = newComment;
-
     this.setState({ comments });
   };
 
@@ -236,9 +234,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     }
 
     const index = comments[file.id].findIndex((c: IComment) => c.id === comment.id);
-
     comments[file.id] = [...comments[file.id].slice(0, index), ...comments[file.id].slice(index + 1)];
-
     this.setState({ comments });
 
     // Think about how to handle this case

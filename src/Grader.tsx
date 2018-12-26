@@ -196,25 +196,14 @@ class Grader extends React.Component<{}, IGraderState> {
       grader: '',
     };
 
-    return fetch(`/api/submissions/${submission.id}/`, {
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({
-          currentSubmissions: this.state.currentSubmissions.filter((sub) => {
-            return sub.id !== submission.id;
-          }),
-        });
-        return json;
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        currentSubmissions: this.state.currentSubmissions.filter((sub) => {
+          return sub.id !== submission.id;
+        }),
       });
+      return json;
+    });
   };
 
   ///////////////////////////////////////
