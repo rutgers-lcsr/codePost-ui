@@ -8,7 +8,7 @@ import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-import { IAssignment, IComment, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
+import { IAssignment, IComment, ICSSStyleObject, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
 
 interface IProps {
   submission: ISubmission;
@@ -77,11 +77,11 @@ const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = CodeBoxUtils.sortHighlights(props.comments);
   const splitCode = props.file.code.split('\n');
 
-  const linesOfCode = splitCode.map((item: any, i: number) => {
+  const linesOfCode = splitCode.map((item: string, i: number) => {
     return <div key={i}> {CodeBoxUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
-  const lineNumbers = splitCode.map((item: any, i: number) => {
+  const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
       <div key={i + 1} className="line-number">
         {' '}
@@ -144,7 +144,7 @@ const CommentList = (props: ICommentListProps) => {
       return a[0] - b[0];
     });
 
-    const style = {
+    const style: ICSSStyleObject = {
       top: `${startAt}px`,
     };
 
@@ -157,21 +157,21 @@ const CommentList = (props: ICommentListProps) => {
 interface ICommentProps {
   key: number;
   comment: IComment;
-  style: any;
+  style: ICSSStyleObject;
 }
 
 const Comment = (props: ICommentProps) => {
   const { comment, style } = props;
 
-  const onMouseEnter = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
+  const onMouseEnter = (id: string, event: any) => {
+    const elems = document.getElementsByClassName(id);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#FAFF91';
     });
   };
 
-  const onMouseLeave = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
+  const onMouseLeave = (id: string, event: any) => {
+    const elems = document.getElementsByClassName(id);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#ffca93';
     });
