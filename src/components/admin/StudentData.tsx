@@ -36,7 +36,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     super(props);
     const sortedIndex = {};
     this.props.assignments.forEach((assn) => {
-      sortedIndex[assn.id] = false;
+      sortedIndex[assn.name] = false;
     });
     sortedIndex[this.studentHeader] = true;
     this.state = { sortedIndex, searchTerm: '' };
@@ -72,12 +72,19 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         return 0;
       }
     } else {
-      const assignmentID = Object.keys(sortedIndex).filter((key) => {
+      const assignmentName = Object.keys(sortedIndex).filter((key) => {
         return typeof sortedIndex[key] !== 'undefined';
       })[0];
+      const assignmentIndex = this.props.assignments
+        .map((i) => {
+          return i.name;
+        })
+        .indexOf(assignmentName);
+      if (assignmentIndex === -1) return 0;
+      const assignmentID = this.props.assignments[assignmentIndex].id;
       const studentAsub = submissionsByStudent[a][assignmentID];
       const studentBsub = submissionsByStudent[b][assignmentID];
-      if (sortedIndex[assignmentID]) {
+      if (sortedIndex[assignmentName]) {
         if (!studentAsub && studentBsub) return -1;
         if (studentAsub && !studentBsub) return 1;
         if (!studentAsub && !studentBsub) return 0;
@@ -117,7 +124,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
     const headers = assignments.map((assignment: IAssignment3) => {
-      return String(assignment.id);
+      return assignment.name;
     });
     headers.unshift(this.studentHeader);
 
