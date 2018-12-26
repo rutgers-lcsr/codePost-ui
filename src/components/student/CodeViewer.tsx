@@ -11,7 +11,6 @@ import CodeBoxUtils from '../../CodeBoxUtils';
 import { IAssignment, IComment, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
 
 interface IProps {
-  deductions: number[];
   submission: ISubmission;
   assignment: IAssignment;
   files: IFile[];
@@ -19,8 +18,25 @@ interface IProps {
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
+  public getTabTitle = (file: IFile, comments: IComment[]) => {
+    const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
+      return accumulator + currentValue.pointDelta;
+    }, 0);
+    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+
+    const numComments = comments.length;
+    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+
+    return (
+      <div className="tab-title">
+        {commentFlag}
+        <div className="tab-title">{`${file.name} ${deductionString}`}</div>
+      </div>
+    );
+  };
+
   public render() {
-    const { assignment, deductions, submission, files, comments } = this.props;
+    const { assignment, submission, files, comments } = this.props;
     // content-box
     return (
       <div className="container-code-viewer">
@@ -28,7 +44,7 @@ class CodeViewer extends React.Component<IProps, {}> {
         <Tabs>
           <TabList>
             {files.map((file: IFile, i: number) => {
-              const tabTitle = this.getTabTitle(file.name, deductions[i], comments[file.id].length);
+              const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
                   {tabTitle}
@@ -50,18 +66,6 @@ class CodeViewer extends React.Component<IProps, {}> {
       </div>
     );
   }
-
-  private getTabTitle = (name: string, deduction: number, numComments: number) => {
-    const deductionString = deduction > 0 ? `(-${deduction})` : '';
-    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
-
-    return (
-      <div className="tab-title">
-        {commentFlag}
-        <div className="tab-title">{name + deductionString}</div>
-      </div>
-    );
-  };
 }
 
 interface ICodeBoxProps {
