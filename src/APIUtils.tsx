@@ -147,4 +147,21 @@ export default class APIUtils {
         return json;
       });
   };
+
+  public static updateSubmission = (submissionID: number, payload: any) => {
+    return fetch(`/api/submissions/${submissionID}/`, {
+      body: JSON.stringify(payload),
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        return json;
+      });
+  };
 }

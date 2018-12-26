@@ -269,23 +269,12 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       isFinalized: !submission.isFinalized,
     };
 
-    return fetch(`/api/submissions/${submission.id}/`, {
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({
-          submission: json,
-        });
-        return json;
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        submission: json,
       });
+      return json;
+    });
   };
 
   //////////////////////////////////////
