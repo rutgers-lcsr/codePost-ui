@@ -7,8 +7,8 @@ interface IProps {
   assignment?: IAssignment;
   submissions: ISubmission[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: IAssignment) => any;
-  releaseSubmission: (submission: ISubmission) => any;
+  claimSubmission: (assignment: IAssignment) => Promise<ISubmission>;
+  releaseSubmission: (submission: ISubmission) => Promise<ISubmission>;
 }
 
 interface IState {

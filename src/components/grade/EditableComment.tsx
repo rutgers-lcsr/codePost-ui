@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { Button, Card, CardText, Chip, TextField } from 'react-md';
 
-import { IComment, IFile } from '../../types/common';
+import { IComment, ICSSStyleObject, IFile, IRubricComment } from '../../types/common';
 
 interface IProps {
   readOnly: boolean;
   file: IFile;
   key: number;
   comment: IComment;
-  style: any;
+  style: ICSSStyleObject;
   active: boolean;
-  changeActive: any;
-  deleteComment: any;
-  updateComment: any;
-  getRubricComment: any;
+  changeActive: (id: number | undefined) => void;
+  deleteComment: (comment: IComment, file: IFile) => void;
+  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
 }
 
 interface IState {
@@ -41,7 +41,7 @@ class EditableComment extends React.Component<IProps, IState> {
     updateComment(comment.id, comment, file);
   };
 
-  public updateDeduction = (value: any) => {
+  public updateDeduction = (value: number) => {
     const { comment, updateComment, file } = this.props;
     comment.pointDelta = value;
     updateComment(comment.id, comment, file);
@@ -164,14 +164,14 @@ class EditableComment extends React.Component<IProps, IState> {
     }
   };
 
-  public onMouseEnter = (i: string, e: any) => {
+  public onMouseEnter = (i: string, event: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#FAFF91';
     });
   };
 
-  public onMouseLeave = (i: string, e: any) => {
+  public onMouseLeave = (i: string, eevent: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#ffca93';
@@ -198,6 +198,14 @@ class EditableComment extends React.Component<IProps, IState> {
       className += ' comment-unsaved';
     }
 
+    // Ugly for type checking
+    let rubricCommentText = 'no standard';
+    if (comment.rubricComment) {
+      const rubricComment = getRubricComment(comment.rubricComment);
+      if (rubricComment) {
+        rubricCommentText = rubricComment.text;
+      }
+    }
     // Non-editable comment
     if (readOnly) {
       return (
@@ -210,9 +218,7 @@ class EditableComment extends React.Component<IProps, IState> {
           <CardText>
             <div className={savingClass} />
             {pointDeltaElement}
-            <div className="comment-rubric">
-              {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
-            </div>
+            <div className="comment-rubric">{rubricCommentText}</div>
             {comment.text}
           </CardText>
         </Card>
@@ -245,9 +251,7 @@ class EditableComment extends React.Component<IProps, IState> {
               fullWidth={true}
               onChange={this.updateDeduction}
             />
-            {comment.rubricComment ? (
-              <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
-            ) : null}
+            {comment.rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
 
             <textarea
               onChange={this.updateComment}
@@ -277,9 +281,7 @@ class EditableComment extends React.Component<IProps, IState> {
         <CardText>
           <div className={savingClass} />
           {pointDeltaElement}
-          {comment.rubricComment ? (
-            <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
-          ) : null}
+          {comment.rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
           <div className="comment-text">{comment.text}</div>
           <div>
             <Button flat className="comment-button" onClick={this.toggleActive}>

@@ -150,3 +150,7 @@ export interface IRubricCategoryToRubricCommentsMap {
 export interface ICourseToAssignmentMap {
   [courseID: number]: IAssignment[];
 }
+
+export interface ICSSStyleObject {
+  [key: string]: string;
+}

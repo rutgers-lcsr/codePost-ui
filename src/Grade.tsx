@@ -79,7 +79,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
   ///////////////////////////////////////
 
   public loadAssignment = (assignmentId: number) => {
-    return APIUtils.fetchAssignment(assignmentId).then((assignment: any) => {
+    return APIUtils.fetchAssignment(assignmentId).then((assignment: IAssignment) => {
       console.log('4.1 - saving assignment: ', assignment);
       this.setState({ assignment });
       return assignment;
@@ -88,7 +88,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
 
   public loadSubmission = () => {
     const submissionId: number = +this.props.match.params.submissionId.valueOf();
-    return APIUtils.fetchSubmission(submissionId).then((submission: any) => {
+    return APIUtils.fetchSubmission(submissionId).then((submission: ISubmission) => {
       return this.loadFiles(submission).then(() => {
         console.log('3 - saving submission: ', submission);
         this.setState({ submission });
@@ -171,7 +171,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
   // Handlers
   ///////////////////////////////////////
 
-  public handleRubricCommentClick = (rubricComment: IRubricComment) => {
+  public handleRubricCommentClick = (rubricComment: IRubricComment): void => {
     const { activeCommentId, submission, files, comments } = this.state;
 
     if (!submission || !activeCommentId) {
@@ -188,23 +188,24 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     }
   };
 
-  public getRubricComment = (rubricCommentId: number) => {
+  public getRubricComment = (rubricCommentID: number): IRubricComment | undefined => {
     const { rubricComments } = this.state;
 
-    for (const rubricCategoryId of Object.keys(rubricComments)) {
-      const rubricComment = rubricComments[rubricCategoryId].find((rc: IRubricComment) => rc.id === rubricCommentId);
+    for (const rubricCategoryID of Object.keys(rubricComments)) {
+      const rubricComment = rubricComments[rubricCategoryID].find((rc: IRubricComment) => rc.id === rubricCommentID);
       if (rubricComment) {
         return rubricComment;
       }
     }
+    return undefined;
   };
 
-  public changeActiveComment = (id: number) => {
+  public changeActiveComment = (id: number | undefined): void => {
     this.setState({ activeCommentId: id });
   };
 
   // Usually adds a blank comment to the submission state
-  public addComment = (comment: IComment, file: IFile) => {
+  public addComment = (comment: IComment, file: IFile): void => {
     const { submission, comments } = this.state;
     if (!submission) {
       return;
@@ -214,20 +215,20 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     this.setState({ comments });
   };
 
-  public updateComment = (commentId: number, newComment: IComment, file: IFile) => {
+  public updateComment = (commentID: number, newComment: IComment, file: IFile): void => {
     const { submission, comments } = this.state;
     if (!submission) {
       return;
     }
 
-    const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentId);
+    const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentID);
     comments[file.id][index] = newComment;
     this.setState({ comments });
   };
 
   // Delete the comment json from the submission state
   // Then delete the comment from the remote db
-  public deleteComment = (comment: IComment, file: IFile) => {
+  public deleteComment = (comment: IComment, file: IFile): void => {
     const { submission, comments } = this.state;
     if (!submission) {
       return;
@@ -255,10 +256,10 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     }
   };
 
-  public toggleFinalized = () => {
+  public toggleFinalized = (): Promise<any> => {
     const { submission } = this.state;
     if (!submission) {
-      return;
+      return Promise.resolve();
     }
 
     const payload = {

@@ -273,37 +273,8 @@ interface IContentAreaProps {
 const ContentArea = (props: IContentAreaProps) => {
   const { assignment, submission, files, comments } = props;
 
-  const getDeductions = () => {
-    const deductions = [];
-    for (const fileId in comments) {
-      if (comments.hasOwnProperty(fileId)) {
-        let totalDeduction = 0;
-        for (const comment of comments[fileId]) {
-          // this is bullshit
-          // cleaning it up later
-          if (typeof comment.pointDelta === 'number') {
-            totalDeduction += comment.pointDelta ? comment.pointDelta : 0;
-          } else {
-            totalDeduction += comment.pointDelta ? parseInt(comment.pointDelta, 10) : 0;
-          }
-        }
-        deductions.push(totalDeduction);
-      }
-    }
-    return deductions;
-  };
-
   if (submission && assignment) {
-    const deductions = getDeductions();
-    return (
-      <CodeViewer
-        deductions={deductions}
-        submission={submission!}
-        assignment={assignment!}
-        files={files}
-        comments={comments}
-      />
-    );
+    return <CodeViewer submission={submission!} assignment={assignment!} files={files} comments={comments} />;
   }
   if (assignment) {
     return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
