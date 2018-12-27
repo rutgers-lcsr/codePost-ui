@@ -499,10 +499,10 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         updateMessage = (
           <div>
             <div className="error-padding" />
-            The following changes will be made to this rubric. Do you want to Proceed?
+            The following changes will be made to this rubric. Do you want to continue?
             <div className="error-padding" />
             <Button raised onClick={this.triggerUpdate} primary={true} flat={true}>
-              Proceed
+              Continue with changes
             </Button>
             <div className="error-padding" />
           </div>

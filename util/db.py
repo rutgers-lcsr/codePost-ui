@@ -75,7 +75,7 @@ for i in range(0, 50):
       Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
       sub.isFinalized = True
       sub.grade = random.randint(0,20)
-      if (i % 2 == 0):
+      if (i % 3 == 0):
           sub.grader = richard
           section1.students.add(tmpUser)
           section1.save()

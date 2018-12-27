@@ -20,12 +20,86 @@ interface IPropsGraderOverview {
 }
 
 interface IState {
+  sortedIndex: { [index: string]: boolean | undefined };
   searchTerm: string;
 }
 
 class GraderData extends React.Component<IPropsGraderOverview, {}> {
   public state: Readonly<IState> = {
+    sortedIndex: {},
     searchTerm: '',
+  };
+
+  public graderHeader = 'grader';
+
+  public constructor(props: any) {
+    super(props);
+    const sortedIndex = {};
+    this.props.assignments.forEach((assn) => {
+      sortedIndex[assn.name] = false;
+    });
+    sortedIndex[this.graderHeader] = true;
+    this.state = { sortedIndex, searchTerm: '' };
+  }
+
+  public toggleSort = (assignmentName: string) => {
+    const { sortedIndex } = this.state;
+    Object.keys(sortedIndex).map((key) => {
+      if (key === assignmentName) {
+        if (typeof sortedIndex[key] === 'undefined') {
+          sortedIndex[key] = true;
+        } else {
+          sortedIndex[key] = !sortedIndex[key];
+        }
+      } else {
+        sortedIndex[key] = undefined;
+      }
+    });
+    this.setState({ sortedIndex });
+  };
+
+  public sortFunction = (a: string, b: string) => {
+    const { sortedIndex } = this.state;
+    const { submissionsByGrader } = this.props;
+    if (typeof sortedIndex[this.graderHeader] !== 'undefined') {
+      if (sortedIndex[this.graderHeader] === true) {
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+      } else {
+        if (a < b) return 1;
+        if (a > b) return -1;
+        return 0;
+      }
+    } else {
+      const assignmentName = Object.keys(sortedIndex).filter((key) => {
+        return typeof sortedIndex[key] !== 'undefined';
+      })[0];
+      const assignmentIndex = this.props.assignments
+        .map((i) => {
+          return i.name;
+        })
+        .indexOf(assignmentName);
+      if (assignmentIndex === -1) return 0;
+      const assignmentID = this.props.assignments[assignmentIndex].id;
+      const graderASubs = submissionsByGrader[a][assignmentID];
+      const graderBSubs = submissionsByGrader[b][assignmentID];
+      if (sortedIndex[assignmentName]) {
+        if (!graderASubs && graderBSubs) return -1;
+        if (graderASubs && !graderBSubs) return 1;
+        if (!graderASubs && !graderBSubs) return 0;
+        if (graderASubs.length > graderBSubs.length) return 1;
+        if (graderASubs.length < graderBSubs.length) return -1;
+        return 0;
+      } else {
+        if (!graderASubs && graderBSubs) return 1;
+        if (graderASubs && !graderBSubs) return -1;
+        if (!graderASubs && !graderBSubs) return 0;
+        if (graderASubs.length > graderBSubs.length) return -1;
+        if (graderASubs.length < graderBSubs.length) return 1;
+        return 0;
+      }
+    }
   };
 
   public renderSubmissionRow(submission: ISubmission3, assignmentID: number) {
@@ -52,12 +126,15 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
   public render() {
     const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
-    const { searchTerm } = this.state;
+    const { searchTerm, sortedIndex } = this.state;
 
     const headers = this.props.assignments.map((assignment: IAssignment3) => {
       return assignment.name;
     });
-    headers.unshift('Grader');
+    headers.unshift(this.graderHeader);
+
+    const graders = Object.keys(submissionsByGrader);
+    graders.sort(this.sortFunction);
 
     if (!activeGrader) {
       return (
@@ -73,12 +150,20 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {
-                  return <TableColumn key={header}>{header}</TableColumn>;
+                  return (
+                    <TableColumn
+                      sorted={sortedIndex[header]}
+                      onClick={this.toggleSort.bind(this.props, header)}
+                      key={header}
+                    >
+                      {header}
+                    </TableColumn>
+                  );
                 })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.keys(submissionsByGrader).map((graderEmail) => {
+              {graders.map((graderEmail) => {
                 if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
                   return <div />;
                 }
