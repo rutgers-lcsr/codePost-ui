@@ -15,6 +15,7 @@ interface IProps {
   assignment: IAssignment;
   files: IFile[];
   comments: IFileToCommentsMap;
+  getRubricCommentText: (commentID: number) => string;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
@@ -36,7 +37,7 @@ class CodeViewer extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { assignment, submission, files, comments } = this.props;
+    const { assignment, submission, files, comments, getRubricCommentText } = this.props;
     // content-box
     return (
       <div className="container-code-viewer">
@@ -57,7 +58,7 @@ class CodeViewer extends React.Component<IProps, {}> {
               <TabPanel key={i}>
                 <div className="panel-box">
                   <CodeBox file={file} comments={comments[file.id]} />
-                  <CommentBox comments={comments[file.id]} />
+                  <CommentBox comments={comments[file.id]} getRubricCommentText={getRubricCommentText} />
                 </div>
               </TabPanel>
             );
@@ -100,19 +101,28 @@ const CodeBox = (props: ICodeBoxProps) => {
 
 interface ICommentBoxProps {
   comments: IComment[];
+  getRubricCommentText: (commentID: number) => string;
 }
 
 const CommentBox = (props: ICommentBoxProps) => {
-  return <CommentList comments={props.comments} />;
+  return <CommentList comments={props.comments} getRubricCommentText={props.getRubricCommentText} />;
 };
 
 interface ICommentListProps {
   comments: IComment[];
+  getRubricCommentText: (commentID: number) => string;
+}
+
+interface IBlock {
+  startAt: number;
+  endAt: number;
 }
 
 const CommentList = (props: ICommentListProps) => {
+  const { getRubricCommentText } = props;
+
   // Store estimated pixel ranges of comment blocks to help with stacking
-  const ranges: any[] = [];
+  const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
   const comments = props.comments.sort((a: IComment, b: IComment) => {
@@ -129,19 +139,21 @@ const CommentList = (props: ICommentListProps) => {
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
-
-    for (const block of ranges) {
-      if (startAt >= block[0] && startAt < block[1]) {
-        startAt = block[1];
+    for (const block of blocks) {
+      if (startAt >= block.startAt && startAt < block.endAt) {
+        startAt = block.endAt;
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, undefined);
-    const newBlock = [startAt, startAt + heightOfComment];
-    ranges.push(newBlock);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, getRubricCommentText, undefined);
+    const newBlock: IBlock = {
+      startAt,
+      endAt: startAt + heightOfComment,
+    };
+    blocks.push(newBlock);
 
-    ranges.sort((a: any, b: any) => {
-      return a[0] - b[0];
+    blocks.sort((a: IBlock, b: IBlock) => {
+      return a.startAt - b.startAt;
     });
 
     const style: ICSSStyleObject = {

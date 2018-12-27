@@ -8,15 +8,9 @@ export default class CodeBoxUtils {
     return PIXELS_PER_LINE;
   };
 
-  public static heightOfComment = (
-    comment: IComment,
-    getRubricComment: any,
-    activeCommentId?: number,
-  ): number => {
+  public static heightOfComment = (comment: IComment, getRubricCommentText: any, activeCommentId?: number): number => {
     const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
-    const linesRubricComment = comment.rubricComment
-      ? getRubricComment(comment.rubricComment).text.length / 30 + 1
-      : 0;
+    const linesRubricComment = comment.rubricComment ? getRubricCommentText(comment.rubricComment).length / 30 + 1 : 0;
     const linesComment = comment.text.length / 36;
     const linesButtons = activeCommentId === comment.id ? 4 : 0;
     const buffer = 6;
@@ -41,18 +35,16 @@ export default class CodeBoxUtils {
     });
   };
 
-  public static highlightText = (
-    sortedHighlights: IComment[],
-    thetext: string,
-    line: number,
-  ): any => {
+  public static highlightText = (sortedHighlights: IComment[], thetext: string, line: number): any => {
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
         // this line sits between a multi-line highlight
         return (
-          <strong id={line.toString()} className={highlight.id.toString()}>
-            {thetext}
-          </strong>
+          <div id={line.toString()}>
+            <strong id={line.toString()} className={highlight.id.toString()}>
+              {thetext}
+            </strong>
+          </div>
         );
       }
       if (highlight.startLine === line) {
@@ -69,7 +61,9 @@ export default class CodeBoxUtils {
           return (
             <div id={line.toString()}>
               {part1}
-              <strong className={highlight.id.toString()}>{part2}</strong>
+              <strong id={line.toString()} className={highlight.id.toString()}>
+                {part2}
+              </strong>
               {part3}
             </div>
           );
@@ -79,7 +73,9 @@ export default class CodeBoxUtils {
         return (
           <div id={line.toString()}>
             {part1}
-            <strong className={highlight.id.toString()}>{part2}</strong>
+            <strong id={line.toString()} className={highlight.id.toString()}>
+              {part2}
+            </strong>
           </div>
         );
       }
@@ -88,7 +84,9 @@ export default class CodeBoxUtils {
         const part2 = thetext.substring(highlight.endChar, thetext.length).replace(/\s*$/, '');
         return (
           <div id={line.toString()}>
-            <strong className={highlight.id.toString()}>{part1}</strong>
+            <strong id={line.toString()} className={highlight.id.toString()}>
+              {part1}
+            </strong>
             {part2}
           </div>
         );

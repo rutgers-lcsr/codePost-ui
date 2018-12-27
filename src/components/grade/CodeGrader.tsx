@@ -4,7 +4,7 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import { IComment, ICSSStyleObject, IFile, IFileToCommentsMap, IRubricComment, ISubmission } from '../../types/common';
+import { IComment, ICSSStyleObject, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
@@ -18,7 +18,7 @@ interface IProps {
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
-  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
+  getRubricCommentText: (rubricCommentID: number) => string;
 }
 
 interface IState {
@@ -78,7 +78,15 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { activeCommentId, deleteComment, readOnly, files, comments, updateComment, getRubricComment } = this.props;
+    const {
+      activeCommentId,
+      deleteComment,
+      readOnly,
+      files,
+      comments,
+      updateComment,
+      getRubricCommentText,
+    } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -115,7 +123,7 @@ class CodeGrader extends React.Component<IProps, IState> {
                     changeActive={this.changeActive}
                     deleteComment={deleteComment}
                     updateComment={updateComment}
-                    getRubricComment={getRubricComment}
+                    getRubricCommentText={getRubricCommentText}
                   />
                 </div>
               </TabPanel>
@@ -141,101 +149,50 @@ const CodeBox = (props: ICodeBoxProps) => {
   const { file, readOnly, commentCounter, updateCommentCounter, addComment, comments } = props;
 
   const onMouseUp = (event: any) => {
-    const selectedText = window.getSelection().toString();
-    if (selectedText === '') {
+    const selection = window.getSelection();
+
+    if (selection.toString() === '') {
       console.log('nothing selected');
       return;
     }
 
-    // we're trying to make a comment by highlighting
+    // Hack to avoid messing with Node type checking
+    const anchorParent: any = selection.anchorNode.parentNode;
+    let startLine = +anchorParent.id;
 
-    // figure out where the comment starts and stops
-    const selection = window.getSelection();
+    const extentParent: any = selection.extentNode.parentNode;
+    let endLine = +extentParent.id;
 
-    const anchorParent = $(selection.anchorNode).closest('div');
-    const extentParent = $(selection.extentNode).closest('div');
-
-    // console.log("contents", anchorParent.contents())
-
-    const startid = anchorParent.attr('id');
-    let startline = startid ? parseInt(startid, undefined) : undefined;
-    // <font /> html tag is disallowed now
-    // sometimes endline will find the parent div
-    // sometimes it will find the formerly <font><strong> div
-    // both will contain the line number as the id
-    // there might be a better way to handle this
-    const endid = extentParent.attr('id');
-    let endline = endid ? parseInt(endid, undefined) : undefined;
-
-    // console.log(startline, endline, anchorParent, extentParent)
-    // console.log("----", selection)
-
-    // If el is not and does not contain targetEl
-    //    Return: the number of text characters inside el
-    // Otherwise:
-    //    Return the number of characters occuring before targetEl
-    //    in el w.r.t. DOM order
-    const getCharsBefore = (el: any, targetEl: any) => {
-      // el is targetEl, so no preceeding chars
-      if ($(el).is(targetEl)) {
-        return 0;
-      }
-
-      // if el does not contain targetEl, return the text length
-      // of el
-      if ($(el).find(targetEl).length === 0) {
-        // console.log('div does not contain el')
-        // console.log(el)
-        return $(el).text().length;
-      }
-
-      // last case: el is a parent of targetEl, so recursively repeat
-      // on children of el
-      let toRet = 0;
-      $(el)
-        .contents()
-        .each((c: any) => {
-          toRet += getCharsBefore(c, targetEl);
-          if ($(c).find(targetEl).length !== 0 || $(c).is(targetEl)) {
-            return; // break out if we find the element
-          }
-        });
-      return toRet;
-    };
-
-    let startIndex = getCharsBefore(anchorParent, selection.anchorNode);
-    startIndex += selection.anchorOffset;
-
-    let endIndex = getCharsBefore(extentParent, selection.extentNode);
-    endIndex += selection.extentOffset;
+    let startChar = selection.anchorOffset;
+    let endChar = selection.extentOffset;
 
     // Check to see if the comment was made backwards
-    if (startline && endline && startline > endline) {
+    if (startLine && endLine && startLine > endLine) {
       // swap endlines
-      const temp1 = startline;
-      startline = endline;
-      endline = temp1;
+      const temp1 = startLine;
+      startLine = endLine;
+      endLine = temp1;
 
-      // swap indexes
-      const temp2 = startIndex;
-      startIndex = endIndex;
-      endIndex = temp2;
-    } else if (startline === endline) {
+      // swap char indices
+      const temp2 = startChar;
+      startChar = endChar;
+      endChar = temp2;
+    } else if (startLine === endLine) {
       // Handle reverse highlight in a single line
-      const temp1 = startIndex;
-      const temp2 = endIndex;
-      startIndex = temp1 < temp2 ? temp1 : temp2;
-      endIndex = temp1 < temp2 ? temp2 : temp1;
+      const temp1 = startChar;
+      const temp2 = endChar;
+      startChar = temp1 < temp2 ? temp1 : temp2;
+      endChar = temp1 < temp2 ? temp2 : temp1;
     }
 
     const newComment = {
       id: commentCounter,
-      endChar: endIndex,
-      endLine: endline,
+      endChar,
+      endLine,
       file: file.id,
       pointDelta: 0.0,
-      startChar: startIndex,
-      startLine: startline,
+      startChar,
+      startLine,
       text: '',
     };
     updateCommentCounter();
@@ -288,13 +245,18 @@ interface ICommentListProps {
   changeActive: (id: number | number) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
-  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
+  getRubricCommentText: (rubricCommentID: number) => string;
+}
+
+interface IBlock {
+  startAt: number;
+  endAt: number;
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, getRubricComment } = props;
+  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, getRubricCommentText } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
-  const ranges: any[] = [];
+  const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
   const comments = props.comments.sort((a: IComment, b: IComment) => {
@@ -311,18 +273,21 @@ const CommentList = (props: ICommentListProps) => {
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
-    for (const block of ranges) {
-      if (startAt >= block[0] && startAt < block[1]) {
-        startAt = block[1];
+    for (const block of blocks) {
+      if (startAt >= block.startAt && startAt < block.endAt) {
+        startAt = block.endAt;
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, getRubricComment, activeCommentId);
-    const newBlock = [startAt, startAt + heightOfComment];
-    ranges.push(newBlock);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, getRubricCommentText, activeCommentId);
+    const newBlock: IBlock = {
+      startAt,
+      endAt: startAt + heightOfComment,
+    };
+    blocks.push(newBlock);
 
-    ranges.sort((a: any, b: any) => {
-      return a[0] - b[0];
+    blocks.sort((a: IBlock, b: IBlock) => {
+      return a.startAt - b.startAt;
     });
 
     const zindex = 100000 - startAt;
@@ -331,10 +296,7 @@ const CommentList = (props: ICommentListProps) => {
       zIndex: zindex.toString(),
     };
 
-    let isActive = false;
-    if (activeCommentId === comment.id) {
-      isActive = true;
-    }
+    const isActive = activeCommentId === comment.id;
 
     return (
       <EditableComment
@@ -347,7 +309,7 @@ const CommentList = (props: ICommentListProps) => {
         changeActive={changeActive}
         deleteComment={deleteComment}
         updateComment={updateComment}
-        getRubricComment={getRubricComment}
+        getRubricCommentText={getRubricCommentText}
       />
     );
   });
