@@ -1467,7 +1467,7 @@ class Admin extends React.Component<{}, IAdminState> {
     return (
       <div className="AdminApp">
         {this.renderRedirect()}
-        <div>
+        <div className="panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter()}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -1501,7 +1501,7 @@ class Admin extends React.Component<{}, IAdminState> {
             createCourse={this.createCourse}
           />
         </div>
-        {courseManagementPanel}
+        <div className="content">{courseManagementPanel}</div>
       </div>
     );
   }
