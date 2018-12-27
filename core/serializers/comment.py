@@ -66,8 +66,8 @@ class CommentSerializer(ModelSerializerWithPOSTCheck):
     if 'file' in newData:
       file = newData['file']
 
-    if endChar < startChar:
-      raise serializers.ValidationError("endChar cannot be < startChar")
+    if endLine == startLine and endChar < startChar:
+      raise serializers.ValidationError("endChar cannot be < startChar on the same line")
 
     if endLine < startLine:
       raise serializers.ValidationError("endLine cannot be < startLine")
