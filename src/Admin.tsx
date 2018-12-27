@@ -166,6 +166,8 @@ class Admin extends React.Component<{}, IAdminState> {
   };
   // ------------------- Permissions check functions -------------------
 
+  private interval: any;
+
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
     if (this.state.isLoggedIn) {
@@ -176,6 +178,17 @@ class Admin extends React.Component<{}, IAdminState> {
       // in case logged out from admin on another tab
       this.setState({ redirect: true });
     }
+    this.interval = setInterval(() => {
+      if (this.state.currentCourse) {
+        this.loadAllCourseData();
+      } else {
+        this.loadCourses();
+      }
+    }, 10000);
+  }
+
+  public componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   public renderRedirect = () => {
@@ -185,8 +198,7 @@ class Admin extends React.Component<{}, IAdminState> {
     return;
   };
 
-  // ------------------- Vertical pane selector functions  -------------------
-  public update = (option: IOptionNumber) => {
+  public updateNewCourse = (option: IOptionNumber) => {
     this.loadCourses().then(() => {
       const currentCourse = this.state.courses.filter((course: ICourse3) => {
         return course.id === option.value;
@@ -228,7 +240,7 @@ class Admin extends React.Component<{}, IAdminState> {
           lockManageAssignment: true,
 
           email: '',
-          isLoading: true,
+          isLoading: false,
           isLoggedIn: localStorage.getItem('token') ? true : false,
           redirect: false,
 
@@ -256,7 +268,7 @@ class Admin extends React.Component<{}, IAdminState> {
         currentCourse,
       },
       () => {
-        this.update(option);
+        this.updateNewCourse(option);
       },
     );
   };
@@ -330,7 +342,6 @@ class Admin extends React.Component<{}, IAdminState> {
     this.loadAssignments();
     // loadStudentsalsoLoadsSections
     this.loadRoster();
-    this.setState({ submissionsbyUserLoadComplete: false });
   };
 
   public loadCourses = () => {
@@ -359,7 +370,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public loadAssignments = () => {
     const { currentCourse } = this.state;
-    this.setState({ assignmentsLoadComplete: false });
     if (currentCourse && currentCourse.assignments) {
       const getData = currentCourse.assignments.map((assignmentID) => {
         return new Promise((resolve) => {
@@ -372,14 +382,12 @@ class Admin extends React.Component<{}, IAdminState> {
               return res.json();
             })
             .then((json) => {
-              const assignments = this.state.assignments;
-              assignments.push(json);
-              this.setState({ assignments }, () => resolve(json));
+              return resolve(json);
             });
         });
       });
-      Promise.all(getData).then(() => {
-        this.setState({ assignmentsLoadComplete: true }, () => {
+      Promise.all(getData).then((newAssignments: IAssignment3[]) => {
+        this.setState({ assignments: newAssignments, assignmentsLoadComplete: true }, () => {
           this.loadRubrics();
         });
       });
@@ -470,7 +478,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public loadRubrics = () => {
     const { currentCourse, assignments } = this.state;
-    this.setState({ assignmentRubricLoadComplete: false });
     if (currentCourse && assignments) {
       const getData = assignments.map((assignment: IAssignment3) => {
         return this.loadAssignmentRubric(assignment.id);
@@ -483,7 +490,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public loadSubmissions = () => {
     const { currentCourse } = this.state;
-    this.setState({ submissionsLoadComplete: false });
     if (currentCourse && currentCourse.assignments) {
       const getData = currentCourse.assignments.map((assignmentID) => {
         return new Promise((resolve) => {
@@ -509,11 +515,6 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public loadRoster = () => {
-    this.setState({
-      studentsLoadComplete: false,
-      gradersLoadComplete: false,
-      adminsLoadComplete: false,
-    });
     const { currentCourse } = this.state;
     if (currentCourse) {
       // courses/id/roster . students
@@ -547,7 +548,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public loadSections = () => {
     const { currentCourse } = this.state;
-    this.setState({ sectionsLoadComplete: false });
     if (currentCourse && currentCourse.sections) {
       const getData = currentCourse.sections.map((sectionID) => {
         return new Promise((resolve) => {

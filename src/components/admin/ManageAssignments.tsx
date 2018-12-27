@@ -424,7 +424,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
       } else {
         const { activeRubricCategories, activeRubricComments } = this.state;
 
-        console.log(activeRubricComments);
         let categoryTables;
 
         if (activeRubricCategories && activeRubricComments) {
