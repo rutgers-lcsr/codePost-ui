@@ -20,30 +20,30 @@ interface IProps {
     pointLimit: number | undefined,
     newComments: IRubricComment[],
   ) => Promise<IRubricCategory3>;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => Promise<{}>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
     text: string,
     pointDelta: number,
   ) => Promise<IRubricComment>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => void;
-  updateRubricComment: (
+  deleteRubricCategory: (
+    assignmentID: number,
     categoryID: number,
-    commentID: number,
-    text: string | undefined,
-    pointDelta: number | undefined,
-  ) => void;
+    categoryName: string,
+  ) => Promise<{}>;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<{}>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => void;
+  ) => Promise<IRubricCategory3>;
+  updateRubricComment: (
+    categoryID: number,
+    commentID: number,
+    text: string | undefined,
+    pointDelta: number | undefined,
+  ) => Promise<IRubricComment>;
   parentUpdate: (assignment: IAssignment3 | undefined) => void;
 }
 
@@ -270,7 +270,13 @@ class RubricFileDialog extends React.Component<IProps, {}> {
                 console.log(oldComments[cat.id][comIndex]);
                 console.log(com);
                 if (makeDBUpdate) {
-                  this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta);
+                  const result = this.props.updateRubricComment(
+                    cat.id,
+                    com.id,
+                    com.text,
+                    com.pointDelta,
+                  );
+                  promises.push(result);
                 }
                 updates.updatedComments.push(com.text);
               }
@@ -285,7 +291,12 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               .indexOf(oldComment.id);
             if (checkDelete === -1) {
               if (makeDBUpdate) {
-                this.props.deleteRubricComment(activeAssignment.id, cat.id, oldComment.id);
+                const result = this.props.deleteRubricComment(
+                  activeAssignment.id,
+                  cat.id,
+                  oldComment.id,
+                );
+                promises.push(result);
               }
               updates.deletedComments.push(oldComment.text);
             }
@@ -297,12 +308,13 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           ) {
             // Reminder -- need to decide as a team if we can allow pointLimit to be null
             if (makeDBUpdate) {
-              this.props.updateRubricCategory(
+              const result = this.props.updateRubricCategory(
                 activeAssignment.id,
                 cat.id,
                 cat.name,
                 cat.pointLimit,
               );
+              promises.push(result);
             }
             updates.updatedCategories.push(cat.name);
           }
@@ -325,6 +337,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         Promise.all(promises).then(() => {
           this.setState({ updatingRubric: false });
           this.props.parentUpdate(activeAssignment);
+          this.props.addToast('Rubric updated successfully.', undefined);
           this.toggleDialog();
         });
       } else {
@@ -498,7 +511,14 @@ class RubricFileDialog extends React.Component<IProps, {}> {
     }
     return (
       <div>
-        <Button raised onClick={this.toggleDialog} primary={true} flat={true}>
+        <Button
+          raised
+          onClick={this.toggleDialog}
+          primary={true}
+          iconChildren={'vertical_align_center'}
+          iconBefore={false}
+          flat={true}
+        >
           Upload / Download Rubric
         </Button>
         <DialogContainer
@@ -511,13 +531,15 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         >
           <div>
             Download rubric as a json format:
+            <div className="error-padding" />
             <Button
               key="download-rubric"
               className="Btn"
-              flat={true}
-              iconChildren={'cloud_download'}
+              iconBefore={false}
+              iconChildren={'save'}
               onClick={this.downloadRubric}
               primary={true}
+              raised={true}
             >
               Download JSON rubric
             </Button>
@@ -525,6 +547,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           <div className="padding" />
           <div>
             Upload file to replace rubric:
+            <div className="error-padding" />
             <FileUpload
               id="rubricUpload-FileInput"
               accept="application/json"
@@ -534,7 +557,9 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               disabled={this.state.updatingRubric}
             />
             {progress}
+            <div className="error-padding" />
             {uploadFile}
+            <div className="error-padding" />
             {errors}
             {updateMessage}
             {newCategories}

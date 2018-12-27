@@ -942,7 +942,6 @@ class Admin extends React.Component<{}, IAdminState> {
             });
             rubricCategories[assignmentID].push(json);
             rubricComments[json.id] = [];
-            this.addToast(`New Rubric Category ${json.name} created`, undefined);
             this.setState({ assignments, rubricCategories, rubricComments }, () => {
               // Reminder - need to change linter here for use
               const promises: any[] = [];
@@ -955,7 +954,9 @@ class Admin extends React.Component<{}, IAdminState> {
                 );
                 promises.push(result);
               });
-              Promise.all(promises).then(() => resolve(json));
+              Promise.all(promises).then(() => {
+                return resolve(json);
+              });
             });
           }
         });
@@ -993,7 +994,6 @@ class Admin extends React.Component<{}, IAdminState> {
             delete rubricComments[categoryID];
           });
           this.setState({ assignments, rubricCategories, rubricComments }, () => {
-            this.addToast(`Category ${categoryName} deleted`, undefined);
             return resolve('done');
           });
         } else {
@@ -1013,55 +1013,59 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryName: string,
     categoryPointLimit: number | undefined,
   ) => {
-    const { currentCourse, rubricCategories } = this.state;
-    if (categoryName.length === 0) {
-      this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return;
-    }
+    return new Promise<IRubricCategory3>((resolve) => {
+      const { currentCourse, rubricCategories } = this.state;
+      if (categoryName.length === 0) {
+        this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+        return;
+      }
 
-    if (currentCourse) {
-      const payload = {
-        id: categoryID,
-        text: categoryName,
-        pointDelta: categoryPointLimit,
-        assignment: assignmentID,
-      };
+      if (currentCourse) {
+        const payload = {
+          id: categoryID,
+          text: categoryName,
+          pointDelta: categoryPointLimit,
+          assignment: assignmentID,
+        };
 
-      fetch(`/api/rubriccategories/${categoryID}/`, {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-      })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json();
-          } else {
-            this.addErrorToast(
-              `Something went wrong when trying to update ${categoryName}.`,
-              undefined,
-            );
-            return undefined;
-          }
+        fetch(`/api/rubriccategories/${categoryID}/`, {
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+          body: JSON.stringify(payload),
         })
-        .then((json: IRubricCategory3) => {
-          if (json) {
-            const catIndex = rubricCategories[assignmentID]
-              .map((cat) => {
-                return cat.id;
-              })
-              .indexOf(categoryID);
-            if (catIndex !== -1) {
-              // Reminder --- add checks for the data received
-              rubricCategories[assignmentID][catIndex].name = json.name;
-              rubricCategories[assignmentID][catIndex].pointLimit = json.pointLimit;
+          .then((res) => {
+            if (res.status === 200) {
+              return res.json();
+            } else {
+              this.addErrorToast(
+                `Something went wrong when trying to update ${categoryName}.`,
+                undefined,
+              );
+              return undefined;
             }
-            this.setState({ rubricCategories }, () => this.addToast('Category updated', undefined));
-          }
-        });
-    }
+          })
+          .then((json: IRubricCategory3) => {
+            if (json) {
+              const catIndex = rubricCategories[assignmentID]
+                .map((cat) => {
+                  return cat.id;
+                })
+                .indexOf(categoryID);
+              if (catIndex !== -1) {
+                // Reminder --- add checks for the data received
+                rubricCategories[assignmentID][catIndex].name = json.name;
+                rubricCategories[assignmentID][catIndex].pointLimit = json.pointLimit;
+              }
+              this.setState({ rubricCategories }, () => {
+                return resolve(json);
+              });
+            }
+          });
+      }
+    });
   };
 
   public createRubricComment = (
@@ -1103,7 +1107,6 @@ class Admin extends React.Component<{}, IAdminState> {
             });
             rubricComments[categoryID].push(json);
             this.setState({ rubricCategories, rubricComments }, () => {
-              this.addToast('Comment created', undefined);
               return resolve(json);
             });
           }
@@ -1112,9 +1115,9 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public deleteRubricComment = (assignmentID: number, categoryID: number, commentID: number) => {
-    const { currentCourse, rubricCategories, rubricComments } = this.state;
+    const { rubricCategories, rubricComments } = this.state;
 
-    if (currentCourse) {
+    return new Promise((resolve) => {
       const payload = { id: commentID };
 
       fetch(`/api/rubriccomments/${commentID}/`, {
@@ -1137,14 +1140,14 @@ class Admin extends React.Component<{}, IAdminState> {
               cat.rubricComments = newComments;
             }
           });
-          this.setState({ rubricCategories, rubricComments }, () =>
-            this.addErrorToast('Comment Deleted.', undefined),
-          );
+          this.setState({ rubricCategories, rubricComments }, () => {
+            return resolve('done');
+          });
         } else {
           this.addErrorToast('Something went wrong.', undefined);
         }
       });
-    }
+    });
   };
 
   public updateRubricComment = (
@@ -1155,47 +1158,51 @@ class Admin extends React.Component<{}, IAdminState> {
   ) => {
     const { rubricComments } = this.state;
 
-    const payload = { id: commentID };
+    return new Promise<IRubricComment>((resolve) => {
+      const payload = { id: commentID };
 
-    if (commentText.length === 0) {
-      this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return;
-    }
-    const key1 = 'text';
-    payload[key1] = commentText;
+      if (commentText.length === 0) {
+        this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
+        return;
+      }
+      const key1 = 'text';
+      payload[key1] = commentText;
 
-    const key2 = 'pointDelta';
-    payload[key2] = commentDelta;
+      const key2 = 'pointDelta';
+      payload[key2] = commentDelta;
 
-    fetch(`/api/rubriccomments/${commentID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          this.addErrorToast('Something went wrong.', undefined);
-          return undefined;
-        }
+      fetch(`/api/rubriccomments/${commentID}/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'PATCH',
+        body: JSON.stringify(payload),
       })
-      .then((json) => {
-        if (json) {
-          const comIndex = rubricComments[categoryID]
-            .map((com) => {
-              return com.id;
-            })
-            .indexOf(commentID);
-          if (comIndex !== -1) {
-            rubricComments[categoryID][comIndex] = json;
+        .then((res) => {
+          if (res.status === 200) {
+            return res.json();
+          } else {
+            this.addErrorToast('Something went wrong.', undefined);
+            return resolve(undefined);
           }
-          this.setState({ rubricComments }, () => this.addToast('Comment updated.', undefined));
-        }
-      });
+        })
+        .then((json) => {
+          if (json) {
+            const comIndex = rubricComments[categoryID]
+              .map((com) => {
+                return com.id;
+              })
+              .indexOf(commentID);
+            if (comIndex !== -1) {
+              rubricComments[categoryID][comIndex] = json;
+            }
+            this.setState({ rubricComments }, () => {
+              return resolve(json);
+            });
+          }
+        });
+    });
   };
 
   // ------------------- Manage assignments API calls  ------------------

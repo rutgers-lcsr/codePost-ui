@@ -43,30 +43,30 @@ interface IProps {
     pointLimit: number | undefined,
     newComments: IRubricComment[],
   ) => Promise<IRubricCategory3>;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => Promise<{}>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
     text: string,
     pointDelta: number,
   ) => Promise<IRubricComment>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => void;
-  updateRubricComment: (
+  deleteRubricCategory: (
+    assignmentID: number,
     categoryID: number,
-    commentID: number,
-    text: string | undefined,
-    pointDelta: number | undefined,
-  ) => void;
+    categoryName: string,
+  ) => Promise<{}>;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<{}>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => void;
+  ) => Promise<IRubricCategory3>;
+  updateRubricComment: (
+    categoryID: number,
+    commentID: number,
+    text: string | undefined,
+    pointDelta: number | undefined,
+  ) => Promise<IRubricComment>;
   updateAssignment: (
     assignnmentID: number,
     name: string | undefined,
