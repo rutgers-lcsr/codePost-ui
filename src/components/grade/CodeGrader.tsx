@@ -4,7 +4,7 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import { IComment, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
+import { IComment, ICSSStyleObject, IFile, IFileToCommentsMap, IRubricComment, ISubmission } from '../../types/common';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
@@ -13,12 +13,12 @@ interface IProps {
   files: IFile[];
   comments: IFileToCommentsMap;
   readOnly: boolean;
-  addComment: any;
+  addComment: (comment: any, file: IFile) => void;
   activeCommentId?: number;
-  changeActive: any;
-  deleteComment: any;
-  updateComment: any;
-  getRubricComment: any;
+  changeActive: (id: number | undefined) => void;
+  deleteComment: (comment: IComment, file: IFile) => void;
+  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
 }
 
 interface IState {
@@ -29,6 +29,7 @@ class CodeGrader extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     commentCounter: -1,
   };
+
   //////////////////////////////////////
   // Lifecycle Methods
   //////////////////////////////////////
@@ -47,7 +48,7 @@ class CodeGrader extends React.Component<IProps, IState> {
     this.props.changeActive(id);
   };
 
-  public updateCommentCounter = () => {
+  public updateCommentCounter = (): void => {
     this.setState({ commentCounter: this.state.commentCounter - 1 });
   };
 
@@ -130,9 +131,10 @@ interface ICodeBoxProps {
   file: IFile;
   comments: IComment[];
   readOnly: boolean;
-  addComment: any;
+  // giving a partial comment breaks the IComment type constraint, could make some fields optional?
+  addComment: (comment: any, file: IFile) => void;
   commentCounter: number;
-  updateCommentCounter: any;
+  updateCommentCounter: () => void;
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
@@ -227,10 +229,10 @@ const CodeBox = (props: ICodeBoxProps) => {
     }
 
     const newComment = {
+      id: commentCounter,
       endChar: endIndex,
       endLine: endline,
       file: file.id,
-      id: commentCounter,
       pointDelta: 0.0,
       startChar: startIndex,
       startLine: startline,
@@ -244,7 +246,7 @@ const CodeBox = (props: ICodeBoxProps) => {
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = readOnly
-    ? splitCode.map((item: any, i: number) => {
+    ? splitCode.map((item: string, i: number) => {
       return (
         <div key={i} id={i.toString()}>
           {' '}
@@ -252,7 +254,7 @@ const CodeBox = (props: ICodeBoxProps) => {
         </div>
       );
     })
-    : splitCode.map((item: any, i: number) => {
+    : splitCode.map((item: string, i: number) => {
       return (
         <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
           {' '}
@@ -261,7 +263,7 @@ const CodeBox = (props: ICodeBoxProps) => {
       );
     });
 
-  const lineNumbers = splitCode.map((item: any, i: number) => {
+  const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
       <div key={i} className="line-number">
         {' '}
@@ -283,10 +285,10 @@ interface ICommentListProps {
   comments: IComment[];
   readOnly: boolean;
   activeCommentId?: number;
-  changeActive: any;
-  deleteComment: any;
-  updateComment: any;
-  getRubricComment: any;
+  changeActive: (id: number | number) => void;
+  deleteComment: (comment: IComment, file: IFile) => void;
+  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
 }
 
 const CommentList = (props: ICommentListProps) => {
@@ -324,9 +326,9 @@ const CommentList = (props: ICommentListProps) => {
     });
 
     const zindex = 100000 - startAt;
-    const style = {
+    const style: ICSSStyleObject = {
       top: `${startAt}px`,
-      zIndex: zindex,
+      zIndex: zindex.toString(),
     };
 
     let isActive = false;

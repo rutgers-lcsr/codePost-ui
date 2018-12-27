@@ -14,7 +14,7 @@ interface IVisibleMap {
 interface IProps {
   rubricCategories: IRubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  handleRubricCommentClick: any;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 interface IState {
@@ -75,7 +75,7 @@ interface IRubricCategoryProps {
   visible: boolean;
   searchTerm: string;
   handleDropDown: (rubricCategory: IRubricCategory, visible: boolean, event: any) => void;
-  handleRubricCommentClick: any;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 const RubricCategory = (props: IRubricCategoryProps) => {
@@ -110,7 +110,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
 
 interface IRubricCommentProps {
   rubricComment: IRubricComment;
-  handleRubricCommentClick: any;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 const RubricComment = (props: IRubricCommentProps) => {
