@@ -12,18 +12,18 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, ISection3, ISectionNoStudents, UserEnum } from '../../types/common';
+import { ICourse, ISection, ISectionNoStudents, USER_APP } from '../../types/common';
 
 interface IProps {
-  sections: ISection3[];
+  sections: ISection[];
   students: string[];
   studentsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   addStudentToSection: (sectionID: number, studentEmail: string) => Promise<{}>;
 }
@@ -43,13 +43,13 @@ class ManageStudents extends React.Component<IProps, {}> {
     searchTerm: '',
   };
 
-  public triggerUnEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
+  public triggerUnEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
     const { unEnrollUsers } = this.props;
 
     unEnrollUsers([newStudentEmail], studentType);
   };
 
-  public triggerEnrollUser = (newStudentEmail: string, studentType: UserEnum) => {
+  public triggerEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
     this.props.enrollUser(newStudentEmail, studentType);
     this.setState({ newStudentField: '' });
   };
@@ -100,7 +100,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
 
     const iconChanged = <FontIcon>track_changes</FontIcon>;
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (studentsLoadComplete && students) {
       if (sortAscending) {

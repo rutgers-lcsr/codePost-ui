@@ -12,37 +12,37 @@ import {
 } from 'react-md';
 import '../../styles/index.scss';
 import {
-  IAssignment3,
-  ICourse3,
-  IRubricCategoriesByAssignment,
-  IRubricCategory3,
+  IAssignment,
+  IAssignmentToRubricCategories,
+  IAssignmentToSubmissionsMap,
+  ICourse,
+  IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
-  IRubricCommentsByCategory,
-  ISubmission3,
-  ISubmissionsByAssignment,
+  ISubmission,
 } from '../../types/common';
 import RubricCategoryTable from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
 import RubricFileDialog from './RubricFileDialog';
 
 interface IProps {
-  submissions: ISubmissionsByAssignment;
-  rubricCategories: IRubricCategoriesByAssignment;
-  rubricComments: IRubricCommentsByCategory;
+  submissions: IAssignmentToSubmissionsMap;
+  rubricCategories: IAssignmentToRubricCategories;
+  rubricComments: IRubricCategoryToRubricCommentsMap;
   submissionsLoadComplete: boolean;
   lockManageAssignment: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   assignmentRubricLoadComplete: boolean;
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
     pointLimit: number | undefined,
     newComments: IRubricComment[],
-  ) => Promise<IRubricCategory3>;
+  ) => Promise<IRubricCategory>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
@@ -60,7 +60,7 @@ interface IProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => Promise<IRubricCategory3>;
+  ) => Promise<IRubricCategory>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
@@ -73,13 +73,13 @@ interface IProps {
     points: number | undefined,
     isReleased: boolean | undefined,
   ) => void;
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment3>;
+  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment>;
 }
 
 interface IState {
-  activeAssignment: IAssignment3 | undefined;
-  activeRubricCategories: IRubricCategory3[] | undefined;
-  activeRubricComments: IRubricCommentsByCategory | undefined;
+  activeAssignment: IAssignment | undefined;
+  activeRubricCategories: IRubricCategory[] | undefined;
+  activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   newCategoryCounter: number;
 }
 
@@ -100,7 +100,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.assignmentPointsField = React.createRef();
   }
 
-  public changeActiveAssignment = (assignment: IAssignment3 | undefined) => {
+  public changeActiveAssignment = (assignment: IAssignment | undefined) => {
     const { rubricCategories, rubricComments } = this.props;
     if (assignment) {
       this.setState({
@@ -394,7 +394,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                     return assn.id === Number(assignmentID);
                   })[0];
 
-                  assignmentSubs.forEach((submission: ISubmission3) => {
+                  assignmentSubs.forEach((submission: ISubmission) => {
                     if (submission.isFinalized) {
                       numGraded += 1;
                     } else if (submission.grader) {

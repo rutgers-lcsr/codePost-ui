@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Button, DialogContainer, TextField } from 'react-md';
 
-import { IAssignment3 } from '../../types/common';
+import { IAssignment } from '../../types/common';
 
 interface IProps {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   addErrorToast: (text: string, action: string | undefined) => void;
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment3>;
+  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment>;
 }
 
 interface IState {

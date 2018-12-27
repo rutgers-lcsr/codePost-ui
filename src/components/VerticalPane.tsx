@@ -8,8 +8,8 @@ import { IOption } from '../types/common';
 interface IProps {
   currentTab?: IOption;
   currentSelector?: IOption;
-  selectorItems: any[];
-  tabItems: any[];
+  selectorItems: IOption[];
+  tabItems: IOption[];
   handleTabChange: (option: IOption, event: any) => void;
   handleSelectorChange: (option: IOption) => void;
   isLoading: boolean;
@@ -32,23 +32,6 @@ const VerticalPane = (props: IProps) => {
   );
 };
 
-interface ITabProps {
-  label: string;
-  value: number | string;
-  key: number;
-  selected: boolean;
-  onClick: any;
-}
-
-const Tab = (props: ITabProps) => {
-  const className = props.selected ? 'vertical-pane-tab selected' : 'vertical-pane-tab';
-  return (
-    <li onClick={props.onClick} key={props.value} className={className}>
-      {props.label}
-    </li>
-  );
-};
-
 interface IVerticalTabsProps {
   currentItem?: IOption;
   items: IOption[];
@@ -58,7 +41,7 @@ interface IVerticalTabsProps {
 const VerticalTabs = (props: IVerticalTabsProps) => {
   return (
     <ul className="vertical-pane">
-      {props.items.map((item: any, i: number) => {
+      {props.items.map((item: IOption, i: number) => {
         const currentLabel = props.currentItem ? props.currentItem.label : '--';
         const selected = item.label === currentLabel;
         return (
@@ -72,6 +55,23 @@ const VerticalTabs = (props: IVerticalTabsProps) => {
         );
       })}
     </ul>
+  );
+};
+
+interface ITabProps {
+  label: string;
+  value: number | string;
+  key: number | string;
+  selected: boolean;
+  onClick: any;
+}
+
+const Tab = (props: ITabProps) => {
+  const className = props.selected ? 'vertical-pane-tab selected' : 'vertical-pane-tab';
+  return (
+    <li onClick={props.onClick} key={props.value} className={className}>
+      {props.label}
+    </li>
   );
 };
 

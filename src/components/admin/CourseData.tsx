@@ -2,23 +2,23 @@ import * as React from 'react';
 import { CircularProgress, Tab, Tabs, TabsContainer } from 'react-md';
 import '../../styles/index.scss';
 import {
-  IAssignment3,
+  IAssignment,
+  IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
-  ISubmissionsByAssignment,
 } from '../../types/common';
 import GraderData from './GraderData';
 import StudentData from './StudentData';
 
 interface IPropsCourseData {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   assignmentsLoadComplete: boolean;
   students: string[];
   studentsLoadComplete: boolean;
   graders: string[];
   gradersLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
-  submissions: ISubmissionsByAssignment;
+  submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
@@ -40,11 +40,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
   public openSubmission = (submissionID: number | string) => {
     if (window) {
-      window.open(
-        `/grade/${submissionID}`,
-        'test',
-        `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`,
-      );
+      window.open(`/grade/${submissionID}`, 'test', `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`);
     }
   };
 

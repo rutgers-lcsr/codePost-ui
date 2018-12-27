@@ -3,17 +3,18 @@ import SearchBar from '../SearchBar';
 
 import '../../styles/Grade.scss';
 
-import { IRubricCategory, IRubricComment } from '../../types/common';
+import { IRubricCategory, IRubricCategoryToRubricCommentsMap, IRubricComment } from '../../types/common';
 
 import { Table, Td, Tr } from 'reactable';
 
 interface IVisibleMap {
-  [categoryId: number]: boolean;
+  [categoryID: number]: boolean;
 }
 
 interface IProps {
-  rubric: IRubricCategory[];
-  handleRubricCommentClick: any;
+  rubricCategories: IRubricCategory[];
+  rubricComments: IRubricCategoryToRubricCommentsMap;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 interface IState {
@@ -27,9 +28,9 @@ class Rubric extends React.Component<IProps, IState> {
     visibles: {},
   };
 
-  public toggleVisible = (category: IRubricCategory, visible: boolean, event: any) => {
+  public toggleVisible = (rubricCategory: IRubricCategory, visible: boolean, event: any) => {
     this.setState({
-      visibles: { ...this.state.visibles, [category.id]: !visible },
+      visibles: { ...this.state.visibles, [rubricCategory.id]: !visible },
     });
   };
 
@@ -43,18 +44,19 @@ class Rubric extends React.Component<IProps, IState> {
   };
 
   public render() {
-    const { handleRubricCommentClick, rubric } = this.props;
+    const { handleRubricCommentClick, rubricCategories, rubricComments } = this.props;
     const { searchTerm, visibles } = this.state;
 
     return (
       <div className="container-rubric">
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
-        {rubric.map((category: IRubricCategory, index: number) => {
-          const visible = visibles[category.id] === undefined ? false : visibles[category.id];
+        {rubricCategories.map((rubricCategory: IRubricCategory, index: number) => {
+          const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
           return (
             <RubricCategory
-              category={category}
-              key={`${category}-${index}`}
+              rubricCategory={rubricCategory}
+              rubricComments={rubricComments[rubricCategory.id]}
+              key={`${rubricCategory}-${index}`}
               handleDropDown={this.toggleVisible}
               visible={visible}
               searchTerm={searchTerm}
@@ -68,47 +70,34 @@ class Rubric extends React.Component<IProps, IState> {
 }
 
 interface IRubricCategoryProps {
-  category: IRubricCategory;
+  rubricCategory: IRubricCategory;
+  rubricComments: IRubricComment[];
   visible: boolean;
   searchTerm: string;
-  handleDropDown: (category: IRubricCategory, visible: boolean, event: any) => void;
-  handleRubricCommentClick: any;
+  handleDropDown: (rubricCategory: IRubricCategory, visible: boolean, event: any) => void;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 const RubricCategory = (props: IRubricCategoryProps) => {
-  const { category, handleRubricCommentClick, searchTerm, visible } = props;
+  const { rubricCategory, rubricComments, handleRubricCommentClick, searchTerm, visible } = props;
 
   const buttonClass = visible ? 'button-up-arrow' : 'button-down-arrow';
 
   return (
     <div className="rubric-category">
-      <div
-        className="container-category"
-        onClick={props.handleDropDown.bind(props, category, visible)}
-      >
+      <div className="container-category" onClick={props.handleDropDown.bind(props, rubricCategory, visible)}>
         <div className="category-title">
-          {category.name}
-          <div
-            className={buttonClass}
-            onClick={props.handleDropDown.bind(props, category, visible)}
-          />
+          {rubricCategory.name}
+          <div className={buttonClass} onClick={props.handleDropDown.bind(props, rubricCategory, visible)} />
         </div>
       </div>
       {visible && (
-        <Table
-          className={'table-rubric-category'}
-          filterable={[' ']}
-          filterBy={searchTerm}
-          hideFilterInput={true}
-        >
-          {category.categoryComments.map((comment: IRubricComment, index: number) => {
+        <Table className={'table-rubric-category'} filterable={[' ']} filterBy={searchTerm} hideFilterInput={true}>
+          {rubricComments.map((rubricComment: IRubricComment, index: number) => {
             return (
               <Tr key={index}>
-                <Td column=" " value={comment.text}>
-                  <RubricComment
-                    comment={comment}
-                    handleRubricCommentClick={handleRubricCommentClick}
-                  />
+                <Td column=" " value={rubricComment.text}>
+                  <RubricComment rubricComment={rubricComment} handleRubricCommentClick={handleRubricCommentClick} />
                 </Td>
               </Tr>
             );
@@ -120,21 +109,21 @@ const RubricCategory = (props: IRubricCategoryProps) => {
 };
 
 interface IRubricCommentProps {
-  comment: IRubricComment;
-  handleRubricCommentClick: any;
+  rubricComment: IRubricComment;
+  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
 }
 
 const RubricComment = (props: IRubricCommentProps) => {
-  const { comment } = props;
+  const { rubricComment } = props;
 
   const onClick = (event: any) => {
-    props.handleRubricCommentClick(comment);
+    props.handleRubricCommentClick(rubricComment);
   };
 
   return (
     <div className="rubric-item" onClick={onClick}>
-      <div className="rubric-item-text">{comment.text}</div>
-      <div className="rubric-item-point-delta">{comment.pointDelta}</div>
+      <div className="rubric-item-text">{rubricComment.text}</div>
+      <div className="rubric-item-point-delta">{rubricComment.pointDelta}</div>
     </div>
   );
 };

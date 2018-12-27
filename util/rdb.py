@@ -11,21 +11,6 @@ princeton = Organization.objects.create(name="Princeton University", shortname="
 cos126s2019 = Course.objects.create(organization=princeton, period="S2019", name="COS126")
 hellos2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="Hello")
 
-assignments = []
-loopss2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="loops")
-assignments.append(loopss2019)
-nbodys2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="nbody")
-assignments.append(nbodys2019)
-sierpinskis2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="sierpinski")
-assignments.append(sierpinskis2019)
-hammings2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="hamming")
-assignments.append(hammings2019)
-lfsrs2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="lfsr")
-assignments.append(lfsrs2019)
-guitars2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="guitar")
-assignments.append(guitars2019)
-markovs2019 = Assignment.objects.create(course=cos126s2019, points=20, isReleased=True, name="markov")
-assignments.append(markovs2019)
 
 ## Create some superusers
 james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com', password="rootabega")
@@ -50,12 +35,12 @@ cos126s2019.graders.add(vinay)
 cos126s2019.save()
 
 ## Add some courseadmins to the course
-cos126s2019.courseAdmins.add(james)
+cos126s2019.courseAdmins.add(richard)
 cos126s2019.courseAdmins.add(vinay)
 cos126s2019.save()
 
 section1 = Section.objects.create(name="P01", course=cos126s2019)
-section1.leaders.add(vinay)
+section1.leaders.add(richard)
 section1.save()
 
 code = """public class BinaryConverter {
@@ -118,21 +103,16 @@ for i in range(0, 5):
   cos126s2019.students.add(tmpUser)
   tmpUser.save()
   cos126s2019.save()
-  for assn in assignments:
-      sub = Submission.objects.create(assignment=assn)
-      sub.students.add(tmpUser)
-      code = "System.out.println('hello world, my name is " + username + "!')"
-      tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
-      Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
-      sub.isFinalized = True
-      sub.grade = random.randint(0,20)
-      if (i % 3 == 0):
-          sub.grader = richard
-          section1.students.add(tmpUser)
-          section1.save()
-      else:
-          sub.grader = vinay
-      sub.save()
+  sub = Submission.objects.create(assignment=hellos2019)
+  sub.students.add(tmpUser)
+  tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+  Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
+  sub.isFinalized = True
+  sub.grade = random.randint(0,20)
+  sub.grader = richard
+  section1.students.add(tmpUser)
+  section1.save()
+  sub.save()
 
 for i in range(0, 2):
   name = "general"+str(i)
@@ -156,14 +136,28 @@ for user in users:
   user.profile.organization = princeton
   user.save()
 
-sub = Submission.objects.create(assignment=hellos2019)
-sub.grader = richard
-cos126s2019.students.add(vinay)
-vinay.save()
+# sub = Submission.objects.create(assignment=hellos2019)
+# sub.grader = richard
+# cos126s2019.students.add(vinay)
+# vinay.save()
+# cos126s2019.save()
+# sub.students.set([vinay])
+# tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+# Comment.objects.create(text="good job,", author=vinay, file=tmpFile, pointDelta=1, startChar=1, endChar=4, startLine=1, endLine=1)
+# sub.isFinalized = True
+# sub.grade = 20
+# sub.save()
+
+cos126s2019.students.add(richard)
+richard.save()
 cos126s2019.save()
-sub.students.set([vinay])
+sub = Submission.objects.create(assignment=hellos2019)
+sub.students.add(richard)
 tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
-Comment.objects.create(text="good job,", author=vinay, file=tmpFile, pointDelta=1, startChar=1, endChar=4, startLine=1, endLine=1)
+Comment.objects.create(text="good job, ", author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
 sub.isFinalized = True
-sub.grade = 20
+sub.grade = random.randint(0,20)
+sub.grader = vinay
+section1.students.add(richard)
+section1.save()
 sub.save()

@@ -6,8 +6,9 @@ import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 interface IProps {
   assignment?: IAssignment;
   submissions: ISubmission[];
-  claimSubmission: (assignment: IAssignment) => any;
-  releaseSubmission: (submission: ISubmission) => any;
+  isLoadingSubmissions: boolean;
+  claimSubmission: (assignment: IAssignment) => Promise<ISubmission>;
+  releaseSubmission: (submission: ISubmission) => Promise<ISubmission>;
 }
 
 interface IState {
@@ -32,29 +33,27 @@ class GradedTab extends React.Component<IProps, {}> {
       return;
     }
 
-    this.setState({ BUTTON_STATE: BUTTON_STATE.Loading });
-    const promise = this.props.claimSubmission(assignment);
-    promise.then((claimedSubmission: ISubmission) => {
+    this.setState({ buttonState: BUTTON_STATE.Loading });
+    this.props.claimSubmission(assignment).then((claimedSubmission: ISubmission) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
         console.log('No more submissions to claim');
-        // this.setState({ BUTTON_STATE: BUTTON_STATE.Inactive })
-        this.setState({ BUTTON_STATE: BUTTON_STATE.Active });
+        this.setState({ buttonState: BUTTON_STATE.Inactive });
       } else {
-        this.setState({ BUTTON_STATE: BUTTON_STATE.Active });
+        this.setState({ buttonState: BUTTON_STATE.Active });
       }
     });
   };
 
   public releaseSubmission = (submission: ISubmission) => {
-    const promise = this.props.releaseSubmission(submission);
-    promise.then((releasedSubmission: ISubmission) => {
+    this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission) => {
       console.log('released', submission.id, releasedSubmission);
+      this.setState({ buttonState: BUTTON_STATE.Active });
     });
   };
 
   public render() {
-    const { assignment, submissions } = this.props;
+    const { assignment, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
@@ -63,13 +62,14 @@ class GradedTab extends React.Component<IProps, {}> {
       cursor: 'pointer',
     };
 
+    if (isLoadingSubmissions) {
+      return <div className="container-graded-tab">Loading..</div>;
+    }
+
     if (assignment && submissions.length > 0) {
       return (
         <div className="container-graded-tab">
-          <GetAnotherSubmissionButton
-            handleClick={this.getAnotherSubmission}
-            buttonState={buttonState}
-          />
+          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
           <DataTable plain={true}>
             <TableHeader>
               <TableRow>
@@ -82,16 +82,11 @@ class GradedTab extends React.Component<IProps, {}> {
               {submissions.map((submission) => {
                 return (
                   <TableRow key={submission.id} style={style}>
+                    {/****** consider making each column its own component to prevent binds */}
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.students
-                        ? submission.students
-                          .map((student: any) => student.profile.username)
-                          .join(',')
-                        : ''}
+                      {submission.students.join(',')}
                     </TableColumn>
-                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.grade}
-                    </TableColumn>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.dateFinalized}
                     </TableColumn>

@@ -12,27 +12,27 @@ import VerticalPane from './components/VerticalPane';
 import './styles/index.scss';
 import './styles/Student.scss';
 import {
-  IAssignment3,
-  ICourse3,
+  IAssignment,
+  IAssignmentToRubricCategories,
+  IAssignmentToSubmissionsMap,
+  ICourse,
   IGraderSubmissionsDataTable,
   IOptionNumber,
-  IRubricCategoriesByAssignment,
-  IRubricCategory3,
+  IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
-  IRubricCommentsByCategory,
-  ISection3,
+  ISection,
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
-  ISubmission3,
-  ISubmissionsByAssignment,
+  ISubmission,
   IToast,
-  UserEnum,
+  USER_APP,
 } from './types/common';
 
 interface IAdminState {
-  currentCourse?: ICourse3; // Course for selector
+  currentCourse?: ICourse; // Course for selector
   loadedPanel: number; // Which active_panel to load, enum
-  courses: ICourse3[]; // Set of courses for the admin for the selector
+  courses: ICourse[]; // Set of courses for the admin for the selector
 
   // general state items
   isShowingSnackBar: boolean;
@@ -47,22 +47,22 @@ interface IAdminState {
   gradersLoadComplete: boolean;
   admins: string[];
   adminsLoadComplete: boolean;
-  sections: ISection3[];
+  sections: ISection[];
 
   // Reminer - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   sectionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
 
-  submissions: ISubmissionsByAssignment;
+  submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
 
   // Props for Assignments panel
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   assignmentsLoadComplete: boolean;
 
-  rubricCategories: IRubricCategoriesByAssignment;
-  rubricComments: IRubricCommentsByCategory;
+  rubricCategories: IAssignmentToRubricCategories;
+  rubricComments: IRubricCategoryToRubricCommentsMap;
 
   assignmentRubricLoadComplete: boolean;
 
@@ -200,7 +200,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public updateNewCourse = (option: IOptionNumber) => {
     this.loadCourses().then(() => {
-      const currentCourse = this.state.courses.filter((course: ICourse3) => {
+      const currentCourse = this.state.courses.filter((course: ICourse) => {
         return course.id === option.value;
       })[0];
 
@@ -258,7 +258,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // Course Selector functions
   public handleCourseChange = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: ICourse3) => {
+    const currentCourse = this.state.courses.filter((course: ICourse) => {
       return course.id === option.value;
     })[0];
 
@@ -285,14 +285,14 @@ class Admin extends React.Component<{}, IAdminState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse3[]) => {
+  public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({
       value: course.id,
       label: course.name,
     }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse3 | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
@@ -386,7 +386,7 @@ class Admin extends React.Component<{}, IAdminState> {
             });
         });
       });
-      Promise.all(getData).then((newAssignments: IAssignment3[]) => {
+      Promise.all(getData).then((newAssignments: IAssignment[]) => {
         this.setState({ assignments: newAssignments, assignmentsLoadComplete: true }, () => {
           this.loadRubrics();
         });
@@ -417,7 +417,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
         Object.keys(submissions).forEach((assignmentID) => {
           const assignmentSubs = submissions[assignmentID];
-          assignmentSubs.forEach((submission: ISubmission3) => {
+          assignmentSubs.forEach((submission: ISubmission) => {
             submission.students.forEach((student: string) => {
               // If a student is un enrolled, the submission won't be deleted,
               // so need to check to make sure it's in the subsByStudent
@@ -479,7 +479,7 @@ class Admin extends React.Component<{}, IAdminState> {
   public loadRubrics = () => {
     const { currentCourse, assignments } = this.state;
     if (currentCourse && assignments) {
-      const getData = assignments.map((assignment: IAssignment3) => {
+      const getData = assignments.map((assignment: IAssignment) => {
         return this.loadAssignmentRubric(assignment.id);
       });
       Promise.all(getData).then(() => {
@@ -559,7 +559,7 @@ class Admin extends React.Component<{}, IAdminState> {
             .then((res) => {
               return res.json();
             })
-            .then((json: ISection3) => {
+            .then((json: ISection) => {
               // Reminder --- should really filter out if the
               // section is already there to eliminate duplicates
               const { sections, sectionsByStudent } = this.state;
@@ -616,22 +616,22 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public changeRoster = (
     newRoster: string[],
-    userType: UserEnum,
+    userType: USER_APP,
     inactiveStudents: string[] | undefined,
   ) => {
     const { currentCourse } = this.state;
 
     if (currentCourse) {
       let payload;
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         if (inactiveStudents) {
           payload = { students: newRoster, inactive_students: inactiveStudents };
         } else {
           payload = { students: newRoster };
         }
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         payload = { graders: newRoster };
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         payload = { courseAdmins: newRoster };
       }
 
@@ -652,7 +652,7 @@ class Admin extends React.Component<{}, IAdminState> {
         })
         .then((json) => {
           if (json) {
-            if (userType === UserEnum.Student) {
+            if (userType === USER_APP.Student) {
               this.setState(
                 {
                   students: json.students,
@@ -663,7 +663,7 @@ class Admin extends React.Component<{}, IAdminState> {
                   this.generateSubmissionsByStudent();
                 },
               );
-            } else if (userType === UserEnum.Grader) {
+            } else if (userType === USER_APP.Grader) {
               this.setState(
                 {
                   graders: json.graders,
@@ -673,7 +673,7 @@ class Admin extends React.Component<{}, IAdminState> {
                   this.generateSubmissionsByStudent();
                 },
               );
-            } else if (userType === UserEnum.CourseAdmin) {
+            } else if (userType === USER_APP.CourseAdmin) {
               this.setState(
                 {
                   admins: json.courseAdmins,
@@ -686,23 +686,23 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public unEnrollUsers = (selectedUserEmails: string[], userType: UserEnum) => {
+  public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
     if (currentCourse) {
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         const { students } = this.state;
         const newStudents = students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
         this.changeRoster(newStudents, userType, selectedUserEmails);
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         const { graders } = this.state;
         const newGraders = graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
         this.changeRoster(newGraders, userType, undefined);
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         const { admins } = this.state;
         const newAdmins = admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
@@ -712,11 +712,11 @@ class Admin extends React.Component<{}, IAdminState> {
     }
   };
 
-  public enrollUser = (userEmail: string, userType: UserEnum) => {
+  public enrollUser = (userEmail: string, userType: USER_APP) => {
     const { currentCourse } = this.state;
     const { students, graders, admins } = this.state;
     if (currentCourse) {
-      if (userType === UserEnum.Student) {
+      if (userType === USER_APP.Student) {
         if (students.indexOf(userEmail) !== -1) {
           this.addErrorToast('Student is already enrolled in course', undefined);
           return;
@@ -735,7 +735,7 @@ class Admin extends React.Component<{}, IAdminState> {
         } else {
           this.changeRoster(newStudents, userType, undefined);
         }
-      } else if (userType === UserEnum.Grader) {
+      } else if (userType === USER_APP.Grader) {
         if (graders.indexOf(userEmail) !== -1) {
           this.addErrorToast('Grader is already enrolled in course', undefined);
           return;
@@ -745,7 +745,7 @@ class Admin extends React.Component<{}, IAdminState> {
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
         this.changeRoster(newGraders, userType, undefined);
-      } else if (userType === UserEnum.CourseAdmin) {
+      } else if (userType === USER_APP.CourseAdmin) {
         if (admins.indexOf(userEmail) !== -1) {
           this.addErrorToast('Admin is already enrolled in course', undefined);
           return;
@@ -826,7 +826,7 @@ class Admin extends React.Component<{}, IAdminState> {
           this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
           return undefined;
         })
-        .then((json: ISection3) => {
+        .then((json: ISection) => {
           if (json) {
             const newSections = sections.map((section) => {
               if (section.id === json.id) {
@@ -900,7 +900,7 @@ class Admin extends React.Component<{}, IAdminState> {
   ) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
-    return new Promise<IRubricCategory3>((resolve) => {
+    return new Promise<IRubricCategory>((resolve) => {
       if (categoryName.length === 0) {
         this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
         return resolve(undefined);
@@ -931,7 +931,7 @@ class Admin extends React.Component<{}, IAdminState> {
             return resolve(undefined);
           }
         })
-        .then((json: IRubricCategory3) => {
+        .then((json: IRubricCategory) => {
           if (json) {
             assignments.forEach((assn) => {
               // Add an empty set of comments to the returned
@@ -1013,7 +1013,7 @@ class Admin extends React.Component<{}, IAdminState> {
     categoryName: string,
     categoryPointLimit: number | undefined,
   ) => {
-    return new Promise<IRubricCategory3>((resolve) => {
+    return new Promise<IRubricCategory>((resolve) => {
       const { currentCourse, rubricCategories } = this.state;
       if (categoryName.length === 0) {
         this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
@@ -1047,7 +1047,7 @@ class Admin extends React.Component<{}, IAdminState> {
               return undefined;
             }
           })
-          .then((json: IRubricCategory3) => {
+          .then((json: IRubricCategory) => {
             if (json) {
               const catIndex = rubricCategories[assignmentID]
                 .map((cat) => {
@@ -1267,7 +1267,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public createAssignment = (assignmentName: string, assignmentPoints: number) => {
     const { currentCourse } = this.state;
-    return new Promise<IAssignment3>((resolve) => {
+    return new Promise<IAssignment>((resolve) => {
       if (currentCourse) {
         const payload = {
           course: currentCourse.id,
@@ -1293,7 +1293,7 @@ class Admin extends React.Component<{}, IAdminState> {
               return resolve(undefined);
             }
           })
-          .then((json: IAssignment3) => {
+          .then((json: IAssignment) => {
             const { submissions, rubricCategories, assignments } = this.state;
             if (json) {
               currentCourse.assignments.push(json.id);
@@ -1313,7 +1313,7 @@ class Admin extends React.Component<{}, IAdminState> {
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
     const { currentCourse, courses } = this.state;
-    return new Promise<ICourse3>((resolve) => {
+    return new Promise<ICourse>((resolve) => {
       if (currentCourse) {
         const payload = {
           name: courseName,
@@ -1336,7 +1336,7 @@ class Admin extends React.Component<{}, IAdminState> {
               return resolve(undefined);
             }
           })
-          .then((json: ICourse3) => {
+          .then((json: ICourse) => {
             if (json) {
               courses.push(json);
               this.addToast(`Course ${json.name} successfully created.`, undefined);

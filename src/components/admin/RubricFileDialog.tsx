@@ -2,16 +2,16 @@ import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import {
-  IAssignment3,
-  IRubricCategory3,
+  IAssignment,
+  IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
-  IRubricCommentsByCategory,
 } from '../../types/common';
 
 interface IProps {
-  activeAssignment: IAssignment3 | undefined;
-  activeRubricCategories: IRubricCategory3[] | undefined;
-  activeRubricComments: IRubricCommentsByCategory | undefined;
+  activeAssignment: IAssignment | undefined;
+  activeRubricCategories: IRubricCategory[] | undefined;
+  activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   addErrorToast: (text: string, action: string | undefined) => void;
   addToast: (text: string, action: string | undefined) => void;
   createRubricCategory: (
@@ -19,7 +19,7 @@ interface IProps {
     categoryName: string,
     pointLimit: number | undefined,
     newComments: IRubricComment[],
-  ) => Promise<IRubricCategory3>;
+  ) => Promise<IRubricCategory>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
@@ -37,14 +37,14 @@ interface IProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => Promise<IRubricCategory3>;
+  ) => Promise<IRubricCategory>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
   ) => Promise<IRubricComment>;
-  parentUpdate: (assignment: IAssignment3 | undefined) => void;
+  parentUpdate: (assignment: IAssignment | undefined) => void;
 }
 
 interface IDownloadCategory {

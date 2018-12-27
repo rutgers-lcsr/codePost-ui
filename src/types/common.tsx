@@ -2,7 +2,7 @@
  * Common Types
  */
 
-export enum APPS {
+export enum USER_APP {
   Student,
   Grader,
   CourseAdmin,
@@ -15,8 +15,14 @@ export enum BUTTON_STATE {
 }
 
 export interface IUser {
-  email: string;
   id: number;
+  email: string;
+}
+
+export interface IProfile {
+  id: number;
+  user: string;
+  organization: number;
 }
 
 export interface IOption {
@@ -34,81 +40,68 @@ export interface IAssignment {
   name: string;
   points: number;
   isReleased: boolean;
-  rubric?: IRubricCategory[];
+  rubricCategories: number[];
 }
 
 export interface ICourse {
   id: number;
   name: string;
   period: string;
-  assignments: IAssignment[];
+  assignments: number[];
+  sections: number[];
 }
 
 export interface ISubmission {
   id: number;
   isFinalized: any;
   dateFinalized?: any;
-  files: any[];
+  files: number[];
   grade: number;
-  grader?: IGrader;
-  students: IStudent[];
-  assignment: IAssignment;
+  grader?: string;
+  students: string[];
+  assignment: number;
 }
 
 export interface IFile {
   id: number;
   code: string;
-  comments: any[];
+  comments: number[];
   extension: string;
   name: string;
 }
 
 export interface IComment {
   id: number;
-  localId: number;
   author: any;
   startChar: number;
   endChar: number;
   startLine: number;
   endLine: number;
-  pointDelta: number | string;
+  pointDelta: number;
   text: string;
-  rubricComment: any;
+  rubricComment: number;
+  file: number;
 }
 
-export interface IProfile {
+export interface ISection {
+  name: string;
   id: number;
-  username: string;
+  students: string[];
+  leaders: string[];
 }
 
-export interface IStudent {
-  profile: IProfile;
+export interface ISectionNoStudents {
+  name: string;
+  id: number;
 }
 
-export interface IGrader {
-  profile: IProfile;
-}
-
-export interface ICourseAdmin {
-  profile: IProfile;
-}
-
-export interface IAssignmentSubmissionsMap {
-  [id: number]: {
-    name: string;
-    points: number;
-    isReleased: boolean;
-    submissions: ISubmission[];
-  };
-}
-
-export interface IUserSubmissionsMap {
-  [id: number]: {
-    profile: IProfile;
-    submissionsByAssignment: {
-      [id: number]: ISubmission;
-    };
-  };
+export interface IRubricCategory {
+  id: number;
+  name: string;
+  pointLimit: number | undefined;
+  // reminder - need to fix this, it's disgusting
+  rubricComments: number[];
+  assignment: number;
 }
 
 export interface IRubricComment {
@@ -118,110 +111,46 @@ export interface IRubricComment {
   category: number;
 }
 
-export interface IRubricCategory {
-  id: number;
-  name: string;
-  pointLimit: number | undefined;
-  // reminder - need to fix this, it's disgusting
-  rubricComments: number[];
-  comments: IRubricComment[];
-  categoryComments: IRubricComment[];
-  assignment: number;
-}
-
 export interface IToast {
   text: string;
   action: string | undefined;
 }
 
-export interface ISection {
-  name: string;
-  id: number;
-  students: IStudent[];
-  leader?: IGrader[];
-}
-
-export interface ISectionNoStudents {
-  name: string;
-  id: number;
-}
-
-export enum UserEnum {
-  Student = 'Student',
-  Grader = 'Grader',
-  CourseAdmin = 'CourseAdmin',
-}
-
 // New interfaces for Admin panel -- to merge
-
-export interface IRubricCategory3 {
-  id: number;
-  name: string;
-  pointLimit: number | undefined;
-  // reminder - need to fix this, it's disgusting
-  rubricComments: number[];
-  assignment: number;
-}
-
-export interface ISection3 {
-  name: string;
-  id: number;
-  students: string[];
-  leaders: string[];
-}
 
 // Making a separate data table to ensure that each
 // student has only one submission for an assignment
 
 export interface IStudentSubmissionsDataTable {
   [userEmail: string]: {
-    [assignmentID: number]: ISubmission3;
+    [assignmentID: number]: ISubmission;
   };
 }
 
 export interface IGraderSubmissionsDataTable {
-  [userEmail: string]: ISubmissionsByAssignment;
+  [userEmail: string]: IAssignmentToSubmissionsMap;
 }
 
-export interface IAssignment3 {
-  id: number;
-  name: string;
-  points: number;
-  isReleased: boolean;
-  rubricCategories: number[];
+export interface IAssignmentToSubmissionsMap {
+  [assignmentID: number]: ISubmission[];
 }
 
-export interface ICourse3 {
-  id: number;
-  name: string;
-  period: string;
-  assignments: number[];
-  sections: number[];
+export interface IAssignmentToRubricCategories {
+  [assignmentID: number]: IRubricCategory[];
 }
 
-export interface ISubmission3 {
-  id: number;
-  isFinalized: any;
-  dateFinalized?: any;
-  files: number[];
-  grade: number;
-  grader?: string;
-  students: string[];
-  assignment: IAssignment;
+export interface IFileToCommentsMap {
+  [fileID: number]: IComment[];
 }
 
-export interface IAssignmentsByCourse {
-  [courseID: number]: IAssignment3[];
+export interface IRubricCategoryToRubricCommentsMap {
+  [rubricCategoryID: number]: IRubricComment[];
 }
 
-export interface ISubmissionsByAssignment {
-  [assignmentID: number]: ISubmission3[];
+export interface ICourseToAssignmentMap {
+  [courseID: number]: IAssignment[];
 }
 
-export interface IRubricCategoriesByAssignment {
-  [assignmentID: number]: IRubricCategory3[];
-}
-
-export interface IRubricCommentsByCategory {
-  [categoryID: number]: IRubricComment[];
+export interface ICSSStyleObject {
+  [key: string]: string;
 }

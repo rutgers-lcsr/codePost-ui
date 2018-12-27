@@ -7,11 +7,15 @@ import Rubric from './components/grade/Rubric';
 
 import './styles/Grade.scss';
 
+import APIUtils from './APIUtils';
+
 import {
   IAssignment,
   IComment,
   IFile,
+  IFileToCommentsMap,
   IRubricCategory,
+  IRubricCategoryToRubricCommentsMap,
   IRubricComment,
   ISubmission,
 } from './types/common';
@@ -21,19 +25,28 @@ interface IGradeState {
   isLoggedIn: boolean;
   isLoading: boolean;
   redirect: boolean;
+  assignment?: IAssignment;
   submission?: ISubmission;
-  rubric?: IRubricCategory[];
+  rubricCategories: IRubricCategory[];
+  rubricComments: IRubricCategoryToRubricCommentsMap;
   activeCommentId?: number;
+
+  files: IFile[];
+  comments: IFileToCommentsMap;
 }
 
-class Grade extends React.Component<{ match: { params: { subID: typeof Number } } }, IGradeState> {
+class Grade extends React.Component<{ match: { params: { submissionId: typeof Number } } }, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
+    assignment: undefined,
+    comments: {},
     email: '',
+    files: [],
     isLoading: true,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
-    rubric: undefined,
+    rubricCategories: [],
+    rubricComments: {},
     submission: undefined,
   };
 
@@ -48,179 +61,217 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
     if (this.state.isLoggedIn) {
-      this.loadSubmission();
+      this.loadSubmission().then((submission) => {
+        return Promise.all([
+          this.loadAssignment(submission.assignment),
+          this.loadRubricCategories(submission.assignment),
+        ]).then(() => {
+          this.setState({ isLoading: false });
+        });
+      });
     } else {
       this.setState({ redirect: true });
     }
   }
 
-  //////////////////////////////////////
-  // Prop Methods
-  //////////////////////////////////////
+  ///////////////////////////////////////
+  // Loading methods
+  ///////////////////////////////////////
 
-  public handleRubricCommentClick = (rubricComment: IRubricComment) => {
-    const { activeCommentId, submission } = this.state;
+  public loadAssignment = (assignmentId: number) => {
+    return APIUtils.fetchAssignment(assignmentId).then((assignment: IAssignment) => {
+      console.log('4.1 - saving assignment: ', assignment);
+      this.setState({ assignment });
+      return assignment;
+    });
+  };
+
+  public loadSubmission = () => {
+    const submissionId: number = +this.props.match.params.submissionId.valueOf();
+    return APIUtils.fetchSubmission(submissionId).then((submission: ISubmission) => {
+      return this.loadFiles(submission).then(() => {
+        console.log('3 - saving submission: ', submission);
+        this.setState({ submission });
+        return submission;
+      });
+    });
+  };
+
+  public loadFiles = (submission: ISubmission) => {
+    return Promise.all(
+      submission.files.map((fileId: number) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile) => {
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: [],
+            },
+          });
+          return this.loadComments(file).then(() => {
+            console.log('2 - saving file:', file);
+            this.setState({ files: [...this.state.files, file] });
+          });
+        });
+      }),
+    );
+  };
+
+  public loadComments = (file: IFile) => {
+    return Promise.all(
+      file.comments.map((commentId: number) => {
+        return APIUtils.fetchComment(commentId).then((comment: IComment) => {
+          console.log('1 - saving comment:', comment);
+          const comments = [...this.state.comments[file.id], comment];
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: comments,
+            },
+          });
+        });
+      }),
+    );
+  };
+
+  public loadRubricCategories = (assignmentId: number) => {
+    return APIUtils.fetchRubricCategories(assignmentId).then((rubricCategories) => {
+      return Promise.all(
+        rubricCategories.map((rubricCategory: IRubricCategory) => {
+          return this.loadRubricComments(rubricCategory);
+        }),
+      ).then(() => {
+        console.log('4.2 - saving rubricCategories: ', rubricCategories);
+        this.setState({ rubricCategories });
+        return rubricCategories;
+      });
+    });
+  };
+
+  public loadRubricComments = (rubricCategory: IRubricCategory) => {
+    return Promise.all(
+      rubricCategory.rubricComments.map((rubricCommentId: number) => {
+        return APIUtils.fetchRubricComment(rubricCommentId).then((rubricComment: IRubricComment) => {
+          console.log('4.11 - saving rubricComment:', rubricComment);
+          let rubricComments = [rubricComment];
+          if (this.state.rubricComments[rubricCategory.id]) {
+            rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
+          }
+          this.setState({
+            rubricComments: {
+              ...this.state.rubricComments,
+              [rubricCategory.id]: rubricComments,
+            },
+          });
+        });
+      }),
+    );
+  };
+
+  ///////////////////////////////////////
+  // Handlers
+  ///////////////////////////////////////
+
+  public handleRubricCommentClick = (rubricComment: IRubricComment): void => {
+    const { activeCommentId, submission, files, comments } = this.state;
 
     if (!submission || !activeCommentId) {
       return;
     }
 
-    // As below, this is mutating the state object which could be bad practice
-    for (const file of submission.files) {
-      const comment = file.comments.find((c: IComment) => c.localId === activeCommentId);
-      if (comment) {
-        comment.rubricComment = rubricComment;
-        // comment.text = rubricComment.text;
-        comment.pointDelta = rubricComment.pointDelta;
-        this.setState({ submission });
+    for (const file of files) {
+      const index = comments[file.id].findIndex((c: IComment) => c.id === activeCommentId);
+      if (index !== -1) {
+        comments[file.id][index].rubricComment = rubricComment.id;
+        this.setState({ comments });
         break;
       }
     }
   };
 
-  public changeActiveComment = (id: number) => {
+  public getRubricComment = (rubricCommentID: number): IRubricComment | undefined => {
+    const { rubricComments } = this.state;
+
+    for (const rubricCategoryID of Object.keys(rubricComments)) {
+      const rubricComment = rubricComments[rubricCategoryID].find((rc: IRubricComment) => rc.id === rubricCommentID);
+      if (rubricComment) {
+        return rubricComment;
+      }
+    }
+    return undefined;
+  };
+
+  public changeActiveComment = (id: number | undefined): void => {
     this.setState({ activeCommentId: id });
   };
 
   // Usually adds a blank comment to the submission state
-  public addComment = (comment: IComment, file: IFile) => {
-    const { submission } = this.state;
+  public addComment = (comment: IComment, file: IFile): void => {
+    const { submission, comments } = this.state;
     if (!submission) {
       return;
     }
 
-    submission.files.find((f: IFile) => f.id === file.id).comments = [
-      ...submission.files.find((f: IFile) => f.id === file.id).comments,
-      comment,
-    ];
-    this.setState({ submission });
+    comments[file.id] = [...comments[file.id], comment];
+    this.setState({ comments });
   };
 
-  public updateComment = (comment: IComment, file: IFile) => {
-    const { submission } = this.state;
+  public updateComment = (commentID: number, newComment: IComment, file: IFile): void => {
+    const { submission, comments } = this.state;
     if (!submission) {
       return;
     }
 
-    const commentsCopy = submission.files.find((f: IFile) => f.id === file.id).comments;
-    const index = commentsCopy.findIndex((c: IComment) => c.localId === comment.localId);
-
-    submission.files.find((f: IFile) => f.id === file.id).comments[index] = comment;
-    this.setState({ submission });
+    const index = comments[file.id].findIndex((comment: IComment) => comment.id === commentID);
+    comments[file.id][index] = newComment;
+    this.setState({ comments });
   };
 
   // Delete the comment json from the submission state
   // Then delete the comment from the remote db
-  public deleteComment = (comment: IComment, file: IFile) => {
-    const { submission } = this.state;
+  public deleteComment = (comment: IComment, file: IFile): void => {
+    const { submission, comments } = this.state;
     if (!submission) {
       return;
     }
 
-    const commentsCopy = submission.files.find((f: IFile) => f.id === file.id).comments;
-    const index = commentsCopy.findIndex((c: IComment) => c.id === comment.id);
+    const index = comments[file.id].findIndex((c: IComment) => c.id === comment.id);
+    comments[file.id] = [...comments[file.id].slice(0, index), ...comments[file.id].slice(index + 1)];
+    this.setState({ comments });
 
-    submission.files.find((f: IFile) => f.id === file.id).comments = [
-      ...commentsCopy.slice(0, index),
-      ...commentsCopy.slice(index + 1),
-    ];
-
-    this.setState({ submission });
-
-    // Add promise
-    fetch(`/api/comments/${comment.id}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-      method: 'DELETE',
-    }).then((res) => {
-      // Returning '204 No Content' on success
-      // Is that correct?
-      console.log('res', res);
-    });
-  };
-
-  public toggleFinalized = () => {
-    const { submission } = this.state;
-    if (!submission) {
-      return;
-    }
-
-    if (submission.isFinalized) {
-      return new Promise((resolve, reject) => {
-        fetch(`/api/submissions/${submission.id}/takeBack/`, {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-          },
-          method: 'PATCH',
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((json) => {
-            this.setState({
-              submission: json,
-            });
-            resolve(json);
-          });
-      });
-    }
-    return new Promise((resolve, reject) => {
-      fetch(`/api/submissions/${submission.id}/finalize/`, {
+    // Think about how to handle this case
+    // Options:
+    // - Leave as is. If the DELETE fails, it's not that big of a deal. Just annoying.
+    // - Keep comment rendered until DELETE completes
+    // - Remove comment render, add in a global page loading icon.
+    if (comment.id > 0) {
+      fetch(`/api/comments/${comment.id}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
         },
-        method: 'PATCH',
-      })
-        .then((res) => {
-          return res.json();
-        })
-        .then((json) => {
-          this.setState({
-            submission: json,
-          });
-          resolve(json);
-        });
+        method: 'DELETE',
+      }).then((res) => {
+        // Returns '204 No Content' on success
+        console.log('res', res);
+      });
+    }
+  };
+
+  public toggleFinalized = (): Promise<any> => {
+    const { submission } = this.state;
+    if (!submission) {
+      return Promise.resolve();
+    }
+
+    const payload = {
+      isFinalized: !submission.isFinalized,
+    };
+
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        submission: json,
+      });
+      return json;
     });
-  };
-
-  //////////////////////////////////////
-  // Helpers
-  //////////////////////////////////////
-
-  public loadSubmission = () => {
-    const subID = this.props.match.params.subID;
-
-    fetch(`/api/submissions/${subID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        if (json.detail === 'Not found.') {
-          this.setState({ submission: undefined, isLoading: false, email: json.email });
-        } else {
-          this.setState({ submission: json, isLoading: false, email: json.email });
-          this.loadRubric(json.assignment);
-        }
-      });
-  };
-
-  public loadRubric = (assignment: IAssignment) => {
-    fetch(`/api/assignments/${assignment.id}/rubric`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ rubric: json });
-      });
   };
 
   //////////////////////////////////////
@@ -235,10 +286,22 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
   };
 
   public render() {
-    const { activeCommentId, rubric, submission } = this.state;
-    const deductions: number[] = [];
+    const {
+      assignment,
+      activeCommentId,
+      files,
+      rubricCategories,
+      rubricComments,
+      submission,
+      comments,
+      isLoading,
+    } = this.state;
 
-    if (!submission || !rubric) {
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+
+    if (!submission || !assignment) {
       return <div>No Submission Found </div>;
     }
 
@@ -247,18 +310,24 @@ class Grade extends React.Component<{ match: { params: { subID: typeof Number } 
       <div>
         {this.renderRedirect()}
 
-        <Panel submission={submission} toggleFinalized={this.toggleFinalized} />
+        <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="container-main">
-          <Rubric rubric={rubric} handleRubricCommentClick={this.handleRubricCommentClick} />
+          <Rubric
+            rubricCategories={rubricCategories}
+            rubricComments={rubricComments}
+            handleRubricCommentClick={this.handleRubricCommentClick}
+          />
           <CodeGrader
-            deductions={deductions}
             submission={submission}
+            files={files}
+            comments={comments}
             readOnly={submission.isFinalized}
             addComment={this.addComment}
             activeCommentId={activeCommentId}
             changeActive={this.changeActiveComment}
             deleteComment={this.deleteComment}
             updateComment={this.updateComment}
+            getRubricComment={this.getRubricComment}
           />
         </div>
       </div>

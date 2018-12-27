@@ -9,10 +9,10 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment3, IGraderSubmissionsDataTable, ISubmission3 } from '../../types/common';
+import { IAssignment, IGraderSubmissionsDataTable, ISubmission } from '../../types/common';
 
 interface IPropsGraderOverview {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   submissionsByGrader: IGraderSubmissionsDataTable;
   activeGrader: string | undefined;
   changeActiveGrader: (grader: string | undefined) => void;
@@ -102,7 +102,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     }
   };
 
-  public renderSubmissionRow(submission: ISubmission3, assignmentID: number) {
+  public renderSubmissionRow(submission: ISubmission, assignmentID: number) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
@@ -128,7 +128,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
-    const headers = this.props.assignments.map((assignment: IAssignment3) => {
+    const headers = this.props.assignments.map((assignment: IAssignment) => {
       return assignment.name;
     });
     headers.unshift(this.graderHeader);
@@ -192,7 +192,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       const tablemap: any = [];
       Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
-        submissions.forEach((submission: ISubmission3) => {
+        submissions.forEach((submission: ISubmission) => {
           tablemap.push(this.renderSubmissionRow(submission, Number(assignmentID)));
         });
       });

@@ -9,10 +9,10 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment3, IStudentSubmissionsDataTable } from '../../types/common';
+import { IAssignment, IStudentSubmissionsDataTable } from '../../types/common';
 
 interface IPropsStudentOverview {
-  assignments: IAssignment3[];
+  assignments: IAssignment[];
   submissionsByStudent: IStudentSubmissionsDataTable;
   activeStudent: string | undefined;
   changeActiveStudent: (student: string | undefined) => void;
@@ -123,7 +123,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       changeActiveStudent,
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
-    const headers = assignments.map((assignment: IAssignment3) => {
+    const headers = assignments.map((assignment: IAssignment) => {
       return assignment.name;
     });
     headers.unshift(this.studentHeader);
@@ -185,26 +185,6 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         </div>
       );
     } else {
-      // const submissionRows: any = [];
-      // assignments.forEach((assignment) => {
-      //   const submission = submissionsByStudent[activeStudent][assignment.id];
-      //   if (submission) {
-      //     console.log(submission);
-      //     let grade = 'Not submitted';
-      //     if (submission && submission.isFinalized) {
-      //       grade = String(submission.grade);
-      //     } else if (submission) {
-      //       grade = 'Not graded';
-      //     }
-      //     submissionRows.push(
-      //       <TableRow key={assignment.id}
-      // onClick={openSubmission.bind(this.props, submission.id)}>
-      //         <TableColumn>{assignment.name}</TableColumn>
-      //         <TableColumn>{grade}</TableColumn>
-      //       </TableRow>,
-      //     );
-      //   }
-      // });
       return (
         <div>
           <hr />
