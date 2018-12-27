@@ -905,7 +905,12 @@ class Admin extends React.Component<{}, IAdminState> {
         this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
         return resolve(undefined);
       }
-      const payload = { name: categoryName, assignment: assignmentID, pointLimit };
+      const payload = {
+        name: categoryName,
+        assignment: assignmentID,
+        pointLimit,
+        rubricComments: [],
+      };
 
       fetch('/api/rubriccategories/', {
         headers: {
@@ -939,10 +944,18 @@ class Admin extends React.Component<{}, IAdminState> {
             rubricComments[json.id] = [];
             this.addToast(`New Rubric Category ${json.name} created`, undefined);
             this.setState({ assignments, rubricCategories, rubricComments }, () => {
+              // Reminder - need to change linter here for use
+              const promises: any[] = [];
               newComments.forEach((comment) => {
-                this.createRubricComment(assignmentID, json.id, comment.text, comment.pointDelta);
+                const result = this.createRubricComment(
+                  assignmentID,
+                  json.id,
+                  comment.text,
+                  comment.pointDelta,
+                );
+                promises.push(result);
               });
-              return resolve(json);
+              Promise.all(promises).then(() => resolve(json));
             });
           }
         });

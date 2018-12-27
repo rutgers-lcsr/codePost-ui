@@ -27,6 +27,11 @@ body {
   width: 100%;
 }
 
+.uploadErrorText {
+  color: red;
+  font-style: italic;
+}
+
 .progressCircle {
   @include react-md-progress-circular($primary-color);
 }
@@ -37,6 +42,9 @@ body {
 
 .padding {
   height: 50px;
+}
+.error-padding {
+  height: 10px;
 }
 
 .App-intro {
