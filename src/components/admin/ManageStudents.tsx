@@ -31,7 +31,7 @@ interface IProps {
 interface IState {
   newStudentField: string | undefined;
   changedSectionStudents: string[];
-  studentSortAscending: boolean;
+  sortAscending: boolean;
   searchTerm: string;
 }
 
@@ -39,7 +39,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
     changedSectionStudents: [],
-    studentSortAscending: true,
+    sortAscending: true,
     searchTerm: '',
   };
 
@@ -73,8 +73,8 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ newStudentField: value });
   };
 
-  public toggleStudentSort = () => {
-    this.setState({ studentSortAscending: !this.state.studentSortAscending });
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
   };
 
   public changeSearch = (value: string) => {
@@ -89,12 +89,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       sections,
       sectionsByStudent,
     } = this.props;
-    const {
-      newStudentField,
-      changedSectionStudents,
-      studentSortAscending,
-      searchTerm,
-    } = this.state;
+    const { newStudentField, changedSectionStudents, sortAscending, searchTerm } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -108,11 +103,10 @@ class ManageStudents extends React.Component<IProps, {}> {
     const studentType = UserEnum.Student;
 
     if (studentsLoadComplete && students) {
-      const sortedStudents = students;
-      if (studentSortAscending) {
-        sortedStudents.sort();
+      if (sortAscending) {
+        students.sort();
       } else {
-        sortedStudents.sort().reverse();
+        students.sort().reverse();
       }
       return (
         <div>
@@ -145,7 +139,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Student'} sorted={true} onClick={this.toggleStudentSort}>
+                <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>
                   Student
                 </TableColumn>
                 <TableColumn key={'Section'}>Section</TableColumn>

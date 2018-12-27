@@ -25,12 +25,14 @@ interface IProps {
 
 interface IState {
   newField: string | undefined;
+  sortAscending: boolean;
   searchTerm: string;
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newField: undefined,
+    sortAscending: true,
     searchTerm: '',
   };
 
@@ -48,13 +50,17 @@ class ManageGraders extends React.Component<IProps, {}> {
     this.setState({ newField: value });
   };
 
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
   public changeSearch = (value: string) => {
     this.setState({ searchTerm: value });
   };
 
   public render() {
     const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
-    const { newField, searchTerm } = this.state;
+    const { newField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
@@ -62,6 +68,11 @@ class ManageGraders extends React.Component<IProps, {}> {
     const graderType = UserEnum.Grader;
 
     if (gradersLoadComplete && graders) {
+      if (sortAscending) {
+        graders.sort();
+      } else {
+        graders.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -93,7 +104,9 @@ class ManageGraders extends React.Component<IProps, {}> {
           <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow>
-                <TableColumn key={'Grader'}>Grader name</TableColumn>
+                <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>
+                  Grader name
+                </TableColumn>
                 <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>

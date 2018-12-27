@@ -25,12 +25,14 @@ interface IProps {
 
 interface IState {
   newAdminField: string | undefined;
+  sortAscending: boolean;
   searchTerm: string;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newAdminField: undefined,
+    sortAscending: true,
     searchTerm: '',
   };
 
@@ -52,9 +54,13 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ searchTerm: value });
   };
 
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
   public render() {
     const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
-    const { newAdminField, searchTerm } = this.state;
+    const { newAdminField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
@@ -62,6 +68,11 @@ class ManageStudents extends React.Component<IProps, {}> {
     const adminType = UserEnum.CourseAdmin;
 
     if (adminsLoadComplete && admins) {
+      if (sortAscending) {
+        admins.sort();
+      } else {
+        admins.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -93,7 +104,9 @@ class ManageStudents extends React.Component<IProps, {}> {
           <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Admin'}>Admin name</TableColumn>
+                <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
+                  Admin name
+                </TableColumn>
                 <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>
