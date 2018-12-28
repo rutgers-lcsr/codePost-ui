@@ -134,8 +134,8 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
           if (comment.rubricComment) {
             return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
               this.setState({
-                rubricComments: {
-                  ...this.state.rubricComments,
+                commentRubricComments: {
+                  ...this.state.commentRubricComments,
                   [comment.id]: rubricComment,
                 },
               });
@@ -186,7 +186,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
   ///////////////////////////////////////
 
   public handleRubricCommentClick = (rubricComment: IRubricComment): void => {
-    const { activeCommentId, submission, files, comments } = this.state;
+    const { activeCommentId, submission, files, comments, commentRubricComments } = this.state;
 
     if (!submission || !activeCommentId) {
       return;
@@ -196,7 +196,8 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       const index = comments[file.id].findIndex((c: IComment) => c.id === activeCommentId);
       if (index !== -1) {
         comments[file.id][index].rubricComment = rubricComment.id;
-        this.setState({ comments });
+        commentRubricComments[comments[file.id][index].id] = rubricComment;
+        this.setState({ comments, commentRubricComments });
         break;
       }
     }
@@ -300,6 +301,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       isLoading,
     } = this.state;
 
+    console.log('rub', commentRubricComments);
     if (isLoading) {
       return <div>Loading...</div>;
     }
