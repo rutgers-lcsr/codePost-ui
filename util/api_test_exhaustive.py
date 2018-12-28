@@ -129,6 +129,7 @@ for course in courses:
   r = requests.post(BASE_URL+'courses/', data=payload, auth=(admin, PASSWORD))
   if r.status_code != CODE_CREATED:
     print("ERROR: Failed to create course")
+    print(r.status_code)
 
   created = r.json()
   course['id'] = created['id']
@@ -787,3 +788,14 @@ testMethods('comments/', users, expected_behavior_post,
   expected_behavior_patch, expected_behavior_get, comment, payload)
 
 print('')
+
+payload = {
+  'grader' : [],
+  'students' : [],
+}
+
+r = requests.patch(BASE_URL+'submissions/1/', data=payload, auth=('admin0@princeton.edu', PASSWORD))
+if r.status_code == 200:
+  print(r.json())
+else:
+  print(r.text)

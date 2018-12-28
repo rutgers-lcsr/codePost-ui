@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { BUTTON_STATE, ISubmission } from '../../types/common';
+import { BUTTON_STATE, ISubmission2 } from '../../types/common';
 
 import { FinalizeButton } from '../Buttons';
 
 interface IFinalizeProps {
-  submission: ISubmission;
+  submission: ISubmission2;
   toggleFinalized: any;
 }
 
@@ -25,7 +25,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     this.setState({ buttonState: BUTTON_STATE.Loading });
 
     const promise = toggleFinalized();
-    promise.then((submission: ISubmission) => {
+    promise.then((submission: ISubmission2) => {
       if (submission.isFinalized) {
         this.setState({ buttonState: BUTTON_STATE.Active });
       } else {
