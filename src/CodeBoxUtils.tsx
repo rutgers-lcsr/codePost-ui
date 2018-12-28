@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IComment } from './types/common';
+import { IComment, IRubricComment } from './types/common';
 
 const PIXELS_PER_LINE = 19;
 
@@ -8,9 +8,13 @@ export default class CodeBoxUtils {
     return PIXELS_PER_LINE;
   };
 
-  public static heightOfComment = (comment: IComment, getRubricCommentText: any, activeCommentId?: number): number => {
+  public static heightOfComment = (
+    comment: IComment,
+    rubricComment: IRubricComment | undefined,
+    activeCommentId?: number,
+  ): number => {
     const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
-    const linesRubricComment = comment.rubricComment ? getRubricCommentText(comment.rubricComment).length / 30 + 1 : 0;
+    const linesRubricComment = rubricComment ? rubricComment.text.length / 30 + 1 : 0;
     const linesComment = comment.text.length / 36;
     const linesButtons = activeCommentId === comment.id ? 4 : 0;
     const buffer = 6;

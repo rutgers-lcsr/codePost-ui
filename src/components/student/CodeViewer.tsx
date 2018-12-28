@@ -8,14 +8,23 @@ import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-import { IAssignment, IComment, ICSSStyleObject, IFile, IFileToCommentsMap, ISubmission } from '../../types/common';
+import {
+  IAssignment,
+  IComment,
+  ICommentToRubricCommentMap,
+  ICSSStyleObject,
+  IFile,
+  IFileToCommentsMap,
+  IRubricComment,
+  ISubmission,
+} from '../../types/common';
 
 interface IProps {
   submission: ISubmission;
   assignment: IAssignment;
   files: IFile[];
   comments: IFileToCommentsMap;
-  getRubricCommentText: (commentID: number) => string;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
@@ -37,7 +46,7 @@ class CodeViewer extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { assignment, submission, files, comments, getRubricCommentText } = this.props;
+    const { assignment, submission, files, comments, rubricComments } = this.props;
     // content-box
     return (
       <div className="container-code-viewer">
@@ -58,7 +67,7 @@ class CodeViewer extends React.Component<IProps, {}> {
               <TabPanel key={i}>
                 <div className="panel-box">
                   <CodeBox file={file} comments={comments[file.id]} />
-                  <CommentBox comments={comments[file.id]} getRubricCommentText={getRubricCommentText} />
+                  <CommentList comments={comments[file.id]} rubricComments={rubricComments} />
                 </div>
               </TabPanel>
             );
@@ -99,18 +108,9 @@ const CodeBox = (props: ICodeBoxProps) => {
   );
 };
 
-interface ICommentBoxProps {
-  comments: IComment[];
-  getRubricCommentText: (commentID: number) => string;
-}
-
-const CommentBox = (props: ICommentBoxProps) => {
-  return <CommentList comments={props.comments} getRubricCommentText={props.getRubricCommentText} />;
-};
-
 interface ICommentListProps {
   comments: IComment[];
-  getRubricCommentText: (commentID: number) => string;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 interface IBlock {
@@ -119,8 +119,7 @@ interface IBlock {
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const { getRubricCommentText } = props;
-
+  const { rubricComments } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const blocks: IBlock[] = [];
 
@@ -145,7 +144,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, getRubricCommentText, undefined);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, rubricComments[comment.id], undefined);
     const newBlock: IBlock = {
       startAt,
       endAt: startAt + heightOfComment,
@@ -160,7 +159,9 @@ const CommentList = (props: ICommentListProps) => {
       top: `${startAt}px`,
     };
 
-    return <Comment key={comment.id} comment={comment} style={style} />;
+    return (
+      <Comment key={comment.id} comment={comment} rubricComment={props.rubricComments[comment.id]} style={style} />
+    );
   });
 
   return <div className="comment-box">{commentNodes}</div>;
@@ -169,11 +170,12 @@ const CommentList = (props: ICommentListProps) => {
 interface ICommentProps {
   key: number;
   comment: IComment;
+  rubricComment: IRubricComment | undefined;
   style: ICSSStyleObject;
 }
 
 const Comment = (props: ICommentProps) => {
-  const { comment, style } = props;
+  const { comment, rubricComment, style } = props;
 
   const onMouseEnter = (id: string, event: any) => {
     const elems = document.getElementsByClassName(id);
@@ -204,7 +206,7 @@ const Comment = (props: ICommentProps) => {
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}
         {/*// should make slug related rubricComment slug related on text*/}
-        {comment.rubricComment ? <div className="comment-rubric">{comment.rubricComment}</div> : null}
+        {rubricComment ? <div className="comment-rubric">{rubricComment.text}</div> : null}
         <div className="comment-text">{comment.text}</div>
       </CardText>
     </Card>

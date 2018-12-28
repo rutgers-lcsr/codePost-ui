@@ -171,15 +171,6 @@ class Student extends React.Component<{}, IStudentState> {
   // Handlers
   ///////////////////////////////////////
 
-  public getRubricCommentText = (commentID: number): string => {
-    const { rubricComments } = this.state;
-
-    if (rubricComments[commentID]) {
-      return rubricComments[commentID].text;
-    }
-    return '';
-  };
-
   public handleAssignmentChange = (option: IOption, event: any) => {
     const { assignments, currentCourse } = this.state;
 
@@ -260,7 +251,16 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission, isLoading, files, comments } = this.state;
+    const {
+      courses,
+      currentAssignment,
+      currentCourse,
+      currentSubmission,
+      isLoading,
+      files,
+      comments,
+      rubricComments,
+    } = this.state;
     console.log(this.state.rubricComments);
     return (
       <div>
@@ -280,7 +280,7 @@ class Student extends React.Component<{}, IStudentState> {
             submission={currentSubmission}
             files={files}
             comments={comments}
-            getRubricCommentText={this.getRubricCommentText}
+            rubricComments={rubricComments}
           />
         </div>
       </div>
@@ -293,11 +293,11 @@ interface IContentAreaProps {
   submission?: ISubmission;
   files: IFile[];
   comments: IFileToCommentsMap;
-  getRubricCommentText: (commentID: number) => string;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 const ContentArea = (props: IContentAreaProps) => {
-  const { assignment, submission, files, comments, getRubricCommentText } = props;
+  const { assignment, submission, files, comments, rubricComments } = props;
 
   if (submission && assignment) {
     return (
@@ -306,7 +306,7 @@ const ContentArea = (props: IContentAreaProps) => {
         assignment={assignment!}
         files={files}
         comments={comments}
-        getRubricCommentText={getRubricCommentText}
+        rubricComments={rubricComments}
       />
     );
   }

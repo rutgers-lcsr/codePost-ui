@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { Button, Card, CardText, Chip, TextField } from 'react-md';
 
-import { IComment, ICSSStyleObject, IFile } from '../../types/common';
+import { IComment, ICSSStyleObject, IFile, IRubricComment } from '../../types/common';
 
 interface IProps {
   readOnly: boolean;
   file: IFile;
   key: number;
   comment: IComment;
+  rubricComment: IRubricComment | undefined;
   style: ICSSStyleObject;
   active: boolean;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
-  getRubricCommentText: (rubricCommentID: number) => string;
 }
 
 interface IState {
@@ -183,7 +183,7 @@ class EditableComment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { active, comment, file, deleteComment, readOnly, style, getRubricCommentText } = this.props;
+    const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
     const pointDeltaLabel = `-${comment.pointDelta}`;
@@ -200,8 +200,8 @@ class EditableComment extends React.Component<IProps, IState> {
 
     // Ugly for type checking
     let rubricCommentText = 'no standard';
-    if (comment.rubricComment) {
-      rubricCommentText = getRubricCommentText(comment.rubricComment);
+    if (rubricComment) {
+      rubricCommentText = rubricComment.text;
     }
     // Non-editable comment
     if (readOnly) {

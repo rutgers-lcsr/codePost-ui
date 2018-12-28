@@ -12,6 +12,7 @@ import APIUtils from './APIUtils';
 import {
   IAssignment,
   IComment,
+  ICommentToRubricCommentMap,
   IFile,
   IFileToCommentsMap,
   IRubricCategory,
@@ -33,12 +34,14 @@ interface IGradeState {
 
   files: IFile[];
   comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
 }
 
 class Grade extends React.Component<{ match: { params: { submissionId: typeof Number } } }, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
+    commentRubricComments: {},
     comments: {},
     email: '',
     files: [],
@@ -128,6 +131,17 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
               [file.id]: comments,
             },
           });
+          if (comment.rubricComment) {
+            return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
+              this.setState({
+                rubricComments: {
+                  ...this.state.rubricComments,
+                  [comment.id]: rubricComment,
+                },
+              });
+            });
+          }
+          return;
         });
       }),
     );
@@ -186,18 +200,6 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
         break;
       }
     }
-  };
-
-  public getRubricCommentText = (rubricCommentID: number): string => {
-    const { rubricComments } = this.state;
-
-    for (const rubricCategoryID of Object.keys(rubricComments)) {
-      const rubricComment = rubricComments[rubricCategoryID].find((rc: IRubricComment) => rc.id === rubricCommentID);
-      if (rubricComment) {
-        return rubricComment.text;
-      }
-    }
-    return '';
   };
 
   public changeActiveComment = (id: number | undefined): void => {
@@ -289,6 +291,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     const {
       assignment,
       activeCommentId,
+      commentRubricComments,
       files,
       rubricCategories,
       rubricComments,
@@ -321,13 +324,13 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             submission={submission}
             files={files}
             comments={comments}
+            rubricComments={commentRubricComments}
             readOnly={submission.isFinalized}
             addComment={this.addComment}
             activeCommentId={activeCommentId}
             changeActive={this.changeActiveComment}
             deleteComment={this.deleteComment}
             updateComment={this.updateComment}
-            getRubricCommentText={this.getRubricCommentText}
           />
         </div>
       </div>
