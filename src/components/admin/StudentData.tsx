@@ -142,7 +142,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           />
           <DataTable plain={true}>
             <TableHeader>
-              <TableRow>
+              <TableRow key={'index'}>
                 {headers.map((header) => {
                   return (
                     <TableColumn
@@ -166,15 +166,15 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                     key={studentEmail}
                     onClick={changeActiveStudent.bind(this.props, studentEmail)}
                   >
-                    <TableColumn>{studentEmail}</TableColumn>
+                    <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
                     {this.props.assignments.map((assignment) => {
                       const submission = submissionsByStudent[studentEmail][assignment.id];
                       if (submission && submission.isFinalized) {
-                        return <TableColumn>{submission.grade}</TableColumn>;
+                        return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
                       } else if (submission) {
-                        return <TableColumn>Not graded</TableColumn>;
+                        return <TableColumn key={assignment.name}>Not graded</TableColumn>;
                       } else {
-                        return <TableColumn>Not submitted</TableColumn>;
+                        return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
                       }
                     })}
                   </TableRow>
@@ -202,8 +202,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           <DataTable plain={true}>
             <TableHeader>
               <TableRow>
-                <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
-                <TableColumn key={'Grade'}>{'Grade'}</TableColumn>
+                <TableColumn>{'Assignment'}</TableColumn>
+                <TableColumn>{'Grade'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -217,7 +217,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                 }
                 return (
                   <TableRow
-                    key={submission.id}
+                    key={submission.id.toString()}
                     onClick={openSubmission.bind(this.props, submission.id)}
                   >
                     <TableColumn>
