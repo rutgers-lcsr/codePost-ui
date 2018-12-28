@@ -31,6 +31,7 @@ assignments.append(markovs2019)
 james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com', password="rootabega")
 richard = User.objects.create(username='rjfreling@gmail.com', email='rjfreling@gmail.com', password="rootabega")
 vinay = User.objects.create(username='vayyala@gmail.com', email='vayyala@gmail.com', password="rootabega")
+vinay.profile.organization = princeton
 james.set_password("rootabega")
 richard.set_password("rootabega")
 vinay.set_password("rootabega")
@@ -119,19 +120,20 @@ for i in range(0, 5):
   tmpUser.save()
   cos126s2019.save()
   for assn in assignments:
-    sub = Submission.objects.create(assignment=assn)
-    sub.students.add(tmpUser)
-    tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
-    Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
-    sub.isFinalized = True
-    sub.grade = random.randint(0,20)
-    if (i % 2 == 0):
-        sub.grader = richard
-        section1.students.add(tmpUser)
-        section1.save()
-    else:
-        sub.grader = vinay
-    sub.save()
+      sub = Submission.objects.create(assignment=assn)
+      sub.students.add(tmpUser)
+      code = "System.out.println('hello world, my name is " + username + "!')"
+      tmpFile = File.objects.create(name="hello.java", code=code, submission=sub, extension='java')
+      Comment.objects.create(text="good job, " + username, author=vinay, file=tmpFile, startChar=1, endChar=4, startLine=1, endLine=1)
+      sub.isFinalized = True
+      sub.grade = random.randint(0,20)
+      if (i % 3 == 0):
+          sub.grader = richard
+          section1.students.add(tmpUser)
+          section1.save()
+      else:
+          sub.grader = vinay
+      sub.save()
 
 for i in range(0, 2):
   name = "general"+str(i)

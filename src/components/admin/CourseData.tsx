@@ -78,7 +78,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       return (
         <div>
           <hr />
-          <TabsContainer onTabChange={this.onTabChange}>
+          <TabsContainer onTabChange={this.onTabChange} className="tabs">
             <Tabs tabId="simple-tab">
               <Tab label="Students" style={{ color: '#000000' }}>
                 <StudentData
