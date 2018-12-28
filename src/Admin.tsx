@@ -207,7 +207,7 @@ class Admin extends React.Component<{}, IAdminState> {
       this.setState(
         {
           currentCourse,
-          loadedPanel: 0,
+          loadedPanel: this.state.loadedPanel ? this.state.loadedPanel : 0,
 
           students: [],
           studentsLoadComplete: false,
