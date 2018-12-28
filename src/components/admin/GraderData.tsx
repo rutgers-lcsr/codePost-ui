@@ -102,7 +102,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     }
   };
 
-  public renderSubmissionRow(submission: ISubmission, assignmentID: number) {
+  public renderSubmissionRow(submission: ISubmission, assignmentName: string) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
@@ -113,7 +113,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn>{assignmentID}</TableColumn>
+        <TableColumn>{assignmentName}</TableColumn>
         <TableColumn>{submission.students.toString()}</TableColumn>
         <TableColumn>{grade}</TableColumn>
       </TableRow>
@@ -193,7 +193,8 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
         submissions.forEach((submission: ISubmission) => {
-          tablemap.push(this.renderSubmissionRow(submission, Number(assignmentID)));
+          const assnName = assignments.filter(assignment => assignment.id === parseInt(assignmentID, 10))[0].name;
+          tablemap.push(this.renderSubmissionRow(submission, assnName));
         });
       });
       return (

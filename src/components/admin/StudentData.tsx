@@ -209,7 +209,6 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
             <TableBody>
               {Object.keys(submissionsByStudent[activeStudent]).map((assignmentID) => {
                 const submission = submissionsByStudent[activeStudent][assignmentID];
-                console.log(submission);
                 let grade = 'Not submitted';
                 if (submission && submission.isFinalized) {
                   grade = String(submission.grade);
@@ -221,7 +220,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                     key={submission.id}
                     onClick={openSubmission.bind(this.props, submission.id)}
                   >
-                    <TableColumn>{assignmentID}</TableColumn>
+                    <TableColumn>
+                    { assignments.filter(assignment => assignment.id === parseInt(assignmentID, 10))[0].name }
+                    </TableColumn>
                     <TableColumn>{grade}</TableColumn>
                   </TableRow>
                 );
