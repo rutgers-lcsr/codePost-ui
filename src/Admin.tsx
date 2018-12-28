@@ -49,7 +49,7 @@ interface IAdminState {
   adminsLoadComplete: boolean;
   sections: ISection[];
 
-  // Reminer - need to get rid of ISectionNoStudents, it's ugly
+  // Reminder - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   sectionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
@@ -1462,6 +1462,12 @@ class Admin extends React.Component<{}, IAdminState> {
           />
         </div>
       );
+    } else if (!currentCourse) {
+      if (courses.length > 0) {
+        courseManagementPanel = (<div>Select a course to get started.</div>);
+      } else {
+        courseManagementPanel = (<div>Create a course to get started!</div>);
+      }
     }
 
     return (
