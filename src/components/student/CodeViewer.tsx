@@ -6,27 +6,33 @@ import '../../styles/Student.scss';
 
 import { Card, CardText, Chip } from 'react-md';
 
-import CodeUtils from '../CodeUtils';
+import CodeBoxUtils from '../../CodeBoxUtils';
 
-import { IAssignment, IComment, IFile, ISubmission } from '../../types/common';
+import { IAssignment, IComment, IFile2, ISubmission2 } from '../../types/common';
+
+interface IFileToCommentsMap {
+  [fileId: number]: IComment[];
+}
 
 interface IProps {
   deductions: number[];
-  submission: ISubmission;
+  submission: ISubmission2;
   assignment: IAssignment;
+  files: IFile2[];
+  comments: IFileToCommentsMap;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
   public render() {
-    const { assignment, deductions, submission } = this.props;
+    const { assignment, deductions, submission, files, comments } = this.props;
     // content-box
     return (
       <div className="container-code-viewer">
         <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
-            {submission.files.map((file: IFile, i: number) => {
-              const tabTitle = this.getTabTitle(file.name, deductions[i], file.comments.length);
+            {files.map((file: IFile2, i: number) => {
+              const tabTitle = this.getTabTitle(file.name, deductions[i], comments[file.id].length);
               return (
                 <Tab id="{i}" key={i}>
                   {tabTitle}
@@ -34,12 +40,12 @@ class CodeViewer extends React.Component<IProps, {}> {
               );
             })}
           </TabList>
-          {submission.files.map((file: IFile, i: number) => {
+          {files.map((file: IFile2, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
-                  <CodeBox file={file} />
-                  <CommentBox comments={file.comments} />
+                  <CodeBox file={file} comments={comments[file.id]} />
+                  <CommentBox comments={comments[file.id]} />
                 </div>
               </TabPanel>
             );
@@ -64,15 +70,16 @@ class CodeViewer extends React.Component<IProps, {}> {
 }
 
 interface ICodeBoxProps {
-  file: IFile;
+  file: IFile2;
+  comments: IComment[];
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
-  const sortedHighlights = CodeUtils.sortHighlights(props.file.comments);
+  const sortedHighlights = CodeBoxUtils.sortHighlights(props.comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = splitCode.map((item: any, i: number) => {
-    return <div key={i}> {CodeUtils.highlightText(sortedHighlights, item, i)} </div>;
+    return <div key={i}> {CodeBoxUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
   const lineNumbers = splitCode.map((item: any, i: number) => {
@@ -119,7 +126,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodeUtils.pixelsPerLine(); // Each line is 15px
+    let startAt = comment.startLine * CodeBoxUtils.pixelsPerLine(); // Each line is 15px
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -130,7 +137,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeUtils.heightOfComment(comment, undefined);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, undefined);
     const newBlock = [startAt, startAt + heightOfComment];
     ranges.push(newBlock);
 
@@ -180,8 +187,8 @@ const Comment = (props: ICommentProps) => {
     <Card
       className="comment"
       style={style}
-      onMouseEnter={onMouseEnter.bind(props, comment.localId.toString())}
-      onMouseLeave={onMouseLeave.bind(props, comment.localId.toString())}
+      onMouseEnter={onMouseEnter.bind(props, comment.id.toString())}
+      onMouseLeave={onMouseLeave.bind(props, comment.id.toString())}
     >
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}
