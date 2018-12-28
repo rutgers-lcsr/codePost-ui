@@ -10,73 +10,69 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, UserEnum } from '../../types/common';
+import { ICourse, USER_APP } from '../../types/common';
 
 interface IProps {
   admins: string[];
   adminsLoadComplete: boolean;
   lockedAdminChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
 }
 
 interface IState {
   newAdminField: string | undefined;
-  selectedAdmins: string[];
+  sortAscending: boolean;
+  searchTerm: string;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newAdminField: undefined,
-    selectedAdmins: [],
+    sortAscending: true,
+    searchTerm: '',
   };
 
-  public triggerUnEnrollAdmins = () => {
-    const { selectedAdmins } = this.state;
+  public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     const { unEnrollUsers } = this.props;
-
-    const adminType = UserEnum.CourseAdmin;
-
-    if (selectedAdmins) {
-      unEnrollUsers(selectedAdmins, adminType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedAdmins: [] });
-    }
+    unEnrollUsers([newUserEmail], userType);
   };
 
-  public rowSelect = (adminEmail: string, rowID: number, checked: boolean) => {
-    const { selectedAdmins } = this.state;
-    if (checked) {
-      selectedAdmins.push(adminEmail);
-      this.setState({ selectedAdmins });
-      // Reminder: We should throw an error if the numSelected is different than
-      // our array at any point
-    } else {
-      const newSelectedAdmins = selectedAdmins.filter((value) => {
-        return value !== adminEmail;
-      });
-      this.setState({ selectedAdmins: newSelectedAdmins });
-    }
+  public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
+    this.props.enrollUser(newUserEmail, userType);
+    this.setState({ newAdminField: '' });
   };
 
   public newAdminFieldOnChange = (value: string) => {
     this.setState({ newAdminField: value });
   };
 
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
   public render() {
-    const { adminsLoadComplete, lockedAdminChange, enrollUser, admins } = this.props;
-    const { newAdminField, selectedAdmins } = this.state;
+    const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
+    const { newAdminField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
 
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
-    const adminType = UserEnum.CourseAdmin;
+    const adminType = USER_APP.CourseAdmin;
 
     if (adminsLoadComplete && admins) {
+      if (sortAscending) {
+        admins.sort();
+      } else {
+        admins.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -93,31 +89,48 @@ class ManageStudents extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewAdminButton || lockedAdminChange}
-            onClick={enrollUser.bind(this.props, newAdminField, adminType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newAdminField, adminType)}
           >
             Save new admin
           </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedAdminChange || selectedAdmins.length === 0}
-            onClick={this.triggerUnEnrollAdmins}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
+          <TextField
+            id="search-manageAdmins"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
-                <TableColumn key={'Admin'}>Admin name</TableColumn>
+                <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
+                  Admin name
+                </TableColumn>
+                <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
               {admins.map((admin) => {
+                if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
                 return (
-                  <TableRow key={admin} onCheckboxClick={this.rowSelect.bind(this.props, admin)}>
+                  <TableRow key={admin}>
                     <TableColumn>{admin}</TableColumn>
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedAdminChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, admin, adminType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}

@@ -1,11 +1,10 @@
-@import "globals";
-$material-icons-font-path: "~material-icons/iconfont/";
+@import 'globals';
+$material-icons-font-path: '~material-icons/iconfont/';
 
 $primary-color: #2ecd70;
 $md-primary-color: #2ecd70;
 $md-secondary-color: #ffcdd2;
-
-@import "~material-icons/iconfont/material-icons.scss";
+@import '~material-icons/iconfont/material-icons.scss';
 @include react-md-everything;
 @include react-md-theme-everything($primary-color, $md-secondary-color);
 
@@ -24,8 +23,32 @@ body {
   font-family: $primary-font;
 }
 
+.AdminApp {
+  display: flex;
+  width: 100%;
+
+  .panel {
+    width: 240px;
+    float: left;
+  }
+
+  .content {
+    margin-left: 50px;
+    flex: 1;
+  }
+
+  .tabs {
+    width: 1400px;
+  }
+}
+
 .App {
   width: 100%;
+}
+
+.uploadErrorText {
+  color: red;
+  font-style: italic;
 }
 
 .progressCircle {
@@ -38,6 +61,9 @@ body {
 
 .padding {
   height: 50px;
+}
+.error-padding {
+  height: 10px;
 }
 
 .App-intro {

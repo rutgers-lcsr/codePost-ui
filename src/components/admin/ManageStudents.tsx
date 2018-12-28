@@ -12,98 +12,84 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, ISection3, ISectionNoStudents, UserEnum } from '../../types/common';
+import { ICourse, ISection, ISectionNoStudents, USER_APP } from '../../types/common';
 
 interface IProps {
-  sections: ISection3[];
+  sections: ISection[];
   students: string[];
   studentsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  addStudentToSection: (sectionID: number, studentEmail: string) => void;
+  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<{}>;
 }
 
 interface IState {
   newStudentField: string | undefined;
-  selectedStudents: string[];
-  changedSections: { [studentEmail: string]: number };
+  changedSectionStudents: string[];
+  sortAscending: boolean;
+  searchTerm: string;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
-    selectedStudents: [],
-    changedSections: {},
+    changedSectionStudents: [],
+    sortAscending: true,
+    searchTerm: '',
   };
 
-  public triggerUnEnrollStudents = () => {
-    const { selectedStudents } = this.state;
+  public triggerUnEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
     const { unEnrollUsers } = this.props;
 
-    const studentType = UserEnum.Student;
-
-    if (selectedStudents) {
-      unEnrollUsers(selectedStudents, studentType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedStudents: [] });
-    }
+    unEnrollUsers([newStudentEmail], studentType);
   };
 
-  public triggerAddStudentsToSections = () => {
-    // Reminder --- calling this for multiple students triggers
-    // alock in the database... need to fix
-    const { changedSections } = this.state;
-    const { addStudentToSection } = this.props;
-
-    Object.keys(changedSections).forEach((studentEmail) => {
-      const sectionID = changedSections[studentEmail];
-      addStudentToSection(Number(sectionID), studentEmail);
-    });
-
-    this.setState({ changedSections: {} });
+  public triggerEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
+    this.props.enrollUser(newStudentEmail, studentType);
+    this.setState({ newStudentField: '' });
   };
 
   public rowSectionChange = (studentEmail: string, value: number) => {
-    const { changedSections } = this.state;
-    changedSections[studentEmail] = value;
-    this.setState({ changedSections });
-  };
+    let { changedSectionStudents } = this.state;
+    const { addStudentToSection } = this.props;
 
-  public rowSelect = (studentID: string, rowID: number, checked: boolean) => {
-    const { selectedStudents } = this.state;
-    if (checked) {
-      selectedStudents.push(studentID);
-      this.setState({ selectedStudents });
-      // Reminder: We should throw an error if the numSelected is
-      // different than our array at any point
-    } else {
-      const newSelectedStudents = selectedStudents.filter((value) => {
-        return value !== studentID;
+    changedSectionStudents.push(studentEmail);
+    this.setState({ changedSectionStudents });
+
+    addStudentToSection(value, studentEmail).then(() => {
+      changedSectionStudents = changedSectionStudents.filter((i) => {
+        return i !== studentEmail;
       });
-      this.setState({ selectedStudents: newSelectedStudents });
-    }
+      this.setState({ changedSectionStudents });
+    });
   };
 
   public newStudentFieldOnChange = (value: string) => {
     this.setState({ newStudentField: value });
   };
 
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
     const {
       studentsLoadComplete,
       lockedStudentChange,
-      enrollUser,
       students,
       sections,
       sectionsByStudent,
     } = this.props;
-    const { newStudentField, selectedStudents, changedSections } = this.state;
+    const { newStudentField, changedSectionStudents, sortAscending, searchTerm } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
 
@@ -114,9 +100,14 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
 
     const iconChanged = <FontIcon>track_changes</FontIcon>;
-    const studentType = UserEnum.Student;
+    const studentType = USER_APP.Student;
 
     if (studentsLoadComplete && students) {
+      if (sortAscending) {
+        students.sort();
+      } else {
+        students.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -133,63 +124,74 @@ class ManageStudents extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewStudentButton || lockedStudentChange}
-            onClick={enrollUser.bind(this.props, newStudentField, studentType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
           >
             Save new student
           </Button>
-          <Button
-            iconChildren="done"
-            className="save-Btn"
-            disabled={lockedStudentChange || Object.keys(changedSections).length === 0}
-            onClick={this.triggerAddStudentsToSections}
-          >
-            Save sections
-          </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedStudentChange || selectedStudents.length === 0}
-            onClick={this.triggerUnEnrollStudents}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Enroll-students-table" baseId="Enroll-students-table">
+          <TextField
+            id="search-manageStudents"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
+          <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
-                <TableColumn key={'Student'}>Student</TableColumn>
+                <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>
+                  Student
+                </TableColumn>
                 <TableColumn key={'Section'}>Section</TableColumn>
+                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
               {students.map((student) => {
                 const section = sectionsByStudent[student];
+                const sectionID = section ? section.id : '';
+                const sectionName = section ? section.name : '';
 
-                let sectionID = section ? section.id : '';
+                if (
+                  student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
+                  sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
+                ) {
+                  return <div />;
+                }
 
                 let dropDown;
+                let sectionDisable = false;
 
-                if (student in changedSections) {
-                  sectionID = changedSections[student];
+                if (changedSectionStudents.indexOf(student) !== -1) {
                   dropDown = iconChanged;
+                  sectionDisable = true;
                 } else {
                   dropDown = undefined;
                 }
 
                 return (
-                  <TableRow
-                    key={student}
-                    onCheckboxClick={this.rowSelect.bind(this.props, student)}
-                  >
+                  <TableRow key={student}>
                     <TableColumn>{student}</TableColumn>
                     <SelectFieldColumn
                       dropdownIcon={dropDown}
                       value={sectionID}
                       menuItems={sectionMenuItems}
-                      disabled={lockedStudentChange}
+                      disabled={lockedStudentChange || sectionDisable}
                       onChange={this.rowSectionChange.bind(this.props, student)}
                     />
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedStudentChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}

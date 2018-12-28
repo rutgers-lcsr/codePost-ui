@@ -10,73 +10,69 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse3, UserEnum } from '../../types/common';
+import { ICourse, USER_APP } from '../../types/common';
 
 interface IProps {
   graders: string[];
   gradersLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse3 | undefined;
+  currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: UserEnum) => void;
-  unEnrollUsers: (emails: string[], type: UserEnum) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => void;
 }
 
 interface IState {
   newField: string | undefined;
-  selectedUsers: string[];
+  sortAscending: boolean;
+  searchTerm: string;
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newField: undefined,
-    selectedUsers: [],
+    sortAscending: true,
+    searchTerm: '',
   };
 
-  public triggerUnEnrollUsers = () => {
-    const { selectedUsers } = this.state;
+  public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     const { unEnrollUsers } = this.props;
-
-    const graderType = UserEnum.Grader;
-
-    if (selectedUsers) {
-      unEnrollUsers(selectedUsers, graderType);
-      // Reminder to fix: Potentially could create problems if parent fails
-      // to delete one of the selected ids and it looks selected but no longer is on the backend
-      this.setState({ selectedUsers: [] });
-    }
+    unEnrollUsers([newUserEmail], userType);
   };
 
-  public rowSelect = (graderEmail: string, rowID: number, checked: boolean) => {
-    const { selectedUsers } = this.state;
-    if (checked) {
-      selectedUsers.push(graderEmail);
-      this.setState({ selectedUsers });
-      // Reminder: We should throw an error if the numSelected is different
-      // than our array at any point
-    } else {
-      const newSelectedUsers = selectedUsers.filter((value) => {
-        return value !== graderEmail;
-      });
-      this.setState({ selectedUsers: newSelectedUsers });
-    }
+  public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
+    this.props.enrollUser(newUserEmail, userType);
+    this.setState({ newField: '' });
   };
 
   public newFieldOnChange = (value: string) => {
     this.setState({ newField: value });
   };
 
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
   public render() {
-    const { gradersLoadComplete, lockedGraderChange, enrollUser, graders } = this.props;
-    const { newField, selectedUsers } = this.state;
+    const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
+    const { newField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
 
     const showSaveNewButton = newField && newField.includes('@');
-    const graderType = UserEnum.Grader;
+    const graderType = USER_APP.Grader;
 
     if (gradersLoadComplete && graders) {
+      if (sortAscending) {
+        graders.sort();
+      } else {
+        graders.sort().reverse();
+      }
       return (
         <div>
           <TextField
@@ -93,31 +89,48 @@ class ManageGraders extends React.Component<IProps, {}> {
             iconChildren="done"
             className="save-Btn"
             disabled={!showSaveNewButton || lockedGraderChange}
-            onClick={enrollUser.bind(this.props, newField, graderType)}
+            onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
           >
             Save new grader
           </Button>
-          <Button
-            iconChildren="delete"
-            className="delete-Btn"
-            disabled={lockedGraderChange || selectedUsers.length === 0}
-            onClick={this.triggerUnEnrollUsers}
-          >
-            Unenroll selected
-          </Button>
           <hr />
-          <DataTable className="Manage-admins-table" baseId="Manage-admins-table">
+          <TextField
+            id="search-manageGraders"
+            label="Search"
+            lineDirection="center"
+            className="md-cell md-cell--bottom"
+            onChange={this.changeSearch}
+          />
+          <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
             <TableHeader>
-              <TableRow selectable={false}>
-                <TableColumn key={'Filler'} />
-                <TableColumn key={'Grader'}>Grader name</TableColumn>
+              <TableRow>
+                <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>
+                  Grader name
+                </TableColumn>
+                <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
               {graders.map((grader) => {
+                if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+                  return <div />;
+                }
                 return (
-                  <TableRow key={grader} onCheckboxClick={this.rowSelect.bind(this.props, grader)}>
+                  <TableRow key={grader}>
                     <TableColumn>{grader}</TableColumn>
+                    <TableColumn key={'UnEnroll'}>
+                      {' '}
+                      <Button
+                        key="unEnroll"
+                        className="Btn"
+                        flat={true}
+                        icon={true}
+                        disabled={lockedGraderChange}
+                        onClick={this.triggerUnEnrollUser.bind(this.props, grader, graderType)}
+                      >
+                        cancel
+                      </Button>
+                    </TableColumn>
                   </TableRow>
                 );
               })}

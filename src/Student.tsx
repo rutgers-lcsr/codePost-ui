@@ -6,27 +6,31 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Student.scss';
 
-import { IAssignment, IComment, ICourse2, IFile2, IOption, ISubmission2 } from './types/common';
+import {
+  IAssignment,
+  IComment,
+  ICommentToRubricCommentMap,
+  ICourse,
+  ICourseToAssignmentMap,
+  IFile,
+  IFileToCommentsMap,
+  IOption,
+  ISubmission,
+  USER_APP,
+} from './types/common';
 
 import APIUtils from './APIUtils';
 
-interface ICourseToAssignmentMap {
-  [courseId: number]: IAssignment[];
-}
-
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
-
 interface IStudentState {
-  courses: ICourse2[];
+  courses: ICourse[];
   assignments: ICourseToAssignmentMap;
-  files: IFile2[];
+  files: IFile[];
   comments: IFileToCommentsMap;
+  rubricComments: ICommentToRubricCommentMap;
 
-  currentCourse?: ICourse2;
+  currentCourse?: ICourse;
   currentAssignment?: IAssignment;
-  currentSubmission?: ISubmission2;
+  currentSubmission?: ISubmission;
 
   email: string;
   isLoading: boolean;
@@ -49,6 +53,7 @@ class Student extends React.Component<{}, IStudentState> {
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
+    rubricComments: {},
   };
 
   public componentDidMount() {
@@ -72,17 +77,17 @@ class Student extends React.Component<{}, IStudentState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return this.fetchCourses().then((courses) => {
-      this.setState({ courses });
+    return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
+      this.setState({ email, courses });
       return Promise.all(
-        courses.map((course: ICourse2) => {
+        courses.map((course: ICourse) => {
           return this.loadAssignments(course);
         }),
       );
     });
   };
 
-  public loadAssignments = (course: ICourse2) => {
+  public loadAssignments = (course: ICourse) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
         return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
@@ -107,7 +112,7 @@ class Student extends React.Component<{}, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return this.fetchSubmission(assignment.id).then((currentSubmission) => {
+    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Student, this.state.email).then((currentSubmission) => {
       return this.loadFiles(currentSubmission).then(() => {
         console.log('3 - saving submission: ', currentSubmission);
         this.setState({ currentSubmission });
@@ -115,10 +120,16 @@ class Student extends React.Component<{}, IStudentState> {
     });
   };
 
-  public loadFiles = (submission: ISubmission2) => {
+  public loadFiles = (submission: ISubmission) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return APIUtils.fetchFile(fileId).then((file: IFile2) => {
+        return APIUtils.fetchFile(fileId).then((file: IFile) => {
+          this.setState({
+            comments: {
+              ...this.state.comments,
+              [file.id]: [],
+            },
+          });
           return this.loadComments(file).then(() => {
             console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
@@ -128,63 +139,32 @@ class Student extends React.Component<{}, IStudentState> {
     );
   };
 
-  public loadComments = (file: IFile2) => {
+  public loadComments = (file: IFile) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
           console.log('1 - saving comment:', comment);
-          let comments = [comment];
-          if (this.state.comments[file.id]) {
-            comments = [...this.state.comments[file.id], comment];
-          }
+          const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
               ...this.state.comments,
               [file.id]: comments,
             },
           });
+          if (comment.rubricComment) {
+            return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
+              this.setState({
+                rubricComments: {
+                  ...this.state.rubricComments,
+                  [comment.id]: rubricComment,
+                },
+              });
+            });
+          }
+          return;
         });
       }),
     );
-  };
-
-  ///////////////////////////////////////
-  // Fetch requests
-  ///////////////////////////////////////
-
-  public fetchCourses = () => {
-    return fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ email: json.email });
-        const studentCourses = 'studentCourses';
-        return json[studentCourses];
-      });
-  };
-
-  public fetchSubmission = (id: string | number) => {
-    return fetch(`/api/assignments/${id}/submissions/?student=${this.state.email}`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        if (json.length > 0 && json[0].isFinalized) {
-          return json[0];
-        }
-        // should not happen, should be an error
-        // right now just avoiding the null check in loadSubmissions
-        return json[0];
-      });
   };
 
   ///////////////////////////////////////
@@ -218,7 +198,7 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: ICourse2) => {
+    const currentCourse = this.state.courses.filter((obj: ICourse) => {
       return obj.id === option.value;
     })[0];
 
@@ -229,18 +209,18 @@ class Student extends React.Component<{}, IStudentState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse2[]) => {
+  public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({ value: course.id, label: course.name }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse2 | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
     return { value: currentCourse.id, label: currentCourse.name };
   };
 
-  public tabItemsFormatter = (currentCourse: ICourse2 | undefined) => {
+  public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
     const { assignments } = this.state;
     if (!currentCourse) {
       return [];
@@ -279,7 +259,9 @@ class Student extends React.Component<{}, IStudentState> {
       isLoading,
       files,
       comments,
+      rubricComments,
     } = this.state;
+
     return (
       <div>
         {this.renderRedirect()}
@@ -298,6 +280,7 @@ class Student extends React.Component<{}, IStudentState> {
             submission={currentSubmission}
             files={files}
             comments={comments}
+            rubricComments={rubricComments}
           />
         </div>
       </div>
@@ -307,50 +290,28 @@ class Student extends React.Component<{}, IStudentState> {
 
 interface IContentAreaProps {
   assignment?: IAssignment;
-  submission?: ISubmission2;
-  files: IFile2[];
+  submission?: ISubmission;
+  files: IFile[];
   comments: IFileToCommentsMap;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 const ContentArea = (props: IContentAreaProps) => {
-  const { assignment, submission, files, comments } = props;
-
-  const getDeductions = () => {
-    const deductions = [];
-    for (const fileId in comments) {
-      if (comments.hasOwnProperty(fileId)) {
-        let totalDeduction = 0;
-        for (const comment of comments[fileId]) {
-          // this is bullshit
-          // cleaning it up later
-          if (typeof comment.pointDelta === 'number') {
-            totalDeduction += comment.pointDelta ? comment.pointDelta : 0;
-          } else {
-            totalDeduction += comment.pointDelta ? parseInt(comment.pointDelta, 10) : 0;
-          }
-        }
-        deductions.push(totalDeduction);
-      }
-    }
-    return deductions;
-  };
+  const { assignment, submission, files, comments, rubricComments } = props;
 
   if (submission && assignment) {
-    const deductions = getDeductions();
     return (
       <CodeViewer
-        deductions={deductions}
         submission={submission!}
         assignment={assignment!}
         files={files}
         comments={comments}
+        rubricComments={rubricComments}
       />
     );
   }
   if (assignment) {
-    return (
-      <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>
-    );
+    return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
   }
   return <div className="container-code-viewer">Select an assignment on the left!</div>;
 };

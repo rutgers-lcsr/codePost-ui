@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
-import { BUTTON_STATE, IAssignment, ISubmission2 } from '../../types/common';
+import { BUTTON_STATE, IAssignment, ISubmission } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
 interface IProps {
   assignment?: IAssignment;
-  submissions: ISubmission2[];
+  submissions: ISubmission[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: IAssignment) => any;
-  releaseSubmission: (submission: ISubmission2) => any;
+  claimSubmission: (assignment: IAssignment) => Promise<ISubmission>;
+  releaseSubmission: (submission: ISubmission) => Promise<ISubmission>;
 }
 
 interface IState {
@@ -20,7 +20,7 @@ class GradedTab extends React.Component<IProps, {}> {
     buttonState: BUTTON_STATE.Active,
   };
 
-  public openGradePage = (submission: ISubmission2) => {
+  public openGradePage = (submission: ISubmission) => {
     window.open(`/grade/${submission.id}`);
     // window.open("/grade/" + subid, 'test',
     // 'width=' + screen.availWidth * 0.9 + ',
@@ -34,7 +34,7 @@ class GradedTab extends React.Component<IProps, {}> {
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment).then((claimedSubmission: ISubmission2) => {
+    this.props.claimSubmission(assignment).then((claimedSubmission: ISubmission) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
         console.log('No more submissions to claim');
@@ -45,8 +45,8 @@ class GradedTab extends React.Component<IProps, {}> {
     });
   };
 
-  public releaseSubmission = (submission: ISubmission2) => {
-    this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission2) => {
+  public releaseSubmission = (submission: ISubmission) => {
+    this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission) => {
       console.log('released', submission.id, releasedSubmission);
       this.setState({ buttonState: BUTTON_STATE.Active });
     });
@@ -69,10 +69,7 @@ class GradedTab extends React.Component<IProps, {}> {
     if (assignment && submissions.length > 0) {
       return (
         <div className="container-graded-tab">
-          <GetAnotherSubmissionButton
-            handleClick={this.getAnotherSubmission}
-            buttonState={buttonState}
-          />
+          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
           <DataTable plain={true}>
             <TableHeader>
               <TableRow>
@@ -89,9 +86,7 @@ class GradedTab extends React.Component<IProps, {}> {
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.students.join(',')}
                     </TableColumn>
-                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.grade}
-                    </TableColumn>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.dateFinalized}
                     </TableColumn>

@@ -8,31 +8,53 @@ import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-import { IAssignment, IComment, IFile2, ISubmission2 } from '../../types/common';
-
-interface IFileToCommentsMap {
-  [fileId: number]: IComment[];
-}
+import {
+  IAssignment,
+  IComment,
+  ICommentToRubricCommentMap,
+  ICSSStyleObject,
+  IFile,
+  IFileToCommentsMap,
+  IRubricComment,
+  ISubmission,
+} from '../../types/common';
 
 interface IProps {
-  deductions: number[];
-  submission: ISubmission2;
+  submission: ISubmission;
   assignment: IAssignment;
-  files: IFile2[];
+  files: IFile[];
   comments: IFileToCommentsMap;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
+  public getTabTitle = (file: IFile, comments: IComment[]) => {
+    const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
+      return accumulator + currentValue.pointDelta;
+    }, 0);
+    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+
+    const numComments = comments.length;
+    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+
+    return (
+      <div className="tab-title">
+        {commentFlag}
+        <div className="tab-title">{`${file.name} ${deductionString}`}</div>
+      </div>
+    );
+  };
+
   public render() {
-    const { assignment, deductions, submission, files, comments } = this.props;
+    const { assignment, submission, files, comments, rubricComments } = this.props;
     // content-box
     return (
       <div className="container-code-viewer">
         <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
-            {files.map((file: IFile2, i: number) => {
-              const tabTitle = this.getTabTitle(file.name, deductions[i], comments[file.id].length);
+            {files.map((file: IFile, i: number) => {
+              const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
                   {tabTitle}
@@ -40,12 +62,12 @@ class CodeViewer extends React.Component<IProps, {}> {
               );
             })}
           </TabList>
-          {files.map((file: IFile2, i: number) => {
+          {files.map((file: IFile, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
                   <CodeBox file={file} comments={comments[file.id]} />
-                  <CommentBox comments={comments[file.id]} />
+                  <CommentList comments={comments[file.id]} rubricComments={rubricComments} />
                 </div>
               </TabPanel>
             );
@@ -54,23 +76,10 @@ class CodeViewer extends React.Component<IProps, {}> {
       </div>
     );
   }
-
-  private getTabTitle = (name: string, deduction: number, numComments: number) => {
-    const deductionString = deduction > 0 ? `(-${deduction})` : '';
-    const commentFlag =
-      numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
-
-    return (
-      <div className="tab-title">
-        {commentFlag}
-        <div className="tab-title">{name + deductionString}</div>
-      </div>
-    );
-  };
 }
 
 interface ICodeBoxProps {
-  file: IFile2;
+  file: IFile;
   comments: IComment[];
 }
 
@@ -78,11 +87,11 @@ const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = CodeBoxUtils.sortHighlights(props.comments);
   const splitCode = props.file.code.split('\n');
 
-  const linesOfCode = splitCode.map((item: any, i: number) => {
+  const linesOfCode = splitCode.map((item: string, i: number) => {
     return <div key={i}> {CodeBoxUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
-  const lineNumbers = splitCode.map((item: any, i: number) => {
+  const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
       <div key={i + 1} className="line-number">
         {' '}
@@ -99,21 +108,20 @@ const CodeBox = (props: ICodeBoxProps) => {
   );
 };
 
-interface ICommentBoxProps {
-  comments: IComment[];
-}
-
-const CommentBox = (props: ICommentBoxProps) => {
-  return <CommentList comments={props.comments} />;
-};
-
 interface ICommentListProps {
   comments: IComment[];
+  rubricComments: ICommentToRubricCommentMap;
+}
+
+interface IBlock {
+  startAt: number;
+  endAt: number;
 }
 
 const CommentList = (props: ICommentListProps) => {
+  const { rubricComments } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
-  const ranges: any[] = [];
+  const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
   const comments = props.comments.sort((a: IComment, b: IComment) => {
@@ -130,26 +138,30 @@ const CommentList = (props: ICommentListProps) => {
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
-
-    for (const block of ranges) {
-      if (startAt >= block[0] && startAt < block[1]) {
-        startAt = block[1];
+    for (const block of blocks) {
+      if (startAt >= block.startAt && startAt < block.endAt) {
+        startAt = block.endAt;
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, undefined);
-    const newBlock = [startAt, startAt + heightOfComment];
-    ranges.push(newBlock);
+    const heightOfComment = CodeBoxUtils.heightOfComment(comment, rubricComments[comment.id], undefined);
+    const newBlock: IBlock = {
+      startAt,
+      endAt: startAt + heightOfComment,
+    };
+    blocks.push(newBlock);
 
-    ranges.sort((a: any, b: any) => {
-      return a[0] - b[0];
+    blocks.sort((a: IBlock, b: IBlock) => {
+      return a.startAt - b.startAt;
     });
 
-    const style = {
+    const style: ICSSStyleObject = {
       top: `${startAt}px`,
     };
 
-    return <Comment key={comment.id} comment={comment} style={style} />;
+    return (
+      <Comment key={comment.id} comment={comment} rubricComment={props.rubricComments[comment.id]} style={style} />
+    );
   });
 
   return <div className="comment-box">{commentNodes}</div>;
@@ -158,21 +170,22 @@ const CommentList = (props: ICommentListProps) => {
 interface ICommentProps {
   key: number;
   comment: IComment;
-  style: any;
+  rubricComment: IRubricComment | undefined;
+  style: ICSSStyleObject;
 }
 
 const Comment = (props: ICommentProps) => {
-  const { comment, style } = props;
+  const { comment, rubricComment, style } = props;
 
-  const onMouseEnter = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
+  const onMouseEnter = (id: string, event: any) => {
+    const elems = document.getElementsByClassName(id);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#FAFF91';
     });
   };
 
-  const onMouseLeave = (i: string, e: any) => {
-    const elems = document.getElementsByClassName(i);
+  const onMouseLeave = (id: string, event: any) => {
+    const elems = document.getElementsByClassName(id);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#ffca93';
     });
@@ -192,9 +205,8 @@ const Comment = (props: ICommentProps) => {
     >
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}
-        {comment.rubricComment ? (
-          <div className="comment-rubric">{comment.rubricComment.text}</div>
-        ) : null}
+        {/*// should make slug related rubricComment slug related on text*/}
+        {rubricComment ? <div className="comment-rubric">{rubricComment.text}</div> : null}
         <div className="comment-text">{comment.text}</div>
       </CardText>
     </Card>

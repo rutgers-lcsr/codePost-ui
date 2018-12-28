@@ -5,22 +5,18 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Grader.scss';
 
-import { IAssignment, ICourse2, IOption, ISubmission2 } from './types/common';
+import { IAssignment, ICourse, ICourseToAssignmentMap, IOption, ISubmission, USER_APP } from './types/common';
 
 import APIUtils from './APIUtils';
 
-interface ICourseToAssignmentMap {
-  [courseId: number]: IAssignment[];
-}
-
 interface IGraderState {
-  courses: ICourse2[];
+  courses: ICourse[];
   assignments: ICourseToAssignmentMap;
   isLoadingSubmissions: boolean;
 
   currentAssignment?: IAssignment;
-  currentCourse?: ICourse2;
-  currentSubmissions: ISubmission2[];
+  currentCourse?: ICourse;
+  currentSubmissions: ISubmission[];
 
   email: string;
   isLoggedIn: boolean;
@@ -63,17 +59,17 @@ class Grader extends React.Component<{}, IGraderState> {
   ///////////////////////////////////////
 
   public loadCourses = () => {
-    return this.fetchCourses().then((courses) => {
-      this.setState({ courses });
+    return APIUtils.fetchUser(USER_APP.Grader).then(([email, courses]) => {
+      this.setState({ email, courses });
       return Promise.all(
-        courses.map((course: ICourse2) => {
+        courses.map((course: ICourse) => {
           return this.loadAssignments(course);
         }),
       );
     });
   };
 
-  public loadAssignments = (course: ICourse2) => {
+  public loadAssignments = (course: ICourse) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
         return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
@@ -93,32 +89,12 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public loadSubmissions = (assignment: IAssignment) => {
-    return APIUtils.fetchSubmissions(assignment.id, `grader=${this.state.email}`).then(
-      (currentSubmissions: any) => {
+    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Grader, this.state.email).then(
+      (currentSubmissions: ISubmission[]) => {
         console.log('1 - saving submissions', currentSubmissions);
         this.setState({ currentSubmissions });
       },
     );
-  };
-
-  ///////////////////////////////////////
-  // Fetch requests
-  ///////////////////////////////////////
-
-  public fetchCourses = () => {
-    return fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({ email: json.email });
-        const graderCourses = 'graderCourses';
-        return json[graderCourses];
-      });
   };
 
   ///////////////////////////////////////
@@ -152,7 +128,7 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: ICourse2) => {
+    const currentCourse = this.state.courses.filter((obj: ICourse) => {
       return obj.id === option.value;
     })[0];
 
@@ -163,18 +139,18 @@ class Grader extends React.Component<{}, IGraderState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse2[]) => {
+  public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({ value: course.id, label: course.name }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse2 | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
     return { value: currentCourse.id, label: currentCourse.name };
   };
 
-  public tabItemsFormatter = (currentCourse: ICourse2 | undefined) => {
+  public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
     const { assignments } = this.state;
     if (!currentCourse || !currentCourse.assignments) {
       return [];
@@ -193,7 +169,7 @@ class Grader extends React.Component<{}, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: IAssignment): any => {
+  public claimSubmission = (assignment: IAssignment): Promise<ISubmission> => {
     return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -215,30 +191,19 @@ class Grader extends React.Component<{}, IGraderState> {
       });
   };
 
-  public releaseSubmission = (submission: ISubmission2): any => {
+  public releaseSubmission = (submission: ISubmission): Promise<ISubmission> => {
     const payload = {
       grader: '',
     };
 
-    return fetch(`/api/submissions/${submission.id}/`, {
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState({
-          currentSubmissions: this.state.currentSubmissions.filter((sub) => {
-            return sub.id !== submission.id;
-          }),
-        });
-        return json;
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        currentSubmissions: this.state.currentSubmissions.filter((sub) => {
+          return sub.id !== submission.id;
+        }),
       });
+      return json;
+    });
   };
 
   ///////////////////////////////////////
@@ -253,13 +218,7 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public render() {
-    const {
-      courses,
-      currentAssignment,
-      currentCourse,
-      currentSubmissions,
-      isLoadingSubmissions,
-    } = this.state;
+    const { courses, currentAssignment, currentCourse, currentSubmissions, isLoadingSubmissions } = this.state;
     return (
       <div>
         {this.renderRedirect()}

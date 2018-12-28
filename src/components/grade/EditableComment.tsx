@@ -1,30 +1,32 @@
 import * as React from 'react';
 import { Button, Card, CardText, Chip, TextField } from 'react-md';
 
-import { IComment, IFile } from '../../types/common';
+import { IComment, ICSSStyleObject, IFile, IRubricComment } from '../../types/common';
 
 interface IProps {
   readOnly: boolean;
   file: IFile;
   key: number;
   comment: IComment;
-  style: any;
+  rubricComment: IRubricComment | undefined;
+  style: ICSSStyleObject;
   active: boolean;
-  changeActive: any;
-  deleteComment: any;
-  updateComment: any;
-  getRubricComment: any;
+  changeActive: (id: number | undefined) => void;
+  deleteComment: (comment: IComment, file: IFile) => void;
+  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
 }
 
 interface IState {
   saveWarning: boolean;
   savingClass: string;
+  isUnsaved: boolean;
 }
 
 class EditableComment extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'comment-idle',
+    isUnsaved: this.props.comment.id < 0,
   };
 
   //////////////////////////////////////
@@ -38,12 +40,14 @@ class EditableComment extends React.Component<IProps, IState> {
   public updateComment = (event: any) => {
     const { comment, updateComment, file } = this.props;
     comment.text = event.target.value;
+    this.setState({ isUnsaved: true });
     updateComment(comment.id, comment, file);
   };
 
-  public updateDeduction = (value: any) => {
+  public updateDeduction = (value: number) => {
     const { comment, updateComment, file } = this.props;
     comment.pointDelta = value;
+    this.setState({ isUnsaved: true });
     updateComment(comment.id, comment, file);
   };
 
@@ -69,7 +73,7 @@ class EditableComment extends React.Component<IProps, IState> {
     this.setState({ savingClass: 'comment-saving' });
 
     // If this is a new comment being edited, then it doesn't have an id yet
-    // The new comments get initalized in CodeGrader:onMouseUp (with id undefined)
+    // The new comments get initalized in CodeGrader:onMouseUp (with negative)
     // New comments should be a POST request
     // Else PATCH
     if (comment.id < 0) {
@@ -97,11 +101,12 @@ class EditableComment extends React.Component<IProps, IState> {
           return res.json();
         })
         .then((json) => {
+          // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle' });
+            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
             // It's important that we update the parent state
             // after this timeout, otherwise we face memory-leaks
             // setting the state of an unmounted component
@@ -112,20 +117,6 @@ class EditableComment extends React.Component<IProps, IState> {
           return true;
         });
     } else {
-      // Temp fix until API
-      // Boilerplate PATCH can't handle nested objects
-      // Should update API to handle
-      // const payload = {
-      //   endChar: comment.endChar,
-      //   endLine: comment.endLine,
-      //   id: comment.id,
-      //   pointDelta: comment.pointDelta,
-      //   rubricComment: comment.rubricComment,
-      //   startChar: comment.startChar,
-      //   startLine: comment.startLine,
-      //   text: comment.text,
-      // };
-
       console.log('PATCH', JSON.stringify(comment));
       return fetch(`/api/comments/${comment.id}/`, {
         body: JSON.stringify(comment),
@@ -139,11 +130,12 @@ class EditableComment extends React.Component<IProps, IState> {
           return res.json();
         })
         .then((json) => {
+          // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle' });
+            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
             updateComment(comment.id, json, file);
             return true;
           }, 2000);
@@ -176,14 +168,14 @@ class EditableComment extends React.Component<IProps, IState> {
     }
   };
 
-  public onMouseEnter = (i: string, e: any) => {
+  public onMouseEnter = (i: string, event: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#FAFF91';
+      elem.style.setProperty('background-color', '#FAFF91', 'important');
     });
   };
 
-  public onMouseLeave = (i: string, e: any) => {
+  public onMouseLeave = (i: string, eevent: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = '#ffca93';
@@ -195,16 +187,26 @@ class EditableComment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { active, comment, file, deleteComment, readOnly, style, getRubricComment } = this.props;
+    const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
     const pointDeltaLabel = `-${comment.pointDelta}`;
 
+    let pointDeltaElement = null;
+    if (comment.pointDelta && comment.pointDelta !== 0) {
+      pointDeltaElement = <Chip label={pointDeltaLabel} />;
+    }
+
     let className = 'comment';
-    if (comment.id < 0) {
+    if (this.state.isUnsaved) {
       className += ' comment-unsaved';
     }
 
+    // Ugly for type checking
+    let rubricCommentText = 'no standard';
+    if (rubricComment) {
+      rubricCommentText = rubricComment.text;
+    }
     // Non-editable comment
     if (readOnly) {
       return (
@@ -216,10 +218,8 @@ class EditableComment extends React.Component<IProps, IState> {
         >
           <CardText>
             <div className={savingClass} />
-            {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
-            <div className="comment-rubric">
-              {comment.rubricComment ? getRubricComment(comment.rubricComment).text : 'no standard'}
-            </div>
+            {pointDeltaElement}
+            <div className="comment-rubric">{rubricCommentText}</div>
             {comment.text}
           </CardText>
         </Card>
@@ -252,9 +252,7 @@ class EditableComment extends React.Component<IProps, IState> {
               fullWidth={true}
               onChange={this.updateDeduction}
             />
-            {comment.rubricComment ? (
-              <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
-            ) : null}
+            {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
 
             <textarea
               onChange={this.updateComment}
@@ -283,21 +281,14 @@ class EditableComment extends React.Component<IProps, IState> {
       >
         <CardText>
           <div className={savingClass} />
-          {comment.pointDelta === 0 ? null : <Chip label={pointDeltaLabel} />}
-
-          {comment.rubricComment ? (
-            <div className="comment-rubric">{getRubricComment(comment.rubricComment).text}</div>
-          ) : null}
+          {pointDeltaElement}
+          {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
           <div className="comment-text">{comment.text}</div>
           <div>
             <Button flat className="comment-button" onClick={this.toggleActive}>
               Edit
             </Button>
-            <Button
-              flat
-              className="comment-button"
-              onClick={deleteComment.bind(this, comment, file)}
-            >
+            <Button flat className="comment-button" onClick={deleteComment.bind(this, comment, file)}>
               Delete
             </Button>
           </div>

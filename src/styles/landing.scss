@@ -2,7 +2,7 @@
 // Theme
 ///////////////
 
-@import "~react-md/src/scss/react-md";
+@import '~react-md/src/scss/react-md';
 
 $md-primary-color: #2ecd70;
 $md-secondary-color: #ffcdd2;
@@ -45,7 +45,6 @@ $buffer-height: 150px;
     background-color: $codePost-color;
   }
 }
-
 .Hero {
   height: 550px;
   background-color: $dark-grey;
