@@ -9,6 +9,7 @@ import './styles/Student.scss';
 import {
   IAssignment,
   IComment,
+  ICommentToRubricCommentMap,
   ICourse,
   ICourseToAssignmentMap,
   IFile,
@@ -25,6 +26,7 @@ interface IStudentState {
   assignments: ICourseToAssignmentMap;
   files: IFile[];
   comments: IFileToCommentsMap;
+  rubricComments: ICommentToRubricCommentMap;
 
   currentCourse?: ICourse;
   currentAssignment?: IAssignment;
@@ -51,6 +53,7 @@ class Student extends React.Component<{}, IStudentState> {
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
+    rubricComments: {},
   };
 
   public componentDidMount() {
@@ -148,6 +151,17 @@ class Student extends React.Component<{}, IStudentState> {
               [file.id]: comments,
             },
           });
+          if (comment.rubricComment) {
+            return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
+              this.setState({
+                rubricComments: {
+                  ...this.state.rubricComments,
+                  [comment.id]: rubricComment,
+                },
+              });
+            });
+          }
+          return;
         });
       }),
     );
@@ -237,7 +251,17 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission, isLoading, files, comments } = this.state;
+    const {
+      courses,
+      currentAssignment,
+      currentCourse,
+      currentSubmission,
+      isLoading,
+      files,
+      comments,
+      rubricComments,
+    } = this.state;
+    console.log(this.state.rubricComments);
     return (
       <div>
         {this.renderRedirect()}
@@ -256,6 +280,7 @@ class Student extends React.Component<{}, IStudentState> {
             submission={currentSubmission}
             files={files}
             comments={comments}
+            rubricComments={rubricComments}
           />
         </div>
       </div>
@@ -268,13 +293,22 @@ interface IContentAreaProps {
   submission?: ISubmission;
   files: IFile[];
   comments: IFileToCommentsMap;
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 const ContentArea = (props: IContentAreaProps) => {
-  const { assignment, submission, files, comments } = props;
+  const { assignment, submission, files, comments, rubricComments } = props;
 
   if (submission && assignment) {
-    return <CodeViewer submission={submission!} assignment={assignment!} files={files} comments={comments} />;
+    return (
+      <CodeViewer
+        submission={submission!}
+        assignment={assignment!}
+        files={files}
+        comments={comments}
+        rubricComments={rubricComments}
+      />
+    );
   }
   if (assignment) {
     return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;

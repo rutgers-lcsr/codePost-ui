@@ -8,12 +8,12 @@ interface IProps {
   file: IFile;
   key: number;
   comment: IComment;
+  rubricComment: IRubricComment | undefined;
   style: ICSSStyleObject;
   active: boolean;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
-  getRubricComment: (rubricCommentID: number) => IRubricComment | undefined;
 }
 
 interface IState {
@@ -167,7 +167,7 @@ class EditableComment extends React.Component<IProps, IState> {
   public onMouseEnter = (i: string, event: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#FAFF91';
+      elem.style.setProperty('background-color', '#FAFF91', 'important');
     });
   };
 
@@ -183,7 +183,7 @@ class EditableComment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { active, comment, file, deleteComment, readOnly, style, getRubricComment } = this.props;
+    const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
     const pointDeltaLabel = `-${comment.pointDelta}`;
@@ -200,11 +200,8 @@ class EditableComment extends React.Component<IProps, IState> {
 
     // Ugly for type checking
     let rubricCommentText = 'no standard';
-    if (comment.rubricComment) {
-      const rubricComment = getRubricComment(comment.rubricComment);
-      if (rubricComment) {
-        rubricCommentText = rubricComment.text;
-      }
+    if (rubricComment) {
+      rubricCommentText = rubricComment.text;
     }
     // Non-editable comment
     if (readOnly) {
@@ -251,7 +248,7 @@ class EditableComment extends React.Component<IProps, IState> {
               fullWidth={true}
               onChange={this.updateDeduction}
             />
-            {comment.rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
+            {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
 
             <textarea
               onChange={this.updateComment}
@@ -281,7 +278,7 @@ class EditableComment extends React.Component<IProps, IState> {
         <CardText>
           <div className={savingClass} />
           {pointDeltaElement}
-          {comment.rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
+          {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
           <div className="comment-text">{comment.text}</div>
           <div>
             <Button flat className="comment-button" onClick={this.toggleActive}>

@@ -12,6 +12,7 @@ import APIUtils from './APIUtils';
 import {
   IAssignment,
   IComment,
+  ICommentToRubricCommentMap,
   IFile,
   IFileToCommentsMap,
   IRubricCategory,
@@ -33,12 +34,14 @@ interface IGradeState {
 
   files: IFile[];
   comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
 }
 
 class Grade extends React.Component<{ match: { params: { submissionId: typeof Number } } }, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
+    commentRubricComments: {},
     comments: {},
     email: '',
     files: [],
@@ -80,7 +83,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
 
   public loadAssignment = (assignmentId: number) => {
     return APIUtils.fetchAssignment(assignmentId).then((assignment: IAssignment) => {
-      console.log('4.1 - saving assignment: ', assignment);
+      // console.log('4.1 - saving assignment: ', assignment);
       this.setState({ assignment });
       return assignment;
     });
@@ -90,7 +93,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     const submissionId: number = +this.props.match.params.submissionId.valueOf();
     return APIUtils.fetchSubmission(submissionId).then((submission: ISubmission) => {
       return this.loadFiles(submission).then(() => {
-        console.log('3 - saving submission: ', submission);
+        // console.log('3 - saving submission: ', submission);
         this.setState({ submission });
         return submission;
       });
@@ -108,7 +111,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             },
           });
           return this.loadComments(file).then(() => {
-            console.log('2 - saving file:', file);
+            // console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
           });
         });
@@ -120,7 +123,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
-          console.log('1 - saving comment:', comment);
+          // console.log('1 - saving comment:', comment);
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -128,6 +131,17 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
               [file.id]: comments,
             },
           });
+          if (comment.rubricComment) {
+            return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
+              this.setState({
+                commentRubricComments: {
+                  ...this.state.commentRubricComments,
+                  [comment.id]: rubricComment,
+                },
+              });
+            });
+          }
+          return;
         });
       }),
     );
@@ -140,7 +154,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
           return this.loadRubricComments(rubricCategory);
         }),
       ).then(() => {
-        console.log('4.2 - saving rubricCategories: ', rubricCategories);
+        // console.log('4.2 - saving rubricCategories: ', rubricCategories);
         this.setState({ rubricCategories });
         return rubricCategories;
       });
@@ -151,7 +165,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     return Promise.all(
       rubricCategory.rubricComments.map((rubricCommentId: number) => {
         return APIUtils.fetchRubricComment(rubricCommentId).then((rubricComment: IRubricComment) => {
-          console.log('4.11 - saving rubricComment:', rubricComment);
+          // console.log('4.11 - saving rubricComment:', rubricComment);
           let rubricComments = [rubricComment];
           if (this.state.rubricComments[rubricCategory.id]) {
             rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
@@ -172,7 +186,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
   ///////////////////////////////////////
 
   public handleRubricCommentClick = (rubricComment: IRubricComment): void => {
-    const { activeCommentId, submission, files, comments } = this.state;
+    const { activeCommentId, submission, files, comments, commentRubricComments } = this.state;
 
     if (!submission || !activeCommentId) {
       return;
@@ -182,22 +196,11 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       const index = comments[file.id].findIndex((c: IComment) => c.id === activeCommentId);
       if (index !== -1) {
         comments[file.id][index].rubricComment = rubricComment.id;
-        this.setState({ comments });
+        commentRubricComments[comments[file.id][index].id] = rubricComment;
+        this.setState({ comments, commentRubricComments });
         break;
       }
     }
-  };
-
-  public getRubricComment = (rubricCommentID: number): IRubricComment | undefined => {
-    const { rubricComments } = this.state;
-
-    for (const rubricCategoryID of Object.keys(rubricComments)) {
-      const rubricComment = rubricComments[rubricCategoryID].find((rc: IRubricComment) => rc.id === rubricCommentID);
-      if (rubricComment) {
-        return rubricComment;
-      }
-    }
-    return undefined;
   };
 
   public changeActiveComment = (id: number | undefined): void => {
@@ -289,6 +292,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     const {
       assignment,
       activeCommentId,
+      commentRubricComments,
       files,
       rubricCategories,
       rubricComments,
@@ -297,6 +301,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       isLoading,
     } = this.state;
 
+    console.log('rub', commentRubricComments);
     if (isLoading) {
       return <div>Loading...</div>;
     }
@@ -321,13 +326,13 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             submission={submission}
             files={files}
             comments={comments}
+            rubricComments={commentRubricComments}
             readOnly={submission.isFinalized}
             addComment={this.addComment}
             activeCommentId={activeCommentId}
             changeActive={this.changeActiveComment}
             deleteComment={this.deleteComment}
             updateComment={this.updateComment}
-            getRubricComment={this.getRubricComment}
           />
         </div>
       </div>
