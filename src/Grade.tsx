@@ -83,7 +83,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
 
   public loadAssignment = (assignmentId: number) => {
     return APIUtils.fetchAssignment(assignmentId).then((assignment: IAssignment) => {
-      // console.log('4.1 - saving assignment: ', assignment);
+      console.log('4.1 - saving assignment: ', assignment);
       this.setState({ assignment });
       return assignment;
     });
@@ -93,7 +93,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     const submissionId: number = +this.props.match.params.submissionId.valueOf();
     return APIUtils.fetchSubmission(submissionId).then((submission: ISubmission) => {
       return this.loadFiles(submission).then(() => {
-        // console.log('3 - saving submission: ', submission);
+        console.log('3 - saving submission: ', submission);
         this.setState({ submission });
         return submission;
       });
@@ -111,7 +111,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             },
           });
           return this.loadComments(file).then(() => {
-            // console.log('2 - saving file:', file);
+            console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
           });
         });
@@ -123,7 +123,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
-          // console.log('1 - saving comment:', comment);
+          console.log('1 - saving comment:', comment);
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -154,7 +154,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
           return this.loadRubricComments(rubricCategory);
         }),
       ).then(() => {
-        // console.log('4.2 - saving rubricCategories: ', rubricCategories);
+        console.log('4.2 - saving rubricCategories: ', rubricCategories);
         this.setState({ rubricCategories });
         return rubricCategories;
       });
@@ -165,7 +165,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     return Promise.all(
       rubricCategory.rubricComments.map((rubricCommentId: number) => {
         return APIUtils.fetchRubricComment(rubricCommentId).then((rubricComment: IRubricComment) => {
-          // console.log('4.11 - saving rubricComment:', rubricComment);
+          console.log('4.11 - saving rubricComment:', rubricComment);
           let rubricComments = [rubricComment];
           if (this.state.rubricComments[rubricCategory.id]) {
             rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
@@ -301,7 +301,6 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
       isLoading,
     } = this.state;
 
-    console.log('rub', commentRubricComments);
     if (isLoading) {
       return <div>Loading...</div>;
     }

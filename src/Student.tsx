@@ -261,7 +261,7 @@ class Student extends React.Component<{}, IStudentState> {
       comments,
       rubricComments,
     } = this.state;
-    console.log(this.state.rubricComments);
+
     return (
       <div>
         {this.renderRedirect()}

@@ -19,12 +19,14 @@ interface IProps {
 interface IState {
   saveWarning: boolean;
   savingClass: string;
+  isUnsaved: boolean;
 }
 
 class EditableComment extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'comment-idle',
+    isUnsaved: this.props.comment.id < 0,
   };
 
   //////////////////////////////////////
@@ -38,12 +40,14 @@ class EditableComment extends React.Component<IProps, IState> {
   public updateComment = (event: any) => {
     const { comment, updateComment, file } = this.props;
     comment.text = event.target.value;
+    this.setState({ isUnsaved: true });
     updateComment(comment.id, comment, file);
   };
 
   public updateDeduction = (value: number) => {
     const { comment, updateComment, file } = this.props;
     comment.pointDelta = value;
+    this.setState({ isUnsaved: true });
     updateComment(comment.id, comment, file);
   };
 
@@ -102,7 +106,7 @@ class EditableComment extends React.Component<IProps, IState> {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle' });
+            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
             // It's important that we update the parent state
             // after this timeout, otherwise we face memory-leaks
             // setting the state of an unmounted component
@@ -131,7 +135,7 @@ class EditableComment extends React.Component<IProps, IState> {
             this.setState({ savingClass: 'comment-saved' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle' });
+            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
             updateComment(comment.id, json, file);
             return true;
           }, 2000);
@@ -189,12 +193,12 @@ class EditableComment extends React.Component<IProps, IState> {
     const pointDeltaLabel = `-${comment.pointDelta}`;
 
     let pointDeltaElement = null;
-    if (comment.pointDelta && comment.pointDelta === 0) {
+    if (comment.pointDelta && comment.pointDelta !== 0) {
       pointDeltaElement = <Chip label={pointDeltaLabel} />;
     }
 
     let className = 'comment';
-    if (comment.id < 0) {
+    if (this.state.isUnsaved) {
       className += ' comment-unsaved';
     }
 
