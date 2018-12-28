@@ -550,7 +550,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const { currentCourse } = this.state;
     if (currentCourse && currentCourse.sections) {
       const getData = currentCourse.sections.map((sectionID) => {
-        return new Promise((resolve) => {
+        return new Promise<ISection>((resolve) => {
           fetch(`/api/sections/${sectionID}`, {
             headers: {
               Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -562,8 +562,7 @@ class Admin extends React.Component<{}, IAdminState> {
             .then((json: ISection) => {
               // Reminder --- should really filter out if the
               // section is already there to eliminate duplicates
-              const { sections, sectionsByStudent } = this.state;
-              sections.push(json);
+              const { sectionsByStudent } = this.state;
 
               json.students.forEach((studentEmail: string) => {
                 sectionsByStudent[studentEmail] = {
@@ -571,12 +570,13 @@ class Admin extends React.Component<{}, IAdminState> {
                   id: json.id,
                 };
               });
-              this.setState({ sections, sectionsByStudent }, () => resolve(json));
+              this.setState({ sectionsByStudent });
+              return resolve(json);
             });
         });
       });
-      Promise.all(getData).then(() => {
-        this.setState({ sectionsLoadComplete: true });
+      Promise.all(getData).then((sections) => {
+        this.setState({ sections, sectionsLoadComplete: true });
       });
     }
   };
@@ -912,7 +912,7 @@ class Admin extends React.Component<{}, IAdminState> {
         rubricComments: [],
       };
 
-      fetch('/api/rubriccategories/', {
+      fetch('/api/rubricCategories/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -973,7 +973,7 @@ class Admin extends React.Component<{}, IAdminState> {
     return new Promise((resolve) => {
       const payload = { id: categoryID };
 
-      fetch(`/api/rubriccategories/${categoryID}/`, {
+      fetch(`/api/rubricCategories/${categoryID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -1028,7 +1028,7 @@ class Admin extends React.Component<{}, IAdminState> {
           assignment: assignmentID,
         };
 
-        fetch(`/api/rubriccategories/${categoryID}/`, {
+        fetch(`/api/rubricCategories/${categoryID}/`, {
           headers: {
             Authorization: `JWT ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
@@ -1082,7 +1082,7 @@ class Admin extends React.Component<{}, IAdminState> {
       }
 
       const payload = { text: commentText, category: categoryID, pointDelta: commentDelta };
-      fetch('/api/rubriccomments/', {
+      fetch('/api/rubricComments/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -1120,7 +1120,7 @@ class Admin extends React.Component<{}, IAdminState> {
     return new Promise((resolve) => {
       const payload = { id: commentID };
 
-      fetch(`/api/rubriccomments/${commentID}/`, {
+      fetch(`/api/rubricComments/${commentID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -1171,7 +1171,7 @@ class Admin extends React.Component<{}, IAdminState> {
       const key2 = 'pointDelta';
       payload[key2] = commentDelta;
 
-      fetch(`/api/rubriccomments/${commentID}/`, {
+      fetch(`/api/rubricComments/${commentID}/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',

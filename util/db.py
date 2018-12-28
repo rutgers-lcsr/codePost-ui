@@ -31,6 +31,7 @@ assignments.append(markovs2019)
 james = User.objects.create(username='james.alb.evans@gmail.com', email='james.alb.evans@gmail.com', password="rootabega")
 richard = User.objects.create(username='rjfreling@gmail.com', email='rjfreling@gmail.com', password="rootabega")
 vinay = User.objects.create(username='vayyala@gmail.com', email='vayyala@gmail.com', password="rootabega")
+vinay.profile.organization = princeton
 james.set_password("rootabega")
 richard.set_password("rootabega")
 vinay.set_password("rootabega")
