@@ -31,7 +31,7 @@ import {
 
 interface IAdminState {
   currentCourse?: ICourse; // Course for selector
-  loadedPanel: number; // Which active_panel to load, enum
+  loadedPanel?: number; // Which active_panel to load, enum
   courses: ICourse[]; // Set of courses for the admin for the selector
 
   // general state items
@@ -88,7 +88,7 @@ interface IAdminState {
 class Admin extends React.Component<{}, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined, // Course for selector
-    loadedPanel: 0, // Which active_panel to load, enum
+    loadedPanel: undefined, // Which active_panel to load, enum
     courses: [], // Set of courses for the admin for the selector
 
     // general props
@@ -262,11 +262,9 @@ class Admin extends React.Component<{}, IAdminState> {
       return course.id === option.value;
     })[0];
 
+    // reminder: set students graders everything to undefined
     this.setState(
-      {
-        // reminder: set students graders everything to undefined
-        currentCourse,
-      },
+      { currentCourse },
       () => {
         this.updateNewCourse(option);
       },
@@ -307,10 +305,15 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public tabCurrentFormatter = () => {
-    return {
-      value: this.state.loadedPanel,
-      label: this.panels[this.state.loadedPanel],
-    };
+    const loadedPanel = this.state.loadedPanel;
+    if (typeof(loadedPanel) !== 'undefined') {
+      return {
+        value: loadedPanel,
+        label: this.panels[loadedPanel],
+      };
+    } else {
+      return undefined;
+    }
   };
 
   // ------------------- Toast functions -------------------
