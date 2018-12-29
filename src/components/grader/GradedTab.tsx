@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import { BUTTON_STATE, IAssignment, ISubmission } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -91,7 +91,14 @@ class GradedTab extends React.Component<IProps, {}> {
                       {submission.dateFinalized}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
-                      <div className="button-release" />
+                      <Button
+                        key={`release-button-${submission.id}`}
+                        className="button-release"
+                        flat={true}
+                        icon={true}
+                      >
+                        remove_circle
+                      </Button>
                     </TableColumn>
                   </TableRow>
                 );
