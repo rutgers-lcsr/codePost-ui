@@ -82,21 +82,8 @@
           font-weight: bold;
           padding-left: 10px;
 
-          .button-up-arrow {
+          .button-arrow {
             float: right;
-            background-image: url(../img/up_arrow.png);
-            background-repeat: no-repeat;
-            background-size: contain;
-            height: 20px;
-            width: 20px;
-            cursor: pointer;
-          }
-
-          .button-down-arrow {
-            float: right;
-            background-image: url(../img/down_arrow.png);
-            background-repeat: no-repeat;
-            background-size: contain;
             height: 20px;
             width: 20px;
             cursor: pointer;

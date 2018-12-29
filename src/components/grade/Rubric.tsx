@@ -7,6 +7,8 @@ import { IRubricCategory, IRubricCategoryToRubricCommentsMap, IRubricComment } f
 
 import { Table, Td, Tr } from 'reactable';
 
+import { Button } from 'react-md';
+
 interface IVisibleMap {
   [categoryID: number]: boolean;
 }
@@ -81,14 +83,16 @@ interface IRubricCategoryProps {
 const RubricCategory = (props: IRubricCategoryProps) => {
   const { rubricCategory, rubricComments, handleRubricCommentClick, searchTerm, visible } = props;
 
-  const buttonClass = visible ? 'button-up-arrow' : 'button-down-arrow';
+  const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
 
   return (
     <div className="rubric-category">
       <div className="container-category" onClick={props.handleDropDown.bind(props, rubricCategory, visible)}>
         <div className="category-title">
           {rubricCategory.name}
-          <div className={buttonClass} onClick={props.handleDropDown.bind(props, rubricCategory, visible)} />
+          <Button key={rubricCategory.id} className="button-arrow" flat={true} icon={true}>
+            {buttonIcon}
+          </Button>
         </div>
       </div>
       {visible && (
