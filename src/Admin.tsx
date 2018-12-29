@@ -621,108 +621,100 @@ class Admin extends React.Component<{}, IAdminState> {
   ) => {
     const { currentCourse } = this.state;
 
-    if (currentCourse) {
-      let payload;
-      if (userType === USER_APP.Student) {
-        if (inactiveStudents) {
-          payload = { students: newRoster, inactive_students: inactiveStudents };
-        } else {
-          payload = { students: newRoster };
-        }
-      } else if (userType === USER_APP.Grader) {
-        payload = { graders: newRoster };
-      } else if (userType === USER_APP.CourseAdmin) {
-        payload = { courseAdmins: newRoster };
-      }
-
-      fetch(`/api/courses/${currentCourse.id}/roster/`, {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-      })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json();
-          }
-          this.addErrorToast('Something went wrong', undefined);
-          return undefined;
-        })
-        .then((json) => {
-          if (json) {
-            if (userType === USER_APP.Student) {
-              this.setState(
-                {
-                  students: json.students,
-                  inactiveStudents: json.inactive_students,
-                },
-                () => {
-                  this.addToast('Student roster successfully updated.', undefined);
-                  this.generateSubmissionsByStudent();
-                },
-              );
-            } else if (userType === USER_APP.Grader) {
-              this.setState(
-                {
-                  graders: json.graders,
-                },
-                () => {
-                  this.addToast('Grader roster successfully updated.', undefined);
-                  this.generateSubmissionsByStudent();
-                },
-              );
-            } else if (userType === USER_APP.CourseAdmin) {
-              this.setState(
-                {
-                  admins: json.courseAdmins,
-                },
-                () => this.addToast('Admin roster successfully updated.', undefined),
-              );
-            }
-          }
-        });
+    if (!currentCourse) {
+      return;
     }
+
+    let payload;
+    switch (userType) {
+      case USER_APP.Student:
+        payload = { students: newRoster };
+        if (inactiveStudents) {
+          const key = 'inactive_students';
+          payload[key] = inactiveStudents;
+        }
+        break;
+      case USER_APP.Grader:
+        payload = { graders: newRoster };
+        break;
+      case USER_APP.CourseAdmin:
+        payload = { courseAdmins: newRoster };
+        break;
+    }
+
+    fetch(`/api/courses/${currentCourse.id}/roster/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        }
+        this.addErrorToast('Something went wrong', undefined);
+        return undefined;
+      })
+      .then((json) => {
+        switch (userType) {
+          case USER_APP.Student:
+            this.setState(
+              { students: json.students, inactiveStudents: json.inactive_students },
+              () => {
+                this.addToast('Student roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              },
+            );
+            break;
+          case USER_APP.Grader:
+            this.setState({ graders: json.graders }, () => {
+              this.addToast('Grader roster successfully updated.', undefined);
+              this.generateSubmissionsByStudent();
+            });
+            break;
+          case USER_APP.CourseAdmin:
+            this.setState({ admins: json.courseAdmins }, () =>
+              this.addToast('Admin roster successfully updated.', undefined),
+            );
+            break;
+        }
+      });
   };
 
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
-    const { currentCourse } = this.state;
-
-    if (currentCourse) {
-      if (userType === USER_APP.Student) {
-        const { students } = this.state;
-        const newStudents = students.filter((student) => {
+    switch (userType) {
+      case USER_APP.Student:
+        const newStudents = this.state.students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
         this.changeRoster(newStudents, userType, selectedUserEmails);
-      } else if (userType === USER_APP.Grader) {
-        const { graders } = this.state;
-        const newGraders = graders.filter((grader) => {
+        break;
+      case USER_APP.Grader:
+        const newGraders = this.state.graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        this.changeRoster(newGraders, userType, undefined);
-      } else if (userType === USER_APP.CourseAdmin) {
-        const { admins } = this.state;
-        const newAdmins = admins.filter((admin) => {
+        this.changeRoster(newGraders, userType, selectedUserEmails);
+        break;
+      case USER_APP.CourseAdmin:
+        const newAdmins = this.state.admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
         this.changeRoster(newAdmins, userType, undefined);
-      }
+        break;
     }
   };
 
   public enrollUser = (userEmail: string, userType: USER_APP) => {
-    const { currentCourse } = this.state;
     const { students, graders, admins } = this.state;
-    if (currentCourse) {
-      if (userType === USER_APP.Student) {
+    switch (userType) {
+      case USER_APP.Student:
         if (students.indexOf(userEmail) !== -1) {
           this.addErrorToast('Student is already enrolled in course', undefined);
           return;
         }
-        // Need to do a deep copy of state array in case adding fails, we don't
-        // want to update the state
+        // Need to do a deep copy of state array in case adding fails, we don't update state
         const newStudents = JSON.parse(JSON.stringify(students));
         newStudents.push(userEmail);
 
@@ -735,28 +727,27 @@ class Admin extends React.Component<{}, IAdminState> {
         } else {
           this.changeRoster(newStudents, userType, undefined);
         }
-      } else if (userType === USER_APP.Grader) {
+        break;
+      case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
           this.addErrorToast('Grader is already enrolled in course', undefined);
           return;
         }
-        // Need to do a deep copy of state array in case adding fails, we don't
-        // want to update the state
+        // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
         this.changeRoster(newGraders, userType, undefined);
-      } else if (userType === USER_APP.CourseAdmin) {
+        break;
+      case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
           this.addErrorToast('Admin is already enrolled in course', undefined);
           return;
         }
-        // Need to do a deep copy of state array in case adding fails, we don't
-        // want to update the state
+        // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
         this.changeRoster(newAdmins, userType, undefined);
-      }
-      // this.addToast(`New ${userType} ${json.profile.username} added`, undefined);
+        break;
     }
   };
 
