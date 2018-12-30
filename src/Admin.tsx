@@ -207,7 +207,7 @@ class Admin extends React.Component<{}, IAdminState> {
       this.setState(
         {
           currentCourse,
-          loadedPanel: 0,
+          loadedPanel: this.state.loadedPanel ? this.state.loadedPanel : 0,
 
           students: [],
           studentsLoadComplete: false,
@@ -1360,6 +1360,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <CourseData
+            key={currentCourse.id}
             assignments={this.state.assignments}
             assignmentsLoadComplete={this.state.assignmentsLoadComplete}
             students={this.state.students}
@@ -1379,6 +1380,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageAssignments
+            key={currentCourse.id}
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             submissions={this.state.submissions}
@@ -1405,6 +1407,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageStudents
+            key={currentCourse.id}
             sections={this.state.sections}
             students={this.state.students}
             studentsLoadComplete={this.state.studentsLoadComplete}
@@ -1423,6 +1426,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageGraders
+            key={currentCourse.id}
             graders={this.state.graders}
             gradersLoadComplete={this.state.gradersLoadComplete}
             lockedGraderChange={this.state.lockManageGrader}
@@ -1438,6 +1442,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageSections
+            key={currentCourse.id}
             sections={this.state.sections}
             sectionsLoadComplete={this.state.sectionsLoadComplete}
             lockedSectionChange={this.state.lockManageSection}
@@ -1454,6 +1459,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageAdmins
+            key={currentCourse.id}
             admins={this.state.admins}
             adminsLoadComplete={this.state.adminsLoadComplete}
             lockedAdminChange={this.state.lockManageAdmin}
