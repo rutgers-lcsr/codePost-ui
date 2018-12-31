@@ -37,7 +37,7 @@ class Course(models.Model):
   courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
   class Meta:
-    unique_together = ('name', 'organization')
+    unique_together = ('name', 'period', 'organization',)
 
   def __str__(self):
     return str(self.name) + " | " + self.period
