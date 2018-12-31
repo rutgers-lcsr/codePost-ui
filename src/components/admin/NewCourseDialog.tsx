@@ -71,13 +71,13 @@ class NewCourseDialog extends React.Component<IProps, {}> {
 
     return (
       <div>
-        <Button raised onClick={this.toggleDialog}>
-          Add new course
+        <Button type="submit" raised onClick={this.toggleDialog}>
+          Create course
         </Button>
         <DialogContainer
           id="newCourse-dialog"
           visible={dialogVisible}
-          title="Add new course"
+          title="Create a new course"
           onHide={this.toggleDialog}
           actions={dialogActions}
           modal
@@ -90,7 +90,7 @@ class NewCourseDialog extends React.Component<IProps, {}> {
           />
           <TextField
             id="newCourse-period"
-            label="Course period (e.g., Spring-2018)"
+            label="Course period (e.g., Spring 2018)"
             defaultValue=""
             onChange={this.changePeriodField}
           />
