@@ -39,7 +39,12 @@ interface IStudentState {
   redirect: boolean;
 }
 
-class Student extends React.Component<{}, IStudentState> {
+interface IStudentProps {
+  match: any;
+  history: any;
+}
+
+class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
     assignments: {},
     comments: {},
@@ -72,6 +77,47 @@ class Student extends React.Component<{}, IStudentState> {
     }
   }
 
+  public componentDidUpdate(prevProps : IStudentProps, prevState : IStudentState) {
+    if (prevState.isLoading && prevState.courses && prevState.assignments) {
+      const { courses, assignments, currentCourse } = this.state;
+      const adder = (total : number, num : number) => total + num;
+
+      const targetEntries = courses.map(course => course.assignments.length).reduce(adder, 0);
+      const currEntries = Object.keys(assignments).map((key, i) => assignments[key].length).reduce(adder, 0);
+      if (targetEntries > 0 && targetEntries === currEntries) {
+        if (assignments && currentCourse) {
+          this.setState({ isLoading: false }, () => this.setAssignmentFromURL(assignments, currentCourse));
+        }
+      }
+    }
+  }
+
+  ///////////////////////////////////////
+  // URL handler methods
+  ///////////////////////////////////////
+
+  public setCourseFromURL(courses : ICourse[]) {
+    const URLcourseID = parseInt(this.props.match.params.courseID, 10);
+    if (URLcourseID) {
+      const currentCourse = courses.find((obj: ICourse) => {
+        return obj.id === URLcourseID;
+      });
+      this.setState({ currentCourse });
+      return currentCourse;
+    }
+    return undefined;
+  }
+
+  public setAssignmentFromURL(assignments : ICourseToAssignmentMap  , currentCourse : ICourse) {
+    const URLassignmentID = parseInt(this.props.match.params.assignmentID, 10);
+    if (URLassignmentID) {
+      const currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+        return obj.id === URLassignmentID;
+      });
+      this.setState({ currentAssignment });
+    }
+  }
+
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
@@ -79,11 +125,16 @@ class Student extends React.Component<{}, IStudentState> {
   public loadCourses = () => {
     return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
       this.setState({ email, courses });
+      this.setCourseFromURL(courses);
+
       return Promise.all(
         courses.map((course: ICourse) => {
           return this.loadAssignments(course);
         }),
-      );
+      ).then((arg: any) => {
+        // this.setAssignmentFromURL(this.state.assignments, this.state.currentCourse);
+        this.setState({ isLoading: false });
+      });
     });
   };
 
@@ -95,6 +146,7 @@ class Student extends React.Component<{}, IStudentState> {
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
           }
+
           this.setState({
             assignments: {
               ...this.state.assignments,
@@ -131,7 +183,6 @@ class Student extends React.Component<{}, IStudentState> {
             },
           });
           return this.loadComments(file).then(() => {
-            console.log('2 - saving file:', file);
             this.setState({ files: [...this.state.files, file] });
           });
         });
@@ -143,7 +194,6 @@ class Student extends React.Component<{}, IStudentState> {
     return Promise.all(
       file.comments.map((commentId: number) => {
         return APIUtils.fetchComment(commentId).then((comment: IComment) => {
-          console.log('1 - saving comment:', comment);
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -187,12 +237,8 @@ class Student extends React.Component<{}, IStudentState> {
     if (currentAssignment) {
       this.loadSubmission(currentAssignment)
         .then(() => {
-          this.setState({ currentAssignment });
-          console.log('4 - saving assignment', currentAssignment);
-          console.log('~fin~');
-        })
-        .then(() => {
-          this.setState({ isLoadingSubmission: false });
+          this.setState({ currentAssignment, isLoadingSubmission: false },
+            () => this.props.history.push(`/student/${currentCourse.id}/${currentAssignment.id}`));
         });
     }
   };
@@ -206,7 +252,7 @@ class Student extends React.Component<{}, IStudentState> {
       currentAssignment: undefined,
       currentCourse,
       currentSubmission: undefined,
-    });
+    }, () => this.props.history.push(`/student/${currentCourse.id}`));
   };
 
   public selectorItemsFormatter = (courses: ICourse[]) => {
@@ -221,8 +267,8 @@ class Student extends React.Component<{}, IStudentState> {
   };
 
   public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments } = this.state;
-    if (!currentCourse) {
+    const { assignments, isLoading } = this.state;
+    if (!currentCourse || isLoading) {
       return [];
     }
 
@@ -287,6 +333,18 @@ class Student extends React.Component<{}, IStudentState> {
     );
   }
 }
+
+// const URLHandler = (props: any) => {
+//   if (props.match.params.courseID) {
+//     if (props.match.params.assignmentID) {
+//       return (<div>{props.match.params.assignmentID} :)</div>);
+//     }
+//     return (<div>{props.match.params.courseID}</div>);
+//   } else {
+//     return (<div>Nope :(</div>);
+//   }
+
+// };
 
 interface IContentAreaProps {
   assignment?: IAssignment;
