@@ -246,8 +246,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
           submissionsByStudent: {},
           submissionsByGrader: {},
-
-          toasts: [],
         },
         () => {
           this.loadAllCourseData();
@@ -1315,38 +1313,39 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
-    const { currentCourse, courses } = this.state;
+    const { courses } = this.state;
     return new Promise<ICourse>((resolve) => {
-      if (currentCourse) {
-        const payload = {
-          name: courseName,
-          period: coursePeriod,
-        };
+      // if (currentCourse) {
+      const payload = {
+        name: courseName,
+        period: coursePeriod,
+      };
 
-        fetch('/api/courses/', {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-          body: JSON.stringify(payload),
+      fetch('/api/courses/', {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+        .then((res) => {
+          if (res.status === 201) {
+            return res.json();
+          } else {
+            this.addErrorToast('Something went wrong.', undefined);
+            return resolve(undefined);
+          }
         })
-          .then((res) => {
-            if (res.status === 201) {
-              return res.json();
-            } else {
-              this.addErrorToast('Something went wrong.', undefined);
-              return resolve(undefined);
-            }
-          })
-          .then((json: ICourse) => {
-            if (json) {
-              courses.push(json);
-              this.addToast(`Course ${json.name} successfully created.`, undefined);
-              return resolve(json);
-            }
-          });
-      }
+        .then((json: ICourse) => {
+          if (json) {
+            courses.push(json);
+            this.addToast(`Course ${json.name} successfully created.`, undefined);
+            this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
+            return resolve(json);
+          }
+        });
+      // }
     });
   };
 
