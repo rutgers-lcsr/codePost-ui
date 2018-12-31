@@ -17,6 +17,7 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
     if self.instance:
       organization = self.instance.organization
       name = self.instance.name
+      period = self.instance.period
     else:
       courseAdmin = self.context['request'].user
       organization = courseAdmin.profile.organization
@@ -24,11 +25,14 @@ class CourseSerializer(ModelSerializerWithPOSTCheck):
     if 'name' in newData:
       name = newData['name']
 
-    # Manually establish unique_together(name, organization) constraint
-    others = Course.objects.filter(name=name, organization=organization)
+    if 'period' in newData:
+      period = newData['period']
+
+    # Manually establish unique_together(name, period, organization) constraint
+    others = Course.objects.filter(name=name, period=period, organization=organization)
     if len(others) > 0:
       # Should raise a unique together issue here
-      raise serializers.ValidationError("The fields name, organization must make a unique set.")
+      raise serializers.ValidationError("The fields name, period, organization must make a unique set.")
 
     return newData
 

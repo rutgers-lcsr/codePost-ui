@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CircularProgress, Tab, Tabs, TabsContainer } from 'react-md';
+import { Tab, Tabs, TabsContainer } from 'react-md';
 import '../../styles/index.scss';
 import {
   IAssignment,
@@ -23,6 +23,7 @@ interface IPropsCourseData {
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
   addToast: (text: string, action: string | undefined) => void;
+  currentCourseID: number;
 }
 
 interface IState {
@@ -32,6 +33,26 @@ interface IState {
 }
 
 class CourseData extends React.Component<IPropsCourseData, {}> {
+  public static getDerivedStateFromProps(props : IPropsCourseData, state : IState) {
+    const { students, graders } = props;
+
+    if (!state.activeStudent && !state.activeGrader) {
+      return null;
+    }
+
+    const toRet = { activeStudent: state.activeStudent, activeGrader: state.activeGrader };
+
+    if (!students || students.filter((s:string) => s === state.activeStudent).length !== 1) {
+      toRet.activeStudent = undefined;
+    }
+
+    if (!graders || graders.filter((s:string) => s === state.activeGrader).length !== 1) {
+      toRet.activeGrader = undefined;
+    }
+
+    return toRet;
+  }
+
   public state: Readonly<IState> = {
     activeTabIndex: 0,
     activeStudent: undefined,
@@ -71,45 +92,42 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       assignments,
       submissionsByStudent,
       submissionsByGrader,
+      currentCourseID,
     } = this.props;
     const { activeStudent, activeGrader } = this.state;
 
-    if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
-      return (
-        <div>
-          <hr />
-          <TabsContainer onTabChange={this.onTabChange} className="tabs">
-            <Tabs tabId="simple-tab">
-              <Tab label="Students" style={{ color: '#000000' }}>
-                <StudentData
-                  assignments={assignments}
-                  submissionsByStudent={submissionsByStudent}
-                  activeStudent={activeStudent}
-                  changeActiveStudent={this.changeActiveStudent}
-                  openSubmission={this.openSubmission}
-                />
-              </Tab>
-              <Tab label="Graders" style={{ color: '#000000' }}>
-                <GraderData
-                  assignments={assignments}
-                  submissionsByGrader={submissionsByGrader}
-                  activeGrader={activeGrader}
-                  changeActiveGrader={this.changeActiveGrader}
-                  openSubmission={this.openSubmission}
-                />
-              </Tab>
-            </Tabs>
-          </TabsContainer>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
-      );
-    }
+    return (
+      <div>
+        <TabsContainer onTabChange={this.onTabChange} className="tabs">
+          <Tabs tabId="simple-tab">
+            <Tab label="Students" style={{ color: '#000000' }}>
+              <StudentData
+                key={currentCourseID}
+                submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+                assignmentsLoadComplete={assignmentsLoadComplete}
+                assignments={assignments}
+                submissionsByStudent={submissionsByStudent}
+                activeStudent={activeStudent}
+                changeActiveStudent={this.changeActiveStudent}
+                openSubmission={this.openSubmission}
+              />
+            </Tab>
+            <Tab label="Graders" style={{ color: '#000000' }}>
+              <GraderData
+                key={currentCourseID}
+                submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+                assignmentsLoadComplete={assignmentsLoadComplete}
+                assignments={assignments}
+                submissionsByGrader={submissionsByGrader}
+                activeGrader={activeGrader}
+                changeActiveGrader={this.changeActiveGrader}
+                openSubmission={this.openSubmission}
+              />
+            </Tab>
+          </Tabs>
+        </TabsContainer>
+      </div>
+    );
   }
 }
 

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  CircularProgress,
   DataTable,
   FontIcon,
   SelectFieldColumn,
@@ -73,78 +72,85 @@ class ManageSections extends React.Component<IProps, {}> {
       };
     });
 
-    if (sectionsLoadComplete && sections) {
-      return (
-        <div>
-          <TextField
-            id="addSectionField"
-            label="Add a Section"
-            lineDirection="center"
-            placeholder="Section Name"
-            className="md-cell md-cell--bottom"
-            maxLength={16}
-            value={newSectionField}
-            onChange={this.newSectionFieldOnChange}
-            disabled={lockedSectionChange}
-          />
-          <Button
-            iconChildren="done"
-            className="save-Btn"
-            disabled={!allowAddSection || lockedSectionChange}
-            onClick={createSection.bind(this.props, newSectionField)}
-          >
-            Add new section
-          </Button>
-          <hr />
-          <DataTable className="Manage-sections-table" baseId="Manage-sections-table" plain={true}>
-            <TableHeader>
-              <TableRow>
-                <TableColumn key={'sectionName'}>Section Name</TableColumn>
-                <TableColumn key={'sectionLeader'}>Leader</TableColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sections.map((section) => {
-                // Reminder - need to change to represent multiple leaders
-                const currentLeader =
-                  section.leaders && section.leaders[0] ? section.leaders[0] : '';
+    let tableBody;
+    if (sectionsLoadComplete) {
+      tableBody = (
+        sections.map((section) => {
+          // Reminder - need to change to represent multiple leaders
+          const currentLeader =
+            section.leaders && section.leaders[0] ? section.leaders[0] : '';
 
-                let dropDown;
-                let leaderDisable = false;
+          let dropDown;
+          let leaderDisable = false;
 
-                if (changedSections.indexOf(section.id) !== -1) {
-                  dropDown = iconChanged;
-                  leaderDisable = true;
-                } else {
-                  dropDown = undefined;
-                }
-                return (
-                  <TableRow key={section.id}>
-                    <TableColumn>{section.name}</TableColumn>
-                    <SelectFieldColumn
-                      dropdownIcon={dropDown}
-                      value={currentLeader}
-                      menuItems={leaderMenuItems}
-                      disabled={lockedSectionChange || leaderDisable}
-                      onChange={this.rowLeaderChange.bind(this.props, section.id)}
-                    />
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </DataTable>
-          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-            {lockIcon}
-          </Button>
-        </div>
+          if (changedSections.indexOf(section.id) !== -1) {
+            dropDown = iconChanged;
+            leaderDisable = true;
+          } else {
+            dropDown = undefined;
+          }
+          return (
+            <TableRow key={section.id}>
+              <TableColumn>{section.name}</TableColumn>
+              <SelectFieldColumn
+                dropdownIcon={dropDown}
+                value={currentLeader}
+                menuItems={leaderMenuItems}
+                disabled={lockedSectionChange || leaderDisable}
+                onChange={this.rowLeaderChange.bind(this.props, section.id)}
+              />
+            </TableRow>
+          );
+        })
+      );
+    } else {
+      tableBody = (
+        <TableRow>
+          <TableColumn>Loading...</TableColumn>
+          <TableColumn />
+        </TableRow>
       );
     }
+
     return (
       <div>
+        <TextField
+          id="addSectionField"
+          label="Add a Section"
+          lineDirection="center"
+          placeholder="Section Name"
+          className="md-cell md-cell--bottom"
+          maxLength={16}
+          value={newSectionField}
+          onChange={this.newSectionFieldOnChange}
+          disabled={lockedSectionChange}
+        />
+        <Button
+          iconChildren="done"
+          className="save-Btn"
+          disabled={!allowAddSection || lockedSectionChange}
+          onClick={createSection.bind(this.props, newSectionField)}
+        >
+          Add new section
+        </Button>
         <hr />
-        <CircularProgress id="circle" className="progressCircle" />
+        <DataTable className="Manage-sections-table" baseId="Manage-sections-table" plain={true}>
+          <TableHeader>
+            <TableRow>
+              <TableColumn key={'sectionName'}>Section Name</TableColumn>
+              <TableColumn key={'sectionLeader'}>Leader</TableColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableBody}
+          </TableBody>
+        </DataTable>
+        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+          {lockIcon}
+        </Button>
       </div>
     );
+
   }
 }
 

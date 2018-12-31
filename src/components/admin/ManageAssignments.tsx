@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  CircularProgress,
   DataTable,
   SelectionControl,
   TableBody,
@@ -354,201 +353,209 @@ class ManageAssignments extends React.Component<IProps, {}> {
     } = this.props;
 
     const { activeAssignment } = this.state;
-
     const lockIcon = lockManageAssignment ? 'lock' : 'lock_open';
 
-    if (submissions && submissionsLoadComplete && assignmentRubricLoadComplete && assignments) {
-      if (!activeAssignment) {
-        return (
-          <div>
-            <div className="padding" />
-            <NewAssignmentDialog
-              assignments={this.props.assignments}
-              addErrorToast={this.props.addErrorToast}
-              createAssignment={this.props.createAssignment}
-            />
-            <div className="padding" />
-            <DataTable
-              className="Manage-assignments-table"
-              baseId="Manage-assignments-table"
-              plain={true}
-            >
-              <TableHeader>
-                <TableRow>
-                  <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
-                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
-                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
-                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
-                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Object.keys(submissions).map((assignmentID) => {
-                  const assignmentSubs = submissions[assignmentID];
-                  const numSubmissions = assignmentSubs.length;
-                  let numGraded = 0;
-                  let numUngraded = 0;
-                  let numUnclaimed = 0;
+    let tableBody;
+    if (submissionsLoadComplete && assignmentRubricLoadComplete) {
+      tableBody =  (
+          Object.keys(submissions).map((assignmentID) => {
+            const assignmentSubs = submissions[assignmentID];
+            const numSubmissions = assignmentSubs.length;
+            let numGraded = 0;
+            let numUngraded = 0;
+            let numUnclaimed = 0;
 
-                  const assignment = assignments.filter((assn) => {
-                    return assn.id === Number(assignmentID);
-                  })[0];
+            const assignment = assignments.filter((assn) => {
+              return assn.id === Number(assignmentID);
+            })[0];
 
-                  assignmentSubs.forEach((submission: ISubmission) => {
-                    if (submission.isFinalized) {
-                      numGraded += 1;
-                    } else if (submission.grader) {
-                      numUngraded += 1;
-                    } else {
-                      numUnclaimed += 1;
-                    }
-                  });
+            assignmentSubs.forEach((submission: ISubmission) => {
+              if (submission.isFinalized) {
+                numGraded += 1;
+              } else if (submission.grader) {
+                numUngraded += 1;
+              } else {
+                numUnclaimed += 1;
+              }
+            });
 
-                  return (
-                    <TableRow
-                      key={assignmentID}
-                      onClick={this.changeActiveAssignment.bind(this.props, assignment)}
-                    >
-                      <TableColumn>{assignment.name}</TableColumn>
-                      <TableColumn>{numSubmissions}</TableColumn>
-                      <TableColumn>{numGraded}</TableColumn>
-                      <TableColumn>{numUngraded}</TableColumn>
-                      <TableColumn>{numUnclaimed}</TableColumn>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </DataTable>
-          </div>
-        );
-      } else {
-        const { activeRubricCategories, activeRubricComments } = this.state;
-
-        let categoryTables;
-
-        if (activeRubricCategories && activeRubricComments) {
-          categoryTables = activeRubricCategories.map((cat, catIndex) => {
             return (
-              <RubricCategoryTable
-                key={cat.id}
-                categoryID={cat.id}
-                categoryIndex={catIndex}
-                comments={activeRubricComments[cat.id]}
-                categoryName={cat.name}
-                categoryPointLimit={cat.pointLimit}
-                deleteCategory={this.deleteCategory}
-                changeCategoryName={this.changeCategoryName}
-                changeCategoryCap={this.changeCategoryCap}
-                addEmptyComment={this.addEmptyComment}
-                changeCommentText={this.changeCommentText}
-                changeCommentDelta={this.changeCommentDelta}
-                deleteComment={this.deleteComment}
-                isDisabled={lockManageAssignment}
-                updateComment={this.updateComment}
-                updateCategory={this.updateCategory}
-              />
+              <TableRow
+                key={assignmentID}
+                onClick={this.changeActiveAssignment.bind(this.props, assignment)}
+              >
+                <TableColumn>{assignment.name}</TableColumn>
+                <TableColumn>{numSubmissions}</TableColumn>
+                <TableColumn>{numGraded}</TableColumn>
+                <TableColumn>{numUngraded}</TableColumn>
+                <TableColumn>{numUnclaimed}</TableColumn>
+              </TableRow>
             );
-          });
-        }
-
-        return (
-          <div>
-            <Button
-              key="Back"
-              className="Btn"
-              flat={true}
-              icon={true}
-              onClick={this.changeActiveAssignment.bind(this.props, undefined)}
-            >
-              arrow_back
-            </Button>
-            <div>
-              <TextField
-                defaultValue={activeAssignment.name}
-                ref={(field) => {
-                  this.assignmentNameField = field;
-                }}
-                label={'Assignment Name'}
-                fullWidth={false}
-                disabled={lockManageAssignment}
-                onBlur={this.updateAssignmentName}
-              />
-              <TextField
-                defaultValue={activeAssignment.points}
-                step={0.5}
-                pattern="^d+(\.|\,)\d{1}"
-                type="number"
-                min={0}
-                ref={(field) => {
-                  this.assignmentPointsField = field;
-                }}
-                label={'Total Points'}
-                fullWidth={false}
-                disabled={lockManageAssignment}
-                onBlur={this.updateAssignmentPoints}
-              />
-              <SelectionControl
-                id="assignment-release-checkbox"
-                name="assignment-release-checkbox"
-                type="checkbox"
-                label="released"
-                defaultChecked={activeAssignment.isReleased}
-                disabled={lockManageAssignment}
-                onChange={this.props.updateAssignment.bind(
-                  this.props,
-                  activeAssignment.id,
-                  undefined,
-                  undefined,
-                  !activeAssignment.isReleased,
-                )}
-              />
-              <RubricFileDialog
-                activeAssignment={this.state.activeAssignment}
-                activeRubricComments={this.state.activeRubricComments}
-                activeRubricCategories={this.state.activeRubricCategories}
-                addErrorToast={this.props.addErrorToast}
-                addToast={this.props.addToast}
-                createRubricCategory={this.props.createRubricCategory}
-                createRubricComment={this.props.createRubricComment}
-                updateRubricCategory={this.props.updateRubricCategory}
-                updateRubricComment={this.props.updateRubricComment}
-                deleteRubricCategory={this.props.deleteRubricCategory}
-                deleteRubricComment={this.props.deleteRubricComment}
-                parentUpdate={this.changeActiveAssignment}
-              />
-            </div>
-            <div className="padding" />
-            {categoryTables}
-            <Button
-              className="Btn"
-              iconChildren={'playlist_add'}
-              disabled={lockManageAssignment}
-              onClick={this.addEmptyCategory}
-            >
-              Add New Category
-            </Button>
-            <Button
-              key="Lock"
-              className="Btn"
-              floating={true}
-              fixed={true}
-              icon={true}
-              onClick={this.props.toggleLock}
-            >
-              {lockIcon}
-            </Button>
-          </div>
-        );
-      }
+          })
+      );
     } else {
+      tableBody = (
+        <TableRow>
+          <TableColumn>Loading...</TableColumn>
+          <TableColumn />
+          <TableColumn />
+          <TableColumn />
+          <TableColumn />
+        </TableRow>
+      );
+    }
+
+    if (!activeAssignment) {
       return (
         <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
+          <div className="padding" />
+          <NewAssignmentDialog
+            assignments={this.props.assignments}
+            addErrorToast={this.props.addErrorToast}
+            createAssignment={this.props.createAssignment}
+          />
+          <div className="padding" />
+          <DataTable
+            className="Manage-assignments-table"
+            baseId="Manage-assignments-table"
+            plain={true}
+          >
+            <TableHeader>
+              <TableRow>
+                <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
+                <TableColumn key={'SubNumber'}># of submissions</TableColumn>
+                <TableColumn key={'GradedNumber'}># graded</TableColumn>
+                <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
+                <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+            {tableBody}
+            </TableBody>
+          </DataTable>
+        </div>
+      );
+    } else {
+      const { activeRubricCategories, activeRubricComments } = this.state;
+
+      let categoryTables;
+
+      if (activeRubricCategories && activeRubricComments) {
+        categoryTables = activeRubricCategories.map((cat, catIndex) => {
+          return (
+            <RubricCategoryTable
+              key={cat.id}
+              categoryID={cat.id}
+              categoryIndex={catIndex}
+              comments={activeRubricComments[cat.id]}
+              categoryName={cat.name}
+              categoryPointLimit={cat.pointLimit}
+              deleteCategory={this.deleteCategory}
+              changeCategoryName={this.changeCategoryName}
+              changeCategoryCap={this.changeCategoryCap}
+              addEmptyComment={this.addEmptyComment}
+              changeCommentText={this.changeCommentText}
+              changeCommentDelta={this.changeCommentDelta}
+              deleteComment={this.deleteComment}
+              isDisabled={lockManageAssignment}
+              updateComment={this.updateComment}
+              updateCategory={this.updateCategory}
+            />
+          );
+        });
+      }
+
+      return (
+        <div>
+          <Button
+            key="Back"
+            className="Btn"
+            flat={true}
+            icon={true}
+            onClick={this.changeActiveAssignment.bind(this.props, undefined)}
+          >
+            arrow_back
+          </Button>
+          <div>
+            <TextField
+              defaultValue={activeAssignment.name}
+              ref={(field) => {
+                this.assignmentNameField = field;
+              }}
+              label={'Assignment Name'}
+              fullWidth={false}
+              disabled={lockManageAssignment}
+              onBlur={this.updateAssignmentName}
+            />
+            <TextField
+              defaultValue={activeAssignment.points}
+              step={0.5}
+              pattern="^d+(\.|\,)\d{1}"
+              type="number"
+              min={0}
+              ref={(field) => {
+                this.assignmentPointsField = field;
+              }}
+              label={'Total Points'}
+              fullWidth={false}
+              disabled={lockManageAssignment}
+              onBlur={this.updateAssignmentPoints}
+            />
+            <SelectionControl
+              id="assignment-release-checkbox"
+              name="assignment-release-checkbox"
+              type="checkbox"
+              label="released"
+              defaultChecked={activeAssignment.isReleased}
+              disabled={lockManageAssignment}
+              onChange={this.props.updateAssignment.bind(
+                this.props,
+                activeAssignment.id,
+                undefined,
+                undefined,
+                !activeAssignment.isReleased,
+              )}
+            />
+            <RubricFileDialog
+              activeAssignment={this.state.activeAssignment}
+              activeRubricComments={this.state.activeRubricComments}
+              activeRubricCategories={this.state.activeRubricCategories}
+              addErrorToast={this.props.addErrorToast}
+              addToast={this.props.addToast}
+              createRubricCategory={this.props.createRubricCategory}
+              createRubricComment={this.props.createRubricComment}
+              updateRubricCategory={this.props.updateRubricCategory}
+              updateRubricComment={this.props.updateRubricComment}
+              deleteRubricCategory={this.props.deleteRubricCategory}
+              deleteRubricComment={this.props.deleteRubricComment}
+              parentUpdate={this.changeActiveAssignment}
+            />
+          </div>
+          <div className="padding" />
+          {categoryTables}
+          <Button
+            className="Btn"
+            iconChildren={'playlist_add'}
+            disabled={lockManageAssignment}
+            onClick={this.addEmptyCategory}
+          >
+            Add New Category
+          </Button>
+          <Button
+            key="Lock"
+            className="Btn"
+            floating={true}
+            fixed={true}
+            icon={true}
+            onClick={this.props.toggleLock}
+          >
+            {lockIcon}
+          </Button>
         </div>
       );
     }
   }
+
 }
 
 export default ManageAssignments;

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  CircularProgress,
   DataTable,
   TableBody,
   TableColumn,
@@ -67,95 +66,100 @@ class ManageStudents extends React.Component<IProps, {}> {
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
     const adminType = USER_APP.CourseAdmin;
 
-    if (adminsLoadComplete && admins) {
-      if (sortAscending) {
-        admins.sort();
-      } else {
-        admins.sort().reverse();
-      }
-      return (
-        <div>
-          <TextField
-            id="addAdminField"
-            label="Add Admin"
-            lineDirection="center"
-            placeholder="Student's email"
-            className="md-cell md-cell--bottom"
-            value={newAdminField}
-            onChange={this.newAdminFieldOnChange}
-            disabled={lockedAdminChange}
-          />
-          <Button
-            iconChildren="done"
-            className="save-Btn"
-            disabled={!showSaveNewAdminButton || lockedAdminChange}
-            onClick={this.triggerEnrollUser.bind(this.props, newAdminField, adminType)}
-          >
-            Save new admin
-          </Button>
-          <hr />
-          <TextField
-            id="search-manageAdmins"
-            label="Search"
-            lineDirection="center"
-            className="md-cell md-cell--bottom"
-            onChange={this.changeSearch}
-          />
-          <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
-            <TableHeader>
-              <TableRow selectable={false}>
-                <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
-                  Admin name
-                </TableColumn>
-                <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {admins.map((admin) => {
-                if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-                  return <div />;
-                }
-                return (
-                  <TableRow key={admin}>
-                    <TableColumn>{admin}</TableColumn>
-                    <TableColumn key={'UnEnroll'}>
-                      {' '}
-                      <Button
-                        key="unEnroll"
-                        className="Btn"
-                        flat={true}
-                        icon={true}
-                        disabled={lockedAdminChange}
-                        onClick={this.triggerUnEnrollUser.bind(this.props, admin, adminType)}
-                      >
-                        cancel
-                      </Button>
-                    </TableColumn>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
-            {lockIcon}
-          </Button>
-        </div>
+    let tableBody;
+    if (adminsLoadComplete) {
+      tableBody = (
+        admins.map((admin) => {
+          if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+            return <div />;
+          }
+          return (
+            <TableRow key={admin}>
+              <TableColumn>{admin}</TableColumn>
+              <TableColumn key={'UnEnroll'}>
+                {' '}
+                <Button
+                  key="unEnroll"
+                  className="Btn"
+                  flat={true}
+                  icon={true}
+                  disabled={lockedAdminChange}
+                  onClick={this.triggerUnEnrollUser.bind(this.props, admin, adminType)}
+                >
+                  cancel
+                </Button>
+              </TableColumn>
+            </TableRow>
+          );
+        })
       );
     } else {
-      return (
-        <div>
-          <hr />
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
+      tableBody = (
+        <TableRow>
+          <TableColumn>Loading...</TableColumn>
+          <TableColumn />
+        </TableRow>
       );
     }
+
+    if (sortAscending) {
+      admins.sort();
+    } else {
+      admins.sort().reverse();
+    }
+    return (
+      <div>
+        <TextField
+          id="addAdminField"
+          label="Add Admin"
+          lineDirection="center"
+          placeholder="Student's email"
+          className="md-cell md-cell--bottom"
+          value={newAdminField}
+          onChange={this.newAdminFieldOnChange}
+          disabled={lockedAdminChange}
+        />
+        <Button
+          iconChildren="done"
+          className="save-Btn"
+          disabled={!showSaveNewAdminButton || lockedAdminChange}
+          onClick={this.triggerEnrollUser.bind(this.props, newAdminField, adminType)}
+        >
+          Save new admin
+        </Button>
+        <hr />
+        <TextField
+          id="search-manageAdmins"
+          label="Search"
+          lineDirection="center"
+          className="md-cell md-cell--bottom"
+          onChange={this.changeSearch}
+        />
+        <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
+          <TableHeader>
+            <TableRow selectable={false}>
+              <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
+                Admin name
+              </TableColumn>
+              <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableBody}
+          </TableBody>
+        </DataTable>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
+          {lockIcon}
+        </Button>
+      </div>
+    );
   }
 }
 

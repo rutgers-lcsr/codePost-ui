@@ -31,7 +31,7 @@ import {
 
 interface IAdminState {
   currentCourse?: ICourse; // Course for selector
-  loadedPanel: number; // Which active_panel to load, enum
+  loadedPanel?: number; // Which active_panel to load, enum
   courses: ICourse[]; // Set of courses for the admin for the selector
 
   // general state items
@@ -49,7 +49,7 @@ interface IAdminState {
   adminsLoadComplete: boolean;
   sections: ISection[];
 
-  // Reminer - need to get rid of ISectionNoStudents, it's ugly
+  // Reminder - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   sectionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
@@ -88,7 +88,7 @@ interface IAdminState {
 class Admin extends React.Component<{}, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined, // Course for selector
-    loadedPanel: 0, // Which active_panel to load, enum
+    loadedPanel: undefined, // Which active_panel to load, enum
     courses: [], // Set of courses for the admin for the selector
 
     // general props
@@ -207,7 +207,7 @@ class Admin extends React.Component<{}, IAdminState> {
       this.setState(
         {
           currentCourse,
-          loadedPanel: 0,
+          loadedPanel: this.state.loadedPanel ? this.state.loadedPanel : 0,
 
           students: [],
           studentsLoadComplete: false,
@@ -246,8 +246,6 @@ class Admin extends React.Component<{}, IAdminState> {
 
           submissionsByStudent: {},
           submissionsByGrader: {},
-
-          toasts: [],
         },
         () => {
           this.loadAllCourseData();
@@ -262,11 +260,9 @@ class Admin extends React.Component<{}, IAdminState> {
       return course.id === option.value;
     })[0];
 
+    // reminder: set students graders everything to undefined
     this.setState(
-      {
-        // reminder: set students graders everything to undefined
-        currentCourse,
-      },
+      { currentCourse },
       () => {
         this.updateNewCourse(option);
       },
@@ -288,7 +284,7 @@ class Admin extends React.Component<{}, IAdminState> {
   public selectorItemsFormatter = (courses: ICourse[]) => {
     return courses.map((course, i) => ({
       value: course.id,
-      label: course.name,
+      label: `${course.name} | ${course.period}`,
     }));
   };
 
@@ -296,7 +292,7 @@ class Admin extends React.Component<{}, IAdminState> {
     if (!currentCourse) {
       return undefined;
     }
-    return { value: currentCourse.id, label: currentCourse.name };
+    return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
   public tabItemsFormatter = () => {
@@ -307,10 +303,15 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   public tabCurrentFormatter = () => {
-    return {
-      value: this.state.loadedPanel,
-      label: this.panels[this.state.loadedPanel],
-    };
+    const loadedPanel = this.state.loadedPanel;
+    if (typeof(loadedPanel) !== 'undefined') {
+      return {
+        value: loadedPanel,
+        label: this.panels[loadedPanel],
+      };
+    } else {
+      return undefined;
+    }
   };
 
   // ------------------- Toast functions -------------------
@@ -1024,7 +1025,7 @@ class Admin extends React.Component<{}, IAdminState> {
         const payload = {
           id: categoryID,
           text: categoryName,
-          pointDelta: categoryPointLimit,
+          pointLimit: categoryPointLimit,
           assignment: assignmentID,
         };
 
@@ -1312,38 +1313,39 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
-    const { currentCourse, courses } = this.state;
+    const { courses } = this.state;
     return new Promise<ICourse>((resolve) => {
-      if (currentCourse) {
-        const payload = {
-          name: courseName,
-          period: coursePeriod,
-        };
+      // if (currentCourse) {
+      const payload = {
+        name: courseName,
+        period: coursePeriod,
+      };
 
-        fetch('/api/courses/', {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-          body: JSON.stringify(payload),
+      fetch('/api/courses/', {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+        .then((res) => {
+          if (res.status === 201) {
+            return res.json();
+          } else {
+            this.addErrorToast('Something went wrong.', undefined);
+            return resolve(undefined);
+          }
         })
-          .then((res) => {
-            if (res.status === 201) {
-              return res.json();
-            } else {
-              this.addErrorToast('Something went wrong.', undefined);
-              return resolve(undefined);
-            }
-          })
-          .then((json: ICourse) => {
-            if (json) {
-              courses.push(json);
-              this.addToast(`Course ${json.name} successfully created.`, undefined);
-              return resolve(json);
-            }
-          });
-      }
+        .then((json: ICourse) => {
+          if (json) {
+            courses.push(json);
+            this.addToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
+            this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
+            return resolve(json);
+          }
+        });
+      // }
     });
   };
 
@@ -1357,6 +1359,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <CourseData
+            currentCourseID={currentCourse.id}
             assignments={this.state.assignments}
             assignmentsLoadComplete={this.state.assignmentsLoadComplete}
             students={this.state.students}
@@ -1376,6 +1379,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageAssignments
+            key={currentCourse.id}
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             submissions={this.state.submissions}
@@ -1402,6 +1406,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageStudents
+            key={currentCourse.id}
             sections={this.state.sections}
             students={this.state.students}
             studentsLoadComplete={this.state.studentsLoadComplete}
@@ -1420,6 +1425,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageGraders
+            key={currentCourse.id}
             graders={this.state.graders}
             gradersLoadComplete={this.state.gradersLoadComplete}
             lockedGraderChange={this.state.lockManageGrader}
@@ -1435,6 +1441,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageSections
+            key={currentCourse.id}
             sections={this.state.sections}
             sectionsLoadComplete={this.state.sectionsLoadComplete}
             lockedSectionChange={this.state.lockManageSection}
@@ -1451,6 +1458,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <ManageAdmins
+            key={currentCourse.id}
             admins={this.state.admins}
             adminsLoadComplete={this.state.adminsLoadComplete}
             lockedAdminChange={this.state.lockManageAdmin}
@@ -1462,6 +1470,12 @@ class Admin extends React.Component<{}, IAdminState> {
           />
         </div>
       );
+    } else if (!currentCourse) {
+      if (courses.length > 0) {
+        courseManagementPanel = (<div>Select a course to get started.</div>);
+      } else {
+        courseManagementPanel = (<div>Create a course to get started!</div>);
+      }
     }
 
     return (
