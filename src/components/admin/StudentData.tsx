@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  CircularProgress,
   DataTable,
   TableBody,
   TableColumn,
@@ -17,6 +18,8 @@ interface IPropsStudentOverview {
   activeStudent: string | undefined;
   changeActiveStudent: (student: string | undefined) => void;
   openSubmission: (submissionID: number | string) => void;
+  submissionsbyUserLoadComplete: boolean;
+  assignmentsLoadComplete: boolean;
 }
 
 interface IState {
@@ -121,6 +124,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       activeStudent,
       openSubmission,
       changeActiveStudent,
+      submissionsbyUserLoadComplete,
+      assignmentsLoadComplete,
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
     const headers = assignments.map((assignment: IAssignment) => {
@@ -128,9 +133,44 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     });
     headers.unshift(this.studentHeader);
 
-    if (!activeStudent) {
+    let tableBody;
+    if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
       const students = Object.keys(submissionsByStudent);
       students.sort(this.sortFunction);
+      tableBody = (
+        students.map((studentEmail) => {
+          if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+            return <div />;
+          }
+          return (
+            <TableRow
+              key={studentEmail}
+              onClick={changeActiveStudent.bind(this.props, studentEmail)}
+            >
+              <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
+              {this.props.assignments.map((assignment) => {
+                const submission = submissionsByStudent[studentEmail][assignment.id];
+                if (submission && submission.isFinalized) {
+                  return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
+                } else if (submission) {
+                  return <TableColumn key={assignment.name}>Not graded</TableColumn>;
+                } else {
+                  return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
+                }
+              })}
+            </TableRow>
+          );
+        })
+      );
+    } else {
+      tableBody = (
+        <div>
+          <CircularProgress id="circle" className="progressCircle" />
+        </div>
+      );
+    }
+
+    if (!activeStudent) {
       return (
         <div>
           <TextField
@@ -157,29 +197,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((studentEmail) => {
-                if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-                  return <div />;
-                }
-                return (
-                  <TableRow
-                    key={studentEmail}
-                    onClick={changeActiveStudent.bind(this.props, studentEmail)}
-                  >
-                    <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
-                    {this.props.assignments.map((assignment) => {
-                      const submission = submissionsByStudent[studentEmail][assignment.id];
-                      if (submission && submission.isFinalized) {
-                        return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
-                      } else if (submission) {
-                        return <TableColumn key={assignment.name}>Not graded</TableColumn>;
-                      } else {
-                        return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
-                      }
-                    })}
-                  </TableRow>
-                );
-              })}
+              {tableBody}
             </TableBody>
           </DataTable>
         </div>

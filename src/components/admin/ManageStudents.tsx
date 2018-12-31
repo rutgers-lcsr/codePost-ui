@@ -102,118 +102,123 @@ class ManageStudents extends React.Component<IProps, {}> {
     const iconChanged = <FontIcon>track_changes</FontIcon>;
     const studentType = USER_APP.Student;
 
-    if (studentsLoadComplete && students) {
-      if (sortAscending) {
-        students.sort();
-      } else {
-        students.sort().reverse();
-      }
-      return (
+    let tableBody;
+    if (studentsLoadComplete) {
+      tableBody = (
+        students.map((student) => {
+          const section = sectionsByStudent[student];
+          const sectionID = section ? section.id : '';
+          const sectionName = section ? section.name : '';
+
+          if (
+            student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
+            sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
+          ) {
+            return <div />;
+          }
+
+          let dropDown;
+          let sectionDisable = false;
+
+          if (changedSectionStudents.indexOf(student) !== -1) {
+            dropDown = iconChanged;
+            sectionDisable = true;
+          } else {
+            dropDown = undefined;
+          }
+
+          return (
+            <TableRow key={student}>
+              <TableColumn>{student}</TableColumn>
+              <SelectFieldColumn
+                dropdownIcon={dropDown}
+                value={sectionID}
+                menuItems={sectionMenuItems}
+                disabled={lockedStudentChange || sectionDisable}
+                onChange={this.rowSectionChange.bind(this.props, student)}
+              />
+              <TableColumn key={'UnEnroll'}>
+                {' '}
+                <Button
+                  key="unEnroll"
+                  className="Btn"
+                  flat={true}
+                  icon={true}
+                  disabled={lockedStudentChange}
+                  onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+                >
+                  cancel
+                </Button>
+              </TableColumn>
+            </TableRow>
+          );
+        })
+       );
+    } else {
+      tableBody = (
         <div>
-          <TextField
-            id="addStudentField"
-            label="Add Student"
-            lineDirection="center"
-            placeholder="Student's email"
-            className="md-cell md-cell--bottom"
-            value={newStudentField}
-            onChange={this.newStudentFieldOnChange}
-            disabled={lockedStudentChange}
-          />
-          <Button
-            iconChildren="done"
-            className="save-Btn"
-            disabled={!showSaveNewStudentButton || lockedStudentChange}
-            onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
-          >
-            Save new student
-          </Button>
-          <hr />
-          <TextField
-            id="search-manageStudents"
-            label="Search"
-            lineDirection="center"
-            className="md-cell md-cell--bottom"
-            onChange={this.changeSearch}
-          />
-          <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
-            <TableHeader>
-              <TableRow selectable={false}>
-                <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>
-                  Student
-                </TableColumn>
-                <TableColumn key={'Section'}>Section</TableColumn>
-                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {students.map((student) => {
-                const section = sectionsByStudent[student];
-                const sectionID = section ? section.id : '';
-                const sectionName = section ? section.name : '';
-
-                if (
-                  student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
-                  sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
-                ) {
-                  return <div />;
-                }
-
-                let dropDown;
-                let sectionDisable = false;
-
-                if (changedSectionStudents.indexOf(student) !== -1) {
-                  dropDown = iconChanged;
-                  sectionDisable = true;
-                } else {
-                  dropDown = undefined;
-                }
-
-                return (
-                  <TableRow key={student}>
-                    <TableColumn>{student}</TableColumn>
-                    <SelectFieldColumn
-                      dropdownIcon={dropDown}
-                      value={sectionID}
-                      menuItems={sectionMenuItems}
-                      disabled={lockedStudentChange || sectionDisable}
-                      onChange={this.rowSectionChange.bind(this.props, student)}
-                    />
-                    <TableColumn key={'UnEnroll'}>
-                      {' '}
-                      <Button
-                        key="unEnroll"
-                        className="Btn"
-                        flat={true}
-                        icon={true}
-                        disabled={lockedStudentChange}
-                        onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
-                      >
-                        cancel
-                      </Button>
-                    </TableColumn>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </DataTable>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
-            {lockIcon}
-          </Button>
+          <CircularProgress id="circle" className="progressCircle" />
         </div>
       );
     }
+
+    if (sortAscending) {
+      students.sort();
+    } else {
+      students.sort().reverse();
+    }
     return (
       <div>
+        <TextField
+          id="addStudentField"
+          label="Add Student"
+          lineDirection="center"
+          placeholder="Student's email"
+          className="md-cell md-cell--bottom"
+          value={newStudentField}
+          onChange={this.newStudentFieldOnChange}
+          disabled={lockedStudentChange}
+        />
+        <Button
+          iconChildren="done"
+          className="save-Btn"
+          disabled={!showSaveNewStudentButton || lockedStudentChange}
+          onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
+        >
+          Save new student
+        </Button>
         <hr />
-        <CircularProgress id="circle" className="progressCircle" />
+        <TextField
+          id="search-manageStudents"
+          label="Search"
+          lineDirection="center"
+          className="md-cell md-cell--bottom"
+          onChange={this.changeSearch}
+        />
+        <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
+          <TableHeader>
+            <TableRow selectable={false}>
+              <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>
+                Student
+              </TableColumn>
+              <TableColumn key={'Section'}>Section</TableColumn>
+              <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableBody}
+          </TableBody>
+        </DataTable>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
+          {lockIcon}
+        </Button>
       </div>
     );
   }

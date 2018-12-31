@@ -1359,7 +1359,7 @@ class Admin extends React.Component<{}, IAdminState> {
       courseManagementPanel = (
         <div className="content-container">
           <CourseData
-            key={currentCourse.id}
+            currentCourseID={currentCourse.id}
             assignments={this.state.assignments}
             assignmentsLoadComplete={this.state.assignmentsLoadComplete}
             students={this.state.students}

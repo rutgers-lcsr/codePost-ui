@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  CircularProgress,
   DataTable,
   TableBody,
   TableColumn,
@@ -17,6 +18,8 @@ interface IPropsGraderOverview {
   activeGrader: string | undefined;
   changeActiveGrader: (grader: string | undefined) => void;
   openSubmission: (submissionID: number | string) => void;
+  submissionsbyUserLoadComplete: boolean;
+  assignmentsLoadComplete: boolean;
 }
 
 interface IState {
@@ -125,7 +128,12 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
   };
 
   public render() {
-    const { submissionsByGrader, assignments, activeGrader, changeActiveGrader } = this.props;
+    const {
+      submissionsByGrader,
+      assignments, activeGrader,
+      changeActiveGrader,
+      submissionsbyUserLoadComplete,
+      assignmentsLoadComplete } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
     const headers = this.props.assignments.map((assignment: IAssignment) => {
@@ -135,6 +143,40 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     const graders = Object.keys(submissionsByGrader);
     graders.sort(this.sortFunction);
+
+    let tableBody;
+    if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
+      tableBody = (
+        graders.map((graderEmail) => {
+          if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+            return <div />;
+          }
+          return (
+            <TableRow
+              key={graderEmail}
+              onClick={changeActiveGrader.bind(this.props, graderEmail)}
+            >
+              <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
+              {assignments.map((assignment) => {
+                const submissions = submissionsByGrader[graderEmail][assignment.id];
+                const assignmentName = assignment.name;
+                if (submissions) {
+                  return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+                } else {
+                  return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+                }
+              })}
+            </TableRow>
+          );
+        })
+      );
+    } else {
+      tableBody = (
+        <div>
+          <CircularProgress id="circle" className="progressCircle" />
+        </div>
+      );
+    }
 
     if (!activeGrader) {
       return (
@@ -163,28 +205,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {graders.map((graderEmail) => {
-                if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-                  return <div />;
-                }
-                return (
-                  <TableRow
-                    key={graderEmail}
-                    onClick={changeActiveGrader.bind(this.props, graderEmail)}
-                  >
-                    <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
-                    {assignments.map((assignment) => {
-                      const submissions = submissionsByGrader[graderEmail][assignment.id];
-                      const assignmentName = assignment.name;
-                      if (submissions) {
-                        return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
-                      } else {
-                        return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
-                      }
-                    })}
-                  </TableRow>
-                );
-              })}
+              {tableBody}
             </TableBody>
           </DataTable>
         </div>
