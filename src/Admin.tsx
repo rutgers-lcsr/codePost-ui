@@ -1340,7 +1340,7 @@ class Admin extends React.Component<{}, IAdminState> {
         .then((json: ICourse) => {
           if (json) {
             courses.push(json);
-            this.addToast(`Course ${json.name} successfully created.`, undefined);
+            this.addToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
             this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
             return resolve(json);
           }
