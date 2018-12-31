@@ -45,14 +45,8 @@ class NewCourseDialog extends React.Component<IProps, {}> {
       this.props.addErrorToast('Course name must be longer than 4 characters', undefined);
       return;
     }
-    if (
-      courses
-        .map((i) => {
-          return i.name.toLowerCase();
-        })
-        .indexOf(newCourseName.toLowerCase()) !== -1
-    ) {
-      this.props.addErrorToast('Course name must be distinct from other courses.', undefined);
+    if (courses.filter(c => c.name === newCourseName && c.period === newCoursePeriod).length !== 0) {
+      this.props.addErrorToast('Cannot create course with same name and period as existing course.', undefined);
       return;
     }
     this.props.createCourse(newCourseName, newCoursePeriod).then(() => {
