@@ -1025,7 +1025,7 @@ class Admin extends React.Component<{}, IAdminState> {
         const payload = {
           id: categoryID,
           text: categoryName,
-          pointDelta: categoryPointLimit,
+          pointLimit: categoryPointLimit,
           assignment: assignmentID,
         };
 
