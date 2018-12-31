@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  CircularProgress,
   DataTable,
   TableBody,
   TableColumn,
@@ -172,9 +171,11 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       );
     } else {
       tableBody = (
-        <div>
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
+        <TableRow>
+          <TableColumn>Loading...</TableColumn>
+          <TableColumn />
+          <TableColumn />
+        </TableRow>
       );
     }
 

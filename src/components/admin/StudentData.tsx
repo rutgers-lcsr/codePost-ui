@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  CircularProgress,
   DataTable,
   TableBody,
   TableColumn,
@@ -164,9 +163,12 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       );
     } else {
       tableBody = (
-        <div>
-          <CircularProgress id="circle" className="progressCircle" />
-        </div>
+        <TableRow>
+          <TableColumn>Loading...</TableColumn>
+          <TableColumn />
+          <TableColumn />
+          <TableColumn />
+        </TableRow>
       );
     }
 
