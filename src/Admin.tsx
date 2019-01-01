@@ -85,7 +85,12 @@ interface IAdminState {
   errorToasts: IToast[];
 }
 
-class Admin extends React.Component<{}, IAdminState> {
+interface IAdminProps {
+  match: any;
+  history: any;
+}
+
+class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined, // Course for selector
     loadedPanel: undefined, // Which active_panel to load, enum
@@ -149,6 +154,15 @@ class Admin extends React.Component<{}, IAdminState> {
     5: 'Manage Admins',
   };
 
+  public panelMapForURL = [
+    'course-data',
+    'assignments',
+    'manage-students',
+    'manage-graders',
+    'manage-sections',
+    'manage-admins',
+  ];
+
   public snackBarStyle = {
     width: '100%',
     fontWeight: 500,
@@ -164,9 +178,58 @@ class Admin extends React.Component<{}, IAdminState> {
     backgroundColor: 'red',
     maxWidth: '100%',
   };
-  // ------------------- Permissions check functions -------------------
 
   private interval: any;
+
+  ///////////////////////////////////////
+  // URL handler methods
+  ///////////////////////////////////////
+
+  public panelFromString(name : string) {
+    console.log(name);
+    return this.panelMapForURL.indexOf(name);
+  }
+
+  public stringFromPanel(panel : number) {
+    if (panel < this.panelMapForURL.length && panel >= 0) {
+      return this.panelMapForURL[panel];
+    }
+    return null;
+  }
+
+  public setCourseFromURL(courses : ICourse[]) {
+    const courseNameFromURL = this.props.match.params.courseName;
+    const periodFromURL = this.props.match.params.period;
+    const panelFromURL = this.props.match.params.panelName;
+
+    let currentCourse;
+    if (courseNameFromURL && periodFromURL && panelFromURL) {
+      const formattedCourseName = courseNameFromURL.replace('_', ' ');
+      const formattedPeriod = periodFromURL.replace('_', ' ');
+
+      currentCourse = courses.find((obj: ICourse) => {
+        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+      });
+
+      const panelNum = this.panelFromString(panelFromURL);
+
+      if (currentCourse && (typeof panelNum !== undefined)) {
+        this.setState({ currentCourse, loadedPanel: panelNum });
+      } else {
+        currentCourse = undefined;
+      }
+    }
+    return currentCourse;
+  }
+
+  public setURLFromCourse(course : ICourse, panel: number) {
+    const formattedName = course.name.replace(' ', '_');
+    const formattedPeriod = course.period.replace(' ', '_');
+    const panelName = this.stringFromPanel(panel);
+    this.props.history.push(`/course-admin/${formattedName}/${formattedPeriod}/${panelName}`);
+  }
+
+  // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
@@ -187,6 +250,15 @@ class Admin extends React.Component<{}, IAdminState> {
     }, 10000);
   }
 
+  public componentDidUpdate(prevProps : IAdminProps, prevState : IAdminState) {
+    if (prevState.isLoading && prevState.courses && prevState.assignments) {
+      const { courses } = this.state;
+      if (courses) {
+        this.setCourseFromURL(courses);
+      }
+    }
+  }
+
   public componentWillUnmount() {
     clearInterval(this.interval);
   }
@@ -204,10 +276,12 @@ class Admin extends React.Component<{}, IAdminState> {
         return course.id === option.value;
       })[0];
 
+      const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
+
       this.setState(
         {
           currentCourse,
-          loadedPanel: this.state.loadedPanel ? this.state.loadedPanel : 0,
+          loadedPanel: currentPanel,
 
           students: [],
           studentsLoadComplete: false,
@@ -248,6 +322,7 @@ class Admin extends React.Component<{}, IAdminState> {
           submissionsByGrader: {},
         },
         () => {
+          this.setURLFromCourse(currentCourse, currentPanel);
           this.loadAllCourseData();
         },
       );
@@ -278,6 +353,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
     this.setState({ loadedPanel: Number(option.value) }, () => {
       this.forceUpdate();
+      this.setURLFromCourse(currentCourse, Number(option.value));
     });
   };
 
