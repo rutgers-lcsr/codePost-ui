@@ -136,7 +136,7 @@ class App extends React.Component<{}, IStudentState> {
               <Switch>
                 <Route exact={true} path={`${STUDENT}/`} component={Student} />
                 <Route exact={true} path={`${STUDENT}/:courseID`} component={Student} />
-                <Route exact={true} path={`${STUDENT}/:courseID/:assignmentID`} component={Student} />>
+                <Route exact={true} path={`${STUDENT}/:courseID/:assignmentID`} component={Student} />
 
                 <Route exact={true} path={GRADER} component={Grader} />
                 <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />

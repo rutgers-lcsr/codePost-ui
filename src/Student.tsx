@@ -79,11 +79,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public componentDidUpdate(prevProps : IStudentProps, prevState : IStudentState) {
     if (prevState.isLoading && prevState.courses && prevState.assignments) {
-      const { courses, assignments, currentCourse } = this.state;
-      const adder = (total : number, num : number) => total + num;
+      const { assignments, currentCourse } = this.state;
 
-      const targetEntries = courses.map(course => course.assignments.length).reduce(adder, 0);
-      const currEntries = Object.keys(assignments).map((key, i) => assignments[key].length).reduce(adder, 0);
+      // Don't need to try to load assignment if no currrentCourse
+      if (!currentCourse || !assignments[currentCourse.id]) {
+        return;
+      }
+
+      const targetEntries = currentCourse.assignments.length;
+      const currEntries = assignments[currentCourse.id].length;
       if (targetEntries > 0 && targetEntries === currEntries) {
         if (assignments && currentCourse) {
           this.setState({ isLoading: false }, () => this.setAssignmentFromURL(assignments, currentCourse));
@@ -333,18 +337,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
   }
 }
-
-// const URLHandler = (props: any) => {
-//   if (props.match.params.courseID) {
-//     if (props.match.params.assignmentID) {
-//       return (<div>{props.match.params.assignmentID} :)</div>);
-//     }
-//     return (<div>{props.match.params.courseID}</div>);
-//   } else {
-//     return (<div>Nope :(</div>);
-//   }
-
-// };
 
 interface IContentAreaProps {
   assignment?: IAssignment;
