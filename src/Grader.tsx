@@ -24,7 +24,12 @@ interface IGraderState {
   redirect: boolean;
 }
 
-class Grader extends React.Component<{}, IGraderState> {
+interface IGraderProps {
+  match: any;
+  history: any;
+}
+
+class Grader extends React.Component<IGraderProps, IGraderState> {
   public state: Readonly<IGraderState> = {
     assignments: {},
     courses: [],
@@ -54,6 +59,78 @@ class Grader extends React.Component<{}, IGraderState> {
     }
   }
 
+  public componentDidUpdate(prevProps : IGraderProps, prevState : IGraderState) {
+    if (prevState.isLoading && prevState.courses && prevState.assignments) {
+      const { assignments, currentCourse } = this.state;
+
+      // Don't need to try to load assignment if no currrentCourse
+      if (!currentCourse || !assignments[currentCourse.id]) {
+        return;
+      }
+
+      const targetEntries = currentCourse.assignments.length;
+      const currEntries = assignments[currentCourse.id].length;
+      if (targetEntries > 0 && targetEntries === currEntries) {
+        if (assignments && currentCourse) {
+          this.setState({ isLoading: false }, () => this.setAssignmentFromURL(assignments, currentCourse));
+        }
+      }
+    }
+  }
+  ///////////////////////////////////////
+  // URL handler methods
+  ///////////////////////////////////////
+
+  public setCourseFromURL(courses : ICourse[]) {
+    const courseNameFromURL = this.props.match.params.courseName;
+    const periodFromURL = this.props.match.params.period;
+
+    let currentCourse;
+    if (courseNameFromURL && periodFromURL) {
+      const formattedCourseName = courseNameFromURL.replace('_', ' ');
+      const formattedPeriod = periodFromURL.replace('_', ' ');
+
+      currentCourse = courses.find((obj: ICourse) => {
+        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+      });
+      if (currentCourse) {
+        this.setState({ currentCourse });
+      }
+    }
+    return currentCourse;
+  }
+
+  public setAssignmentFromURL(assignments : ICourseToAssignmentMap  , currentCourse : ICourse) {
+    const assignmentNameFromURL = this.props.match.params.assignmentName;
+
+    let currentAssignment;
+    if (assignmentNameFromURL) {
+      const formattedAssignmentName = assignmentNameFromURL.replace('_', ' ');
+
+      currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+        return obj.name === formattedAssignmentName;
+      });
+      if (currentAssignment) {
+        this.setState({ currentAssignment });
+      }
+    }
+
+    return currentAssignment;
+  }
+
+  public setURLFromCourse(course : ICourse) {
+    const formattedName = course.name.replace(' ', '_');
+    const formattedPeriod = course.period.replace(' ', '_');
+    this.props.history.push(`/grader/${formattedName}/${formattedPeriod}`);
+  }
+
+  public setURLFromAssignment(assignment : IAssignment, course : ICourse) {
+    const formattedCourseName = course.name.replace(' ', '_');
+    const formattedPeriod = course.period.replace(' ', '_');
+    const formattedAssignmentName = assignment.name.replace(' ', '_');
+    this.props.history.push(`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`);
+  }
+
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
@@ -61,6 +138,7 @@ class Grader extends React.Component<{}, IGraderState> {
   public loadCourses = () => {
     return APIUtils.fetchUser(USER_APP.Grader).then(([email, courses]) => {
       this.setState({ email, courses });
+      this.setCourseFromURL(courses);
       return Promise.all(
         courses.map((course: ICourse) => {
           return this.loadAssignments(course);
@@ -91,7 +169,6 @@ class Grader extends React.Component<{}, IGraderState> {
   public loadSubmissions = (assignment: IAssignment) => {
     return APIUtils.fetchSubmissions(assignment.id, USER_APP.Grader, this.state.email).then(
       (currentSubmissions: ISubmission[]) => {
-        console.log('1 - saving submissions', currentSubmissions);
         this.setState({ currentSubmissions });
       },
     );
@@ -117,12 +194,8 @@ class Grader extends React.Component<{}, IGraderState> {
     if (currentAssignment) {
       this.loadSubmissions(currentAssignment)
         .then(() => {
-          this.setState({ currentAssignment });
-          console.log('2 - saving current assignment', currentAssignment);
-          console.log('~fin~');
-        })
-        .then(() => {
-          this.setState({ isLoadingSubmissions: false });
+          this.setState({ currentAssignment, isLoadingSubmissions: false },
+            () => this.setURLFromAssignment(currentAssignment, currentCourse));
         });
     }
   };
@@ -136,7 +209,7 @@ class Grader extends React.Component<{}, IGraderState> {
       currentAssignment: undefined,
       currentCourse,
       currentSubmissions: [],
-    });
+    }, () => this.setURLFromCourse(currentCourse));
   };
 
   public selectorItemsFormatter = (courses: ICourse[]) => {
@@ -151,8 +224,8 @@ class Grader extends React.Component<{}, IGraderState> {
   };
 
   public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
+    const { assignments, isLoading } = this.state;
+    if (isLoading || !currentCourse || !currentCourse.assignments) {
       return [];
     }
 
