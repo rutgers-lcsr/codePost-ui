@@ -101,25 +101,53 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
 
   public setCourseFromURL(courses : ICourse[]) {
-    const URLcourseID = parseInt(this.props.match.params.courseID, 10);
-    if (URLcourseID) {
-      const currentCourse = courses.find((obj: ICourse) => {
-        return obj.id === URLcourseID;
+    const courseNameFromURL = this.props.match.params.courseName;
+    const periodFromURL = this.props.match.params.period;
+
+    let currentCourse;
+    if (courseNameFromURL && periodFromURL) {
+      const formattedCourseName = courseNameFromURL.replace('_', ' ');
+      const formattedPeriod = periodFromURL.replace('_', ' ');
+
+      currentCourse = courses.find((obj: ICourse) => {
+        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
       });
-      this.setState({ currentCourse });
-      return currentCourse;
+      if (currentCourse) {
+        this.setState({ currentCourse });
+      }
     }
-    return undefined;
+    return currentCourse;
   }
 
   public setAssignmentFromURL(assignments : ICourseToAssignmentMap  , currentCourse : ICourse) {
-    const URLassignmentID = parseInt(this.props.match.params.assignmentID, 10);
-    if (URLassignmentID) {
-      const currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
-        return obj.id === URLassignmentID;
+    const assignmentNameFromURL = this.props.match.params.assignmentName;
+
+    let currentAssignment;
+    if (assignmentNameFromURL) {
+      const formattedAssignmentName = assignmentNameFromURL.replace('_', ' ');
+
+      currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+        return obj.name === formattedAssignmentName;
       });
-      this.setState({ currentAssignment });
+      if (currentAssignment) {
+        this.setState({ currentAssignment });
+      }
     }
+
+    return currentAssignment;
+  }
+
+  public setURLFromCourse(course : ICourse) {
+    const formattedName = course.name.replace(' ', '_');
+    const formattedPeriod = course.period.replace(' ', '_');
+    this.props.history.push(`/student/${formattedName}/${formattedPeriod}`);
+  }
+
+  public setURLFromAssignment(assignment : IAssignment, course : ICourse) {
+    const formattedCourseName = course.name.replace(' ', '_');
+    const formattedPeriod = course.period.replace(' ', '_');
+    const formattedAssignmentName = assignment.name.replace(' ', '_');
+    this.props.history.push(`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`);
   }
 
   ///////////////////////////////////////
@@ -136,7 +164,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           return this.loadAssignments(course);
         }),
       ).then((arg: any) => {
-        // this.setAssignmentFromURL(this.state.assignments, this.state.currentCourse);
         this.setState({ isLoading: false });
       });
     });
@@ -170,7 +197,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     return APIUtils.fetchSubmissions(assignment.id, USER_APP.Student, this.state.email).then((currentSubmission) => {
       return this.loadFiles(currentSubmission).then(() => {
-        console.log('3 - saving submission: ', currentSubmission);
         this.setState({ currentSubmission });
       });
     });
@@ -242,7 +268,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.loadSubmission(currentAssignment)
         .then(() => {
           this.setState({ currentAssignment, isLoadingSubmission: false },
-            () => this.props.history.push(`/student/${currentCourse.id}/${currentAssignment.id}`));
+            () => this.setURLFromAssignment(currentAssignment, currentCourse));
         });
     }
   };
@@ -256,7 +282,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentAssignment: undefined,
       currentCourse,
       currentSubmission: undefined,
-    }, () => this.props.history.push(`/student/${currentCourse.id}`));
+    }, () => {
+      this.setURLFromCourse(currentCourse);
+    });
   };
 
   public selectorItemsFormatter = (courses: ICourse[]) => {
