@@ -213,14 +213,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public selectorItemsFormatter = (courses: ICourse[]) => {
-    return courses.map((course, i) => ({ value: course.id, label: course.name }));
+    return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
   };
 
   public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
-    return { value: currentCourse.id, label: currentCourse.name };
+    return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
   public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
