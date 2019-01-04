@@ -21,7 +21,7 @@ interface IProps {
   currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
-  addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
+  addLeader: (sectionID: number, leaderEmail: string | undefined) => Promise<string[]>;
   graders: string[];
 }
 
@@ -43,11 +43,12 @@ class ManageSections extends React.Component<IProps, {}> {
   public rowLeaderChange = (sectionID: number, graderEmail: string) => {
     let { changedSections } = this.state;
     const { addLeader } = this.props;
-    // Reminder -- do some check through the existing sections to only keep tabs on what changed
     changedSections.push(sectionID);
     this.setState({ changedSections });
 
-    addLeader(Number(sectionID), graderEmail).then((leaders) => {
+    const newLeader = graderEmail.length > 0 ? graderEmail : undefined;
+
+    addLeader(Number(sectionID), newLeader).then((leaders) => {
       if (leaders) {
         changedSections = changedSections.filter((i) => {
           return i !== sectionID;
@@ -83,35 +84,37 @@ class ManageSections extends React.Component<IProps, {}> {
 
     let tableBody;
     if (sectionsLoadComplete) {
-      tableBody = (
-        sections.map((section) => {
-          // Reminder - need to change to represent multiple leaders
-          const currentLeader =
-            section.leaders && section.leaders[0] ? section.leaders[0] : '';
+      tableBody = sections.map((section) => {
+        // Reminder - need to change to represent multiple leaders
+        const currentLeader = section.leaders && section.leaders[0] ? section.leaders[0] : '';
 
-          let dropDown;
-          let leaderDisable = false;
+        // Adding an empty option in drop down if leader is selected
+        if (currentLeader) {
+          leaderMenuItems.push({ label: '', value: '' });
+        }
 
-          if (changedSections.indexOf(section.id) !== -1) {
-            dropDown = iconChanged;
-            leaderDisable = true;
-          } else {
-            dropDown = undefined;
-          }
-          return (
-            <TableRow key={section.id}>
-              <TableColumn>{section.name}</TableColumn>
-              <SelectFieldColumn
-                dropdownIcon={dropDown}
-                value={currentLeader}
-                menuItems={leaderMenuItems}
-                disabled={lockedSectionChange || leaderDisable}
-                onChange={this.rowLeaderChange.bind(this.props, section.id)}
-              />
-            </TableRow>
-          );
-        })
-      );
+        let dropDown;
+        let leaderDisable = false;
+
+        if (changedSections.indexOf(section.id) !== -1) {
+          dropDown = iconChanged;
+          leaderDisable = true;
+        } else {
+          dropDown = undefined;
+        }
+        return (
+          <TableRow key={section.id}>
+            <TableColumn>{section.name}</TableColumn>
+            <SelectFieldColumn
+              dropdownIcon={dropDown}
+              value={currentLeader}
+              menuItems={leaderMenuItems}
+              disabled={lockedSectionChange || leaderDisable}
+              onChange={this.rowLeaderChange.bind(this.props, section.id)}
+            />
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -150,16 +153,20 @@ class ManageSections extends React.Component<IProps, {}> {
               <TableColumn key={'sectionLeader'}>Leader</TableColumn>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {tableBody}
-          </TableBody>
+          <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
           {lockIcon}
         </Button>
       </div>
     );
-
   }
 }
 

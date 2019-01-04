@@ -806,12 +806,20 @@ class Admin extends React.Component<{}, IAdminState> {
       });
   };
 
-  public addLeaderToSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
+  public addLeaderToSection = (
+    sectionID: number,
+    leaderEmail: string | undefined,
+  ): Promise<string[]> => {
     const { sections } = this.state;
 
     // Reminder -- need to change leaderEmail [] to concatenation of existing addLeaderToSection
     // once the front end can handle multiple leaders
-    const payload = { id: sectionID, leaders: [leaderEmail] };
+    let payload;
+    if (leaderEmail) {
+      payload = { id: sectionID, leaders: [leaderEmail] };
+    } else {
+      payload = { id: sectionID, leaders: [] };
+    }
 
     return fetch(`/api/sections/${sectionID}/`, {
       headers: {
@@ -840,7 +848,11 @@ class Admin extends React.Component<{}, IAdminState> {
           });
 
           this.setState({ sections: newSections }, () => {
-            this.addToast(`${leaderEmail} set as a leader of section ${name}`, undefined);
+            if (leaderEmail) {
+              this.addToast(`${leaderEmail} set as a leader of section ${name}`, undefined);
+            } else {
+              this.addToast(`Leader of section ${name} set to empty`, undefined);
+            }
           });
           return json.leaders;
         }
