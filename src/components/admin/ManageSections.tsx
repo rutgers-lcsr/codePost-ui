@@ -82,16 +82,12 @@ class ManageSections extends React.Component<IProps, {}> {
       };
     });
 
+    leaderMenuItems.push({ label: '', value: '' });
     let tableBody;
     if (sectionsLoadComplete) {
       tableBody = sections.map((section) => {
         // Reminder - need to change to represent multiple leaders
         const currentLeader = section.leaders && section.leaders[0] ? section.leaders[0] : '';
-
-        // Adding an empty option in drop down if leader is selected
-        if (currentLeader) {
-          leaderMenuItems.push({ label: '', value: '' });
-        }
 
         let dropDown;
         let leaderDisable = false;

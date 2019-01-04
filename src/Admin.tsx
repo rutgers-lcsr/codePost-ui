@@ -757,10 +757,58 @@ class Admin extends React.Component<{}, IAdminState> {
       });
   };
 
+  public removeStudentFromSection = (
+    sectionID: number,
+    studentEmail: string,
+  ): Promise<ISection> => {
+    const { sections, sectionsByStudent } = this.state;
+
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const newStudents = thisSection.students.filter((student) => {
+      return student !== studentEmail;
+    });
+
+    const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
+
+    return fetch(`/api/sections/${sectionID}/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json: ISection) => {
+        if (json) {
+          const newSections = sections.map((section) => {
+            if (section.id === json.id) {
+              section.students = json.students;
+            }
+            return section;
+          });
+
+          delete sectionsByStudent[studentEmail];
+
+          this.setState({ sections: newSections, sectionsByStudent }, () =>
+            this.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
+          );
+        }
+        return json;
+      });
+  };
+
   public addStudentToSection = (sectionID: number, studentEmail: string): Promise<ISection> => {
     const { sections, sectionsByStudent } = this.state;
 
-    // Reminder -- there must be a cleaner way to do this filter
     const thisSection = sections.filter((section) => {
       return section.id === sectionID;
     })[0];
@@ -778,11 +826,11 @@ class Admin extends React.Component<{}, IAdminState> {
       body: JSON.stringify(payload),
     })
       .then((res) => {
-        if (res.status === 200) {
-          return res.json();
+        if (res.status !== 200) {
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
+          return undefined;
         }
-        this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
-        return undefined;
+        return res.json();
       })
       .then((json: ISection) => {
         if (json) {
@@ -799,11 +847,32 @@ class Admin extends React.Component<{}, IAdminState> {
           };
 
           this.setState({ sections: newSections, sectionsByStudent }, () => {
-            this.addToast(`Student ${studentEmail} added to section ${name}`, undefined);
+            this.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
           });
         }
         return json;
       });
+  };
+
+  public changeStudentSection = (
+    newSectionID: number | undefined,
+    studentEmail: string,
+  ): Promise<ISection> => {
+    const { sectionsByStudent } = this.state;
+    const previousSection = sectionsByStudent[studentEmail];
+    if (previousSection && newSectionID) {
+      return this.removeStudentFromSection(previousSection.id, studentEmail).then(() => {
+        return this.addStudentToSection(newSectionID, studentEmail);
+      });
+    } else if (previousSection) {
+      return this.removeStudentFromSection(previousSection.id, studentEmail);
+    } else if (newSectionID) {
+      return this.addStudentToSection(newSectionID, studentEmail);
+    }
+    this.addErrorToast('Error - both old section and new section are empty.', undefined);
+    return new Promise((resolve) => {
+      resolve(undefined);
+    });
   };
 
   public addLeaderToSection = (
@@ -1361,7 +1430,7 @@ class Admin extends React.Component<{}, IAdminState> {
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
             sectionsByStudent={this.state.sectionsByStudent}
-            addStudentToSection={this.addStudentToSection}
+            changeStudentSection={this.changeStudentSection}
           />
         </div>
       );
