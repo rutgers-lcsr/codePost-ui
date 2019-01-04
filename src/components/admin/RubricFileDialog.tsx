@@ -30,8 +30,12 @@ interface IProps {
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-  ) => Promise<{}>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<{}>;
+  ) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
