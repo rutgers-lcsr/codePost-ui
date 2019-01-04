@@ -34,11 +34,6 @@ interface IAdminState {
   loadedPanel?: number; // Which active_panel to load, enum
   courses: ICourse[]; // Set of courses for the admin for the selector
 
-  // general state items
-  isShowingSnackBar: boolean;
-  isSaving: boolean;
-  searchTerm: string;
-
   // student, grader, admin, sections data
   students: string[];
   studentsLoadComplete: boolean;
@@ -67,11 +62,7 @@ interface IAdminState {
   assignmentRubricLoadComplete: boolean;
 
   // Props for Enroll panels
-  lockManageAdmin: boolean;
-  lockManageStudent: boolean;
-  lockManageGrader: boolean;
-  lockManageSection: boolean;
-  lockManageAssignment: boolean;
+  lockChanges: boolean;
 
   email: string;
   isLoggedIn: boolean;
@@ -82,6 +73,7 @@ interface IAdminState {
   submissionsByGrader: IGraderSubmissionsDataTable;
 
   toasts: IToast[];
+  longToasts: IToast[];
   errorToasts: IToast[];
 }
 
@@ -90,11 +82,6 @@ class Admin extends React.Component<{}, IAdminState> {
     currentCourse: undefined, // Course for selector
     loadedPanel: undefined, // Which active_panel to load, enum
     courses: [], // Set of courses for the admin for the selector
-
-    // general props
-    isShowingSnackBar: false,
-    isSaving: false,
-    searchTerm: '',
 
     // student, grader, admin, sections data
     students: [],
@@ -122,11 +109,7 @@ class Admin extends React.Component<{}, IAdminState> {
     assignmentRubricLoadComplete: false,
 
     // Props for Enroll panels
-    lockManageAdmin: true,
-    lockManageStudent: true,
-    lockManageGrader: true,
-    lockManageSection: true,
-    lockManageAssignment: true,
+    lockChanges: true,
 
     email: '',
     isLoading: true,
@@ -137,6 +120,7 @@ class Admin extends React.Component<{}, IAdminState> {
     submissionsByGrader: {},
 
     toasts: [],
+    longToasts: [],
     errorToasts: [],
   };
 
@@ -233,11 +217,7 @@ class Admin extends React.Component<{}, IAdminState> {
           assignmentRubricLoadComplete: false,
 
           // Props for Enroll panels
-          lockManageAdmin: true,
-          lockManageStudent: true,
-          lockManageGrader: true,
-          lockManageSection: true,
-          lockManageAssignment: true,
+          lockChanges: true,
 
           email: '',
           isLoading: false,
@@ -261,12 +241,9 @@ class Admin extends React.Component<{}, IAdminState> {
     })[0];
 
     // reminder: set students graders everything to undefined
-    this.setState(
-      { currentCourse },
-      () => {
-        this.updateNewCourse(option);
-      },
-    );
+    this.setState({ currentCourse }, () => {
+      this.updateNewCourse(option);
+    });
   };
 
   public handlePanelChange = (option: IOptionNumber, event: any) => {
@@ -304,7 +281,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   public tabCurrentFormatter = () => {
     const loadedPanel = this.state.loadedPanel;
-    if (typeof(loadedPanel) !== 'undefined') {
+    if (typeof loadedPanel !== 'undefined') {
       return {
         value: loadedPanel,
         label: this.panels[loadedPanel],
@@ -322,6 +299,12 @@ class Admin extends React.Component<{}, IAdminState> {
     this.setState({ toasts });
   };
 
+  public addLongToast = (text: string, action: string | undefined) => {
+    const longToasts = this.state.longToasts.slice();
+    longToasts.push({ text, action });
+    this.setState({ longToasts });
+  };
+
   public addErrorToast = (text: string, action: string | undefined) => {
     const errorToasts = this.state.errorToasts.slice();
     errorToasts.push({ text, action });
@@ -331,6 +314,11 @@ class Admin extends React.Component<{}, IAdminState> {
   public dismissToast = () => {
     const [, ...toasts] = this.state.toasts;
     this.setState({ toasts });
+  };
+
+  public dismissLongToast = () => {
+    const [, ...longToasts] = this.state.longToasts;
+    this.setState({ longToasts });
   };
 
   public dismissErrorToast = () => {
@@ -586,33 +574,9 @@ class Admin extends React.Component<{}, IAdminState> {
   };
 
   // ------------------- Toggle data change locks  -------------------
-  public toggleAssignmentLock = () => {
+  public toggleLock = () => {
     this.setState({
-      lockManageAssignment: !this.state.lockManageAssignment,
-    });
-  };
-
-  public toggleEnrollStudentsLock = () => {
-    this.setState({
-      lockManageStudent: !this.state.lockManageStudent,
-    });
-  };
-
-  public toggleAdminLock = () => {
-    this.setState({
-      lockManageAdmin: !this.state.lockManageAdmin,
-    });
-  };
-
-  public toggleGraderLock = () => {
-    this.setState({
-      lockManageGrader: !this.state.lockManageGrader,
-    });
-  };
-
-  public toggleSectionLock = () => {
-    this.setState({
-      lockManageSection: !this.state.lockManageSection,
+      lockChanges: !this.state.lockChanges,
     });
   };
 
@@ -1011,7 +975,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
     const payload = {
       id: categoryID,
-      text: categoryName,
+      name: categoryName,
       pointLimit: categoryPointLimit,
       assignment: assignmentID,
     };
@@ -1276,7 +1240,7 @@ class Admin extends React.Component<{}, IAdminState> {
         rubricCategories[json.id] = [];
         assignments.push(json);
         this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
-          this.addToast(`Assignment ${json.name} successfully created.`, undefined);
+          this.addLongToast(`Assignment ${json.name} successfully created.`, undefined);
         });
         return json;
       });
@@ -1309,7 +1273,10 @@ class Admin extends React.Component<{}, IAdminState> {
         if (json) {
           courses.push(json);
           this.setState({ courses });
-          this.addToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
+          this.addLongToast(
+            `Course ${json.name} | ${json.period} successfully created.`,
+            undefined,
+          );
           this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
         }
         return json;
@@ -1318,7 +1285,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Render -------------------
   public render() {
-    const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
+    const { courses, currentCourse, loadedPanel, toasts, longToasts, errorToasts } = this.state;
 
     let courseManagementPanel = null;
 
@@ -1351,8 +1318,8 @@ class Admin extends React.Component<{}, IAdminState> {
             rubricComments={this.state.rubricComments}
             submissions={this.state.submissions}
             submissionsLoadComplete={this.state.submissionsLoadComplete}
-            lockManageAssignment={this.state.lockManageAssignment}
-            toggleLock={this.toggleAssignmentLock}
+            lockManageAssignment={this.state.lockChanges}
+            toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
             addErrorToast={this.addErrorToast}
@@ -1377,8 +1344,8 @@ class Admin extends React.Component<{}, IAdminState> {
             sections={this.state.sections}
             students={this.state.students}
             studentsLoadComplete={this.state.studentsLoadComplete}
-            lockedStudentChange={this.state.lockManageStudent}
-            toggleLock={this.toggleEnrollStudentsLock}
+            lockedStudentChange={this.state.lockChanges}
+            toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
             enrollUser={this.enrollUser}
@@ -1395,8 +1362,8 @@ class Admin extends React.Component<{}, IAdminState> {
             key={currentCourse.id}
             graders={this.state.graders}
             gradersLoadComplete={this.state.gradersLoadComplete}
-            lockedGraderChange={this.state.lockManageGrader}
-            toggleLock={this.toggleGraderLock}
+            lockedGraderChange={this.state.lockChanges}
+            toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
             enrollUser={this.enrollUser}
@@ -1411,8 +1378,8 @@ class Admin extends React.Component<{}, IAdminState> {
             key={currentCourse.id}
             sections={this.state.sections}
             sectionsLoadComplete={this.state.sectionsLoadComplete}
-            lockedSectionChange={this.state.lockManageSection}
-            toggleLock={this.toggleSectionLock}
+            lockedSectionChange={this.state.lockChanges}
+            toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
             createSection={this.createSection}
@@ -1428,8 +1395,8 @@ class Admin extends React.Component<{}, IAdminState> {
             key={currentCourse.id}
             admins={this.state.admins}
             adminsLoadComplete={this.state.adminsLoadComplete}
-            lockedAdminChange={this.state.lockManageAdmin}
-            toggleLock={this.toggleAdminLock}
+            lockedAdminChange={this.state.lockChanges}
+            toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
             addToast={this.addToast}
             enrollUser={this.enrollUser}
@@ -1439,9 +1406,9 @@ class Admin extends React.Component<{}, IAdminState> {
       );
     } else if (!currentCourse) {
       if (courses.length > 0) {
-        courseManagementPanel = (<div>Select a course to get started.</div>);
+        courseManagementPanel = <div>Select a course to get started.</div>;
       } else {
-        courseManagementPanel = (<div>Create a course to get started!</div>);
+        courseManagementPanel = <div>Create a course to get started!</div>;
       }
     }
 
@@ -1459,12 +1426,21 @@ class Admin extends React.Component<{}, IAdminState> {
             isLoading={this.state.isLoading}
           />
           <Snackbar
-            id="snackbar"
-            className="snackbar"
+            id="short-snackbar"
+            className="short-snackbar"
             toasts={toasts}
             autohide={true}
             autohideTimeout={2000}
             onDismiss={this.dismissToast}
+            style={this.snackBarStyle}
+          />
+          <Snackbar
+            id="long-snackbar"
+            className="long-snackbar"
+            toasts={longToasts}
+            autohide={true}
+            autohideTimeout={4000}
+            onDismiss={this.dismissLongToast}
             style={this.snackBarStyle}
           />
           <Snackbar
