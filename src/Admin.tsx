@@ -452,8 +452,6 @@ class Admin extends React.Component<{}, IAdminState> {
         rubricCategories[assignmentID] = json.categories;
         json.categories.forEach((cat: IRubricCategory) => {
           rubricComments[cat.id] = json.comments.filter((comm: IRubricComment) => {
-            console.log('here');
-            console.log(comm.category);
             return comm.category === cat.id;
           });
         });
