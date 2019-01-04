@@ -73,6 +73,7 @@ interface IAdminState {
   submissionsByGrader: IGraderSubmissionsDataTable;
 
   toasts: IToast[];
+  longToasts: IToast[];
   errorToasts: IToast[];
 }
 
@@ -119,6 +120,7 @@ class Admin extends React.Component<{}, IAdminState> {
     submissionsByGrader: {},
 
     toasts: [],
+    longToasts: [],
     errorToasts: [],
   };
 
@@ -297,6 +299,12 @@ class Admin extends React.Component<{}, IAdminState> {
     this.setState({ toasts });
   };
 
+  public addLongToast = (text: string, action: string | undefined) => {
+    const longToasts = this.state.longToasts.slice();
+    longToasts.push({ text, action });
+    this.setState({ longToasts });
+  };
+
   public addErrorToast = (text: string, action: string | undefined) => {
     const errorToasts = this.state.errorToasts.slice();
     errorToasts.push({ text, action });
@@ -306,6 +314,11 @@ class Admin extends React.Component<{}, IAdminState> {
   public dismissToast = () => {
     const [, ...toasts] = this.state.toasts;
     this.setState({ toasts });
+  };
+
+  public dismissLongToast = () => {
+    const [, ...longToasts] = this.state.longToasts;
+    this.setState({ longToasts });
   };
 
   public dismissErrorToast = () => {
@@ -1227,7 +1240,7 @@ class Admin extends React.Component<{}, IAdminState> {
         rubricCategories[json.id] = [];
         assignments.push(json);
         this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
-          this.addToast(`Assignment ${json.name} successfully created.`, undefined);
+          this.addLongToast(`Assignment ${json.name} successfully created.`, undefined);
         });
         return json;
       });
@@ -1260,7 +1273,10 @@ class Admin extends React.Component<{}, IAdminState> {
         if (json) {
           courses.push(json);
           this.setState({ courses });
-          this.addToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
+          this.addLongToast(
+            `Course ${json.name} | ${json.period} successfully created.`,
+            undefined,
+          );
           this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
         }
         return json;
@@ -1269,7 +1285,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Render -------------------
   public render() {
-    const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
+    const { courses, currentCourse, loadedPanel, toasts, longToasts, errorToasts } = this.state;
 
     let courseManagementPanel = null;
 
@@ -1410,12 +1426,21 @@ class Admin extends React.Component<{}, IAdminState> {
             isLoading={this.state.isLoading}
           />
           <Snackbar
-            id="snackbar"
-            className="snackbar"
+            id="short-snackbar"
+            className="short-snackbar"
             toasts={toasts}
             autohide={true}
             autohideTimeout={2000}
             onDismiss={this.dismissToast}
+            style={this.snackBarStyle}
+          />
+          <Snackbar
+            id="long-snackbar"
+            className="long-snackbar"
+            toasts={longToasts}
+            autohide={true}
+            autohideTimeout={4000}
+            onDismiss={this.dismissLongToast}
             style={this.snackBarStyle}
           />
           <Snackbar
