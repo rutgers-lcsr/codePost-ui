@@ -53,8 +53,12 @@ interface IProps {
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-  ) => Promise<{}>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<{}>;
+  ) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -72,7 +76,7 @@ interface IProps {
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
-  ) => void;
+  ) => Promise<IAssignment>;
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment>;
 }
 
@@ -149,17 +153,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
     const { activeAssignment } = this.state;
     const { activeRubricCategories, activeRubricComments } = this.state;
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
-      this.props
-        .deleteRubricCategory(activeAssignment.id, categoryID, categoryName)
-        .then((data) => {
-          if (data) {
-            const newRubricCategories = activeRubricCategories.filter((cat) => {
-              return cat.id !== categoryID;
-            });
-            delete activeRubricComments[categoryID];
-            this.setState({ activeRubricCategories: newRubricCategories, activeRubricComments });
-          }
+      this.props.deleteRubricCategory(activeAssignment.id, categoryID, categoryName).then(() => {
+        const newRubricCategories = activeRubricCategories.filter((cat) => {
+          return cat.id !== categoryID;
         });
+        delete activeRubricComments[categoryID];
+        this.setState({ activeRubricCategories: newRubricCategories, activeRubricComments });
+      });
     }
   };
 
@@ -188,15 +188,21 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.props.addErrorToast('Cannot save comment. Text must not be empty.', undefined);
         return;
       } else if (comm.id === -1) {
-        this.props
-          .createRubricComment(activeAssignment.id, categoryID, comm.text, comm.pointDelta)
-          .then((data) => {
+        const promise = this.props.createRubricComment(
+          activeAssignment.id,
+          categoryID,
+          comm.text,
+          comm.pointDelta,
+        );
+        if (promise) {
+          promise.then((data) => {
             if (data) {
               console.log(activeRubricComments[categoryID].length);
               activeRubricComments[categoryID][commentIndex].id = data.id;
               this.setState({ activeRubricComments });
             }
           });
+        }
       } else {
         this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta);
       }
@@ -229,9 +235,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
           return;
         }
         if (oldID < 0) {
-          this.props
-            .createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, [])
-            .then((data) => {
+          const promise = this.props.createRubricCategory(
+            activeAssignment.id,
+            cat.name,
+            cat.pointLimit,
+            [],
+          );
+          if (promise) {
+            promise.then((data) => {
               if (data) {
                 const newRubricCategories = activeRubricCategories.map((i, index) => {
                   if (index === categoryIndex) {
@@ -250,6 +261,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 });
               }
             });
+          }
         } else {
           this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit);
         }

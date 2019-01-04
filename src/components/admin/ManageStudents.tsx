@@ -25,7 +25,7 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<{}>;
+  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<ISection>;
 }
 
 interface IState {
