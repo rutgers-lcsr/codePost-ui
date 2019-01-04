@@ -45,14 +45,8 @@ class NewCourseDialog extends React.Component<IProps, {}> {
       this.props.addErrorToast('Course name must be longer than 4 characters', undefined);
       return;
     }
-    if (
-      courses
-        .map((i) => {
-          return i.name.toLowerCase();
-        })
-        .indexOf(newCourseName.toLowerCase()) !== -1
-    ) {
-      this.props.addErrorToast('Course name must be distinct from other courses.', undefined);
+    if (courses.filter(c => c.name === newCourseName && c.period === newCoursePeriod).length !== 0) {
+      this.props.addErrorToast('Cannot create course with same name and period as existing course.', undefined);
       return;
     }
     this.props.createCourse(newCourseName, newCoursePeriod).then(() => {
@@ -77,13 +71,13 @@ class NewCourseDialog extends React.Component<IProps, {}> {
 
     return (
       <div>
-        <Button raised onClick={this.toggleDialog}>
-          Add new course
+        <Button type="submit" raised onClick={this.toggleDialog}>
+          Create course
         </Button>
         <DialogContainer
           id="newCourse-dialog"
           visible={dialogVisible}
-          title="Add new course"
+          title="Create a new course"
           onHide={this.toggleDialog}
           actions={dialogActions}
           modal
@@ -96,7 +90,7 @@ class NewCourseDialog extends React.Component<IProps, {}> {
           />
           <TextField
             id="newCourse-period"
-            label="Course period (e.g., Spring-2018)"
+            label="Course period (e.g., Spring 2018)"
             defaultValue=""
             onChange={this.changePeriodField}
           />
