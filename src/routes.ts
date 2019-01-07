@@ -8,6 +8,8 @@ export const RESET = '/password-reset';
 export const RESET_TOKEN = '/password-reset/:uid/:token';
 export const LANDING = '/landing';
 
+export const COURSE_SELECTOR = ':courseName/:period';
+
 export type ROUTES =
   | typeof ADMIN
   | typeof HOME

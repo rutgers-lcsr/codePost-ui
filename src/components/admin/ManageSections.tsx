@@ -21,7 +21,7 @@ interface IProps {
   currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
-  addLeader: (sectionID: number, leaderEmail: string) => Promise<{}>;
+  addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
   graders: string[];
 }
 
@@ -47,22 +47,31 @@ class ManageSections extends React.Component<IProps, {}> {
     changedSections.push(sectionID);
     this.setState({ changedSections });
 
-    addLeader(Number(sectionID), graderEmail).then(() => {
-      changedSections = changedSections.filter((i) => {
-        return i !== sectionID;
-      });
-      this.setState({ changedSections });
+    addLeader(Number(sectionID), graderEmail).then((leaders) => {
+      if (leaders) {
+        changedSections = changedSections.filter((i) => {
+          return i !== sectionID;
+        });
+        this.setState({ changedSections });
+      }
     });
   };
 
   public render() {
-    const { sectionsLoadComplete, lockedSectionChange, sections, createSection, graders } = this.props;
+    const {
+      sectionsLoadComplete,
+      lockedSectionChange,
+      sections,
+      createSection,
+      graders,
+    } = this.props;
     const { newSectionField, changedSections } = this.state;
 
     const lockIcon = lockedSectionChange ? 'lock' : 'lock_open';
     const iconChanged = <FontIcon>track_changes</FontIcon>;
 
-    const allowAddSection = newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
+    const allowAddSection =
+      newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
     const leaderMenuItems = graders.map((grader) => {
       // Reminder -- fix this to simplify
