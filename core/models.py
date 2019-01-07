@@ -34,6 +34,7 @@ class Course(models.Model):
   students = models.ManyToManyField(User, related_name="student_courses")
   inactive_students = models.ManyToManyField(User, related_name="student_inactive_courses")
   graders = models.ManyToManyField(User, related_name="grader_courses")
+  lead_graders = models.ManyToManyField(User, related_name="lead_grader_courses")
   courseAdmins = models.ManyToManyField(User, related_name="courseAdmin_courses")
 
   class Meta:
