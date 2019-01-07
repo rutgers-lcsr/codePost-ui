@@ -33,10 +33,19 @@ interface IStudentState {
   currentSubmission?: ISubmission;
 
   email: string;
-  isLoading: boolean;
-  isLoadingSubmission: boolean;
   isLoggedIn: boolean;
   redirect: boolean;
+
+  // Loading variables
+  isLoadingCourses: boolean;
+  isLoadingAssignments: boolean;
+  isLoadingSubmission: boolean;
+
+  // URL variables
+  toLoadCourse: boolean;
+  toLoadAssignment: boolean;
+
+  // Testing
 }
 
 interface IStudentProps {
@@ -54,11 +63,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     currentSubmission: undefined,
     email: '',
     files: [],
-    isLoading: true,
+    isLoadingCourses: true,
+    isLoadingAssignments: true,
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
     rubricComments: {},
+    toLoadCourse: false,
+    toLoadAssignment: false,
   };
 
   public componentDidMount() {
@@ -68,31 +80,32 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
     if (this.state.isLoggedIn) {
-      this.setState({ isLoading: true });
-      this.loadCourses().then(() => {
-        this.setState({ isLoading: false });
-      });
+      this.loadCourses();
     } else {
       this.setState({ redirect: true });
     }
   }
 
+  // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps : IStudentProps, prevState : IStudentState) {
-    if (prevState.isLoading && prevState.courses && prevState.assignments) {
-      const { assignments, currentCourse } = this.state;
+    const { isLoadingAssignments, assignments, courses } = this.state;
 
-      // Don't need to try to load assignment if no currrentCourse
-      if (!currentCourse || !assignments[currentCourse.id]) {
-        return;
+    // Determine if assignments are done loading
+    if (courses && assignments && prevState.assignments !== assignments) {
+      const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
+      const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
+      if (targetEntries === currEntries) {
+        this.setState({ isLoadingAssignments: false });
       }
+    }
 
-      const targetEntries = currentCourse.assignments.length;
-      const currEntries = assignments[currentCourse.id].length;
-      if (targetEntries > 0 && targetEntries === currEntries) {
-        if (assignments && currentCourse) {
-          this.setState({ isLoading: false }, () => this.setAssignmentFromURL(assignments, currentCourse));
-        }
-      }
+    // After loading necessary resources, set state from URL
+    if (prevState.isLoadingAssignments && !isLoadingAssignments) {
+      this.setStateFromURL();
+    }
+
+    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
+      this.setState({ toLoadCourse: false, toLoadAssignment: false });
     }
   }
 
@@ -100,54 +113,30 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   // URL handler methods
   ///////////////////////////////////////
 
-  public setCourseFromURL(courses : ICourse[]) {
-    const courseNameFromURL = this.props.match.params.courseName;
-    const periodFromURL = this.props.match.params.period;
+  public setStateFromURL = () => {
+    const { courseName, period, assignmentName } = this.props.match.params;
+    const { courses, assignments } = this.state;
 
+    // Test whether (courseName, period) corresponds to loaded course
     let currentCourse;
-    if (courseNameFromURL && periodFromURL) {
-      const formattedCourseName = courseNameFromURL.replace('_', ' ');
-      const formattedPeriod = periodFromURL.replace('_', ' ');
-
+    let currentAssignment;
+    if (courseName && period) {
+      const formattedCourseName = courseName.replace(/_/g, ' ');
+      const formattedPeriod = period.replace(/_/g, ' ');
       currentCourse = courses.find((obj: ICourse) => {
         return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
       });
-      if (currentCourse) {
-        this.setState({ currentCourse });
-      }
-    }
-    return currentCourse;
-  }
 
-  public setAssignmentFromURL(assignments : ICourseToAssignmentMap  , currentCourse : ICourse) {
-    const assignmentNameFromURL = this.props.match.params.assignmentName;
-
-    let currentAssignment;
-    if (assignmentNameFromURL) {
-      const formattedAssignmentName = assignmentNameFromURL.replace('_', ' ');
-
-      currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
-        return obj.name === formattedAssignmentName;
-      });
-      if (currentAssignment) {
-        this.setState({ currentAssignment });
+      // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
+      if (currentCourse && assignmentName) {
+        const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
+        currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+          return obj.name === formattedAssignmentName;
+        });
       }
     }
 
-    return currentAssignment;
-  }
-
-  public setURLFromCourse(course : ICourse) {
-    const formattedName = course.name.replace(' ', '_');
-    const formattedPeriod = course.period.replace(' ', '_');
-    this.props.history.push(`/student/${formattedName}/${formattedPeriod}`);
-  }
-
-  public setURLFromAssignment(assignment : IAssignment, course : ICourse) {
-    const formattedCourseName = course.name.replace(' ', '_');
-    const formattedPeriod = course.period.replace(' ', '_');
-    const formattedAssignmentName = assignment.name.replace(' ', '_');
-    this.props.history.push(`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`);
+    this.setState({ currentCourse, currentAssignment });
   }
 
   ///////////////////////////////////////
@@ -156,16 +145,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public loadCourses = () => {
     return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
-      this.setState({ email, courses });
-      this.setCourseFromURL(courses);
-
+      this.setState({ email, courses, isLoadingCourses: false });
       return Promise.all(
         courses.map((course: ICourse) => {
           return this.loadAssignments(course);
         }),
-      ).then((arg: any) => {
-        this.setState({ isLoading: false });
-      });
+      );
     });
   };
 
@@ -177,7 +162,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
           }
-
           this.setState({
             assignments: {
               ...this.state.assignments,
@@ -254,8 +238,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public handleAssignmentChange = (option: IOption, event: any) => {
     const { assignments, currentCourse } = this.state;
 
-    this.setState({ isLoadingSubmission: true });
-
     if (!currentCourse) {
       return;
     }
@@ -265,11 +247,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     })[0];
 
     if (currentAssignment) {
-      this.loadSubmission(currentAssignment)
-        .then(() => {
-          this.setState({ currentAssignment, isLoadingSubmission: false },
-            () => this.setURLFromAssignment(currentAssignment, currentCourse));
+      // Need to test these callbacks to avoid first setState following completion
+      this.setState({ isLoadingSubmission: true }, () => {
+        this.loadSubmission(currentAssignment).then(() => {
+          this.setState({ currentAssignment, toLoadAssignment: true, isLoadingSubmission: false });
         });
+      });
     }
   };
 
@@ -282,8 +265,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentAssignment: undefined,
       currentCourse,
       currentSubmission: undefined,
-    }, () => {
-      this.setURLFromCourse(currentCourse);
+      toLoadCourse: true,
     });
   };
 
@@ -299,8 +281,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments, isLoading } = this.state;
-    if (!currentCourse || isLoading) {
+    const { assignments, isLoadingCourses } = this.state;
+    if (!currentCourse || isLoadingCourses) {
       return [];
     }
 
@@ -334,11 +316,28 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentAssignment,
       currentCourse,
       currentSubmission,
-      isLoading,
+      isLoadingCourses,
       files,
       comments,
       rubricComments,
+      toLoadCourse,
+      toLoadAssignment,
     } = this.state;
+
+    if (toLoadCourse || toLoadAssignment) {
+      if (currentCourse) {
+        const formattedCourseName = currentCourse.name.replace(/ /g, '_');
+        const formattedPeriod = currentCourse.period.replace(/ /g, '_');
+        if (toLoadAssignment && currentAssignment) {
+          const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
+          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`}/>;
+        } else {
+          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/`}/>;
+        }
+      } else {
+        return <Redirect to={'/student'}/>;
+      }
+    }
 
     return (
       <div>
@@ -351,7 +350,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={isLoading}
+            isLoading={isLoadingCourses}
           />
           <ContentArea
             assignment={currentAssignment}
