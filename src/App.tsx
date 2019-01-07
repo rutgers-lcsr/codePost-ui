@@ -15,13 +15,13 @@ import Student from './Student';
 import './styles/index.scss';
 import { IUser } from './types/common';
 
-interface IStudentState {
+interface IState {
   error: string;
   logged_in: boolean;
   user: IUser;
 }
 
-class App extends React.Component<{}, IStudentState> {
+class App extends React.Component<{}, IState> {
   public constructor(props: any) {
     super(props);
     this.state = {
@@ -137,10 +137,8 @@ class App extends React.Component<{}, IStudentState> {
               <Switch>
                 <Route exact={true} path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} component={Student} />
                 <Route exact={true} path={`${GRADER}/:courseName?/:period?/:assignmentName?`} component={Grader} />
-
                 <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
-
-                <Route exact={true} path={`${ADMIN}/:courseName?/:period?/:panelName?`} component={Admin} />
+                <Route exact={true} path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`} component={Admin} />
 
                 <Route exact={true} path={HOME} component={Home} />
 
