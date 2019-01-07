@@ -74,11 +74,6 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     }
   };
 
-  public onTabChange = (newActiveTabIndex: number) => {
-    // this.setState({ activeTabIndex: newActiveTabIndex }, () => this.props.onTabChange(newActiveTabIndex));
-    console.log('tab changed');
-  };
-
   public changeActiveStudent = (student: string | undefined) => {
     if (student) {
       this.setState({ activeStudent: student });
@@ -108,7 +103,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
     return (
       <div>
-        <TabsContainer defaultTabIndex={activeTabIndex} onTabChange={this.onTabChange} className="tabs">
+        <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
           <Tabs tabId="simple-tab">
             <Tab label="Students" style={{ color: '#000000' }}>
               <StudentData

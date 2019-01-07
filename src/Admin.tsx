@@ -234,7 +234,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     // the toLoadPanel assignment causes the URL to add default loadedPanel if none is specified
     const isValid = currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
-    console.log(isValid);
     this.setState({ currentCourse, loadedPanel, toLoadPanel: !isValid }, () => {
       if (currentCourse) {
         this.updateNewCourse({ value: currentCourse.id, label: '' });
