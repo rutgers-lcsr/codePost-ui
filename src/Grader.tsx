@@ -12,16 +12,22 @@ import APIUtils from './APIUtils';
 interface IGraderState {
   courses: ICourse[];
   assignments: ICourseToAssignmentMap;
-  isLoadingSubmissions: boolean;
-
   currentAssignment?: IAssignment;
   currentCourse?: ICourse;
   currentSubmissions: ISubmission[];
 
   email: string;
   isLoggedIn: boolean;
-  isLoading: boolean;
   redirect: boolean;
+
+  // Loading variables
+  isLoadingCourses: boolean;
+  isLoadingAssignments: boolean;
+  isLoadingSubmissions: boolean;
+
+  // URL variables
+  toLoadCourse: boolean;
+  toLoadAssignment: boolean;
 }
 
 interface IGraderProps {
@@ -37,10 +43,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     currentCourse: undefined,
     currentSubmissions: [],
     email: '',
-    isLoading: true,
-    isLoadingSubmissions: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
+    isLoadingCourses: true,
+    isLoadingAssignments: true,
+    isLoadingSubmissions: false,
+    toLoadCourse: false,
+    toLoadAssignment: false,
+
   };
 
   public componentDidMount() {
@@ -50,85 +60,63 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
     if (this.state.isLoggedIn) {
-      this.setState({ isLoading: true });
-      this.loadCourses().then(() => {
-        this.setState({ isLoading: false });
-      });
+      this.loadCourses();
     } else {
       this.setState({ redirect: true });
     }
   }
 
+  // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps : IGraderProps, prevState : IGraderState) {
-    if (prevState.isLoading && prevState.courses && prevState.assignments) {
-      const { assignments, currentCourse } = this.state;
+    const { isLoadingAssignments, assignments, courses } = this.state;
 
-      // Don't need to try to load assignment if no currrentCourse
-      if (!currentCourse || !assignments[currentCourse.id]) {
-        return;
-      }
-
-      const targetEntries = currentCourse.assignments.length;
-      const currEntries = assignments[currentCourse.id].length;
-      if (targetEntries > 0 && targetEntries === currEntries) {
-        if (assignments && currentCourse) {
-          this.setState({ isLoading: false }, () => this.setAssignmentFromURL(assignments, currentCourse));
-        }
+    // Determine if assignments are done loading
+    if (courses && assignments && prevState.assignments !== assignments) {
+      const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
+      const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
+      if (targetEntries === currEntries) {
+        this.setState({ isLoadingAssignments: false });
       }
     }
+
+    // After loading necessary resources, set state from URL
+    if (prevState.isLoadingAssignments && !isLoadingAssignments) {
+      this.setStateFromURL();
+    }
+
+    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
+      this.setState({ toLoadCourse: false, toLoadAssignment: false });
+    }
   }
+
   ///////////////////////////////////////
   // URL handler methods
   ///////////////////////////////////////
 
-  public setCourseFromURL(courses : ICourse[]) {
-    const courseNameFromURL = this.props.match.params.courseName;
-    const periodFromURL = this.props.match.params.period;
+  public setStateFromURL = () => {
+    const { courseName, period, assignmentName } = this.props.match.params;
+    const { courses, assignments } = this.state;
 
+    // Test whether (courseName, period) corresponds to loaded course
     let currentCourse;
-    if (courseNameFromURL && periodFromURL) {
-      const formattedCourseName = courseNameFromURL.replace('_', ' ');
-      const formattedPeriod = periodFromURL.replace('_', ' ');
-
+    let currentAssignment;
+    if (courseName && period) {
+      const formattedCourseName = courseName.replace(/_/g, ' ');
+      const formattedPeriod = period.replace(/_/g, ' ');
       currentCourse = courses.find((obj: ICourse) => {
         return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
       });
-      if (currentCourse) {
-        this.setState({ currentCourse });
-      }
-    }
-    return currentCourse;
-  }
 
-  public setAssignmentFromURL(assignments : ICourseToAssignmentMap  , currentCourse : ICourse) {
-    const assignmentNameFromURL = this.props.match.params.assignmentName;
-
-    let currentAssignment;
-    if (assignmentNameFromURL) {
-      const formattedAssignmentName = assignmentNameFromURL.replace('_', ' ');
-
-      currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
-        return obj.name === formattedAssignmentName;
-      });
-      if (currentAssignment) {
-        this.setState({ currentAssignment });
+      // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
+      if (currentCourse && assignmentName) {
+        const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
+        currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+          return obj.name === formattedAssignmentName;
+        });
       }
     }
 
-    return currentAssignment;
-  }
-
-  public setURLFromCourse(course : ICourse) {
-    const formattedName = course.name.replace(' ', '_');
-    const formattedPeriod = course.period.replace(' ', '_');
-    this.props.history.push(`/grader/${formattedName}/${formattedPeriod}`);
-  }
-
-  public setURLFromAssignment(assignment : IAssignment, course : ICourse) {
-    const formattedCourseName = course.name.replace(' ', '_');
-    const formattedPeriod = course.period.replace(' ', '_');
-    const formattedAssignmentName = assignment.name.replace(' ', '_');
-    this.props.history.push(`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`);
+    this.setState({ currentCourse, currentAssignment });
   }
 
   ///////////////////////////////////////
@@ -137,8 +125,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public loadCourses = () => {
     return APIUtils.fetchUser(USER_APP.Grader).then(([email, courses]) => {
-      this.setState({ email, courses });
-      this.setCourseFromURL(courses);
+      this.setState({ email, courses, isLoadingCourses: false });
       return Promise.all(
         courses.map((course: ICourse) => {
           return this.loadAssignments(course);
@@ -181,8 +168,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   public handleAssignmentChange = (option: IOption, event: any) => {
     const { assignments, currentCourse } = this.state;
 
-    this.setState({ isLoadingSubmissions: true });
-
     if (!currentCourse) {
       return;
     }
@@ -192,11 +177,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     })[0];
 
     if (currentAssignment) {
-      this.loadSubmissions(currentAssignment)
+      this.setState({ isLoadingSubmissions: true }, () => {
+        this.loadSubmissions(currentAssignment)
         .then(() => {
-          this.setState({ currentAssignment, isLoadingSubmissions: false },
-            () => this.setURLFromAssignment(currentAssignment, currentCourse));
+          this.setState({ currentAssignment, isLoadingSubmissions: false, toLoadAssignment: true });
         });
+      });
+
     }
   };
 
@@ -209,7 +196,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       currentAssignment: undefined,
       currentCourse,
       currentSubmissions: [],
-    }, () => this.setURLFromCourse(currentCourse));
+      toLoadCourse: true,
+    });
   };
 
   public selectorItemsFormatter = (courses: ICourse[]) => {
@@ -224,8 +212,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments, isLoading } = this.state;
-    if (isLoading || !currentCourse || !currentCourse.assignments) {
+    const { assignments, isLoadingCourses } = this.state;
+    if (isLoadingCourses || !currentCourse || !currentCourse.assignments) {
       return [];
     }
 
@@ -291,7 +279,31 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmissions, isLoadingSubmissions } = this.state;
+    const {
+      courses,
+      currentAssignment,
+      currentCourse,
+      currentSubmissions,
+      isLoadingSubmissions,
+      toLoadCourse,
+      toLoadAssignment,
+    } = this.state;
+
+    if (toLoadCourse || toLoadAssignment) {
+      if (currentCourse) {
+        const formattedCourseName = currentCourse.name.replace(/ /g, '_');
+        const formattedPeriod = currentCourse.period.replace(/ /g, '_');
+        if (toLoadAssignment && currentAssignment) {
+          const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
+          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`}/>;
+        } else {
+          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/`}/>;
+        }
+      } else {
+        return <Redirect to={'/grader'}/>;
+      }
+    }
+
     return (
       <div>
         {this.renderRedirect()}
@@ -303,7 +315,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={this.state.isLoading}
+            isLoading={this.state.isLoadingCourses}
           />
           <GradedTab
             claimSubmission={this.claimSubmission}
