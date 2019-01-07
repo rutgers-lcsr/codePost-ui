@@ -24,6 +24,8 @@ interface IPropsCourseData {
   submissionsByGrader: IGraderSubmissionsDataTable;
   addToast: (text: string, action: string | undefined) => void;
   currentCourseID: number;
+  initialTab: number;
+  // onTabChange: (newTab: number) => void;
 }
 
 interface IState {
@@ -54,19 +56,22 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
   }
 
   public state: Readonly<IState> = {
-    activeTabIndex: 0,
+    activeTabIndex: this.props.initialTab,
     activeStudent: undefined,
     activeGrader: undefined,
   };
+
+  public componentDidUpdate(prevProps : IPropsCourseData, prevState : IState) {
+    const { initialTab } = this.props;
+    if (prevProps.initialTab !== initialTab) {
+      this.setState({ activeTabIndex: initialTab });
+    }
+  }
 
   public openSubmission = (submissionID: number | string) => {
     if (window) {
       window.open(`/grade/${submissionID}`, 'test', `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`);
     }
-  };
-
-  public onTabChange = (newActiveTabIndex: number) => {
-    this.setState({ activeTabIndex: newActiveTabIndex });
   };
 
   public changeActiveStudent = (student: string | undefined) => {
@@ -94,11 +99,11 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       submissionsByGrader,
       currentCourseID,
     } = this.props;
-    const { activeStudent, activeGrader } = this.state;
+    const { activeStudent, activeGrader, activeTabIndex } = this.state;
 
     return (
       <div>
-        <TabsContainer onTabChange={this.onTabChange} className="tabs">
+        <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
           <Tabs tabId="simple-tab">
             <Tab label="Students" style={{ color: '#000000' }}>
               <StudentData

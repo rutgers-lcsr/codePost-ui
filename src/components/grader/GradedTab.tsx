@@ -37,7 +37,6 @@ class GradedTab extends React.Component<IProps, {}> {
     this.props.claimSubmission(assignment).then((claimedSubmission: ISubmission) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
-        console.log('No more submissions to claim');
         this.setState({ buttonState: BUTTON_STATE.Inactive });
       } else {
         this.setState({ buttonState: BUTTON_STATE.Active });
@@ -47,7 +46,6 @@ class GradedTab extends React.Component<IProps, {}> {
 
   public releaseSubmission = (submission: ISubmission) => {
     this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission) => {
-      console.log('released', submission.id, releasedSubmission);
       this.setState({ buttonState: BUTTON_STATE.Active });
     });
   };

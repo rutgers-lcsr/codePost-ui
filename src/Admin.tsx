@@ -83,9 +83,22 @@ interface IAdminState {
 
   toasts: IToast[];
   errorToasts: IToast[];
+
+  // URL variables
+  toLoadCourse: boolean;
+  toLoadPanel: boolean;
+
+  // Pre-loaded initializtion paramters for children
+  readURL: boolean;
+  initialTab: number;
 }
 
-class Admin extends React.Component<{}, IAdminState> {
+interface IAdminProps {
+  match: any;
+  history: any;
+}
+
+class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined, // Course for selector
     loadedPanel: undefined, // Which active_panel to load, enum
@@ -138,6 +151,12 @@ class Admin extends React.Component<{}, IAdminState> {
 
     toasts: [],
     errorToasts: [],
+
+    readURL: false,
+    initialTab: 0,
+
+    toLoadCourse: false,
+    toLoadPanel: false,
   };
 
   public panels: { [key: string]: string } = {
@@ -148,6 +167,24 @@ class Admin extends React.Component<{}, IAdminState> {
     4: 'Manage Sections',
     5: 'Manage Admins',
   };
+
+  public panelMapForURL = [
+    'course-data',
+    'assignments',
+    'manage-students',
+    'manage-graders',
+    'manage-sections',
+    'manage-admins',
+  ];
+
+  public defaultPanelArgForURL = [
+    'students',
+    null,
+    null,
+    null,
+    null,
+    null,
+  ];
 
   public snackBarStyle = {
     width: '100%',
@@ -164,15 +201,71 @@ class Admin extends React.Component<{}, IAdminState> {
     backgroundColor: 'red',
     maxWidth: '100%',
   };
-  // ------------------- Permissions check functions -------------------
 
   private interval: any;
+
+  ///////////////////////////////////////
+  // URL handler methods
+  ///////////////////////////////////////
+
+  public setStateFromURL = () => {
+    const { courseName, period, panelName } = this.props.match.params;
+    const { courses } = this.state;
+
+    // Test whether (courseName, period) corresponds to loaded course
+    let currentCourse : ICourse | undefined;
+    let loadedPanel;
+    if (courseName && period) {
+      const formattedCourseName = courseName.replace(/_/g, ' ');
+      const formattedPeriod = period.replace(/_/g, ' ');
+      currentCourse = courses.find((obj: ICourse) => {
+        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+      });
+
+      // Given (courseName, period), test whether panelName corresponds to valid panel
+      if (currentCourse) {
+        if (panelName) {
+          loadedPanel = this.panelFromString(panelName);
+        } else {
+          loadedPanel = 0;
+        }
+      }
+    }
+
+    // the toLoadPanel assignment causes the URL to add default loadedPanel if none is specified
+    const isValid = currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
+    this.setState({ currentCourse, loadedPanel, toLoadPanel: !isValid }, () => {
+      if (currentCourse) {
+        this.updateNewCourse({ value: currentCourse.id, label: '' });
+      }
+    });
+  }
+
+  public panelFromString(name : string) {
+    const toRet = this.panelMapForURL.indexOf(name);
+    return toRet >= 0 ? toRet : 0;
+  }
+
+  public stringFromPanel(panel : number) {
+    if (panel < this.panelMapForURL.length && panel >= 0) {
+      return this.panelMapForURL[panel];
+    }
+    return null;
+  }
+
+  public panelArgFromPanel(panel : number) {
+    if (panel < this.defaultPanelArgForURL.length && panel >= 0) {
+      return this.defaultPanelArgForURL[panel];
+    }
+    return null;
+  }
+
+  // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
     if (this.state.isLoggedIn) {
-      this.setState({ isLoading: true });
-      this.loadCourses();
+      this.setState({ isLoading: true }, () => this.loadCourses());
     } else {
       // reminder, should check if logged in periodically,
       // in case logged out from admin on another tab
@@ -185,6 +278,19 @@ class Admin extends React.Component<{}, IAdminState> {
         this.loadCourses();
       }
     }, 10000);
+  }
+
+  public componentDidUpdate(prevProps : IAdminProps, prevState : IAdminState) {
+    const { isLoading, toLoadCourse, toLoadPanel } = this.state;
+
+    // After loading necessary resources, set state from URL
+    if (prevState.isLoading && !isLoading) {
+      this.setStateFromURL();
+    }
+
+    if (toLoadCourse || toLoadPanel) {
+      this.setState({ toLoadCourse: false, toLoadPanel: false });
+    }
   }
 
   public componentWillUnmount() {
@@ -204,10 +310,12 @@ class Admin extends React.Component<{}, IAdminState> {
         return course.id === option.value;
       })[0];
 
+      const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
+
       this.setState(
         {
           currentCourse,
-          loadedPanel: this.state.loadedPanel ? this.state.loadedPanel : 0,
+          loadedPanel: currentPanel,
 
           students: [],
           studentsLoadComplete: false,
@@ -262,7 +370,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
     // reminder: set students graders everything to undefined
     this.setState(
-      { currentCourse },
+      { currentCourse, toLoadCourse: true },
       () => {
         this.updateNewCourse(option);
       },
@@ -276,7 +384,7 @@ class Admin extends React.Component<{}, IAdminState> {
       return;
     }
 
-    this.setState({ loadedPanel: Number(option.value) }, () => {
+    this.setState({ loadedPanel: Number(option.value), toLoadPanel: true }, () => {
       this.forceUpdate();
     });
   };
@@ -1351,7 +1459,21 @@ class Admin extends React.Component<{}, IAdminState> {
 
   // ------------------- Render -------------------
   public render() {
-    const { courses, currentCourse, loadedPanel, toasts, errorToasts } = this.state;
+    const { courses, currentCourse, loadedPanel, toasts, errorToasts, toLoadCourse, toLoadPanel } = this.state;
+
+    if (toLoadCourse || toLoadPanel) {
+      if (currentCourse) {
+        const formattedCourseName = currentCourse.name.replace(/ /g, '_');
+        const formattedPeriod = currentCourse.period.replace(/ /g, '_');
+
+        // hacky way to set default to 0
+        const panelName = this.stringFromPanel(typeof loadedPanel !== 'undefined' ? loadedPanel : 0);
+
+        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`}/>;
+      } else {
+        return <Redirect to={'/course-admin'}/>;
+      }
+    }
 
     let courseManagementPanel = null;
 
@@ -1372,6 +1494,7 @@ class Admin extends React.Component<{}, IAdminState> {
             submissionsByStudent={this.state.submissionsByStudent}
             submissionsByGrader={this.state.submissionsByGrader}
             addToast={this.addToast}
+            initialTab={this.state.initialTab}
           />
         </div>
       );
