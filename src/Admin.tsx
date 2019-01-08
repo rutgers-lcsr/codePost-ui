@@ -884,7 +884,7 @@ class Admin extends React.Component<{}, IAdminState> {
     newLeaders.push(leaderEmail);
 
     return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
-      this.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
+      this.addToast(`${leaderEmail} added as leader of section ${sectionName}`, undefined);
       return leaders;
     });
   };
