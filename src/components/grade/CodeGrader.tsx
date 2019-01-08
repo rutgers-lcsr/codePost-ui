@@ -64,10 +64,10 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public getTabTitle = (file: IFile, comments: IComment[]) => {
-    const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
+    const pointDelta = comments.reduce((accumulator: number, currentValue: IComment) => {
       return accumulator + currentValue.pointDelta;
     }, 0);
-    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+    const pointDeltaString = pointDelta > 0 ? `(-${pointDelta})` : '';
 
     const numComments = comments.length;
     const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
@@ -75,7 +75,7 @@ class CodeGrader extends React.Component<IProps, IState> {
     return (
       <div className="tab-title">
         {commentFlag}
-        <div className="tab-title">{`${file.name} ${deductionString}`}</div>
+        <div className="tab-title">{`${file.name} ${pointDeltaString}`}</div>
       </div>
     );
   };
