@@ -876,16 +876,39 @@ class Admin extends React.Component<{}, IAdminState> {
   public addLeaderToSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
     const { sections } = this.state;
 
-    // Reminder -- need to change leaderEmail [] to concatenation of existing addLeaderToSection
-    // once the front end can handle multiple leaders
     const thisSection = sections.filter((section) => {
       return section.id === sectionID;
     })[0];
+    const sectionName = thisSection.name;
     const newLeaders = thisSection.leaders;
     newLeaders.push(leaderEmail);
 
-    let payload;
-    payload = { id: sectionID, leaders: newLeaders };
+    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
+      this.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
+      return leaders;
+    });
+  };
+
+  public removeLeaderFromSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
+    const { sections } = this.state;
+
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const sectionName = thisSection.name;
+    const newLeaders = thisSection.leaders.filter((leader) => {
+      return leader !== leaderEmail;
+    });
+
+    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
+      this.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
+      return leaders;
+    });
+  };
+
+  public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
+    const { sections } = this.state;
+    const payload = { id: sectionID, leaders: newLeaders };
 
     return fetch(`/api/sections/${sectionID}/`, {
       headers: {
@@ -904,25 +927,16 @@ class Admin extends React.Component<{}, IAdminState> {
       })
       .then((json) => {
         if (json) {
-          let name = '';
           const newSections = sections.map((section) => {
             if (section.id === sectionID) {
               section.leaders = json.leaders;
-              name = section.name;
             }
             return section;
           });
 
-          this.setState({ sections: newSections }, () => {
-            if (leaderEmail) {
-              this.addToast(`${leaderEmail} set as a leader of section ${name}`, undefined);
-            } else {
-              this.addToast(`Leader of section ${name} set to empty`, undefined);
-            }
-          });
+          this.setState({ sections: newSections });
           return json.leaders;
         }
-        return;
       });
   };
 
@@ -1449,6 +1463,7 @@ class Admin extends React.Component<{}, IAdminState> {
             createSection={this.createSection}
             graders={this.state.graders}
             addLeader={this.addLeaderToSection}
+            removeLeader={this.removeLeaderFromSection}
           />
         </div>
       );

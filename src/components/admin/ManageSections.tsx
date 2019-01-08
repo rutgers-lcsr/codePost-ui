@@ -22,6 +22,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
+  removeLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
   graders: string[];
 }
 
