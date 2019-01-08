@@ -229,6 +229,46 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     this.setState({ comments });
   };
 
+  public saveGrade = (): any => {
+    const { comments, submission } = this.state;
+    if (!submission) {
+      return;
+    }
+
+    // Horrific code that is happneing because the pointDelta is sometimes
+    // a number and sometimes a string
+    // will fix the underlying issue in a future PR
+    const grade = Object.keys(comments)
+      .map((fileID) => {
+        return comments[fileID].reduce((accumulator: number, comment: IComment) => {
+          if (comment.pointDelta) {
+            if (typeof comment.pointDelta === 'number') {
+              return accumulator + comment.pointDelta;
+            } else {
+              return accumulator + parseInt(comment.pointDelta, 10);
+            }
+          } else {
+            return accumulator;
+          }
+          return accumulator + (comment.pointDelta ? comment.pointDelta : 0);
+        }, 0);
+      })
+      .reduce((accumulator: number, fileGrade: number) => {
+        return accumulator + fileGrade;
+      }, 0);
+
+    const payload = {
+      grade,
+    };
+
+    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+      this.setState({
+        submission: json,
+      });
+      return json;
+    });
+  };
+
   // Delete the comment json from the submission state
   // Then delete the comment from the remote db
   public deleteComment = (comment: IComment, file: IFile): void => {
@@ -332,6 +372,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             changeActive={this.changeActiveComment}
             deleteComment={this.deleteComment}
             updateComment={this.updateComment}
+            saveGrade={this.saveGrade}
           />
         </div>
       </div>

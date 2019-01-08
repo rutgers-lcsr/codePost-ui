@@ -26,6 +26,7 @@ interface IProps {
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  saveGrade: () => any;
 }
 
 interface IState {
@@ -64,8 +65,19 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public getTabTitle = (file: IFile, comments: IComment[]) => {
-    const pointDelta = comments.reduce((accumulator: number, currentValue: IComment) => {
-      return accumulator + currentValue.pointDelta;
+    // Horrific code that is happneing because the pointDelta is sometimes
+    // a number and sometimes a string
+    // will fix the underlying issue in a future PR
+    const pointDelta = comments.reduce((accumulator: number, comment: IComment) => {
+      if (comment.pointDelta) {
+        if (typeof comment.pointDelta === 'number') {
+          return accumulator + comment.pointDelta;
+        } else {
+          return accumulator + parseInt(comment.pointDelta, 10);
+        }
+      } else {
+        return accumulator;
+      }
     }, 0);
     const pointDeltaString = pointDelta > 0 ? `(-${pointDelta})` : '';
 
@@ -85,7 +97,16 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { activeCommentId, deleteComment, readOnly, files, comments, rubricComments, updateComment } = this.props;
+    const {
+      activeCommentId,
+      deleteComment,
+      readOnly,
+      files,
+      comments,
+      rubricComments,
+      updateComment,
+      saveGrade,
+    } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -123,6 +144,7 @@ class CodeGrader extends React.Component<IProps, IState> {
                     changeActive={this.changeActive}
                     deleteComment={deleteComment}
                     updateComment={updateComment}
+                    saveGrade={saveGrade}
                   />
                 </div>
               </TabPanel>
@@ -245,6 +267,7 @@ interface ICommentListProps {
   changeActive: (id: number | number) => void;
   deleteComment: (comment: IComment, file: IFile) => void;
   updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  saveGrade: () => any;
 }
 
 interface IBlock {
@@ -253,7 +276,16 @@ interface IBlock {
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = props;
+  const {
+    activeCommentId,
+    changeActive,
+    deleteComment,
+    file,
+    readOnly,
+    updateComment,
+    rubricComments,
+    saveGrade,
+  } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const blocks: IBlock[] = [];
 
@@ -309,6 +341,7 @@ const CommentList = (props: ICommentListProps) => {
         changeActive={changeActive}
         deleteComment={deleteComment}
         updateComment={updateComment}
+        saveGrade={saveGrade}
       />
     );
   });
