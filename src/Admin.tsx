@@ -1509,6 +1509,7 @@ class Admin extends React.Component<{}, IAdminState> {
             className="short-snackbar"
             toasts={toasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={2000}
             onDismiss={this.dismissToast}
             style={this.snackBarStyle}
@@ -1518,6 +1519,7 @@ class Admin extends React.Component<{}, IAdminState> {
             className="long-snackbar"
             toasts={longToasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={4000}
             onDismiss={this.dismissLongToast}
             style={this.snackBarStyle}
@@ -1527,6 +1529,7 @@ class Admin extends React.Component<{}, IAdminState> {
             className="error-snackbar"
             toasts={errorToasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={2000}
             onDismiss={this.dismissErrorToast}
             style={this.errorSnackBarStyl4e}
