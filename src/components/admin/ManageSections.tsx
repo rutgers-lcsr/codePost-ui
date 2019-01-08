@@ -21,7 +21,7 @@ interface IProps {
   currentCourse: ICourse | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
-  addLeader: (sectionID: number, leaderEmail: string | undefined) => Promise<string[]>;
+  addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
   graders: string[];
 }
 
@@ -46,9 +46,7 @@ class ManageSections extends React.Component<IProps, {}> {
     changedSections.push(sectionID);
     this.setState({ changedSections });
 
-    const newLeader = graderEmail.length > 0 ? graderEmail : undefined;
-
-    addLeader(Number(sectionID), newLeader).then((leaders) => {
+    addLeader(Number(sectionID), graderEmail).then((leaders) => {
       if (leaders) {
         changedSections = changedSections.filter((i) => {
           return i !== sectionID;
@@ -75,14 +73,12 @@ class ManageSections extends React.Component<IProps, {}> {
       newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
     const leaderMenuItems = graders.map((grader) => {
-      // Reminder -- fix this to simplify
       return {
         label: grader,
         value: grader,
       };
     });
 
-    leaderMenuItems.push({ label: '', value: '' });
     let tableBody;
     if (sectionsLoadComplete) {
       tableBody = sections.map((section) => {

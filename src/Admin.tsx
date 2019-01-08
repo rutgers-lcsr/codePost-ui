@@ -873,20 +873,19 @@ class Admin extends React.Component<{}, IAdminState> {
     return Promise.reject();
   };
 
-  public addLeaderToSection = (
-    sectionID: number,
-    leaderEmail: string | undefined,
-  ): Promise<string[]> => {
+  public addLeaderToSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
     const { sections } = this.state;
 
     // Reminder -- need to change leaderEmail [] to concatenation of existing addLeaderToSection
     // once the front end can handle multiple leaders
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const newLeaders = thisSection.leaders;
+    newLeaders.push(leaderEmail);
+
     let payload;
-    if (leaderEmail) {
-      payload = { id: sectionID, leaders: [leaderEmail] };
-    } else {
-      payload = { id: sectionID, leaders: [] };
-    }
+    payload = { id: sectionID, leaders: newLeaders };
 
     return fetch(`/api/sections/${sectionID}/`, {
       headers: {
