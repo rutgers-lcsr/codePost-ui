@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  Chip,
   DataTable,
   FontIcon,
   SelectFieldColumn,
@@ -22,6 +23,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
+  removeLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
   graders: string[];
 }
 
@@ -40,10 +42,9 @@ class ManageSections extends React.Component<IProps, {}> {
     this.setState({ newSectionField: value });
   };
 
-  public rowLeaderChange = (sectionID: number, graderEmail: string) => {
+  public addLeaderToSection = (sectionID: number, graderEmail: string) => {
     let { changedSections } = this.state;
     const { addLeader } = this.props;
-    // Reminder -- do some check through the existing sections to only keep tabs on what changed
     changedSections.push(sectionID);
     this.setState({ changedSections });
 
@@ -54,6 +55,25 @@ class ManageSections extends React.Component<IProps, {}> {
         });
         this.setState({ changedSections });
       }
+    });
+  };
+
+  public removeLeaderFromSection = (sectionID: number, graderEmail: string) => {
+    let { changedSections } = this.state;
+    const { removeLeader, lockedSectionChange } = this.props;
+
+    if (lockedSectionChange) {
+      return;
+    }
+
+    changedSections.push(sectionID);
+    this.setState({ changedSections });
+
+    removeLeader(Number(sectionID), graderEmail).then(() => {
+      changedSections = changedSections.filter((i) => {
+        return i !== sectionID;
+      });
+      this.setState({ changedSections });
     });
   };
 
@@ -73,45 +93,56 @@ class ManageSections extends React.Component<IProps, {}> {
     const allowAddSection =
       newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
-    const leaderMenuItems = graders.map((grader) => {
-      // Reminder -- fix this to simplify
-      return {
-        label: grader,
-        value: grader,
-      };
-    });
-
     let tableBody;
     if (sectionsLoadComplete) {
-      tableBody = (
-        sections.map((section) => {
-          // Reminder - need to change to represent multiple leaders
-          const currentLeader =
-            section.leaders && section.leaders[0] ? section.leaders[0] : '';
+      tableBody = sections.map((section) => {
+        // Reminder - need to change to represent multiple leaders
+        let dropDown;
+        let leaderDisable = false;
 
-          let dropDown;
-          let leaderDisable = false;
+        if (changedSections.indexOf(section.id) !== -1) {
+          dropDown = iconChanged;
+          leaderDisable = true;
+        } else {
+          dropDown = undefined;
+        }
 
-          if (changedSections.indexOf(section.id) !== -1) {
-            dropDown = iconChanged;
-            leaderDisable = true;
-          } else {
-            dropDown = undefined;
-          }
-          return (
-            <TableRow key={section.id}>
-              <TableColumn>{section.name}</TableColumn>
-              <SelectFieldColumn
-                dropdownIcon={dropDown}
-                value={currentLeader}
-                menuItems={leaderMenuItems}
-                disabled={lockedSectionChange || leaderDisable}
-                onChange={this.rowLeaderChange.bind(this.props, section.id)}
-              />
-            </TableRow>
-          );
-        })
-      );
+        const leaderMenuItems = graders
+          .filter((grader) => {
+            return section.leaders.indexOf(grader) === -1;
+          })
+          .map((grader) => {
+            return {
+              label: grader,
+              value: grader,
+            };
+          });
+
+        return (
+          <TableRow key={section.id}>
+            <TableColumn>{section.name}</TableColumn>
+            <TableColumn>
+              {section.leaders.map((leader) => {
+                return (
+                  <Chip
+                    key={leader}
+                    label={leader}
+                    removable={!lockedSectionChange}
+                    onClick={this.removeLeaderFromSection.bind(this.props, section.id, leader)}
+                  />
+                );
+              })}
+            </TableColumn>
+            <SelectFieldColumn
+              dropdownIcon={dropDown}
+              value={''}
+              menuItems={leaderMenuItems}
+              disabled={lockedSectionChange || leaderDisable}
+              onChange={this.addLeaderToSection.bind(this.props, section.id)}
+            />
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -147,19 +178,24 @@ class ManageSections extends React.Component<IProps, {}> {
           <TableHeader>
             <TableRow>
               <TableColumn key={'sectionName'}>Section Name</TableColumn>
-              <TableColumn key={'sectionLeader'}>Leader</TableColumn>
+              <TableColumn key={'sectionLeaders'}>Leaders</TableColumn>
+              <TableColumn key={'addLeader'}>Add Leader</TableColumn>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {tableBody}
-          </TableBody>
+          <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
           {lockIcon}
         </Button>
       </div>
     );
-
   }
 }
 

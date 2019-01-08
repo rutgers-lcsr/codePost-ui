@@ -563,8 +563,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         rubricCategories[assignmentID] = json.categories;
         json.categories.forEach((cat: IRubricCategory) => {
           rubricComments[cat.id] = json.comments.filter((comm: IRubricComment) => {
-            console.log('here');
-            console.log(comm.category);
             return comm.category === cat.id;
           });
         });
@@ -870,10 +868,58 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
   };
 
+  public removeStudentFromSection = (
+    sectionID: number,
+    studentEmail: string,
+  ): Promise<ISection> => {
+    const { sections, sectionsByStudent } = this.state;
+
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const newStudents = thisSection.students.filter((student) => {
+      return student !== studentEmail;
+    });
+
+    const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
+
+    return fetch(`/api/sections/${sectionID}/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json: ISection) => {
+        if (json) {
+          const newSections = sections.map((section) => {
+            if (section.id === json.id) {
+              section.students = json.students;
+            }
+            return section;
+          });
+
+          delete sectionsByStudent[studentEmail];
+
+          this.setState({ sections: newSections, sectionsByStudent }, () =>
+            this.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
+          );
+        }
+        return json;
+      });
+  };
+
   public addStudentToSection = (sectionID: number, studentEmail: string): Promise<ISection> => {
     const { sections, sectionsByStudent } = this.state;
 
-    // Reminder -- there must be a cleaner way to do this filter
     const thisSection = sections.filter((section) => {
       return section.id === sectionID;
     })[0];
@@ -891,11 +937,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       body: JSON.stringify(payload),
     })
       .then((res) => {
-        if (res.status === 200) {
-          return res.json();
+        if (res.status !== 200) {
+          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
+          return undefined;
         }
-        this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
-        return undefined;
+        return res.json();
       })
       .then((json: ISection) => {
         if (json) {
@@ -912,19 +958,68 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           };
 
           this.setState({ sections: newSections, sectionsByStudent }, () => {
-            this.addToast(`Student ${studentEmail} added to section ${name}`, undefined);
+            this.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
           });
         }
         return json;
       });
   };
 
+  public changeStudentSection = (
+    newSectionID: number | undefined,
+    studentEmail: string,
+  ): Promise<ISection> => {
+    const { sectionsByStudent } = this.state;
+    const previousSection = sectionsByStudent[studentEmail];
+    if (previousSection && newSectionID) {
+      return this.removeStudentFromSection(previousSection.id, studentEmail).then(() => {
+        return this.addStudentToSection(newSectionID, studentEmail);
+      });
+    } else if (previousSection) {
+      return this.removeStudentFromSection(previousSection.id, studentEmail);
+    } else if (newSectionID) {
+      return this.addStudentToSection(newSectionID, studentEmail);
+    }
+    this.addErrorToast('Error - both old section and new section are empty.', undefined);
+    return Promise.reject();
+  };
+
   public addLeaderToSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
     const { sections } = this.state;
 
-    // Reminder -- need to change leaderEmail [] to concatenation of existing addLeaderToSection
-    // once the front end can handle multiple leaders
-    const payload = { id: sectionID, leaders: [leaderEmail] };
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const sectionName = thisSection.name;
+    const newLeaders = thisSection.leaders;
+    newLeaders.push(leaderEmail);
+
+    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
+      this.addToast(`${leaderEmail} added as leader of section ${sectionName}`, undefined);
+      return leaders;
+    });
+  };
+
+  public removeLeaderFromSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
+    const { sections } = this.state;
+
+    const thisSection = sections.filter((section) => {
+      return section.id === sectionID;
+    })[0];
+    const sectionName = thisSection.name;
+    const newLeaders = thisSection.leaders.filter((leader) => {
+      return leader !== leaderEmail;
+    });
+
+    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
+      this.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
+      return leaders;
+    });
+  };
+
+  public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
+    const { sections } = this.state;
+    const payload = { id: sectionID, leaders: newLeaders };
 
     return fetch(`/api/sections/${sectionID}/`, {
       headers: {
@@ -943,21 +1038,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       })
       .then((json) => {
         if (json) {
-          let name = '';
           const newSections = sections.map((section) => {
             if (section.id === sectionID) {
               section.leaders = json.leaders;
-              name = section.name;
             }
             return section;
           });
 
-          this.setState({ sections: newSections }, () => {
-            this.addToast(`${leaderEmail} set as a leader of section ${name}`, undefined);
-          });
+          this.setState({ sections: newSections });
           return json.leaders;
         }
-        return;
       });
   };
 
@@ -973,9 +1063,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = {
@@ -1079,9 +1167,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = {
@@ -1137,9 +1223,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { rubricCategories, rubricComments } = this.state;
     if (commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = { text: commentText, category: categoryID, pointDelta: commentDelta };
@@ -1215,9 +1299,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
     const payload = { id: commentID, text: commentText, pointDelta: commentDelta };
 
@@ -1246,8 +1328,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           if (comIndex !== -1) {
             rubricComments[categoryID][comIndex] = json;
           }
-          this.setState({ rubricComments });
         }
+        this.setState({ rubricComments });
         return json;
       });
   };
@@ -1262,9 +1344,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { assignments } = this.state;
 
     if (!name && !points && typeof isReleased === 'undefined') {
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = { id: assignmentID };
@@ -1317,9 +1397,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   ): Promise<IAssignment> => {
     const { currentCourse } = this.state;
     if (!currentCourse) {
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
     const payload = {
       course: currentCourse.id,
@@ -1486,7 +1564,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
             sectionsByStudent={this.state.sectionsByStudent}
-            addStudentToSection={this.addStudentToSection}
+            changeStudentSection={this.changeStudentSection}
           />
         </div>
       );
@@ -1520,6 +1598,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             createSection={this.createSection}
             graders={this.state.graders}
             addLeader={this.addLeaderToSection}
+            removeLeader={this.removeLeaderFromSection}
           />
         </div>
       );
@@ -1565,6 +1644,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             className="short-snackbar"
             toasts={toasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={2000}
             onDismiss={this.dismissToast}
             style={this.snackBarStyle}
@@ -1574,6 +1654,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             className="long-snackbar"
             toasts={longToasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={4000}
             onDismiss={this.dismissLongToast}
             style={this.snackBarStyle}
@@ -1583,6 +1664,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             className="error-snackbar"
             toasts={errorToasts}
             autohide={true}
+            lastChild={true}
             autohideTimeout={2000}
             onDismiss={this.dismissErrorToast}
             style={this.errorSnackBarStyl4e}
