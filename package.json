@@ -112,12 +112,7 @@
       "json",
       "node",
       "mjs"
-    ],
-    "globals": {
-      "ts-jest": {
-        "tsConfigFile": "/Users/richardfreling/Documents/codepost-v1/tsconfig.test.json"
-      }
-    }
+    ]
   },
   "babel": {
     "presets": [
