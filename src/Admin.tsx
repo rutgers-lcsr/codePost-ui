@@ -870,9 +870,7 @@ class Admin extends React.Component<{}, IAdminState> {
       return this.addStudentToSection(newSectionID, studentEmail);
     }
     this.addErrorToast('Error - both old section and new section are empty.', undefined);
-    return new Promise((resolve) => {
-      resolve(undefined);
-    });
+    return Promise.reject();
   };
 
   public addLeaderToSection = (
@@ -941,9 +939,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = {
@@ -1047,9 +1043,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = {
@@ -1105,9 +1099,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const { rubricCategories, rubricComments } = this.state;
     if (commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = { text: commentText, category: categoryID, pointDelta: commentDelta };
@@ -1183,9 +1175,7 @@ class Admin extends React.Component<{}, IAdminState> {
 
     if (commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
     const payload = { id: commentID, text: commentText, pointDelta: commentDelta };
 
@@ -1214,8 +1204,8 @@ class Admin extends React.Component<{}, IAdminState> {
           if (comIndex !== -1) {
             rubricComments[categoryID][comIndex] = json;
           }
-          this.setState({ rubricComments });
         }
+        this.setState({ rubricComments });
         return json;
       });
   };
@@ -1230,9 +1220,7 @@ class Admin extends React.Component<{}, IAdminState> {
     const { assignments } = this.state;
 
     if (!name && !points && typeof isReleased === 'undefined') {
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
 
     const payload = { id: assignmentID };
@@ -1285,9 +1273,7 @@ class Admin extends React.Component<{}, IAdminState> {
   ): Promise<IAssignment> => {
     const { currentCourse } = this.state;
     if (!currentCourse) {
-      return new Promise((resolve) => {
-        resolve(undefined);
-      });
+      return Promise.reject();
     }
     const payload = {
       course: currentCourse.id,
