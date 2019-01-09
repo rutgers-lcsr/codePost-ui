@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import Admin from './Admin';
 
@@ -32,7 +32,7 @@ class App extends React.Component<{}, IState> {
     };
   }
 
-  public componentDidUpdate(prevProps : any, prevState : IState) {
+  public componentDidUpdate(prevProps: any, prevState: IState) {
     if (this.state.toRedirect) {
       this.setState({ toRedirect: false });
     }
@@ -153,29 +153,31 @@ class App extends React.Component<{}, IState> {
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
             <div className="AppHome">
-              <Switch>
-                <Route
-                  exact={true}
-                  path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-                  render={(props : any) => <Student {...props} email={email} initialCourses={studentCourses} />}
-                />
+              <BrowserRouter>
+                <Switch>
+                  <Route
+                    exact={true}
+                    path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+                    render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+                  />
 
-                <Route
-                  exact={true}
-                  path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
-                  render={(props : any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
-                />
+                  <Route
+                    exact={true}
+                    path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+                    render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
+                  />
 
-                <Route
-                  exact={true}
-                  path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                  render={(props : any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
-                />
+                  <Route
+                    exact={true}
+                    path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+                    render={(props: any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
+                  />
 
-                <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
+                  <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
 
-                <Route exact={true} path={HOME} component={Home} />
-              </Switch>
+                  <Route exact={true} path={HOME} component={Home} />
+                </Switch>
+              </BrowserRouter>
             </div>
           </div>
         </div>
