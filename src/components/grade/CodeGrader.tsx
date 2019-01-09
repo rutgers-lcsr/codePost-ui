@@ -23,6 +23,7 @@ interface IProps {
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  saveGrade: () => any;
 }
 
 interface IState {
@@ -61,10 +62,21 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public getTabTitle = (file: FileType, comments: CommentType[]) => {
-    const deduction = comments.reduce((accumulator: number, currentValue: CommentType) => {
-      return accumulator + (currentValue.pointDelta ? currentValue.pointDelta : 0);
+    // Horrific code that is happneing because the pointDelta is sometimes
+    // a number and sometimes a string
+    // will fix the underlying issue in a future PR
+    const pointDelta = comments.reduce((accumulator: number, comment: CommentType) => {
+      if (comment.pointDelta) {
+        if (typeof comment.pointDelta === 'number') {
+          return accumulator + comment.pointDelta;
+        } else {
+          return accumulator + parseInt(comment.pointDelta, 10);
+        }
+      } else {
+        return accumulator;
+      }
     }, 0);
-    const deductionString = deduction > 0 ? `(-${deduction})` : '';
+    const pointDeltaString = pointDelta > 0 ? `(-${pointDelta})` : '';
 
     const numComments = comments.length;
     const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
@@ -72,7 +84,7 @@ class CodeGrader extends React.Component<IProps, IState> {
     return (
       <div className="tab-title">
         {commentFlag}
-        <div className="tab-title">{`${file.name} ${deductionString}`}</div>
+        <div className="tab-title">{`${file.name} ${pointDeltaString}`}</div>
       </div>
     );
   };
@@ -82,7 +94,16 @@ class CodeGrader extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const { activeCommentId, deleteComment, readOnly, files, comments, rubricComments, updateComment } = this.props;
+    const {
+      activeCommentId,
+      deleteComment,
+      readOnly,
+      files,
+      comments,
+      rubricComments,
+      updateComment,
+      saveGrade,
+    } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -120,6 +141,7 @@ class CodeGrader extends React.Component<IProps, IState> {
                     changeActive={this.changeActive}
                     deleteComment={deleteComment}
                     updateComment={updateComment}
+                    saveGrade={saveGrade}
                   />
                 </div>
               </TabPanel>
@@ -148,7 +170,6 @@ const CodeBox = (props: ICodeBoxProps) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
-      console.log('nothing selected');
       return;
     }
 
@@ -244,6 +265,7 @@ interface ICommentListProps {
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  saveGrade: () => any;
 }
 
 interface IBlock {
@@ -252,7 +274,16 @@ interface IBlock {
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = props;
+  const {
+    activeCommentId,
+    changeActive,
+    deleteComment,
+    file,
+    readOnly,
+    updateComment,
+    rubricComments,
+    saveGrade,
+  } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const blocks: IBlock[] = [];
 
@@ -308,6 +339,7 @@ const CommentList = (props: ICommentListProps) => {
         changeActive={changeActive}
         deleteComment={deleteComment}
         updateComment={updateComment}
+        saveGrade={saveGrade}
       />
     );
   });

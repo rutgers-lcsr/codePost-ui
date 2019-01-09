@@ -38,6 +38,12 @@ class NewCourseDialog extends React.Component<IProps, {}> {
     this.setState({ newCoursePeriod: newPeriod });
   };
 
+  public handleKeyPress = (event: any) => {
+    if (event.keyCode === 13) {
+      this.createNewCourse();
+    }
+  };
+
   public createNewCourse = () => {
     const { newCourseName, newCoursePeriod } = this.state;
     const { courses } = this.props;
@@ -45,8 +51,19 @@ class NewCourseDialog extends React.Component<IProps, {}> {
       this.props.addErrorToast('Course name must be longer than 4 characters', undefined);
       return;
     }
-    if (courses.filter(c => c.name === newCourseName && c.period === newCoursePeriod).length !== 0) {
-      this.props.addErrorToast('Cannot create course with same name and period as existing course.', undefined);
+    if (newCoursePeriod.length < 1) {
+      this.props.addErrorToast('Course period must not be empty', undefined);
+      return;
+    }
+    if (
+      courses.filter((c) => {
+        return c.name === newCourseName && c.period === newCoursePeriod;
+      }).length !== 0
+    ) {
+      this.props.addErrorToast(
+        'Cannot create course with same name and period as existing course.',
+        undefined,
+      );
       return;
     }
     this.props.createCourse(newCourseName, newCoursePeriod).then(() => {
@@ -87,12 +104,14 @@ class NewCourseDialog extends React.Component<IProps, {}> {
             label="Course name"
             defaultValue=""
             onChange={this.changeNameField}
+            onKeyDown={this.handleKeyPress}
           />
           <TextField
             id="newCourse-period"
             label="Course period (e.g., Spring 2018)"
             defaultValue=""
             onChange={this.changePeriodField}
+            onKeyDown={this.handleKeyPress}
           />
         </DialogContainer>
       </div>

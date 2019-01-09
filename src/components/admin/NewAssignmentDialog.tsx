@@ -38,6 +38,12 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
     this.setState({ newAssignmentPoints: newPoints });
   };
 
+  public handleKeyPress = (event: any) => {
+    if (event.keyCode === 13) {
+      this.createNewAssignment();
+    }
+  };
+
   public createNewAssignment = () => {
     const { newAssignmentName, newAssignmentPoints } = this.state;
     const { assignments } = this.props;
@@ -100,6 +106,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
             label="New Assignment name"
             defaultValue=""
             onChange={this.changeNameField}
+            onKeyDown={this.handleKeyPress}
           />
           <TextField
             id="newAssignment-points"
@@ -109,6 +116,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
             min={0}
             defaultValue=""
             onChange={this.changePointsField}
+            onKeyDown={this.handleKeyPress}
           />
         </DialogContainer>
       </div>

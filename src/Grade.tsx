@@ -218,6 +218,52 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     this.setState({ comments });
   };
 
+  public saveGrade = (): any => {
+    const { comments, submission, assignment } = this.state;
+
+    let assignmentPoints = 0;
+    if (!submission || !assignment) {
+      return;
+    } else {
+      assignmentPoints = assignment.points;
+    }
+
+    // Horrific code that is happneing because the pointDelta is sometimes
+    // a number and sometimes a string
+    // will fix the underlying issue in a future PR
+    const grade =
+      assignmentPoints -
+      Object.keys(comments)
+        .map((fileID) => {
+          return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+            if (comment.pointDelta) {
+              if (typeof comment.pointDelta === 'number') {
+                return accumulator + comment.pointDelta;
+              } else {
+                return accumulator + parseInt(comment.pointDelta, 10);
+              }
+            } else {
+              return accumulator;
+            }
+          }, 0);
+        })
+        .reduce((accumulator: number, fileGrade: number) => {
+          return accumulator + fileGrade;
+        }, 0);
+
+    const payload = {
+      id: submission.id,
+      grade,
+    };
+
+    return Submission.update(payload).then((json) => {
+      this.setState({
+        submission: json,
+      });
+      return json;
+    });
+  };
+
   // Delete the comment json from the submission state
   // Then delete the comment from the remote db
   public deleteComment = (comment: CommentType, file: FileType): void => {
@@ -314,6 +360,7 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
             changeActive={this.changeActiveComment}
             deleteComment={this.deleteComment}
             updateComment={this.updateComment}
+            saveGrade={this.saveGrade}
           />
         </div>
       </div>

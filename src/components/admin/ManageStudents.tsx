@@ -27,7 +27,7 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<SectionType>;
+  changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
 }
 
 interface IState {
@@ -58,12 +58,14 @@ class ManageStudents extends React.Component<IProps, {}> {
 
   public rowSectionChange = (studentEmail: string, value: number) => {
     let { changedSectionStudents } = this.state;
-    const { addStudentToSection } = this.props;
+    const { changeStudentSection } = this.props;
 
     changedSectionStudents.push(studentEmail);
     this.setState({ changedSectionStudents });
 
-    addStudentToSection(value, studentEmail).then(() => {
+    const newSectionID = value > 0 ? value : undefined;
+
+    changeStudentSection(newSectionID, studentEmail).then(() => {
       changedSectionStudents = changedSectionStudents.filter((i) => {
         return i !== studentEmail;
       });
@@ -84,13 +86,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const {
-      studentsLoadComplete,
-      lockedStudentChange,
-      students,
-      sections,
-      sectionsByStudent,
-    } = this.props;
+    const { studentsLoadComplete, lockedStudentChange, students, sections, sectionsByStudent } = this.props;
     const { newStudentField, changedSectionStudents, sortAscending, searchTerm } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
@@ -100,62 +96,61 @@ class ManageStudents extends React.Component<IProps, {}> {
     const sectionMenuItems = sections.map((section) => {
       return { label: section.name, value: section.id };
     });
+    sectionMenuItems.push({ label: '', value: -1 });
 
     const iconChanged = <FontIcon>track_changes</FontIcon>;
     const studentType = USER_APP.Student;
 
     let tableBody;
     if (studentsLoadComplete) {
-      tableBody = (
-        students.map((student) => {
-          const section = sectionsByStudent[student];
-          const sectionID = section ? section.id : '';
-          const sectionName = section ? section.name : '';
+      tableBody = students.map((student) => {
+        const section = sectionsByStudent[student];
+        const sectionID = section ? section.id : -1;
+        const sectionName = section ? section.name : '';
 
-          if (
-            student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
-            sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
-          ) {
-            return <div />;
-          }
+        if (
+          student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
+          sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
+        ) {
+          return <div />;
+        }
 
-          let dropDown;
-          let sectionDisable = false;
+        let dropDown;
+        let sectionDisable = false;
 
-          if (changedSectionStudents.indexOf(student) !== -1) {
-            dropDown = iconChanged;
-            sectionDisable = true;
-          } else {
-            dropDown = undefined;
-          }
+        if (changedSectionStudents.indexOf(student) !== -1) {
+          dropDown = iconChanged;
+          sectionDisable = true;
+        } else {
+          dropDown = undefined;
+        }
 
-          return (
-            <TableRow key={student}>
-              <TableColumn>{student}</TableColumn>
-              <SelectFieldColumn
-                dropdownIcon={dropDown}
-                value={sectionID}
-                menuItems={sectionMenuItems}
-                disabled={lockedStudentChange || sectionDisable}
-                onChange={this.rowSectionChange.bind(this.props, student)}
-              />
-              <TableColumn key={'UnEnroll'}>
-                {' '}
-                <Button
-                  key="unEnroll"
-                  className="Btn"
-                  flat={true}
-                  icon={true}
-                  disabled={lockedStudentChange}
-                  onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
-                >
-                  cancel
-                </Button>
-              </TableColumn>
-            </TableRow>
-          );
-        })
-       );
+        return (
+          <TableRow key={student}>
+            <TableColumn>{student}</TableColumn>
+            <SelectFieldColumn
+              dropdownIcon={dropDown}
+              value={sectionID}
+              menuItems={sectionMenuItems}
+              disabled={lockedStudentChange || sectionDisable}
+              onChange={this.rowSectionChange.bind(this.props, student)}
+            />
+            <TableColumn key={'UnEnroll'}>
+              {' '}
+              <Button
+                key="unEnroll"
+                className="Btn"
+                flat={true}
+                icon={true}
+                disabled={lockedStudentChange}
+                onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+              >
+                cancel
+              </Button>
+            </TableColumn>
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -209,18 +204,9 @@ class ManageStudents extends React.Component<IProps, {}> {
               <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {tableBody}
-          </TableBody>
+          <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button
-          key="Lock"
-          className="Btn"
-          floating={true}
-          fixed={true}
-          icon={true}
-          onClick={this.props.toggleLock}
-        >
+        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
           {lockIcon}
         </Button>
       </div>
