@@ -11,20 +11,23 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, ISection, ISectionNoStudents, USER_APP } from '../../types/common';
+import { ISectionNoStudents, USER_APP } from '../../types/common';
+
+import { CourseType } from '../../infrastructure/course';
+import { SectionType } from '../../infrastructure/section';
 
 interface IProps {
-  sections: ISection[];
+  sections: SectionType[];
   students: string[];
   studentsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<ISection>;
+  addStudentToSection: (sectionID: number, studentEmail: string) => Promise<SectionType>;
 }
 
 interface IState {

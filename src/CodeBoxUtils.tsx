@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { IComment, IRubricComment } from './types/common';
+import { CommentType } from './infrastructure/comment';
+import { RubricCommentType } from './infrastructure/rubricComment';
 
 const PIXELS_PER_LINE = 19;
 
@@ -9,8 +10,8 @@ export default class CodeBoxUtils {
   };
 
   public static heightOfComment = (
-    comment: IComment,
-    rubricComment: IRubricComment | undefined,
+    comment: CommentType,
+    rubricComment: RubricCommentType | undefined,
     activeCommentId?: number,
   ): number => {
     const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
@@ -24,8 +25,8 @@ export default class CodeBoxUtils {
     return totalLines * PIXELS_PER_LINE;
   };
 
-  public static sortHighlights = (highlights: IComment[]): IComment[] => {
-    return highlights.sort((a: IComment, b: IComment) => {
+  public static sortHighlights = (highlights: CommentType[]): CommentType[] => {
+    return highlights.sort((a: CommentType, b: CommentType) => {
       if (a.startLine === b.startLine) {
         if (a.startChar > b.startChar) {
           return 1;
@@ -39,7 +40,7 @@ export default class CodeBoxUtils {
     });
   };
 
-  public static highlightText = (sortedHighlights: IComment[], thetext: string, line: number): any => {
+  public static highlightText = (sortedHighlights: CommentType[], thetext: string, line: number): any => {
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
         // this line sits between a multi-line highlight

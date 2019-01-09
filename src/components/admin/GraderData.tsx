@@ -9,10 +9,13 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment, IGraderSubmissionsDataTable, ISubmission } from '../../types/common';
+import { IGraderSubmissionsDataTable } from '../../types/common';
+
+import { AssignmentType } from '../../infrastructure/assignment';
+import { SubmissionType } from '../../infrastructure/submission';
 
 interface IPropsGraderOverview {
-  assignments: IAssignment[];
+  assignments: AssignmentType[];
   submissionsByGrader: IGraderSubmissionsDataTable;
   activeGrader: string | undefined;
   changeActiveGrader: (grader: string | undefined) => void;
@@ -104,7 +107,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     }
   };
 
-  public renderSubmissionRow(submission: ISubmission, assignmentName: string) {
+  public renderSubmissionRow(submission: SubmissionType, assignmentName: string) {
     const { openSubmission } = this.props;
     let grade = 'Not submitted';
     if (submission && submission.isFinalized) {
@@ -135,7 +138,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       assignmentsLoadComplete } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
-    const headers = this.props.assignments.map((assignment: IAssignment) => {
+    const headers = this.props.assignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.graderHeader);
@@ -215,7 +218,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       const tablemap: any = [];
       Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
-        submissions.forEach((submission: ISubmission) => {
+        submissions.forEach((submission: SubmissionType) => {
           const assnName = assignments.filter(assignment => assignment.id === parseInt(assignmentID, 10))[0].name;
           tablemap.push(this.renderSubmissionRow(submission, assnName));
         });

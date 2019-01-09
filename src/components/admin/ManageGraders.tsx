@@ -9,14 +9,16 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, USER_APP } from '../../types/common';
+import { USER_APP } from '../../types/common';
+
+import { CourseType } from '../../infrastructure/course';
 
 interface IProps {
   graders: string[];
   gradersLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;

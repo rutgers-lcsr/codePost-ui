@@ -4,28 +4,25 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import {
-  IComment,
-  ICommentToRubricCommentMap,
-  ICSSStyleObject,
-  IFile,
-  IFileToCommentsMap,
-  ISubmission,
-} from '../../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { SubmissionType } from '../../infrastructure/submission';
+
 interface IProps {
-  submission: ISubmission;
-  files: IFile[];
+  submission: SubmissionType;
+  files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
-  addComment: (comment: any, file: IFile) => void;
+  addComment: (comment: any, file: FileType) => void;
   activeCommentId?: number;
   changeActive: (id: number | undefined) => void;
-  deleteComment: (comment: IComment, file: IFile) => void;
-  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
 }
 
 interface IState {
@@ -45,7 +42,7 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Prop Methods
   //////////////////////////////////////
 
-  public addComment = (comment: IComment, file: IFile) => {
+  public addComment = (comment: CommentType, file: FileType) => {
     const { addComment } = this.props;
     this.props.changeActive(comment.id);
     addComment(comment, file);
@@ -63,9 +60,9 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: IFile, comments: IComment[]) => {
-    const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
-      return accumulator + currentValue.pointDelta;
+  public getTabTitle = (file: FileType, comments: CommentType[]) => {
+    const deduction = comments.reduce((accumulator: number, currentValue: CommentType) => {
+      return accumulator + (currentValue.pointDelta ? currentValue.pointDelta : 0);
     }, 0);
     const deductionString = deduction > 0 ? `(-${deduction})` : '';
 
@@ -93,7 +90,7 @@ class CodeGrader extends React.Component<IProps, IState> {
       <div className="container-code-grader">
         <Tabs>
           <TabList>
-            {files.map((file: IFile, i: number) => {
+            {files.map((file: FileType, i: number) => {
               const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
@@ -102,7 +99,7 @@ class CodeGrader extends React.Component<IProps, IState> {
               );
             })}
           </TabList>
-          {files.map((file: IFile, i: number) => {
+          {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
@@ -135,11 +132,11 @@ class CodeGrader extends React.Component<IProps, IState> {
 }
 
 interface ICodeBoxProps {
-  file: IFile;
-  comments: IComment[];
+  file: FileType;
+  comments: CommentType[];
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
-  addComment: (comment: any, file: IFile) => void;
+  addComment: (comment: any, file: FileType) => void;
   commentCounter: number;
   updateCommentCounter: () => void;
 }
@@ -201,23 +198,25 @@ const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = CodeBoxUtils.sortHighlights(comments);
   const splitCode = props.file.code.split('\n');
 
+  /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
-      return (
-        <div key={i} id={i.toString()}>
-          {' '}
-          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
-        </div>
-      );
-    })
+        return (
+          <div key={i} id={i.toString()}>
+            {' '}
+            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+          </div>
+        );
+      })
     : splitCode.map((item: string, i: number) => {
-      return (
-        <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
-          {' '}
-          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
-        </div>
-      );
-    });
+        return (
+          <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
+            {' '}
+            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+          </div>
+        );
+      });
+  /* tslint:enable */
 
   const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
@@ -237,14 +236,14 @@ const CodeBox = (props: ICodeBoxProps) => {
 };
 
 interface ICommentListProps {
-  file: IFile;
-  comments: IComment[];
+  file: FileType;
+  comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
-  deleteComment: (comment: IComment, file: IFile) => void;
-  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
 }
 
 interface IBlock {
@@ -258,11 +257,11 @@ const CommentList = (props: ICommentListProps) => {
   const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
-  const comments = props.comments.sort((a: IComment, b: IComment) => {
+  const comments = props.comments.sort((a: CommentType, b: CommentType) => {
     return a.startLine > b.startLine ? 1 : -1;
   });
 
-  const commentNodes = comments.map((comment: IComment) => {
+  const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
     // Placement model:
     //    - Make comment position fixed

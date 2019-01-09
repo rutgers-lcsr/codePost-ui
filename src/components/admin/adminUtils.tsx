@@ -9,7 +9,7 @@ import {
   TableRow,
   TextField,
 } from 'react-md';
-import { IRubricComment } from '../../types/common';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 interface IPropsRubricComment {
   commentID: number;
@@ -33,7 +33,7 @@ interface IPropsRubricCategory {
   updateComment: (categoryID: number, commentIndex: number) => void;
 
   // Category props
-  comments: IRubricComment[];
+  comments: RubricCommentType[];
   categoryName: string;
   categoryPointLimit: number | undefined;
 

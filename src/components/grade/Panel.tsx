@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { IAssignment, ISubmission } from '../../types/common';
 import Finalize from './Finalize';
 
 import pluralize from 'pluralize';
 
+import { AssignmentType } from '../../infrastructure/assignment';
+import { SubmissionType } from '../../infrastructure/submission';
+
 interface IPanelProps {
-  submission: ISubmission;
-  assignment: IAssignment;
+  submission: SubmissionType;
+  assignment: AssignmentType;
   toggleFinalized: any;
 }
 
@@ -23,8 +25,8 @@ const Panel = (props: IPanelProps) => {
 };
 
 interface ISubmissionInfoProps {
-  submission: ISubmission;
-  assignment: IAssignment;
+  submission: SubmissionType;
+  assignment: AssignmentType;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
@@ -47,8 +49,8 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 };
 
 interface IGradeBoxProps {
-  submission: ISubmission;
-  assignment: IAssignment;
+  submission: SubmissionType;
+  assignment: AssignmentType;
 }
 
 const GradeBox = (props: IGradeBoxProps) => {
@@ -59,7 +61,7 @@ const GradeBox = (props: IGradeBoxProps) => {
 };
 
 interface IGradeActionsProps {
-  submission: ISubmission;
+  submission: SubmissionType;
   toggleFinalized: any;
 }
 

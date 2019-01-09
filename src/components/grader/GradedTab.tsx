@@ -1,14 +1,17 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
-import { BUTTON_STATE, IAssignment, ISubmission } from '../../types/common';
+import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
+import { AssignmentType } from '../../infrastructure/assignment';
+import { SubmissionType } from '../../infrastructure/submission';
+
 interface IProps {
-  assignment?: IAssignment;
-  submissions: ISubmission[];
+  assignment?: AssignmentType;
+  submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: IAssignment) => Promise<ISubmission>;
-  releaseSubmission: (submission: ISubmission) => Promise<ISubmission>;
+  claimSubmission: (assignment: AssignmentType) => Promise<SubmissionType>;
+  releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
 interface IState {
@@ -20,7 +23,7 @@ class GradedTab extends React.Component<IProps, {}> {
     buttonState: BUTTON_STATE.Active,
   };
 
-  public openGradePage = (submission: ISubmission) => {
+  public openGradePage = (submission: SubmissionType) => {
     window.open(`/grade/${submission.id}`);
     // window.open("/grade/" + subid, 'test',
     // 'width=' + screen.availWidth * 0.9 + ',
@@ -34,7 +37,7 @@ class GradedTab extends React.Component<IProps, {}> {
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment).then((claimedSubmission: ISubmission) => {
+    this.props.claimSubmission(assignment).then((claimedSubmission: SubmissionType) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
         this.setState({ buttonState: BUTTON_STATE.Inactive });
@@ -44,8 +47,8 @@ class GradedTab extends React.Component<IProps, {}> {
     });
   };
 
-  public releaseSubmission = (submission: ISubmission) => {
-    this.props.releaseSubmission(submission).then((releasedSubmission: ISubmission) => {
+  public releaseSubmission = (submission: SubmissionType) => {
+    this.props.releaseSubmission(submission).then((releasedSubmission: SubmissionType) => {
       this.setState({ buttonState: BUTTON_STATE.Active });
     });
   };

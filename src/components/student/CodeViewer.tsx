@@ -8,29 +8,27 @@ import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
-import {
-  IAssignment,
-  IComment,
-  ICommentToRubricCommentMap,
-  ICSSStyleObject,
-  IFile,
-  IFileToCommentsMap,
-  IRubricComment,
-  ISubmission,
-} from '../../types/common';
+import { SubmissionType } from '../../infrastructure/submission';
+
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
+
+import { AssignmentType } from '../../infrastructure/assignment';
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 interface IProps {
-  submission: ISubmission;
-  assignment: IAssignment;
-  files: IFile[];
+  submission: SubmissionType;
+  assignment: AssignmentType;
+  files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
 }
 
 class CodeViewer extends React.Component<IProps, {}> {
-  public getTabTitle = (file: IFile, comments: IComment[]) => {
-    const deduction = comments.reduce((accumulator: number, currentValue: IComment) => {
-      return accumulator + currentValue.pointDelta;
+  public getTabTitle = (file: FileType, comments: CommentType[]) => {
+    const deduction = comments.reduce((accumulator: number, currentValue: CommentType) => {
+      return accumulator + (currentValue.pointDelta ? currentValue.pointDelta : 0);
     }, 0);
     const deductionString = deduction > 0 ? `(-${deduction})` : '';
 
@@ -53,7 +51,7 @@ class CodeViewer extends React.Component<IProps, {}> {
         <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
-            {files.map((file: IFile, i: number) => {
+            {files.map((file: FileType, i: number) => {
               const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
@@ -62,7 +60,7 @@ class CodeViewer extends React.Component<IProps, {}> {
               );
             })}
           </TabList>
-          {files.map((file: IFile, i: number) => {
+          {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
@@ -79,8 +77,8 @@ class CodeViewer extends React.Component<IProps, {}> {
 }
 
 interface ICodeBoxProps {
-  file: IFile;
-  comments: IComment[];
+  file: FileType;
+  comments: CommentType[];
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
@@ -109,7 +107,7 @@ const CodeBox = (props: ICodeBoxProps) => {
 };
 
 interface ICommentListProps {
-  comments: IComment[];
+  comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
 }
 
@@ -124,11 +122,11 @@ const CommentList = (props: ICommentListProps) => {
   const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
-  const comments = props.comments.sort((a: IComment, b: IComment) => {
+  const comments = props.comments.sort((a: CommentType, b: CommentType) => {
     return a.startLine > b.startLine ? 1 : -1;
   });
 
-  const commentNodes = comments.map((comment: IComment) => {
+  const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
     // Placement model:
     //    - Make comment position fixed
@@ -169,8 +167,8 @@ const CommentList = (props: ICommentListProps) => {
 
 interface ICommentProps {
   key: number;
-  comment: IComment;
-  rubricComment: IRubricComment | undefined;
+  comment: CommentType;
+  rubricComment: RubricCommentType | undefined;
   style: ICSSStyleObject;
 }
 

@@ -2,15 +2,16 @@ import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import {
-  IAssignment,
-  IRubricCategory,
   IRubricCategoryToRubricCommentsMap,
-  IRubricComment,
 } from '../../types/common';
 
+import { AssignmentType  } from '../../infrastructure/assignment';
+import { RubricCategoryType  } from '../../infrastructure/rubricCategory';
+import { RubricCommentType  } from '../../infrastructure/rubricComment';
+
 interface IProps {
-  activeAssignment: IAssignment | undefined;
-  activeRubricCategories: IRubricCategory[] | undefined;
+  activeAssignment: AssignmentType | undefined;
+  activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   addErrorToast: (text: string, action: string | undefined) => void;
   addToast: (text: string, action: string | undefined) => void;
@@ -18,14 +19,14 @@ interface IProps {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | undefined,
-    newComments: IRubricComment[],
-  ) => Promise<IRubricCategory>;
+    newComments: RubricCommentType[],
+  ) => Promise<RubricCategoryType>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
     text: string,
     pointDelta: number,
-  ) => Promise<IRubricComment>;
+  ) => Promise<RubricCommentType>;
   deleteRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -41,21 +42,21 @@ interface IProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => Promise<IRubricCategory>;
+  ) => Promise<RubricCategoryType>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
-  ) => Promise<IRubricComment>;
-  parentUpdate: (assignment: IAssignment | undefined) => void;
+  ) => Promise<RubricCommentType>;
+  parentUpdate: (assignment: AssignmentType | undefined) => void;
 }
 
 interface IDownloadCategory {
   id: number;
   name: string;
   pointLimit: number | undefined;
-  rubricComments: IRubricComment[];
+  rubricComments: RubricCommentType[];
 }
 
 interface IState {
