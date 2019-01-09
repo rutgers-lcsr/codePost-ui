@@ -87,7 +87,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
-  public componentDidUpdate(prevProps : IStudentProps, prevState : IStudentState) {
+  public componentDidUpdate(prevProps: IStudentProps, prevState: IStudentState) {
     const { isLoadingAssignments, assignments, courses } = this.state;
 
     // Determine if assignments are done loading
@@ -124,7 +124,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
       currentCourse = courses.find((obj: ICourse) => {
-        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+        return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
       // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
@@ -137,7 +137,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     this.setState({ currentCourse, currentAssignment });
-  }
+  };
 
   ///////////////////////////////////////
   // Loading methods
@@ -330,12 +330,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
         if (toLoadAssignment && currentAssignment) {
           const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
-          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`}/>;
+          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
         } else {
-          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/`}/>;
+          return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/`} />;
         }
       } else {
-        return <Redirect to={'/student'}/>;
+        return <Redirect to={'/student'} />;
       }
     }
 
