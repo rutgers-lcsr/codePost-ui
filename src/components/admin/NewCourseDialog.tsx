@@ -60,10 +60,7 @@ class NewCourseDialog extends React.Component<IProps, {}> {
         return c.name === newCourseName && c.period === newCoursePeriod;
       }).length !== 0
     ) {
-      this.props.addErrorToast(
-        'Cannot create course with same name and period as existing course.',
-        undefined,
-      );
+      this.props.addErrorToast('Cannot create course with same name and period as existing course.', undefined);
       return;
     }
     this.props.createCourse(newCourseName, newCoursePeriod).then(() => {

@@ -65,13 +65,7 @@ class ForgotPasswordForm extends React.Component<{}, State> {
       <form onSubmit={this.handleReset}>
         <h4>Reset your password</h4>
         <label htmlFor="email">Email</label>
-        <input
-          type="email"
-          name="email"
-          id="id_email"
-          value={this.state.email}
-          onChange={this.handleChange}
-        />
+        <input type="email" name="email" id="id_email" value={this.state.email} onChange={this.handleChange} />
         <input type="submit" />
       </form>
     );

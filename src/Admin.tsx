@@ -188,6 +188,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { courses } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
+
     let currentCourse: CourseType | undefined;
     let loadedPanel;
     if (courseName && period) {
@@ -254,7 +255,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
     const { toLoadCourse, toLoadPanel } = this.state;
     console.log(prevProps);
-
+    
     if (toLoadCourse || toLoadPanel) {
       this.setState({ toLoadCourse: false, toLoadPanel: false });
     }
@@ -720,7 +721,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
     const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [], id: -1 };
-
+    
     return Section.create(payload).then((section: SectionType) => {
       sections.push(section);
       currentCourse.sections.push(section.id);

@@ -36,19 +36,9 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
       <form onSubmit={this.handleLogin} className="container-login">
         <h4>Log In</h4>
         <label htmlFor="username">Username</label>
-        <input
-          type="text"
-          name="username"
-          value={this.state.username}
-          onChange={this.handleChange}
-        />
+        <input type="text" name="username" value={this.state.username} onChange={this.handleChange} />
         <label htmlFor="password">Password</label>
-        <input
-          type="password"
-          name="password"
-          value={this.state.password}
-          onChange={this.handleChange}
-        />
+        <input type="password" name="password" value={this.state.password} onChange={this.handleChange} />
         <input type="submit" />
         <br />
         <br />

@@ -175,7 +175,6 @@ class App extends React.Component<{}, IState> {
                 <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
 
                 <Route exact={true} path={HOME} component={Home} />
-
               </Switch>
             </div>
           </div>
