@@ -2,6 +2,13 @@
  * Common Types
  */
 
+import { AssignmentType } from '../infrastructure/assignment';
+import { CommentType } from '../infrastructure/comment';
+import { CourseType } from '../infrastructure/course';
+import { RubricCategoryType } from '../infrastructure/rubricCategory';
+import { RubricCommentType } from '../infrastructure/rubricComment';
+import { SubmissionType } from '../infrastructure/submission';
+
 export enum USER_APP {
   Student,
   Grader,
@@ -17,6 +24,9 @@ export enum BUTTON_STATE {
 export interface IUser {
   id: number;
   email: string;
+  studentCourses: CourseType[];
+  graderCourses: CourseType[];
+  courseadminCourses: CourseType[];
 }
 
 export interface IProfile {
@@ -35,80 +45,9 @@ export interface IOptionNumber {
   value: number;
 }
 
-export interface IAssignment {
-  id: number;
-  name: string;
-  points: number;
-  isReleased: boolean;
-  rubricCategories: number[];
-}
-
-export interface ICourse {
-  id: number;
-  name: string;
-  period: string;
-  assignments: number[];
-  sections: number[];
-}
-
-export interface ISubmission {
-  id: number;
-  isFinalized: any;
-  dateFinalized?: any;
-  files: number[];
-  grade: number;
-  grader?: string;
-  students: string[];
-  assignment: number;
-}
-
-export interface IFile {
-  id: number;
-  code: string;
-  comments: number[];
-  extension: string;
-  name: string;
-}
-
-export interface IComment {
-  id: number;
-  author: any;
-  startChar: number;
-  endChar: number;
-  startLine: number;
-  endLine: number;
-  pointDelta: number;
-  text: string;
-  rubricComment: number;
-  file: number;
-}
-
-export interface ISection {
-  name: string;
-  id: number;
-  students: string[];
-  leaders: string[];
-}
-
 export interface ISectionNoStudents {
   name: string;
   id: number;
-}
-
-export interface IRubricCategory {
-  id: number;
-  name: string;
-  pointLimit: number | undefined;
-  // reminder - need to fix this, it's disgusting
-  rubricComments: number[];
-  assignment: number;
-}
-
-export interface IRubricComment {
-  id: number;
-  text: string;
-  pointDelta: number;
-  category: number;
 }
 
 export interface IToast {
@@ -123,7 +62,7 @@ export interface IToast {
 
 export interface IStudentSubmissionsDataTable {
   [userEmail: string]: {
-    [assignmentID: number]: ISubmission;
+    [assignmentID: number]: SubmissionType;
   };
 }
 
@@ -132,27 +71,27 @@ export interface IGraderSubmissionsDataTable {
 }
 
 export interface IAssignmentToSubmissionsMap {
-  [assignmentID: number]: ISubmission[];
+  [assignmentID: number]: SubmissionType[];
 }
 
 export interface IAssignmentToRubricCategories {
-  [assignmentID: number]: IRubricCategory[];
+  [assignmentID: number]: RubricCategoryType[];
 }
 
 export interface IFileToCommentsMap {
-  [fileID: number]: IComment[];
+  [fileID: number]: CommentType[];
 }
 
 export interface IRubricCategoryToRubricCommentsMap {
-  [rubricCategoryID: number]: IRubricComment[];
+  [rubricCategoryID: number]: RubricCommentType[];
 }
 
 export interface ICourseToAssignmentMap {
-  [courseID: number]: IAssignment[];
+  [courseID: number]: AssignmentType[];
 }
 
 export interface ICommentToRubricCommentMap {
-  [commentID: number]: IRubricComment;
+  [commentID: number]: RubricCommentType;
 }
 
 export interface ICSSStyleObject {

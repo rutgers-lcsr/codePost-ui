@@ -5,23 +5,23 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Grader.scss';
 
-import { IAssignment, ICourse, ICourseToAssignmentMap, IOption, ISubmission, USER_APP } from './types/common';
+import { ICourseToAssignmentMap, IOption } from './types/common';
 
-import APIUtils from './APIUtils';
+import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { CourseType } from './infrastructure/course';
+import { Submission, SubmissionType } from './infrastructure/submission';
 
 interface IGraderState {
-  courses: ICourse[];
+  courses: CourseType[];
   assignments: ICourseToAssignmentMap;
-  currentAssignment?: IAssignment;
-  currentCourse?: ICourse;
-  currentSubmissions: ISubmission[];
+  currentAssignment?: AssignmentType;
+  currentCourse?: CourseType;
+  currentSubmissions: SubmissionType[];
 
-  email: string;
   isLoggedIn: boolean;
   redirect: boolean;
 
   // Loading variables
-  isLoadingCourses: boolean;
   isLoadingAssignments: boolean;
   isLoadingSubmissions: boolean;
 
@@ -31,6 +31,8 @@ interface IGraderState {
 }
 
 interface IGraderProps {
+  initialCourses: CourseType[];
+  email: string;
   match: any;
   history: any;
 }
@@ -38,14 +40,12 @@ interface IGraderProps {
 class Grader extends React.Component<IGraderProps, IGraderState> {
   public state: Readonly<IGraderState> = {
     assignments: {},
-    courses: [],
+    courses: this.props.initialCourses,
     currentAssignment: undefined,
     currentCourse: undefined,
     currentSubmissions: [],
-    email: '',
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
-    isLoadingCourses: true,
     isLoadingAssignments: true,
     isLoadingSubmissions: false,
     toLoadCourse: false,
@@ -53,16 +53,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    // Should use props to pass graderID here from top-level app...
-    // ...annoying that typescript doesn't allow usage of lambdas
-    // in render prop of Route object (which is designed to handle
-    // lambdas efficiently)
-    if (this.state.isLoggedIn) {
-      this.loadCourses();
-    } else {
-      this.setState({ redirect: true });
-    }
+    this.loadAllAssignments();
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
@@ -102,14 +93,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: ICourse) => {
+      currentCourse = courses.find((obj: CourseType) => {
         return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
       // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
       if (currentCourse && assignmentName) {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-        currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+        currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
         });
       }
@@ -122,21 +113,19 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   // Loading methods
   ///////////////////////////////////////
 
-  public loadCourses = () => {
-    return APIUtils.fetchUser(USER_APP.Grader).then(([email, courses]) => {
-      this.setState({ email, courses, isLoadingCourses: false });
-      return Promise.all(
-        courses.map((course: ICourse) => {
-          return this.loadAssignments(course);
-        }),
-      );
-    });
+  public loadAllAssignments = () => {
+    const courses = this.state.courses;
+    return Promise.all(
+      courses.map((course: CourseType) => {
+        return this.loadAssignments(course);
+      }),
+    );
   };
 
-  public loadAssignments = (course: ICourse) => {
+  public loadAssignments = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
-        return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
+        return Assignment.read(assignmentId).then((assignment) => {
           let assignments = [assignment];
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
@@ -152,9 +141,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
   };
 
-  public loadSubmissions = (assignment: IAssignment) => {
-    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Grader, this.state.email).then(
-      (currentSubmissions: ISubmission[]) => {
+  public loadSubmissions = (assignment: AssignmentType) => {
+    return Assignment.readSubmissions(assignment.id, { grader: this.props.email }).then(
+      (currentSubmissions: SubmissionType[]) => {
         this.setState({ currentSubmissions });
       },
     );
@@ -171,7 +160,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       return;
     }
 
-    const currentAssignment = assignments[currentCourse.id].filter((obj: IAssignment) => {
+    const currentAssignment = assignments[currentCourse.id].filter((obj: AssignmentType) => {
       return obj.id === option.value;
     })[0];
 
@@ -185,7 +174,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: ICourse) => {
+    const currentCourse = this.state.courses.filter((obj: CourseType) => {
       return obj.id === option.value;
     })[0];
 
@@ -197,20 +186,20 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse[]) => {
+  public selectorItemsFormatter = (courses: CourseType[]) => {
     return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
     return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
-  public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments, isLoadingCourses } = this.state;
-    if (isLoadingCourses || !currentCourse || !currentCourse.assignments) {
+  public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
+    const { assignments } = this.state;
+    if (!currentCourse || !currentCourse.assignments) {
       return [];
     }
 
@@ -220,14 +209,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }));
   };
 
-  public tabCurrentFormatter = (currentAssignment: IAssignment | undefined) => {
+  public tabCurrentFormatter = (currentAssignment: AssignmentType | undefined) => {
     if (!currentAssignment) {
       return undefined;
     }
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: IAssignment): Promise<ISubmission> => {
+  public claimSubmission = (assignment: AssignmentType): Promise<SubmissionType> => {
     return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -249,12 +238,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       });
   };
 
-  public releaseSubmission = (submission: ISubmission): Promise<ISubmission> => {
+  public releaseSubmission = (submission: SubmissionType): Promise<SubmissionType> => {
     const payload = {
+      id: submission.id,
       grader: '',
     };
 
-    return APIUtils.updateSubmission(submission.id, payload).then((json) => {
+    return Submission.update(payload).then((json) => {
       this.setState({
         currentSubmissions: this.state.currentSubmissions.filter((sub) => {
           return sub.id !== submission.id;
@@ -312,7 +302,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={this.state.isLoadingCourses}
+            isLoading={false}
           />
           <GradedTab
             claimSubmission={this.claimSubmission}

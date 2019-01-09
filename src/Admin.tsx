@@ -12,27 +12,30 @@ import VerticalPane from './components/VerticalPane';
 import './styles/index.scss';
 import './styles/Student.scss';
 import {
-  IAssignment,
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
-  ICourse,
   IGraderSubmissionsDataTable,
   IOptionNumber,
-  IRubricCategory,
   IRubricCategoryToRubricCommentsMap,
-  IRubricComment,
-  ISection,
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
-  ISubmission,
   IToast,
   USER_APP,
 } from './types/common';
 
+import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { Course, CourseType, RosterType } from './infrastructure/course';
+import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
+import { Section, SectionType } from './infrastructure/section';
+import { SubmissionType } from './infrastructure/submission';
+
+import { addToPayload } from './infrastructure/utils';
+
 interface IAdminState {
-  currentCourse?: ICourse; // Course for selector
+  currentCourse?: CourseType; // Course for selector
   loadedPanel?: number; // Which active_panel to load, enum
-  courses: ICourse[]; // Set of courses for the admin for the selector
+  courses: CourseType[]; // Set of courses for the admin for the selector
 
   // student, grader, admin, sections data
   students: string[];
@@ -42,7 +45,7 @@ interface IAdminState {
   gradersLoadComplete: boolean;
   admins: string[];
   adminsLoadComplete: boolean;
-  sections: ISection[];
+  sections: SectionType[];
 
   // Reminder - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
@@ -53,7 +56,7 @@ interface IAdminState {
   submissionsLoadComplete: boolean;
 
   // Props for Assignments panel
-  assignments: IAssignment[];
+  assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
 
   rubricCategories: IAssignmentToRubricCategories;
@@ -63,10 +66,7 @@ interface IAdminState {
 
   // Props for Enroll panels
   lockChanges: boolean;
-
-  email: string;
   isLoggedIn: boolean;
-  isLoading: boolean;
   redirect: boolean;
 
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -81,11 +81,12 @@ interface IAdminState {
   toLoadPanel: boolean;
 
   // Pre-loaded initializtion paramters for children
-  readURL: boolean;
   initialTab: number;
 }
 
 interface IAdminProps {
+  initialCourses: CourseType[];
+  email: string;
   match: any;
   history: any;
 }
@@ -94,7 +95,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined, // Course for selector
     loadedPanel: undefined, // Which active_panel to load, enum
-    courses: [], // Set of courses for the admin for the selector
+    courses: this.props.initialCourses, // Set of courses for the admin for the selector
 
     // student, grader, admin, sections data
     students: [],
@@ -124,8 +125,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     // Props for Enroll panels
     lockChanges: true,
 
-    email: '',
-    isLoading: true,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
 
@@ -136,7 +135,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     longToasts: [],
     errorToasts: [],
 
-    readURL: false,
     initialTab: 0,
 
     toLoadCourse: false,
@@ -190,12 +188,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { courses } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse: ICourse | undefined;
+
+    let currentCourse: CourseType | undefined;
     let loadedPanel;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: ICourse) => {
+      currentCourse = courses.find((obj: CourseType) => {
         return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
@@ -241,30 +240,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     // Should kick user back to login screne if they are not logged in
-    if (this.state.isLoggedIn) {
-      this.setState({ isLoading: true }, () => this.loadCourses());
-    } else {
-      // reminder, should check if logged in periodically,
-      // in case logged out from admin on another tab
+    if (!this.state.isLoggedIn) {
       this.setState({ redirect: true });
+    } else {
+      this.setStateFromURL();
     }
     this.interval = setInterval(() => {
       if (this.state.currentCourse) {
         this.loadAllCourseData();
-      } else {
-        this.loadCourses();
       }
     }, 10000);
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
-    const { isLoading, toLoadCourse, toLoadPanel } = this.state;
-
-    // After loading necessary resources, set state from URL
-    if (prevState.isLoading && !isLoading) {
-      this.setStateFromURL();
-    }
-
+    const { toLoadCourse, toLoadPanel } = this.state;
+    console.log(prevProps);
+    
     if (toLoadCourse || toLoadPanel) {
       this.setState({ toLoadCourse: false, toLoadPanel: false });
     }
@@ -282,62 +273,58 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public updateNewCourse = (option: IOptionNumber) => {
-    this.loadCourses().then(() => {
-      const currentCourse = this.state.courses.filter((course: ICourse) => {
-        return course.id === option.value;
-      })[0];
+    const currentCourse = this.state.courses.filter((course: CourseType) => {
+      return course.id === option.value;
+    })[0];
 
-      const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
+    const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
 
-      this.setState(
-        {
-          currentCourse,
-          loadedPanel: currentPanel,
+    this.setState(
+      {
+        currentCourse,
+        loadedPanel: currentPanel,
 
-          students: [],
-          studentsLoadComplete: false,
-          graders: [],
-          gradersLoadComplete: false,
-          admins: [],
-          adminsLoadComplete: false,
+        students: [],
+        studentsLoadComplete: false,
+        graders: [],
+        gradersLoadComplete: false,
+        admins: [],
+        adminsLoadComplete: false,
 
-          sections: [],
-          sectionsByStudent: {},
-          sectionsLoadComplete: false,
-          submissionsbyUserLoadComplete: false,
+        sections: [],
+        sectionsByStudent: {},
+        sectionsLoadComplete: false,
+        submissionsbyUserLoadComplete: false,
 
-          submissions: {},
-          submissionsLoadComplete: false,
+        submissions: {},
+        submissionsLoadComplete: false,
 
-          assignments: [],
-          assignmentsLoadComplete: false,
+        assignments: [],
+        assignmentsLoadComplete: false,
 
-          rubricCategories: {},
-          rubricComments: {},
+        rubricCategories: {},
+        rubricComments: {},
 
-          assignmentRubricLoadComplete: false,
+        assignmentRubricLoadComplete: false,
 
-          // Props for Enroll panels
-          lockChanges: true,
+        // Props for Enroll panels
+        lockChanges: true,
 
-          email: '',
-          isLoading: false,
-          isLoggedIn: localStorage.getItem('token') ? true : false,
-          redirect: false,
+        isLoggedIn: localStorage.getItem('token') ? true : false,
+        redirect: false,
 
-          submissionsByStudent: {},
-          submissionsByGrader: {},
-        },
-        () => {
-          this.loadAllCourseData();
-        },
-      );
-    });
+        submissionsByStudent: {},
+        submissionsByGrader: {},
+      },
+      () => {
+        this.loadAllCourseData();
+      },
+    );
   };
 
   // Course Selector functions
   public handleCourseChange = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: ICourse) => {
+    const currentCourse = this.state.courses.filter((course: CourseType) => {
       return course.id === option.value;
     })[0];
 
@@ -359,14 +346,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse[]) => {
+  public selectorItemsFormatter = (courses: CourseType[]) => {
     return courses.map((course, i) => ({
       value: course.id,
       label: `${course.name} | ${course.period}`,
     }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
@@ -434,47 +421,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     this.loadRoster();
   };
 
-  public loadCourses = () => {
-    return fetch('/api/users/me/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        const admin = 'courseadminCourses';
-        this.setState(
-          {
-            courses: json[admin],
-            isLoading: false,
-            email: json.email,
-          },
-          () => {
-            return;
-          },
-        );
-      });
-  };
-
   public loadAssignments = () => {
     const { currentCourse } = this.state;
     if (currentCourse && currentCourse.assignments) {
       const getData = currentCourse.assignments.map((assignmentID) => {
-        return fetch(`/api/assignments/${assignmentID}`, {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-          },
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((json) => {
-            return json;
-          });
+        return Assignment.read(assignmentID);
       });
-      Promise.all(getData).then((newAssignments: IAssignment[]) => {
+      Promise.all(getData).then((newAssignments: AssignmentType[]) => {
         this.setState({ assignments: newAssignments, assignmentsLoadComplete: true }, () => {
           this.loadRubrics();
         });
@@ -505,7 +458,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         Object.keys(submissions).forEach((assignmentID) => {
           const assignmentSubs = submissions[assignmentID];
-          assignmentSubs.forEach((submission: ISubmission) => {
+          assignmentSubs.forEach((submission: SubmissionType) => {
             submission.students.forEach((student: string) => {
               // If a student is un enrolled, the submission won't be deleted,
               // so need to check to make sure it's in the subsByStudent
@@ -540,26 +493,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public loadAssignmentRubric = (assignmentID: number) => {
-    return fetch(`/api/assignments/${assignmentID}/rubric/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        const { rubricCategories, rubricComments } = this.state;
-        rubricCategories[assignmentID] = json.categories;
-        json.categories.forEach((cat: IRubricCategory) => {
-          rubricComments[cat.id] = json.comments.filter((comm: IRubricComment) => {
-            return comm.category === cat.id;
-          });
-        });
-        this.setState({ rubricCategories, rubricComments }, () => {
-          return;
+    return Assignment.readRubric(assignmentID, {}).then((json) => {
+      const { rubricCategories, rubricComments } = this.state;
+      rubricCategories[assignmentID] = json.categories;
+      json.categories.forEach((cat: RubricCategoryType) => {
+        rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
+          return comm.category === cat.id;
         });
       });
+      this.setState({ rubricCategories, rubricComments }, () => {
+        return;
+      });
+    });
   };
 
   public loadRubrics = () => {
@@ -568,7 +513,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
     Promise.all(
-      assignments.map((assignment: IAssignment) => {
+      assignments.map((assignment: AssignmentType) => {
         return this.loadAssignmentRubric(assignment.id);
       }),
     ).then(() => {
@@ -583,21 +528,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
     Promise.all(
       currentCourse.assignments.map((assignmentID) => {
-        return fetch(`/api/assignments/${assignmentID}/submissions`, {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-          },
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((json) => {
-            const submissions = this.state.submissions;
-            submissions[assignmentID] = json;
-            this.setState({ submissions }, () => {
-              return;
-            });
+        return Assignment.readSubmissions(assignmentID, {}).then((subs: SubmissionType[]) => {
+          const submissions = this.state.submissions;
+          submissions[assignmentID] = subs;
+          this.setState({ submissions }, () => {
+            return;
           });
+        });
       }),
     ).then(() => {
       this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
@@ -610,31 +547,23 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
     // courses/id/roster . students
-    fetch(`/api/courses/${currentCourse.id}/roster`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        this.setState(
-          {
-            students: json.students,
-            graders: json.graders,
-            admins: json.courseAdmins,
-            inactiveStudents: json.inactive_students,
-            studentsLoadComplete: true,
-            gradersLoadComplete: true,
-            adminsLoadComplete: true,
-          },
-          () => {
-            this.loadSections();
-            this.generateSubmissionsByStudent();
-          },
-        );
-      });
+    Course.readRoster(currentCourse.id, {}).then((roster: RosterType) => {
+      this.setState(
+        {
+          students: roster.students,
+          graders: roster.graders,
+          admins: roster.courseAdmins,
+          inactiveStudents: roster.inactive_students,
+          studentsLoadComplete: true,
+          gradersLoadComplete: true,
+          adminsLoadComplete: true,
+        },
+        () => {
+          this.loadSections();
+          this.generateSubmissionsByStudent();
+        },
+      );
+    });
   };
 
   public loadSections = () => {
@@ -644,28 +573,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
     Promise.all(
       currentCourse.sections.map((sectionID) => {
-        return fetch(`/api/sections/${sectionID}`, {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
-          },
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((json: ISection) => {
-            // Reminder --- should really filter out if the
-            // section is already there to eliminate duplicates
-            const { sectionsByStudent } = this.state;
-
-            json.students.forEach((studentEmail: string) => {
-              sectionsByStudent[studentEmail] = {
-                name: json.name,
-                id: json.id,
-              };
-            });
-            this.setState({ sectionsByStudent });
-            return json;
+        return Section.read(sectionID).then((section: SectionType) => {
+          // Reminder --- should really filter out if the
+          // section is already there to eliminate duplicates
+          const { sectionsByStudent } = this.state;
+          section.students.forEach((studentEmail: string) => {
+            sectionsByStudent[studentEmail] = {
+              name: section.name,
+              id: section.id,
+            };
           });
+          this.setState({ sectionsByStudent });
+          return section;
+        });
       }),
     ).then((sections) => {
       this.setState({ sections, sectionsLoadComplete: true });
@@ -688,59 +608,41 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
 
-    let payload;
+    const payload = { id: currentCourse.id };
     switch (userType) {
       case USER_APP.Student:
-        payload = { students: newRoster };
-        if (inactiveStudents) {
-          const key = 'inactive_students';
-          payload[key] = inactiveStudents;
-        }
+        addToPayload(payload, 'students', newRoster);
+        addToPayload(payload, 'inactive_students', inactiveStudents);
         break;
       case USER_APP.Grader:
-        payload = { graders: newRoster };
+        addToPayload(payload, 'graders', newRoster);
         break;
       case USER_APP.CourseAdmin:
-        payload = { courseAdmins: newRoster };
+        addToPayload(payload, 'courseAdmins', newRoster);
         break;
     }
 
-    fetch(`/api/courses/${currentCourse.id}/roster/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        }
-        this.addErrorToast('Something went wrong', undefined);
-        return undefined;
-      })
-      .then((json) => {
-        switch (userType) {
-          case USER_APP.Student:
-            this.setState({ students: json.students, inactiveStudents: json.inactive_students }, () => {
-              this.addToast('Student roster successfully updated.', undefined);
-              this.generateSubmissionsByStudent();
-            });
-            break;
-          case USER_APP.Grader:
-            this.setState({ graders: json.graders }, () => {
-              this.addToast('Grader roster successfully updated.', undefined);
-              this.generateSubmissionsByStudent();
-            });
-            break;
-          case USER_APP.CourseAdmin:
-            this.setState({ admins: json.courseAdmins }, () =>
-              this.addToast('Admin roster successfully updated.', undefined),
-            );
-            break;
-        }
-      });
+    Course.updateRoster(payload, {}).then((roster: RosterType) => {
+      switch (userType) {
+        case USER_APP.Student:
+          this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
+            this.addToast('Student roster successfully updated.', undefined);
+            this.generateSubmissionsByStudent();
+          });
+          break;
+        case USER_APP.Grader:
+          this.setState({ graders: roster.graders }, () => {
+            this.addToast('Grader roster successfully updated.', undefined);
+            this.generateSubmissionsByStudent();
+          });
+          break;
+        case USER_APP.CourseAdmin:
+          this.setState({ admins: roster.courseAdmins }, () =>
+            this.addToast('Admin roster successfully updated.', undefined),
+          );
+          break;
+      }
+    });
   };
 
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
@@ -813,42 +715,21 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage sections API calls  -------------------
   public createSection = (newSection: string) => {
-    const { currentCourse } = this.state;
-    const { sections } = this.state;
+    const { currentCourse, sections } = this.state;
 
     if (!currentCourse) {
       return;
     }
-    const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [] };
-
-    fetch('/api/sections/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          return res.json();
-        }
-        this.addErrorToast('Something went wrong. Please ensure the section name is valid.', undefined);
-        return undefined;
-      })
-      .then((json) => {
-        if (json) {
-          // Check this --- json.students = [];
-          sections.push(json);
-          currentCourse.sections.push(json.id);
-          this.setState({ sections, currentCourse }, () =>
-            this.addToast(`New section ${json.name} created`, undefined),
-          );
-        }
-      });
+    const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [], id: -1 };
+    
+    return Section.create(payload).then((section: SectionType) => {
+      sections.push(section);
+      currentCourse.sections.push(section.id);
+      this.setState({ sections, currentCourse }, () => this.addToast(`New section ${section.name} created`, undefined));
+    });
   };
 
-  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<ISection> => {
+  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -860,41 +741,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
 
-    return fetch(`/api/sections/${sectionID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
-          return undefined;
+    return Section.update(payload).then((json: SectionType) => {
+      const newSections = sections.map((section) => {
+        if (section.id === json.id) {
+          section.students = json.students;
         }
-        return res.json();
-      })
-      .then((json: ISection) => {
-        if (json) {
-          const newSections = sections.map((section) => {
-            if (section.id === json.id) {
-              section.students = json.students;
-            }
-            return section;
-          });
-
-          delete sectionsByStudent[studentEmail];
-
-          this.setState({ sections: newSections, sectionsByStudent }, () =>
-            this.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
-          );
-        }
-        return json;
+        return section;
       });
+
+      delete sectionsByStudent[studentEmail];
+
+      this.setState({ sections: newSections, sectionsByStudent }, () =>
+        this.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
+      );
+      return json;
+    });
   };
 
-  public addStudentToSection = (sectionID: number, studentEmail: string): Promise<ISection> => {
+  public addStudentToSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -905,44 +769,27 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
 
-    return fetch(`/api/sections/${sectionID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
-          return undefined;
+    return Section.update(payload).then((json: SectionType) => {
+      const newSections = sections.map((section) => {
+        if (section.id === json.id) {
+          section.students = json.students;
         }
-        return res.json();
-      })
-      .then((json: ISection) => {
-        if (json) {
-          const newSections = sections.map((section) => {
-            if (section.id === json.id) {
-              section.students = json.students;
-            }
-            return section;
-          });
-
-          sectionsByStudent[studentEmail] = {
-            name: json.name,
-            id: json.id,
-          };
-
-          this.setState({ sections: newSections, sectionsByStudent }, () => {
-            this.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
-          });
-        }
-        return json;
+        return section;
       });
+
+      sectionsByStudent[studentEmail] = {
+        name: json.name,
+        id: json.id,
+      };
+
+      this.setState({ sections: newSections, sectionsByStudent }, () => {
+        this.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
+      });
+      return json;
+    });
   };
 
-  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<ISection> => {
+  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<SectionType> => {
     const { sectionsByStudent } = this.state;
     const previousSection = sectionsByStudent[studentEmail];
     if (previousSection && newSectionID) {
@@ -995,34 +842,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { sections } = this.state;
     const payload = { id: sectionID, leaders: newLeaders };
 
-    return fetch(`/api/sections/${sectionID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
+    return Section.update(payload).then((json) => {
+      const newSections = sections.map((section) => {
+        if (section.id === sectionID) {
+          section.leaders = json.leaders;
         }
-        this.addErrorToast('Something went wrong. Please ensure the email is valid.', undefined);
-        return undefined;
-      })
-      .then((json) => {
-        if (json) {
-          const newSections = sections.map((section) => {
-            if (section.id === sectionID) {
-              section.leaders = json.leaders;
-            }
-            return section;
-          });
-
-          this.setState({ sections: newSections });
-          return json.leaders;
-        }
+        return section;
       });
+
+      this.setState({ sections: newSections });
+      return json.leaders;
+    });
   };
 
   // ------------------- Manage rubric API calls  ------------------
@@ -1031,8 +861,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | undefined,
-    newComments: IRubricComment[],
-  ): Promise<IRubricCategory> => {
+    newComments: RubricCommentType[],
+  ): Promise<RubricCategoryType> => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     if (categoryName.length === 0) {
@@ -1041,67 +871,39 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const payload = {
+      id: -1, // codePost convention
       name: categoryName,
       assignment: assignmentID,
-      pointLimit,
       rubricComments: [],
     };
+    addToPayload(payload, 'pointLimit', pointLimit);
 
-    return fetch('/api/rubricCategories/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          return res.json();
-        } else {
-          this.addErrorToast(`Something went wrong when trying to update ${categoryName}`, undefined);
-          return undefined;
+    return RubricCategory.create(payload).then((rubricCategory: RubricCategoryType) => {
+      assignments.forEach((assn) => {
+        // Add an empty set of comments to the returned
+        // category, Api only returns category ids
+        if (assn.id === assignmentID) {
+          assn.rubricCategories.push(rubricCategory.id);
         }
-      })
-      .then((json: IRubricCategory) => {
-        assignments.forEach((assn) => {
-          // Add an empty set of comments to the returned
-          // category, Api only returns category ids
-          if (assn.id === assignmentID) {
-            assn.rubricCategories.push(json.id);
-          }
-        });
-        rubricCategories[assignmentID].push(json);
-        rubricComments[json.id] = [];
-        this.setState({ assignments, rubricCategories, rubricComments });
-        // Reminder - need to change linter here for use
-        return Promise.all(
-          newComments.map((comment) => {
-            return this.createRubricComment(assignmentID, json.id, comment.text, comment.pointDelta);
-          }),
-        ).then(() => {
-          return json;
-        });
       });
+      rubricCategories[assignmentID].push(rubricCategory);
+      rubricComments[rubricCategory.id] = [];
+      this.setState({ assignments, rubricCategories, rubricComments });
+      // Reminder - need to change linter here for use
+      return Promise.all(
+        newComments.map((comment) => {
+          return this.createRubricComment(assignmentID, rubricCategory.id, comment.text, comment.pointDelta);
+        }),
+      ).then(() => {
+        return rubricCategory;
+      });
+    });
   };
 
   public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
-    const payload = { id: categoryID };
-
-    return fetch(`/api/rubricCategories/${categoryID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'DELETE',
-      body: JSON.stringify(payload),
-    }).then((res) => {
-      if (res.status !== 204) {
-        this.addErrorToast(`Something went wrong when trying to delete ${categoryName}`, undefined);
-        return undefined;
-      }
+    return RubricCategory.delete(categoryID).then(() => {
       assignments.forEach((assn) => {
         if (assn.id === assignmentID) {
           assn.rubricCategories = assn.rubricCategories.filter((catID) => {
@@ -1125,7 +927,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ): Promise<IRubricCategory> => {
+  ): Promise<RubricCategoryType> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
@@ -1135,42 +937,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const payload = {
       id: categoryID,
       name: categoryName,
-      pointLimit: categoryPointLimit,
       assignment: assignmentID,
     };
+    addToPayload(payload, 'pointLimit', categoryPointLimit);
 
-    return fetch(`/api/rubricCategories/${categoryID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          this.addErrorToast(`Something went wrong when trying to update ${categoryName}.`, undefined);
-          return undefined;
-        }
-      })
-      .then((json: IRubricCategory) => {
-        if (json) {
-          const catIndex = rubricCategories[assignmentID]
-            .map((cat) => {
-              return cat.id;
-            })
-            .indexOf(categoryID);
-          if (catIndex !== -1) {
-            // Reminder --- add checks for the data received
-            rubricCategories[assignmentID][catIndex].name = json.name;
-            rubricCategories[assignmentID][catIndex].pointLimit = json.pointLimit;
-          }
-          this.setState({ rubricCategories });
-        }
-        return json;
-      });
+    return RubricCategory.update(payload).then((rubricCategory: RubricCategoryType) => {
+      const catIndex = rubricCategories[assignmentID]
+        .map((cat) => {
+          return cat.id;
+        })
+        .indexOf(categoryID);
+      if (catIndex !== -1) {
+        // Reminder --- add checks for the data received
+        rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
+        rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
+      }
+      this.setState({ rubricCategories });
+      return rubricCategory;
+    });
   };
 
   public createRubricComment = (
@@ -1178,66 +962,34 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     categoryID: number,
     commentText: string,
     commentDelta: number,
-  ): Promise<IRubricComment> => {
+  ): Promise<RubricCommentType> => {
     const { rubricCategories, rubricComments } = this.state;
     if (commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return Promise.reject();
     }
-
-    const payload = { text: commentText, category: categoryID, pointDelta: commentDelta };
-    return fetch('/api/rubricComments/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          return res.json();
-        } else {
-          this.addErrorToast('Something went wrong.', undefined);
-          return undefined;
+    const payload = { text: commentText, category: categoryID, pointDelta: commentDelta, id: -1 };
+    return RubricComment.create(payload).then((rubricComment: RubricCommentType) => {
+      rubricCategories[assignmentID].forEach((cat) => {
+        if (cat.id === categoryID) {
+          cat.rubricComments.push(rubricComment.id);
         }
-      })
-      .then((json: IRubricComment) => {
-        if (json) {
-          rubricCategories[assignmentID].forEach((cat) => {
-            if (cat.id === categoryID) {
-              cat.rubricComments.push(json.id);
-            }
-          });
-          rubricComments[categoryID].push(json);
-          this.setState({ rubricCategories, rubricComments });
-        }
-        return json;
       });
+      rubricComments[categoryID].push(rubricComment);
+      this.setState({ rubricCategories, rubricComments });
+      return rubricComment;
+    });
   };
 
   public deleteRubricComment = (assignmentID: number, categoryID: number, commentID: number) => {
     const { rubricCategories, rubricComments } = this.state;
-    const payload = { id: commentID };
-
-    return fetch(`/api/rubricComments/${commentID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'DELETE',
-      body: JSON.stringify(payload),
-    }).then((res) => {
-      if (res.status !== 204) {
-        this.addErrorToast('Something went wrong.', undefined);
-        return undefined;
-      }
+    return RubricComment.delete(commentID).then(() => {
       rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
         return com.id !== commentID;
       });
       rubricCategories[assignmentID].forEach((cat) => {
         if (cat.id === categoryID) {
-          const newComments = cat.rubricComments.filter((i) => {
+          const newComments = cat.rubricComments.filter((i: number) => {
             return i !== commentID;
           });
           cat.rubricComments = newComments;
@@ -1251,46 +1003,32 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public updateRubricComment = (
     categoryID: number,
     commentID: number,
-    commentText: string,
-    commentDelta: number,
-  ): Promise<IRubricComment> => {
+    commentText: string | undefined,
+    commentDelta: number | undefined,
+  ): Promise<RubricCommentType> => {
     const { rubricComments } = this.state;
-
-    if (commentText.length === 0) {
+    const payload = { id: commentID };
+    if (commentText && commentText.length === 0) {
       this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return Promise.reject();
     }
-    const payload = { id: commentID, text: commentText, pointDelta: commentDelta };
 
-    return fetch(`/api/rubricComments/${commentID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          this.addErrorToast('Something went wrong.', undefined);
-          return undefined;
-        }
-        return res.json();
-      })
-      .then((json) => {
-        if (json) {
-          const comIndex = rubricComments[categoryID]
-            .map((com) => {
-              return com.id;
-            })
-            .indexOf(commentID);
-          if (comIndex !== -1) {
-            rubricComments[categoryID][comIndex] = json;
-          }
-        }
-        this.setState({ rubricComments });
-        return json;
-      });
+    addToPayload(payload, 'text', commentText);
+    addToPayload(payload, 'pointDelta', commentDelta);
+
+    return RubricComment.update(payload).then((rubricComment) => {
+      const comIndex = rubricComments[categoryID]
+        .map((com) => {
+          return com.id;
+        })
+        .indexOf(commentID);
+      if (comIndex !== -1) {
+        rubricComments[categoryID][comIndex] = rubricComment;
+      }
+
+      this.setState({ rubricComments });
+      return rubricComment;
+    });
   };
 
   // ------------------- Manage assignments API calls  ------------------
@@ -1299,7 +1037,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
-  ): Promise<IAssignment> => {
+  ): Promise<AssignmentType> => {
     const { assignments } = this.state;
 
     if (!name && !points && typeof isReleased === 'undefined') {
@@ -1307,120 +1045,69 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const payload = { id: assignmentID };
-    if (name) {
-      const key = 'name';
-      payload[key] = name;
-    }
-    if (points) {
-      const key = 'points';
-      payload[key] = points;
-    }
-    if (typeof isReleased !== 'undefined') {
-      const key = 'isReleased';
-      payload[key] = isReleased;
-    }
+    addToPayload(payload, 'name', name);
+    addToPayload(payload, 'points', points);
+    addToPayload(payload, 'isReleased', isReleased);
 
-    return fetch(`/api/assignments/${assignmentID}/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          this.addErrorToast('Something went wrong when trying to update assignment', undefined);
-          return undefined;
+    return Assignment.update(payload).then((assignment) => {
+      assignments.forEach((assn) => {
+        if (assn.id === assignmentID) {
+          assn.name = assignment.name;
+          assn.points = assignment.points;
+          assn.isReleased = assignment.isReleased;
         }
-        return res.json();
-      })
-      .then((json) => {
-        assignments.forEach((assn) => {
-          if (assn.id === assignmentID) {
-            assn.name = json.name;
-            assn.points = json.points;
-            assn.isReleased = json.isReleased;
-          }
-        });
-        this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
-        return json;
       });
+      this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
+      return assignment;
+    });
   };
 
-  public createAssignment = (assignmentName: string, assignmentPoints: number): Promise<IAssignment> => {
+  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
     const { currentCourse } = this.state;
     if (!currentCourse) {
       return Promise.reject();
     }
+
     const payload = {
+      id: -1, // codePost convention
       course: currentCourse.id,
-      name: assignmentName,
-      points: assignmentPoints,
+      name: aName,
+      points: aPoints,
       isReleased: false,
       rubricCategories: [],
     };
 
-    return fetch('/api/assignments/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 201) {
-          this.addErrorToast('Something went wrong.', undefined);
-          return undefined;
-        }
-        return res.json();
-      })
-      .then((json: IAssignment) => {
-        const { submissions, rubricCategories, assignments } = this.state;
-        currentCourse.assignments.push(json.id);
-        submissions[json.id] = [];
-        rubricCategories[json.id] = [];
-        assignments.push(json);
-        this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
-          this.addLongToast(`Assignment ${json.name} successfully created.`, undefined);
-        });
-        return json;
+    return Assignment.create(payload).then((assignment: AssignmentType) => {
+      const { submissions, rubricCategories, assignments } = this.state;
+      currentCourse.assignments.push(assignment.id);
+      submissions[assignment.id] = [];
+      rubricCategories[assignment.id] = [];
+      assignments.push(assignment);
+      this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
+        this.addLongToast(`Assignment ${assignment.name} successfully created.`, undefined);
       });
+      return assignment;
+    });
   };
 
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
     const { courses } = this.state;
     const payload = {
+      id: -1, // codePost convention
       name: courseName,
       period: coursePeriod,
+      assignments: [], // ignored by API
+      sections: [], // ignored by API
     };
 
-    return fetch('/api/courses/', {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status !== 201) {
-          this.addErrorToast('Something went wrong.', undefined);
-          return undefined;
-        }
-        return res.json();
-      })
-      .then((json: ICourse) => {
-        if (json) {
-          courses.push(json);
-          this.setState({ courses });
-          this.addLongToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
-          this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
-        }
-        return json;
-      });
+    return Course.create(payload).then((course: CourseType) => {
+      courses.push(course);
+      this.setState({ courses });
+      this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+      return course;
+    });
   };
 
   // ------------------- Render -------------------
@@ -1588,7 +1275,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             tabItems={this.tabItemsFormatter()}
             handleTabChange={this.handlePanelChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={this.state.isLoading}
+            isLoading={false}
           />
           <Snackbar
             id="short-snackbar"

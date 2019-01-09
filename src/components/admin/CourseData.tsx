@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Tab, Tabs, TabsContainer } from 'react-md';
+import { AssignmentType } from '../../infrastructure/assignment';
 import '../../styles/index.scss';
 import {
-  IAssignment,
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
@@ -11,7 +11,7 @@ import GraderData from './GraderData';
 import StudentData from './StudentData';
 
 interface IPropsCourseData {
-  assignments: IAssignment[];
+  assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
   students: string[];
   studentsLoadComplete: boolean;

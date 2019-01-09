@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Button, DialogContainer, TextField } from 'react-md';
 
-import { ICourse } from '../../types/common';
+import { CourseType } from '../../infrastructure/course';
 
 interface IProps {
-  courses: ICourse[];
+  courses: CourseType[];
   addErrorToast: (text: string, action: string | undefined) => void;
-  createCourse: (courseName: string, coursePeriod: string) => Promise<ICourse>;
+  createCourse: (courseName: string, coursePeriod: string) => Promise<CourseType>;
 }
 
 interface IState {

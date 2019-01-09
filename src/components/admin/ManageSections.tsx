@@ -12,14 +12,16 @@ import {
   TextField,
 } from 'react-md';
 import '../../styles/index.scss';
-import { ICourse, ISection } from '../../types/common';
+
+import { CourseType } from '../../infrastructure/course';
+import { SectionType } from '../../infrastructure/section';
 
 interface IProps {
-  sections: ISection[];
+  sections: SectionType[];
   sectionsLoadComplete: boolean;
   lockedSectionChange: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;

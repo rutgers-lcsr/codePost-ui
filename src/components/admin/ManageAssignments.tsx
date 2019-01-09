@@ -9,20 +9,21 @@ import {
   TableRow,
   TextField,
 } from 'react-md';
+import { AssignmentType } from '../../infrastructure/assignment';
 import '../../styles/index.scss';
 import {
-  IAssignment,
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
-  ICourse,
-  IRubricCategory,
   IRubricCategoryToRubricCommentsMap,
-  IRubricComment,
-  ISubmission,
 } from '../../types/common';
 import RubricCategoryTable from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
 import RubricFileDialog from './RubricFileDialog';
+
+import { CourseType  } from '../../infrastructure/course';
+import { RubricCategoryType  } from '../../infrastructure/rubricCategory';
+import { RubricCommentType  } from '../../infrastructure/rubricComment';
+import { SubmissionType  } from '../../infrastructure/submission';
 
 interface IProps {
   submissions: IAssignmentToSubmissionsMap;
@@ -31,49 +32,57 @@ interface IProps {
   submissionsLoadComplete: boolean;
   lockManageAssignment: boolean;
   toggleLock: () => void;
-  currentCourse: ICourse | undefined;
+  currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
-  assignments: IAssignment[];
+  assignments: AssignmentType[];
   assignmentRubricLoadComplete: boolean;
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
     pointLimit: number | undefined,
-    newComments: IRubricComment[],
-  ) => Promise<IRubricCategory>;
+    newComments: RubricCommentType[],
+  ) => Promise<RubricCategoryType>;
   createRubricComment: (
     assignmentID: number,
     categoryID: number,
     text: string,
     pointDelta: number,
-  ) => Promise<IRubricComment>;
-  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
+  ) => Promise<RubricCommentType>;
+  deleteRubricCategory: (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+  ) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | undefined,
-  ) => Promise<IRubricCategory>;
+  ) => Promise<RubricCategoryType>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
-  ) => Promise<IRubricComment>;
+  ) => Promise<RubricCommentType>;
   updateAssignment: (
     assignnmentID: number,
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
-  ) => Promise<IAssignment>;
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<IAssignment>;
+  ) => Promise<AssignmentType>;
+  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
 }
 
 interface IState {
-  activeAssignment: IAssignment | undefined;
-  activeRubricCategories: IRubricCategory[] | undefined;
+  activeAssignment: AssignmentType | undefined;
+  activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   newCategoryCounter: number;
 }
@@ -95,7 +104,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.assignmentPointsField = React.createRef();
   }
 
-  public changeActiveAssignment = (assignment: IAssignment | undefined) => {
+  public changeActiveAssignment = (assignment: AssignmentType | undefined) => {
     const { rubricCategories, rubricComments } = this.props;
     if (assignment) {
       this.setState({
@@ -349,15 +358,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
           return assn.id === Number(assignmentID);
         })[0];
 
-        assignmentSubs.forEach((submission: ISubmission) => {
-          if (submission.isFinalized) {
-            numGraded += 1;
-          } else if (submission.grader) {
-            numUngraded += 1;
-          } else {
-            numUnclaimed += 1;
-          }
-        });
+            assignmentSubs.forEach((submission: SubmissionType) => {
+              if (submission.isFinalized) {
+                numGraded += 1;
+              } else if (submission.grader) {
+                numUngraded += 1;
+              } else {
+                numUnclaimed += 1;
+              }
+            });
 
         return (
           <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>

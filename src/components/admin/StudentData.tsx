@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 import '../../styles/index.scss';
-import { IAssignment, IStudentSubmissionsDataTable } from '../../types/common';
+import { IStudentSubmissionsDataTable } from '../../types/common';
+
+import { AssignmentType  } from '../../infrastructure/assignment';
 
 interface IPropsStudentOverview {
-  assignments: IAssignment[];
+  assignments: AssignmentType[];
   submissionsByStudent: IStudentSubmissionsDataTable;
   activeStudent: string | undefined;
   changeActiveStudent: (student: string | undefined) => void;
@@ -83,8 +85,10 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         if (studentAsub && !studentBsub) return 1;
         if (!studentAsub && !studentBsub) return 0;
         if (studentAsub.isFinalized && studentBsub.isFinalized) {
-          if (studentAsub.grade < studentBsub.grade) return -1;
-          if (studentAsub.grade > studentBsub.grade) return 1;
+          if (typeof studentAsub.grade !== 'undefined' && typeof studentBsub.grade !== 'undefined') {
+            if (studentAsub.grade < studentBsub.grade) return -1;
+            if (studentAsub.grade > studentBsub.grade) return 1;
+          }
           return 0;
         } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return 1;
         else if (!studentAsub.isFinalized && studentBsub.isFinalized) return -1;
@@ -93,9 +97,12 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         if (!studentAsub && studentBsub) return 1;
         if (studentAsub && !studentBsub) return -1;
         if (!studentAsub && !studentBsub) return 0;
-        if (studentAsub.isFinalized && studentBsub.isFinalized) {
-          if (studentAsub.grade < studentBsub.grade) return 1;
-          if (studentAsub.grade > studentBsub.grade) return -1;
+
+        if (studentAsub.isFinalized && studentBsub.isFinalized && studentAsub.grade) {
+          if (typeof studentAsub.grade !== 'undefined' && typeof studentBsub.grade !== 'undefined') {
+            if (studentAsub.grade < studentBsub.grade) return 1;
+            if (studentAsub.grade > studentBsub.grade) return -1;
+          }
           return 0;
         } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return -1;
         else if (!studentAsub.isFinalized && studentBsub.isFinalized) return 1;
@@ -119,7 +126,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       assignmentsLoadComplete,
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
-    const headers = assignments.map((assignment: IAssignment) => {
+    const headers = assignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.studentHeader);

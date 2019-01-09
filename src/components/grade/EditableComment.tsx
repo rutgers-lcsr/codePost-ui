@@ -1,19 +1,23 @@
 import * as React from 'react';
 import { Button, Card, CardText, Chip, TextField } from 'react-md';
 
-import { IComment, ICSSStyleObject, IFile, IRubricComment } from '../../types/common';
+import { ICSSStyleObject } from '../../types/common';
+
+import { Comment, CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 interface IProps {
   readOnly: boolean;
-  file: IFile;
+  file: FileType;
   key: number;
-  comment: IComment;
-  rubricComment: IRubricComment | undefined;
+  comment: CommentType;
+  rubricComment: RubricCommentType | undefined;
   style: ICSSStyleObject;
   active: boolean;
   changeActive: (id: number | undefined) => void;
-  deleteComment: (comment: IComment, file: IFile) => void;
-  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
   saveGrade: () => any;
 }
 
@@ -55,8 +59,7 @@ class EditableComment extends React.Component<IProps, IState> {
   public toggleActive = () => {
     const { active, changeActive, comment } = this.props;
     if (active) {
-      this.save().then((successful) => {
-        console.log('successful?', successful);
+      this.save().then(() => {
         changeActive(undefined);
       });
     } else {
@@ -79,6 +82,7 @@ class EditableComment extends React.Component<IProps, IState> {
     // Else PATCH
     if (comment.id < 0) {
       const payload = {
+        id: comment.id, // codePost convention
         endChar: comment.endChar,
         endLine: comment.endLine,
         file: comment.file,
@@ -89,18 +93,7 @@ class EditableComment extends React.Component<IProps, IState> {
         text: comment.text,
       };
 
-      console.log('POST', JSON.stringify(comment));
-      return fetch('/api/comments/', {
-        body: JSON.stringify(payload),
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-        .then((res) => {
-          return res.json();
-        })
+      return Comment.create(payload)
         .then((json) => {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
@@ -117,6 +110,9 @@ class EditableComment extends React.Component<IProps, IState> {
             return true;
           }, 2000);
           return true;
+        })
+        .catch((error) => {
+          console.log(error);
         });
     } else {
       console.log('PATCH', JSON.stringify(comment));
@@ -246,7 +242,7 @@ class EditableComment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment-pointdelta-field"
-              defaultValue={comment.pointDelta}
+              defaultValue={comment.pointDelta ? comment.pointDelta : 0}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"

@@ -6,49 +6,42 @@ import VerticalPane from './components/VerticalPane';
 
 import './styles/Student.scss';
 
-import {
-  IAssignment,
-  IComment,
-  ICommentToRubricCommentMap,
-  ICourse,
-  ICourseToAssignmentMap,
-  IFile,
-  IFileToCommentsMap,
-  IOption,
-  ISubmission,
-  USER_APP,
-} from './types/common';
+import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
-import APIUtils from './APIUtils';
+import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { Comment, CommentType } from './infrastructure/comment';
+import { CourseType } from './infrastructure/course';
+import { File, FileType } from './infrastructure/file';
+import { RubricComment } from './infrastructure/rubricComment';
+import { SubmissionType } from './infrastructure/submission';
 
 interface IStudentState {
-  courses: ICourse[];
+  courses: CourseType[];
   assignments: ICourseToAssignmentMap;
-  files: IFile[];
+  files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
 
-  currentCourse?: ICourse;
-  currentAssignment?: IAssignment;
-  currentSubmission?: ISubmission;
+  currentCourse?: CourseType;
+  currentAssignment?: AssignmentType;
+  currentSubmission?: SubmissionType;
 
   email: string;
   isLoggedIn: boolean;
   redirect: boolean;
 
   // Loading variables
-  isLoadingCourses: boolean;
   isLoadingAssignments: boolean;
   isLoadingSubmission: boolean;
 
   // URL variables
   toLoadCourse: boolean;
   toLoadAssignment: boolean;
-
-  // Testing
 }
 
 interface IStudentProps {
+  initialCourses: CourseType[];
+  email: string;
   match: any;
   history: any;
 }
@@ -57,13 +50,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
     assignments: {},
     comments: {},
-    courses: [],
+    courses: this.props.initialCourses,
     currentAssignment: undefined,
     currentCourse: undefined,
     currentSubmission: undefined,
     email: '',
     files: [],
-    isLoadingCourses: true,
     isLoadingAssignments: true,
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
@@ -74,16 +66,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    // Should use props to pass studentID here from top-level app...
-    // ...annoying that typescript doesn't allow usage of lambdas
-    // in render prop of Route object (which is designed to handle
-    // lambdas efficiently)
-    if (this.state.isLoggedIn) {
-      this.loadCourses();
-    } else {
-      this.setState({ redirect: true });
-    }
+    this.loadAllAssignments();
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
@@ -123,14 +106,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: ICourse) => {
+      currentCourse = courses.find((obj: CourseType) => {
         return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
       // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
       if (currentCourse && assignmentName) {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-        currentAssignment = assignments[currentCourse.id].find((obj: IAssignment) => {
+        currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
         });
       }
@@ -143,21 +126,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   // Loading methods
   ///////////////////////////////////////
 
-  public loadCourses = () => {
-    return APIUtils.fetchUser(USER_APP.Student).then(([email, courses]) => {
-      this.setState({ email, courses, isLoadingCourses: false });
-      return Promise.all(
-        courses.map((course: ICourse) => {
-          return this.loadAssignments(course);
-        }),
-      );
-    });
+  public loadAllAssignments = () => {
+    const courses = this.state.courses;
+    return Promise.all(
+      courses.map((course: CourseType) => {
+        return this.loadAssignments(course);
+      }),
+    );
   };
 
-  public loadAssignments = (course: ICourse) => {
+  public loadAssignments = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
-        return APIUtils.fetchAssignment(assignmentId).then((assignment) => {
+        return Assignment.read(assignmentId).then((assignment) => {
           let assignments = [assignment];
           if (this.state.assignments[course.id]) {
             assignments = [...this.state.assignments[course.id], assignment];
@@ -173,23 +154,29 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
   };
 
-  public loadSubmission = (assignment: IAssignment) => {
+  public loadSubmission = (assignment: AssignmentType) => {
     if (!assignment.isReleased) {
       this.setState({ currentSubmission: undefined });
       return Promise.resolve(); // empty Promise
     }
 
-    return APIUtils.fetchSubmissions(assignment.id, USER_APP.Student, this.state.email).then((currentSubmission) => {
-      return this.loadFiles(currentSubmission).then(() => {
-        this.setState({ currentSubmission });
-      });
+    return Assignment.readSubmissions(assignment.id, { student: this.props.email }).then((subs) => {
+      if (subs.length === 0) {
+        this.setState({ currentSubmission: undefined });
+        return Promise.resolve(); // empty Promise
+      } else {
+        const currentSubmission = subs[0];
+        return this.loadFiles(currentSubmission).then(() => {
+          this.setState({ currentSubmission });
+        });
+      }
     });
   };
 
-  public loadFiles = (submission: ISubmission) => {
+  public loadFiles = (submission: SubmissionType) => {
     return Promise.all(
       submission.files.map((fileId: number) => {
-        return APIUtils.fetchFile(fileId).then((file: IFile) => {
+        return File.read(fileId).then((file: FileType) => {
           this.setState({
             comments: {
               ...this.state.comments,
@@ -204,10 +191,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
   };
 
-  public loadComments = (file: IFile) => {
+  public loadComments = (file: FileType) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
-        return APIUtils.fetchComment(commentId).then((comment: IComment) => {
+        return Comment.read(commentId).then((comment: CommentType) => {
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -216,7 +203,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             },
           });
           if (comment.rubricComment) {
-            return APIUtils.fetchRubricComment(comment.rubricComment).then((rubricComment) => {
+            return RubricComment.read(comment.rubricComment).then((rubricComment) => {
               this.setState({
                 rubricComments: {
                   ...this.state.rubricComments,
@@ -242,7 +229,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       return;
     }
 
-    const currentAssignment = assignments[currentCourse.id].filter((obj: IAssignment) => {
+    const currentAssignment = assignments[currentCourse.id].filter((obj: AssignmentType) => {
       return obj.id === option.value;
     })[0];
 
@@ -257,7 +244,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: ICourse) => {
+    const currentCourse = this.state.courses.filter((obj: CourseType) => {
       return obj.id === option.value;
     })[0];
 
@@ -269,20 +256,20 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     });
   };
 
-  public selectorItemsFormatter = (courses: ICourse[]) => {
+  public selectorItemsFormatter = (courses: CourseType[]) => {
     return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: ICourse | undefined) => {
+  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
     return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
-  public tabItemsFormatter = (currentCourse: ICourse | undefined) => {
-    const { assignments, isLoadingCourses } = this.state;
-    if (!currentCourse || isLoadingCourses) {
+  public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
+    const { assignments } = this.state;
+    if (!currentCourse) {
       return [];
     }
 
@@ -292,7 +279,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }));
   };
 
-  public tabCurrentFormatter = (currentAssignment: IAssignment | undefined) => {
+  public tabCurrentFormatter = (currentAssignment: AssignmentType | undefined) => {
     if (!currentAssignment) {
       return undefined;
     }
@@ -316,7 +303,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentAssignment,
       currentCourse,
       currentSubmission,
-      isLoadingCourses,
       files,
       comments,
       rubricComments,
@@ -350,7 +336,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={isLoadingCourses}
+            isLoading={false}
           />
           <ContentArea
             assignment={currentAssignment}
@@ -366,9 +352,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 }
 
 interface IContentAreaProps {
-  assignment?: IAssignment;
-  submission?: ISubmission;
-  files: IFile[];
+  assignment?: AssignmentType;
+  submission?: SubmissionType;
+  files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
 }

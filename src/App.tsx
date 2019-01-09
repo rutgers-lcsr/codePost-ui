@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import Admin from './Admin';
 
@@ -17,8 +17,9 @@ import { IUser } from './types/common';
 
 interface IState {
   error: string;
-  logged_in: boolean;
-  user: IUser;
+  has_token: boolean;
+  user?: IUser;
+  toRedirect: boolean;
 }
 
 class App extends React.Component<{}, IState> {
@@ -26,20 +27,25 @@ class App extends React.Component<{}, IState> {
     super(props);
     this.state = {
       error: '',
-      logged_in: localStorage.getItem('token') ? true : false,
-      user: { email: '', id: 0 },
+      has_token: localStorage.getItem('token') ? true : false,
+      toRedirect: false,
     };
   }
 
+  public componentDidUpdate(prevProps : any, prevState : IState) {
+    if (this.state.toRedirect) {
+      this.setState({ toRedirect: false });
+    }
+  }
+
   public componentDidMount() {
-    if (this.state.logged_in) {
+    if (this.state.has_token && !this.state.user) {
       fetch('http://localhost:8000/core/current_user/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
         },
       })
         .then((res) => {
-          // Mainly to handle token timeout
           if (res.ok) {
             return res.json();
           }
@@ -51,14 +57,17 @@ class App extends React.Component<{}, IState> {
         })
         .catch((error) => {
           this.handleLogout();
-          this.setState({ logged_in: false });
         });
     }
   }
 
   public handleLogout = () => {
     localStorage.removeItem('token');
-    this.setState({ logged_in: false, user: { email: '', id: 0 } });
+    this.setState({
+      has_token: false,
+      user: undefined,
+      toRedirect: true,
+    });
   };
 
   // Used to implement sliding session for JWT authenticated session
@@ -67,7 +76,7 @@ class App extends React.Component<{}, IState> {
   // Note: we could also check to see if the token is close to expiring
   // and only attempt to refresh if true.
   public refreshToken = () => {
-    if (!this.state.logged_in) {
+    if (!this.state.has_token) {
       return;
     }
 
@@ -115,8 +124,9 @@ class App extends React.Component<{}, IState> {
         localStorage.setItem('token', json.token);
         this.setState({
           error: '',
-          logged_in: true,
+          has_token: true,
           user: json.user,
+          toRedirect: true,
         });
       })
       .catch((error) => {
@@ -126,19 +136,43 @@ class App extends React.Component<{}, IState> {
   };
 
   public render() {
+    if (this.state.toRedirect) {
+      return <Redirect to={'/'} />;
+    }
+
     /* tslint:disable:jsx-no-lambda */
     // Disabling this rule means we can use the render prop of Route to pass props to components
-    if (this.state.logged_in) {
+    if (typeof this.state.user !== 'undefined') {
+      const courseAdminCourses = this.state.user.courseadminCourses;
+      const graderCourses = this.state.user.graderCourses;
+      const studentCourses = this.state.user.studentCourses;
+      const email = this.state.user.email;
+
       return (
         <div>
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
             <div className="AppHome">
               <Switch>
-                <Route exact={true} path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} component={Student} />
-                <Route exact={true} path={`${GRADER}/:courseName?/:period?/:assignmentName?`} component={Grader} />
+                <Route
+                  exact={true}
+                  path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+                  render={(props : any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+                />
+
+                <Route
+                  exact={true}
+                  path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+                  render={(props : any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
+                />
+
+                <Route
+                  exact={true}
+                  path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+                  render={(props : any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
+                />
+
                 <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
-                <Route exact={true} path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`} component={Admin} />
 
                 <Route exact={true} path={HOME} component={Home} />
               </Switch>

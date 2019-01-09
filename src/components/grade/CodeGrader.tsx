@@ -4,28 +4,25 @@ import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
-import {
-  IComment,
-  ICommentToRubricCommentMap,
-  ICSSStyleObject,
-  IFile,
-  IFileToCommentsMap,
-  ISubmission,
-} from '../../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
 
 import CodeBoxUtils from '../../CodeBoxUtils';
 
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { SubmissionType } from '../../infrastructure/submission';
+
 interface IProps {
-  submission: ISubmission;
-  files: IFile[];
+  submission: SubmissionType;
+  files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
-  addComment: (comment: any, file: IFile) => void;
+  addComment: (comment: any, file: FileType) => void;
   activeCommentId?: number;
   changeActive: (id: number | undefined) => void;
-  deleteComment: (comment: IComment, file: IFile) => void;
-  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
   saveGrade: () => any;
 }
 
@@ -46,7 +43,7 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Prop Methods
   //////////////////////////////////////
 
-  public addComment = (comment: IComment, file: IFile) => {
+  public addComment = (comment: CommentType, file: FileType) => {
     const { addComment } = this.props;
     this.props.changeActive(comment.id);
     addComment(comment, file);
@@ -64,11 +61,11 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: IFile, comments: IComment[]) => {
+  public getTabTitle = (file: FileType, comments: CommentType[]) => {
     // Horrific code that is happneing because the pointDelta is sometimes
     // a number and sometimes a string
     // will fix the underlying issue in a future PR
-    const pointDelta = comments.reduce((accumulator: number, comment: IComment) => {
+    const pointDelta = comments.reduce((accumulator: number, comment: CommentType) => {
       if (comment.pointDelta) {
         if (typeof comment.pointDelta === 'number') {
           return accumulator + comment.pointDelta;
@@ -114,7 +111,7 @@ class CodeGrader extends React.Component<IProps, IState> {
       <div className="container-code-grader">
         <Tabs>
           <TabList>
-            {files.map((file: IFile, i: number) => {
+            {files.map((file: FileType, i: number) => {
               const tabTitle = this.getTabTitle(file, comments[file.id]);
               return (
                 <Tab id="{i}" key={i}>
@@ -123,7 +120,7 @@ class CodeGrader extends React.Component<IProps, IState> {
               );
             })}
           </TabList>
-          {files.map((file: IFile, i: number) => {
+          {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
                 <div className="panel-box">
@@ -157,11 +154,11 @@ class CodeGrader extends React.Component<IProps, IState> {
 }
 
 interface ICodeBoxProps {
-  file: IFile;
-  comments: IComment[];
+  file: FileType;
+  comments: CommentType[];
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
-  addComment: (comment: any, file: IFile) => void;
+  addComment: (comment: any, file: FileType) => void;
   commentCounter: number;
   updateCommentCounter: () => void;
 }
@@ -173,7 +170,6 @@ const CodeBox = (props: ICodeBoxProps) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
-      console.log('nothing selected');
       return;
     }
 
@@ -223,8 +219,6 @@ const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = CodeBoxUtils.sortHighlights(comments);
   const splitCode = props.file.code.split('\n');
 
-  // There seems to be a discrepancy between how tslint and prettier
-  // handle ternaries. Disabling this block for now
   /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
@@ -263,14 +257,14 @@ const CodeBox = (props: ICodeBoxProps) => {
 };
 
 interface ICommentListProps {
-  file: IFile;
-  comments: IComment[];
+  file: FileType;
+  comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
-  deleteComment: (comment: IComment, file: IFile) => void;
-  updateComment: (commentID: number, newComment: IComment, file: IFile) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
   saveGrade: () => any;
 }
 
@@ -294,11 +288,11 @@ const CommentList = (props: ICommentListProps) => {
   const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
-  const comments = props.comments.sort((a: IComment, b: IComment) => {
+  const comments = props.comments.sort((a: CommentType, b: CommentType) => {
     return a.startLine > b.startLine ? 1 : -1;
   });
 
-  const commentNodes = comments.map((comment: IComment) => {
+  const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
     // Placement model:
     //    - Make comment position fixed

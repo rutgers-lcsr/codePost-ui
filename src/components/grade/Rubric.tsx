@@ -3,7 +3,10 @@ import SearchBar from '../SearchBar';
 
 import '../../styles/Grade.scss';
 
-import { IRubricCategory, IRubricCategoryToRubricCommentsMap, IRubricComment } from '../../types/common';
+import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
+
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 import { Table, Td, Tr } from 'reactable';
 
@@ -14,9 +17,9 @@ interface IVisibleMap {
 }
 
 interface IProps {
-  rubricCategories: IRubricCategory[];
+  rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
 }
 
 interface IState {
@@ -30,7 +33,7 @@ class Rubric extends React.Component<IProps, IState> {
     visibles: {},
   };
 
-  public toggleVisible = (rubricCategory: IRubricCategory, visible: boolean, event: any) => {
+  public toggleVisible = (rubricCategory: RubricCategoryType, visible: boolean, event: any) => {
     this.setState({
       visibles: { ...this.state.visibles, [rubricCategory.id]: !visible },
     });
@@ -52,7 +55,7 @@ class Rubric extends React.Component<IProps, IState> {
     return (
       <div className="container-rubric">
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
-        {rubricCategories.map((rubricCategory: IRubricCategory, index: number) => {
+        {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
           const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
           return (
             <RubricCategory
@@ -72,12 +75,12 @@ class Rubric extends React.Component<IProps, IState> {
 }
 
 interface IRubricCategoryProps {
-  rubricCategory: IRubricCategory;
-  rubricComments: IRubricComment[];
+  rubricCategory: RubricCategoryType;
+  rubricComments: RubricCommentType[];
   visible: boolean;
   searchTerm: string;
-  handleDropDown: (rubricCategory: IRubricCategory, visible: boolean, event: any) => void;
-  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
+  handleDropDown: (rubricCategory: RubricCategoryType, visible: boolean, event: any) => void;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
 }
 
 const RubricCategory = (props: IRubricCategoryProps) => {
@@ -97,7 +100,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
       </div>
       {visible && (
         <Table className={'table-rubric-category'} filterable={[' ']} filterBy={searchTerm} hideFilterInput={true}>
-          {rubricComments.map((rubricComment: IRubricComment, index: number) => {
+          {rubricComments.map((rubricComment: RubricCommentType, index: number) => {
             return (
               <Tr key={index}>
                 <Td column=" " value={rubricComment.text}>
@@ -113,8 +116,8 @@ const RubricCategory = (props: IRubricCategoryProps) => {
 };
 
 interface IRubricCommentProps {
-  rubricComment: IRubricComment;
-  handleRubricCommentClick: (rubricComment: IRubricComment) => void;
+  rubricComment: RubricCommentType;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
 }
 
 const RubricComment = (props: IRubricCommentProps) => {
