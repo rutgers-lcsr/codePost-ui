@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import Admin from './Admin';
 
@@ -134,15 +134,20 @@ class App extends React.Component<{}, IState> {
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
             <div className="AppHome">
-              <Switch>
-                <Route exact={true} path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} component={Student} />
-                <Route exact={true} path={`${GRADER}/:courseName?/:period?/:assignmentName?`} component={Grader} />
-                <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
-                <Route exact={true} path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`} component={Admin} />
+              <BrowserRouter>
+                <Switch>
+                  <Route exact={true} path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} component={Student} />
+                  <Route exact={true} path={`${GRADER}/:courseName?/:period?/:assignmentName?`} component={Grader} />
+                  <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
+                  <Route
+                    exact={true}
+                    path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+                    component={Admin}
+                  />
 
-                <Route exact={true} path={HOME} component={Home} />
-
-              </Switch>
+                  <Route exact={true} path={HOME} component={Home} />
+                </Switch>
+              </BrowserRouter>
             </div>
           </div>
         </div>
