@@ -12,7 +12,6 @@ interface IProps {
   tabItems: IOption[];
   handleTabChange: (option: IOption, event: any) => void;
   handleSelectorChange: (option: IOption) => void;
-  isLoading: boolean;
 }
 
 const VerticalPane = (props: IProps) => {
@@ -21,12 +20,7 @@ const VerticalPane = (props: IProps) => {
 
   return (
     <div className="container-vertical-pane">
-      <Select
-        isLoading={props.isLoading}
-        options={selectorItems}
-        onChange={handleSelectorChange}
-        value={currentSelector}
-      />
+      <Select options={selectorItems} onChange={handleSelectorChange} value={currentSelector} />
       <VerticalTabs currentItem={currentTab} items={tabItems} handleTabChange={handleTabChange} />
     </div>
   );

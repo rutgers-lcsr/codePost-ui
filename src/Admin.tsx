@@ -66,8 +66,6 @@ interface IAdminState {
 
   // Props for Enroll panels
   lockChanges: boolean;
-  isLoggedIn: boolean;
-  redirect: boolean;
 
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
@@ -124,9 +122,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     // Props for Enroll panels
     lockChanges: true,
-
-    isLoggedIn: localStorage.getItem('token') ? true : false,
-    redirect: false,
 
     submissionsByStudent: {},
     submissionsByGrader: {},
@@ -238,12 +233,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    if (!this.state.isLoggedIn) {
-      this.setState({ redirect: true });
-    } else {
-      this.setStateFromURL();
-    }
+    this.setStateFromURL();
     this.interval = setInterval(() => {
       if (this.state.currentCourse) {
         this.loadAllCourseData();
@@ -263,13 +253,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public componentWillUnmount() {
     clearInterval(this.interval);
   }
-
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
 
   public updateNewCourse = (option: IOptionNumber) => {
     const currentCourse = this.state.courses.filter((course: CourseType) => {
@@ -308,9 +291,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         // Props for Enroll panels
         lockChanges: true,
-
-        isLoggedIn: localStorage.getItem('token') ? true : false,
-        redirect: false,
 
         submissionsByStudent: {},
         submissionsByGrader: {},
@@ -416,7 +396,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public loadAllCourseData = () => {
     this.loadSubmissions();
     this.loadAssignments();
-    // loadStudentsalsoLoadsSections
     this.loadRoster();
   };
 
@@ -1265,7 +1244,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     return (
       <div className="AdminApp">
-        {this.renderRedirect()}
         <div className="panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter()}
@@ -1274,7 +1252,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             tabItems={this.tabItemsFormatter()}
             handleTabChange={this.handlePanelChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
           />
           <Snackbar
             id="short-snackbar"

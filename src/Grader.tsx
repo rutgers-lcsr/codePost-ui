@@ -258,13 +258,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   // Main
   ///////////////////////////////////////
 
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
-
   public render() {
     const {
       courses,
@@ -293,7 +286,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     return (
       <div>
-        {this.renderRedirect()}
         <div className="container-main">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
@@ -302,7 +294,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
           />
           <GradedTab
             claimSubmission={this.claimSubmission}

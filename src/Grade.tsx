@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Redirect } from 'react-router-dom';
 
 import CodeGrader from './components/grade/CodeGrader';
 import Panel from './components/grade/Panel';
@@ -17,8 +16,6 @@ import { RubricComment, RubricCommentType } from './infrastructure/rubricComment
 import { Submission, SubmissionType } from './infrastructure/submission';
 
 interface IGradeState {
-  email: string;
-  isLoggedIn: boolean;
   isLoading: boolean;
   redirect: boolean;
   assignment?: AssignmentType;
@@ -32,16 +29,21 @@ interface IGradeState {
   commentRubricComments: ICommentToRubricCommentMap;
 }
 
-class Grade extends React.Component<{ match: { params: { submissionId: typeof Number } } }, IGradeState> {
+interface IProps {
+  submissionID: number;
+  email: string;
+  match: any;
+  history: any;
+}
+
+class Grade extends React.Component<IProps, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
     commentRubricComments: {},
     comments: {},
-    email: '',
     files: [],
     isLoading: true,
-    isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
     rubricCategories: [],
     rubricComments: {},
@@ -58,18 +60,14 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     // ...annoying that typescript doesn't allow usage of lambdas
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
-    if (this.state.isLoggedIn) {
-      this.loadSubmission().then((submission) => {
-        return Promise.all([
-          this.loadAssignment(submission.assignment),
-          this.loadRubricCategories(submission.assignment),
-        ]).then(() => {
-          this.setState({ isLoading: false });
-        });
+    this.loadSubmission().then((submission) => {
+      return Promise.all([
+        this.loadAssignment(submission.assignment),
+        this.loadRubricCategories(submission.assignment),
+      ]).then(() => {
+        this.setState({ isLoading: false });
       });
-    } else {
-      this.setState({ redirect: true });
-    }
+    });
   }
 
   ///////////////////////////////////////
@@ -309,13 +307,6 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
   // Main
   //////////////////////////////////////
 
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
-
   public render() {
     const {
       assignment,
@@ -340,8 +331,6 @@ class Grade extends React.Component<{ match: { params: { submissionId: typeof Nu
     // Should include loading functionality while the submission is coming in
     return (
       <div>
-        {this.renderRedirect()}
-
         <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="container-main">
           <Rubric

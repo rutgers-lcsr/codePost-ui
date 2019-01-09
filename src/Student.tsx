@@ -26,7 +26,6 @@ interface IStudentState {
   currentAssignment?: AssignmentType;
   currentSubmission?: SubmissionType;
 
-  email: string;
   isLoggedIn: boolean;
   redirect: boolean;
 
@@ -54,7 +53,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     currentAssignment: undefined,
     currentCourse: undefined,
     currentSubmission: undefined,
-    email: '',
     files: [],
     isLoadingAssignments: true,
     isLoadingSubmission: false,
@@ -290,13 +288,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   // Main
   ///////////////////////////////////////
 
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
-
   public render() {
     const {
       courses,
@@ -327,7 +318,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     return (
       <div>
-        {this.renderRedirect()}
         <div className="container-main">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
@@ -336,7 +326,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
           />
           <ContentArea
             assignment={currentAssignment}
