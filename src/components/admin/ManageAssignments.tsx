@@ -125,12 +125,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
   // Reminder need to add checks to make sure cateogries can't be added
   //  with the same name as existing categories.
   public addEmptyCategory = () => {
-    const {
-      activeRubricCategories,
-      activeRubricComments,
-      activeAssignment,
-      newCategoryCounter,
-    } = this.state;
+    const { activeRubricCategories, activeRubricComments, activeAssignment, newCategoryCounter } = this.state;
     if (activeRubricCategories && activeAssignment && activeRubricComments) {
       activeRubricCategories.push({
         id: newCategoryCounter,
@@ -188,12 +183,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.props.addErrorToast('Cannot save comment. Text must not be empty.', undefined);
         return;
       } else if (comm.id === -1) {
-        const promise = this.props.createRubricComment(
-          activeAssignment.id,
-          categoryID,
-          comm.text,
-          comm.pointDelta,
-        );
+        const promise = this.props.createRubricComment(activeAssignment.id, categoryID, comm.text, comm.pointDelta);
         if (promise) {
           promise.then((data) => {
             if (data) {
@@ -215,10 +205,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
       const cat = activeRubricCategories[categoryIndex];
       const oldID = cat.id;
       if (cat.name.length === 0) {
-        this.props.addErrorToast(
-          'Cannot save category. Category name must not be empty.',
-          undefined,
-        );
+        this.props.addErrorToast('Cannot save category. Category name must not be empty.', undefined);
         return;
       } else {
         let duplicate = false;
@@ -235,12 +222,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
           return;
         }
         if (oldID < 0) {
-          const promise = this.props.createRubricCategory(
-            activeAssignment.id,
-            cat.name,
-            cat.pointLimit,
-            [],
-          );
+          const promise = this.props.createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, []);
           if (promise) {
             promise.then((data) => {
               if (data) {
@@ -334,12 +316,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     const { activeAssignment } = this.state;
     console.log(this.assignmentNameField);
     if (activeAssignment) {
-      this.props.updateAssignment(
-        activeAssignment.id,
-        this.assignmentNameField.getField().value,
-        undefined,
-        undefined,
-      );
+      this.props.updateAssignment(activeAssignment.id, this.assignmentNameField.getField().value, undefined, undefined);
     }
   };
 
@@ -370,17 +347,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     let tableBody;
     if (submissionsLoadComplete && assignmentRubricLoadComplete) {
-      tableBody =  (
-          Object.keys(submissions).map((assignmentID) => {
-            const assignmentSubs = submissions[assignmentID];
-            const numSubmissions = assignmentSubs.length;
-            let numGraded = 0;
-            let numUngraded = 0;
-            let numUnclaimed = 0;
+      tableBody = Object.keys(submissions).map((assignmentID) => {
+        const assignmentSubs = submissions[assignmentID];
+        const numSubmissions = assignmentSubs.length;
+        let numGraded = 0;
+        let numUngraded = 0;
+        let numUnclaimed = 0;
 
-            const assignment = assignments.filter((assn) => {
-              return assn.id === Number(assignmentID);
-            })[0];
+        const assignment = assignments.filter((assn) => {
+          return assn.id === Number(assignmentID);
+        })[0];
 
             assignmentSubs.forEach((submission: SubmissionType) => {
               if (submission.isFinalized) {
@@ -392,20 +368,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
               }
             });
 
-            return (
-              <TableRow
-                key={assignmentID}
-                onClick={this.changeActiveAssignment.bind(this.props, assignment)}
-              >
-                <TableColumn>{assignment.name}</TableColumn>
-                <TableColumn>{numSubmissions}</TableColumn>
-                <TableColumn>{numGraded}</TableColumn>
-                <TableColumn>{numUngraded}</TableColumn>
-                <TableColumn>{numUnclaimed}</TableColumn>
-              </TableRow>
-            );
-          })
-      );
+        return (
+          <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
+            <TableColumn>{assignment.name}</TableColumn>
+            <TableColumn>{numSubmissions}</TableColumn>
+            <TableColumn>{numGraded}</TableColumn>
+            <TableColumn>{numUngraded}</TableColumn>
+            <TableColumn>{numUnclaimed}</TableColumn>
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -428,11 +400,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             createAssignment={this.props.createAssignment}
           />
           <div className="padding" />
-          <DataTable
-            className="Manage-assignments-table"
-            baseId="Manage-assignments-table"
-            plain={true}
-          >
+          <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
             <TableHeader>
               <TableRow>
                 <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
@@ -442,9 +410,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
               </TableRow>
             </TableHeader>
-            <TableBody>
-            {tableBody}
-            </TableBody>
+            <TableBody>{tableBody}</TableBody>
           </DataTable>
         </div>
       );
@@ -554,21 +520,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
           >
             Add New Category
           </Button>
-          <Button
-            key="Lock"
-            className="Btn"
-            floating={true}
-            fixed={true}
-            icon={true}
-            onClick={this.props.toggleLock}
-          >
+          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>
         </div>
       );
     }
   }
-
 }
 
 export default ManageAssignments;

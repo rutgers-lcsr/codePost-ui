@@ -1,13 +1,5 @@
 import * as React from 'react';
-import {
-  Button,
-  DataTable,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  TextField,
-} from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 import '../../styles/index.scss';
 import { IStudentSubmissionsDataTable } from '../../types/common';
 
@@ -143,31 +135,26 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
       const students = Object.keys(submissionsByStudent);
       students.sort(this.sortFunction);
-      tableBody = (
-        students.map((studentEmail) => {
-          if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-            return <div />;
-          }
-          return (
-            <TableRow
-              key={studentEmail}
-              onClick={changeActiveStudent.bind(this.props, studentEmail)}
-            >
-              <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
-              {this.props.assignments.map((assignment) => {
-                const submission = submissionsByStudent[studentEmail][assignment.id];
-                if (submission && submission.isFinalized) {
-                  return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
-                } else if (submission) {
-                  return <TableColumn key={assignment.name}>Not graded</TableColumn>;
-                } else {
-                  return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
-                }
-              })}
-            </TableRow>
-          );
-        })
-      );
+      tableBody = students.map((studentEmail) => {
+        if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
+            <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
+            {this.props.assignments.map((assignment) => {
+              const submission = submissionsByStudent[studentEmail][assignment.id];
+              if (submission && submission.isFinalized) {
+                return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
+              } else if (submission) {
+                return <TableColumn key={assignment.name}>Not graded</TableColumn>;
+              } else {
+                return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
+              }
+            })}
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -205,9 +192,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                 })}
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {tableBody}
-            </TableBody>
+            <TableBody>{tableBody}</TableBody>
           </DataTable>
         </div>
       );
@@ -243,12 +228,13 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                   grade = 'Not graded';
                 }
                 return (
-                  <TableRow
-                    key={submission.id.toString()}
-                    onClick={openSubmission.bind(this.props, submission.id)}
-                  >
+                  <TableRow key={submission.id.toString()} onClick={openSubmission.bind(this.props, submission.id)}>
                     <TableColumn>
-                    { assignments.filter(assignment => assignment.id === parseInt(assignmentID, 10))[0].name }
+                      {
+                        assignments.filter((assignment) => {
+                          return assignment.id === parseInt(assignmentID, 10);
+                        })[0].name
+                      }
                     </TableColumn>
                     <TableColumn>{grade}</TableColumn>
                   </TableRow>

@@ -39,11 +39,7 @@ class ForgotPasswordForm extends React.Component<IPasswordResetFormProps, State>
         <input type="password" name="password2" onChange={this.handleChange} />
         <br />
         <br />
-        {this.state.password1 !== '' && this.state.password1 === this.state.password2 ? (
-          <input type="submit" />
-        ) : (
-          ''
-        )}
+        {this.state.password1 !== '' && this.state.password1 === this.state.password2 ? <input type="submit" /> : ''}
       </form>
     );
   }

@@ -35,7 +35,7 @@ interface IState {
 }
 
 class CourseData extends React.Component<IPropsCourseData, {}> {
-  public static getDerivedStateFromProps(props : IPropsCourseData, state : IState) {
+  public static getDerivedStateFromProps(props: IPropsCourseData, state: IState) {
     const { students, graders } = props;
 
     if (!state.activeStudent && !state.activeGrader) {
@@ -44,11 +44,11 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
     const toRet = { activeStudent: state.activeStudent, activeGrader: state.activeGrader };
 
-    if (!students || students.filter((s:string) => s === state.activeStudent).length !== 1) {
+    if (!students || students.filter((s: string) => s === state.activeStudent).length !== 1) {
       toRet.activeStudent = undefined;
     }
 
-    if (!graders || graders.filter((s:string) => s === state.activeGrader).length !== 1) {
+    if (!graders || graders.filter((s: string) => s === state.activeGrader).length !== 1) {
       toRet.activeGrader = undefined;
     }
 
@@ -61,7 +61,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     activeGrader: undefined,
   };
 
-  public componentDidUpdate(prevProps : IPropsCourseData, prevState : IState) {
+  public componentDidUpdate(prevProps: IPropsCourseData, prevState: IState) {
     const { initialTab } = this.props;
     if (prevProps.initialTab !== initialTab) {
       this.setState({ activeTabIndex: initialTab });
