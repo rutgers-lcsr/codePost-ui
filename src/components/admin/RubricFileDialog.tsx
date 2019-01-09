@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
-import {
-  IAssignment,
-  IRubricCategory,
-  IRubricCategoryToRubricCommentsMap,
-  IRubricComment,
-} from '../../types/common';
+import { IAssignment, IRubricCategory, IRubricCategoryToRubricCommentsMap, IRubricComment } from '../../types/common';
 
 interface IProps {
   activeAssignment: IAssignment | undefined;
@@ -26,16 +21,8 @@ interface IProps {
     text: string,
     pointDelta: number,
   ) => Promise<IRubricComment>;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => Promise<void>;
-  deleteRubricComment: (
-    assignmentID: number,
-    categoryID: number,
-    commentID: number,
-  ) => Promise<void>;
+  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -192,9 +179,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
             uploadErrors.push(`Category field of ${comm.id} must be a number`);
           }
           if (comm.category !== cat.id) {
-            uploadErrors.push(
-              `Category field of ${comm.id} must be equal to the ID of it's parent category`,
-            );
+            uploadErrors.push(`Category field of ${comm.id} must be equal to the ID of it's parent category`);
           }
           if (Object.keys(comm).length !== 4) {
             uploadErrors.push(`Comment of id ${comm.id} has some incorrect keys.
@@ -250,12 +235,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           cat.rubricComments.forEach((com) => {
             if (com.id === -1) {
               if (makeDBUpdate) {
-                const result = this.props.createRubricComment(
-                  activeAssignment.id,
-                  cat.id,
-                  com.text,
-                  com.pointDelta,
-                );
+                const result = this.props.createRubricComment(activeAssignment.id, cat.id, com.text, com.pointDelta);
                 promises.push(result);
               }
               updates.newComments.push(com.text);
@@ -274,12 +254,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
                 console.log(oldComments[cat.id][comIndex]);
                 console.log(com);
                 if (makeDBUpdate) {
-                  const result = this.props.updateRubricComment(
-                    cat.id,
-                    com.id,
-                    com.text,
-                    com.pointDelta,
-                  );
+                  const result = this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta);
                   promises.push(result);
                 }
                 updates.updatedComments.push(com.text);
@@ -295,29 +270,17 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               .indexOf(oldComment.id);
             if (checkDelete === -1) {
               if (makeDBUpdate) {
-                const result = this.props.deleteRubricComment(
-                  activeAssignment.id,
-                  cat.id,
-                  oldComment.id,
-                );
+                const result = this.props.deleteRubricComment(activeAssignment.id, cat.id, oldComment.id);
                 promises.push(result);
               }
               updates.deletedComments.push(oldComment.text);
             }
           });
           // If a category name or pointLimit has been changed, update it
-          if (
-            oldCategories[catIndex].name !== cat.name ||
-            oldCategories[catIndex].pointLimit !== cat.pointLimit
-          ) {
+          if (oldCategories[catIndex].name !== cat.name || oldCategories[catIndex].pointLimit !== cat.pointLimit) {
             // Reminder -- need to decide as a team if we can allow pointLimit to be null
             if (makeDBUpdate) {
-              const result = this.props.updateRubricCategory(
-                activeAssignment.id,
-                cat.id,
-                cat.name,
-                cat.pointLimit,
-              );
+              const result = this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit);
               promises.push(result);
             }
             updates.updatedCategories.push(cat.name);
@@ -353,9 +316,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
   // Once the user has seen and proceeded with the changes, trigger an update with
   // makeDBUpdate = true
   public triggerUpdate = () => {
-    this.setState({ updatingRubric: true, updates: undefined }, () =>
-      this.updateRubric(this.state.jsonUpload, true),
-    );
+    this.setState({ updatingRubric: true, updates: undefined }, () => this.updateRubric(this.state.jsonUpload, true));
   };
 
   public dummyUpload = (file: File) => {
@@ -380,11 +341,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         </div>
       );
     });
-    const progress = this.state.updatingRubric ? (
-      <LinearProgress id="circle" className="progressCircle" />
-    ) : (
-      ''
-    );
+    const progress = this.state.updatingRubric ? <LinearProgress id="circle" className="progressCircle" /> : '';
 
     const uploadFile = this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : '';
 

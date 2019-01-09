@@ -33,19 +33,9 @@ class SignupForm extends React.Component<ISignupFormProps, State> {
       <form onSubmit={this.handleSignup}>
         <h4>Sign Up</h4>
         <label htmlFor="username">Username</label>
-        <input
-          type="text"
-          name="username"
-          value={this.state.username}
-          onChange={this.handleChange}
-        />
+        <input type="text" name="username" value={this.state.username} onChange={this.handleChange} />
         <label htmlFor="password">Password</label>
-        <input
-          type="password"
-          name="password"
-          value={this.state.password}
-          onChange={this.handleChange}
-        />
+        <input type="password" name="password" value={this.state.password} onChange={this.handleChange} />
         <input type="submit" />
       </form>
     );

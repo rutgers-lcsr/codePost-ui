@@ -28,8 +28,8 @@ class Landing extends React.Component {
             <div className="logo">codePost</div>
             <div className="Description-head">Teach Computer Science Better.</div>
             <div className="Description-text">
-              codePost makes grading and course management easy, allowing you to focus on what's
-              important: helping your students improve and become power programmers.
+              codePost makes grading and course management easy, allowing you to focus on what's important: helping your
+              students improve and become power programmers.
             </div>
           </div>
           <div className="Hero-image col-md-7" />
@@ -61,9 +61,7 @@ class Landing extends React.Component {
         </div>
         <div className="buffer" />
         <div className="newFlow">
-          <div className="headline col-md-4">
-            codePost streamlines the Computer Science course workflow
-          </div>
+          <div className="headline col-md-4">codePost streamlines the Computer Science course workflow</div>
           <div className="diagram col-md-8">
             <div className="admin row">
               <div className="text">
@@ -81,8 +79,7 @@ class Landing extends React.Component {
               <div className="student col-md-6">
                 <div className="title">Students</div>
                 <div className="text">
-                  <b>No more paper</b>, finally. Assignments all in one place,{' '}
-                  <b> never lose one again.</b>
+                  <b>No more paper</b>, finally. Assignments all in one place, <b> never lose one again.</b>
                   <b> Targeted conversations</b> with TAs and professors.
                 </div>
                 <img className="student-new-icon" src={require('./img/student-new.png')} />

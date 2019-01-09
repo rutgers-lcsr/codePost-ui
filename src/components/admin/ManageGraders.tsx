@@ -1,13 +1,5 @@
 import * as React from 'react';
-import {
-  Button,
-  DataTable,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  TextField,
-} from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 import '../../styles/index.scss';
 import { ICourse, USER_APP } from '../../types/common';
 
@@ -68,31 +60,29 @@ class ManageGraders extends React.Component<IProps, {}> {
 
     let tableBody;
     if (gradersLoadComplete) {
-      tableBody = (
-        graders.map((grader) => {
-          if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-            return <div />;
-          }
-          return (
-            <TableRow key={grader}>
-              <TableColumn>{grader}</TableColumn>
-              <TableColumn key={'UnEnroll'}>
-                {' '}
-                <Button
-                  key="unEnroll"
-                  className="Btn"
-                  flat={true}
-                  icon={true}
-                  disabled={lockedGraderChange}
-                  onClick={this.triggerUnEnrollUser.bind(this.props, grader, graderType)}
-                >
-                  cancel
-                </Button>
-              </TableColumn>
-            </TableRow>
-          );
-        })
-      );
+      tableBody = graders.map((grader) => {
+        if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={grader}>
+            <TableColumn>{grader}</TableColumn>
+            <TableColumn key={'UnEnroll'}>
+              {' '}
+              <Button
+                key="unEnroll"
+                className="Btn"
+                flat={true}
+                icon={true}
+                disabled={lockedGraderChange}
+                onClick={this.triggerUnEnrollUser.bind(this.props, grader, graderType)}
+              >
+                cancel
+              </Button>
+            </TableColumn>
+          </TableRow>
+        );
+      });
     } else {
       tableBody = (
         <TableRow>
@@ -144,18 +134,9 @@ class ManageGraders extends React.Component<IProps, {}> {
               <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {tableBody}
-          </TableBody>
+          <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button
-          key="Lock"
-          className="Btn"
-          floating={true}
-          fixed={true}
-          icon={true}
-          onClick={this.props.toggleLock}
-        >
+        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
           {lockIcon}
         </Button>
       </div>

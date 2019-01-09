@@ -83,14 +83,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
   let deleteCommentColumn;
   if (!isDisabled) {
     deleteCommentColumn = (
-      <Button
-        key="Delete"
-        className="Btn"
-        flat={true}
-        icon={true}
-        disabled={isDisabled}
-        onClick={deleteThisComment}
-      >
+      <Button key="Delete" className="Btn" flat={true} icon={true} disabled={isDisabled} onClick={deleteThisComment}>
         delete
       </Button>
     );
@@ -232,12 +225,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         onBlur={updateThisCategory}
       />
       {deleteCategoryButton}
-      <DataTable
-        key={categoryID}
-        className="edit-rubric-table"
-        baseId="edit-rubric-table"
-        plain={true}
-      >
+      <DataTable key={categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow>
             <TableColumn key={'CommentText'}>Comment text</TableColumn>
@@ -247,12 +235,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         </TableHeader>
         <TableBody>{renderCommentRows()}</TableBody>
       </DataTable>
-      <Button
-        className="Btn"
-        iconChildren={'playlist_add'}
-        disabled={isDisabled}
-        onClick={addEmptyCommentToThis}
-      >
+      <Button className="Btn" iconChildren={'playlist_add'} disabled={isDisabled} onClick={addEmptyCommentToThis}>
         Add New Comment
       </Button>
       <div className="padding" />

@@ -161,14 +161,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     'manage-admins',
   ];
 
-  public defaultPanelArgForURL = [
-    'students',
-    null,
-    null,
-    null,
-    null,
-    null,
-  ];
+  public defaultPanelArgForURL = ['students', null, null, null, null, null];
 
   public snackBarStyle = {
     width: '100%',
@@ -197,13 +190,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { courses } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse : ICourse | undefined;
+    let currentCourse: ICourse | undefined;
     let loadedPanel;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
       currentCourse = courses.find((obj: ICourse) => {
-        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+        return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
       // Given (courseName, period), test whether panelName corresponds to valid panel
@@ -223,21 +216,21 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         this.updateNewCourse({ value: currentCourse.id, label: '' });
       }
     });
-  }
+  };
 
-  public panelFromString(name : string) {
+  public panelFromString(name: string) {
     const toRet = this.panelMapForURL.indexOf(name);
     return toRet >= 0 ? toRet : 0;
   }
 
-  public stringFromPanel(panel : number) {
+  public stringFromPanel(panel: number) {
     if (panel < this.panelMapForURL.length && panel >= 0) {
       return this.panelMapForURL[panel];
     }
     return null;
   }
 
-  public panelArgFromPanel(panel : number) {
+  public panelArgFromPanel(panel: number) {
     if (panel < this.defaultPanelArgForURL.length && panel >= 0) {
       return this.defaultPanelArgForURL[panel];
     }
@@ -264,7 +257,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }, 10000);
   }
 
-  public componentDidUpdate(prevProps : IAdminProps, prevState : IAdminState) {
+  public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
     const { isLoading, toLoadCourse, toLoadPanel } = this.state;
 
     // After loading necessary resources, set state from URL
@@ -349,12 +342,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     })[0];
 
     // reminder: set students graders everything to undefined
-    this.setState(
-      { currentCourse, toLoadCourse: true },
-      () => {
-        this.updateNewCourse(option);
-      },
-    );
+    this.setState({ currentCourse, toLoadCourse: true }, () => {
+      this.updateNewCourse(option);
+    });
   };
 
   public handlePanelChange = (option: IOptionNumber, event: any) => {
@@ -691,11 +681,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (
-    newRoster: string[],
-    userType: USER_APP,
-    inactiveStudents: string[] | undefined,
-  ) => {
+  public changeRoster = (newRoster: string[], userType: USER_APP, inactiveStudents: string[] | undefined) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -737,13 +723,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .then((json) => {
         switch (userType) {
           case USER_APP.Student:
-            this.setState(
-              { students: json.students, inactiveStudents: json.inactive_students },
-              () => {
-                this.addToast('Student roster successfully updated.', undefined);
-                this.generateSubmissionsByStudent();
-              },
-            );
+            this.setState({ students: json.students, inactiveStudents: json.inactive_students }, () => {
+              this.addToast('Student roster successfully updated.', undefined);
+              this.generateSubmissionsByStudent();
+            });
             break;
           case USER_APP.Grader:
             this.setState({ graders: json.graders }, () => {
@@ -850,10 +833,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         if (res.status === 201) {
           return res.json();
         }
-        this.addErrorToast(
-          'Something went wrong. Please ensure the section name is valid.',
-          undefined,
-        );
+        this.addErrorToast('Something went wrong. Please ensure the section name is valid.', undefined);
         return undefined;
       })
       .then((json) => {
@@ -868,10 +848,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
   };
 
-  public removeStudentFromSection = (
-    sectionID: number,
-    studentEmail: string,
-  ): Promise<ISection> => {
+  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<ISection> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -965,10 +942,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
   };
 
-  public changeStudentSection = (
-    newSectionID: number | undefined,
-    studentEmail: string,
-  ): Promise<ISection> => {
+  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<ISection> => {
     const { sectionsByStudent } = this.state;
     const previousSection = sectionsByStudent[studentEmail];
     if (previousSection && newSectionID) {
@@ -1085,10 +1059,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         if (res.status === 201) {
           return res.json();
         } else {
-          this.addErrorToast(
-            `Something went wrong when trying to update ${categoryName}`,
-            undefined,
-          );
+          this.addErrorToast(`Something went wrong when trying to update ${categoryName}`, undefined);
           return undefined;
         }
       })
@@ -1106,12 +1077,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Reminder - need to change linter here for use
         return Promise.all(
           newComments.map((comment) => {
-            return this.createRubricComment(
-              assignmentID,
-              json.id,
-              comment.text,
-              comment.pointDelta,
-            );
+            return this.createRubricComment(assignmentID, json.id, comment.text, comment.pointDelta);
           }),
         ).then(() => {
           return json;
@@ -1119,11 +1085,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
   };
 
-  public deleteRubricCategory = (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => {
+  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     const payload = { id: categoryID };
@@ -1189,10 +1151,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         if (res.status === 200) {
           return res.json();
         } else {
-          this.addErrorToast(
-            `Something went wrong when trying to update ${categoryName}.`,
-            undefined,
-          );
+          this.addErrorToast(`Something went wrong when trying to update ${categoryName}.`, undefined);
           return undefined;
         }
       })
@@ -1384,17 +1343,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assn.isReleased = json.isReleased;
           }
         });
-        this.setState({ assignments }, () =>
-          this.addToast('Assignment has been updated', undefined),
-        );
+        this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
         return json;
       });
   };
 
-  public createAssignment = (
-    assignmentName: string,
-    assignmentPoints: number,
-  ): Promise<IAssignment> => {
+  public createAssignment = (assignmentName: string, assignmentPoints: number): Promise<IAssignment> => {
     const { currentCourse } = this.state;
     if (!currentCourse) {
       return Promise.reject();
@@ -1462,10 +1416,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         if (json) {
           courses.push(json);
           this.setState({ courses });
-          this.addLongToast(
-            `Course ${json.name} | ${json.period} successfully created.`,
-            undefined,
-          );
+          this.addLongToast(`Course ${json.name} | ${json.period} successfully created.`, undefined);
           this.updateNewCourse(this.selectorItemsFormatter([json])[0]);
         }
         return json;
@@ -1493,9 +1444,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // hacky way to set default to 0
         const panelName = this.stringFromPanel(typeof loadedPanel !== 'undefined' ? loadedPanel : 0);
 
-        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`}/>;
+        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
       } else {
-        return <Redirect to={'/course-admin'}/>;
+        return <Redirect to={'/course-admin'} />;
       }
     }
 

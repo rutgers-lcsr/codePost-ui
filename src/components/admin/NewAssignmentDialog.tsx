@@ -58,10 +58,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         })
         .indexOf(newAssignmentName.toLowerCase()) !== -1
     ) {
-      this.props.addErrorToast(
-        'Assignment name must be distinct from other assignments in course.',
-        undefined,
-      );
+      this.props.addErrorToast('Assignment name must be distinct from other assignments in course.', undefined);
       return;
     }
     if (newAssignmentPoints < 1) {

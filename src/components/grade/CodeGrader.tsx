@@ -223,23 +223,27 @@ const CodeBox = (props: ICodeBoxProps) => {
   const sortedHighlights = CodeBoxUtils.sortHighlights(comments);
   const splitCode = props.file.code.split('\n');
 
+  // There seems to be a discrepancy between how tslint and prettier
+  // handle ternaries. Disabling this block for now
+  /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
-      return (
-        <div key={i} id={i.toString()}>
-          {' '}
-          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
-        </div>
-      );
-    })
+        return (
+          <div key={i} id={i.toString()}>
+            {' '}
+            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+          </div>
+        );
+      })
     : splitCode.map((item: string, i: number) => {
-      return (
-        <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
-          {' '}
-          {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
-        </div>
-      );
-    });
+        return (
+          <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
+            {' '}
+            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+          </div>
+        );
+      });
+  /* tslint:enable */
 
   const lineNumbers = splitCode.map((item: string, i: number) => {
     return (

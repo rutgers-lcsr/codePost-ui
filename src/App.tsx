@@ -141,7 +141,6 @@ class App extends React.Component<{}, IState> {
                 <Route exact={true} path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`} component={Admin} />
 
                 <Route exact={true} path={HOME} component={Home} />
-
               </Switch>
             </div>
           </div>

@@ -50,7 +50,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     isLoadingSubmissions: false,
     toLoadCourse: false,
     toLoadAssignment: false,
-
   };
 
   public componentDidMount() {
@@ -67,7 +66,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
-  public componentDidUpdate(prevProps : IGraderProps, prevState : IGraderState) {
+  public componentDidUpdate(prevProps: IGraderProps, prevState: IGraderState) {
     const { isLoadingAssignments, assignments, courses } = this.state;
 
     // Determine if assignments are done loading
@@ -104,7 +103,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
       currentCourse = courses.find((obj: ICourse) => {
-        return (obj.name === formattedCourseName) && (obj.period === formattedPeriod);
+        return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
 
       // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
@@ -117,7 +116,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     this.setState({ currentCourse, currentAssignment });
-  }
+  };
 
   ///////////////////////////////////////
   // Loading methods
@@ -178,12 +177,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     if (currentAssignment) {
       this.setState({ isLoadingSubmissions: true }, () => {
-        this.loadSubmissions(currentAssignment)
-        .then(() => {
+        this.loadSubmissions(currentAssignment).then(() => {
           this.setState({ currentAssignment, isLoadingSubmissions: false, toLoadAssignment: true });
         });
       });
-
     }
   };
 
@@ -295,12 +292,12 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
         if (toLoadAssignment && currentAssignment) {
           const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
-          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`}/>;
+          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
         } else {
-          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/`}/>;
+          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/`} />;
         }
       } else {
-        return <Redirect to={'/grader'}/>;
+        return <Redirect to={'/grader'} />;
       }
     }
 
