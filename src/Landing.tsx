@@ -29,7 +29,7 @@ class Landing extends React.Component {
             <div className="Description-head">Teach Computer Science Better.</div>
             <div className="Description-text">
               codePost makes grading and course management easy, allowing you to focus on what's important: helping your
-              students improve and become power programmers.
+              students improve and become power programmers!
             </div>
           </div>
           <div className="Hero-image col-md-7" />

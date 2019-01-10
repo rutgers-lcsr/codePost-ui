@@ -12,6 +12,7 @@ phases:
       - echo "pre_build step"
   build:
     commands:
+      - echo "build step"
       - npm run build
   post_build:
     commands:
