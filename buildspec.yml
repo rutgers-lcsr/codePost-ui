@@ -16,4 +16,4 @@ phases:
   post_build:
     commands:
       - echo "post_build step"
-      - aws s3 sync build --delete . "s3://io.codepost-ui-dev"
+      - aws s3 sync . --delete . "s3://io.codepost-ui-dev"
