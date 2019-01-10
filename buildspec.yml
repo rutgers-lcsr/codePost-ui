@@ -1,0 +1,19 @@
+# From tutorial here
+# https://medium.freecodecamp.org/how-to-continuously-deploy-a-static-website-in-style-using-github-and-aws-3df7ecb58d9c
+
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "install step"
+      - npm i
+  pre_build:
+    commands:
+      - echo "pre_build step"
+  build:
+    commands:
+      - npm build
+  post_build:
+    commands:
+      - echo "post_build step"
+      - aws s3 sync ./build --delete . "s3://io.codepost-ui-dev"
