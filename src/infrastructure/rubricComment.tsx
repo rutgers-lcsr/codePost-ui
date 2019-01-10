@@ -1,25 +1,30 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
-const RubricCommentV = t.intersection([
-  GenericObject,
-  t.type({
-    text: t.string,
-    pointDelta: t.number,
-    category: t.number,
-  }),
-  t.partial({
-  }),
-], 'RubricComment');
+const RubricCommentV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      text: t.string,
+      pointDelta: t.number,
+      category: t.number,
+    }),
+    t.partial({}),
+  ],
+  'RubricComment',
+);
 
-const RubricCommentVPatch = t.intersection([
-  GenericObject,
-  t.partial({
-    text: t.string,
-    pointDelta: t.number,
-    category: t.number,
-  }),
-], 'RubricCommentPatch');
+const RubricCommentVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      text: t.string,
+      pointDelta: t.number,
+      category: t.number,
+    }),
+  ],
+  'RubricCommentPatch',
+);
 
 type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
 

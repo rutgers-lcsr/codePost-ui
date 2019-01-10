@@ -1,25 +1,30 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
-const SectionV = t.intersection([
-  GenericObject,
-  t.type({
-    name: t.string,
-    students: t.array(t.string),
-    leaders: t.array(t.string),
-  }),
-  t.partial({
-  }),
-], 'Section');
+const SectionV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      name: t.string,
+      students: t.array(t.string),
+      leaders: t.array(t.string),
+    }),
+    t.partial({}),
+  ],
+  'Section',
+);
 
-const SectionVPatch = t.intersection([
-  GenericObject,
-  t.partial({
-    name: t.string,
-    students: t.array(t.string),
-    leaders: t.array(t.string),
-  }),
-], 'SectionPatch');
+const SectionVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      name: t.string,
+      students: t.array(t.string),
+      leaders: t.array(t.string),
+    }),
+  ],
+  'SectionPatch',
+);
 
 type SectionType = t.TypeOf<typeof SectionV>;
 

@@ -32,7 +32,7 @@ class App extends React.Component<{}, IState> {
     };
   }
 
-  public componentDidUpdate(prevProps : any, prevState : IState) {
+  public componentDidUpdate(prevProps: any, prevState: IState) {
     if (this.state.toRedirect) {
       this.setState({ toRedirect: false });
     }
@@ -157,19 +157,19 @@ class App extends React.Component<{}, IState> {
                 <Route
                   exact={true}
                   path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-                  render={(props : any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+                  render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
                 />
 
                 <Route
                   exact={true}
                   path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
-                  render={(props : any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
+                  render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
                 />
 
                 <Route
                   exact={true}
                   path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                  render={(props : any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
+                  render={(props: any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
                 />
 
                 <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />

@@ -3,7 +3,7 @@ import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextF
 import '../../styles/index.scss';
 import { IStudentSubmissionsDataTable } from '../../types/common';
 
-import { AssignmentType  } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../infrastructure/assignment';
 
 interface IPropsStudentOverview {
   assignments: AssignmentType[];

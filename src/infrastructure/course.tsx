@@ -9,49 +9,60 @@ import {
   updateObjectDetail,
 } from './generics';
 
-const CourseV = t.intersection([
-  GenericObject,
-  t.type({
-    name: t.string,
-    period: t.string,
-    assignments: t.array(t.number),
-    sections: t.array(t.number),
-  }),
-], 'Course');
+const CourseV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      name: t.string,
+      period: t.string,
+      assignments: t.array(t.number),
+      sections: t.array(t.number),
+    }),
+  ],
+  'Course',
+);
 
-const CourseVPatch = t.intersection([
-  GenericObject,
-  t.partial({
-    name: t.string,
-    period: t.string,
-    assignments: t.array(t.number),
-    sections: t.array(t.number),
-  }),
-], 'CoursePatch');
+const CourseVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      name: t.string,
+      period: t.string,
+      assignments: t.array(t.number),
+      sections: t.array(t.number),
+    }),
+  ],
+  'CoursePatch',
+);
 
 type CourseType = t.TypeOf<typeof CourseV>;
 
-const RosterV = t.intersection([
-  GenericObject,
-  t.type({
-    students: t.array(t.string),
-    inactive_students: t.array(t.string),
-    graders: t.array(t.string),
-    courseAdmins: t.array(t.string),
-  }),
-  t.partial({
-  }),
-], 'Roster');
+const RosterV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      students: t.array(t.string),
+      inactive_students: t.array(t.string),
+      graders: t.array(t.string),
+      courseAdmins: t.array(t.string),
+    }),
+    t.partial({}),
+  ],
+  'Roster',
+);
 
-const RosterVPatch = t.intersection([
-  GenericObject,
-  t.partial({
-    students: t.array(t.string),
-    inactive_students: t.array(t.string),
-    graders: t.array(t.string),
-    courseAdmins: t.array(t.string),
-  }),
-], 'RosterPatch');
+const RosterVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      students: t.array(t.string),
+      inactive_students: t.array(t.string),
+      graders: t.array(t.string),
+      courseAdmins: t.array(t.string),
+    }),
+  ],
+  'RosterPatch',
+);
 
 type RosterType = t.TypeOf<typeof RosterV>;
 

@@ -206,7 +206,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
         submissions.forEach((submission: SubmissionType) => {
-          const assnName = assignments.filter(assignment => assignment.id === parseInt(assignmentID, 10))[0].name;
+          const assnName = assignments.filter((assignment) => {
+            return assignment.id === parseInt(assignmentID, 10);
+          })[0].name;
           tablemap.push(this.renderSubmissionRow(submission, assnName));
         });
       });

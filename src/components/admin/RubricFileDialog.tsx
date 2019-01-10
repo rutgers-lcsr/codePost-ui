@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
-import {
-  IRubricCategoryToRubricCommentsMap,
-} from '../../types/common';
+import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
-import { AssignmentType  } from '../../infrastructure/assignment';
-import { RubricCategoryType  } from '../../infrastructure/rubricCategory';
-import { RubricCommentType  } from '../../infrastructure/rubricComment';
+import { AssignmentType } from '../../infrastructure/assignment';
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 interface IProps {
   activeAssignment: AssignmentType | undefined;
@@ -27,16 +25,8 @@ interface IProps {
     text: string,
     pointDelta: number,
   ) => Promise<RubricCommentType>;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => Promise<void>;
-  deleteRubricComment: (
-    assignmentID: number,
-    categoryID: number,
-    commentID: number,
-  ) => Promise<void>;
+  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
