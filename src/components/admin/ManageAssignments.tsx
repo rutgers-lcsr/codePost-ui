@@ -20,10 +20,10 @@ import RubricCategoryTable from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
 import RubricFileDialog from './RubricFileDialog';
 
-import { CourseType  } from '../../infrastructure/course';
-import { RubricCategoryType  } from '../../infrastructure/rubricCategory';
-import { RubricCommentType  } from '../../infrastructure/rubricComment';
-import { SubmissionType  } from '../../infrastructure/submission';
+import { CourseType } from '../../infrastructure/course';
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { SubmissionType } from '../../infrastructure/submission';
 
 interface IProps {
   submissions: IAssignmentToSubmissionsMap;
@@ -49,16 +49,8 @@ interface IProps {
     text: string,
     pointDelta: number,
   ) => Promise<RubricCommentType>;
-  deleteRubricCategory: (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => Promise<void>;
-  deleteRubricComment: (
-    assignmentID: number,
-    categoryID: number,
-    commentID: number,
-  ) => Promise<void>;
+  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
+  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -358,15 +350,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
           return assn.id === Number(assignmentID);
         })[0];
 
-            assignmentSubs.forEach((submission: SubmissionType) => {
-              if (submission.isFinalized) {
-                numGraded += 1;
-              } else if (submission.grader) {
-                numUngraded += 1;
-              } else {
-                numUnclaimed += 1;
-              }
-            });
+        assignmentSubs.forEach((submission: SubmissionType) => {
+          if (submission.isFinalized) {
+            numGraded += 1;
+          } else if (submission.grader) {
+            numUngraded += 1;
+          } else {
+            numUnclaimed += 1;
+          }
+        });
 
         return (
           <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
