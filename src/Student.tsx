@@ -318,21 +318,25 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     return (
       <div className="student">
-        <VerticalPane
-          currentTab={this.tabCurrentFormatter(currentAssignment)}
-          currentSelector={this.selectorCurrentFormatter(currentCourse)}
-          selectorItems={this.selectorItemsFormatter(courses)}
-          tabItems={this.tabItemsFormatter(currentCourse)}
-          handleTabChange={this.handleAssignmentChange}
-          handleSelectorChange={this.handleCourseChange}
-        />
-        <ContentArea
-          assignment={currentAssignment}
-          submission={currentSubmission}
-          files={files}
-          comments={comments}
-          rubricComments={rubricComments}
-        />
+        <div className="student__left-panel">
+          <VerticalPane
+            currentTab={this.tabCurrentFormatter(currentAssignment)}
+            currentSelector={this.selectorCurrentFormatter(currentCourse)}
+            selectorItems={this.selectorItemsFormatter(courses)}
+            tabItems={this.tabItemsFormatter(currentCourse)}
+            handleTabChange={this.handleAssignmentChange}
+            handleSelectorChange={this.handleCourseChange}
+          />
+        </div>
+        <div className="student__right-panel">
+          <ContentArea
+            assignment={currentAssignment}
+            submission={currentSubmission}
+            files={files}
+            comments={comments}
+            rubricComments={rubricComments}
+          />
+        </div>
       </div>
     );
   }
@@ -361,9 +365,9 @@ const ContentArea = (props: IContentAreaProps) => {
     );
   }
   if (assignment) {
-    return <div className="student__right-panel">Your {assignment.name} has not yet been graded.</div>;
+    return <div>Your {assignment.name} has not yet been graded.</div>;
   }
-  return <div className="student__right-panel">Select an assignment on the left!</div>;
+  return <div>Select an assignment on the left!</div>;
 };
 
 export default Student;

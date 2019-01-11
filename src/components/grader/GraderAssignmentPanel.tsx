@@ -18,7 +18,7 @@ interface IState {
   buttonState: BUTTON_STATE;
 }
 
-class GradedTab extends React.Component<IProps, {}> {
+class GraderAssignmentPanel extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
   };
@@ -64,12 +64,12 @@ class GradedTab extends React.Component<IProps, {}> {
     };
 
     if (isLoadingSubmissions) {
-      return <div className="container-graded-tab">Loading..</div>;
+      return <div>Loading..</div>;
     }
 
     if (assignment && submissions.length > 0) {
       return (
-        <div className="container-graded-tab">
+        <div>
           <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
           <DataTable plain={true}>
             <TableHeader>
@@ -93,8 +93,8 @@ class GradedTab extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
                       <Button
-                        key={`release-button-${submission.id}`}
-                        className="button-release"
+                        key={`button__release-${submission.id}`}
+                        className="button__release"
                         flat={true}
                         icon={true}
                       >
@@ -111,13 +111,13 @@ class GradedTab extends React.Component<IProps, {}> {
     }
     if (assignment) {
       return (
-        <div className="container-graded-tab">
+        <div>
           <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
         </div>
       );
     }
-    return <div className="container-graded-tab">Select an assignment on the left</div>;
+    return <div>Select an assignment on the left</div>;
   }
 }
 
-export default GradedTab;
+export default GraderAssignmentPanel;

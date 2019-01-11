@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import '../styles/Grade.scss';
-import '../styles/Grader.scss';
+// import '../styles/Grade.scss';
+// import '../styles/Grader.scss';
 
 import { BUTTON_STATE } from '../types/common';
 
@@ -15,15 +15,15 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   const { handleClick, buttonState } = props;
 
   if (buttonState === BUTTON_STATE.Inactive) {
-    return <div className="button-get-another disabled">Nothing left to grade</div>;
+    return <div className="button__get-another button--disabled">Nothing left to grade</div>;
   }
 
   if (buttonState === BUTTON_STATE.Loading) {
-    return <div className="button-get-another disabled">Loading...</div>;
+    return <div className="button__get-another button--disabled">Loading...</div>;
   }
 
   return (
-    <div className="button-get-another " onClick={handleClick}>
+    <div className="button__get-another " onClick={handleClick}>
       Grade another
     </div>
   );
@@ -35,12 +35,12 @@ export const StartGradingButton = (props: IButtonProps) => {
 
   switch (buttonState) {
     case BUTTON_STATE.Inactive:
-      return <div className="button-start-grading disabled">Nothing left to grade!</div>;
+      return <div className="button__start-grading button--disabled">Nothing left to grade!</div>;
     case BUTTON_STATE.Loading:
-      return <div className="button-start-grading disabled">Loading...</div>;
+      return <div className="button__start-grading button--disabled">Loading...</div>;
     default:
       return (
-        <div className="button-start-grading" onClick={handleClick}>
+        <div className="button__start-grading" onClick={handleClick}>
           Start grading!
         </div>
       );

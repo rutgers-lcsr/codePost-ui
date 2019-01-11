@@ -25,7 +25,7 @@ $md-secondary-color: #ffcdd2;
 @import 'layout/header';
 
 // 5. Components
-@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment';
+@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment', 'components/button';
 
 // 6. Page-specific styles
 @import 'pages/student';
