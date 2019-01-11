@@ -55,8 +55,6 @@ class ManageGraders extends React.Component<IProps, {}> {
     const { rosterLoadComplete, lockedGraderChange, graders } = this.props;
     const { newField, searchTerm, sortAscending } = this.state;
 
-    const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
-
     const showSaveNewButton = newField && newField.includes('@');
     const graderType = USER_APP.Grader;
 
@@ -138,9 +136,6 @@ class ManageGraders extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-          {lockIcon}
-        </Button>
       </div>
     );
   }

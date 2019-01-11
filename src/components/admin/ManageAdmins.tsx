@@ -55,8 +55,6 @@ class ManageStudents extends React.Component<IProps, {}> {
     const { rosterLoadComplete, lockedAdminChange, admins } = this.props;
     const { newAdminField, searchTerm, sortAscending } = this.state;
 
-    const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
-
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
     const adminType = USER_APP.CourseAdmin;
 
@@ -138,9 +136,6 @@ class ManageStudents extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-          {lockIcon}
-        </Button>
       </div>
     );
   }

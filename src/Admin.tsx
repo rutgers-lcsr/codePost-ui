@@ -2,11 +2,8 @@ import * as React from 'react';
 import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import CourseData from './components/admin/CourseData';
-import ManageAdmins from './components/admin/ManageAdmins';
 import ManageAssignments from './components/admin/ManageAssignments';
-import ManageGraders from './components/admin/ManageGraders';
-import ManageSections from './components/admin/ManageSections';
-import ManageStudents from './components/admin/ManageStudents';
+import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
 import VerticalPane from './components/VerticalPane';
 // import './styles/index.scss';
@@ -143,22 +140,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public panels: { [key: string]: string } = {
     0: 'Course Data',
     1: 'Manage Assignments',
-    2: 'Manage Students',
-    3: 'Manage Graders',
-    4: 'Manage Sections',
-    5: 'Manage Admins',
+    2: 'Manage Users',
   };
 
-  public panelMapForURL = [
-    'course-data',
-    'assignments',
-    'manage-students',
-    'manage-graders',
-    'manage-sections',
-    'manage-admins',
-  ];
+  public panelMapForURL = ['course-data', 'assignments', 'manage-users'];
 
-  public defaultPanelArgForURL = ['students', null, null, null, null, null];
+  public defaultPanelArgForURL = ['students', null, null];
 
   public snackBarStyle = {
     width: '100%',
@@ -574,7 +561,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (newRoster: string[], userType: USER_APP, inactiveStudents: string[] | undefined) => {
+  public changeRoster = (newRoster: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -585,7 +572,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     switch (userType) {
       case USER_APP.Student:
         addToPayload(payload, 'students', newRoster);
-        addToPayload(payload, 'inactive_students', inactiveStudents);
         break;
       case USER_APP.Grader:
         addToPayload(payload, 'graders', newRoster);
@@ -633,19 +619,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const newStudents = this.state.students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
-        this.changeRoster(newStudents, userType, selectedUserEmails);
+        this.changeRoster(newStudents, userType);
         break;
       case USER_APP.Grader:
         const newGraders = this.state.graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        this.changeRoster(newGraders, userType, selectedUserEmails);
+        this.changeRoster(newGraders, userType);
         break;
       case USER_APP.CourseAdmin:
         const newAdmins = this.state.admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
-        this.changeRoster(newAdmins, userType, undefined);
+        this.changeRoster(newAdmins, userType);
         break;
     }
   };
@@ -663,14 +649,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newStudents.push(userEmail);
 
         // Check if the student is in the inactives for the course, and remove them if so
-        if (this.state.inactiveStudents.indexOf(userEmail) !== -1) {
-          const newInactives = this.state.inactiveStudents.filter((i) => {
-            return i !== userEmail;
-          });
-          this.changeRoster(newStudents, userType, newInactives);
-        } else {
-          this.changeRoster(newStudents, userType, undefined);
-        }
+        this.changeRoster(newStudents, userType);
         break;
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
@@ -680,7 +659,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
-        this.changeRoster(newGraders, userType, undefined);
+        this.changeRoster(newGraders, userType);
         break;
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
@@ -690,7 +669,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
-        this.changeRoster(newAdmins, userType, undefined);
+        this.changeRoster(newAdmins, userType);
         break;
     }
   };
@@ -720,9 +699,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
-    const thisSection = sections.filter((section) => {
+    const thisSection = sections.find((section) => {
       return section.id === sectionID;
-    })[0];
+    });
+    if (!thisSection) {
+      return Promise.reject();
+    }
+
     const newStudents = thisSection.students.filter((student) => {
       return student !== studentEmail;
     });
@@ -1176,69 +1159,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
         <div className="content-container">
-          <ManageStudents
+          <ManageUsers
             key={currentCourse.id}
+            currentCourse={this.state.currentCourse}
             sections={this.state.sections}
             students={this.state.students}
-            rosterLoadComplete={this.state.rosterLoadComplete}
-            lockedStudentChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
+            graders={this.state.graders}
+            admins={this.state.admins}
             sectionsByStudent={this.state.sectionsByStudent}
-            changeStudentSection={this.changeStudentSection}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 3) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageGraders
-            key={currentCourse.id}
-            graders={this.state.graders}
             rosterLoadComplete={this.state.rosterLoadComplete}
-            lockedGraderChange={this.state.lockChanges}
+            sectionsLoadComplete={this.state.sectionsLoadComplete}
+            lockChanges={this.state.lockChanges}
             toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 4) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageSections
-            key={currentCourse.id}
-            sections={this.state.sections}
-            sectionsLoadComplete={this.state.sectionsLoadComplete}
-            lockedSectionChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
+            changeStudentSection={this.changeStudentSection}
             createSection={this.createSection}
-            graders={this.state.graders}
             addLeader={this.addLeaderToSection}
             removeLeader={this.removeLeaderFromSection}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 5) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageAdmins
-            key={currentCourse.id}
-            admins={this.state.admins}
-            rosterLoadComplete={this.state.rosterLoadComplete}
-            lockedAdminChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
             addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
+            initialTab={this.state.initialTab}
           />
         </div>
       );
