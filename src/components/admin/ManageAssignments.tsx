@@ -448,6 +448,20 @@ class ManageAssignments extends React.Component<IProps, {}> {
             arrow_back
           </Button>
           <div>
+            <RubricFileDialog
+              activeAssignment={this.state.activeAssignment}
+              activeRubricComments={this.state.activeRubricComments}
+              activeRubricCategories={this.state.activeRubricCategories}
+              addErrorToast={this.props.addErrorToast}
+              addToast={this.props.addToast}
+              createRubricCategory={this.props.createRubricCategory}
+              createRubricComment={this.props.createRubricComment}
+              updateRubricCategory={this.props.updateRubricCategory}
+              updateRubricComment={this.props.updateRubricComment}
+              deleteRubricCategory={this.props.deleteRubricCategory}
+              deleteRubricComment={this.props.deleteRubricComment}
+              parentUpdate={this.changeActiveAssignment}
+            />
             <TextField
               defaultValue={activeAssignment.name}
               ref={(field) => {
@@ -486,20 +500,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 undefined,
                 !activeAssignment.isReleased,
               )}
-            />
-            <RubricFileDialog
-              activeAssignment={this.state.activeAssignment}
-              activeRubricComments={this.state.activeRubricComments}
-              activeRubricCategories={this.state.activeRubricCategories}
-              addErrorToast={this.props.addErrorToast}
-              addToast={this.props.addToast}
-              createRubricCategory={this.props.createRubricCategory}
-              createRubricComment={this.props.createRubricComment}
-              updateRubricCategory={this.props.updateRubricCategory}
-              updateRubricComment={this.props.updateRubricComment}
-              deleteRubricCategory={this.props.deleteRubricCategory}
-              deleteRubricComment={this.props.deleteRubricComment}
-              parentUpdate={this.changeActiveAssignment}
             />
           </div>
           <div className="padding" />

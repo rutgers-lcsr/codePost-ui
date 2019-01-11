@@ -483,6 +483,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           iconChildren={'vertical_align_center'}
           iconBefore={false}
           flat={true}
+          className={'fileUploadDialog'}
         >
           Upload / Download Rubric
         </Button>
