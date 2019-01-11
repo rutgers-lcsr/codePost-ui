@@ -91,7 +91,7 @@ const CodeBox = (props: ICodeBoxProps) => {
 
   const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
-      <div key={i + 1} className="code__line-number">
+      <div key={i + 1} className="code__line-numbers__line-number">
         {' '}
         {i + 1}{' '}
       </div>

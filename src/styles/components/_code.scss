@@ -16,9 +16,8 @@
 
     &__line-number {
       display: block;
-      height: 19px;
       width: 2em;
-      font-family: monospace;
+      font-family: $code-font-stack;
     }
   }
 
@@ -26,6 +25,7 @@
     flex: 1 1 0;
     padding-left: 8px;
     overflow-x: hidden;
+    font-family: $code-font-stack;
   }
 
   &__comments {
