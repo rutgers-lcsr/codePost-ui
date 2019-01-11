@@ -11,6 +11,7 @@ import NewCourseDialog from './components/admin/NewCourseDialog';
 import VerticalPane from './components/VerticalPane';
 // import './styles/index.scss';
 // import './styles/Student.scss';
+
 import {
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
