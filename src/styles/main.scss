@@ -1,5 +1,17 @@
 @charset 'UTF-8';
 
+/////// tmp /////////
+@import 'globals';
+$material-icons-font-path: '~material-icons/iconfont/';
+
+$primary-color: #2ecd70;
+$md-primary-color: #2ecd70;
+$md-secondary-color: #ffcdd2;
+@import '~material-icons/iconfont/material-icons.scss';
+@include react-md-everything;
+@include react-md-theme-everything($primary-color, $md-secondary-color);
+/////////////////////
+
 // 1. Configuration and helpers
 @import 'abstracts/variables', 'abstracts/functions', 'abstracts/mixins';
 
@@ -10,13 +22,13 @@
 @import 'base/base', 'base/fonts', 'base/typography', 'base/helpers';
 
 // 4. Layout-related sections
-// @import 'layout/header', 'layout/footer';
+@import 'layout/header';
 
 // 5. Components
-// @import 'components/button';
+@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment';
 
 // 6. Page-specific styles
-// @import 'pages/home';
+@import 'pages/student';
 
 // 7. Themes
 // @import 'themes/default';

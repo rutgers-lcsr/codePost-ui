@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import 'react-tabs/style/react-tabs.css';
-import '../../styles/Student.scss';
+// import '../../styles/Student.scss';
 
 import { Card, CardText, Chip } from 'react-md';
 
@@ -33,12 +33,12 @@ class CodeViewer extends React.Component<IProps, {}> {
     const deductionString = deduction > 0 ? `(-${deduction})` : '';
 
     const numComments = comments.length;
-    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+    const commentFlag = numComments > 0 ? <div className="tab__comment-count">{numComments}</div> : '';
 
     return (
-      <div className="tab-title">
+      <div className="tab__title">
         {commentFlag}
-        <div className="tab-title">{`${file.name} ${deductionString}`}</div>
+        <div className="tab__title">{`${file.name} ${deductionString}`}</div>
       </div>
     );
   };
@@ -47,8 +47,8 @@ class CodeViewer extends React.Component<IProps, {}> {
     const { assignment, submission, files, comments, rubricComments } = this.props;
     // content-box
     return (
-      <div className="container-code-viewer">
-        <div className="grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
+      <div className="student__right-panel">
+        <div className="code__grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
             {files.map((file: FileType, i: number) => {
@@ -63,9 +63,8 @@ class CodeViewer extends React.Component<IProps, {}> {
           {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
-                <div className="panel-box">
-                  <CodeBox file={file} comments={comments[file.id]} />
-                  <CommentList comments={comments[file.id]} rubricComments={rubricComments} />
+                <div>
+                  <CodeBox file={file} comments={comments[file.id]} rubricComments={rubricComments} />
                 </div>
               </TabPanel>
             );
@@ -79,6 +78,7 @@ class CodeViewer extends React.Component<IProps, {}> {
 interface ICodeBoxProps {
   file: FileType;
   comments: CommentType[];
+  rubricComments: ICommentToRubricCommentMap;
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
@@ -91,7 +91,7 @@ const CodeBox = (props: ICodeBoxProps) => {
 
   const lineNumbers = splitCode.map((item: string, i: number) => {
     return (
-      <div key={i + 1} className="line-number">
+      <div key={i + 1} className="code__line-number">
         {' '}
         {i + 1}{' '}
       </div>
@@ -99,9 +99,10 @@ const CodeBox = (props: ICodeBoxProps) => {
   });
 
   return (
-    <div className="code-box">
-      <div className="line-numbers">{lineNumbers}</div>
-      <div className="highlighted-area">{linesOfCode}</div>
+    <div className="code">
+      <div className="code__line-numbers">{lineNumbers}</div>
+      <div className="code__highlighted-area">{linesOfCode}</div>
+      <CommentList comments={props.comments} rubricComments={props.rubricComments} />
     </div>
   );
 };
@@ -162,7 +163,7 @@ const CommentList = (props: ICommentListProps) => {
     );
   });
 
-  return <div className="comment-box">{commentNodes}</div>;
+  return <div className="code__comments">{commentNodes}</div>;
 };
 
 interface ICommentProps {
@@ -204,8 +205,8 @@ const Comment = (props: ICommentProps) => {
       <CardText>
         {pointDelta === '' ? null : <Chip label={pointDelta} />}
         {/*// should make slug related rubricComment slug related on text*/}
-        {rubricComment ? <div className="comment-rubric">{rubricComment.text}</div> : null}
-        <div className="comment-text">{comment.text}</div>
+        {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
+        <div className="comment__text">{comment.text}</div>
       </CardText>
     </Card>
   );

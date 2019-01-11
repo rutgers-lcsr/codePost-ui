@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import CodeViewer from './components/student/CodeViewer';
 import VerticalPane from './components/VerticalPane';
 
-import './styles/Student.scss';
+// import './styles/Student.scss';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
@@ -317,24 +317,22 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     return (
-      <div>
-        <div className="container-main">
-          <VerticalPane
-            currentTab={this.tabCurrentFormatter(currentAssignment)}
-            currentSelector={this.selectorCurrentFormatter(currentCourse)}
-            selectorItems={this.selectorItemsFormatter(courses)}
-            tabItems={this.tabItemsFormatter(currentCourse)}
-            handleTabChange={this.handleAssignmentChange}
-            handleSelectorChange={this.handleCourseChange}
-          />
-          <ContentArea
-            assignment={currentAssignment}
-            submission={currentSubmission}
-            files={files}
-            comments={comments}
-            rubricComments={rubricComments}
-          />
-        </div>
+      <div className="student">
+        <VerticalPane
+          currentTab={this.tabCurrentFormatter(currentAssignment)}
+          currentSelector={this.selectorCurrentFormatter(currentCourse)}
+          selectorItems={this.selectorItemsFormatter(courses)}
+          tabItems={this.tabItemsFormatter(currentCourse)}
+          handleTabChange={this.handleAssignmentChange}
+          handleSelectorChange={this.handleCourseChange}
+        />
+        <ContentArea
+          assignment={currentAssignment}
+          submission={currentSubmission}
+          files={files}
+          comments={comments}
+          rubricComments={rubricComments}
+        />
       </div>
     );
   }
@@ -363,9 +361,9 @@ const ContentArea = (props: IContentAreaProps) => {
     );
   }
   if (assignment) {
-    return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
+    return <div className="student__right-panel">Your {assignment.name} has not yet been graded.</div>;
   }
-  return <div className="container-code-viewer">Select an assignment on the left!</div>;
+  return <div className="student__right-panel">Select an assignment on the left!</div>;
 };
 
 export default Student;

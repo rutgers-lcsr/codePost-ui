@@ -1,0 +1,21 @@
+.comment {
+  position: absolute;
+  max-width: 400px;
+  min-width: 150px;
+  // background-color: #f7f7f7;
+  border: 1px solid #dadada;
+
+  &__rubric-comment {
+    margin: 10px 0px 10px 0px;
+    padding: 5px 0px 5px 5px;
+    border-left: 2px solid blue;
+  }
+
+  &__text {
+    margin: 10px 0px 10px 0px;
+  }
+
+  &:hover {
+    border: 1px solid black !important;
+  }
+}

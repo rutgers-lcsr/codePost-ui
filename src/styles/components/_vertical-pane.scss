@@ -1,0 +1,25 @@
+.vertical-pane {
+  padding: 0;
+  margin-bottom: 10px;
+
+  &__tab {
+    padding: 10px;
+    border: 1px solid #ececee;
+    border-left: none;
+    border-right: none;
+    list-style-type: none;
+
+    &--selected {
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-left: 6px solid #2ecc71;
+      border-right: none;
+      transition: border-left 0.3s ease;
+      list-style-type: none;
+    }
+
+    &:hover {
+      background-color: #dedede;
+    }
+  }
+}

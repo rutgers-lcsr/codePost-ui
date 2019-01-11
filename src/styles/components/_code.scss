@@ -1,0 +1,36 @@
+.code {
+  display: flex;
+
+  &__grade {
+    float: left;
+    width: 200px;
+    height: 30px;
+    font-size: 18pt;
+  }
+
+  &__line-numbers {
+    flex: 0 1 15px;
+    text-align: center;
+    color: gray;
+    border-right: 1px solid gray;
+
+    &__line-number {
+      display: block;
+      height: 19px;
+      width: 2em;
+      font-family: monospace;
+    }
+  }
+
+  &__highlighted-area {
+    flex: 1 1 0;
+    padding-left: 8px;
+    overflow-x: hidden;
+  }
+
+  &__comments {
+    flex: 0 1 200px;
+    font-size: 13px;
+    position: relative;
+  }
+}
