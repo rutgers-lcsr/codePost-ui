@@ -39,6 +39,7 @@ $margin: 50px;
     margin-left: $margin;
     flex: 1;
     max-width: calc(100% - #{$panel-width} - #{$margin});
+    height: 100vh;
   }
 }
 

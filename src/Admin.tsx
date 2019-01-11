@@ -565,7 +565,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
     const payload = { id: currentCourse.id };
@@ -581,36 +581,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
     }
 
-    Course.updateRoster(payload, {})
-      .then((roster: RosterType) => {
-        switch (userType) {
-          case USER_APP.Student:
-            this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-              this.addToast('Student roster successfully updated.', undefined);
-              this.generateSubmissionsByStudent();
+    return (
+      Course.updateRoster(payload, {})
+        .then((roster: RosterType) => {
+          switch (userType) {
+            case USER_APP.Student:
+              this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
+                this.addToast('Student roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              });
+              break;
+            case USER_APP.Grader:
+              this.setState({ graders: roster.graders }, () => {
+                this.addToast('Grader roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              });
+              break;
+            case USER_APP.CourseAdmin:
+              this.setState({ admins: roster.courseAdmins }, () =>
+                this.addToast('Admin roster successfully updated.', undefined),
+              );
+              break;
+          }
+        })
+        // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
+        .catch((errors) => {
+          Object.keys(errors).forEach((key) => {
+            errors[key].forEach((error: string) => {
+              this.addErrorToast(error, undefined);
             });
-            break;
-          case USER_APP.Grader:
-            this.setState({ graders: roster.graders }, () => {
-              this.addToast('Grader roster successfully updated.', undefined);
-              this.generateSubmissionsByStudent();
-            });
-            break;
-          case USER_APP.CourseAdmin:
-            this.setState({ admins: roster.courseAdmins }, () =>
-              this.addToast('Admin roster successfully updated.', undefined),
-            );
-            break;
-        }
-      })
-      // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
           });
-        });
-      });
+        })
+    );
   };
 
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
@@ -1173,11 +1175,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             toggleLock={this.toggleLock}
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
+            changeRoster={this.changeRoster}
             changeStudentSection={this.changeStudentSection}
             createSection={this.createSection}
             addLeader={this.addLeaderToSection}
             removeLeader={this.removeLeaderFromSection}
             addToast={this.addToast}
+            addErrorToast={this.addErrorToast}
             initialTab={this.state.initialTab}
           />
         </div>

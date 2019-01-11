@@ -4,6 +4,7 @@ import '../../styles/index.scss';
 import { USER_APP } from '../../types/common';
 
 import { CourseType } from '../../infrastructure/course';
+import RosterFileUpload from './RosterFileUpload';
 
 interface IProps {
   graders: string[];
@@ -12,8 +13,10 @@ interface IProps {
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
 }
 
 interface IState {
@@ -52,7 +55,7 @@ class ManageGraders extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { rosterLoadComplete, lockedGraderChange, graders } = this.props;
+    const { rosterLoadComplete, lockedGraderChange, graders, addErrorToast, addToast, changeRoster } = this.props;
     const { newField, searchTerm, sortAscending } = this.state;
 
     const showSaveNewButton = newField && newField.includes('@');
@@ -99,6 +102,13 @@ class ManageGraders extends React.Component<IProps, {}> {
     }
     return (
       <div>
+        <RosterFileUpload
+          users={graders}
+          addErrorToast={addErrorToast}
+          addToast={addToast}
+          changeRoster={changeRoster}
+          userType={USER_APP.Grader}
+        />
         <TextField
           id="addGraderField"
           label="Add Grader"

@@ -27,6 +27,7 @@ interface IPropsManageUsers {
 
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  changeRoster: (emails: string[], type: USER_APP) => Promise<void>;
 
   createSection: (newSection: string) => void;
   addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
@@ -34,6 +35,7 @@ interface IPropsManageUsers {
   changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
 
   addToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
   initialTab: number;
 }
 
@@ -61,9 +63,9 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
 
     return (
       <div>
-        <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
+        <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" slideStyle={{ minHeight: '70vh' }}>
           <Tabs tabId="simple-tab">
-            <Tab label="Students" style={{ color: '#000000' }}>
+            <Tab label="Students" classname="manageStudents" style={{ color: '#000000' }}>
               <ManageStudents
                 sections={this.props.sections}
                 students={this.props.students}
@@ -72,13 +74,15 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
                 toggleLock={this.props.toggleLock}
                 currentCourse={this.props.currentCourse}
                 addToast={this.props.addToast}
+                addErrorToast={this.props.addErrorToast}
                 enrollUser={this.props.enrollUser}
                 unEnrollUsers={this.props.unEnrollUsers}
+                changeRoster={this.props.changeRoster}
                 sectionsByStudent={this.props.sectionsByStudent}
                 changeStudentSection={this.props.changeStudentSection}
               />
             </Tab>
-            <Tab label="Graders" style={{ color: '#000000' }}>
+            <Tab label="Graders" className="manageGraders" style={{ color: '#000000' }}>
               <ManageGraders
                 graders={this.props.graders}
                 rosterLoadComplete={this.props.rosterLoadComplete}
@@ -86,11 +90,13 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
                 toggleLock={this.props.toggleLock}
                 currentCourse={this.props.currentCourse}
                 addToast={this.props.addToast}
+                addErrorToast={this.props.addErrorToast}
                 enrollUser={this.props.enrollUser}
                 unEnrollUsers={this.props.unEnrollUsers}
+                changeRoster={this.props.changeRoster}
               />
             </Tab>
-            <Tab label="Sections" style={{ color: '#000000' }}>
+            <Tab label="Sections" className="manageSections" style={{ color: '#000000' }}>
               <ManageSections
                 sections={this.props.sections}
                 sectionsLoadComplete={this.props.sectionsLoadComplete}
@@ -112,8 +118,10 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
                 toggleLock={this.props.toggleLock}
                 currentCourse={this.props.currentCourse}
                 addToast={this.props.addToast}
+                addErrorToast={this.props.addErrorToast}
                 enrollUser={this.props.enrollUser}
                 unEnrollUsers={this.props.unEnrollUsers}
+                changeRoster={this.props.changeRoster}
               />
             </Tab>
           </Tabs>

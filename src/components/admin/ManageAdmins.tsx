@@ -5,6 +5,8 @@ import { USER_APP } from '../../types/common';
 
 import { CourseType } from '../../infrastructure/course';
 
+import RosterFileUpload from './RosterFileUpload';
+
 interface IProps {
   admins: string[];
   rosterLoadComplete: boolean;
@@ -12,8 +14,10 @@ interface IProps {
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
 }
 
 interface IState {
@@ -52,7 +56,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { rosterLoadComplete, lockedAdminChange, admins } = this.props;
+    const { rosterLoadComplete, lockedAdminChange, admins, addErrorToast, addToast, changeRoster } = this.props;
     const { newAdminField, searchTerm, sortAscending } = this.state;
 
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
@@ -99,6 +103,13 @@ class ManageStudents extends React.Component<IProps, {}> {
     }
     return (
       <div>
+        <RosterFileUpload
+          users={admins}
+          addErrorToast={addErrorToast}
+          addToast={addToast}
+          changeRoster={changeRoster}
+          userType={USER_APP.CourseAdmin}
+        />
         <TextField
           id="addAdminField"
           label="Add Admin"
