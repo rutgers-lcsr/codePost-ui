@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  DataTable,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../styles/index.scss';
 import { USER_APP } from '../../types/common';
 
@@ -7,7 +15,7 @@ import { CourseType } from '../../infrastructure/course';
 
 interface IProps {
   admins: string[];
-  adminsLoadComplete: boolean;
+  rosterLoadComplete: boolean;
   lockedAdminChange: boolean;
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
@@ -52,7 +60,7 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { adminsLoadComplete, lockedAdminChange, admins } = this.props;
+    const { rosterLoadComplete, lockedAdminChange, admins } = this.props;
     const { newAdminField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedAdminChange ? 'lock' : 'lock_open';
@@ -61,7 +69,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const adminType = USER_APP.CourseAdmin;
 
     let tableBody;
-    if (adminsLoadComplete) {
+    if (rosterLoadComplete) {
       tableBody = admins.map((admin) => {
         if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
           return <div />;
@@ -138,7 +146,14 @@ class ManageStudents extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
           {lockIcon}
         </Button>
       </div>

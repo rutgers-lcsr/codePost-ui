@@ -19,7 +19,7 @@ import { SectionType } from '../../infrastructure/section';
 interface IProps {
   sections: SectionType[];
   students: string[];
-  studentsLoadComplete: boolean;
+  rosterLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
@@ -27,7 +27,10 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => void;
   unEnrollUsers: (emails: string[], type: USER_APP) => void;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
+  changeStudentSection: (
+    sectionID: number | undefined,
+    studentEmail: string,
+  ) => Promise<SectionType>;
 }
 
 interface IState {
@@ -86,7 +89,13 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { studentsLoadComplete, lockedStudentChange, students, sections, sectionsByStudent } = this.props;
+    const {
+      rosterLoadComplete,
+      lockedStudentChange,
+      students,
+      sections,
+      sectionsByStudent,
+    } = this.props;
     const { newStudentField, changedSectionStudents, sortAscending, searchTerm } = this.state;
 
     const lockIcon = lockedStudentChange ? 'lock' : 'lock_open';
@@ -102,7 +111,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     const studentType = USER_APP.Student;
 
     let tableBody;
-    if (studentsLoadComplete) {
+    if (rosterLoadComplete) {
       tableBody = students.map((student) => {
         const section = sectionsByStudent[student];
         const sectionID = section ? section.id : -1;
@@ -206,7 +215,14 @@ class ManageStudents extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
           {lockIcon}
         </Button>
       </div>

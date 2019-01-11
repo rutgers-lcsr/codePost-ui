@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  DataTable,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../styles/index.scss';
 import { USER_APP } from '../../types/common';
 
@@ -7,7 +15,7 @@ import { CourseType } from '../../infrastructure/course';
 
 interface IProps {
   graders: string[];
-  gradersLoadComplete: boolean;
+  rosterLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
@@ -52,7 +60,7 @@ class ManageGraders extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { gradersLoadComplete, lockedGraderChange, graders } = this.props;
+    const { rosterLoadComplete, lockedGraderChange, graders } = this.props;
     const { newField, searchTerm, sortAscending } = this.state;
 
     const lockIcon = lockedGraderChange ? 'lock' : 'lock_open';
@@ -61,7 +69,7 @@ class ManageGraders extends React.Component<IProps, {}> {
     const graderType = USER_APP.Grader;
 
     let tableBody;
-    if (gradersLoadComplete) {
+    if (rosterLoadComplete) {
       tableBody = graders.map((grader) => {
         if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
           return <div />;
@@ -138,7 +146,14 @@ class ManageGraders extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
           {lockIcon}
         </Button>
       </div>

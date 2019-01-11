@@ -37,38 +37,44 @@ interface IAdminState {
   loadedPanel?: number; // Which active_panel to load, enum
   courses: CourseType[]; // Set of courses for the admin for the selector
 
-  // student, grader, admin, sections data
+  // roster data, all from a single api call so only needs a single loadComplete boolean
   students: string[];
-  studentsLoadComplete: boolean;
   inactiveStudents: string[];
   graders: string[];
-  gradersLoadComplete: boolean;
+  inactiveGraders: string[];
   admins: string[];
-  adminsLoadComplete: boolean;
-  sections: SectionType[];
+  rosterLoadComplete: boolean;
 
+  // sections data
+  sections: SectionType[];
+  sectionsLoadComplete: boolean;
+
+  // A calculated mapping each student to their section to speed up render time
   // Reminder - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  sectionsLoadComplete: boolean;
-  submissionsbyUserLoadComplete: boolean;
 
+  // Submissions data
   submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
 
-  // Props for Assignments panel
+  // Assignments data
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
 
+  // Assignments rubric data
   rubricCategories: IAssignmentToRubricCategories;
   rubricComments: IRubricCategoryToRubricCommentsMap;
-
   assignmentRubricLoadComplete: boolean;
+
+  // Calculated mappings to render the CourseData tab quickly
+  // submissionsByStudent is for the StudentData tab
+  // submissionsByGrader is for the GraderData tab
+  submissionsByStudent: IStudentSubmissionsDataTable;
+  submissionsByGrader: IGraderSubmissionsDataTable;
+  submissionsbyUserLoadComplete: boolean;
 
   // Props for Enroll panels
   lockChanges: boolean;
-
-  submissionsByStudent: IStudentSubmissionsDataTable;
-  submissionsByGrader: IGraderSubmissionsDataTable;
 
   toasts: IToast[];
   longToasts: IToast[];
@@ -91,40 +97,37 @@ interface IAdminProps {
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
-    currentCourse: undefined, // Course for selector
-    loadedPanel: undefined, // Which active_panel to load, enum
-    courses: this.props.initialCourses, // Set of courses for the admin for the selector
+    currentCourse: undefined,
+    loadedPanel: undefined,
+    courses: this.props.initialCourses,
 
-    // student, grader, admin, sections data
     students: [],
-    studentsLoadComplete: false,
     inactiveStudents: [],
     graders: [],
-    gradersLoadComplete: false,
+    inactiveGraders: [],
     admins: [],
-    adminsLoadComplete: false,
+    rosterLoadComplete: false,
 
     sections: [],
-    sectionsByStudent: {},
     sectionsLoadComplete: false,
-    submissionsbyUserLoadComplete: false,
+
+    sectionsByStudent: {},
 
     submissions: {},
     submissionsLoadComplete: false,
-    // Props for Assignments panel
+
     assignments: [],
     assignmentsLoadComplete: false,
 
     rubricCategories: {},
     rubricComments: {},
-
     assignmentRubricLoadComplete: false,
-
-    // Props for Enroll panels
-    lockChanges: true,
 
     submissionsByStudent: {},
     submissionsByGrader: {},
+    submissionsbyUserLoadComplete: false,
+
+    lockChanges: true,
 
     toasts: [],
     longToasts: [],
@@ -204,7 +207,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     // the toLoadPanel assignment causes the URL to add default loadedPanel if none is specified
-    const isValid = currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
+    const isValid =
+      currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
     this.setState({ currentCourse, loadedPanel, toLoadPanel: !isValid }, () => {
       if (currentCourse) {
         this.updateNewCourse({ value: currentCourse.id, label: '' });
@@ -266,16 +270,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         loadedPanel: currentPanel,
 
         students: [],
-        studentsLoadComplete: false,
+        inactiveStudents: [],
         graders: [],
-        gradersLoadComplete: false,
+        inactiveGraders: [],
         admins: [],
-        adminsLoadComplete: false,
+        rosterLoadComplete: false,
 
         sections: [],
-        sectionsByStudent: {},
         sectionsLoadComplete: false,
-        submissionsbyUserLoadComplete: false,
+
+        sectionsByStudent: {},
 
         submissions: {},
         submissionsLoadComplete: false,
@@ -285,14 +289,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         rubricCategories: {},
         rubricComments: {},
-
         assignmentRubricLoadComplete: false,
-
-        // Props for Enroll panels
-        lockChanges: true,
 
         submissionsByStudent: {},
         submissionsByGrader: {},
+        submissionsbyUserLoadComplete: false,
+
+        // Props for Enroll panels
+        lockChanges: true,
       },
       () => {
         this.loadAllCourseData();
@@ -417,11 +421,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       students,
       graders,
       submissions,
-      studentsLoadComplete,
-      gradersLoadComplete,
+      rosterLoadComplete,
       submissionsLoadComplete,
     } = this.state;
-    if (studentsLoadComplete && gradersLoadComplete && submissionsLoadComplete) {
+    if (rosterLoadComplete && submissionsLoadComplete) {
       const promise = new Promise((resolve, reject) => {
         const subsByStudent: IStudentSubmissionsDataTable = {};
         const subsByGrader: IGraderSubmissionsDataTable = {};
@@ -531,9 +534,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           graders: roster.graders,
           admins: roster.courseAdmins,
           inactiveStudents: roster.inactive_students,
-          studentsLoadComplete: true,
-          gradersLoadComplete: true,
-          adminsLoadComplete: true,
+          inactiveGraders: roster.inactive_graders,
+          rosterLoadComplete: true,
         },
         () => {
           this.loadSections();
@@ -578,7 +580,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (newRoster: string[], userType: USER_APP, inactiveStudents: string[] | undefined) => {
+  public changeRoster = (
+    newRoster: string[],
+    userType: USER_APP,
+    inactiveStudents: string[] | undefined,
+  ) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -599,27 +605,34 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
     }
 
-    Course.updateRoster(payload, {}).then((roster: RosterType) => {
-      switch (userType) {
-        case USER_APP.Student:
-          this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-            this.addToast('Student roster successfully updated.', undefined);
-            this.generateSubmissionsByStudent();
-          });
-          break;
-        case USER_APP.Grader:
-          this.setState({ graders: roster.graders }, () => {
-            this.addToast('Grader roster successfully updated.', undefined);
-            this.generateSubmissionsByStudent();
-          });
-          break;
-        case USER_APP.CourseAdmin:
-          this.setState({ admins: roster.courseAdmins }, () =>
-            this.addToast('Admin roster successfully updated.', undefined),
-          );
-          break;
-      }
-    });
+    Course.updateRoster(payload, {})
+      .then((roster: RosterType) => {
+        switch (userType) {
+          case USER_APP.Student:
+            this.setState(
+              { students: roster.students, inactiveStudents: roster.inactive_students },
+              () => {
+                this.addToast('Student roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              },
+            );
+            break;
+          case USER_APP.Grader:
+            this.setState({ graders: roster.graders }, () => {
+              this.addToast('Grader roster successfully updated.', undefined);
+              this.generateSubmissionsByStudent();
+            });
+            break;
+          case USER_APP.CourseAdmin:
+            this.setState({ admins: roster.courseAdmins }, () =>
+              this.addToast('Admin roster successfully updated.', undefined),
+            );
+            break;
+        }
+      })
+      .catch((error) => {
+        this.addErrorToast('Something went wrong', undefined);
+      });
   };
 
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
@@ -697,16 +710,27 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (!currentCourse) {
       return;
     }
-    const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [], id: -1 };
+    const payload = {
+      name: newSection,
+      course: currentCourse.id,
+      leaders: [],
+      students: [],
+      id: -1,
+    };
 
     return Section.create(payload).then((section: SectionType) => {
       sections.push(section);
       currentCourse.sections.push(section.id);
-      this.setState({ sections, currentCourse }, () => this.addToast(`New section ${section.name} created`, undefined));
+      this.setState({ sections, currentCourse }, () =>
+        this.addToast(`New section ${section.name} created`, undefined),
+      );
     });
   };
 
-  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
+  public removeStudentFromSection = (
+    sectionID: number,
+    studentEmail: string,
+  ): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -766,7 +790,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<SectionType> => {
+  public changeStudentSection = (
+    newSectionID: number | undefined,
+    studentEmail: string,
+  ): Promise<SectionType> => {
     const { sectionsByStudent } = this.state;
     const previousSection = sectionsByStudent[studentEmail];
     if (previousSection && newSectionID) {
@@ -869,7 +896,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       // Reminder - need to change linter here for use
       return Promise.all(
         newComments.map((comment) => {
-          return this.createRubricComment(assignmentID, rubricCategory.id, comment.text, comment.pointDelta);
+          return this.createRubricComment(
+            assignmentID,
+            rubricCategory.id,
+            comment.text,
+            comment.pointDelta,
+          );
         }),
       ).then(() => {
         return rubricCategory;
@@ -877,7 +909,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
+  public deleteRubricCategory = (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+  ) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     return RubricCategory.delete(categoryID).then(() => {
@@ -1081,7 +1117,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Course.create(payload).then((course: CourseType) => {
       courses.push(course);
       this.setState({ courses });
-      this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+      this.addLongToast(
+        `Course ${course.name} | ${course.period} successfully created.`,
+        undefined,
+      );
       this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
       return course;
     });
@@ -1106,9 +1145,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
 
         // hacky way to set default to 0
-        const panelName = this.stringFromPanel(typeof loadedPanel !== 'undefined' ? loadedPanel : 0);
+        const panelName = this.stringFromPanel(
+          typeof loadedPanel !== 'undefined' ? loadedPanel : 0,
+        );
 
-        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
+        return (
+          <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />
+        );
       } else {
         return <Redirect to={'/course-admin'} />;
       }
@@ -1124,9 +1167,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assignments={this.state.assignments}
             assignmentsLoadComplete={this.state.assignmentsLoadComplete}
             students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
             graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
             submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
             submissions={this.state.submissions}
             submissionsLoadComplete={this.state.submissionsLoadComplete}
@@ -1171,7 +1212,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             key={currentCourse.id}
             sections={this.state.sections}
             students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
+            rosterLoadComplete={this.state.rosterLoadComplete}
             lockedStudentChange={this.state.lockChanges}
             toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
@@ -1189,7 +1230,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <ManageGraders
             key={currentCourse.id}
             graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
+            rosterLoadComplete={this.state.rosterLoadComplete}
             lockedGraderChange={this.state.lockChanges}
             toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}
@@ -1223,7 +1264,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <ManageAdmins
             key={currentCourse.id}
             admins={this.state.admins}
-            adminsLoadComplete={this.state.adminsLoadComplete}
+            rosterLoadComplete={this.state.rosterLoadComplete}
             lockedAdminChange={this.state.lockChanges}
             toggleLock={this.toggleLock}
             currentCourse={this.state.currentCourse}

@@ -14,9 +14,7 @@ interface IPropsCourseData {
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
   students: string[];
-  studentsLoadComplete: boolean;
   graders: string[];
-  gradersLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
@@ -70,7 +68,11 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
   public openSubmission = (submissionID: number | string) => {
     if (window) {
-      window.open(`/grade/${submissionID}`, 'test', `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`);
+      window.open(
+        `/grade/${submissionID}`,
+        'test',
+        `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`,
+      );
     }
   };
 
