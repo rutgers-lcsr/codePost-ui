@@ -43,6 +43,7 @@ const RosterV = t.intersection(
     t.type({
       students: t.array(t.string),
       inactive_students: t.array(t.string),
+      inactive_graders: t.array(t.string),
       graders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
@@ -56,7 +57,6 @@ const RosterVPatch = t.intersection(
     GenericObject,
     t.partial({
       students: t.array(t.string),
-      inactive_students: t.array(t.string),
       graders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
