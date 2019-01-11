@@ -139,8 +139,9 @@ function readObjectDetail<T, O, I>(
       const data = await res.json();
       return await decodeToPromise(arg, data);
     }
+    console.log(res);
 
-    return Promise.reject();
+    return Promise.reject(new Error(await res.json()));
   };
 
   return foo;
@@ -176,7 +177,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       return await decodeToPromise(output, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(new Error(await res.json()));
   };
 
   return foo;
