@@ -207,8 +207,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     // the toLoadPanel assignment causes the URL to add default loadedPanel if none is specified
-    const isValid =
-      currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
+    const isValid = currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
     this.setState({ currentCourse, loadedPanel, toLoadPanel: !isValid }, () => {
       if (currentCourse) {
         this.updateNewCourse({ value: currentCourse.id, label: '' });
@@ -417,13 +416,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public async generateSubmissionsByStudent() {
-    const {
-      students,
-      graders,
-      submissions,
-      rosterLoadComplete,
-      submissionsLoadComplete,
-    } = this.state;
+    const { students, graders, submissions, rosterLoadComplete, submissionsLoadComplete } = this.state;
     if (rosterLoadComplete && submissionsLoadComplete) {
       const promise = new Promise((resolve, reject) => {
         const subsByStudent: IStudentSubmissionsDataTable = {};
@@ -580,11 +573,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (
-    newRoster: string[],
-    userType: USER_APP,
-    inactiveStudents: string[] | undefined,
-  ) => {
+  public changeRoster = (newRoster: string[], userType: USER_APP, inactiveStudents: string[] | undefined) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -609,13 +598,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .then((roster: RosterType) => {
         switch (userType) {
           case USER_APP.Student:
-            this.setState(
-              { students: roster.students, inactiveStudents: roster.inactive_students },
-              () => {
-                this.addToast('Student roster successfully updated.', undefined);
-                this.generateSubmissionsByStudent();
-              },
-            );
+            this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
+              this.addToast('Student roster successfully updated.', undefined);
+              this.generateSubmissionsByStudent();
+            });
             break;
           case USER_APP.Grader:
             this.setState({ graders: roster.graders }, () => {
@@ -630,8 +616,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             break;
         }
       })
-      .catch((error) => {
-        this.addErrorToast('Something went wrong', undefined);
+      // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
       });
   };
 
@@ -721,16 +712,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Section.create(payload).then((section: SectionType) => {
       sections.push(section);
       currentCourse.sections.push(section.id);
-      this.setState({ sections, currentCourse }, () =>
-        this.addToast(`New section ${section.name} created`, undefined),
-      );
+      this.setState({ sections, currentCourse }, () => this.addToast(`New section ${section.name} created`, undefined));
     });
   };
 
-  public removeStudentFromSection = (
-    sectionID: number,
-    studentEmail: string,
-  ): Promise<SectionType> => {
+  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -790,10 +776,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public changeStudentSection = (
-    newSectionID: number | undefined,
-    studentEmail: string,
-  ): Promise<SectionType> => {
+  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<SectionType> => {
     const { sectionsByStudent } = this.state;
     const previousSection = sectionsByStudent[studentEmail];
     if (previousSection && newSectionID) {
@@ -896,12 +879,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       // Reminder - need to change linter here for use
       return Promise.all(
         newComments.map((comment) => {
-          return this.createRubricComment(
-            assignmentID,
-            rubricCategory.id,
-            comment.text,
-            comment.pointDelta,
-          );
+          return this.createRubricComment(assignmentID, rubricCategory.id, comment.text, comment.pointDelta);
         }),
       ).then(() => {
         return rubricCategory;
@@ -909,11 +887,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public deleteRubricCategory = (
-    assignmentID: number,
-    categoryID: number,
-    categoryName: string,
-  ) => {
+  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     return RubricCategory.delete(categoryID).then(() => {
@@ -1117,10 +1091,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Course.create(payload).then((course: CourseType) => {
       courses.push(course);
       this.setState({ courses });
-      this.addLongToast(
-        `Course ${course.name} | ${course.period} successfully created.`,
-        undefined,
-      );
+      this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
       this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
       return course;
     });
@@ -1145,13 +1116,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
 
         // hacky way to set default to 0
-        const panelName = this.stringFromPanel(
-          typeof loadedPanel !== 'undefined' ? loadedPanel : 0,
-        );
+        const panelName = this.stringFromPanel(typeof loadedPanel !== 'undefined' ? loadedPanel : 0);
 
-        return (
-          <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />
-        );
+        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
       } else {
         return <Redirect to={'/course-admin'} />;
       }

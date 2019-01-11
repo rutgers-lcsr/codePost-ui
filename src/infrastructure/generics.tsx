@@ -177,7 +177,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       return await decodeToPromise(output, data);
     }
 
-    return Promise.reject(new Error(await res.json()));
+    return Promise.reject(await res.json());
   };
 
   return foo;
