@@ -1,13 +1,5 @@
 import * as React from 'react';
-import {
-  Button,
-  DataTable,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  TextField,
-} from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 import '../../styles/index.scss';
 import { USER_APP } from '../../types/common';
 
@@ -146,14 +138,7 @@ class ManageGraders extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button
-          key="Lock"
-          className="Btn"
-          floating={true}
-          fixed={true}
-          icon={true}
-          onClick={this.props.toggleLock}
-        >
+        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
           {lockIcon}
         </Button>
       </div>
