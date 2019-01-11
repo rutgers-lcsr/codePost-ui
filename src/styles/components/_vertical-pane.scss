@@ -1,6 +1,9 @@
 .vertical-pane {
-  padding: 0;
   margin-bottom: 10px;
+
+  &__tabs {
+    padding: 0;
+  }
 
   &__tab {
     padding: 10px;

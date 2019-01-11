@@ -45,9 +45,8 @@ class CodeViewer extends React.Component<IProps, {}> {
 
   public render() {
     const { assignment, submission, files, comments, rubricComments } = this.props;
-    // content-box
     return (
-      <div className="student__right-panel">
+      <div>
         <div className="code__grade">{`Grade: ${submission!.grade}/${assignment!.points}`}</div>
         <Tabs>
           <TabList>
