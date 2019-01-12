@@ -230,6 +230,7 @@ class EditableComment extends React.Component<IProps, IState> {
       // SaveWarning unused right now. But leaving it here in case we want to include
       // it in a form validation
       // const pointDeltaClassName = saveWarning ? 'point-delta warning' : 'point-delta';
+      const commentText = rubricComment ? rubricCommentText : comment.text ? comment.text : '';
       return (
         <Card
           className={className}
@@ -256,7 +257,7 @@ class EditableComment extends React.Component<IProps, IState> {
             <textarea
               onChange={this.updateComment}
               onKeyPress={this.enterKey}
-              value={comment.text}
+              value={commentText}
               className="comment-textarea"
             />
 
