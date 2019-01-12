@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Tab, Tabs, TabsContainer } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
-// import '../../styles/index.scss';
+
 import {
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,

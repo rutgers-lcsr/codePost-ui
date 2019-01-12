@@ -3,19 +3,17 @@
     width: 100%;
     padding: 10px 40px 10px 10px;
     font-size: 14px;
-    border: 1px solid #ddd;
+    border: 1px solid $theme-grey;
     border-radius: 2px;
     // box-sizing: border-box;
   }
 
   &__category {
     padding: 0px;
-    border: 1px solid #ececee;
-    border: '1px solid #ddd';
+    border: 1px solid $theme-grey;
 
     &__title-row {
-      background-color: #f7faf6;
-      border-bottom: 1px solid #eee;
+      background-color: $light-grey;
       padding-top: 3px;
       cursor: pointer;
       position: relative;
@@ -34,7 +32,7 @@
     &__comment-row {
       display: flex;
       padding-left: 10px;
-      border-top: 1px solid #ececee;
+      border-top: 1px solid $theme-grey;
       cursor: pointer;
 
       &__text {
@@ -49,7 +47,7 @@
       }
 
       &:hover {
-        color: #aaaaaa;
+        color: $brand-color;
       }
     }
   }

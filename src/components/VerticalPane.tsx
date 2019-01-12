@@ -1,8 +1,6 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-// import '../styles/VerticalPane.scss';
-
 import { IOption } from '../types/common';
 
 interface IProps {

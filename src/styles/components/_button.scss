@@ -1,42 +1,41 @@
-.button {
-  &--disabled {
-    background-color: gray !important;
-    cursor: pointer;
+@mixin button($background-color, $color) {
+  background-color: $background-color;
+  color: $color;
+  text-align: center;
+  cursor: pointer;
+
+  @include attention {
+    background-color: shade($background-color, 10);
   }
 
+  &--disabled {
+    color: tint($text-color, 40);
+    background-color: $light-grey !important;
+  }
+}
+
+.button {
   &--start-grading {
+    @include button($brand-color, white);
+
     width: 250px;
     margin: auto;
     margin-top: 40px;
     padding: 7px 16px;
     font-size: 20px;
-    text-align: center;
     font-weight: 600;
-    color: white;
-    background-color: #2ecc71;
     border-radius: 5px;
-
-    &:hover {
-      background-color: #167e43;
-      cursor: pointer;
-    }
   }
 
   $button-get-another-height: 30px;
-
   &--get-another {
+    @include button($brand-color, white);
+
     display: inline-block;
+    padding: $button-get-another-height / 6;
     height: $button-get-another-height;
     font-size: $button-get-another-height / 2;
     border-radius: $button-get-another-height / 6;
-    padding: $button-get-another-height / 6;
-    background-color: #2ecc71;
-    color: white;
-
-    &:hover {
-      background-color: #167e43;
-      cursor: pointer;
-    }
   }
 
   &--release {
@@ -45,21 +44,15 @@
   }
 
   &--finalize {
+    @include button($very-light-grey, $text-color);
     position: absolute;
     width: 80px;
     height: 42.2px;
     right: 20px;
     font-size: 10pt;
     font-weight: bold;
-    text-align: center;
-    background: #f7faf6;
-    border: 1px solid #c7c7c7;
+    border: 1px solid $light-grey;
     line-height: 42.2px;
-    cursor: pointer;
-
-    &:hover {
-      background: #fafcf9;
-    }
   }
 
   &--comment {
@@ -70,9 +63,16 @@
   }
 
   &--rubric-arrow {
+    vertical-align: middle;
+    min-width: 30px;
+    padding: 0px;
     float: right;
     height: 20px;
     width: 20px;
     cursor: pointer;
+
+    &--up {
+      color: $brand-color;
+    }
   }
 }

@@ -1,8 +1,6 @@
 import * as React from 'react';
 import SearchBar from '../SearchBar';
 
-// import '../../styles/Grade.scss';
-
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -87,6 +85,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
   const { rubricCategory, rubricComments, handleRubricCommentClick, searchTerm, visible } = props;
 
   const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
+  const arrowClassName = visible ? 'button--rubric-arrow button--rubric-arrow--up' : 'button--rubric-arrow';
 
   return (
     <div className="grade-rubric__category">
@@ -96,7 +95,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
       >
         <div className="grade-rubric__category__title-row__title">
           {rubricCategory.name}
-          <Button key={rubricCategory.id} className="button--rubric-arrow" flat={true} icon={true}>
+          <Button key={rubricCategory.id} className={arrowClassName} flat={true} icon={true}>
             {buttonIcon}
           </Button>
         </div>

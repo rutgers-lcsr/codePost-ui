@@ -5,7 +5,7 @@ import 'typeface-roboto';
 
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import './styles/index.scss';
+import './styles/main.scss';
 
 ReactDOM.render(
   <BrowserRouter>

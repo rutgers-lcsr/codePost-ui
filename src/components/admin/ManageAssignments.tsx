@@ -10,7 +10,7 @@ import {
   TextField,
 } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
-// import '../../styles/index.scss';
+
 import {
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,

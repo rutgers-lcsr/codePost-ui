@@ -3,12 +3,12 @@
   max-width: 400px;
   min-width: 150px;
   // background-color: #f7f7f7;
-  border: 1px solid #dadada;
+  border: 1px solid $theme-grey;
 
   &__rubric-comment {
     margin: 10px 0px 10px 0px;
     padding: 5px 0px 5px 5px;
-    border-left: 2px solid blue;
+    border-left: 2px solid $brand-color;
   }
 
   &__text {
@@ -33,6 +33,6 @@
   }
 
   &:hover {
-    border: 1px solid black !important;
+    border: 1px solid $dark-grey !important;
   }
 }

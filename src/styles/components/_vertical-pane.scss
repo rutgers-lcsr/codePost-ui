@@ -7,22 +7,22 @@
 
   &__tab {
     padding: 10px;
-    border: 1px solid #ececee;
+    border: 1px solid $theme-grey;
     border-left: none;
     border-right: none;
     list-style-type: none;
 
     &--selected {
       padding: 10px;
-      background-color: #f9f9f9;
-      border-left: 6px solid #2ecc71;
+      background-color: $theme-grey;
+      border-left: 6px solid $brand-color;
       border-right: none;
       transition: border-left 0.3s ease;
       list-style-type: none;
     }
 
     &:hover {
-      background-color: #dedede;
+      background-color: $light-grey;
     }
   }
 }

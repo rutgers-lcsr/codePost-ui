@@ -5,8 +5,8 @@
   &--saving {
     float: right;
     margin-top: 6px;
-    border: 2px solid #f3f3f3; /* Light grey */
-    border-top: 2px solid #3498db; /* Blue */
+    border: 2px solid $light-grey;
+    border-top: 2px solid $brand-color;
     border-radius: 50%;
     width: 20px;
     height: 20px;

@@ -12,8 +12,6 @@ import Home from './Home';
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
-// import './styles/index.scss';
-import './styles/main.scss';
 import { IUser } from './types/common';
 
 interface IState {
@@ -179,7 +177,7 @@ class App extends React.Component<{}, IState> {
       );
     }
     return (
-      <div className="App">
+      <div>
         <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
       </div>
     );

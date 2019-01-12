@@ -4,7 +4,8 @@
 
 /// Regular font family
 /// @type List
-$text-font-stack: 'Open Sans', 'Helvetica Neue Light', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !default;
+// $text-font-stack: 'Open Sans', 'Helvetica Neue Light', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif !default;
+$text-font-stack: 'Roboto', 'Franklin Gothic Medium', 'Tahoma', sans-serif !default;
 
 /// Code (monospace) font family
 /// @type List
@@ -16,7 +17,15 @@ $text-color: rgb(34, 34, 34) !default;
 
 /// Main brand color
 /// @type Color
-$brand-color: rgb(229, 0, 80) !default;
+$brand-color: rgb(46, 205, 112) !default; // #2ecd70
+
+/// Secondary brand color
+/// @type Color
+$brand-color-secondary: rgb(22, 126, 67) !default; // #167E43
+
+/// Very Light grey
+/// @type Color
+$very-light-grey: rgb(247, 250, 246) !default; // #F7FAF6
 
 /// Light grey
 /// @type Color
@@ -29,6 +38,10 @@ $mid-grey: rgb(153, 153, 153) !default;
 /// Dark grey
 /// @type Color
 $dark-grey: rgb(68, 68, 68) !default;
+
+/// Theme grey
+/// @type Color
+$theme-grey: rgb(255, 205, 210) !default; //#ffcdd2
 
 /// Container's maximum width
 /// @type Length

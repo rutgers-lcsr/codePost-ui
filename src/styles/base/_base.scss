@@ -26,11 +26,11 @@ html {
  * Basic styles for links
  */
 a {
-  color: $brand-color;
+  color: $text-color;
   text-decoration: none;
 
   @include attention {
-    color: $text-color;
+    color: $brand-color;
     text-decoration: underline;
   }
 }

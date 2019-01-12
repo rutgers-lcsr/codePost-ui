@@ -1,27 +1,26 @@
-@import 'globals';
-$material-icons-font-path: '~material-icons/iconfont/';
-
-$primary-color: #2ecd70;
-$md-primary-color: #2ecd70;
-$md-secondary-color: #ffcdd2;
-@import '~material-icons/iconfont/material-icons.scss';
-@include react-md-everything;
-@include react-md-theme-everything($primary-color, $md-secondary-color);
+// @import 'globals';
+// $material-icons-font-path: '~material-icons/iconfont/';
+// $primary-color: #2ecd70;
+// $md-primary-color: #2ecd70;
+// $md-secondary-color: #ffcdd2;
+// @import '~material-icons/iconfont/material-icons.scss';
+// @include react-md-everything;
+// @include react-md-theme-everything($primary-color, $md-secondary-color);
 
 ///////////////
 // Theme
 ///////////////
 
-$primary-font: roboto;
+// $primary-font: roboto;
 
-///////////////
-///////////////
+// ///////////////
+// ///////////////
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: $primary-font;
-}
+// body {
+//   margin: 0;
+//   padding: 0;
+//   font-family: $primary-font;
+// }
 
 // $panel-width: 240px;
 // $margin: 50px;
@@ -42,18 +41,18 @@ body {
 //   }
 // }
 
-.App {
-  width: 100%;
-}
+// .App {
+//   width: 100%;
+// }
 
 .uploadErrorText {
   color: red;
   font-style: italic;
 }
 
-.progressCircle {
-  @include react-md-progress-circular($primary-color);
-}
+// .progressCircle {
+//   @include react-md-progress-circular($primary-color);
+// }
 
 // .padding {
 //   height: 50px;
