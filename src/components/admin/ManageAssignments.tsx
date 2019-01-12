@@ -10,7 +10,7 @@ import {
   TextField,
 } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
-import '../../styles/index.scss';
+// import '../../styles/index.scss';
 import {
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
@@ -502,7 +502,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               parentUpdate={this.changeActiveAssignment}
             />
           </div>
-          <div className="padding" />
+          <br />
           {categoryTables}
           <Button
             className="Btn"

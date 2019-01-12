@@ -244,7 +244,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       grader: '',
     };
 
-    return Submission.update(payload).then((json) => {
+    return Submission.update(payload).then((json: any) => {
       this.setState({
         currentSubmissions: this.state.currentSubmissions.filter((sub) => {
           return sub.id !== submission.id;

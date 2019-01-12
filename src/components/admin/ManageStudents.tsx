@@ -10,7 +10,7 @@ import {
   TableRow,
   TextField,
 } from 'react-md';
-import '../../styles/index.scss';
+// import '../../styles/index.scss';
 import { ISectionNoStudents, USER_APP } from '../../types/common';
 
 import { CourseType } from '../../infrastructure/course';
