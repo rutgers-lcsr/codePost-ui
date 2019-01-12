@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import 'react-tabs/style/react-tabs.css';
-
 import { Card, CardText, Chip } from 'react-md';
 
 import CodeBoxUtils from '../../CodeBoxUtils';

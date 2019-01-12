@@ -4,8 +4,6 @@ import { Redirect } from 'react-router-dom';
 import CodeViewer from './components/student/CodeViewer';
 import VerticalPane from './components/VerticalPane';
 
-// import './styles/Student.scss';
-
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';

@@ -4,8 +4,6 @@ import CodeGrader from './components/grade/CodeGrader';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
-// import './styles/Grade.scss';
-
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
