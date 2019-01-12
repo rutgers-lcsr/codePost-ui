@@ -1,24 +1,3 @@
-.grade__top-container {
-  display: flex;
-  padding: 20px;
-  border-bottom: 1px solid black;
-}
-
-.grade__main-container {
-  width: 100%;
-  padding: 10px;
-  display: flex;
-
-  &__left-panel {
-    flex: 0 1 200px;
-  }
-
-  &__right-panel {
-    flex: 1 1 0;
-    padding-left: 10px;
-  }
-}
-
 .grade {
   &__top-container {
     display: flex;
@@ -35,7 +14,6 @@
 
     &__sub-finalize {
       flex: 0 1 150px;
-      position: relative;
     }
   }
 
@@ -45,7 +23,7 @@
     display: flex;
 
     &__left-panel {
-      flex: 0 1 200px;
+      flex: 0 1 250px;
     }
 
     &__right-panel {

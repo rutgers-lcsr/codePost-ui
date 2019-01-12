@@ -30,7 +30,7 @@ interface IState {
 class EditableComment extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     saveWarning: false,
-    savingClass: 'comment-idle',
+    savingClass: 'saving-spinner--idle',
     isUnsaved: this.props.comment.id < 0,
   };
 
@@ -74,7 +74,7 @@ class EditableComment extends React.Component<IProps, IState> {
       return Promise.resolve(false);
     }
 
-    this.setState({ savingClass: 'comment-saving' });
+    this.setState({ savingClass: 'saving-spinner--saving' });
 
     // If this is a new comment being edited, then it doesn't have an id yet
     // The new comments get initalized in CodeGrader:onMouseUp (with negative)
@@ -97,10 +97,10 @@ class EditableComment extends React.Component<IProps, IState> {
         .then((json) => {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-saved' });
+            this.setState({ savingClass: 'saving-spinner--success' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
+            this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
             // It's important that we update the parent state
             // after this timeout, otherwise we face memory-leaks
             // setting the state of an unmounted component
@@ -130,10 +130,10 @@ class EditableComment extends React.Component<IProps, IState> {
         .then((json) => {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-saved' });
+            this.setState({ savingClass: 'saving-spinner--success' });
           }, 1000);
           setTimeout(() => {
-            this.setState({ savingClass: 'comment-idle', isUnsaved: false });
+            this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
             updateComment(comment.id, json, file);
             saveGrade(); // async issue with setState
             return true;
@@ -198,7 +198,7 @@ class EditableComment extends React.Component<IProps, IState> {
 
     let className = 'comment';
     if (this.state.isUnsaved) {
-      className += ' comment-unsaved';
+      className += ' comment--unsaved';
     }
 
     // Ugly for type checking
@@ -241,7 +241,7 @@ class EditableComment extends React.Component<IProps, IState> {
             <div className={savingClass} />
             <TextField
               id="pointdelta-field"
-              className="comment-pointdelta-field"
+              className="comment__pointdelta-field"
               defaultValue={comment.pointDelta ? comment.pointDelta : 0}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
@@ -257,11 +257,11 @@ class EditableComment extends React.Component<IProps, IState> {
               onChange={this.updateComment}
               onKeyPress={this.enterKey}
               value={comment.text}
-              className="comment-textarea"
+              className="comment__textarea"
             />
 
             <div>
-              <Button flat className="comment-button" onClick={this.toggleActive}>
+              <Button flat className="button--comment" onClick={this.toggleActive}>
                 Save
               </Button>
             </div>
@@ -284,10 +284,10 @@ class EditableComment extends React.Component<IProps, IState> {
           {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
           <div className="comment__text">{comment.text}</div>
           <div>
-            <Button flat className="comment-button" onClick={this.toggleActive}>
+            <Button flat className="button--comment" onClick={this.toggleActive}>
               Edit
             </Button>
-            <Button flat className="comment-button" onClick={deleteComment.bind(this, comment, file)}>
+            <Button flat className="button--comment" onClick={deleteComment.bind(this, comment, file)}>
               Delete
             </Button>
           </div>

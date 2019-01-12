@@ -25,10 +25,11 @@ $md-secondary-color: #ffcdd2;
 @import 'layout/header';
 
 // 5. Components
-@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment', 'components/button';
+@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment', 'components/button',
+  'components/saving-spinner', 'components/grade-rubric';
 
 // 6. Page-specific styles
-@import 'pages/student';
+@import 'pages/student', 'pages/grader', 'pages/grade';
 
 // 7. Themes
 // @import 'themes/default';

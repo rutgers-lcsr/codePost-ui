@@ -4,7 +4,7 @@
     cursor: pointer;
   }
 
-  &__start-grading {
+  &--start-grading {
     width: 250px;
     margin: auto;
     margin-top: 40px;
@@ -24,7 +24,7 @@
 
   $button-get-another-height: 30px;
 
-  &__get-another {
+  &--get-another {
     display: inline-block;
     height: $button-get-another-height;
     font-size: $button-get-another-height / 2;
@@ -39,16 +39,16 @@
     }
   }
 
-  &__release {
-    color: blue;
+  &--release {
+    color: red;
     cursor: pointer;
   }
 
-  &__finalize {
+  &--finalize {
     position: absolute;
     width: 80px;
     height: 42.2px;
-    right: 0px;
+    right: 20px;
     font-size: 10pt;
     font-weight: bold;
     text-align: center;
@@ -60,5 +60,19 @@
     &:hover {
       background: #fafcf9;
     }
+  }
+
+  &--comment {
+    display: inline-block;
+    min-width: 30px;
+    padding: 4px 8px;
+    margin: 4px 4px -10px 4px;
+  }
+
+  &--rubric-arrow {
+    float: right;
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
   }
 }

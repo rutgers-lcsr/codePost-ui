@@ -89,17 +89,25 @@ const RubricCategory = (props: IRubricCategoryProps) => {
   const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
 
   return (
-    <div className="rubric-category">
-      <div className="container-category" onClick={props.handleDropDown.bind(props, rubricCategory, visible)}>
-        <div className="category-title">
+    <div className="grade-rubric__category">
+      <div
+        className="grade-rubric__category__title-row"
+        onClick={props.handleDropDown.bind(props, rubricCategory, visible)}
+      >
+        <div className="grade-rubric__category__title-row__title">
           {rubricCategory.name}
-          <Button key={rubricCategory.id} className="button-arrow" flat={true} icon={true}>
+          <Button key={rubricCategory.id} className="button--rubric-arrow" flat={true} icon={true}>
             {buttonIcon}
           </Button>
         </div>
       </div>
       {visible && (
-        <Table className={'table-rubric-category'} filterable={[' ']} filterBy={searchTerm} hideFilterInput={true}>
+        <Table
+          className={'grade-rubric__category__table'}
+          filterable={[' ']}
+          filterBy={searchTerm}
+          hideFilterInput={true}
+        >
           {rubricComments.map((rubricComment: RubricCommentType, index: number) => {
             return (
               <Tr key={index}>
@@ -128,9 +136,9 @@ const RubricComment = (props: IRubricCommentProps) => {
   };
 
   return (
-    <div className="rubric-item" onClick={onClick}>
-      <div className="rubric-item-text">{rubricComment.text}</div>
-      <div className="rubric-item-point-delta">{rubricComment.pointDelta}</div>
+    <div className="grade-rubric__category__comment-row" onClick={onClick}>
+      <div className="grade-rubric__category__comment-row__text">{rubricComment.text}</div>
+      <div className="grade-rubric__category__comment-row__point-delta">{rubricComment.pointDelta}</div>
     </div>
   );
 };
