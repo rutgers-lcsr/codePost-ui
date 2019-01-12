@@ -26,7 +26,12 @@ interface IProps {
     pointDelta: number,
   ) => Promise<RubricCommentType>;
   deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+    deleteLinkedComments: boolean,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -125,7 +130,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       const uploadErrors = this.isRubric(rubric);
       if (uploadErrors.length === 0) {
         this.setState({ updatingRubric: true, jsonUpload: rubric, updates: undefined });
-        this.updateRubric(rubric, false);
+        this.updateRubric(rubric, false, false);
       } else {
         this.setState({ uploadErrors, updates: undefined });
       }
@@ -185,7 +190,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           if (comm.category !== cat.id) {
             uploadErrors.push(`Category field of ${comm.id} must be equal to the ID of it's parent category`);
           }
-          if (Object.keys(comm).length !== 4) {
+          if (Object.keys(comm).length < 4) {
             uploadErrors.push(`Comment of id ${comm.id} has some incorrect keys.
               Please check the spellings of id, text, pointDelta, and category fields`);
           }
@@ -199,7 +204,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
 
   // If makeDBUpdate === false, check to see what changes would be makeDBUpdate
   // If makeDBUpdate === true, actually make the api calls to make the changes
-  public updateRubric = (newRubric: IDownloadCategory[], makeDBUpdate: boolean) => {
+  public updateRubric = (newRubric: IDownloadCategory[], makeDBUpdate: boolean, deleteLinkedComments: boolean) => {
     const { activeRubricComments, activeRubricCategories, activeAssignment } = this.props;
     const updates: { [index: string]: string[] } = {
       newCategories: [],
@@ -274,7 +279,12 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               .indexOf(oldComment.id);
             if (checkDelete === -1) {
               if (makeDBUpdate) {
-                const result = this.props.deleteRubricComment(activeAssignment.id, cat.id, oldComment.id);
+                const result = this.props.deleteRubricComment(
+                  activeAssignment.id,
+                  cat.id,
+                  oldComment.id,
+                  deleteLinkedComments,
+                );
                 promises.push(result);
               }
               updates.deletedComments.push(oldComment.text);
@@ -320,7 +330,27 @@ class RubricFileDialog extends React.Component<IProps, {}> {
   // Once the user has seen and proceeded with the changes, trigger an update with
   // makeDBUpdate = true
   public triggerUpdate = () => {
-    this.setState({ updatingRubric: true, updates: undefined }, () => this.updateRubric(this.state.jsonUpload, true));
+    this.setState({ updatingRubric: true, updates: undefined }, () =>
+      this.updateRubric(this.state.jsonUpload, true, true),
+    );
+  };
+
+  public getUpdateMessages = (data: string[], message: string) => {
+    if (data.length > 0) {
+      return (
+        <div>
+          <b>{message}</b>
+          {data.map((elem, index) => {
+            return (
+              <div className="uploadChangesText" key={index}>
+                {elem}
+              </div>
+            );
+          })}
+          <div className="error-padding" />
+        </div>
+      );
+    } else return;
   };
 
   public dummyUpload = (file: File) => {
@@ -359,107 +389,25 @@ class RubricFileDialog extends React.Component<IProps, {}> {
     let shouldUpdate = false;
 
     if (updates) {
-      if (updates.newCategories.length > 0) {
-        shouldUpdate = true;
-        newCategories = (
-          <div>
-            <b>The following categories will be added:</b>
-            {updates.newCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.newComments.length > 0) {
-        shouldUpdate = true;
-        newComments = (
-          <div>
-            <b>The following comments will be added:</b>
-            {updates.newComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.updatedCategories.length > 0) {
-        shouldUpdate = true;
-        updatedCategories = (
-          <div>
-            <b>The following categories will be updated:</b>
-            {updates.updatedCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.updatedComments.length > 0) {
-        shouldUpdate = true;
-        updatedComments = (
-          <div>
-            <b>The following comments will be updated: </b>
-            {updates.updatedComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.deletedCategories.length > 0) {
-        shouldUpdate = true;
-        deletedCategories = (
-          <div>
-            <b>The following categories will be deleted:</b>
-            {updates.deletedCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.deletedComments.length > 0) {
-        deletedComments = (
-          <div>
-            <b>The following comments will be deleted:</b>
-            {updates.deletedComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
+      newCategories = this.getUpdateMessages(updates.newCategories, 'The following categories will be added:');
+      newComments = this.getUpdateMessages(updates.newComments, 'The following comments will be added:');
+      updatedCategories = this.getUpdateMessages(
+        updates.updatedCategories,
+        'The following categories will be updated:',
+      );
+      updatedComments = this.getUpdateMessages(updates.updatedComments, 'The following comments will be updated:');
+      deletedCategories = this.getUpdateMessages(
+        updates.deletedCategories,
+        'The following categories will be deleted:',
+      );
+      deletedComments = this.getUpdateMessages(updates.deletedComments, 'The following comments will be deleted:');
+      shouldUpdate =
+        typeof newCategories !== 'undefined' ||
+        typeof newComments !== 'undefined' ||
+        typeof updatedCategories !== 'undefined' ||
+        typeof updatedComments !== 'undefined' ||
+        typeof deletedCategories !== 'undefined' ||
+        typeof deletedComments !== 'undefined';
       if (shouldUpdate) {
         updateMessage = (
           <div>

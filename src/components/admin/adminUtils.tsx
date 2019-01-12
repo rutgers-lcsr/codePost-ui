@@ -20,7 +20,7 @@ interface IPropsRubricComment {
   defaultText: string;
   defaultDelta: number;
   isDisabled: boolean;
-  deleteComment: (categoryID: number, commentIndex: number) => void;
+  deleteComment: (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
 }
 interface IPropsRubricCategory {
@@ -29,7 +29,7 @@ interface IPropsRubricCategory {
   // CommentFunctions
   changeCommentText: (categoryID: number, commentIndex: number, newText: string) => void;
   changeCommentDelta: (categoryID: number, commentIndex: number, newDelta: number) => void;
-  deleteComment: (categoryID: number, commentIndex: number) => void;
+  deleteComment: (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
 
   // Category props
@@ -73,7 +73,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
   };
 
   const deleteThisComment = () => {
-    deleteComment(categoryID, commentIndex);
+    deleteComment(categoryID, commentIndex, true);
   };
 
   const updateThisComment = () => {

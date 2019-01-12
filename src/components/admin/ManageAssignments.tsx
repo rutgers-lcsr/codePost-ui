@@ -50,7 +50,12 @@ interface IProps {
     pointDelta: number,
   ) => Promise<RubricCommentType>;
   deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+    deleteLinkedComments: boolean,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
@@ -252,6 +257,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         text: '',
         pointDelta: 0,
         category: categoryID,
+        comments: [],
       };
       if (activeRubricComments[categoryID]) {
         activeRubricComments[categoryID].push(newComment);
@@ -278,12 +284,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricComments });
   };
 
-  public deleteComment = (categoryID: number, commentIndex: number) => {
+  public deleteComment = (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => {
     const { activeRubricComments, activeRubricCategories, activeAssignment } = this.state;
 
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
       const commentID = activeRubricComments[categoryID][commentIndex].id;
-      this.props.deleteRubricComment(activeAssignment.id, categoryID, commentID);
+      this.props.deleteRubricComment(activeAssignment.id, categoryID, commentID, deleteLinkedComments);
       const newRubricComments = activeRubricComments;
       newRubricComments[categoryID] = activeRubricComments[categoryID].filter((_, index) => {
         return index !== commentIndex;
