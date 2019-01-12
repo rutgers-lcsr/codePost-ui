@@ -43,4 +43,22 @@
     color: blue;
     cursor: pointer;
   }
+
+  &__finalize {
+    position: absolute;
+    width: 80px;
+    height: 42.2px;
+    right: 0px;
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: center;
+    background: #f7faf6;
+    border: 1px solid #c7c7c7;
+    line-height: 42.2px;
+    cursor: pointer;
+
+    &:hover {
+      background: #fafcf9;
+    }
+  }
 }

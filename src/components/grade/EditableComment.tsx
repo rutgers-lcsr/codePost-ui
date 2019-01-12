@@ -218,7 +218,7 @@ class EditableComment extends React.Component<IProps, IState> {
           <CardText>
             <div className={savingClass} />
             {pointDeltaElement}
-            <div className="comment-rubric">{rubricCommentText}</div>
+            <div className="comment__rubric-comment">{rubricCommentText}</div>
             {comment.text}
           </CardText>
         </Card>
@@ -251,7 +251,7 @@ class EditableComment extends React.Component<IProps, IState> {
               fullWidth={true}
               onChange={this.updateDeduction}
             />
-            {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
+            {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
 
             <textarea
               onChange={this.updateComment}
@@ -281,8 +281,8 @@ class EditableComment extends React.Component<IProps, IState> {
         <CardText>
           <div className={savingClass} />
           {pointDeltaElement}
-          {rubricComment ? <div className="comment-rubric">{rubricCommentText}</div> : null}
-          <div className="comment-text">{comment.text}</div>
+          {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
+          <div className="comment__text">{comment.text}</div>
           <div>
             <Button flat className="comment-button" onClick={this.toggleActive}>
               Edit

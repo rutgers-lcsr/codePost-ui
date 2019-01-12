@@ -1,7 +1,7 @@
 import * as React from 'react';
 import SearchBar from '../SearchBar';
 
-import '../../styles/Grade.scss';
+// import '../../styles/Grade.scss';
 
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
@@ -53,7 +53,7 @@ class Rubric extends React.Component<IProps, IState> {
     const { searchTerm, visibles } = this.state;
 
     return (
-      <div className="container-rubric">
+      <div className="grade__main-container__left-panel">
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
           const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
