@@ -8,6 +8,20 @@ const RubricCommentV = t.intersection(
       text: t.string,
       pointDelta: t.number,
       category: t.number,
+      comments: t.array(t.number),
+    }),
+    t.partial({}),
+  ],
+  'RubricComment',
+);
+
+const RubricCommentVPost = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      text: t.string,
+      pointDelta: t.number,
+      category: t.number,
     }),
     t.partial({}),
   ],
@@ -29,7 +43,7 @@ const RubricCommentVPatch = t.intersection(
 type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
 
 class RubricComment {
-  public static create = createObject(RubricCommentV, 'rubricComments');
+  public static create = createObject(RubricCommentV, RubricCommentVPost, 'rubricComments');
   public static read = readObject(RubricCommentV, 'rubricComments');
   public static update = updateObject(RubricCommentV, RubricCommentVPatch, 'rubricComments');
   public static delete = deleteObject(RubricCommentV, 'rubricComments');

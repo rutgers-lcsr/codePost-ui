@@ -32,7 +32,7 @@ const RubricCategoryVPatch = t.intersection(
 type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
 
 class RubricCategory {
-  public static create = createObject(RubricCategoryV, 'rubricCategories');
+  public static create = createObject(RubricCategoryV, RubricCategoryV, 'rubricCategories');
   public static read = readObject(RubricCategoryV, 'rubricCategories');
   public static update = updateObject(RubricCategoryV, RubricCategoryVPatch, 'rubricCategories');
   public static delete = deleteObject(RubricCategoryV, 'rubricCategories');

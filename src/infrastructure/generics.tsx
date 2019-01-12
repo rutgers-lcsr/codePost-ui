@@ -22,8 +22,12 @@ const GenericObject = t.type({
 
 type GenericObjectType = t.TypeOf<typeof GenericObject>;
 
-function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) => Promise<T>) {
-  const foo = async (object: T) => {
+function createObject<T, Q, O, I>(
+  output: t.Type<T, O, I>,
+  input: t.Type<Q, O, I>,
+  url: string,
+): ((object: Q) => Promise<T>) {
+  const foo = async (object: Q) => {
     const res = await fetch(`/api/${url}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
@@ -35,7 +39,7 @@ function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) 
 
     if ((await res.status) === 201) {
       const data = await res.json();
-      return await decodeToPromise(arg, data);
+      return await decodeToPromise(output, data);
     }
 
     return Promise.reject();

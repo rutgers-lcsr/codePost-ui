@@ -67,7 +67,7 @@ const RosterVPatch = t.intersection(
 type RosterType = t.TypeOf<typeof RosterV>;
 
 class Course {
-  public static create = createObject(CourseV, 'courses');
+  public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
   public static update = updateObject(CourseV, CourseVPatch, 'courses');
   public static delete = deleteObject(CourseV, 'courses');
