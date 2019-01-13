@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
-import GradedTab from './components/grader/GradedTab';
+import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import VerticalPane from './components/VerticalPane';
 
-import './styles/Grader.scss';
+// import './styles/Grader.scss';
 
 import { ICourseToAssignmentMap, IOption } from './types/common';
 
@@ -244,7 +244,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       grader: '',
     };
 
-    return Submission.update(payload).then((json) => {
+    return Submission.update(payload).then((json: any) => {
       this.setState({
         currentSubmissions: this.state.currentSubmissions.filter((sub) => {
           return sub.id !== submission.id;
@@ -285,8 +285,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     return (
-      <div>
-        <div className="container-main">
+      <div className="grader">
+        <div className="grader__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -295,7 +295,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
           />
-          <GradedTab
+        </div>
+        <div className="grader__right-panel">
+          <GraderAssignmentPanel
             claimSubmission={this.claimSubmission}
             releaseSubmission={this.releaseSubmission}
             assignment={currentAssignment}

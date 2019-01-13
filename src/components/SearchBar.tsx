@@ -33,14 +33,14 @@ class SearchBar extends React.Component<IProps, IState> {
     const { value } = this.state;
     if (inactive) {
       const message = inactiveMessage ? inactiveMessage : 'Loading...';
-      return <div className="input-search-bar">{message}</div>;
+      return <div className="grade-rubric__search-bar">{message}</div>;
     }
     {
       /* removed from <input>             ref="input"*/
     }
     return (
       <input
-        className="input-search-bar"
+        className="grade-rubric__search-bar"
         type="text"
         maxLength={100}
         autoCapitalize="none"

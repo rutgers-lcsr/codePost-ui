@@ -4,8 +4,6 @@ import { Redirect } from 'react-router-dom';
 import CodeViewer from './components/student/CodeViewer';
 import VerticalPane from './components/VerticalPane';
 
-import './styles/Student.scss';
-
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
@@ -317,8 +315,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     return (
-      <div>
-        <div className="container-main">
+      <div className="student">
+        <div className="student__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -327,6 +325,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
           />
+        </div>
+        <div className="student__right-panel">
           <ContentArea
             assignment={currentAssignment}
             submission={currentSubmission}
@@ -363,9 +363,9 @@ const ContentArea = (props: IContentAreaProps) => {
     );
   }
   if (assignment) {
-    return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
+    return <div>Your {assignment.name} has not yet been graded.</div>;
   }
-  return <div className="container-code-viewer">Select an assignment on the left!</div>;
+  return <div>Select an assignment on the left!</div>;
 };
 
 export default Student;

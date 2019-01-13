@@ -4,8 +4,6 @@ import CodeGrader from './components/grade/CodeGrader';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
-import './styles/Grade.scss';
-
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
@@ -254,7 +252,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       grade,
     };
 
-    return Submission.update(payload).then((json) => {
+    return Submission.update(payload).then((json: any) => {
       this.setState({
         submission: json,
       });
@@ -295,7 +293,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       isFinalized: !submission.isFinalized,
     };
 
-    return Submission.update(payload).then((json) => {
+    return Submission.update(payload).then((json: any) => {
       this.setState({
         submission: json,
       });
@@ -332,7 +330,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     return (
       <div>
         <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
-        <div className="container-main">
+        <div className="grade__main-container">
           <Rubric
             rubricCategories={rubricCategories}
             rubricComments={rubricComments}

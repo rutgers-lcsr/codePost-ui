@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
 
 import EditableComment from './EditableComment';
 
@@ -79,12 +78,12 @@ class CodeGrader extends React.Component<IProps, IState> {
     const pointDeltaString = pointDelta > 0 ? `(-${pointDelta})` : '';
 
     const numComments = comments.length;
-    const commentFlag = numComments > 0 ? <div className="tab-title-num-comments">{numComments}</div> : '';
+    const commentFlag = numComments > 0 ? <div className="tab__comment-count">{numComments}</div> : '';
 
     return (
-      <div className="tab-title">
+      <div className="tab__title">
         {commentFlag}
-        <div className="tab-title">{`${file.name} ${pointDeltaString}`}</div>
+        <div className="tab__title">{`${file.name} ${pointDeltaString}`}</div>
       </div>
     );
   };
@@ -108,7 +107,7 @@ class CodeGrader extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <div className="container-code-grader">
+      <div className="grade__main-container__right-panel">
         <Tabs>
           <TabList>
             {files.map((file: FileType, i: number) => {
@@ -123,20 +122,15 @@ class CodeGrader extends React.Component<IProps, IState> {
           {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
-                <div className="panel-box">
+                <div>
                   <CodeBox
                     file={file}
                     readOnly={readOnly}
+                    comments={comments[file.id]}
+                    rubricComments={rubricComments}
                     addComment={this.addComment}
                     commentCounter={commentCounter}
                     updateCommentCounter={this.updateCommentCounter}
-                    comments={comments[file.id]}
-                  />
-                  <CommentList
-                    file={file}
-                    comments={comments[file.id]}
-                    rubricComments={rubricComments}
-                    readOnly={readOnly}
                     activeCommentId={activeCommentId}
                     changeActive={this.changeActive}
                     deleteComment={deleteComment}
@@ -156,15 +150,35 @@ class CodeGrader extends React.Component<IProps, IState> {
 interface ICodeBoxProps {
   file: FileType;
   comments: CommentType[];
+  rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
   addComment: (comment: any, file: FileType) => void;
   commentCounter: number;
   updateCommentCounter: () => void;
+
+  activeCommentId?: number;
+  changeActive: (id: number | number) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  saveGrade: () => any;
 }
 
 const CodeBox = (props: ICodeBoxProps) => {
-  const { file, readOnly, commentCounter, updateCommentCounter, addComment, comments } = props;
+  const {
+    file,
+    readOnly,
+    commentCounter,
+    updateCommentCounter,
+    addComment,
+    comments,
+    changeActive,
+    rubricComments,
+    activeCommentId,
+    deleteComment,
+    updateComment,
+    saveGrade,
+  } = props;
 
   const onMouseUp = (event: any) => {
     const selection = window.getSelection();
@@ -249,9 +263,20 @@ const CodeBox = (props: ICodeBoxProps) => {
   });
 
   return (
-    <div className="code-box">
-      <div className="line-numbers">{lineNumbers}</div>
-      <div className="highlighted-area">{linesOfCode}</div>
+    <div className="code">
+      <div className="code__line-numbers">{lineNumbers}</div>
+      <div className="code__highlighted-area">{linesOfCode}</div>
+      <CommentList
+        file={file}
+        readOnly={readOnly}
+        comments={comments}
+        rubricComments={rubricComments}
+        activeCommentId={activeCommentId}
+        changeActive={changeActive}
+        deleteComment={deleteComment}
+        updateComment={updateComment}
+        saveGrade={saveGrade}
+      />
     </div>
   );
 };
@@ -344,7 +369,7 @@ const CommentList = (props: ICommentListProps) => {
     );
   });
 
-  return <div className="comment-box">{commentNodes}</div>;
+  return <div className="code__comments">{commentNodes}</div>;
 };
 
 export default CodeGrader;

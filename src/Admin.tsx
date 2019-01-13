@@ -1118,120 +1118,108 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (currentCourse && loadedPanel === 0) {
       courseManagementPanel = (
-        <div className="content-container">
-          <CourseData
-            currentCourseID={currentCourse.id}
-            assignments={this.state.assignments}
-            assignmentsLoadComplete={this.state.assignmentsLoadComplete}
-            students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
-            graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
-            submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-            submissions={this.state.submissions}
-            submissionsLoadComplete={this.state.submissionsLoadComplete}
-            submissionsByStudent={this.state.submissionsByStudent}
-            submissionsByGrader={this.state.submissionsByGrader}
-            addToast={this.addToast}
-            initialTab={this.state.initialTab}
-          />
-        </div>
+        <CourseData
+          currentCourseID={currentCourse.id}
+          assignments={this.state.assignments}
+          assignmentsLoadComplete={this.state.assignmentsLoadComplete}
+          students={this.state.students}
+          studentsLoadComplete={this.state.studentsLoadComplete}
+          graders={this.state.graders}
+          gradersLoadComplete={this.state.gradersLoadComplete}
+          submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+          submissions={this.state.submissions}
+          submissionsLoadComplete={this.state.submissionsLoadComplete}
+          submissionsByStudent={this.state.submissionsByStudent}
+          submissionsByGrader={this.state.submissionsByGrader}
+          addToast={this.addToast}
+          initialTab={this.state.initialTab}
+        />
       );
     } else if (currentCourse && loadedPanel === 1) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageAssignments
-            key={currentCourse.id}
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            submissions={this.state.submissions}
-            submissionsLoadComplete={this.state.submissionsLoadComplete}
-            lockManageAssignment={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            addErrorToast={this.addErrorToast}
-            assignments={this.state.assignments}
-            assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
-            createRubricCategory={this.createRubricCategory}
-            deleteRubricCategory={this.deleteRubricCategory}
-            createRubricComment={this.createRubricComment}
-            deleteRubricComment={this.deleteRubricComment}
-            updateRubricComment={this.updateRubricComment}
-            updateRubricCategory={this.updateRubricCategory}
-            updateAssignment={this.updateAssignment}
-            createAssignment={this.createAssignment}
-          />
-        </div>
+        <ManageAssignments
+          key={currentCourse.id}
+          rubricCategories={this.state.rubricCategories}
+          rubricComments={this.state.rubricComments}
+          submissions={this.state.submissions}
+          submissionsLoadComplete={this.state.submissionsLoadComplete}
+          lockManageAssignment={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          addErrorToast={this.addErrorToast}
+          assignments={this.state.assignments}
+          assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
+          createRubricCategory={this.createRubricCategory}
+          deleteRubricCategory={this.deleteRubricCategory}
+          createRubricComment={this.createRubricComment}
+          deleteRubricComment={this.deleteRubricComment}
+          updateRubricComment={this.updateRubricComment}
+          updateRubricCategory={this.updateRubricCategory}
+          updateAssignment={this.updateAssignment}
+          createAssignment={this.createAssignment}
+        />
       );
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageStudents
-            key={currentCourse.id}
-            sections={this.state.sections}
-            students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
-            lockedStudentChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
-            sectionsByStudent={this.state.sectionsByStudent}
-            changeStudentSection={this.changeStudentSection}
-          />
-        </div>
+        <ManageStudents
+          key={currentCourse.id}
+          sections={this.state.sections}
+          students={this.state.students}
+          studentsLoadComplete={this.state.studentsLoadComplete}
+          lockedStudentChange={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          enrollUser={this.enrollUser}
+          unEnrollUsers={this.unEnrollUsers}
+          sectionsByStudent={this.state.sectionsByStudent}
+          changeStudentSection={this.changeStudentSection}
+        />
       );
     } else if (currentCourse && loadedPanel === 3) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageGraders
-            key={currentCourse.id}
-            graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
-            lockedGraderChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
-          />
-        </div>
+        <ManageGraders
+          key={currentCourse.id}
+          graders={this.state.graders}
+          gradersLoadComplete={this.state.gradersLoadComplete}
+          lockedGraderChange={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          enrollUser={this.enrollUser}
+          unEnrollUsers={this.unEnrollUsers}
+        />
       );
     } else if (currentCourse && loadedPanel === 4) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageSections
-            key={currentCourse.id}
-            sections={this.state.sections}
-            sectionsLoadComplete={this.state.sectionsLoadComplete}
-            lockedSectionChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            createSection={this.createSection}
-            graders={this.state.graders}
-            addLeader={this.addLeaderToSection}
-            removeLeader={this.removeLeaderFromSection}
-          />
-        </div>
+        <ManageSections
+          key={currentCourse.id}
+          sections={this.state.sections}
+          sectionsLoadComplete={this.state.sectionsLoadComplete}
+          lockedSectionChange={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          createSection={this.createSection}
+          graders={this.state.graders}
+          addLeader={this.addLeaderToSection}
+          removeLeader={this.removeLeaderFromSection}
+        />
       );
     } else if (currentCourse && loadedPanel === 5) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageAdmins
-            key={currentCourse.id}
-            admins={this.state.admins}
-            adminsLoadComplete={this.state.adminsLoadComplete}
-            lockedAdminChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
-          />
-        </div>
+        <ManageAdmins
+          key={currentCourse.id}
+          admins={this.state.admins}
+          adminsLoadComplete={this.state.adminsLoadComplete}
+          lockedAdminChange={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          enrollUser={this.enrollUser}
+          unEnrollUsers={this.unEnrollUsers}
+        />
       );
     } else if (!currentCourse) {
       if (courses.length > 0) {
@@ -1242,8 +1230,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     return (
-      <div className="AdminApp">
-        <div className="panel">
+      <div className="admin">
+        <div className="admin__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter()}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -1288,7 +1276,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             createCourse={this.createCourse}
           />
         </div>
-        <div className="content">{courseManagementPanel}</div>
+        <div className="admin__right-panel">{courseManagementPanel}</div>
       </div>
     );
   }

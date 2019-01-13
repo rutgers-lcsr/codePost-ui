@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
-import '../../styles/index.scss';
+
 import { IGraderSubmissionsDataTable } from '../../types/common';
 
 import { AssignmentType } from '../../infrastructure/assignment';
