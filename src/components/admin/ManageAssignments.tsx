@@ -16,7 +16,7 @@ import {
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
 } from '../../types/common';
-import { RubricCategoryTable } from './adminUtils';
+import { DeleteLinkedCommentsDialog, RubricCategoryTable } from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
 import RubricFileDialog from './RubricFileDialog';
 
@@ -87,6 +87,8 @@ interface IState {
   activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   newCategoryCounter: number;
+  deleteCommentDialogID: { categoryID: number; commentIndex: number } | undefined;
+  deleteCategoryDialogID: { categoryID: number; categoryName: string } | undefined;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -95,6 +97,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
     activeRubricCategories: undefined,
     activeRubricComments: undefined,
     newCategoryCounter: -1,
+    deleteCommentDialogID: undefined,
+    deleteCategoryDialogID: undefined,
   };
 
   public assignmentNameField: any;
@@ -155,7 +159,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
           return cat.id !== categoryID;
         });
         delete activeRubricComments[categoryID];
-        this.setState({ activeRubricCategories: newRubricCategories, activeRubricComments });
+        this.setState({
+          activeRubricCategories: newRubricCategories,
+          activeRubricComments,
+          deleteCategoryDialogID: undefined,
+        });
       });
     }
   };
@@ -294,23 +302,25 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
       const commentID = activeRubricComments[categoryID][commentIndex].id;
-      this.props.deleteRubricComment(activeAssignment.id, categoryID, commentID, deleteLinkedComments);
-      const newRubricComments = activeRubricComments;
-      newRubricComments[categoryID] = activeRubricComments[categoryID].filter((_, index) => {
-        return index !== commentIndex;
-      });
-      const newRubricCategories = activeRubricCategories.map((cat) => {
-        if (cat.id === categoryID) {
-          const newComments = cat.rubricComments.filter((i) => {
-            return i !== commentID;
-          });
-          cat.rubricComments = newComments;
-        }
-        return cat;
-      });
-      this.setState({
-        activeRubricComments: newRubricComments,
-        activeRubricCategories: newRubricCategories,
+      this.props.deleteRubricComment(activeAssignment.id, categoryID, commentID, deleteLinkedComments).then(() => {
+        const newRubricComments = activeRubricComments;
+        newRubricComments[categoryID] = activeRubricComments[categoryID].filter((_, index) => {
+          return index !== commentIndex;
+        });
+        const newRubricCategories = activeRubricCategories.map((cat) => {
+          if (cat.id === categoryID) {
+            const newComments = cat.rubricComments.filter((i) => {
+              return i !== commentID;
+            });
+            cat.rubricComments = newComments;
+          }
+          return cat;
+        });
+        this.setState({
+          activeRubricComments: newRubricComments,
+          activeRubricCategories: newRubricCategories,
+          deleteCommentDialogID: undefined,
+        });
       });
     }
   };
@@ -333,6 +343,22 @@ class ManageAssignments extends React.Component<IProps, {}> {
         undefined,
       );
     }
+  };
+
+  public triggerDeleteCommentDialog = (categoryID: number, commentIndex: number) => {
+    this.setState({ deleteCommentDialogID: { categoryID, commentIndex } });
+  };
+
+  public triggerDeleteCategoryDialog = (categoryID: number, categoryName: string) => {
+    this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+  };
+
+  public clearDeleteCommentDialog = () => {
+    this.setState({ deleteCommentDialogID: undefined });
+  };
+
+  public clearDeleteCategoryDialog = () => {
+    this.setState({ deleteCategoryDialogID: undefined });
   };
 
   // ------------------- Render -------------------
@@ -432,13 +458,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
               comments={activeRubricComments[cat.id]}
               categoryName={cat.name}
               categoryPointLimit={cat.pointLimit}
-              deleteCategory={this.deleteCategory}
+              deleteCategory={this.triggerDeleteCategoryDialog}
               changeCategoryName={this.changeCategoryName}
               changeCategoryCap={this.changeCategoryCap}
               addEmptyComment={this.addEmptyComment}
               changeCommentText={this.changeCommentText}
               changeCommentDelta={this.changeCommentDelta}
-              deleteComment={this.deleteComment}
+              deleteComment={this.triggerDeleteCommentDialog}
               isDisabled={lockManageAssignment}
               updateComment={this.updateComment}
               updateCategory={this.updateCategory}
@@ -523,6 +549,56 @@ class ManageAssignments extends React.Component<IProps, {}> {
           >
             Add New Category
           </Button>
+          <DeleteLinkedCommentsDialog
+            onDelete={
+              typeof this.state.deleteCommentDialogID !== 'undefined'
+                ? this.deleteComment.bind(
+                    this.props,
+                    this.state.deleteCommentDialogID.categoryID,
+                    this.state.deleteCommentDialogID.commentIndex,
+                    true,
+                  )
+                : ''
+            }
+            onUnLink={
+              typeof this.state.deleteCommentDialogID !== 'undefined'
+                ? this.deleteComment.bind(
+                    this.props,
+                    this.state.deleteCommentDialogID.categoryID,
+                    this.state.deleteCommentDialogID.commentIndex,
+                    false,
+                  )
+                : ''
+            }
+            onCancel={this.clearDeleteCommentDialog}
+            isVisible={typeof this.state.deleteCommentDialogID !== 'undefined'}
+            isDialog={true}
+          />
+          <DeleteLinkedCommentsDialog
+            onDelete={
+              typeof this.state.deleteCategoryDialogID !== 'undefined'
+                ? this.deleteCategory.bind(
+                    this.props,
+                    this.state.deleteCategoryDialogID.categoryID,
+                    this.state.deleteCategoryDialogID.categoryName,
+                    true,
+                  )
+                : ''
+            }
+            onUnLink={
+              typeof this.state.deleteCategoryDialogID !== 'undefined'
+                ? this.deleteCategory.bind(
+                    this.props,
+                    this.state.deleteCategoryDialogID.categoryID,
+                    this.state.deleteCategoryDialogID.categoryName,
+                    false,
+                  )
+                : ''
+            }
+            onCancel={this.clearDeleteCategoryDialog}
+            isVisible={typeof this.state.deleteCategoryDialogID !== 'undefined'}
+            isDialog={true}
+          />
           <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockIcon}
           </Button>

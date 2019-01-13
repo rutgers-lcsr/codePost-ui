@@ -231,7 +231,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           flat={true}
           className={'fileUploadDialog'}
         >
-          {`Upload / Download ${USER_APP[userType]} Roster`}
+          {`${USER_APP[userType]} Roster: Upload / Download`}
         </Button>
         <DialogContainer
           id="rosterFile-dialog"

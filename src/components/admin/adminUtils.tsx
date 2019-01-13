@@ -21,7 +21,7 @@ interface IPropsRubricComment {
   defaultText: string;
   defaultDelta: number;
   isDisabled: boolean;
-  deleteComment: (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => void;
+  deleteComment: (categoryID: number, commentIndex: number) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
 }
 
@@ -31,7 +31,7 @@ interface IPropsRubricCategory {
   // CommentFunctions
   changeCommentText: (categoryID: number, commentIndex: number, newText: string) => void;
   changeCommentDelta: (categoryID: number, commentIndex: number, newDelta: number) => void;
-  deleteComment: (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => void;
+  deleteComment: (categoryID: number, commentIndex: number) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
 
   // Category props
@@ -40,7 +40,7 @@ interface IPropsRubricCategory {
   categoryPointLimit: number | undefined;
 
   // Category fuctions
-  deleteCategory: (categoryID: number, categoryName: string, deleteLinkedComments: boolean) => void;
+  deleteCategory: (categoryID: number, categoryName: string) => void;
   changeCategoryName: (categoryIndex: number, newText: string) => void;
   changeCategoryCap: (categoryIndex: number, newCap: number) => void;
   addEmptyComment: (categoryIndex: number) => void;
@@ -83,7 +83,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
   };
 
   const deleteThisComment = () => {
-    deleteComment(categoryID, commentIndex, true);
+    deleteComment(categoryID, commentIndex);
   };
 
   const updateThisComment = () => {
@@ -160,7 +160,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   };
 
   const deleteThisCategory = () => {
-    deleteCategory(categoryID, categoryName, true);
+    deleteCategory(categoryID, categoryName);
   };
 
   const addEmptyCommentToThis = () => {
