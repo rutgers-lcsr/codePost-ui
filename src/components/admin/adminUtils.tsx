@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   Button,
   DataTable,
+  DialogContainer,
   EditDialogColumn,
   TableBody,
   TableColumn,
@@ -23,6 +24,7 @@ interface IPropsRubricComment {
   deleteComment: (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
 }
+
 interface IPropsRubricCategory {
   categoryID: number;
   categoryIndex: number;
@@ -38,7 +40,7 @@ interface IPropsRubricCategory {
   categoryPointLimit: number | undefined;
 
   // Category fuctions
-  deleteCategory: (categoryID: number, categoryName: string) => void;
+  deleteCategory: (categoryID: number, categoryName: string, deleteLinkedComments: boolean) => void;
   changeCategoryName: (categoryIndex: number, newText: string) => void;
   changeCategoryCap: (categoryIndex: number, newCap: number) => void;
   addEmptyComment: (categoryIndex: number) => void;
@@ -48,6 +50,14 @@ interface IPropsRubricCategory {
   isDisabled: boolean;
 }
 
+interface IPropsDeleteLinkedDialog {
+  numCommentsAffected?: number;
+  onDelete: () => void;
+  onUnLink: () => void;
+  onCancel: () => void;
+  isVisible: boolean;
+  isDialog: boolean;
+}
 // Creating a new class to render RubricCommentRows in the admin panel, in order
 // to avoid binds and improve performance
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -150,7 +160,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   };
 
   const deleteThisCategory = () => {
-    deleteCategory(categoryID, categoryName);
+    deleteCategory(categoryID, categoryName, true);
   };
 
   const addEmptyCommentToThis = () => {
@@ -243,4 +253,39 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   );
 };
 
-export default RubricCategoryTable;
+const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
+  if (!props.isVisible) {
+    return <div />;
+  }
+  const content = (
+    <div>
+      <div className="error-padding" />
+      Performing this action will delete some rubric comments. If there are submission comments associated with these,
+      you can choose to delete those comments or to 'unlink those comments' (keeping the comment intact with the same
+      text and point value). Which action would you like to take?
+      <div className="error-padding" />
+      <Button raised onClick={props.onDelete} primary={false} flat={true}>
+        Delete linked comments
+      </Button>
+      <Button raised onClick={props.onUnLink} primary={true} flat={true}>
+        Unlink
+      </Button>
+      <Button raised onClick={props.onCancel} primary={false} flat={true}>
+        Cancel upload
+      </Button>
+      <div className="error-padding" />
+    </div>
+  );
+
+  if (props.isDialog) {
+    return (
+      <DialogContainer id="rubricFile-dialog" visible={true} title="Manage rubric files" onHide={props.onCancel} modal>
+        {content}
+      </DialogContainer>
+    );
+  } else {
+    return <div>{content}</div>;
+  }
+};
+
+export { RubricCategoryTable, DeleteLinkedCommentsDialog };

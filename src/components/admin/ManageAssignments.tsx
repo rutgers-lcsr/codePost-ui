@@ -16,7 +16,7 @@ import {
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
 } from '../../types/common';
-import RubricCategoryTable from './adminUtils';
+import { RubricCategoryTable } from './adminUtils';
 import NewAssignmentDialog from './NewAssignmentDialog';
 import RubricFileDialog from './RubricFileDialog';
 
@@ -49,7 +49,12 @@ interface IProps {
     text: string,
     pointDelta: number,
   ) => Promise<RubricCommentType>;
-  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
+  deleteRubricCategory: (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+    deleteLinkedComments: boolean,
+  ) => Promise<void>;
   deleteRubricComment: (
     assignmentID: number,
     categoryID: number,
@@ -141,11 +146,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  public deleteCategory = (categoryID: number, categoryName: string) => {
+  public deleteCategory = (categoryID: number, categoryName: string, deleteLinkedComments: boolean) => {
     const { activeAssignment } = this.state;
     const { activeRubricCategories, activeRubricComments } = this.state;
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
-      this.props.deleteRubricCategory(activeAssignment.id, categoryID, categoryName).then(() => {
+      this.props.deleteRubricCategory(activeAssignment.id, categoryID, categoryName, deleteLinkedComments).then(() => {
         const newRubricCategories = activeRubricCategories.filter((cat) => {
           return cat.id !== categoryID;
         });

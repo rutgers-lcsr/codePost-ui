@@ -874,25 +874,35 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
+  public deleteRubricCategory = (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+    deleteLinkedComments: boolean,
+  ) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
-
-    return RubricCategory.delete(categoryID).then(() => {
-      assignments.forEach((assn) => {
-        if (assn.id === assignmentID) {
-          assn.rubricCategories = assn.rubricCategories.filter((catID) => {
-            return catID !== categoryID;
+    const linkedRubricComments = rubricComments[categoryID];
+    return Promise.all(
+      linkedRubricComments.map((comm) => {
+        return this.deleteRubricComment(assignmentID, categoryID, comm.id, deleteLinkedComments);
+      }),
+    ).then(() => {
+      return RubricCategory.delete(categoryID).then(() => {
+        assignments.forEach((assn) => {
+          if (assn.id === assignmentID) {
+            assn.rubricCategories = assn.rubricCategories.filter((catID) => {
+              return catID !== categoryID;
+            });
+          }
+          rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
+            return cat.id !== categoryID;
           });
-        }
-        rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
-          return cat.id !== categoryID;
+          delete rubricComments[categoryID];
         });
-        delete rubricComments[categoryID];
+        return this.setState({ assignments, rubricCategories, rubricComments }, () => {
+          return 'done';
+        });
       });
-      return this.setState({ assignments, rubricCategories, rubricComments }, () => {
-        return 'done';
-      });
-      // Reminder -- fix this
     });
   };
 
@@ -969,13 +979,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return Promise.reject();
     }
     // Get the latest comments that are linked to the RubricCommentType
-    RubricComment.read(commentID).then((rubricComment) => {
+    return RubricComment.read(commentID).then((rubricComment) => {
       const linkedComments = rubricComment.comments;
+      console.log(linkedComments);
       const commentPromises: any = linkedComments.map((id) => {
-        const payload = { id, text: thisRubricComment.text, pointDelta: thisRubricComment.pointDelta };
+        const payload = {
+          id,
+          text: thisRubricComment.text,
+          pointDelta: thisRubricComment.pointDelta,
+          rubricComment: null,
+        };
         return deleteLinkedComments ? Comment.delete(id) : Comment.update(payload);
       });
-      Promise.all(commentPromises).then(() => {
+      return Promise.all(commentPromises).then(() => {
         return RubricComment.delete(commentID).then(() => {
           rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
             return com.id !== commentID;
