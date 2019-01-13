@@ -1,14 +1,3 @@
 .admin {
-  width: 100%;
-  padding: 10px;
-  display: flex;
-
-  &__left-panel {
-    flex: 0 1 200px;
-  }
-
-  &__right-panel {
-    flex: 1 1 0;
-    padding-left: 10px;
-  }
+  @include dual-pane(200);
 }

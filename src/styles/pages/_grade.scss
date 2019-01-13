@@ -18,17 +18,6 @@
   }
 
   &__main-container {
-    width: 100%;
-    padding: 10px;
-    display: flex;
-
-    &__left-panel {
-      flex: 0 1 250px;
-    }
-
-    &__right-panel {
-      flex: 1 1 0;
-      padding-left: 10px;
-    }
+    @include dual-pane(250);
   }
 }
