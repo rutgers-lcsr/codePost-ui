@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import CodeGrader from './components/grade/CodeGrader';
+import { CodePanel } from './components/CodePanel';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
@@ -339,7 +339,7 @@ class Grade extends React.Component<IProps, IGradeState> {
             />
           </div>
           <div className="grade__main-container__right-panel">
-            <CodeGrader
+            <CodePanel
               submission={submission}
               files={files}
               comments={comments}

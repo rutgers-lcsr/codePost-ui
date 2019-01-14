@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import CodeViewer from './components/student/CodeViewer';
+import { CodePanel, makeReadOnly } from './components/CodePanel';
+
 import VerticalPane from './components/VerticalPane';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
@@ -314,12 +315,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       }
     }
 
+    const ReadOnlyCodePanel = makeReadOnly(CodePanel);
+
     let contentArea;
     if (currentSubmission && currentAssignment) {
       contentArea = (
         <div>
           <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
-          <CodeViewer
+          <ReadOnlyCodePanel
             submission={currentSubmission!}
             assignment={currentAssignment!}
             files={files}

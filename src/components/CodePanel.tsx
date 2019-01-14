@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import Comment from '../Comment';
+import Comment from './Comment';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../types/common';
 
-import CodePanelUtils from '../../CodePanelUtils';
+import CodePanelUtils from '../CodePanelUtils';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { CommentType } from '../infrastructure/comment';
+import { FileType } from '../infrastructure/file';
+import { SubmissionType } from '../infrastructure/submission';
 
 interface IProps {
   submission: SubmissionType;
@@ -29,7 +29,7 @@ interface IState {
   commentCounter: number;
 }
 
-class CodeGrader extends React.Component<IProps, IState> {
+class CodePanel extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     commentCounter: -1,
   };
@@ -368,4 +368,45 @@ const CommentList = (props: ICommentListProps) => {
   return <div className="code__comments">{commentNodes}</div>;
 };
 
-export default CodeGrader;
+const makeReadOnly = (Component: React.ComponentType<any>) => {
+  return class WrappedComponent extends React.Component<any, any> {
+    public readOnly = true;
+    public activeCommentId = undefined;
+
+    public addComment = (comment: any, file: FileType) => {
+      return;
+    };
+
+    public changeActive = (id: number) => {
+      return;
+    };
+
+    public deleteComment = (comment: CommentType, file: FileType) => {
+      return;
+    };
+
+    public updateComment = (commentID: number, newComment: CommentType, file: FileType) => {
+      return;
+    };
+
+    public saveGrade = () => {
+      return;
+    };
+
+    public render() {
+      return (
+        <Component
+          {...this.props}
+          readOnly={this.readOnly}
+          activeCommentId={this.activeCommentId}
+          changeActive={this.changeActive}
+          deleteComment={this.deleteComment}
+          updateComment={this.updateComment}
+          saveGrade={this.saveGrade}
+        />
+      );
+    }
+  };
+};
+
+export { CodePanel, makeReadOnly };
