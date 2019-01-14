@@ -1,19 +1,20 @@
 import * as React from 'react';
 import { Button, Card, CardText, Chip, TextField } from 'react-md';
 
-import { ICSSStyleObject } from '../../types/common';
+import { ICSSStyleObject } from '../types/common';
 
-import { Comment, CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { CommentIO, CommentType } from '../infrastructure/comment';
+import { FileType } from '../infrastructure/file';
+import { RubricCommentType } from '../infrastructure/rubricComment';
 
 interface IProps {
-  readOnly: boolean;
-  file: FileType;
   key: number;
   comment: CommentType;
   rubricComment: RubricCommentType | undefined;
   style: ICSSStyleObject;
+  readOnly: boolean;
+
+  file: FileType;
   active: boolean;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
@@ -27,7 +28,7 @@ interface IState {
   isUnsaved: boolean;
 }
 
-class EditableComment extends React.Component<IProps, IState> {
+class Comment extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
@@ -93,7 +94,7 @@ class EditableComment extends React.Component<IProps, IState> {
         text: comment.text,
       };
 
-      return Comment.create(payload)
+      return CommentIO.create(payload)
         .then((json) => {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
@@ -116,30 +117,19 @@ class EditableComment extends React.Component<IProps, IState> {
         });
     } else {
       console.log('PATCH', JSON.stringify(comment));
-      return fetch(`/api/comments/${comment.id}/`, {
-        body: JSON.stringify(comment),
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-      })
-        .then((res) => {
-          return res.json();
-        })
-        .then((json) => {
-          // this is just aesthetic wait time to watch the comment save
-          setTimeout(() => {
-            this.setState({ savingClass: 'saving-spinner--success' });
-          }, 1000);
-          setTimeout(() => {
-            this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
-            updateComment(comment.id, json, file);
-            saveGrade(); // async issue with setState
-            return true;
-          }, 2000);
+      return CommentIO.update(comment).then((json) => {
+        // this is just aesthetic wait time to watch the comment save
+        setTimeout(() => {
+          this.setState({ savingClass: 'saving-spinner--success' });
+        }, 1000);
+        setTimeout(() => {
+          this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
+          updateComment(comment.id, json, file);
+          saveGrade(); // async issue with setState
           return true;
-        });
+        }, 2000);
+        return true;
+      });
     }
   };
 
@@ -189,10 +179,11 @@ class EditableComment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
-    const pointDeltaLabel = `-${comment.pointDelta}`;
+    const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
+    const pointDeltaLabel = `-${pointDelta}`;
 
     let pointDeltaElement = null;
-    if (comment.pointDelta && comment.pointDelta !== 0) {
+    if (pointDelta && pointDelta !== 0) {
       pointDeltaElement = <Chip label={pointDeltaLabel} />;
     }
 
@@ -242,13 +233,14 @@ class EditableComment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment__pointdelta-field"
-              defaultValue={comment.pointDelta ? comment.pointDelta : 0}
+              value={pointDelta ? pointDelta : 0}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
               min={0}
               label={'Deduction'}
               fullWidth={true}
+              disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}
             />
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
@@ -297,4 +289,4 @@ class EditableComment extends React.Component<IProps, IState> {
   }
 }
 
-export default EditableComment;
+export default Comment;

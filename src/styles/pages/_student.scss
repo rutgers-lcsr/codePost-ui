@@ -1,3 +1,10 @@
 .student {
   @include dual-pane(200);
+
+  &__grade {
+    float: left;
+    width: 200px;
+    height: 30px;
+    font-size: 18pt;
+  }
 }

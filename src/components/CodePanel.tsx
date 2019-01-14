@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import EditableComment from './EditableComment';
+import Comment from './Comment';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../types/common';
 
-import CodeBoxUtils from '../../CodeBoxUtils';
+import CodePanelUtils from '../CodePanelUtils';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { CommentType } from '../infrastructure/comment';
+import { FileType } from '../infrastructure/file';
+import { SubmissionType } from '../infrastructure/submission';
 
 interface IProps {
   submission: SubmissionType;
@@ -29,7 +29,7 @@ interface IState {
   commentCounter: number;
 }
 
-class CodeGrader extends React.Component<IProps, IState> {
+class CodePanel extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     commentCounter: -1,
   };
@@ -60,7 +60,7 @@ class CodeGrader extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: FileType, comments: CommentType[]) => {
+  public getTabTitle = (file: FileType, comments: CommentType[], rubricComments: ICommentToRubricCommentMap) => {
     // Horrific code that is happneing because the pointDelta is sometimes
     // a number and sometimes a string
     // will fix the underlying issue in a future PR
@@ -71,6 +71,8 @@ class CodeGrader extends React.Component<IProps, IState> {
         } else {
           return accumulator + parseInt(comment.pointDelta, 10);
         }
+      } else if (rubricComments[comment.id]) {
+        return accumulator + rubricComments[comment.id].pointDelta;
       } else {
         return accumulator;
       }
@@ -107,47 +109,43 @@ class CodeGrader extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <div className="grade__main-container__right-panel">
-        <Tabs>
-          <TabList>
-            {files.map((file: FileType, i: number) => {
-              const tabTitle = this.getTabTitle(file, comments[file.id]);
-              return (
-                <Tab id="{i}" key={i}>
-                  {tabTitle}
-                </Tab>
-              );
-            })}
-          </TabList>
+      <Tabs>
+        <TabList>
           {files.map((file: FileType, i: number) => {
+            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <TabPanel key={i}>
-                <div>
-                  <CodeBox
-                    file={file}
-                    readOnly={readOnly}
-                    comments={comments[file.id]}
-                    rubricComments={rubricComments}
-                    addComment={this.addComment}
-                    commentCounter={commentCounter}
-                    updateCommentCounter={this.updateCommentCounter}
-                    activeCommentId={activeCommentId}
-                    changeActive={this.changeActive}
-                    deleteComment={deleteComment}
-                    updateComment={updateComment}
-                    saveGrade={saveGrade}
-                  />
-                </div>
-              </TabPanel>
+              <Tab id="{i}" key={i}>
+                {tabTitle}
+              </Tab>
             );
           })}
-        </Tabs>
-      </div>
+        </TabList>
+        {files.map((file: FileType, i: number) => {
+          return (
+            <TabPanel key={i}>
+              <Code
+                file={file}
+                comments={comments[file.id]}
+                rubricComments={rubricComments}
+                readOnly={readOnly}
+                addComment={this.addComment}
+                commentCounter={commentCounter}
+                updateCommentCounter={this.updateCommentCounter}
+                activeCommentId={activeCommentId}
+                changeActive={this.changeActive}
+                deleteComment={deleteComment}
+                updateComment={updateComment}
+                saveGrade={saveGrade}
+              />
+            </TabPanel>
+          );
+        })}
+      </Tabs>
     );
   }
 }
 
-interface ICodeBoxProps {
+interface ICodeProps {
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
@@ -164,7 +162,7 @@ interface ICodeBoxProps {
   saveGrade: () => any;
 }
 
-const CodeBox = (props: ICodeBoxProps) => {
+const Code = (props: ICodeProps) => {
   const {
     file,
     readOnly,
@@ -230,7 +228,7 @@ const CodeBox = (props: ICodeBoxProps) => {
     addComment(newComment, file);
   };
 
-  const sortedHighlights = CodeBoxUtils.sortHighlights(comments);
+  const sortedHighlights = CodePanelUtils.sortHighlights(comments);
   const splitCode = props.file.code.split('\n');
 
   /* tslint:disable */
@@ -239,7 +237,7 @@ const CodeBox = (props: ICodeBoxProps) => {
         return (
           <div key={i} id={i.toString()}>
             {' '}
-            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+            {CodePanelUtils.highlightText(sortedHighlights, item, i)}{' '}
           </div>
         );
       })
@@ -247,7 +245,7 @@ const CodeBox = (props: ICodeBoxProps) => {
         return (
           <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
             {' '}
-            {CodeBoxUtils.highlightText(sortedHighlights, item, i)}{' '}
+            {CodePanelUtils.highlightText(sortedHighlights, item, i)}{' '}
           </div>
         );
       });
@@ -323,7 +321,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodeBoxUtils.pixelsPerLine();
+    let startAt = comment.startLine * CodePanelUtils.pixelsPerLine();
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -333,7 +331,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, rubricComments[comment.id], activeCommentId);
+    const heightOfComment = CodePanelUtils.heightOfComment(comment, rubricComments[comment.id], activeCommentId);
     const newBlock: IBlock = {
       startAt,
       endAt: startAt + heightOfComment,
@@ -353,13 +351,13 @@ const CommentList = (props: ICommentListProps) => {
     const isActive = activeCommentId === comment.id;
 
     return (
-      <EditableComment
-        readOnly={readOnly}
-        file={file}
+      <Comment
         key={comment.id}
         comment={comment}
         rubricComment={rubricComments[comment.id]}
         style={style}
+        readOnly={readOnly}
+        file={file}
         active={isActive}
         changeActive={changeActive}
         deleteComment={deleteComment}
@@ -372,4 +370,45 @@ const CommentList = (props: ICommentListProps) => {
   return <div className="code__comments">{commentNodes}</div>;
 };
 
-export default CodeGrader;
+const makeReadOnly = (Component: React.ComponentType<any>) => {
+  return class WrappedComponent extends React.Component<any, any> {
+    public readOnly = true;
+    public activeCommentId = undefined;
+
+    public addComment = (comment: any, file: FileType) => {
+      return;
+    };
+
+    public changeActive = (id: number) => {
+      return;
+    };
+
+    public deleteComment = (comment: CommentType, file: FileType) => {
+      return;
+    };
+
+    public updateComment = (commentID: number, newComment: CommentType, file: FileType) => {
+      return;
+    };
+
+    public saveGrade = () => {
+      return;
+    };
+
+    public render() {
+      return (
+        <Component
+          {...this.props}
+          readOnly={this.readOnly}
+          activeCommentId={this.activeCommentId}
+          changeActive={this.changeActive}
+          deleteComment={this.deleteComment}
+          updateComment={this.updateComment}
+          saveGrade={this.saveGrade}
+        />
+      );
+    }
+  };
+};
+
+export { CodePanel, makeReadOnly };

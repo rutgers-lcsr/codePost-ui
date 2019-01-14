@@ -1,13 +1,6 @@
 .code {
   display: flex;
 
-  &__grade {
-    float: left;
-    width: 200px;
-    height: 30px;
-    font-size: 18pt;
-  }
-
   &__line-numbers {
     flex: 0 1 15px;
     text-align: center;

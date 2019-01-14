@@ -24,6 +24,7 @@ type GenericObjectType = t.TypeOf<typeof GenericObject>;
 
 function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) => Promise<T>) {
   const foo = async (object: T) => {
+    console.log('object', object);
     const res = await fetch(`/api/${url}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
