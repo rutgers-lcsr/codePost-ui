@@ -646,20 +646,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const newStudents = this.state.students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
-        this.changeRoster(newStudents, userType);
-        break;
+        return this.changeRoster(newStudents, userType);
       case USER_APP.Grader:
         const newGraders = this.state.graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        this.changeRoster(newGraders, userType);
-        break;
+        return this.changeRoster(newGraders, userType);
       case USER_APP.CourseAdmin:
         const newAdmins = this.state.admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
-        this.changeRoster(newAdmins, userType);
-        break;
+        return this.changeRoster(newAdmins, userType);
     }
   };
 

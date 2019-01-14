@@ -26,7 +26,7 @@ interface IPropsManageUsers {
   toggleLock: () => void;
 
   enrollUser: (email: string, type: USER_APP) => void;
-  unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   changeRoster: (emails: string[], type: USER_APP) => Promise<void>;
 
   createSection: (newSection: string) => void;
@@ -59,8 +59,6 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
     const { activeTabIndex } = this.state;
     const { lockChanges } = this.props;
 
-    const lockIcon = lockChanges ? 'lock' : 'lock_open';
-
     return (
       <div>
         <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" slideStyle={{ minHeight: '70vh' }}>
@@ -85,6 +83,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             <Tab label="Graders" className="manageGraders" style={{ color: '#000000' }}>
               <ManageGraders
                 graders={this.props.graders}
+                admins={this.props.admins}
                 rosterLoadComplete={this.props.rosterLoadComplete}
                 lockedGraderChange={this.props.lockChanges}
                 toggleLock={this.props.toggleLock}
@@ -113,6 +112,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             <Tab label="Admins" style={{ color: '#000000' }}>
               <ManageAdmins
                 admins={this.props.admins}
+                graders={this.props.graders}
                 rosterLoadComplete={this.props.rosterLoadComplete}
                 lockedAdminChange={this.props.lockChanges}
                 toggleLock={this.props.toggleLock}
@@ -126,8 +126,20 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             </Tab>
           </Tabs>
         </TabsContainer>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-          {lockIcon}
+        <Button
+          key="Lock"
+          className="Btn"
+          floating={true}
+          tooltipLabel={lockChanges ? 'Making edits is locked.' : 'Edits are allowed. Click to lock.'}
+          tooltipDelay={1500}
+          tooltipPosition="left"
+          tooltipTransitionEnterTimeout={0}
+          tooltipTransitionLeaveTimeout={0}
+          fixed={true}
+          icon={true}
+          onClick={this.props.toggleLock}
+        >
+          {lockChanges ? 'lock' : 'lock_open'}
         </Button>
       </div>
     );

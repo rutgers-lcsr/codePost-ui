@@ -28,7 +28,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
-  unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;

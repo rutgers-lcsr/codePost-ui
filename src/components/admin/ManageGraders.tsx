@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 import '../../styles/index.scss';
 import { USER_APP } from '../../types/common';
 
@@ -8,6 +8,7 @@ import RosterFileUpload from './RosterFileUpload';
 
 interface IProps {
   graders: string[];
+  admins: string[];
   rosterLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
@@ -15,7 +16,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
   enrollUser: (email: string, type: USER_APP) => void;
-  unEnrollUsers: (emails: string[], type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
 }
 
@@ -23,6 +24,10 @@ interface IState {
   newField: string | undefined;
   sortAscending: boolean;
   searchTerm: string;
+  // This field will either be the grader's username who is also an admin, to prompt
+  // the user if they would like to unenroll the user from being an admin also, or will
+  // be null if no such choice is required
+  emailToAdminUnenroll: string | undefined;
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
@@ -30,11 +35,24 @@ class ManageGraders extends React.Component<IProps, {}> {
     newField: undefined,
     sortAscending: true,
     searchTerm: '',
+    emailToAdminUnenroll: undefined,
   };
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
-    const { unEnrollUsers } = this.props;
+    const { unEnrollUsers, admins } = this.props;
     unEnrollUsers([newUserEmail], userType);
+    if (admins.indexOf(newUserEmail) !== -1) {
+      this.setState({ emailToAdminUnenroll: newUserEmail });
+    }
+  };
+
+  public resolveAdminUnenroll = (triggerUnenroll: boolean) => {
+    const { unEnrollUsers } = this.props;
+    const { emailToAdminUnenroll } = this.state;
+    if (typeof emailToAdminUnenroll !== 'undefined' && triggerUnenroll) {
+      unEnrollUsers([emailToAdminUnenroll], USER_APP.CourseAdmin);
+    }
+    this.setState({ emailToAdminUnenroll: undefined });
   };
 
   public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
@@ -56,7 +74,7 @@ class ManageGraders extends React.Component<IProps, {}> {
 
   public render() {
     const { rosterLoadComplete, lockedGraderChange, graders, addErrorToast, addToast, changeRoster } = this.props;
-    const { newField, searchTerm, sortAscending } = this.state;
+    const { newField, searchTerm, sortAscending, emailToAdminUnenroll } = this.state;
 
     const showSaveNewButton = newField && newField.includes('@');
     const graderType = USER_APP.Grader;
@@ -100,8 +118,29 @@ class ManageGraders extends React.Component<IProps, {}> {
     } else {
       graders.sort().reverse();
     }
+
     return (
       <div>
+        <DialogContainer
+          id="rubricFile-dialog"
+          visible={typeof emailToAdminUnenroll !== 'undefined'}
+          title="User also enrolled as Course Admin"
+          actions={[
+            {
+              primary: true,
+              children: 'Leave as Admin',
+              onClick: this.resolveAdminUnenroll.bind(this.props, false),
+            },
+            {
+              children: 'Unenroll',
+              onClick: this.resolveAdminUnenroll.bind(this.props, true),
+            },
+          ]}
+          modal
+          portal={true}
+        >
+          {`Would you like to also unenroll ${emailToAdminUnenroll} from admin?`}
+        </DialogContainer>
         <RosterFileUpload
           users={graders}
           addErrorToast={addErrorToast}

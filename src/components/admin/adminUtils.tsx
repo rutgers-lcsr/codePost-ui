@@ -311,11 +311,13 @@ const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
       <Button raised onClick={props.onDelete} primary={false} flat={true}>
         Delete linked comments
       </Button>
+      <div className="error-padding" />
       <Button raised onClick={props.onUnLink} primary={true} flat={true}>
         Unlink
       </Button>
+      <div className="error-padding" />
       <Button raised onClick={props.onCancel} primary={false} flat={true}>
-        Cancel upload
+        Cancel
       </Button>
       <div className="error-padding" />
     </div>
