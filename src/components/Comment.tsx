@@ -179,10 +179,11 @@ class Comment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
-    const pointDeltaLabel = `-${comment.pointDelta}`;
+    const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
+    const pointDeltaLabel = `-${pointDelta}`;
 
     let pointDeltaElement = null;
-    if (comment.pointDelta && comment.pointDelta !== 0) {
+    if (pointDelta && pointDelta !== 0) {
       pointDeltaElement = <Chip label={pointDeltaLabel} />;
     }
 
@@ -232,13 +233,14 @@ class Comment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment__pointdelta-field"
-              defaultValue={comment.pointDelta ? comment.pointDelta : 0}
+              value={pointDelta ? pointDelta : 0}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
               min={0}
               label={'Deduction'}
               fullWidth={true}
+              disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}
             />
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}

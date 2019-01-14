@@ -181,6 +181,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       const index = comments[file.id].findIndex((c: CommentType) => c.id === activeCommentId);
       if (index !== -1) {
         comments[file.id][index].rubricComment = rubricComment.id;
+        comments[file.id][index].pointDelta = null;
         commentRubricComments[comments[file.id][index].id] = rubricComment;
         this.setState({ comments, commentRubricComments });
         break;
@@ -215,7 +216,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public saveGrade = (): any => {
-    const { comments, submission, assignment } = this.state;
+    const { comments, submission, assignment, commentRubricComments } = this.state;
 
     let assignmentPoints = 0;
     if (!submission || !assignment) {
@@ -238,6 +239,8 @@ class Grade extends React.Component<IProps, IGradeState> {
               } else {
                 return accumulator + parseInt(comment.pointDelta, 10);
               }
+            } else if (commentRubricComments[comment.id]) {
+              return accumulator + commentRubricComments[comment.id].pointDelta;
             } else {
               return accumulator;
             }

@@ -60,7 +60,7 @@ class CodePanel extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: FileType, comments: CommentType[]) => {
+  public getTabTitle = (file: FileType, comments: CommentType[], rubricComments: ICommentToRubricCommentMap) => {
     // Horrific code that is happneing because the pointDelta is sometimes
     // a number and sometimes a string
     // will fix the underlying issue in a future PR
@@ -71,6 +71,8 @@ class CodePanel extends React.Component<IProps, IState> {
         } else {
           return accumulator + parseInt(comment.pointDelta, 10);
         }
+      } else if (rubricComments[comment.id]) {
+        return accumulator + rubricComments[comment.id].pointDelta;
       } else {
         return accumulator;
       }
@@ -110,7 +112,7 @@ class CodePanel extends React.Component<IProps, IState> {
       <Tabs>
         <TabList>
           {files.map((file: FileType, i: number) => {
-            const tabTitle = this.getTabTitle(file, comments[file.id]);
+            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
               <Tab id="{i}" key={i}>
                 {tabTitle}

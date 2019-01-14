@@ -95,7 +95,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
       >
         <div className="grade-rubric__category__title-row__title">
           {rubricCategory.name}
-          <Button key={rubricCategory.id} className={arrowClassName} flat={true} icon={true}>
+          <Button key={rubricCategory.id} className={arrowClassName} icon={true}>
             {buttonIcon}
           </Button>
         </div>
