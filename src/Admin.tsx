@@ -455,18 +455,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public loadAssignmentRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID, {}).then((json) => {
-      const { rubricCategories, rubricComments } = this.state;
-      rubricCategories[assignmentID] = json.categories;
-      json.categories.forEach((cat: RubricCategoryType) => {
-        rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
-          return comm.category === cat.id;
+    return Assignment.readRubric(assignmentID, {})
+      .then((json) => {
+        const { rubricCategories, rubricComments } = this.state;
+        rubricCategories[assignmentID] = json.categories;
+        json.categories.forEach((cat: RubricCategoryType) => {
+          rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
+            return comm.category === cat.id;
+          });
+        });
+        this.setState({ rubricCategories, rubricComments }, () => {
+          return;
+        });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
         });
       });
-      this.setState({ rubricCategories, rubricComments }, () => {
-        return;
-      });
-    });
   };
 
   public loadRubrics = () => {
@@ -498,9 +506,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           });
         });
       }),
-    ).then(() => {
-      this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
-    });
+    )
+      .then(() => {
+        this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   public loadRoster = () => {
@@ -548,9 +564,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           return section;
         });
       }),
-    ).then((sections) => {
-      this.setState({ sections, sectionsLoadComplete: true });
-    });
+    )
+      .then((sections) => {
+        this.setState({ sections, sectionsLoadComplete: true });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   // ------------------- Toggle data change locks  -------------------
@@ -887,31 +911,41 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return this.deleteRubricComment(assignmentID, categoryID, comm.id, deleteLinkedComments);
       }),
     ).then(() => {
-      return RubricCategory.delete(categoryID).then(() => {
-        assignments.forEach((assn) => {
-          if (assn.id === assignmentID) {
-            assn.rubricCategories = assn.rubricCategories.filter((catID) => {
-              return catID !== categoryID;
+      return RubricCategory.delete(categoryID)
+        .then(() => {
+          assignments.forEach((assn) => {
+            if (assn.id === assignmentID) {
+              assn.rubricCategories = assn.rubricCategories.filter((catID) => {
+                return catID !== categoryID;
+              });
+            }
+            rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
+              return cat.id !== categoryID;
             });
-          }
-          rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
-            return cat.id !== categoryID;
+            delete rubricComments[categoryID];
           });
-          delete rubricComments[categoryID];
+          return this.setState({ assignments, rubricCategories, rubricComments }, () => {
+            return 'done';
+          });
+        })
+        .catch((errors) => {
+          Object.keys(errors).forEach((key) => {
+            errors[key].forEach((error: string) => {
+              this.addErrorToast(error, undefined);
+            });
+          });
         });
-        return this.setState({ assignments, rubricCategories, rubricComments }, () => {
-          return 'done';
-        });
-      });
     });
   };
 
+  // Updates return a  Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateRubricCategory = (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
-  ): Promise<RubricCategoryType> => {
+  ): Promise<void> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
@@ -925,20 +959,28 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       pointLimit: categoryPointLimit,
     };
 
-    return RubricCategory.update(payload).then((rubricCategory: RubricCategoryType) => {
-      const catIndex = rubricCategories[assignmentID]
-        .map((cat) => {
-          return cat.id;
-        })
-        .indexOf(categoryID);
-      if (catIndex !== -1) {
-        // Reminder --- add checks for the data received
-        rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
-        rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
-      }
-      this.setState({ rubricCategories });
-      return rubricCategory;
-    });
+    return RubricCategory.update(payload)
+      .then((rubricCategory: RubricCategoryType) => {
+        const catIndex = rubricCategories[assignmentID]
+          .map((cat) => {
+            return cat.id;
+          })
+          .indexOf(categoryID);
+        if (catIndex !== -1) {
+          // Reminder --- add checks for the data received
+          rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
+          rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
+        }
+        this.setState({ rubricCategories });
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   public createRubricComment = (
@@ -979,45 +1021,54 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return Promise.reject();
     }
     // Get the latest comments that are linked to the RubricCommentType
-    return RubricComment.read(commentID).then((rubricComment) => {
-      const linkedComments = rubricComment.comments;
-      console.log(linkedComments);
-      const commentPromises: any = linkedComments.map((id) => {
-        const payload = {
-          id,
-          text: thisRubricComment.text,
-          pointDelta: thisRubricComment.pointDelta,
-          rubricComment: null,
-        };
-        return deleteLinkedComments ? Comment.delete(id) : Comment.update(payload);
-      });
-      return Promise.all(commentPromises).then(() => {
-        return RubricComment.delete(commentID).then(() => {
-          rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
-            return com.id !== commentID;
+    return RubricComment.read(commentID)
+      .then((rubricComment) => {
+        const linkedComments = rubricComment.comments;
+        console.log(linkedComments);
+        const commentPromises: any = linkedComments.map((id) => {
+          const payload = {
+            id,
+            text: thisRubricComment.text,
+            pointDelta: thisRubricComment.pointDelta,
+            rubricComment: null,
+          };
+          return deleteLinkedComments ? Comment.delete(id) : Comment.update(payload);
+        });
+        return Promise.all(commentPromises).then(() => {
+          return RubricComment.delete(commentID).then(() => {
+            rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
+              return com.id !== commentID;
+            });
+            rubricCategories[assignmentID].forEach((cat) => {
+              if (cat.id === categoryID) {
+                const newComments = cat.rubricComments.filter((i: number) => {
+                  return i !== commentID;
+                });
+                cat.rubricComments = newComments;
+              }
+            });
+            this.setState({ rubricCategories, rubricComments });
+            return;
           });
-          rubricCategories[assignmentID].forEach((cat) => {
-            if (cat.id === categoryID) {
-              const newComments = cat.rubricComments.filter((i: number) => {
-                return i !== commentID;
-              });
-              cat.rubricComments = newComments;
-            }
+        });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
           });
-          this.setState({ rubricCategories, rubricComments });
-          return;
         });
       });
-    });
-    return Promise.reject();
   };
 
+  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateRubricComment = (
     categoryID: number,
     commentID: number,
     commentText: string | undefined,
     commentDelta: number | undefined,
-  ): Promise<RubricCommentType> => {
+  ): Promise<void> => {
     const { rubricComments } = this.state;
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
@@ -1028,28 +1079,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'text', commentText);
     addToPayload(payload, 'pointDelta', commentDelta);
 
-    return RubricComment.update(payload).then((rubricComment) => {
-      const comIndex = rubricComments[categoryID]
-        .map((com) => {
-          return com.id;
-        })
-        .indexOf(commentID);
-      if (comIndex !== -1) {
-        rubricComments[categoryID][comIndex] = rubricComment;
-      }
+    return RubricComment.update(payload)
+      .then((rubricComment) => {
+        const comIndex = rubricComments[categoryID]
+          .map((com) => {
+            return com.id;
+          })
+          .indexOf(commentID);
+        if (comIndex !== -1) {
+          rubricComments[categoryID][comIndex] = rubricComment;
+        }
 
-      this.setState({ rubricComments });
-      return rubricComment;
-    });
+        this.setState({ rubricComments });
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   // ------------------- Manage assignments API calls  ------------------
+  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateAssignment = (
     assignmentID: number,
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
-  ): Promise<AssignmentType> => {
+  ): Promise<void> => {
     const { assignments } = this.state;
 
     if (!name && !points && typeof isReleased === 'undefined') {
@@ -1061,17 +1122,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'points', points);
     addToPayload(payload, 'isReleased', isReleased);
 
-    return Assignment.update(payload).then((assignment) => {
-      assignments.forEach((assn) => {
-        if (assn.id === assignmentID) {
-          assn.name = assignment.name;
-          assn.points = assignment.points;
-          assn.isReleased = assignment.isReleased;
-        }
+    return Assignment.update(payload)
+      .then((assignment) => {
+        assignments.forEach((assn) => {
+          if (assn.id === assignmentID) {
+            assn.name = assignment.name;
+            assn.points = assignment.points;
+            assn.isReleased = assignment.isReleased;
+          }
+        });
+        this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+        return;
       });
-      this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
-      return assignment;
-    });
   };
 
   public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {

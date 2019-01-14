@@ -43,13 +43,13 @@ interface IProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
-  ) => Promise<RubricCategoryType>;
+  ) => Promise<void>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
-  ) => Promise<RubricCommentType>;
+  ) => Promise<void>;
   parentUpdate: (assignment: AssignmentType | undefined) => void;
 }
 

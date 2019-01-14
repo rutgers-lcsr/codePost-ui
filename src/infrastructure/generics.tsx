@@ -42,7 +42,7 @@ function createObject<T, Q, O, I>(
       return await decodeToPromise(output, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -63,7 +63,7 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number)
       return await decodeToPromise(arg, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -88,8 +88,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
       const data = await res.json();
       return await decodeToPromise(output, data);
     }
-
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -110,7 +109,7 @@ function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number)
       return Promise.resolve(); // no body on delete
     }
 
-    return Promise.reject();
+    return Promise.reject(new Error(await res.json()));
   };
 
   return foo;
@@ -143,9 +142,8 @@ function readObjectDetail<T, O, I>(
       const data = await res.json();
       return await decodeToPromise(arg, data);
     }
-    console.log(res);
 
-    return Promise.reject(new Error(await res.json()));
+    return Promise.reject(await res.json());
   };
 
   return foo;

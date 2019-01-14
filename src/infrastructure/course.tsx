@@ -44,6 +44,7 @@ const RosterV = t.intersection(
       students: t.array(t.string),
       inactive_students: t.array(t.string),
       inactive_graders: t.array(t.string),
+      inactive_courseAdmins: t.array(t.string),
       graders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),

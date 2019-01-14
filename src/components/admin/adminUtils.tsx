@@ -52,6 +52,7 @@ interface IPropsRubricCategory {
   // General props
   isDisabled: boolean;
   savedComments: { [id: number]: boolean };
+  savedCategories: { [id: number]: boolean };
 }
 
 interface IPropsDeleteLinkedDialog {
@@ -95,14 +96,14 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     updateComment(categoryID, commentIndex);
   };
 
-  let deleteCommentColumn;
-  if (!isDisabled) {
-    deleteCommentColumn = (
+  const deleteCommentColumn = !isDisabled ? (
+    <TableColumn>
       <Button key="Delete" className="Btn" flat={true} icon={true} disabled={isDisabled} onClick={deleteThisComment}>
         delete
       </Button>
-    );
-  }
+    </TableColumn>
+  ) : null;
+
   let unSavedChanges;
   if (commentID in savedComments) {
     unSavedChanges = savedComments[commentID] ? (
@@ -124,32 +125,28 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     <div>
       <TableRow key={commentID}>
         {unSavedChanges}
-        <TableColumn>
-          <EditDialogColumn
-            defaultValue={defaultText}
-            inline={true}
-            disabled={isDisabled}
-            noIcon={isDisabled}
-            centered={true}
-            onChange={changeThisCommentText}
-            onBlur={updateThisComment}
-          />
-        </TableColumn>
-        <TableColumn>
-          <EditDialogColumn
-            type="number"
-            defaultValue={defaultDelta}
-            inline={true}
-            step={0.5}
-            pattern="^d+(\.|\,)\d{1}"
-            className="deduction-field"
-            disabled={isDisabled}
-            noIcon={isDisabled}
-            centered={true}
-            onChange={changeThisCommentDelta}
-            onBlur={updateThisComment}
-          />
-        </TableColumn>
+        <EditDialogColumn
+          defaultValue={defaultText}
+          inline={true}
+          disabled={isDisabled}
+          noIcon={isDisabled}
+          centered={true}
+          onChange={changeThisCommentText}
+          onBlur={updateThisComment}
+        />
+        <EditDialogColumn
+          type="number"
+          defaultValue={defaultDelta}
+          inline={true}
+          step={0.5}
+          pattern="^d+(\.|\,)\d{1}"
+          className="deduction-field"
+          disabled={isDisabled}
+          noIcon={isDisabled}
+          centered={true}
+          onChange={changeThisCommentDelta}
+          onBlur={updateThisComment}
+        />
         {deleteCommentColumn}
       </TableRow>
     </div>
@@ -174,6 +171,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     updateComment,
     updateCategory,
     savedComments,
+    savedCategories,
   } = props;
 
   const changeThisCategoryText = (newText: string) => {
@@ -238,33 +236,52 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     deleteCommentHeader = <TableColumn key={'Delete'}>Delete</TableColumn>;
   }
 
+  let unSavedChanges;
+  if (categoryID in savedCategories) {
+    unSavedChanges = savedCategories[categoryID] ? (
+      <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>done_all</FontIcon>
+        </div>
+      </Tooltipped>
+    ) : (
+      <Tooltipped label="Unsaved changes. Click anywhere to save." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>cloud_off</FontIcon>
+        </div>
+      </Tooltipped>
+    );
+  }
+
   return (
     <div key={categoryID}>
-      <TextField
-        defaultValue={categoryName}
-        label={'Category Name'}
-        fullWidth={false}
-        onChange={changeThisCategoryText}
-        disabled={isDisabled}
-        onBlur={updateThisCategory}
-      />
-      <TextField
-        defaultValue={categoryPointLimit ? categoryPointLimit : ''}
-        label={'Category points cap'}
-        fullWidth={false}
-        step={0.5}
-        pattern="^d+(\.|\,)\d{1}"
-        type="number"
-        min={0}
-        onChange={changeThisCategoryCap}
-        disabled={isDisabled}
-        onBlur={updateThisCategory}
-      />
-      {deleteCategoryButton}
+      <div>
+        <TextField
+          defaultValue={categoryName}
+          label={'Category Name'}
+          fullWidth={false}
+          onChange={changeThisCategoryText}
+          disabled={isDisabled}
+          onBlur={updateThisCategory}
+        />
+        <TextField
+          defaultValue={categoryPointLimit ? categoryPointLimit : ''}
+          label={'Category points cap'}
+          fullWidth={false}
+          step={0.5}
+          pattern="^d+(\.|\,)\d{1}"
+          type="number"
+          min={0}
+          onChange={changeThisCategoryCap}
+          disabled={isDisabled}
+          onBlur={updateThisCategory}
+        />
+        {unSavedChanges}
+        {deleteCategoryButton}
+      </div>
       <DataTable key={categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow>
-            <TableColumn key={'saving'}>Comment text</TableColumn>
             <TableColumn key={'CommentText'}>Comment text</TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
             {deleteCommentHeader}
