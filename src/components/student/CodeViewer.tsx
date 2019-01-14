@@ -1,18 +1,17 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import { Card, CardText, Chip } from 'react-md';
-
-import CodeBoxUtils from '../../CodeBoxUtils';
+import CodePanelUtils from '../../CodePanelUtils';
 
 import { SubmissionType } from '../../infrastructure/submission';
 
 import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../../types/common';
 
 import { AssignmentType } from '../../infrastructure/assignment';
-import { CommentType } from '../../infrastructure/comment';
+import { CommentType, withoutEditing } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+
+import Comment from '../Comment';
 
 interface IProps {
   submission: SubmissionType;
@@ -59,9 +58,7 @@ class CodeViewer extends React.Component<IProps, {}> {
           {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={i}>
-                <div>
-                  <CodeBox file={file} comments={comments[file.id]} rubricComments={rubricComments} />
-                </div>
+                <Code file={file} comments={comments[file.id]} rubricComments={rubricComments} />
               </TabPanel>
             );
           })}
@@ -71,18 +68,18 @@ class CodeViewer extends React.Component<IProps, {}> {
   }
 }
 
-interface ICodeBoxProps {
+interface ICodeProps {
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
 }
 
-const CodeBox = (props: ICodeBoxProps) => {
-  const sortedHighlights = CodeBoxUtils.sortHighlights(props.comments);
+const Code = (props: ICodeProps) => {
+  const sortedHighlights = CodePanelUtils.sortHighlights(props.comments);
   const splitCode = props.file.code.split('\n');
 
   const linesOfCode = splitCode.map((item: string, i: number) => {
-    return <div key={i}> {CodeBoxUtils.highlightText(sortedHighlights, item, i)} </div>;
+    return <div key={i}> {CodePanelUtils.highlightText(sortedHighlights, item, i)} </div>;
   });
 
   const lineNumbers = splitCode.map((item: string, i: number) => {
@@ -98,7 +95,7 @@ const CodeBox = (props: ICodeBoxProps) => {
     <div className="code">
       <div className="code__line-numbers">{lineNumbers}</div>
       <div className="code__highlighted-area">{linesOfCode}</div>
-      <CommentList comments={props.comments} rubricComments={props.rubricComments} />
+      <CommentList comments={props.comments} rubricComments={props.rubricComments} file={props.file} />
     </div>
   );
 };
@@ -106,6 +103,7 @@ const CodeBox = (props: ICodeBoxProps) => {
 interface ICommentListProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
+  file: FileType;
 }
 
 interface IBlock {
@@ -129,7 +127,7 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position fixed
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodeBoxUtils.pixelsPerLine(); // Each line is 15px
+    let startAt = comment.startLine * CodePanelUtils.pixelsPerLine(); // Each line is 15px
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -139,7 +137,7 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodeBoxUtils.heightOfComment(comment, rubricComments[comment.id], undefined);
+    const heightOfComment = CodePanelUtils.heightOfComment(comment, rubricComments[comment.id], undefined);
     const newBlock: IBlock = {
       startAt,
       endAt: startAt + heightOfComment,
@@ -154,57 +152,65 @@ const CommentList = (props: ICommentListProps) => {
       top: `${startAt}px`,
     };
 
+    const ReadOnlyComment = withoutEditing(Comment);
+
     return (
-      <Comment key={comment.id} comment={comment} rubricComment={props.rubricComments[comment.id]} style={style} />
+      <ReadOnlyComment
+        key={comment.id}
+        comment={comment}
+        rubricComment={props.rubricComments[comment.id]}
+        file={props.file}
+        style={style}
+      />
     );
   });
 
   return <div className="code__comments">{commentNodes}</div>;
 };
+// interface ICommentProps {
+//   key: number;
+//   comment: CommentType;
+//   rubricComment: RubricCommentType | undefined;
+//   style: ICSSStyleObject;
+//   file: FileType;
+// }
 
-interface ICommentProps {
-  key: number;
-  comment: CommentType;
-  rubricComment: RubricCommentType | undefined;
-  style: ICSSStyleObject;
-}
+// const Comment = (props: ICommentProps) => {
+//   const { comment, rubricComment, style } = props;
 
-const Comment = (props: ICommentProps) => {
-  const { comment, rubricComment, style } = props;
+//   const onMouseEnter = (id: string, event: any) => {
+//     const elems = document.getElementsByClassName(id);
+//     [].forEach.call(elems, (elem: any) => {
+//       elem.style.backgroundColor = '#FAFF91';
+//     });
+//   };
 
-  const onMouseEnter = (id: string, event: any) => {
-    const elems = document.getElementsByClassName(id);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#FAFF91';
-    });
-  };
+//   const onMouseLeave = (id: string, event: any) => {
+//     const elems = document.getElementsByClassName(id);
+//     [].forEach.call(elems, (elem: any) => {
+//       elem.style.backgroundColor = '#ffca93';
+//     });
+//   };
 
-  const onMouseLeave = (id: string, event: any) => {
-    const elems = document.getElementsByClassName(id);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#ffca93';
-    });
-  };
+//   let pointDelta = '';
+//   if (comment.pointDelta && comment.pointDelta !== 0) {
+//     pointDelta = `-${comment.pointDelta}`;
+//   }
 
-  let pointDelta = '';
-  if (comment.pointDelta && comment.pointDelta !== 0) {
-    pointDelta = `-${comment.pointDelta}`;
-  }
-
-  return (
-    <Card
-      className="comment"
-      style={style}
-      onMouseEnter={onMouseEnter.bind(props, comment.id.toString())}
-      onMouseLeave={onMouseLeave.bind(props, comment.id.toString())}
-    >
-      <CardText>
-        {pointDelta === '' ? null : <Chip label={pointDelta} />}
-        {/*// should make slug related rubricComment slug related on text*/}
-        {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
-        <div className="comment__text">{comment.text}</div>
-      </CardText>
-    </Card>
-  );
-};
+//   return (
+//     <Card
+//       className="comment"
+//       style={style}
+//       onMouseEnter={onMouseEnter.bind(props, comment.id.toString())}
+//       onMouseLeave={onMouseLeave.bind(props, comment.id.toString())}
+//     >
+//       <CardText>
+//         {pointDelta === '' ? null : <Chip label={pointDelta} />}
+//         {/*// should make slug related rubricComment slug related on text*/}
+//         {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
+//         <div className="comment__text">{comment.text}</div>
+//       </CardText>
+//     </Card>
+//   );
+// };
 export default CodeViewer;

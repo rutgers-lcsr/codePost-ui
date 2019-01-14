@@ -51,7 +51,7 @@ class Rubric extends React.Component<IProps, IState> {
     const { searchTerm, visibles } = this.state;
 
     return (
-      <div className="grade__main-container__left-panel">
+      <div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
           const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];

@@ -7,7 +7,7 @@ import Rubric from './components/grade/Rubric';
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { Comment, CommentType } from './infrastructure/comment';
+import { CommentIO, CommentType } from './infrastructure/comment';
 import { File, FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -110,7 +110,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   public loadComments = (file: FileType) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
-        return Comment.read(commentId).then((comment: CommentType) => {
+        return CommentIO.read(commentId).then((comment: CommentType) => {
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -278,7 +278,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     // - Keep comment rendered until DELETE completes
     // - Remove comment render, add in a global page loading icon.
     if (comment.id > 0) {
-      Comment.delete(comment.id);
+      CommentIO.delete(comment.id);
     }
   };
 
@@ -331,24 +331,28 @@ class Grade extends React.Component<IProps, IGradeState> {
       <div>
         <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="grade__main-container">
-          <Rubric
-            rubricCategories={rubricCategories}
-            rubricComments={rubricComments}
-            handleRubricCommentClick={this.handleRubricCommentClick}
-          />
-          <CodeGrader
-            submission={submission}
-            files={files}
-            comments={comments}
-            rubricComments={commentRubricComments}
-            readOnly={submission.isFinalized}
-            addComment={this.addComment}
-            activeCommentId={activeCommentId}
-            changeActive={this.changeActiveComment}
-            deleteComment={this.deleteComment}
-            updateComment={this.updateComment}
-            saveGrade={this.saveGrade}
-          />
+          <div className="grade__main-container__left-panel">
+            <Rubric
+              rubricCategories={rubricCategories}
+              rubricComments={rubricComments}
+              handleRubricCommentClick={this.handleRubricCommentClick}
+            />
+          </div>
+          <div className="grade__main-container__right-panel">
+            <CodeGrader
+              submission={submission}
+              files={files}
+              comments={comments}
+              rubricComments={commentRubricComments}
+              readOnly={submission.isFinalized}
+              addComment={this.addComment}
+              activeCommentId={activeCommentId}
+              changeActive={this.changeActiveComment}
+              deleteComment={this.deleteComment}
+              updateComment={this.updateComment}
+              saveGrade={this.saveGrade}
+            />
+          </div>
         </div>
       </div>
     );
