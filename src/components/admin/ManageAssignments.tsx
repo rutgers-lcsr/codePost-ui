@@ -40,7 +40,7 @@ interface IProps {
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
-    pointLimit: number | undefined,
+    pointLimit: number | null,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -65,7 +65,7 @@ interface IProps {
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined,
+    categoryPointLimit: number | null,
   ) => Promise<RubricCategoryType>;
   updateRubricComment: (
     categoryID: number,
@@ -131,9 +131,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  // ------------------- Functions to modify category -------------------
-  // Reminder need to add checks to make sure cateogries can't be added
-  //  with the same name as existing categories.
+  // ------------------- Functions to modify activeRubricCategories state field -------------------
   public addEmptyCategory = () => {
     const { activeRubricCategories, activeRubricComments, activeAssignment, newCategoryCounter } = this.state;
     if (activeRubricCategories && activeAssignment && activeRubricComments) {
@@ -141,7 +139,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         id: newCategoryCounter,
         name: '',
         // Reminder -- Magic number on pointLimit until we can update to be undefined
-        pointLimit: 0,
+        pointLimit: null,
         assignment: activeAssignment.id,
         rubricComments: [],
       });
@@ -188,7 +186,49 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricCategories });
   };
 
-  // ------------------- Functions to modify database -------------------
+  // ------------------- Functions to modify activeRubricComments state field -------------------
+
+  public addEmptyComment = (categoryID: number) => {
+    const { activeRubricComments } = this.state;
+    if (activeRubricComments) {
+      const newComment = {
+        // id -1 indicates new comment
+        id: -1,
+        text: '',
+        pointDelta: 0,
+        category: categoryID,
+        comments: [],
+      };
+      if (activeRubricComments[categoryID]) {
+        activeRubricComments[categoryID].push(newComment);
+      } else {
+        activeRubricComments[categoryID] = [newComment];
+      }
+      this.setState({ activeRubricComments });
+    }
+  };
+
+  public changeCommentText = (categoryID: number, commentIndex: number, newText: string) => {
+    const { activeRubricComments, savedComments } = this.state;
+    if (activeRubricComments) {
+      activeRubricComments[categoryID][commentIndex].text = newText;
+      const commentID = activeRubricComments[categoryID][commentIndex].id;
+      savedComments[commentID] = false;
+    }
+    this.setState({ activeRubricComments, savedComments });
+  };
+
+  public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
+    const { activeRubricComments, savedComments } = this.state;
+    if (activeRubricComments) {
+      activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
+      const commentID = activeRubricComments[categoryID][commentIndex].id;
+      savedComments[commentID] = false;
+    }
+    this.setState({ activeRubricComments, savedComments });
+  };
+
+  // ------------------- Functions that actually make API call to modify database -------------------
   public updateComment = (categoryID: number, commentIndex: number) => {
     const { activeAssignment, activeRubricComments, savedComments } = this.state;
     if (activeAssignment && activeRubricComments) {
@@ -196,14 +236,22 @@ class ManageAssignments extends React.Component<IProps, {}> {
       if (comm.text.length === 0) {
         this.props.addErrorToast('Cannot save comment. Text must not be empty.', undefined);
         return;
-      } else if (comm.id === -1) {
+      }
+      activeRubricComments[categoryID].forEach((otherComment, index) => {
+        if (otherComment.text === comm.text && index !== commentIndex) {
+          this.props.addErrorToast('Cannot save comment. Text must be unique within category.', undefined);
+          return;
+        }
+      });
+      if (comm.id === -1) {
         const promise = this.props.createRubricComment(activeAssignment.id, categoryID, comm.text, comm.pointDelta);
         if (promise) {
           promise.then((data) => {
             activeRubricComments[categoryID][commentIndex].id = data.id;
-            savedComments[comm.id] = true;
+            savedComments[data.id] = true;
+            delete savedComments[-1];
             this.setState({ activeRubricComments, savedComments });
-            setTimeout(this.clearSaveComment.bind(this.props, comm.id), 2000);
+            setTimeout(this.clearSaveComment.bind(this.props, data.id), 2000);
           });
         }
       } else {
@@ -268,46 +316,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  public addEmptyComment = (categoryID: number) => {
-    const { activeRubricComments } = this.state;
-    if (activeRubricComments) {
-      const newComment = {
-        // id -1 indicates new comment
-        id: -1,
-        text: '',
-        pointDelta: 0,
-        category: categoryID,
-        comments: [],
-      };
-      if (activeRubricComments[categoryID]) {
-        activeRubricComments[categoryID].push(newComment);
-      } else {
-        activeRubricComments[categoryID] = [newComment];
-      }
-      this.setState({ activeRubricComments });
-    }
-  };
-
-  public changeCommentText = (categoryID: number, commentIndex: number, newText: string) => {
-    const { activeRubricComments, savedComments } = this.state;
-    if (activeRubricComments) {
-      activeRubricComments[categoryID][commentIndex].text = newText;
-      const commentID = activeRubricComments[categoryID][commentIndex].id;
-      savedComments[commentID] = false;
-    }
-    this.setState({ activeRubricComments, savedComments });
-  };
-
-  public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
-    const { activeRubricComments, savedComments } = this.state;
-    if (activeRubricComments) {
-      activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
-      const commentID = activeRubricComments[categoryID][commentIndex].id;
-      savedComments[commentID] = false;
-    }
-    this.setState({ activeRubricComments, savedComments });
-  };
-
   public deleteComment = (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => {
     const { activeRubricComments, activeRubricCategories, activeAssignment, savedComments } = this.state;
 
@@ -358,7 +366,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  // ------------------- Delete Linked Comments Dialog functions -------------------
+  // ------------------- Functions for setTimeout to call to remove 'saved' status of comments -------------------
 
   public clearSaveComment = (commentID: number) => {
     const { savedComments } = this.state;

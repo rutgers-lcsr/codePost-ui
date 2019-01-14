@@ -40,12 +40,12 @@ interface IPropsRubricCategory {
   // Category props
   comments: RubricCommentType[];
   categoryName: string;
-  categoryPointLimit: number | undefined;
+  categoryPointLimit: number | null;
 
   // Category fuctions
   deleteCategory: (categoryID: number, categoryName: string) => void;
   changeCategoryName: (categoryIndex: number, newText: string) => void;
-  changeCategoryCap: (categoryIndex: number, newCap: number) => void;
+  changeCategoryCap: (categoryIndex: number, newCap: number | null) => void;
   addEmptyComment: (categoryIndex: number) => void;
   updateCategory: (catetgoryIndex: number) => void;
 
@@ -249,7 +249,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         onBlur={updateThisCategory}
       />
       <TextField
-        defaultValue={categoryPointLimit}
+        defaultValue={categoryPointLimit ? categoryPointLimit : ''}
         label={'Category points cap'}
         fullWidth={false}
         step={0.5}

@@ -834,7 +834,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public createRubricCategory = (
     assignmentID: number,
     categoryName: string,
-    pointLimit: number | undefined,
+    pointLimit: number | null,
     newComments: RubricCommentType[],
   ): Promise<RubricCategoryType> => {
     const { assignments, rubricCategories, rubricComments } = this.state;
@@ -849,8 +849,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       name: categoryName,
       assignment: assignmentID,
       rubricComments: [],
+      pointLimit,
     };
-    addToPayload(payload, 'pointLimit', pointLimit);
 
     return RubricCategory.create(payload).then((rubricCategory: RubricCategoryType) => {
       assignments.forEach((assn) => {
@@ -910,7 +910,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined,
+    categoryPointLimit: number | null,
   ): Promise<RubricCategoryType> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
@@ -922,8 +922,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       id: categoryID,
       name: categoryName,
       assignment: assignmentID,
+      pointLimit: categoryPointLimit,
     };
-    addToPayload(payload, 'pointLimit', categoryPointLimit);
 
     return RubricCategory.update(payload).then((rubricCategory: RubricCategoryType) => {
       const catIndex = rubricCategories[assignmentID]

@@ -17,7 +17,7 @@ interface IProps {
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
-    pointLimit: number | undefined,
+    pointLimit: number | null,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -42,7 +42,7 @@ interface IProps {
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined,
+    categoryPointLimit: number | null,
   ) => Promise<RubricCategoryType>;
   updateRubricComment: (
     categoryID: number,
@@ -56,7 +56,7 @@ interface IProps {
 interface IDownloadCategory {
   id: number;
   name: string;
-  pointLimit: number | undefined;
+  pointLimit: number | null;
   rubricComments: RubricCommentType[];
 }
 
