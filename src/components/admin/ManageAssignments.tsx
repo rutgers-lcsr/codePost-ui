@@ -89,6 +89,8 @@ interface IState {
   newCategoryCounter: number;
   deleteCommentDialogID: { categoryID: number; commentIndex: number } | undefined;
   deleteCategoryDialogID: { categoryID: number; categoryName: string } | undefined;
+  savedComments: { [id: number]: boolean };
+  savedCategories: { [id: number]: boolean };
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -99,6 +101,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
     newCategoryCounter: -1,
     deleteCommentDialogID: undefined,
     deleteCategoryDialogID: undefined,
+    savedComments: {},
+    savedCategories: {},
   };
 
   public assignmentNameField: any;
@@ -186,7 +190,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   // ------------------- Functions to modify database -------------------
   public updateComment = (categoryID: number, commentIndex: number) => {
-    const { activeAssignment, activeRubricComments } = this.state;
+    const { activeAssignment, activeRubricComments, savedComments } = this.state;
     if (activeAssignment && activeRubricComments) {
       const comm = activeRubricComments[categoryID][commentIndex];
       if (comm.text.length === 0) {
@@ -196,15 +200,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
         const promise = this.props.createRubricComment(activeAssignment.id, categoryID, comm.text, comm.pointDelta);
         if (promise) {
           promise.then((data) => {
-            if (data) {
-              console.log(activeRubricComments[categoryID].length);
-              activeRubricComments[categoryID][commentIndex].id = data.id;
-              this.setState({ activeRubricComments });
-            }
+            activeRubricComments[categoryID][commentIndex].id = data.id;
+            savedComments[comm.id] = true;
+            this.setState({ activeRubricComments, savedComments });
+            setTimeout(this.clearSaveComment.bind(this.props, comm.id), 2000);
           });
         }
       } else {
-        this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta);
+        this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta).then(() => {
+          savedComments[comm.id] = true;
+          this.setState({ savedComments });
+          setTimeout(this.clearSaveComment.bind(this.props, comm.id), 2000);
+        });
       }
     }
   };
@@ -282,23 +289,27 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public changeCommentText = (categoryID: number, commentIndex: number, newText: string) => {
-    const { activeRubricComments } = this.state;
+    const { activeRubricComments, savedComments } = this.state;
     if (activeRubricComments) {
       activeRubricComments[categoryID][commentIndex].text = newText;
+      const commentID = activeRubricComments[categoryID][commentIndex].id;
+      savedComments[commentID] = false;
     }
-    this.setState({ activeRubricComments });
+    this.setState({ activeRubricComments, savedComments });
   };
 
   public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
-    const { activeRubricComments } = this.state;
+    const { activeRubricComments, savedComments } = this.state;
     if (activeRubricComments) {
       activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
+      const commentID = activeRubricComments[categoryID][commentIndex].id;
+      savedComments[commentID] = false;
     }
-    this.setState({ activeRubricComments });
+    this.setState({ activeRubricComments, savedComments });
   };
 
   public deleteComment = (categoryID: number, commentIndex: number, deleteLinkedComments: boolean) => {
-    const { activeRubricComments, activeRubricCategories, activeAssignment } = this.state;
+    const { activeRubricComments, activeRubricCategories, activeAssignment, savedComments } = this.state;
 
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
       const commentID = activeRubricComments[categoryID][commentIndex].id;
@@ -316,10 +327,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
           }
           return cat;
         });
+        delete savedComments[commentID];
         this.setState({
           activeRubricComments: newRubricComments,
           activeRubricCategories: newRubricCategories,
           deleteCommentDialogID: undefined,
+          savedComments,
         });
       });
     }
@@ -345,6 +358,21 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
+  // ------------------- Delete Linked Comments Dialog functions -------------------
+
+  public clearSaveComment = (commentID: number) => {
+    const { savedComments } = this.state;
+    delete savedComments[commentID];
+    this.setState({ savedComments });
+  };
+
+  public clearSaveCategory = (categoryID: number) => {
+    const { savedCategories } = this.state;
+    delete savedCategories[categoryID];
+    this.setState({ savedCategories });
+  };
+
+  // ------------------- Delete Linked Comments Dialog functions -------------------
   public triggerDeleteCommentDialog = (categoryID: number, commentIndex: number) => {
     this.setState({ deleteCommentDialogID: { categoryID, commentIndex } });
   };
@@ -468,6 +496,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               isDisabled={lockManageAssignment}
               updateComment={this.updateComment}
               updateCategory={this.updateCategory}
+              savedComments={this.state.savedComments}
             />
           );
         });

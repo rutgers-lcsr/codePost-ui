@@ -4,11 +4,13 @@ import {
   DataTable,
   DialogContainer,
   EditDialogColumn,
+  FontIcon,
   TableBody,
   TableColumn,
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
@@ -23,6 +25,7 @@ interface IPropsRubricComment {
   isDisabled: boolean;
   deleteComment: (categoryID: number, commentIndex: number) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
+  savedComments: { [id: number]: boolean };
 }
 
 interface IPropsRubricCategory {
@@ -48,6 +51,7 @@ interface IPropsRubricCategory {
 
   // General props
   isDisabled: boolean;
+  savedComments: { [id: number]: boolean };
 }
 
 interface IPropsDeleteLinkedDialog {
@@ -72,6 +76,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     changeCommentDelta,
     deleteComment,
     updateComment,
+    savedComments,
   } = props;
 
   const changeThisCommentText = (newText: string) => {
@@ -98,37 +103,56 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       </Button>
     );
   }
+  let unSavedChanges;
+  if (commentID in savedComments) {
+    unSavedChanges = savedComments[commentID] ? (
+      <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>done_all</FontIcon>
+        </div>
+      </Tooltipped>
+    ) : (
+      <Tooltipped label="Unsaved changes. Click anywhere to save." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>cloud_off</FontIcon>
+        </div>
+      </Tooltipped>
+    );
+  }
 
   return (
-    <TableRow key={commentID}>
-      <TableColumn>
-        <EditDialogColumn
-          defaultValue={defaultText}
-          inline={true}
-          disabled={isDisabled}
-          noIcon={isDisabled}
-          centered={true}
-          onChange={changeThisCommentText}
-          onBlur={updateThisComment}
-        />
-      </TableColumn>
-      <TableColumn>
-        <EditDialogColumn
-          type="number"
-          defaultValue={defaultDelta}
-          inline={true}
-          step={0.5}
-          pattern="^d+(\.|\,)\d{1}"
-          className="deduction-field"
-          disabled={isDisabled}
-          noIcon={isDisabled}
-          centered={true}
-          onChange={changeThisCommentDelta}
-          onBlur={updateThisComment}
-        />
-      </TableColumn>
-      {deleteCommentColumn}
-    </TableRow>
+    <div>
+      <TableRow key={commentID}>
+        {unSavedChanges}
+        <TableColumn>
+          <EditDialogColumn
+            defaultValue={defaultText}
+            inline={true}
+            disabled={isDisabled}
+            noIcon={isDisabled}
+            centered={true}
+            onChange={changeThisCommentText}
+            onBlur={updateThisComment}
+          />
+        </TableColumn>
+        <TableColumn>
+          <EditDialogColumn
+            type="number"
+            defaultValue={defaultDelta}
+            inline={true}
+            step={0.5}
+            pattern="^d+(\.|\,)\d{1}"
+            className="deduction-field"
+            disabled={isDisabled}
+            noIcon={isDisabled}
+            centered={true}
+            onChange={changeThisCommentDelta}
+            onBlur={updateThisComment}
+          />
+        </TableColumn>
+        {deleteCommentColumn}
+      </TableRow>
+    </div>
   );
 };
 
@@ -149,6 +173,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     addEmptyComment,
     updateComment,
     updateCategory,
+    savedComments,
   } = props;
 
   const changeThisCategoryText = (newText: string) => {
@@ -187,6 +212,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             defaultDelta={comm.pointDelta}
             isDisabled={isDisabled}
             updateComment={updateComment}
+            savedComments={savedComments}
           />
         );
       });
@@ -238,6 +264,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
       <DataTable key={categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow>
+            <TableColumn key={'saving'}>Comment text</TableColumn>
             <TableColumn key={'CommentText'}>Comment text</TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
             {deleteCommentHeader}
