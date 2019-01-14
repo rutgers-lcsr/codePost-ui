@@ -88,8 +88,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const { courses, assignments } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse;
-    let currentAssignment;
+    let currentCourse: any;
+    let currentAssignment: any;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
@@ -102,6 +102,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
         currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
+        });
+
+        this.setState({ isLoadingSubmissions: true });
+        this.loadSubmissions(currentAssignment).then(() => {
+          this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
         });
       }
     }
