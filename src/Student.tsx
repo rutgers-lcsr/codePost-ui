@@ -98,8 +98,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const { courses, assignments } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse;
-    let currentAssignment;
+    let currentCourse: any;
+    let currentAssignment: any;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
@@ -112,6 +112,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
         currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
+        });
+
+        this.setState({ isLoadingSubmission: true });
+        this.loadSubmission(currentAssignment).then(() => {
+          this.setState({ currentCourse, currentAssignment, isLoadingSubmission: false });
         });
       }
     }
@@ -331,11 +336,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
         </div>
       );
+    } else if (currentAssignment && this.state.isLoadingSubmission) {
+      contentArea = <div>Loading...</div>;
     } else if (currentAssignment) {
       contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
     } else {
       contentArea = <div>Select an assignment on the left!</div>;
     }
+
+    console.log(contentArea.props);
 
     return (
       <div className="student">
