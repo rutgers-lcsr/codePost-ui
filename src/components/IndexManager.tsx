@@ -8,6 +8,9 @@ import LoginForm from './LoginForm';
 import NoMatch from './NoMatch';
 import PasswordReset from './PasswordReset';
 
+import SignupForm from './SignupForm';
+import SignUpManager from './SignUpManager';
+
 interface IndexManagerProps {
   error: string;
   handleLogin: (e: any, data: any) => void;
@@ -24,10 +27,30 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
           <Route
             exact={true}
             path={'/login'}
-            render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} />}
+            render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} />}
           />
 
           <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
+
+          <Route
+            exact={true}
+            path={'/signup/student'}
+            render={(props: any) => <SignupForm {...props} isCreating={false} />}
+          />
+
+          <Route
+            exact={true}
+            path={'/signup/staff/join'}
+            render={(props: any) => <SignupForm {...props} isCreating={false} />}
+          />
+
+          <Route
+            exact={true}
+            path={'/signup/staff/create'}
+            render={(props: any) => <SignupForm {...props} isCreating={true} />}
+          />
+
+          <Route exact={true} path={'/signup/staff'} component={SignUpManager} />
 
           <Route
             exact={true}
