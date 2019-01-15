@@ -29,7 +29,7 @@ const SectionVPatch = t.intersection(
 type SectionType = t.TypeOf<typeof SectionV>;
 
 class Section {
-  public static create = createObject(SectionV, 'sections');
+  public static create = createObject(SectionV, SectionV, 'sections');
   public static read = readObject(SectionV, 'sections');
   public static update = updateObject(SectionV, SectionVPatch, 'sections');
   public static delete = deleteObject(SectionV, 'sections');

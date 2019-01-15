@@ -31,7 +31,7 @@ const FileVPatch = t.intersection(
 type FileType = t.TypeOf<typeof FileV>;
 
 class File {
-  public static create = createObject(FileV, 'files');
+  public static create = createObject(FileV, FileV, 'files');
   public static read = readObject(FileV, 'files');
   public static update = updateObject(FileV, FileVPatch, 'files');
   public static delete = deleteObject(FileV, 'files');

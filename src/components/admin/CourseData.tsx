@@ -14,9 +14,7 @@ interface IPropsCourseData {
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
   students: string[];
-  studentsLoadComplete: boolean;
   graders: string[];
-  gradersLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;

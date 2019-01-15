@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
+import { DeleteLinkedCommentsDialog } from './adminUtils';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -16,7 +17,7 @@ interface IProps {
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
-    pointLimit: number | undefined,
+    pointLimit: number | null,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -25,32 +26,43 @@ interface IProps {
     text: string,
     pointDelta: number,
   ) => Promise<RubricCommentType>;
-  deleteRubricCategory: (assignmentID: number, categoryID: number, categoryName: string) => Promise<void>;
-  deleteRubricComment: (assignmentID: number, categoryID: number, commentID: number) => Promise<void>;
+  deleteRubricCategory: (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+    deleteLinkedComments: boolean,
+  ) => Promise<void>;
+  deleteRubricComment: (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+    deleteLinkedComments: boolean,
+  ) => Promise<void>;
   updateRubricCategory: (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined,
-  ) => Promise<RubricCategoryType>;
+    categoryPointLimit: number | null,
+  ) => Promise<void>;
   updateRubricComment: (
     categoryID: number,
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
-  ) => Promise<RubricCommentType>;
+  ) => Promise<void>;
   parentUpdate: (assignment: AssignmentType | undefined) => void;
 }
 
 interface IDownloadCategory {
   id: number;
   name: string;
-  pointLimit: number | undefined;
+  pointLimit: number | null;
   rubricComments: RubricCommentType[];
 }
 
 interface IState {
   dialogVisible: boolean;
+  displayDeleteLinked: boolean;
   uploadErrors: string[];
   updatingRubric: boolean;
   updates: { [index: string]: string[] } | undefined;
@@ -61,6 +73,7 @@ interface IState {
 class RubricFileDialog extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
+    displayDeleteLinked: false,
     uploadErrors: [],
     updatingRubric: false,
     updates: undefined,
@@ -72,6 +85,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
     const { dialogVisible } = this.state;
     this.setState({
       dialogVisible: !dialogVisible,
+      displayDeleteLinked: false,
       uploadErrors: [],
       updates: undefined,
       updatingRubric: false,
@@ -125,7 +139,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       const uploadErrors = this.isRubric(rubric);
       if (uploadErrors.length === 0) {
         this.setState({ updatingRubric: true, jsonUpload: rubric, updates: undefined });
-        this.updateRubric(rubric, false);
+        this.updateRubric(rubric, false, false);
       } else {
         this.setState({ uploadErrors, updates: undefined });
       }
@@ -185,7 +199,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           if (comm.category !== cat.id) {
             uploadErrors.push(`Category field of ${comm.id} must be equal to the ID of it's parent category`);
           }
-          if (Object.keys(comm).length !== 4) {
+          if (Object.keys(comm).length < 4) {
             uploadErrors.push(`Comment of id ${comm.id} has some incorrect keys.
               Please check the spellings of id, text, pointDelta, and category fields`);
           }
@@ -199,7 +213,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
 
   // If makeDBUpdate === false, check to see what changes would be makeDBUpdate
   // If makeDBUpdate === true, actually make the api calls to make the changes
-  public updateRubric = (newRubric: IDownloadCategory[], makeDBUpdate: boolean) => {
+  public updateRubric = (newRubric: IDownloadCategory[], makeDBUpdate: boolean, deleteLinkedComments: boolean) => {
     const { activeRubricComments, activeRubricCategories, activeAssignment } = this.props;
     const updates: { [index: string]: string[] } = {
       newCategories: [],
@@ -237,7 +251,12 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         } else {
           // If new comment for an existing category, create commnet
           cat.rubricComments.forEach((com) => {
-            if (com.id === -1) {
+            const comIndex = oldComments[cat.id]
+              .map((i) => {
+                return i.id;
+              })
+              .indexOf(com.id);
+            if (comIndex === -1) {
               if (makeDBUpdate) {
                 const result = this.props.createRubricComment(activeAssignment.id, cat.id, com.text, com.pointDelta);
                 promises.push(result);
@@ -245,11 +264,6 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               updates.newComments.push(com.text);
             } else {
               // If existing comment, and either text or points have changed, update comment
-              const comIndex = oldComments[cat.id]
-                .map((i) => {
-                  return i.id;
-                })
-                .indexOf(com.id);
               if (
                 comIndex !== -1 &&
                 (oldComments[cat.id][comIndex].text !== com.text ||
@@ -274,7 +288,12 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               .indexOf(oldComment.id);
             if (checkDelete === -1) {
               if (makeDBUpdate) {
-                const result = this.props.deleteRubricComment(activeAssignment.id, cat.id, oldComment.id);
+                const result = this.props.deleteRubricComment(
+                  activeAssignment.id,
+                  cat.id,
+                  oldComment.id,
+                  deleteLinkedComments,
+                );
                 promises.push(result);
               }
               updates.deletedComments.push(oldComment.text);
@@ -298,7 +317,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       activeRubricCategories.forEach((cat) => {
         if (newCatIDs.indexOf(cat.id) === -1) {
           if (makeDBUpdate) {
-            const result = this.props.deleteRubricCategory(activeAssignment.id, cat.id, cat.name);
+            const result = this.props.deleteRubricCategory(activeAssignment.id, cat.id, cat.name, deleteLinkedComments);
             promises.push(result);
           }
           updates.deletedCategories.push(cat.name);
@@ -319,8 +338,40 @@ class RubricFileDialog extends React.Component<IProps, {}> {
 
   // Once the user has seen and proceeded with the changes, trigger an update with
   // makeDBUpdate = true
-  public triggerUpdate = () => {
-    this.setState({ updatingRubric: true, updates: undefined }, () => this.updateRubric(this.state.jsonUpload, true));
+  public triggerUpdate = (deleteLinkedComments: boolean | undefined) => {
+    if (
+      typeof deleteLinkedComments === 'undefined' &&
+      this.state.updates &&
+      (this.state.updates.deletedComments.length > 0 || this.state.updates.deletedCategories.length > 0)
+    ) {
+      this.setState({ updates: undefined, displayDeleteLinked: true });
+    } else if (deleteLinkedComments) {
+      this.setState({ updatingRubric: true, updates: undefined, displayDeleteLinked: false }, () =>
+        this.updateRubric(this.state.jsonUpload, true, true),
+      );
+    } else {
+      this.setState({ updatingRubric: true, updates: undefined, displayDeleteLinked: false }, () =>
+        this.updateRubric(this.state.jsonUpload, true, false),
+      );
+    }
+  };
+
+  public getUpdateMessages = (data: string[], message: string) => {
+    if (data.length > 0) {
+      return (
+        <div>
+          <b>{message}</b>
+          {data.map((elem, index) => {
+            return (
+              <div className="uploadChangesText" key={index}>
+                {elem}
+              </div>
+            );
+          })}
+          <div className="error-padding" />
+        </div>
+      );
+    } else return;
   };
 
   public dummyUpload = (file: File) => {
@@ -328,7 +379,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
   };
 
   public render() {
-    const { dialogVisible, updates } = this.state;
+    const { dialogVisible, updates, displayDeleteLinked } = this.state;
     const dialogActions = [];
     dialogActions.push({
       secondary: true,
@@ -337,139 +388,46 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       disabled: this.state.updatingRubric,
     });
 
-    const errors = this.state.uploadErrors.map((error, index) => {
-      return (
-        <div key={index}>
-          <div className="uploadErrorText">{error}</div>
-          <div className="error-padding" />
-        </div>
-      );
-    });
     const progress = this.state.updatingRubric ? <LinearProgress id="circle" className="progressCircle" /> : '';
-
     const uploadFile = this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : '';
+    let content;
 
-    let updateMessage;
-    let newCategories;
-    let newComments;
-    let updatedCategories;
-    let updatedComments;
-    let deletedCategories;
-    let deletedComments;
-    let shouldUpdate = false;
-
-    if (updates) {
-      if (updates.newCategories.length > 0) {
-        shouldUpdate = true;
-        newCategories = (
-          <div>
-            <b>The following categories will be added:</b>
-            {updates.newCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
+    if (this.state.uploadErrors.length > 0) {
+      content = this.state.uploadErrors.map((error, index) => {
+        return (
+          <div key={index}>
+            <div className="uploadErrorText">{error}</div>
             <div className="error-padding" />
           </div>
         );
-      }
-
-      if (updates.newComments.length > 0) {
-        shouldUpdate = true;
-        newComments = (
-          <div>
-            <b>The following comments will be added:</b>
-            {updates.newComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.updatedCategories.length > 0) {
-        shouldUpdate = true;
-        updatedCategories = (
-          <div>
-            <b>The following categories will be updated:</b>
-            {updates.updatedCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.updatedComments.length > 0) {
-        shouldUpdate = true;
-        updatedComments = (
-          <div>
-            <b>The following comments will be updated: </b>
-            {updates.updatedComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.deletedCategories.length > 0) {
-        shouldUpdate = true;
-        deletedCategories = (
-          <div>
-            <b>The following categories will be deleted:</b>
-            {updates.deletedCategories.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (updates.deletedComments.length > 0) {
-        deletedComments = (
-          <div>
-            <b>The following comments will be deleted:</b>
-            {updates.deletedComments.map((elem, index) => {
-              return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
-                </div>
-              );
-            })}
-            <div className="error-padding" />
-          </div>
-        );
-      }
-
-      if (shouldUpdate) {
-        updateMessage = (
+      });
+    } else if (updates) {
+      const updateMessages = [];
+      updateMessages.push(this.getUpdateMessages(updates.newCategories, 'The following categories will be added:'));
+      updateMessages.push(this.getUpdateMessages(updates.newComments, 'The following comments will be added:'));
+      updateMessages.push(
+        this.getUpdateMessages(updates.updatedCategories, 'The following categories will be updated:'),
+      );
+      updateMessages.push(this.getUpdateMessages(updates.updatedComments, 'The following comments will be updated:'));
+      updateMessages.push(
+        this.getUpdateMessages(updates.deletedCategories, 'The following categories will be deleted:'),
+      );
+      updateMessages.push(this.getUpdateMessages(updates.deletedComments, 'The following comments will be deleted:'));
+      if (
+        updateMessages.find((i) => {
+          return typeof i !== 'undefined';
+        })
+      ) {
+        content = (
           <div>
             <div className="error-padding" />
             The following changes will be made to this rubric. Do you want to continue?
             <div className="error-padding" />
-            <Button raised onClick={this.triggerUpdate} primary={true} flat={true}>
+            <Button raised onClick={this.triggerUpdate.bind(this.props, undefined)} primary={true} flat={true}>
               Continue with changes
             </Button>
             <div className="error-padding" />
+            {updateMessages}
           </div>
         );
       }
@@ -483,6 +441,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           iconChildren={'vertical_align_center'}
           iconBefore={false}
           flat={true}
+          className={'fileUploadDialog'}
         >
           Upload / Download Rubric
         </Button>
@@ -525,14 +484,14 @@ class RubricFileDialog extends React.Component<IProps, {}> {
             <div className="error-padding" />
             {uploadFile}
             <div className="error-padding" />
-            {errors}
-            {updateMessage}
-            {newCategories}
-            {newComments}
-            {updatedCategories}
-            {updatedComments}
-            {deletedCategories}
-            {deletedComments}
+            {content}
+            <DeleteLinkedCommentsDialog
+              onDelete={this.triggerUpdate.bind(this.props, true)}
+              onUnLink={this.triggerUpdate.bind(this.props, false)}
+              onCancel={this.toggleDialog}
+              isVisible={displayDeleteLinked}
+              isDialog={false}
+            />
           </div>
         </DialogContainer>
       </div>

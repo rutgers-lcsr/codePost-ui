@@ -11,7 +11,7 @@ const CommentV = t.intersection(
       startLine: t.number,
       endLine: t.number,
       pointDelta: t.union([t.number, t.null]),
-      text: t.string,
+      text: t.union([t.string, t.null]),
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
     }),
@@ -32,7 +32,7 @@ const CommentVPatch = t.intersection(
       startLine: t.number,
       endLine: t.number,
       pointDelta: t.union([t.number, t.null]),
-      text: t.string,
+      text: t.union([t.string, t.null]),
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
     }),
@@ -43,7 +43,7 @@ const CommentVPatch = t.intersection(
 type CommentType = t.TypeOf<typeof CommentV>;
 
 class CommentIO {
-  public static create = createObject(CommentV, 'comments');
+  public static create = createObject(CommentV, CommentV, 'comments');
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');

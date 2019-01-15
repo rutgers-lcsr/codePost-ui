@@ -82,7 +82,6 @@ class ManageSections extends React.Component<IProps, {}> {
     const { sectionsLoadComplete, lockedSectionChange, sections, createSection, graders } = this.props;
     const { newSectionField, changedSections } = this.state;
 
-    const lockIcon = lockedSectionChange ? 'lock' : 'lock_open';
     const iconChanged = <FontIcon>track_changes</FontIcon>;
 
     const allowAddSection = newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
@@ -178,9 +177,6 @@ class ManageSections extends React.Component<IProps, {}> {
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
         </DataTable>
-        <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-          {lockIcon}
-        </Button>
       </div>
     );
   }

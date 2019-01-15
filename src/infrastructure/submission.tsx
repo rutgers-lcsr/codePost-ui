@@ -38,7 +38,7 @@ const SubmissionVPatch = t.intersection(
 type SubmissionType = t.TypeOf<typeof SubmissionV>;
 
 class Submission {
-  public static create = createObject(SubmissionV, 'submissions');
+  public static create = createObject(SubmissionV, SubmissionV, 'submissions');
   public static read = readObject(SubmissionV, 'submissions');
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
