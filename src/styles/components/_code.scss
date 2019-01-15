@@ -1,0 +1,29 @@
+.code {
+  display: flex;
+
+  &__line-numbers {
+    flex: 0 1 15px;
+    text-align: center;
+    color: gray;
+    border-right: 1px solid gray;
+
+    &__line-number {
+      display: block;
+      width: 2em;
+      font-family: $code-font-stack;
+    }
+  }
+
+  &__highlighted-area {
+    flex: 1 1 0;
+    padding-left: 8px;
+    overflow-x: hidden;
+    font-family: $code-font-stack;
+  }
+
+  &__comments {
+    flex: 0 1 400px;
+    font-size: 13px;
+    position: relative;
+  }
+}

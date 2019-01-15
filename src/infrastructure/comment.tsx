@@ -1,4 +1,5 @@
 import * as t from 'io-ts';
+
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 const CommentV = t.intersection(
@@ -41,11 +42,11 @@ const CommentVPatch = t.intersection(
 
 type CommentType = t.TypeOf<typeof CommentV>;
 
-class Comment {
+class CommentIO {
   public static create = createObject(CommentV, CommentV, 'comments');
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
 }
 
-export { CommentType, Comment };
+export { CommentType, CommentIO };

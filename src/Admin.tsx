@@ -22,7 +22,7 @@ import {
 } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { Comment, CommentType } from './infrastructure/comment';
+import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -1023,9 +1023,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const linkedComments = rubricComment.comments;
         const commentPromises: any = linkedComments.map((id) => {
           if (deleteLinkedComments) {
-            return Comment.delete(id);
+            return CommentIO.delete(id);
           } else {
-            return Comment.read(id).then((c: CommentType) => {
+            return CommentIO.read(id).then((c: CommentType) => {
               const newText = c.text ? `${thisRubricComment.text}. ${c.text}` : thisRubricComment.text;
               const payload = {
                 id,
@@ -1033,7 +1033,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
                 pointDelta: thisRubricComment.pointDelta,
                 rubricComment: null,
               };
-              return Comment.update(payload);
+              return CommentIO.update(payload);
             });
           }
         });
@@ -1245,30 +1245,28 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       );
     } else if (currentCourse && loadedPanel === 1) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageAssignments
-            key={currentCourse.id}
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            submissions={this.state.submissions}
-            submissionsLoadComplete={this.state.submissionsLoadComplete}
-            lockManageAssignment={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            addErrorToast={this.addErrorToast}
-            assignments={this.state.assignments}
-            assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
-            createRubricCategory={this.createRubricCategory}
-            deleteRubricCategory={this.deleteRubricCategory}
-            createRubricComment={this.createRubricComment}
-            deleteRubricComment={this.deleteRubricComment}
-            updateRubricComment={this.updateRubricComment}
-            updateRubricCategory={this.updateRubricCategory}
-            updateAssignment={this.updateAssignment}
-            createAssignment={this.createAssignment}
-          />
-        </div>
+        <ManageAssignments
+          key={currentCourse.id}
+          rubricCategories={this.state.rubricCategories}
+          rubricComments={this.state.rubricComments}
+          submissions={this.state.submissions}
+          submissionsLoadComplete={this.state.submissionsLoadComplete}
+          lockManageAssignment={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          addErrorToast={this.addErrorToast}
+          assignments={this.state.assignments}
+          assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
+          createRubricCategory={this.createRubricCategory}
+          deleteRubricCategory={this.deleteRubricCategory}
+          createRubricComment={this.createRubricComment}
+          deleteRubricComment={this.deleteRubricComment}
+          updateRubricComment={this.updateRubricComment}
+          updateRubricCategory={this.updateRubricCategory}
+          updateAssignment={this.updateAssignment}
+          createAssignment={this.createAssignment}
+        />
       );
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
@@ -1307,8 +1305,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     return (
-      <div className="AdminApp">
-        <div className="panel">
+      <div className="admin">
+        <div className="admin__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter()}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -1353,7 +1351,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             createCourse={this.createCourse}
           />
         </div>
-        <div className="content">{courseManagementPanel}</div>
+        <div className="admin__right-panel">{courseManagementPanel}</div>
       </div>
     );
   }

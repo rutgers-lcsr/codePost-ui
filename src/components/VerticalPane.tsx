@@ -1,8 +1,6 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import '../styles/VerticalPane.scss';
-
 import { IOption } from '../types/common';
 
 interface IProps {
@@ -19,7 +17,7 @@ const VerticalPane = (props: IProps) => {
   const { handleSelectorChange, handleTabChange } = props;
 
   return (
-    <div className="container-vertical-pane">
+    <div className="vertical-pane">
       <Select options={selectorItems} onChange={handleSelectorChange} value={currentSelector} />
       <VerticalTabs currentItem={currentTab} items={tabItems} handleTabChange={handleTabChange} />
     </div>
@@ -34,7 +32,7 @@ interface IVerticalTabsProps {
 
 const VerticalTabs = (props: IVerticalTabsProps) => {
   return (
-    <ul className="vertical-pane">
+    <ul className="vertical-pane__tabs">
       {props.items.map((item: IOption, i: number) => {
         const currentLabel = props.currentItem ? props.currentItem.label : '--';
         const selected = item.label === currentLabel;
@@ -61,7 +59,7 @@ interface ITabProps {
 }
 
 const Tab = (props: ITabProps) => {
-  const className = props.selected ? 'vertical-pane-tab selected' : 'vertical-pane-tab';
+  const className = props.selected ? 'vertical-pane__tab--selected' : 'vertical-pane__tab';
   return (
     <li onClick={props.onClick} key={props.value} className={className}>
       {props.label}

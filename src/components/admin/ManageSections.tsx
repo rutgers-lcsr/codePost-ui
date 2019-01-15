@@ -11,7 +11,6 @@ import {
   TableRow,
   TextField,
 } from 'react-md';
-import '../../styles/index.scss';
 
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';

@@ -4,7 +4,7 @@ import { RubricCommentType } from './infrastructure/rubricComment';
 
 const PIXELS_PER_LINE = 19;
 
-export default class CodeBoxUtils {
+export default class CodePanelUtils {
   public static pixelsPerLine = (): number => {
     return PIXELS_PER_LINE;
   };
