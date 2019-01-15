@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, DialogContainer, TextField } from 'react-md';
 
-import { AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../../infrastructure/assignment';
 
 interface IProps {
   assignments: AssignmentType[];

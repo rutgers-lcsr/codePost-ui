@@ -7,10 +7,10 @@ import { ISectionNoStudents, USER_APP } from '../../types/common';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 
-import ManageAdmins from './ManageAdmins';
-import ManageGraders from './ManageGraders';
-import ManageSections from './ManageSections';
-import ManageStudents from './ManageStudents';
+import ManageAdmins from './ManageUsersComponents/ManageAdmins';
+import ManageGraders from './ManageUsersComponents/ManageGraders';
+import ManageSections from './ManageUsersComponents/ManageSections';
+import ManageStudents from './ManageUsersComponents/ManageStudents';
 
 interface IPropsManageUsers {
   currentCourse: CourseType | undefined;

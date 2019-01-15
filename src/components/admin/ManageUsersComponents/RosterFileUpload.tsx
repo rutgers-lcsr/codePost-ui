@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
-import { USER_APP } from '../../types/common';
+import { USER_APP } from '../../../types/common';
 
 interface IProps {
   users: string[];

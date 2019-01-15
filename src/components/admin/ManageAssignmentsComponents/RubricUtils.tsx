@@ -12,7 +12,7 @@ import {
   TextField,
   Tooltipped,
 } from 'react-md';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 interface IPropsRubricComment {
   commentID: number;
