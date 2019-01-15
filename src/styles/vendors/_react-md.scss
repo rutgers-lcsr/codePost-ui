@@ -1,0 +1,6 @@
+$material-icons-font-path: '~material-icons/iconfont/';
+@import '../../node_modules/react-md/src/scss/react-md';
+@import '~material-icons/iconfont/material-icons.scss';
+
+@include react-md-everything;
+@include react-md-theme-everything($brand-color, $theme-grey);

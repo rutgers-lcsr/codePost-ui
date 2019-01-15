@@ -22,8 +22,12 @@ const GenericObject = t.type({
 
 type GenericObjectType = t.TypeOf<typeof GenericObject>;
 
-function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) => Promise<T>) {
-  const foo = async (object: T) => {
+function createObject<T, Q, O, I>(
+  output: t.Type<T, O, I>,
+  input: t.Type<Q, O, I>,
+  url: string,
+): ((object: Q) => Promise<T>) {
+  const foo = async (object: Q) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
@@ -35,10 +39,10 @@ function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) 
 
     if ((await res.status) === 201) {
       const data = await res.json();
-      return await decodeToPromise(arg, data);
+      return await decodeToPromise(output, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -59,7 +63,7 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number)
       return await decodeToPromise(arg, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -84,8 +88,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
       const data = await res.json();
       return await decodeToPromise(output, data);
     }
-
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -106,7 +109,7 @@ function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number)
       return Promise.resolve(); // no body on delete
     }
 
-    return Promise.reject();
+    return Promise.reject(new Error(await res.json()));
   };
 
   return foo;
@@ -140,7 +143,7 @@ function readObjectDetail<T, O, I>(
       return await decodeToPromise(arg, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -176,7 +179,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       return await decodeToPromise(output, data);
     }
 
-    return Promise.reject();
+    return Promise.reject(await res.json());
   };
 
   return foo;

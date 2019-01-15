@@ -50,7 +50,7 @@ const RubricV = t.intersection(
 );
 
 class Assignment {
-  public static create = createObject(AssignmentV, 'assignments');
+  public static create = createObject(AssignmentV, AssignmentV, 'assignments');
   public static read = readObject(AssignmentV, 'assignments');
   public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
   public static delete = deleteObject(AssignmentV, 'assignments');

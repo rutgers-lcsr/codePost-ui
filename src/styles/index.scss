@@ -1,27 +1,26 @@
-@import 'globals';
-$material-icons-font-path: '~material-icons/iconfont/';
-
-$primary-color: #2ecd70;
-$md-primary-color: #2ecd70;
-$md-secondary-color: #ffcdd2;
-@import '~material-icons/iconfont/material-icons.scss';
-@include react-md-everything;
-@include react-md-theme-everything($primary-color, $md-secondary-color);
+// @import 'globals';
+// $material-icons-font-path: '~material-icons/iconfont/';
+// $primary-color: #2ecd70;
+// $md-primary-color: #2ecd70;
+// $md-secondary-color: #ffcdd2;
+// @import '~material-icons/iconfont/material-icons.scss';
+// @include react-md-everything;
+// @include react-md-theme-everything($primary-color, $md-secondary-color);
 
 ///////////////
 // Theme
 ///////////////
 
-$primary-font: roboto;
+// $primary-font: roboto;
 
-///////////////
-///////////////
+// ///////////////
+// ///////////////
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: $primary-font;
-}
+// body {
+//   margin: 0;
+//   padding: 0;
+//   font-family: $primary-font;
+// }
 
 $panel-width: 240px;
 $margin: 50px;
@@ -39,7 +38,13 @@ $margin: 50px;
     margin-left: $margin;
     flex: 1;
     max-width: calc(100% - #{$panel-width} - #{$margin});
+    height: 100vh;
   }
+}
+
+.fileUploadDialog {
+  float: right;
+  margin-right: 50px;
 }
 
 .App {
@@ -51,40 +56,40 @@ $margin: 50px;
   font-style: italic;
 }
 
-.progressCircle {
-  @include react-md-progress-circular($primary-color);
-}
+// .progressCircle {
+//   @include react-md-progress-circular($primary-color);
+// }
 
-.padding {
-  height: 50px;
-}
+// .padding {
+//   height: 50px;
+// }
 .error-padding {
   height: 10px;
 }
 
-.App-intro {
-  font-size: large;
-}
+// .App-intro {
+//   font-size: large;
+// }
 
-.topbar {
-  background-color: #f5f5f5;
-  height: 60px;
-  width: 100%;
-  border-style: solid;
-  border-width: 0px 0px 2px 0px;
-  border-color: $primary-color;
-  font-size: 30px;
-}
+// .topbar {
+//   background-color: #f5f5f5;
+//   height: 60px;
+//   width: 100%;
+//   border-style: solid;
+//   border-width: 0px 0px 2px 0px;
+//   border-color: $primary-color;
+//   font-size: 30px;
+// }
 
-.topbar-logo {
-  padding: 20px;
-}
+// .topbar-logo {
+//   padding: 20px;
+// }
 
-.codePost-P {
-  color: $primary-color;
-}
+// .codePost-P {
+//   color: $primary-color;
+// }
 
-.welcome {
-  font-size: 20px;
-  float: right;
-}
+// .welcome {
+//   font-size: 20px;
+//   float: right;
+// }

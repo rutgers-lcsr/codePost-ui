@@ -13,7 +13,7 @@ const SubmissionV = t.intersection(
     }),
     t.partial({
       grade: t.number,
-      grader: t.string,
+      grader: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
@@ -28,7 +28,7 @@ const SubmissionVPatch = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       grade: t.number,
-      grader: t.string,
+      grader: t.union([t.string, t.null]),
       dateFinalized: t.union([t.string, t.null]),
     }),
   ],
@@ -38,7 +38,7 @@ const SubmissionVPatch = t.intersection(
 type SubmissionType = t.TypeOf<typeof SubmissionV>;
 
 class Submission {
-  public static create = createObject(SubmissionV, 'submissions');
+  public static create = createObject(SubmissionV, SubmissionV, 'submissions');
   public static read = readObject(SubmissionV, 'submissions');
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');

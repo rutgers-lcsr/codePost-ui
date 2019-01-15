@@ -43,6 +43,8 @@ const RosterV = t.intersection(
     t.type({
       students: t.array(t.string),
       inactive_students: t.array(t.string),
+      inactive_graders: t.array(t.string),
+      inactive_courseAdmins: t.array(t.string),
       graders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
@@ -56,7 +58,6 @@ const RosterVPatch = t.intersection(
     GenericObject,
     t.partial({
       students: t.array(t.string),
-      inactive_students: t.array(t.string),
       graders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
@@ -67,7 +68,7 @@ const RosterVPatch = t.intersection(
 type RosterType = t.TypeOf<typeof RosterV>;
 
 class Course {
-  public static create = createObject(CourseV, 'courses');
+  public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
   public static update = updateObject(CourseV, CourseVPatch, 'courses');
   public static delete = deleteObject(CourseV, 'courses');

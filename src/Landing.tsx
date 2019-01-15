@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Button } from 'react-md';
 import LandingTopBar from './components/LandingTopBar';
-import './styles/index.scss';
-import './styles/landing.scss';
+// import './styles/index.scss';
+// import './styles/landing.scss';
 
 class Landing extends React.Component {
   public state: any = {
