@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
-import '../../styles/index.scss';
-import { USER_APP } from '../../types/common';
+import '../../../styles/index.scss';
 
-import { CourseType } from '../../infrastructure/course';
+import { CourseType } from '../../../infrastructure/course';
+import { USER_APP } from '../../../types/common';
 import RosterFileUpload from './RosterFileUpload';
 
 interface IProps {

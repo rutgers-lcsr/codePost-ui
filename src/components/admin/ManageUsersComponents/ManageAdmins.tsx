@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
-import '../../styles/index.scss';
-import { USER_APP } from '../../types/common';
+import '../../../styles/index.scss';
 
-import { CourseType } from '../../infrastructure/course';
+import { CourseType } from '../../../infrastructure/course';
+import { USER_APP } from '../../../types/common';
 
 import RosterFileUpload from './RosterFileUpload';
 
@@ -77,12 +77,11 @@ class ManageStudents extends React.Component<IProps, {}> {
     const { rosterLoadComplete, lockedAdminChange, admins, addErrorToast, addToast, changeRoster } = this.props;
     const { newAdminField, searchTerm, sortAscending, emailToGraderUnenroll } = this.state;
 
+    // Check for if new admin is a valid admin field
     const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
-    const adminType = USER_APP.CourseAdmin;
 
-    let tableBody;
-    if (rosterLoadComplete) {
-      tableBody = admins.map((admin) => {
+    const tableBody = rosterLoadComplete ? (
+      admins.map((admin) => {
         if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
           return <div />;
         }
@@ -97,22 +96,20 @@ class ManageStudents extends React.Component<IProps, {}> {
                 flat={true}
                 icon={true}
                 disabled={lockedAdminChange}
-                onClick={this.triggerUnEnrollUser.bind(this.props, admin, adminType)}
+                onClick={this.triggerUnEnrollUser.bind(this.props, admin, USER_APP.CourseAdmin)}
               >
                 cancel
               </Button>
             </TableColumn>
           </TableRow>
         );
-      });
-    } else {
-      tableBody = (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-        </TableRow>
-      );
-    }
+      })
+    ) : (
+      <TableRow>
+        <TableColumn>Loading...</TableColumn>
+        <TableColumn />
+      </TableRow>
+    );
 
     if (sortAscending) {
       admins.sort();
@@ -162,7 +159,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           iconChildren="done"
           className="save-Btn"
           disabled={!showSaveNewAdminButton || lockedAdminChange}
-          onClick={this.triggerEnrollUser.bind(this.props, newAdminField, adminType)}
+          onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
         >
           Save new admin
         </Button>

@@ -16,9 +16,9 @@ import {
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
 } from '../../types/common';
-import { DeleteLinkedCommentsDialog, RubricCategoryTable } from './adminUtils';
-import NewAssignmentDialog from './NewAssignmentDialog';
-import RubricFileDialog from './RubricFileDialog';
+import NewAssignmentDialog from './ManageAssignmentsComponents/NewAssignmentDialog';
+import RubricFileDialog from './ManageAssignmentsComponents/RubricFileDialog';
+import { DeleteLinkedCommentsDialog, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
 
 import { CourseType } from '../../infrastructure/course';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';

@@ -12,8 +12,8 @@ import {
   TextField,
 } from 'react-md';
 
-import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
+import { CourseType } from '../../../infrastructure/course';
+import { SectionType } from '../../../infrastructure/section';
 
 interface IProps {
   sections: SectionType[];

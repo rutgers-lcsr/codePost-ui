@@ -7,8 +7,8 @@ import {
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
 } from '../../types/common';
-import GraderData from './GraderData';
-import StudentData from './StudentData';
+import GraderData from './CourseDataComponents/GraderData';
+import StudentData from './CourseDataComponents/StudentData';
 
 interface IPropsCourseData {
   assignments: AssignmentType[];

@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
-import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
-import { DeleteLinkedCommentsDialog } from './adminUtils';
+import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
+import { DeleteLinkedCommentsDialog } from './RubricUtils';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 interface IProps {
   activeAssignment: AssignmentType | undefined;
