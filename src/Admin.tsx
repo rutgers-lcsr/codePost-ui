@@ -22,7 +22,7 @@ import {
 } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { Comment } from './infrastructure/comment';
+import { Comment, CommentType } from './infrastructure/comment';
 import { Course, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -1021,15 +1021,21 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return RubricComment.read(commentID)
       .then((rubricComment) => {
         const linkedComments = rubricComment.comments;
-        console.log(linkedComments);
         const commentPromises: any = linkedComments.map((id) => {
-          const payload = {
-            id,
-            text: thisRubricComment.text,
-            pointDelta: thisRubricComment.pointDelta,
-            rubricComment: null,
-          };
-          return deleteLinkedComments ? Comment.delete(id) : Comment.update(payload);
+          if (deleteLinkedComments) {
+            return Comment.delete(id);
+          } else {
+            return Comment.read(id).then((c: CommentType) => {
+              const newText = c.text ? `${thisRubricComment.text}. ${c.text}` : thisRubricComment.text;
+              const payload = {
+                id,
+                text: newText,
+                pointDelta: thisRubricComment.pointDelta,
+                rubricComment: null,
+              };
+              return Comment.update(payload);
+            });
+          }
         });
         return Promise.all(commentPromises).then(() => {
           return RubricComment.delete(commentID).then(() => {
