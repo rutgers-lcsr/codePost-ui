@@ -56,7 +56,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     payload.append(key1, this.props.match.params.uid);
     payload.append(key2, this.props.match.params.token);
 
-    fetch('http://localhost:8000/api/users/isTokenValid/', {
+    fetch('${process.env.API_URL}/registration/isTokenValid/', {
       body: payload,
       method: 'POST',
     })
@@ -83,7 +83,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     payload.append(key2, this.props.match.params.uid);
     payload.append(key3, data.password1);
 
-    fetch('http://localhost:8000/api/users/updatePassword/', {
+    fetch('${process.env.API_URL}/resgistration/updatePassword/', {
       body: payload,
       method: 'POST',
     }).then((res) => {

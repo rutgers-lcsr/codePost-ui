@@ -24,7 +24,7 @@ type GenericObjectType = t.TypeOf<typeof GenericObject>;
 
 function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) => Promise<T>) {
   const foo = async (object: T) => {
-    const res = await fetch(`/api/${url}/`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ function createObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((object: T) 
 
 function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number) => Promise<T>) {
   const foo = async (id: number) => {
-    const res = await fetch(`/api/${url}/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
   url: string,
 ): ((object: Q) => Promise<T>) {
   const foo = async (object: Q) => {
-    const res = await fetch(`/api/${url}/${object.id}/`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
 // Should change the return value to accept an object of type T (mandated to have an id field) instead of an id
 function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number) => Promise<void>) {
   const foo = async (id: number) => {
-    const res = await fetch(`/api/${url}/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ function readObjectDetail<T, O, I>(
       }
     });
 
-    const res = await fetch(`/api/${url}/${id}/${detail}/${urlString}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       }
     });
 
-    const res = await fetch(`/api/${url}/${object.id}/${detail}/${urlString}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
