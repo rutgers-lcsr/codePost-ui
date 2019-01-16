@@ -11,6 +11,8 @@ $text-font-stack: 'Roboto', 'Franklin Gothic Medium', 'Tahoma', sans-serif !defa
 /// @type List
 $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace !default;
 
+$syntax-highlighter-font-stack: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace !default;
+
 /// Copy text color
 /// @type Color
 $text-color: rgb(34, 34, 34) !default;

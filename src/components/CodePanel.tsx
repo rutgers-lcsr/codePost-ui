@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+
 import Comment from './Comment';
 
 import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../types/common';
@@ -234,36 +237,57 @@ const Code = (props: ICodeProps) => {
   /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
+        if (item == '') {
+          return (
+            <div key={i} id={i.toString()}>
+              &nbsp;
+            </div>
+          );
+        }
         return (
           <div key={i} id={i.toString()}>
-            {' '}
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}{' '}
+            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
           </div>
         );
       })
     : splitCode.map((item: string, i: number) => {
+        if (item == '') {
+          return (
+            <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
+              &nbsp;
+            </div>
+          );
+        }
         return (
           <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
-            {' '}
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}{' '}
+            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
           </div>
         );
       });
   /* tslint:enable */
 
-  const lineNumbers = splitCode.map((item: string, i: number) => {
-    return (
-      <div key={i} className="line-number">
-        {' '}
-        {i}{' '}
-      </div>
-    );
-  });
+  const numberOfLines = linesOfCode.length;
+  const lineNumberStyle = {
+    height: `${numberOfLines * 19}px`,
+  };
+
+  const codeString = props.file.code;
 
   return (
     <div className="code">
-      <div className="code__line-numbers">{lineNumbers}</div>
-      <div className="code__highlighted-area">{linesOfCode}</div>
+      <div className="code__highlighted-area">
+        <div className="code__syntax-highlighter">
+          <SyntaxHighlighter language="javascript" style={googlecode} showLineNumbers={true}>
+            {codeString}
+          </SyntaxHighlighter>
+        </div>
+        <div className="code__underlay">
+          <div className="code__underlay--line-numbers" style={lineNumberStyle}>
+            {numberOfLines}
+          </div>
+          <div className="code__underlay--code">{linesOfCode}</div>
+        </div>
+      </div>
       <CommentList
         file={file}
         readOnly={readOnly}
