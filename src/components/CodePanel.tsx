@@ -277,7 +277,7 @@ const Code = (props: ICodeProps) => {
     <div className="code">
       <div className="code__highlighted-area">
         <div className="code__syntax-highlighter">
-          <SyntaxHighlighter language="javascript" style={googlecode} showLineNumbers={true}>
+          <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
             {codeString}
           </SyntaxHighlighter>
         </div>
