@@ -160,14 +160,14 @@ class Comment extends React.Component<IProps, IState> {
   public onMouseEnter = (i: string, event: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', '#FAFF91', 'important');
+      elem.style.setProperty('background-color', 'rgba(250,255,145, 0.5)', 'important');
     });
   };
 
   public onMouseLeave = (i: string, eevent: any) => {
     const elems = document.getElementsByClassName(i);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = '#ffca93';
+      elem.style.backgroundColor = 'rgba(255, 202, 147, 0.5)';
     });
   };
 
