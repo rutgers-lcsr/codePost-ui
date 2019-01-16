@@ -271,7 +271,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
