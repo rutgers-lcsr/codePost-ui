@@ -47,6 +47,8 @@ class NewCourseDialog extends React.Component<IProps, {}> {
   public createNewCourse = () => {
     const { newCourseName, newCoursePeriod } = this.state;
     const { courses } = this.props;
+
+    // Check for errors in new Course
     if (newCourseName.length < 4) {
       this.props.addErrorToast('Course name must be longer than 4 characters', undefined);
       return;
@@ -63,6 +65,8 @@ class NewCourseDialog extends React.Component<IProps, {}> {
       this.props.addErrorToast('Cannot create course with same name and period as existing course.', undefined);
       return;
     }
+
+    // if validCourse, create the Course
     this.props.createCourse(newCourseName, newCoursePeriod).then(() => {
       this.toggleDialog();
     });

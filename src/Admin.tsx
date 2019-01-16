@@ -2,15 +2,13 @@ import * as React from 'react';
 import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import CourseData from './components/admin/CourseData';
-import ManageAdmins from './components/admin/ManageAdmins';
 import ManageAssignments from './components/admin/ManageAssignments';
-import ManageGraders from './components/admin/ManageGraders';
-import ManageSections from './components/admin/ManageSections';
-import ManageStudents from './components/admin/ManageStudents';
+import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
 import VerticalPane from './components/VerticalPane';
-import './styles/index.scss';
-import './styles/Student.scss';
+// import './styles/index.scss';
+// import './styles/Student.scss';
+
 import {
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
@@ -24,6 +22,7 @@ import {
 } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -37,40 +36,44 @@ interface IAdminState {
   loadedPanel?: number; // Which active_panel to load, enum
   courses: CourseType[]; // Set of courses for the admin for the selector
 
-  // student, grader, admin, sections data
+  // roster data, all from a single api call so only needs a single loadComplete boolean
   students: string[];
-  studentsLoadComplete: boolean;
   inactiveStudents: string[];
   graders: string[];
-  gradersLoadComplete: boolean;
+  inactiveGraders: string[];
   admins: string[];
-  adminsLoadComplete: boolean;
-  sections: SectionType[];
+  rosterLoadComplete: boolean;
 
+  // sections data
+  sections: SectionType[];
+  sectionsLoadComplete: boolean;
+
+  // A calculated mapping each student to their section to speed up render time
   // Reminder - need to get rid of ISectionNoStudents, it's ugly
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  sectionsLoadComplete: boolean;
-  submissionsbyUserLoadComplete: boolean;
 
+  // Submissions data
   submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
 
-  // Props for Assignments panel
+  // Assignments data
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
 
+  // Assignments rubric data
   rubricCategories: IAssignmentToRubricCategories;
   rubricComments: IRubricCategoryToRubricCommentsMap;
-
   assignmentRubricLoadComplete: boolean;
+
+  // Calculated mappings to render the CourseData tab quickly
+  // submissionsByStudent is for the StudentData tab
+  // submissionsByGrader is for the GraderData tab
+  submissionsByStudent: IStudentSubmissionsDataTable;
+  submissionsByGrader: IGraderSubmissionsDataTable;
+  submissionsbyUserLoadComplete: boolean;
 
   // Props for Enroll panels
   lockChanges: boolean;
-  isLoggedIn: boolean;
-  redirect: boolean;
-
-  submissionsByStudent: IStudentSubmissionsDataTable;
-  submissionsByGrader: IGraderSubmissionsDataTable;
 
   toasts: IToast[];
   longToasts: IToast[];
@@ -93,43 +96,37 @@ interface IAdminProps {
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
-    currentCourse: undefined, // Course for selector
-    loadedPanel: undefined, // Which active_panel to load, enum
-    courses: this.props.initialCourses, // Set of courses for the admin for the selector
+    currentCourse: undefined,
+    loadedPanel: undefined,
+    courses: this.props.initialCourses,
 
-    // student, grader, admin, sections data
     students: [],
-    studentsLoadComplete: false,
     inactiveStudents: [],
     graders: [],
-    gradersLoadComplete: false,
+    inactiveGraders: [],
     admins: [],
-    adminsLoadComplete: false,
+    rosterLoadComplete: false,
 
     sections: [],
-    sectionsByStudent: {},
     sectionsLoadComplete: false,
-    submissionsbyUserLoadComplete: false,
+
+    sectionsByStudent: {},
 
     submissions: {},
     submissionsLoadComplete: false,
-    // Props for Assignments panel
+
     assignments: [],
     assignmentsLoadComplete: false,
 
     rubricCategories: {},
     rubricComments: {},
-
     assignmentRubricLoadComplete: false,
-
-    // Props for Enroll panels
-    lockChanges: true,
-
-    isLoggedIn: localStorage.getItem('token') ? true : false,
-    redirect: false,
 
     submissionsByStudent: {},
     submissionsByGrader: {},
+    submissionsbyUserLoadComplete: false,
+
+    lockChanges: true,
 
     toasts: [],
     longToasts: [],
@@ -144,22 +141,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public panels: { [key: string]: string } = {
     0: 'Course Data',
     1: 'Manage Assignments',
-    2: 'Manage Students',
-    3: 'Manage Graders',
-    4: 'Manage Sections',
-    5: 'Manage Admins',
+    2: 'Manage Users',
   };
 
-  public panelMapForURL = [
-    'course-data',
-    'assignments',
-    'manage-students',
-    'manage-graders',
-    'manage-sections',
-    'manage-admins',
-  ];
+  public panelMapForURL = ['course-data', 'assignments', 'manage-users'];
 
-  public defaultPanelArgForURL = ['students', null, null, null, null, null];
+  public defaultPanelArgForURL = ['students', null, null];
 
   public snackBarStyle = {
     width: '100%',
@@ -239,12 +226,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    if (!this.state.isLoggedIn) {
-      this.setState({ redirect: true });
-    } else {
-      this.setStateFromURL();
-    }
+    this.setStateFromURL();
     this.interval = setInterval(() => {
       if (this.state.currentCourse) {
         this.loadAllCourseData();
@@ -254,8 +236,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
     const { toLoadCourse, toLoadPanel } = this.state;
-    console.log(prevProps);
-    
     if (toLoadCourse || toLoadPanel) {
       this.setState({ toLoadCourse: false, toLoadPanel: false });
     }
@@ -264,13 +244,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public componentWillUnmount() {
     clearInterval(this.interval);
   }
-
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
 
   public updateNewCourse = (option: IOptionNumber) => {
     const currentCourse = this.state.courses.filter((course: CourseType) => {
@@ -285,16 +258,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         loadedPanel: currentPanel,
 
         students: [],
-        studentsLoadComplete: false,
+        inactiveStudents: [],
         graders: [],
-        gradersLoadComplete: false,
+        inactiveGraders: [],
         admins: [],
-        adminsLoadComplete: false,
+        rosterLoadComplete: false,
 
         sections: [],
-        sectionsByStudent: {},
         sectionsLoadComplete: false,
-        submissionsbyUserLoadComplete: false,
+
+        sectionsByStudent: {},
 
         submissions: {},
         submissionsLoadComplete: false,
@@ -304,17 +277,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         rubricCategories: {},
         rubricComments: {},
-
         assignmentRubricLoadComplete: false,
-
-        // Props for Enroll panels
-        lockChanges: true,
-
-        isLoggedIn: localStorage.getItem('token') ? true : false,
-        redirect: false,
 
         submissionsByStudent: {},
         submissionsByGrader: {},
+        submissionsbyUserLoadComplete: false,
+
+        // Props for Enroll panels
+        lockChanges: true,
       },
       () => {
         this.loadAllCourseData();
@@ -417,7 +387,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public loadAllCourseData = () => {
     this.loadSubmissions();
     this.loadAssignments();
-    // loadStudentsalsoLoadsSections
     this.loadRoster();
   };
 
@@ -436,15 +405,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public async generateSubmissionsByStudent() {
-    const {
-      students,
-      graders,
-      submissions,
-      studentsLoadComplete,
-      gradersLoadComplete,
-      submissionsLoadComplete,
-    } = this.state;
-    if (studentsLoadComplete && gradersLoadComplete && submissionsLoadComplete) {
+    const { students, graders, submissions, rosterLoadComplete, submissionsLoadComplete } = this.state;
+    if (rosterLoadComplete && submissionsLoadComplete) {
       const promise = new Promise((resolve, reject) => {
         const subsByStudent: IStudentSubmissionsDataTable = {};
         const subsByGrader: IGraderSubmissionsDataTable = {};
@@ -493,18 +455,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public loadAssignmentRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID, {}).then((json) => {
-      const { rubricCategories, rubricComments } = this.state;
-      rubricCategories[assignmentID] = json.categories;
-      json.categories.forEach((cat: RubricCategoryType) => {
-        rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
-          return comm.category === cat.id;
+    return Assignment.readRubric(assignmentID, {})
+      .then((json) => {
+        const { rubricCategories, rubricComments } = this.state;
+        rubricCategories[assignmentID] = json.categories;
+        json.categories.forEach((cat: RubricCategoryType) => {
+          rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
+            return comm.category === cat.id;
+          });
+        });
+        this.setState({ rubricCategories, rubricComments }, () => {
+          return;
+        });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
         });
       });
-      this.setState({ rubricCategories, rubricComments }, () => {
-        return;
-      });
-    });
   };
 
   public loadRubrics = () => {
@@ -536,9 +506,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           });
         });
       }),
-    ).then(() => {
-      this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
-    });
+    )
+      .then(() => {
+        this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   public loadRoster = () => {
@@ -554,9 +532,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           graders: roster.graders,
           admins: roster.courseAdmins,
           inactiveStudents: roster.inactive_students,
-          studentsLoadComplete: true,
-          gradersLoadComplete: true,
-          adminsLoadComplete: true,
+          inactiveGraders: roster.inactive_graders,
+          rosterLoadComplete: true,
         },
         () => {
           this.loadSections();
@@ -587,9 +564,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           return section;
         });
       }),
-    ).then((sections) => {
-      this.setState({ sections, sectionsLoadComplete: true });
-    });
+    )
+      .then((sections) => {
+        this.setState({ sections, sectionsLoadComplete: true });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   // ------------------- Toggle data change locks  -------------------
@@ -601,18 +586,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
-  public changeRoster = (newRoster: string[], userType: USER_APP, inactiveStudents: string[] | undefined) => {
+  public changeRoster = (newRoster: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
     const payload = { id: currentCourse.id };
     switch (userType) {
       case USER_APP.Student:
         addToPayload(payload, 'students', newRoster);
-        addToPayload(payload, 'inactive_students', inactiveStudents);
         break;
       case USER_APP.Grader:
         addToPayload(payload, 'graders', newRoster);
@@ -622,27 +606,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
     }
 
-    Course.updateRoster(payload, {}).then((roster: RosterType) => {
-      switch (userType) {
-        case USER_APP.Student:
-          this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-            this.addToast('Student roster successfully updated.', undefined);
-            this.generateSubmissionsByStudent();
+    return (
+      Course.updateRoster(payload, {})
+        .then((roster: RosterType) => {
+          switch (userType) {
+            case USER_APP.Student:
+              this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
+                this.addToast('Student roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              });
+              break;
+            case USER_APP.Grader:
+              this.setState({ graders: roster.graders }, () => {
+                this.addToast('Grader roster successfully updated.', undefined);
+                this.generateSubmissionsByStudent();
+              });
+              break;
+            case USER_APP.CourseAdmin:
+              this.setState({ admins: roster.courseAdmins }, () =>
+                this.addToast('Admin roster successfully updated.', undefined),
+              );
+              break;
+          }
+        })
+        // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
+        .catch((errors) => {
+          Object.keys(errors).forEach((key) => {
+            errors[key].forEach((error: string) => {
+              this.addErrorToast(error, undefined);
+            });
           });
-          break;
-        case USER_APP.Grader:
-          this.setState({ graders: roster.graders }, () => {
-            this.addToast('Grader roster successfully updated.', undefined);
-            this.generateSubmissionsByStudent();
-          });
-          break;
-        case USER_APP.CourseAdmin:
-          this.setState({ admins: roster.courseAdmins }, () =>
-            this.addToast('Admin roster successfully updated.', undefined),
-          );
-          break;
-      }
-    });
+        })
+    );
   };
 
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
@@ -651,20 +646,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const newStudents = this.state.students.filter((student) => {
           return selectedUserEmails.indexOf(student) === -1;
         });
-        this.changeRoster(newStudents, userType, selectedUserEmails);
-        break;
+        return this.changeRoster(newStudents, userType);
       case USER_APP.Grader:
         const newGraders = this.state.graders.filter((grader) => {
           return selectedUserEmails.indexOf(grader) === -1;
         });
-        this.changeRoster(newGraders, userType, selectedUserEmails);
-        break;
+        return this.changeRoster(newGraders, userType);
       case USER_APP.CourseAdmin:
         const newAdmins = this.state.admins.filter((admin) => {
           return selectedUserEmails.indexOf(admin) === -1;
         });
-        this.changeRoster(newAdmins, userType, undefined);
-        break;
+        return this.changeRoster(newAdmins, userType);
     }
   };
 
@@ -681,14 +673,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newStudents.push(userEmail);
 
         // Check if the student is in the inactives for the course, and remove them if so
-        if (this.state.inactiveStudents.indexOf(userEmail) !== -1) {
-          const newInactives = this.state.inactiveStudents.filter((i) => {
-            return i !== userEmail;
-          });
-          this.changeRoster(newStudents, userType, newInactives);
-        } else {
-          this.changeRoster(newStudents, userType, undefined);
-        }
+        this.changeRoster(newStudents, userType);
         break;
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
@@ -698,7 +683,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
-        this.changeRoster(newGraders, userType, undefined);
+        this.changeRoster(newGraders, userType);
         break;
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
@@ -708,7 +693,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
-        this.changeRoster(newAdmins, userType, undefined);
+        this.changeRoster(newAdmins, userType);
         break;
     }
   };
@@ -720,8 +705,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (!currentCourse) {
       return;
     }
-    const payload = { name: newSection, course: currentCourse.id, leaders: [], students: [], id: -1 };
-    
+    const payload = {
+      name: newSection,
+      course: currentCourse.id,
+      leaders: [],
+      students: [],
+      id: -1,
+    };
+
     return Section.create(payload).then((section: SectionType) => {
       sections.push(section);
       currentCourse.sections.push(section.id);
@@ -732,9 +723,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
-    const thisSection = sections.filter((section) => {
+    const thisSection = sections.find((section) => {
       return section.id === sectionID;
-    })[0];
+    });
+    if (!thisSection) {
+      return Promise.reject();
+    }
+
     const newStudents = thisSection.students.filter((student) => {
       return student !== studentEmail;
     });
@@ -860,7 +855,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public createRubricCategory = (
     assignmentID: number,
     categoryName: string,
-    pointLimit: number | undefined,
+    pointLimit: number | null,
     newComments: RubricCommentType[],
   ): Promise<RubricCategoryType> => {
     const { assignments, rubricCategories, rubricComments } = this.state;
@@ -875,8 +870,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       name: categoryName,
       assignment: assignmentID,
       rubricComments: [],
+      pointLimit,
     };
-    addToPayload(payload, 'pointLimit', pointLimit);
 
     return RubricCategory.create(payload).then((rubricCategory: RubricCategoryType) => {
       assignments.forEach((assn) => {
@@ -900,34 +895,54 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public deleteRubricCategory = (assignmentID: number, categoryID: number, categoryName: string) => {
+  public deleteRubricCategory = (
+    assignmentID: number,
+    categoryID: number,
+    categoryName: string,
+    deleteLinkedComments: boolean,
+  ) => {
     const { assignments, rubricCategories, rubricComments } = this.state;
-
-    return RubricCategory.delete(categoryID).then(() => {
-      assignments.forEach((assn) => {
-        if (assn.id === assignmentID) {
-          assn.rubricCategories = assn.rubricCategories.filter((catID) => {
-            return catID !== categoryID;
+    const linkedRubricComments = rubricComments[categoryID];
+    return Promise.all(
+      linkedRubricComments.map((comm) => {
+        return this.deleteRubricComment(assignmentID, categoryID, comm.id, deleteLinkedComments);
+      }),
+    ).then(() => {
+      return RubricCategory.delete(categoryID)
+        .then(() => {
+          assignments.forEach((assn) => {
+            if (assn.id === assignmentID) {
+              assn.rubricCategories = assn.rubricCategories.filter((catID) => {
+                return catID !== categoryID;
+              });
+            }
+            rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
+              return cat.id !== categoryID;
+            });
+            delete rubricComments[categoryID];
           });
-        }
-        rubricCategories[assignmentID] = rubricCategories[assignmentID].filter((cat) => {
-          return cat.id !== categoryID;
+          return this.setState({ assignments, rubricCategories, rubricComments }, () => {
+            return 'done';
+          });
+        })
+        .catch((errors) => {
+          Object.keys(errors).forEach((key) => {
+            errors[key].forEach((error: string) => {
+              this.addErrorToast(error, undefined);
+            });
+          });
         });
-        delete rubricComments[categoryID];
-      });
-      return this.setState({ assignments, rubricCategories, rubricComments }, () => {
-        return 'done';
-      });
-      // Reminder -- fix this
     });
   };
 
+  // Updates return a  Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateRubricCategory = (
     assignmentID: number,
     categoryID: number,
     categoryName: string,
-    categoryPointLimit: number | undefined,
-  ): Promise<RubricCategoryType> => {
+    categoryPointLimit: number | null,
+  ): Promise<void> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
       this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
@@ -938,23 +953,31 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       id: categoryID,
       name: categoryName,
       assignment: assignmentID,
+      pointLimit: categoryPointLimit,
     };
-    addToPayload(payload, 'pointLimit', categoryPointLimit);
 
-    return RubricCategory.update(payload).then((rubricCategory: RubricCategoryType) => {
-      const catIndex = rubricCategories[assignmentID]
-        .map((cat) => {
-          return cat.id;
-        })
-        .indexOf(categoryID);
-      if (catIndex !== -1) {
-        // Reminder --- add checks for the data received
-        rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
-        rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
-      }
-      this.setState({ rubricCategories });
-      return rubricCategory;
-    });
+    return RubricCategory.update(payload)
+      .then((rubricCategory: RubricCategoryType) => {
+        const catIndex = rubricCategories[assignmentID]
+          .map((cat) => {
+            return cat.id;
+          })
+          .indexOf(categoryID);
+        if (catIndex !== -1) {
+          // Reminder --- add checks for the data received
+          rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
+          rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
+        }
+        this.setState({ rubricCategories });
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   public createRubricComment = (
@@ -981,31 +1004,74 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public deleteRubricComment = (assignmentID: number, categoryID: number, commentID: number) => {
+  public deleteRubricComment = (
+    assignmentID: number,
+    categoryID: number,
+    commentID: number,
+    deleteLinkedComments: boolean,
+  ) => {
     const { rubricCategories, rubricComments } = this.state;
-    return RubricComment.delete(commentID).then(() => {
-      rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
-        return com.id !== commentID;
-      });
-      rubricCategories[assignmentID].forEach((cat) => {
-        if (cat.id === categoryID) {
-          const newComments = cat.rubricComments.filter((i: number) => {
-            return i !== commentID;
-          });
-          cat.rubricComments = newComments;
-        }
-      });
-      this.setState({ rubricCategories, rubricComments });
-      return;
+    const thisRubricComment = rubricComments[categoryID].find((comm) => {
+      return comm.id === commentID;
     });
+    if (!thisRubricComment) {
+      return Promise.reject();
+    }
+    // Get the latest comments that are linked to the RubricCommentType
+    return RubricComment.read(commentID)
+      .then((rubricComment) => {
+        const linkedComments = rubricComment.comments;
+        const commentPromises: any = linkedComments.map((id) => {
+          if (deleteLinkedComments) {
+            return CommentIO.delete(id);
+          } else {
+            return CommentIO.read(id).then((c: CommentType) => {
+              const newText = c.text ? `${thisRubricComment.text}. ${c.text}` : thisRubricComment.text;
+              const payload = {
+                id,
+                text: newText,
+                pointDelta: thisRubricComment.pointDelta,
+                rubricComment: null,
+              };
+              return CommentIO.update(payload);
+            });
+          }
+        });
+        return Promise.all(commentPromises).then(() => {
+          return RubricComment.delete(commentID).then(() => {
+            rubricComments[categoryID] = rubricComments[categoryID].filter((com) => {
+              return com.id !== commentID;
+            });
+            rubricCategories[assignmentID].forEach((cat) => {
+              if (cat.id === categoryID) {
+                const newComments = cat.rubricComments.filter((i: number) => {
+                  return i !== commentID;
+                });
+                cat.rubricComments = newComments;
+              }
+            });
+            this.setState({ rubricCategories, rubricComments });
+            return;
+          });
+        });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
+  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateRubricComment = (
     categoryID: number,
     commentID: number,
     commentText: string | undefined,
     commentDelta: number | undefined,
-  ): Promise<RubricCommentType> => {
+  ): Promise<void> => {
     const { rubricComments } = this.state;
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
@@ -1016,28 +1082,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'text', commentText);
     addToPayload(payload, 'pointDelta', commentDelta);
 
-    return RubricComment.update(payload).then((rubricComment) => {
-      const comIndex = rubricComments[categoryID]
-        .map((com) => {
-          return com.id;
-        })
-        .indexOf(commentID);
-      if (comIndex !== -1) {
-        rubricComments[categoryID][comIndex] = rubricComment;
-      }
+    return RubricComment.update(payload)
+      .then((rubricComment) => {
+        const comIndex = rubricComments[categoryID]
+          .map((com) => {
+            return com.id;
+          })
+          .indexOf(commentID);
+        if (comIndex !== -1) {
+          rubricComments[categoryID][comIndex] = rubricComment;
+        }
 
-      this.setState({ rubricComments });
-      return rubricComment;
-    });
+        this.setState({ rubricComments });
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+      });
   };
 
   // ------------------- Manage assignments API calls  ------------------
+  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
+  // returned assignment should never by the child, only used to change state, and it renders faster on testing
   public updateAssignment = (
     assignmentID: number,
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
-  ): Promise<AssignmentType> => {
+  ): Promise<void> => {
     const { assignments } = this.state;
 
     if (!name && !points && typeof isReleased === 'undefined') {
@@ -1049,17 +1125,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'points', points);
     addToPayload(payload, 'isReleased', isReleased);
 
-    return Assignment.update(payload).then((assignment) => {
-      assignments.forEach((assn) => {
-        if (assn.id === assignmentID) {
-          assn.name = assignment.name;
-          assn.points = assignment.points;
-          assn.isReleased = assignment.isReleased;
-        }
+    return Assignment.update(payload)
+      .then((assignment) => {
+        assignments.forEach((assn) => {
+          if (assn.id === assignmentID) {
+            assn.name = assignment.name;
+            assn.points = assignment.points;
+            assn.isReleased = assignment.isReleased;
+          }
+        });
+        this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
+        return;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
+        return;
       });
-      this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
-      return assignment;
-    });
   };
 
   public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
@@ -1147,9 +1232,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assignments={this.state.assignments}
             assignmentsLoadComplete={this.state.assignmentsLoadComplete}
             students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
             graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
             submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
             submissions={this.state.submissions}
             submissionsLoadComplete={this.state.submissionsLoadComplete}
@@ -1162,97 +1245,54 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       );
     } else if (currentCourse && loadedPanel === 1) {
       courseManagementPanel = (
-        <div className="content-container">
-          <ManageAssignments
-            key={currentCourse.id}
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            submissions={this.state.submissions}
-            submissionsLoadComplete={this.state.submissionsLoadComplete}
-            lockManageAssignment={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            addErrorToast={this.addErrorToast}
-            assignments={this.state.assignments}
-            assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
-            createRubricCategory={this.createRubricCategory}
-            deleteRubricCategory={this.deleteRubricCategory}
-            createRubricComment={this.createRubricComment}
-            deleteRubricComment={this.deleteRubricComment}
-            updateRubricComment={this.updateRubricComment}
-            updateRubricCategory={this.updateRubricCategory}
-            updateAssignment={this.updateAssignment}
-            createAssignment={this.createAssignment}
-          />
-        </div>
+        <ManageAssignments
+          key={currentCourse.id}
+          rubricCategories={this.state.rubricCategories}
+          rubricComments={this.state.rubricComments}
+          submissions={this.state.submissions}
+          submissionsLoadComplete={this.state.submissionsLoadComplete}
+          lockManageAssignment={this.state.lockChanges}
+          toggleLock={this.toggleLock}
+          currentCourse={this.state.currentCourse}
+          addToast={this.addToast}
+          addErrorToast={this.addErrorToast}
+          assignments={this.state.assignments}
+          assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
+          createRubricCategory={this.createRubricCategory}
+          deleteRubricCategory={this.deleteRubricCategory}
+          createRubricComment={this.createRubricComment}
+          deleteRubricComment={this.deleteRubricComment}
+          updateRubricComment={this.updateRubricComment}
+          updateRubricCategory={this.updateRubricCategory}
+          updateAssignment={this.updateAssignment}
+          createAssignment={this.createAssignment}
+        />
       );
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
         <div className="content-container">
-          <ManageStudents
+          <ManageUsers
             key={currentCourse.id}
+            currentCourse={this.state.currentCourse}
             sections={this.state.sections}
             students={this.state.students}
-            studentsLoadComplete={this.state.studentsLoadComplete}
-            lockedStudentChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
+            graders={this.state.graders}
+            admins={this.state.admins}
             sectionsByStudent={this.state.sectionsByStudent}
-            changeStudentSection={this.changeStudentSection}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 3) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageGraders
-            key={currentCourse.id}
-            graders={this.state.graders}
-            gradersLoadComplete={this.state.gradersLoadComplete}
-            lockedGraderChange={this.state.lockChanges}
+            rosterLoadComplete={this.state.rosterLoadComplete}
+            sectionsLoadComplete={this.state.sectionsLoadComplete}
+            lockChanges={this.state.lockChanges}
             toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
             enrollUser={this.enrollUser}
             unEnrollUsers={this.unEnrollUsers}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 4) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageSections
-            key={currentCourse.id}
-            sections={this.state.sections}
-            sectionsLoadComplete={this.state.sectionsLoadComplete}
-            lockedSectionChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
-            addToast={this.addToast}
+            changeRoster={this.changeRoster}
+            changeStudentSection={this.changeStudentSection}
             createSection={this.createSection}
-            graders={this.state.graders}
             addLeader={this.addLeaderToSection}
             removeLeader={this.removeLeaderFromSection}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 5) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <ManageAdmins
-            key={currentCourse.id}
-            admins={this.state.admins}
-            adminsLoadComplete={this.state.adminsLoadComplete}
-            lockedAdminChange={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            currentCourse={this.state.currentCourse}
             addToast={this.addToast}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
+            addErrorToast={this.addErrorToast}
+            initialTab={this.state.initialTab}
           />
         </div>
       );
@@ -1265,9 +1305,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     return (
-      <div className="AdminApp">
-        {this.renderRedirect()}
-        <div className="panel">
+      <div className="admin">
+        <div className="admin__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter()}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -1275,7 +1314,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             tabItems={this.tabItemsFormatter()}
             handleTabChange={this.handlePanelChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
           />
           <Snackbar
             id="short-snackbar"
@@ -1313,7 +1351,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             createCourse={this.createCourse}
           />
         </div>
-        <div className="content">{courseManagementPanel}</div>
+        <div className="admin__right-panel">{courseManagementPanel}</div>
       </div>
     );
   }

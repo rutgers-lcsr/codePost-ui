@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../styles/index.scss';
+import { Link } from 'react-router-dom';
 
 interface IProps {
   email: string;
@@ -11,7 +11,9 @@ class TopBar extends React.Component<IProps, {}> {
     return (
       <div className="topbar">
         <div className="topbar-logo">
-          code<span className="codePost-P">P</span>ost
+          <Link to="/">
+            code<span className="codePost-P">P</span>ost
+          </Link>
           <div className="welcome">
             Hello, {this.props.email}
             <button onClick={this.props.handleLogout}>Logout</button>

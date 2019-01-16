@@ -70,10 +70,7 @@ module.exports = {
     // We inferred the "public path" (such as / or /my-project) from homepage.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
-    devtoolModuleFilenameTemplate: info =>
-      path
-        .relative(paths.appSrc, info.absoluteResourcePath)
-        .replace(/\\/g, '/'),
+    devtoolModuleFilenameTemplate: (info) => path.relative(paths.appSrc, info.absoluteResourcePath).replace(/\\/g, '/'),
   },
   resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
@@ -82,7 +79,7 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/253
     modules: ['node_modules', paths.appNodeModules].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
-      process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
+      process.env.NODE_PATH.split(path.delimiter).filter(Boolean),
     ),
     // These are the reasonable defaults supported by the Node ecosystem.
     // We also include JSX as a common component filename extension to support
@@ -90,20 +87,8 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
-    extensions: [
-      '.mjs',
-      '.web.ts',
-      '.ts',
-      '.web.tsx',
-      '.tsx',
-      '.web.js',
-      '.js',
-      '.json',
-      '.web.jsx',
-      '.jsx',
-    ],
+    extensions: ['.mjs', '.web.ts', '.ts', '.web.tsx', '.tsx', '.web.js', '.js', '.json', '.web.jsx', '.jsx'],
     alias: {
-      
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web',
@@ -150,7 +135,6 @@ module.exports = {
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
-              
               compact: true,
             },
           },
@@ -168,6 +152,12 @@ module.exports = {
                 },
               },
             ],
+          },
+          //------------------- Add SCSS Loaders -------------------//
+          // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
+          {
+            test: /\.scss$/,
+            loaders: [require.resolve('style-loader'), require.resolve('css-loader'), require.resolve('sass-loader')],
           },
           // The notation here is somewhat confusing.
           // "postcss" loader applies autoprefixer to our CSS.
@@ -223,8 +213,8 @@ module.exports = {
                     },
                   ],
                 },
-                extractTextPluginOptions
-              )
+                extractTextPluginOptions,
+              ),
             ),
             // Note: this won't work without `new ExtractTextPlugin()` in `plugins`.
           },

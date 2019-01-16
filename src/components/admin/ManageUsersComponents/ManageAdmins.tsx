@@ -1,0 +1,190 @@
+import * as React from 'react';
+import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import '../../../styles/index.scss';
+
+import { CourseType } from '../../../infrastructure/course';
+import { USER_APP } from '../../../types/common';
+
+import RosterFileUpload from './RosterFileUpload';
+
+interface IProps {
+  graders: string[];
+  admins: string[];
+  rosterLoadComplete: boolean;
+  lockedAdminChange: boolean;
+  toggleLock: () => void;
+  currentCourse: CourseType | undefined;
+  addToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
+  enrollUser: (email: string, type: USER_APP) => void;
+  unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
+  changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+}
+
+interface IState {
+  newAdminField: string | undefined;
+  sortAscending: boolean;
+  searchTerm: string;
+  // This field will either be the grader's username who is also an admin, to prompt
+  // the user if they would like to unenroll the user from being an admin also, or will
+  // be null if no such choice is required
+  emailToGraderUnenroll: string | undefined;
+}
+
+class ManageStudents extends React.Component<IProps, {}> {
+  public state: Readonly<IState> = {
+    newAdminField: undefined,
+    sortAscending: true,
+    searchTerm: '',
+    emailToGraderUnenroll: undefined,
+  };
+
+  public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
+    const { unEnrollUsers, graders } = this.props;
+    unEnrollUsers([newUserEmail], userType);
+    if (graders.indexOf(newUserEmail) !== -1) {
+      this.setState({ emailToGraderUnenroll: newUserEmail });
+    }
+  };
+
+  public resolveGraderUnenroll = (triggerUnenroll: boolean) => {
+    const { unEnrollUsers } = this.props;
+    const { emailToGraderUnenroll } = this.state;
+    if (typeof emailToGraderUnenroll !== 'undefined' && triggerUnenroll) {
+      unEnrollUsers([emailToGraderUnenroll], USER_APP.Grader);
+    }
+    this.setState({ emailToGraderUnenroll: undefined });
+  };
+
+  public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
+    this.props.enrollUser(newUserEmail, userType);
+    this.setState({ newAdminField: '' });
+  };
+
+  public newAdminFieldOnChange = (value: string) => {
+    this.setState({ newAdminField: value });
+  };
+
+  public changeSearch = (value: string) => {
+    this.setState({ searchTerm: value });
+  };
+
+  public toggleSort = () => {
+    this.setState({ sortAscending: !this.state.sortAscending });
+  };
+
+  public render() {
+    const { rosterLoadComplete, lockedAdminChange, admins, addErrorToast, addToast, changeRoster } = this.props;
+    const { newAdminField, searchTerm, sortAscending, emailToGraderUnenroll } = this.state;
+
+    // Check for if new admin is a valid admin field
+    const showSaveNewAdminButton = newAdminField && newAdminField.includes('@');
+
+    const tableBody = rosterLoadComplete ? (
+      admins.map((admin) => {
+        if (admin.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={admin}>
+            <TableColumn>{admin}</TableColumn>
+            <TableColumn key={'UnEnroll'}>
+              {' '}
+              <Button
+                key="unEnroll"
+                className="Btn"
+                flat={true}
+                icon={true}
+                disabled={lockedAdminChange}
+                onClick={this.triggerUnEnrollUser.bind(this.props, admin, USER_APP.CourseAdmin)}
+              >
+                cancel
+              </Button>
+            </TableColumn>
+          </TableRow>
+        );
+      })
+    ) : (
+      <TableRow>
+        <TableColumn>Loading...</TableColumn>
+        <TableColumn />
+      </TableRow>
+    );
+
+    if (sortAscending) {
+      admins.sort();
+    } else {
+      admins.sort().reverse();
+    }
+    return (
+      <div>
+        <DialogContainer
+          id="rubricFile-dialog"
+          visible={typeof emailToGraderUnenroll !== 'undefined'}
+          title="User also enrolled as Course Grader"
+          actions={[
+            {
+              primary: true,
+              children: 'Leave as Admin',
+              onClick: this.resolveGraderUnenroll.bind(this.props, false),
+            },
+            {
+              children: 'Unenroll',
+              onClick: this.resolveGraderUnenroll.bind(this.props, true),
+            },
+          ]}
+          modal
+          portal={true}
+        >
+          {`Would you like to also unenroll ${emailToGraderUnenroll} from grader?`}
+        </DialogContainer>
+        <RosterFileUpload
+          users={admins}
+          addErrorToast={addErrorToast}
+          addToast={addToast}
+          changeRoster={changeRoster}
+          userType={USER_APP.CourseAdmin}
+        />
+        <TextField
+          id="addAdminField"
+          label="Add Admin"
+          lineDirection="center"
+          placeholder="Student's email"
+          className="md-cell md-cell--bottom"
+          value={newAdminField}
+          onChange={this.newAdminFieldOnChange}
+          disabled={lockedAdminChange}
+        />
+        <Button
+          iconChildren="done"
+          className="save-Btn"
+          disabled={!showSaveNewAdminButton || lockedAdminChange}
+          onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
+        >
+          Save new admin
+        </Button>
+        <hr />
+        <TextField
+          id="search-manageAdmins"
+          label="Search"
+          lineDirection="center"
+          className="md-cell md-cell--bottom"
+          onChange={this.changeSearch}
+        />
+        <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
+          <TableHeader>
+            <TableRow selectable={false}>
+              <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
+                Admin name
+              </TableColumn>
+              <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody>{tableBody}</TableBody>
+        </DataTable>
+      </div>
+    );
+  }
+}
+
+export default ManageStudents;

@@ -1,0 +1,78 @@
+@mixin button($background-color, $color) {
+  background-color: $background-color;
+  color: $color;
+  text-align: center;
+  cursor: pointer;
+
+  @include attention {
+    background-color: shade($background-color, 10);
+  }
+
+  &--disabled {
+    color: tint($text-color, 40);
+    background-color: $light-grey !important;
+  }
+}
+
+.button {
+  &--start-grading {
+    @include button($brand-color, white);
+
+    width: 250px;
+    margin: auto;
+    margin-top: 40px;
+    padding: 7px 16px;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 5px;
+  }
+
+  $button-get-another-height: 30px;
+  &--get-another {
+    @include button($brand-color, white);
+
+    display: inline-block;
+    padding: $button-get-another-height / 6;
+    height: $button-get-another-height;
+    font-size: $button-get-another-height / 2;
+    border-radius: $button-get-another-height / 6;
+  }
+
+  &--release {
+    color: red;
+    cursor: pointer;
+  }
+
+  &--finalize {
+    @include button($very-light-grey, $text-color);
+    position: absolute;
+    width: 80px;
+    height: 42.2px;
+    right: 20px;
+    font-size: 10pt;
+    font-weight: bold;
+    border: 1px solid $light-grey;
+    line-height: 42.2px;
+  }
+
+  &--comment {
+    display: inline-block;
+    min-width: 30px;
+    padding: 4px 8px;
+    margin: 4px 4px -10px 4px;
+  }
+
+  &--rubric-arrow {
+    vertical-align: middle;
+    min-width: 30px;
+    padding: 0px;
+    float: right;
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+
+    &--up {
+      color: $brand-color;
+    }
+  }
+}
