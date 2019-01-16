@@ -21,3 +21,4 @@ venv/
 subl
 .prettierrc.json
 *~HEAD
+coverage/
