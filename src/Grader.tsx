@@ -3,8 +3,6 @@ import { Redirect } from 'react-router-dom';
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import VerticalPane from './components/VerticalPane';
 
-// import './styles/Grader.scss';
-
 import { ICourseToAssignmentMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
@@ -204,7 +202,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
