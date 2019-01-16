@@ -1,0 +1,28 @@
+.vertical-pane {
+  margin-bottom: 10px;
+
+  &__tabs {
+    padding: 0;
+  }
+
+  &__tab {
+    padding: 10px;
+    border: 1px solid $theme-grey;
+    border-left: none;
+    border-right: none;
+    list-style-type: none;
+
+    &--selected {
+      padding: 10px;
+      background-color: $theme-grey;
+      border-left: 6px solid $brand-color;
+      border-right: none;
+      transition: border-left 0.3s ease;
+      list-style-type: none;
+    }
+
+    &:hover {
+      background-color: $light-grey;
+    }
+  }
+}

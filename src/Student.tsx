@@ -1,15 +1,14 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import CodeViewer from './components/student/CodeViewer';
-import VerticalPane from './components/VerticalPane';
+import { CodePanel, makeReadOnly } from './components/CodePanel';
 
-import './styles/Student.scss';
+import VerticalPane from './components/VerticalPane';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { Comment, CommentType } from './infrastructure/comment';
+import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
 import { RubricComment } from './infrastructure/rubricComment';
@@ -26,7 +25,6 @@ interface IStudentState {
   currentAssignment?: AssignmentType;
   currentSubmission?: SubmissionType;
 
-  email: string;
   isLoggedIn: boolean;
   redirect: boolean;
 
@@ -54,7 +52,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     currentAssignment: undefined,
     currentCourse: undefined,
     currentSubmission: undefined,
-    email: '',
     files: [],
     isLoadingAssignments: true,
     isLoadingSubmission: false,
@@ -101,8 +98,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const { courses, assignments } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse;
-    let currentAssignment;
+    let currentCourse: any;
+    let currentAssignment: any;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
@@ -115,6 +112,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
         currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
+        });
+
+        this.setState({ isLoadingSubmission: true });
+        this.loadSubmission(currentAssignment).then(() => {
+          this.setState({ currentCourse, currentAssignment, isLoadingSubmission: false });
         });
       }
     }
@@ -194,7 +196,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadComments = (file: FileType) => {
     return Promise.all(
       file.comments.map((commentId: number) => {
-        return Comment.read(commentId).then((comment: CommentType) => {
+        return CommentIO.read(commentId).then((comment: CommentType) => {
           const comments = [...this.state.comments[file.id], comment];
           this.setState({
             comments: {
@@ -269,7 +271,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
@@ -289,13 +291,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
   // Main
   ///////////////////////////////////////
-
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
 
   public render() {
     const {
@@ -325,10 +320,35 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       }
     }
 
+    const ReadOnlyCodePanel = makeReadOnly(CodePanel);
+
+    let contentArea;
+    if (currentSubmission && currentAssignment) {
+      contentArea = (
+        <div>
+          <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
+          <ReadOnlyCodePanel
+            submission={currentSubmission!}
+            assignment={currentAssignment!}
+            files={files}
+            comments={comments}
+            rubricComments={rubricComments}
+          />
+        </div>
+      );
+    } else if (currentAssignment && this.state.isLoadingSubmission) {
+      contentArea = <div>Loading...</div>;
+    } else if (currentAssignment) {
+      contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
+    } else {
+      contentArea = <div>Select an assignment on the left!</div>;
+    }
+
+    console.log(contentArea.props);
+
     return (
-      <div>
-        {this.renderRedirect()}
-        <div className="container-main">
+      <div className="student">
+        <div className="student__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -336,47 +356,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
-          />
-          <ContentArea
-            assignment={currentAssignment}
-            submission={currentSubmission}
-            files={files}
-            comments={comments}
-            rubricComments={rubricComments}
           />
         </div>
+        <div className="student__right-panel">{contentArea}</div>
       </div>
     );
   }
 }
-
-interface IContentAreaProps {
-  assignment?: AssignmentType;
-  submission?: SubmissionType;
-  files: FileType[];
-  comments: IFileToCommentsMap;
-  rubricComments: ICommentToRubricCommentMap;
-}
-
-const ContentArea = (props: IContentAreaProps) => {
-  const { assignment, submission, files, comments, rubricComments } = props;
-
-  if (submission && assignment) {
-    return (
-      <CodeViewer
-        submission={submission!}
-        assignment={assignment!}
-        files={files}
-        comments={comments}
-        rubricComments={rubricComments}
-      />
-    );
-  }
-  if (assignment) {
-    return <div className="container-code-viewer">Your {assignment.name} has not yet been graded.</div>;
-  }
-  return <div className="container-code-viewer">Select an assignment on the left!</div>;
-};
 
 export default Student;

@@ -7,3 +7,5 @@ declare module 'reactable';
 declare module 'node-sass';
 declare module 'sass-loader';
 declare module 'pluralize';
+declare module 'react-syntax-highlighter';
+declare module 'react-syntax-highlighter/dist/styles/hljs';

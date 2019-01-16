@@ -1,22 +1,20 @@
 import * as React from 'react';
 import { Tab, Tabs, TabsContainer } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
-import '../../styles/index.scss';
+
 import {
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
 } from '../../types/common';
-import GraderData from './GraderData';
-import StudentData from './StudentData';
+import GraderData from './CourseDataComponents/GraderData';
+import StudentData from './CourseDataComponents/StudentData';
 
 interface IPropsCourseData {
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
   students: string[];
-  studentsLoadComplete: boolean;
   graders: string[];
-  gradersLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsLoadComplete: boolean;
@@ -102,36 +100,34 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     const { activeStudent, activeGrader, activeTabIndex } = this.state;
 
     return (
-      <div>
-        <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
-          <Tabs tabId="simple-tab">
-            <Tab label="Students" style={{ color: '#000000' }}>
-              <StudentData
-                key={currentCourseID}
-                submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-                assignmentsLoadComplete={assignmentsLoadComplete}
-                assignments={assignments}
-                submissionsByStudent={submissionsByStudent}
-                activeStudent={activeStudent}
-                changeActiveStudent={this.changeActiveStudent}
-                openSubmission={this.openSubmission}
-              />
-            </Tab>
-            <Tab label="Graders" style={{ color: '#000000' }}>
-              <GraderData
-                key={currentCourseID}
-                submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-                assignmentsLoadComplete={assignmentsLoadComplete}
-                assignments={assignments}
-                submissionsByGrader={submissionsByGrader}
-                activeGrader={activeGrader}
-                changeActiveGrader={this.changeActiveGrader}
-                openSubmission={this.openSubmission}
-              />
-            </Tab>
-          </Tabs>
-        </TabsContainer>
-      </div>
+      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
+        <Tabs tabId="simple-tab">
+          <Tab label="Students" style={{ color: '#000000' }}>
+            <StudentData
+              key={currentCourseID}
+              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+              assignmentsLoadComplete={assignmentsLoadComplete}
+              assignments={assignments}
+              submissionsByStudent={submissionsByStudent}
+              activeStudent={activeStudent}
+              changeActiveStudent={this.changeActiveStudent}
+              openSubmission={this.openSubmission}
+            />
+          </Tab>
+          <Tab label="Graders" style={{ color: '#000000' }}>
+            <GraderData
+              key={currentCourseID}
+              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+              assignmentsLoadComplete={assignmentsLoadComplete}
+              assignments={assignments}
+              submissionsByGrader={submissionsByGrader}
+              activeGrader={activeGrader}
+              changeActiveGrader={this.changeActiveGrader}
+              openSubmission={this.openSubmission}
+            />
+          </Tab>
+        </Tabs>
+      </TabsContainer>
     );
   }
 }

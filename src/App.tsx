@@ -12,7 +12,6 @@ import Home from './Home';
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
-import './styles/index.scss';
 import { IUser } from './types/common';
 
 interface IState {
@@ -40,7 +39,7 @@ class App extends React.Component<{}, IState> {
 
   public componentDidMount() {
     if (this.state.has_token && !this.state.user) {
-      fetch('http://localhost:8000/core/current_user/', {
+      fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
         },
@@ -83,7 +82,7 @@ class App extends React.Component<{}, IState> {
     const REFRESH_MIN = 30; // should define this in a settings file somewhere
     const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
 
-    fetch('http://localhost:8000/token-refresh/', {
+    fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
       body: JSON.stringify({ token: localStorage.getItem('token') }),
       headers: {
         'Content-Type': 'application/json',
@@ -107,7 +106,7 @@ class App extends React.Component<{}, IState> {
 
   public handleLogin = (e: any, data: any) => {
     e.preventDefault();
-    fetch('http://localhost:8000/token-auth/', {
+    fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
       body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json',
@@ -183,7 +182,7 @@ class App extends React.Component<{}, IState> {
       );
     }
     return (
-      <div className="App">
+      <div>
         <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
       </div>
     );

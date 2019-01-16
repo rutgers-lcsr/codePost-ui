@@ -16,7 +16,7 @@ const Panel = (props: IPanelProps) => {
   const { assignment, submission, toggleFinalized } = props;
 
   return (
-    <div className="container-info">
+    <div className="grade__top-container">
       <SubmissionInfo submission={submission} assignment={assignment} />
       <GradeBox submission={submission} assignment={assignment} />
       <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
@@ -40,7 +40,7 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
   const assignmentString = `Assignment: ${assignment.name}`;
 
   return (
-    <div className="container-subinfo">
+    <div className="grade__top-container__sub-details">
       <div>{studentString}</div>
       <div>{graderString}</div>
       <div>{assignmentString}</div>
@@ -57,7 +57,7 @@ const GradeBox = (props: IGradeBoxProps) => {
   const { submission, assignment } = props;
 
   const gradeString = `Grade: ${submission.grade} / ${assignment.points}`;
-  return <div className="container-grade">{gradeString}</div>;
+  return <div className="grade__top-container__grade">{gradeString}</div>;
 };
 
 interface IGradeActionsProps {
@@ -69,7 +69,7 @@ const GradeActions = (props: IGradeActionsProps) => {
   const { submission, toggleFinalized } = props;
 
   return (
-    <div className="container-toggle">
+    <div className="grade__top-container__sub-finalize">
       <Finalize submission={submission} toggleFinalized={toggleFinalized} />
     </div>
   );

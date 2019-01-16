@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
-import GradedTab from './components/grader/GradedTab';
+import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import VerticalPane from './components/VerticalPane';
-
-import './styles/Grader.scss';
 
 import { ICourseToAssignmentMap, IOption } from './types/common';
 
@@ -88,8 +86,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const { courses, assignments } = this.state;
 
     // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse;
-    let currentAssignment;
+    let currentCourse: any;
+    let currentAssignment: any;
     if (courseName && period) {
       const formattedCourseName = courseName.replace(/_/g, ' ');
       const formattedPeriod = period.replace(/_/g, ' ');
@@ -102,6 +100,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
         currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
           return obj.name === formattedAssignmentName;
+        });
+
+        this.setState({ isLoadingSubmissions: true });
+        this.loadSubmissions(currentAssignment).then(() => {
+          this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
         });
       }
     }
@@ -199,7 +202,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
@@ -244,7 +247,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       grader: '',
     };
 
-    return Submission.update(payload).then((json) => {
+    return Submission.update(payload).then((json: any) => {
       this.setState({
         currentSubmissions: this.state.currentSubmissions.filter((sub) => {
           return sub.id !== submission.id;
@@ -257,13 +260,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   ///////////////////////////////////////
   // Main
   ///////////////////////////////////////
-
-  public renderRedirect = () => {
-    if (this.state.redirect) {
-      return <Redirect to="/" />;
-    }
-    return;
-  };
 
   public render() {
     const {
@@ -292,9 +288,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     return (
-      <div>
-        {this.renderRedirect()}
-        <div className="container-main">
+      <div className="grader">
+        <div className="grader__left-panel">
           <VerticalPane
             currentTab={this.tabCurrentFormatter(currentAssignment)}
             currentSelector={this.selectorCurrentFormatter(currentCourse)}
@@ -302,9 +297,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             tabItems={this.tabItemsFormatter(currentCourse)}
             handleTabChange={this.handleAssignmentChange}
             handleSelectorChange={this.handleCourseChange}
-            isLoading={false}
           />
-          <GradedTab
+        </div>
+        <div className="grader__right-panel">
+          <GraderAssignmentPanel
             claimSubmission={this.claimSubmission}
             releaseSubmission={this.releaseSubmission}
             assignment={currentAssignment}
