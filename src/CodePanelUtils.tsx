@@ -14,15 +14,9 @@ export default class CodePanelUtils {
     rubricComment: RubricCommentType | undefined,
     activeCommentId?: number,
   ): number => {
-    // Note: rubricComment should be true or comment should be true
-    if (!comment.text && !rubricComment) {
-      throw new Error("Comment doesn't have rubricComment or text");
-    }
-
     const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
     const linesRubricComment = rubricComment ? rubricComment.text.length / 30 + 1 : 0;
-    // The inner ternary false should never be called but typescript complains that comment.text might be null
-    const linesComment = rubricComment ? rubricComment.text.length / 36 : comment.text ? comment.text.length / 36 : 0;
+    const linesComment = comment.text ? comment.text.length / 36 : 0;
     const linesButtons = activeCommentId === comment.id ? 4 : 0;
     const buffer = 6;
 

@@ -331,7 +331,7 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     // Should include loading functionality while the submission is coming in
     return (
-      <div>
+      <div className="grade">
         <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
