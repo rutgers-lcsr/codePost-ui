@@ -137,12 +137,12 @@ class Grade extends React.Component<IProps, IGradeState> {
   public loadRubricCategories = (assignmentId: number) => {
     return Assignment.readRubric(assignmentId, {}).then((rubric) => {
       return Promise.all(
-        rubric.categories.map((rubricCategory: RubricCategoryType) => {
+        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
           return this.loadRubricComments(rubricCategory);
         }),
       ).then(() => {
-        this.setState({ rubricCategories: rubric.categories });
-        return rubric.categories;
+        this.setState({ rubricCategories: rubric.rubricCategories });
+        return rubric.rubricCategories;
       });
     });
   };
