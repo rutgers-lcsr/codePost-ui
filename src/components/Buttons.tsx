@@ -51,7 +51,7 @@ export const FinalizeButton = (props: IButtonProps) => {
   switch (buttonState) {
     case BUTTON_STATE.Active:
       return (
-        <div className="button--finalize" onClick={handleClick}>
+        <div className="button--takeback" onClick={handleClick}>
           Take Back
         </div>
       );

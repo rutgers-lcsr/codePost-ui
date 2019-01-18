@@ -1,9 +1,11 @@
 .grade {
   @include setMinPageHeight($topbar-height);
+  display: flex;
+  flex-direction: column;
 
   &__top-container {
     display: flex;
-    padding: 20px;
+    padding: 15px 20px;
     border-bottom: 1px solid black;
 
     &__sub-details {
@@ -21,5 +23,11 @@
 
   &__main-container {
     @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
+    flex-grow: 1;
+
+    &__left-panel {
+      height: inherit;
+      border-right: 1px solid $very-light-grey;
+    }
   }
 }

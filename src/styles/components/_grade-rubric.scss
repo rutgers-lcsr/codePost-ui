@@ -2,7 +2,7 @@
   &__search-bar {
     width: 100%;
     padding: 10px 40px 10px 10px;
-    font-size: 14px;
+    font-size: $font-size-large;
     border: 1px solid $theme-grey;
     border-radius: 2px;
     // box-sizing: border-box;
@@ -19,7 +19,7 @@
       position: relative;
 
       &__title {
-        font-size: 14pt;
+        font-size: $font-size-large;
         font-weight: bold;
         padding-left: 10px;
       }
@@ -32,17 +32,21 @@
     &__comment-row {
       display: flex;
       padding-left: 10px;
-      border-top: 1px solid $theme-grey;
+      border-radius: 8px;
+      border: 1px solid $theme-grey;
       cursor: pointer;
+      align-items: center;
+      margin: 2px;
 
       &__text {
         flex: 1 1 0;
-        font-size: 10.5pt;
+        font-size: $font-size-normal;
+        padding: 2px;
       }
 
       &__point-delta {
         flex: 0 1 25px;
-        font-size: 10.5pt;
+        font-size: $font-size-normal;
         text-align: center;
       }
 
