@@ -1,4 +1,6 @@
 .grade {
+  @include setMinPageHeight($topbar-height);
+
   &__top-container {
     display: flex;
     padding: 20px;
@@ -18,6 +20,6 @@
   }
 
   &__main-container {
-    @include dual-pane(250);
+    @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
   }
 }

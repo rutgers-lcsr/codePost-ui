@@ -37,6 +37,7 @@
 /// @param {Color} $color - color to tint
 /// @param {Number} $percentage - percentage of `$color` in returned color
 /// @return {Color}
+
 @function tint($color, $percentage) {
   @return mix(white, $color, $percentage);
 }
@@ -46,23 +47,28 @@
 /// @param {Color} $color - color to shade
 /// @param {Number} $percentage - percentage of `$color` in returned color
 /// @return {Color}
+
 @function shade($color, $percentage) {
   @return mix(black, $color, $percentage);
 }
 
 /// Generate a two-panel layout
 /// @param {Number} $flex-basis-left
-@mixin dual-pane($flex-basis-left) {
+@mixin dual-pane-fixed-left($flex-basis-left, $left-pane-name, $right-pane-name) {
   width: 100%;
   padding: 10px;
   display: flex;
 
-  &__left-panel {
+  &__#{$left-pane-name} {
     flex: 0 1 #{$flex-basis-left}px;
   }
 
-  &__right-panel {
+  &__#{$right-pane-name} {
     flex: 1 1 0;
     padding-left: 10px;
   }
+}
+
+@mixin setMinPageHeight($topbar-height) {
+  min-height: calc(100vh - #{$topbar-height} - 20px);
 }
