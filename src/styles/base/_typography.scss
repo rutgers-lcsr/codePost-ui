@@ -1,7 +1,16 @@
 /**
  * Basic typography style for copy text
  */
+
+// Defining font variables
+$font-size-small: 10px;
+$font-size-normal: 12px;
+$font-size-large: 16px;
+$font-size-xlarge: 24px;
+$font-size-xxlarge: 32px;
+
 body {
   color: $text-color;
-  font: normal 125% / 1.4 $text-font-stack;
+  font-size: $font-size-normal;
+  // font: normal 70% / 2 $text-font-stack;
 }
