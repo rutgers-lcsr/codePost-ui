@@ -210,6 +210,11 @@ class Grade extends React.Component<IProps, IGradeState> {
       return;
     }
 
+    // Don't force the client side to always have to input a 0 for deduction
+    if (newComment.pointDelta === null) {
+      newComment.pointDelta = 0;
+    }
+
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
     this.setState({ comments });
