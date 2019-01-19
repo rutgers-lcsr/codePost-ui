@@ -27,7 +27,7 @@ $brand-color-secondary: rgb(22, 126, 67) !default; // #167E43
 
 /// Very Light green
 /// @type Color
-$very-light-green: rgb(247, 250, 246) !default; // #F7FAF6
+$very-light-green: tint($brand-color, 90%) !default; // #F7FAF6
 
 /// Very Light grey
 /// @type Color
@@ -48,6 +48,8 @@ $dark-grey: rgb(68, 68, 68) !default;
 /// Theme grey
 /// @type Color
 $theme-grey: $light-grey !default; //#ffcdd2
+
+$dark-red: #d32f2f !default;
 
 /// Container's maximum width
 /// @type Length
