@@ -23,11 +23,42 @@
 
   &__main-container {
     @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
+    padding: 0px 0px 10px 0px;
     flex-grow: 1;
 
     &__left-panel {
       height: inherit;
-      border-right: 1px solid $very-light-grey;
+      border-right: 2px solid $mid-grey;
+    }
+
+    &__right-panel {
+      padding-top: 10px;
+      &__tabs {
+        width: inherit;
+      }
+    }
+
+    &__tabContent {
+      @media screen and (min-width: 1400px) {
+        $commentPanel-width: calc(100vw - 1400px + 300px);
+        @include dual-pane-fixed-right-scrollable-left($commentPanel-width, 'codePanel', 'commentPanel');
+        padding-right: 0px;
+      }
+      @media screen and (max-width: 1400px) {
+        @include dual-pane-fixed-right-scrollable-left(300px, 'codePanel', 'commentPanel');
+        padding-right: 0px;
+      }
+      min-height: 80vh;
+
+      &__commentPanel {
+        padding-top: 20px;
+        padding-left: 20px;
+        border-left: 1px solid rgba(0, 0, 0, 0.2);
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        background-color: $very-light-green;
+        z-index: 1;
+      }
     }
   }
 }
