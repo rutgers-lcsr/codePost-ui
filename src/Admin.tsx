@@ -18,6 +18,7 @@ import {
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
   IToast,
+  IUser,
   USER_APP,
 } from './types/common';
 
@@ -89,7 +90,7 @@ interface IAdminState {
 
 interface IAdminProps {
   initialCourses: CourseType[];
-  email: string;
+  user: IUser;
   match: any;
   history: any;
 }
@@ -1220,6 +1221,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       } else {
         return <Redirect to={'/course-admin'} />;
       }
+    }
+
+    if (!this.props.user.canCreateCourses) {
+      return <div>Sorry, you're not registered as a course admin. Want access? Contact us here</div>;
     }
 
     let courseManagementPanel = null;
