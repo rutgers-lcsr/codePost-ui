@@ -25,13 +25,17 @@ $brand-color: rgb(46, 205, 112) !default; // #2ecd70
 /// @type Color
 $brand-color-secondary: rgb(22, 126, 67) !default; // #167E43
 
+/// Very Light green
+/// @type Color
+$very-light-green: tint($brand-color, 90%) !default; // #F7FAF6
+
 /// Very Light grey
 /// @type Color
-$very-light-grey: rgb(247, 250, 246) !default; // #F7FAF6
+$very-light-grey: rgb(245, 245, 245) !default;
 
 /// Light grey
 /// @type Color
-$light-grey: rgb(237, 237, 237) !default;
+$light-grey: rgb(225, 225, 225) !default;
 
 /// Medium grey
 /// @type Color
@@ -43,11 +47,15 @@ $dark-grey: rgb(68, 68, 68) !default;
 
 /// Theme grey
 /// @type Color
-$theme-grey: rgb(255, 205, 210) !default; //#ffcdd2
+$theme-grey: $light-grey !default; //#ffcdd2
+
+$dark-red: #d32f2f !default;
 
 /// Container's maximum width
 /// @type Length
 $max-width: 1180px !default;
+
+$topbar-height: 40px !default;
 
 /// Breakpoints map
 /// @prop {String} keys - Keys are identifiers mapped to a given length

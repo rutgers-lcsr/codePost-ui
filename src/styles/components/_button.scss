@@ -14,6 +14,27 @@
   }
 }
 
+%large-button {
+  position: absolute;
+  width: 80px;
+  height: 42.2px;
+  right: 20px;
+  font-size: $font-size-medium;
+  border-radius: 6px;
+  font-weight: bold;
+  line-height: 42.2px;
+}
+
+@mixin icon-button($icon-size, $padding) {
+  // icon size indicated by forceIconSize={20} in react-md button-button
+  // remember -- add forceIconFontSize={true} within button js
+  text-transform: none; // So that tooltip text is not in all-caps
+  min-width: $icon-size + 2 * $padding;
+  width: $icon-size + 2 * $padding;
+  height: $icon-size + 2 * $padding;
+  padding: $padding;
+}
+
 .button {
   &--start-grading {
     @include button($brand-color, white);
@@ -22,7 +43,7 @@
     margin: auto;
     margin-top: 40px;
     padding: 7px 16px;
-    font-size: 20px;
+    font-size: $font-size-xlarge;
     font-weight: 600;
     border-radius: 5px;
   }
@@ -35,7 +56,7 @@
     padding: $button-get-another-height / 6;
     height: $button-get-another-height;
     font-size: $button-get-another-height / 2;
-    border-radius: $button-get-another-height / 6;
+    border-radius: $button-get-another-height / 4;
   }
 
   &--release {
@@ -44,35 +65,34 @@
   }
 
   &--finalize {
-    @include button($very-light-grey, $text-color);
-    position: absolute;
-    width: 80px;
-    height: 42.2px;
-    right: 20px;
-    font-size: 10pt;
-    font-weight: bold;
-    border: 1px solid $light-grey;
-    line-height: 42.2px;
+    @include button($brand-color, white);
+    @extend %large-button;
+  }
+
+  &--takeback {
+    @include button($very-light-grey, $mid-grey);
+    @extend %large-button;
   }
 
   &--comment {
-    display: inline-block;
-    min-width: 30px;
-    padding: 4px 8px;
-    margin: 4px 4px -10px 4px;
+    @include icon-button(20px, 3px);
   }
 
   &--rubric-arrow {
     vertical-align: middle;
     min-width: 30px;
     padding: 0px;
-    float: right;
+    float: left;
     height: 20px;
     width: 20px;
     cursor: pointer;
 
     &--up {
       color: $brand-color;
+    }
+
+    &:hover {
+      background-color: inherit;
     }
   }
 }

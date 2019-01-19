@@ -1,0 +1,13 @@
+@mixin badgeFormat($background-color, $font-color) {
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  font-size: $font-size-normal;
+  color: $font-color;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  background-color: $background-color;
+  text-align: center;
+  z-index: 1;
+}

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import { Tab, Tabs, TabsContainer, Tooltipped } from 'react-md';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
@@ -68,27 +68,34 @@ class CodePanel extends React.Component<IProps, IState> {
     // a number and sometimes a string
     // will fix the underlying issue in a future PR
     const pointDelta = comments.reduce((accumulator: number, comment: CommentType) => {
-      if (comment.pointDelta) {
+      if (comment.pointDelta && comment.id > 0) {
         if (typeof comment.pointDelta === 'number') {
           return accumulator + comment.pointDelta;
         } else {
           return accumulator + parseInt(comment.pointDelta, 10);
         }
-      } else if (rubricComments[comment.id]) {
+      } else if (rubricComments[comment.id] && comment.id > 0) {
         return accumulator + rubricComments[comment.id].pointDelta;
       } else {
         return accumulator;
       }
     }, 0);
-    const pointDeltaString = pointDelta > 0 ? `(-${pointDelta})` : '';
+    const pointDeltaLabel = pointDelta > 0 ? `-${pointDelta}` : pointDelta < 0 ? `+${pointDelta * -1}` : '';
+    const pointDeltaModifier =
+      pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
     const numComments = comments.length;
-    const commentFlag = numComments > 0 ? <div className="tab__comment-count">{numComments}</div> : '';
+    const commentFlag = numComments > 0 ? <div className="tab__title__comment-count">{numComments}</div> : <div />;
 
     return (
       <div className="tab__title">
-        {commentFlag}
-        <div className="tab__title">{`${file.name} ${pointDeltaString}`}</div>
+        <div className="tab__title__fileName">{file.name}</div>
+        <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
+          {commentFlag}
+        </Tooltipped>
+        <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
+          <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
+        </Tooltipped>
       </div>
     );
   };
@@ -112,38 +119,31 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <Tabs>
-        <TabList>
+      <TabsContainer defaultTabIndex={0} className="grade__main-container__right-panel__tabs">
+        <Tabs className="md-tabs--Grade" tabId="simple-tab">
           {files.map((file: FileType, i: number) => {
             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <Tab id="{i}" key={i}>
-                {tabTitle}
+              <Tab key={i} style={{ color: '#000000' }} label={tabTitle}>
+                <Code
+                  file={file}
+                  comments={comments[file.id]}
+                  rubricComments={rubricComments}
+                  readOnly={readOnly}
+                  addComment={this.addComment}
+                  commentCounter={commentCounter}
+                  updateCommentCounter={this.updateCommentCounter}
+                  activeCommentId={activeCommentId}
+                  changeActive={this.changeActive}
+                  deleteComment={deleteComment}
+                  updateComment={updateComment}
+                  saveGrade={saveGrade}
+                />
               </Tab>
             );
           })}
-        </TabList>
-        {files.map((file: FileType, i: number) => {
-          return (
-            <TabPanel key={i}>
-              <Code
-                file={file}
-                comments={comments[file.id]}
-                rubricComments={rubricComments}
-                readOnly={readOnly}
-                addComment={this.addComment}
-                commentCounter={commentCounter}
-                updateCommentCounter={this.updateCommentCounter}
-                activeCommentId={activeCommentId}
-                changeActive={this.changeActive}
-                deleteComment={deleteComment}
-                updateComment={updateComment}
-                saveGrade={saveGrade}
-              />
-            </TabPanel>
-          );
-        })}
-      </Tabs>
+        </Tabs>
+      </TabsContainer>
     );
   }
 }
@@ -274,31 +274,35 @@ const Code = (props: ICodeProps) => {
   const codeString = props.file.code;
 
   return (
-    <div className="code">
-      <div className="code__highlighted-area">
-        <div className="code__syntax-highlighter">
-          <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
-            {codeString}
-          </SyntaxHighlighter>
-        </div>
-        <div className="code__underlay">
-          <div className="code__underlay--line-numbers" style={lineNumberStyle}>
-            {numberOfLines}
+    <div className="grade__main-container__tabContent">
+      <div className="grade__main-container__tabContent__codePanel">
+        <div className="code__highlighted-area">
+          <div className="code__syntax-highlighter">
+            <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
+              {codeString}
+            </SyntaxHighlighter>
           </div>
-          <div className="code__underlay--code">{linesOfCode}</div>
+          <div className="code__underlay">
+            <div className="code__underlay--line-numbers" style={lineNumberStyle}>
+              {numberOfLines}
+            </div>
+            <div className="code__underlay--code">{linesOfCode}</div>
+          </div>
         </div>
       </div>
-      <CommentList
-        file={file}
-        readOnly={readOnly}
-        comments={comments}
-        rubricComments={rubricComments}
-        activeCommentId={activeCommentId}
-        changeActive={changeActive}
-        deleteComment={deleteComment}
-        updateComment={updateComment}
-        saveGrade={saveGrade}
-      />
+      <div className="grade__main-container__tabContent__commentPanel">
+        <CommentList
+          file={file}
+          readOnly={readOnly}
+          comments={comments}
+          rubricComments={rubricComments}
+          activeCommentId={activeCommentId}
+          changeActive={changeActive}
+          deleteComment={deleteComment}
+          updateComment={updateComment}
+          saveGrade={saveGrade}
+        />
+      </div>
     </div>
   );
 };

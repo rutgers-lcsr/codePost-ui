@@ -1,3 +1,4 @@
 .grader {
-  @include dual-pane(200);
+  @include setMinPageHeight($topbar-height);
+  @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
 }
