@@ -14,13 +14,12 @@ export default class CodePanelUtils {
     rubricComment: RubricCommentType | undefined,
     activeCommentId?: number,
   ): number => {
-    const linesDeduction = comment.pointDelta !== 0 ? 2 : 0;
     const linesRubricComment = rubricComment ? rubricComment.text.length / 30 + 1 : 0;
     const linesComment = comment.text ? comment.text.length / 36 : 0;
     const linesButtons = activeCommentId === comment.id ? 4 : 0;
-    const buffer = 6;
+    const buffer = 4;
 
-    const totalLines = linesDeduction + linesRubricComment + linesComment + linesButtons + buffer;
+    const totalLines = linesRubricComment + linesComment + linesButtons + buffer;
 
     return totalLines * PIXELS_PER_LINE;
   };
