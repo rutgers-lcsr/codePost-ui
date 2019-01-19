@@ -31,6 +31,15 @@ class Rubric extends React.Component<IProps, IState> {
     visibles: {},
   };
 
+  public constructor(props: any) {
+    super(props);
+    const visibles = {};
+    this.props.rubricCategories.forEach((cat) => {
+      visibles[cat.id] = true;
+    });
+    this.state = { searchTerm: '', visibles };
+  }
+
   public toggleVisible = (rubricCategory: RubricCategoryType, visible: boolean, event: any) => {
     this.setState({
       visibles: { ...this.state.visibles, [rubricCategory.id]: !visible },
@@ -52,6 +61,7 @@ class Rubric extends React.Component<IProps, IState> {
 
     return (
       <div>
+        <div className="grade-rubric__title">Assignment Rubric</div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
           const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
@@ -94,10 +104,10 @@ const RubricCategory = (props: IRubricCategoryProps) => {
         onClick={props.handleDropDown.bind(props, rubricCategory, visible)}
       >
         <div className="grade-rubric__category__title-row__title">
-          {rubricCategory.name}
           <Button key={rubricCategory.id} className={arrowClassName} icon={true}>
             {buttonIcon}
           </Button>
+          {rubricCategory.name}
         </div>
       </div>
       {visible && (
