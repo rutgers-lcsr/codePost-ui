@@ -25,6 +25,16 @@
   line-height: 42.2px;
 }
 
+@mixin icon-button($icon-size, $padding) {
+  // icon size indicated by forceIconSize={20} in react-md button-button
+  // remember -- add forceIconFontSize={true} within button js
+  text-transform: none; // So that tooltip text is not in all-caps
+  min-width: $icon-size + 2 * $padding;
+  width: $icon-size + 2 * $padding;
+  height: $icon-size + 2 * $padding;
+  padding: $padding;
+}
+
 .button {
   &--start-grading {
     @include button($brand-color, white);
@@ -65,23 +75,24 @@
   }
 
   &--comment {
-    display: inline-block;
-    min-width: 30px;
-    padding: 4px 8px;
-    margin: 4px 4px -10px 4px;
+    @include icon-button(20px, 3px);
   }
 
   &--rubric-arrow {
     vertical-align: middle;
     min-width: 30px;
     padding: 0px;
-    float: right;
+    float: left;
     height: 20px;
     width: 20px;
     cursor: pointer;
 
     &--up {
       color: $brand-color;
+    }
+
+    &:hover {
+      background-color: inherit;
     }
   }
 }
