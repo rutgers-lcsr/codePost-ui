@@ -101,8 +101,8 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
     return (
       <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
-        <Tabs tabId="simple-tab">
-          <Tab label="Students" style={{ color: '#000000' }}>
+        <Tabs className="md-tabs--CourseData" tabId="simple-tab">
+          <Tab style={{ color: '#000000' }} label="Students">
             <StudentData
               key={currentCourseID}
               submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
@@ -114,7 +114,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               openSubmission={this.openSubmission}
             />
           </Tab>
-          <Tab label="Graders" style={{ color: '#000000' }}>
+          <Tab style={{ color: '#000000' }} label="Graders">
             <GraderData
               key={currentCourseID}
               submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}

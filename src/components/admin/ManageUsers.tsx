@@ -62,7 +62,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
     return (
       <div>
         <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" slideStyle={{ minHeight: '70vh' }}>
-          <Tabs tabId="simple-tab">
+          <Tabs tabId="simple-tab" className="md-tabs--ManageUsers">
             <Tab label="Students" classname="manageStudents" style={{ color: '#000000' }}>
               <ManageStudents
                 sections={this.props.sections}
