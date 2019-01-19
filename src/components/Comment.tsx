@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Card, CardText, Chip, TextField } from 'react-md';
+import { Button, TextField } from 'react-md';
 
 import { ICSSStyleObject } from '../types/common';
 
@@ -180,17 +180,12 @@ class Comment extends React.Component<IProps, IState> {
     const { savingClass } = this.state;
 
     const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
-    const pointDeltaLabel = `-${pointDelta}`;
+    const pointDeltaLabel = pointDelta ? (pointDelta > 0 ? `-${pointDelta}` : `+${pointDelta * -1}`) : null;
+    const pointDeltaModifier =
+      pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
-    let pointDeltaElement = null;
-    if (pointDelta && pointDelta !== 0) {
-      pointDeltaElement = <Chip label={pointDeltaLabel} />;
-    }
-
-    let className = 'comment';
-    if (this.state.isUnsaved) {
-      className += ' comment--unsaved';
-    }
+    const className = this.state.isUnsaved ? 'comment--unsaved' : 'comment';
+    const author = comment.author ? comment.author : '';
 
     // Ugly for type checking
     let rubricCommentText = 'no standard';
@@ -200,19 +195,22 @@ class Comment extends React.Component<IProps, IState> {
     // Non-editable comment
     if (readOnly) {
       return (
-        <Card
+        <div
           className={className}
           style={style}
           onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
           onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
         >
-          <CardText>
+          <div className="comment__body">
             <div className={savingClass} />
-            {pointDeltaElement}
+            <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             <div className="comment__rubric-comment">{rubricCommentText}</div>
             {comment.text}
-          </CardText>
-        </Card>
+            <div className="comment__footer">
+              <div className="comment__footer__author">{author}</div>
+            </div>
+          </div>
+        </div>
       );
     }
 
@@ -222,23 +220,23 @@ class Comment extends React.Component<IProps, IState> {
       // it in a form validation
       // const pointDeltaClassName = saveWarning ? 'point-delta warning' : 'point-delta';
       return (
-        <Card
+        <div
           className={className}
           style={style}
           onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
           onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
         >
-          <CardText>
+          <div className="comment__body">
             <div className={savingClass} />
             <TextField
               id="pointdelta-field"
               className="comment__pointdelta-field"
-              value={pointDelta ? pointDelta : 0}
+              value={pointDelta ? pointDelta : undefined}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
               min={0}
-              label={'Deduction'}
+              placeholder={'Deduction'}
               fullWidth={true}
               disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}
@@ -249,7 +247,7 @@ class Comment extends React.Component<IProps, IState> {
               onChange={this.updateComment}
               onKeyPress={this.enterKey}
               value={comment.text ? comment.text : ''}
-              className="comment-textarea"
+              className="comment__textarea"
             />
 
             <div>
@@ -257,34 +255,55 @@ class Comment extends React.Component<IProps, IState> {
                 Save
               </Button>
             </div>
-          </CardText>
-        </Card>
+          </div>
+        </div>
       );
     }
 
     // Editable-inactive comment
     return (
-      <Card
+      <div
         className={className}
         style={style}
         onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
         onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
       >
-        <CardText>
+        <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
+        <div className="comment__body">
           <div className={savingClass} />
-          {pointDeltaElement}
           {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
           <div className="comment__text">{comment.text}</div>
-          <div>
-            <Button flat className="button--comment" onClick={this.toggleActive}>
-              Edit
-            </Button>
-            <Button flat className="button--comment" onClick={deleteComment.bind(this, comment, file)}>
-              Delete
-            </Button>
+          <div className="comment__footer">
+            <div className="comment__footer__author">{author}</div>
+            <div className="comment__footer__buttons">
+              <Button
+                flat
+                className="button--comment"
+                icon={true}
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Edit comment"
+                tooltipDelay={750}
+                onClick={this.toggleActive}
+              >
+                edit
+              </Button>
+              <Button
+                flat
+                className="button--comment"
+                icon={true}
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Delete comment"
+                tooltipDelay={750}
+                onClick={deleteComment.bind(this, comment, file)}
+              >
+                delete
+              </Button>
+            </div>
           </div>
-        </CardText>
-      </Card>
+        </div>
+      </div>
     );
   }
 }
