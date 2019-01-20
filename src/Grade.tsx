@@ -203,20 +203,13 @@ class Grade extends React.Component<IProps, IGradeState> {
       assignmentPoints = assignment.points;
     }
 
-    // Horrific code that is happneing because the pointDelta is sometimes
-    // a number and sometimes a string
-    // will fix the underlying issue in a future PR
     const grade =
       assignmentPoints -
       Object.keys(comments)
         .map((fileID) => {
           return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
             if (comment.pointDelta) {
-              if (typeof comment.pointDelta === 'number') {
-                return accumulator + comment.pointDelta;
-              } else {
-                return accumulator + parseInt(comment.pointDelta, 10);
-              }
+              return accumulator + comment.pointDelta;
             } else if (commentRubricComments[comment.id]) {
               return accumulator + commentRubricComments[comment.id].pointDelta;
             } else {
