@@ -50,9 +50,9 @@ class Comment extends React.Component<IProps, IState> {
     updateComment(comment.id, comment, file);
   };
 
-  public updateDeduction = (value: number) => {
+  public updateDeduction = (value: string) => {
     const { comment, updateComment, file } = this.props;
-    comment.pointDelta = value;
+    comment.pointDelta = parseFloat(value);
     this.setState({ isUnsaved: true });
     updateComment(comment.id, comment, file);
   };
@@ -235,7 +235,6 @@ class Comment extends React.Component<IProps, IState> {
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
-              min={0}
               placeholder={'Deduction'}
               fullWidth={true}
               disabled={rubricComment ? true : false}
@@ -277,7 +276,6 @@ class Comment extends React.Component<IProps, IState> {
             <div className="comment__footer__author">{author}</div>
             <div className="comment__footer__buttons">
               <Button
-                flat
                 className="button--comment"
                 icon={true}
                 forceIconFontSize={true}
@@ -289,7 +287,6 @@ class Comment extends React.Component<IProps, IState> {
                 edit
               </Button>
               <Button
-                flat
                 className="button--comment"
                 icon={true}
                 forceIconFontSize={true}
