@@ -193,34 +193,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.setState({ activeCommentId: id });
   };
 
-  // Usually adds a blank comment to the submission state
-  public addComment = (comment: CommentType, file: FileType): void => {
-    const { submission, comments } = this.state;
-    if (!submission) {
-      return;
-    }
-
-    comments[file.id] = [...comments[file.id], comment];
-    this.setState({ comments });
-  };
-
-  public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
-    const { submission, comments } = this.state;
-    if (!submission) {
-      return;
-    }
-
-    // Don't force the client side to always have to input a 0 for deduction
-    if (newComment.pointDelta === null) {
-      newComment.pointDelta = 0;
-    }
-
-    const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
-    comments[file.id][index] = newComment;
-    this.setState({ comments });
-  };
-
-  public saveGrade = (): any => {
+  public calculateGradeFromComments = () => {
     const { comments, submission, assignment, commentRubricComments } = this.state;
 
     let assignmentPoints = 0;
@@ -254,6 +227,48 @@ class Grade extends React.Component<IProps, IGradeState> {
         .reduce((accumulator: number, fileGrade: number) => {
           return accumulator + fileGrade;
         }, 0);
+
+    return grade;
+  };
+
+  // Usually adds a blank comment to the submission state
+  public addComment = (comment: CommentType, file: FileType): void => {
+    const { submission, comments } = this.state;
+    if (!submission) {
+      return;
+    }
+
+    comments[file.id] = [...comments[file.id], comment];
+    this.setState({ comments });
+  };
+
+  public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
+    const { assignment, submission, comments } = this.state;
+    if (!submission || !assignment) {
+      return;
+    }
+
+    // Don't force the client side to always have to input a 0 for deduction
+    if (newComment.pointDelta === null) {
+      newComment.pointDelta = 0;
+    }
+
+    const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
+    comments[file.id][index] = newComment;
+    this.setState({ comments });
+
+    const grade = this.calculateGradeFromComments();
+    submission.grade = grade;
+    this.setState({ submission });
+  };
+
+  public saveGrade = (): any => {
+    const { submission, assignment } = this.state;
+    if (!submission || !assignment) {
+      return;
+    }
+
+    const grade = this.calculateGradeFromComments();
 
     const payload = {
       id: submission.id,
