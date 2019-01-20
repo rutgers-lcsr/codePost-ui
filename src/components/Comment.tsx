@@ -188,7 +188,7 @@ class Comment extends React.Component<IProps, IState> {
     const author = comment.author ? comment.author : '';
 
     // Ugly for type checking
-    let rubricCommentText = 'no standard';
+    let rubricCommentText = '';
     if (rubricComment) {
       rubricCommentText = rubricComment.text;
     }
@@ -204,7 +204,7 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__body">
             <div className={savingClass} />
             <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
-            <div className="comment__rubric-comment">{rubricCommentText}</div>
+            {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             {comment.text}
             <div className="comment__footer">
               <div className="comment__footer__author">{author}</div>
