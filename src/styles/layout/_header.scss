@@ -1,16 +1,20 @@
-.topbar {
+@mixin topbar($height, $background-color) {
   width: 100%;
-  height: $topbar-height;
-  background-color: white;
-  border-color: $brand-color;
-  border-style: solid;
-  border-width: 0px 0px 3px 0px;
+  height: $height;
+  background-color: $background-color;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: fixed;
   // Highest possible z-index, given browser limitations
   z-index: 16777271;
+}
+
+.topbar {
+  @include topbar($topbar-height, white);
+  border-color: $brand-color;
+  border-style: solid;
+  border-width: 0px 0px 3px 0px;
 
   &__spacing {
     height: $topbar-height;
