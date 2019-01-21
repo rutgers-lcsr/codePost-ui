@@ -344,8 +344,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       contentArea = <div>Select an assignment on the left!</div>;
     }
 
-    console.log(contentArea.props);
-
     return (
       <div className="student">
         <div className="student__left-panel">

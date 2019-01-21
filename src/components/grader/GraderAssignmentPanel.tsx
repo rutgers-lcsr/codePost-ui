@@ -92,12 +92,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                       {submission.dateFinalized}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
-                      <Button
-                        key={`button--release-${submission.id}`}
-                        className="button--release"
-                        flat={true}
-                        icon={true}
-                      >
+                      <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>
                         remove_circle
                       </Button>
                     </TableColumn>

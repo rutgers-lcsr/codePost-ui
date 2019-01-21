@@ -231,7 +231,7 @@ class Comment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment__pointdelta-field"
-              value={pointDelta ? pointDelta : undefined}
+              value={pointDelta ? pointDelta : 0}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
@@ -250,8 +250,27 @@ class Comment extends React.Component<IProps, IState> {
             />
 
             <div>
-              <Button flat className="button--comment" onClick={this.toggleActive}>
-                Save
+              <Button
+                icon={true}
+                className="button--comment"
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Save comment"
+                tooltipDelay={750}
+                onClick={this.toggleActive}
+              >
+                save
+              </Button>
+              <Button
+                icon={true}
+                className="button--comment"
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Delete comment"
+                tooltipDelay={750}
+                onClick={deleteComment.bind(this, comment, file)}
+              >
+                delete
               </Button>
             </div>
           </div>
