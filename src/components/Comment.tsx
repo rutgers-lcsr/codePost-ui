@@ -255,11 +255,22 @@ class Comment extends React.Component<IProps, IState> {
                 className="button--comment"
                 forceIconFontSize={true}
                 forceIconSize={20}
-                tooltipLabel="Edit comment"
+                tooltipLabel="Save comment"
                 tooltipDelay={750}
                 onClick={this.toggleActive}
               >
                 save
+              </Button>
+              <Button
+                icon={true}
+                className="button--comment"
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Delete comment"
+                tooltipDelay={750}
+                onClick={deleteComment.bind(this, comment, file)}
+              >
+                delete
               </Button>
             </div>
           </div>
