@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { HOME } from '../routes';
 
 interface IProps {
   email: string;
@@ -10,7 +11,7 @@ const TopBar = (props: IProps) => (
   <div>
     <div className="topbar">
       <div key="topbar__logo" className="topbar__logo">
-        <Link to="/">
+        <Link to={HOME}>
           code<span className="topbar__codePost-P">P</span>ost
         </Link>
       </div>
