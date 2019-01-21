@@ -22,34 +22,34 @@
 //   font-family: $primary-font;
 // }
 
-$panel-width: 240px;
-$margin: 50px;
-
-.AdminApp {
-  display: flex;
-  width: 100%;
-
-  .panel {
-    width: $panel-width;
-    float: left;
-  }
-
-  .content {
-    margin-left: $margin;
-    flex: 1;
-    max-width: calc(100% - #{$panel-width} - #{$margin});
-    height: 100vh;
-  }
-}
-
-.fileUploadDialog {
-  float: right;
-  margin-right: 50px;
-}
-
-.App {
-  width: 100%;
-}
+// $panel-width: 240px;
+// $margin: 50px;
+//
+// .AdminApp {
+//   display: flex;
+//   width: 100%;
+//
+//   .panel {
+//     width: $panel-width;
+//     float: left;
+//   }
+//
+//   .content {
+//     margin-left: $margin;
+//     flex: 1;
+//     max-width: calc(100% - #{$panel-width} - #{$margin});
+//     height: 100vh;
+//   }
+// }
+//
+// .fileUploadDialog {
+//   float: right;
+//   margin-right: 50px;
+// }
+//
+// .App {
+//   width: 100%;
+// }
 
 .uploadErrorText {
   color: red;

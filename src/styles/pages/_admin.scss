@@ -1,4 +1,49 @@
 .admin {
+  &__topbar {
+    @include topbar(50px, $very-light-green);
+    display: flex;
+    justify-content: space-between;
+    font-size: $font-size-normal;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-bottom: 2px solid $light-grey;
+
+    &__courseSelector {
+      min-width: 200px;
+    }
+
+    &__nav {
+      display: flex;
+      justify-content: space-around;
+      border: 1px solid $brand-color;
+      border-radius: 2px;
+    }
+
+    &__navButton {
+      @include button(white, shade($brand-color, 20%));
+      font-weight: 500;
+      padding: 6px 80px 6px 80px;
+      border-radius: 2px;
+      border-right: 1px solid tint($brand-color, 50%);
+      border-left: 1px solid tint($brand-color, 50%);
+      font-size: $font-size-medium;
+
+      &--active {
+        @include button($brand-color, white);
+        font-weight: bold;
+        font-size: $font-size-large;
+        padding: 6px 80px 6px 80px;
+        border-radius: 2px;
+      }
+    }
+
+    &__spacing {
+      height: 50px;
+    }
+  }
+
+  &__main-panel {
+    padding: 20px 50px 10px 50px;
+  }
   @include setMinPageHeight($topbar-height);
-  @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
 }

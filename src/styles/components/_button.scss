@@ -70,7 +70,7 @@
   }
 
   &--takeback {
-    @include button($very-light-grey, $mid-grey);
+    @include button($mid-grey, white);
     @extend %large-button;
   }
 

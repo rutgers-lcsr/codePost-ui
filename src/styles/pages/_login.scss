@@ -1,0 +1,54 @@
+.login {
+  min-height: 100vh;
+  padding-top: 100px;
+  background-color: $very-light-grey;
+
+  &__main-container {
+    background-color: white;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid $mid-grey;
+    width: 500px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+
+    &__title {
+      font-size: $font-size-xlarge;
+    }
+
+    &__forms {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 40px;
+      padding-right: 40px;
+      &__item {
+        font-size: $font-size-large;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0px 10px 0px;
+      }
+    }
+
+    &__loginBtn {
+      @include button($brand-color, white);
+      font-size: $font-size-xlarge;
+      border-radius: 4px;
+      padding: 4px 60px 4px 60px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    &__footer {
+    }
+  }
+}
