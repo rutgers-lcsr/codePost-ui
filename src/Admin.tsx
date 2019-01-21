@@ -70,6 +70,8 @@ interface IAdminState {
   // submissionsByGrader is for the GraderData tab
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
+  submissionsByInactiveStudent: IStudentSubmissionsDataTable;
+  submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   submissionsbyUserLoadComplete: boolean;
 
   // Props for Enroll panels
@@ -124,6 +126,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     submissionsByStudent: {},
     submissionsByGrader: {},
+    submissionsByInactiveStudent: {},
+    submissionsByInactiveGrader: {},
     submissionsbyUserLoadComplete: false,
 
     lockChanges: true,
@@ -281,6 +285,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         submissionsByStudent: {},
         submissionsByGrader: {},
+        submissionsByInactiveStudent: {},
+        submissionsByInactiveGrader: {},
         submissionsbyUserLoadComplete: false,
 
         // Props for Enroll panels
@@ -386,17 +392,36 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public async generateSubmissionsByStudent() {
-    const { students, graders, submissions, rosterLoadComplete, submissionsLoadComplete } = this.state;
+    const {
+      students,
+      graders,
+      inactiveStudents,
+      inactiveGraders,
+      submissions,
+      rosterLoadComplete,
+      submissionsLoadComplete,
+    } = this.state;
     if (rosterLoadComplete && submissionsLoadComplete) {
       const promise = new Promise((resolve, reject) => {
         const subsByStudent: IStudentSubmissionsDataTable = {};
         const subsByGrader: IGraderSubmissionsDataTable = {};
+        const subsByInactiveStudent: IStudentSubmissionsDataTable = {};
+        const subsByInactiveGrader: IGraderSubmissionsDataTable = {};
+
         students.forEach((student) => {
           subsByStudent[student] = {};
         });
 
+        inactiveStudents.forEach((inactiveStudent) => {
+          subsByInactiveStudent[inactiveStudent] = {};
+        });
+
         graders.forEach((grader) => {
           subsByGrader[grader] = {};
+        });
+
+        inactiveGraders.forEach((inactiveGrader) => {
+          subsByInactiveGrader[inactiveGrader] = {};
         });
 
         Object.keys(submissions).forEach((assignmentID) => {
@@ -407,6 +432,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               // so need to check to make sure it's in the subsByStudent
               if (subsByStudent[student]) {
                 subsByStudent[student][assignmentID] = submission;
+              } else if (subsByInactiveStudent[student]) {
+                subsByInactiveStudent[student][assignmentID] = submission;
               }
             });
             if (submission.grader) {
@@ -415,6 +442,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
                   subsByGrader[submission.grader][assignmentID].push(submission);
                 } else {
                   subsByGrader[submission.grader][assignmentID] = [submission];
+                }
+              } else if (submission.grader in subsByInactiveGrader) {
+                if (subsByInactiveGrader[submission.grader][assignmentID]) {
+                  subsByInactiveGrader[submission.grader][assignmentID].push(submission);
+                } else {
+                  subsByInactiveGrader[submission.grader][assignmentID] = [submission];
                 }
               }
             }
@@ -425,6 +458,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           {
             submissionsByStudent: subsByStudent,
             submissionsByGrader: subsByGrader,
+            submissionsByInactiveStudent: subsByInactiveStudent,
+            submissionsByInactiveGrader: subsByInactiveGrader,
             submissionsbyUserLoadComplete: true,
           },
           () => resolve('done'),
@@ -1221,6 +1256,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsByGrader={this.state.submissionsByGrader}
             addToast={this.addToast}
             initialTab={this.state.initialTab}
+            inactiveStudents={this.state.inactiveStudents}
+            inactiveGraders={this.state.inactiveGraders}
+            submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
+            submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
           />
         </div>
       );
