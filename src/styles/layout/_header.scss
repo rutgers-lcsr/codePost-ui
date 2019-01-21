@@ -41,12 +41,10 @@
     }
 
     &__logout {
-      @include button(white, $mid-grey);
+      @include button(white, $dark-grey);
       padding: 3px 7px;
-      border-style: solid;
+      border: 1px solid $mid-grey;
       border-radius: 7px;
-      border-color: $light-grey;
-      border-width: 1px 1px 1px 1px;
     }
   }
 }
