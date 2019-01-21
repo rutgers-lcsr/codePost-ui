@@ -132,7 +132,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     } = this.state;
 
     return (
-      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
+      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" fixed={true}>
         <Tabs className="md-tabs--CourseData" tabId="simple-tab">
           <Tab style={{ color: '#000000' }} label="Students">
             <StudentData
