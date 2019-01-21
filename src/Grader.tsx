@@ -245,6 +245,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const payload = {
       id: submission.id,
       grader: '',
+      isFinalized: false,
     };
 
     return Submission.update(payload).then((json: any) => {
