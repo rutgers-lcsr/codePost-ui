@@ -250,8 +250,16 @@ class Comment extends React.Component<IProps, IState> {
             />
 
             <div>
-              <Button flat className="button--comment" onClick={this.toggleActive}>
-                Save
+              <Button
+                icon={true}
+                className="button--comment"
+                forceIconFontSize={true}
+                forceIconSize={20}
+                tooltipLabel="Edit comment"
+                tooltipDelay={750}
+                onClick={this.toggleActive}
+              >
+                save
               </Button>
             </div>
           </div>
