@@ -4,7 +4,7 @@ import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 import Admin from './Admin';
 
 import IndexManager from './components/IndexManager';
-import TopBar from './components/TopBar';
+import { TopBar } from './components/TopBar';
 
 import Grade from './Grade';
 import Grader from './Grader';
