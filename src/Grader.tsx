@@ -219,8 +219,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: AssignmentType): Promise<SubmissionType> => {
-    return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
+  public claimSubmission = (assignment: AssignmentType): any => {
+    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
