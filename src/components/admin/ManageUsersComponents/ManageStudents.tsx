@@ -147,7 +147,6 @@ class ManageStudents extends React.Component<IProps, {}> {
               onChange={this.rowSectionChange.bind(this.props, student)}
             />
             <TableColumn key={'UnEnroll'}>
-              {' '}
               <Button
                 key="unEnroll"
                 className="Btn"
@@ -212,7 +211,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           className="md-cell md-cell--bottom"
           onChange={this.changeSearch}
         />
-        <DataTable className="Enroll-students-table" baseId="Enroll-students-table" plain={true}>
+        <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
           <TableHeader>
             <TableRow selectable={false}>
               <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>

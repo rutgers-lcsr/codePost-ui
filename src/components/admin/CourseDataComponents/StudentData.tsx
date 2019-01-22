@@ -175,7 +175,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
             className="md-cell md-cell--bottom"
             onChange={this.changeSearch}
           />
-          <DataTable plain={true}>
+          <DataTable plain={true} className="DataTable--StudentData-All">
             <TableHeader>
               <TableRow key={'index'}>
                 {headers.map((header) => {
@@ -232,7 +232,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           </Button>
           <div>{activeStudent}</div>
           <hr />
-          <DataTable plain={true}>
+          <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
                 <TableColumn>{'Assignment'}</TableColumn>
