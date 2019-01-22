@@ -330,6 +330,18 @@ class Grade extends React.Component<IProps, IGradeState> {
     });
   };
 
+  public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
+    const payload = {
+      id: sub.id,
+      grader,
+    };
+
+    return Submission.update(payload).then((submission) => {
+      this.setState({ submission });
+      return submission;
+    });
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -364,6 +376,7 @@ class Grade extends React.Component<IProps, IGradeState> {
           assignment={assignment}
           toggleFinalized={this.toggleFinalized}
           graders={graders}
+          updateGrader={this.updateGrader}
         />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">

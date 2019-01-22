@@ -3,7 +3,7 @@ import Finalize from './Finalize';
 
 import pluralize from 'pluralize';
 
-import { FontIcon, SelectField } from 'react-md';
+import { Button, FontIcon, SelectField } from 'react-md';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SubmissionType } from '../../infrastructure/submission';
@@ -13,14 +13,15 @@ interface IPanelProps {
   assignment: AssignmentType;
   toggleFinalized: any;
   graders: string[];
+  updateGrader: any;
 }
 
 const Panel = (props: IPanelProps) => {
-  const { assignment, submission, toggleFinalized, graders } = props;
+  const { assignment, submission, toggleFinalized, graders, updateGrader } = props;
 
   return (
     <div className="grade__top-container">
-      <SubmissionInfo submission={submission} assignment={assignment} graders={graders} />
+      <SubmissionInfo submission={submission} assignment={assignment} graders={graders} updateGrader={updateGrader} />
       <GradeBox submission={submission} assignment={assignment} />
       <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
     </div>
@@ -31,14 +32,21 @@ interface ISubmissionInfoProps {
   submission: SubmissionType;
   assignment: AssignmentType;
   graders: string[];
+  updateGrader: any;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
-  const { assignment, submission, graders } = props;
+  const { assignment, submission, graders, updateGrader } = props;
 
   const studentTitle = pluralize('Student', submission.students.length);
   const studentString = `${submission.students.join(',')}`;
-  const grader = submission.grader ? submission.grader : '';
+  const grader = submission.grader ? submission.grader : 'Unassigned';
+
+  const menuItems = ['Unassigned', ...graders];
+
+  const handleGraderChange = (value: any, index: any, event: any, details: any) => {
+    updateGrader(submission, value);
+  };
 
   return (
     <div className="grade__top-container__sub-details">
@@ -51,11 +59,22 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
         {grader}
         <SelectField
           id="select-field-4"
-          placeholder={grader}
-          menuItems={graders}
+          value={grader}
+          onChange={handleGraderChange}
+          menuItems={menuItems}
           position={SelectField.Positions.BELOW}
           dropdownIcon={<FontIcon>assignment_ind</FontIcon>}
         />
+        <Button
+          icon={true}
+          forceIconFontSize={true}
+          forceIconSize={20}
+          tooltipLabel="Unassign grader"
+          tooltipDelay={750}
+          onClick={handleGraderChange.bind(props, '')}
+        >
+          remove_circle_outline
+        </Button>
       </div>
       <div>
         <b>Assignment: </b> {assignment.name}
