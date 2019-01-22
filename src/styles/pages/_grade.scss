@@ -9,7 +9,17 @@
     border-bottom: 1px solid black;
 
     &__sub-details {
-      flex: 0 1 250px;
+      flex: 0 1 400px;
+
+      &__grader-select {
+        .md-icon-text {
+          font-size: $font-size-normal;
+        }
+      }
+
+      &__row {
+        padding: 5px;
+      }
     }
 
     &__sub-grade {

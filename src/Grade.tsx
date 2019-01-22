@@ -385,8 +385,6 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const isCourseAdmin = this.isCourseAdmin(assignment);
 
-    console.log('submission state', this.state.submission);
-
     if (isLoading) {
       return <div>Loading...</div>;
     }

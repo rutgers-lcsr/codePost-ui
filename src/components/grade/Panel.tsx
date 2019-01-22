@@ -58,15 +58,15 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 
   return (
     <div className="grade__top-container__sub-details">
-      <div>
+      <div className="grade__top-container__sub-details__row">
         <b>{`${studentTitle}: `}</b>
         {studentString}
       </div>
-      <div>
+      <div className="grade__top-container__sub-details__row">
         <b>Grader: </b>
-        {grader}
         <SelectField
-          id="select-field-4"
+          id="grader-select-field"
+          className="grade__top-container__sub-details__grader-select"
           value={grader}
           onChange={handleGraderChange}
           menuItems={menuItems}
@@ -90,7 +90,7 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
           ''
         )}
       </div>
-      <div>
+      <div className="grade__top-container__sub-details__row">
         <b>Assignment: </b> {assignment.name}
       </div>
     </div>
