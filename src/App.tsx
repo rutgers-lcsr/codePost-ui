@@ -169,7 +169,9 @@ class App extends React.Component<{}, IState> {
                   <Route
                     exact={true}
                     path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                    render={(props: any) => <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />}
+                    render={(props: any) => (
+                      <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />
+                    )}
                   />
 
                   <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
