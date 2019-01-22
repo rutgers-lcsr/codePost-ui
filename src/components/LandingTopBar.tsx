@@ -16,8 +16,11 @@ const LandingTopBar = () => (
       <Button href="/login" key="Login" className="Btn" flat={true}>
         Login
       </Button>,
-      <Button key="SignUp" className="SignupBtn" raised={true}>
-        Sign Up
+      <Button href="/signup/staff" key="SignUp" className="SignupBtn" raised={true}>
+        Sign Up | Course Staff
+      </Button>,
+      <Button href="/signup/student" key="SignUp" className="SignupBtn" raised={true}>
+        Sign Up | Students
       </Button>,
     ]}
   />

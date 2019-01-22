@@ -7,6 +7,7 @@ import '../styles/Auth.scss';
 
 interface ILoginFormProps {
   handleLogin: (e: any, data: any) => void;
+  error: string;
 }
 
 const initialState = {
@@ -29,6 +30,17 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
 
   public handleLogin = (e: any) => {
     return this.props.handleLogin(e, this.state);
+  };
+
+  public renderError = (error: string) => {
+    switch (error) {
+      case '':
+        return '';
+      case 'invalid':
+        return 'The username and password you entered are invalid.';
+      default:
+        return 'An unknown error occurred.';
+    }
   };
 
   public render() {
@@ -60,6 +72,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
                   onChange={this.handleChange.bind(this, 'password')}
                 />
               </div>
+              <p>{this.renderError(this.props.error)}</p>
               <div className="login__main-container__loginBtn" onClick={this.handleLogin}>
                 Continue
                 <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
