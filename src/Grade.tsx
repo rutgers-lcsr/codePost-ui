@@ -8,6 +8,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
+import { Course, RosterType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -23,6 +24,7 @@ interface IGradeState {
   activeCommentId?: number;
 
   files: FileType[];
+  graders: string[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
 }
@@ -41,6 +43,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     commentRubricComments: {},
     comments: {},
     files: [],
+    graders: [],
     isLoading: true,
     redirect: false,
     rubricCategories: [],
@@ -60,7 +63,9 @@ class Grade extends React.Component<IProps, IGradeState> {
     // lambdas efficiently)
     this.loadSubmission().then((submission) => {
       return Promise.all([
-        this.loadAssignment(submission.assignment),
+        this.loadAssignment(submission.assignment).then((assignment) => {
+          return this.loadGraders(assignment);
+        }),
         this.loadRubricCategories(submission.assignment),
       ]).then(() => {
         this.setState({ isLoading: false });
@@ -76,6 +81,14 @@ class Grade extends React.Component<IProps, IGradeState> {
     return Assignment.read(assignmentId).then((assignment: AssignmentType) => {
       this.setState({ assignment });
       return assignment;
+    });
+  };
+
+  public loadGraders = (assignment: AssignmentType) => {
+    return Course.readRoster(assignment.course!, {}).then((roster: RosterType) => {
+      const rosterGraders = 'graders';
+      this.setState({ graders: roster[rosterGraders] });
+      return roster;
     });
   };
 
