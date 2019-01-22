@@ -32,7 +32,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
           />
 
           <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
-          <Route exact={true} path={'/signup/student'} render={JoinSignup} />
+          <Route exact={true} path={'/signup/student'} component={JoinSignup} />
           <Route exact={true} path={'/signup/staff/join'} component={JoinSignup} />
           <Route exact={true} path={'/signup/staff/create'} component={CreateSignup} />
           <Route exact={true} path={'/signup/staff'} component={SignUpManager} />
