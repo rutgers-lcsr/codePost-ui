@@ -12,7 +12,11 @@ import {
   TextField,
   Tooltipped,
 } from 'react-md';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
+
+// -- Rubric Comment Row  Object --
+// Creating a new class to render RubricCommentRows in the admin panel, in order
+// to avoid binds and improve performance
 
 interface IPropsRubricComment {
   commentID: number;
@@ -27,6 +31,89 @@ interface IPropsRubricComment {
   updateComment: (categoryID: number, commentIndex: number) => void;
   savedComments: { [id: number]: boolean };
 }
+
+const RubricCommentRow = (props: IPropsRubricComment) => {
+  const changeThisCommentText = (newText: string) => {
+    props.changeCommentText(props.categoryID, props.commentIndex, newText);
+  };
+
+  const changeThisCommentDelta = (newDelta: number) => {
+    props.changeCommentDelta(props.categoryID, props.commentIndex, newDelta);
+  };
+
+  const deleteThisComment = () => {
+    props.deleteComment(props.categoryID, props.commentIndex);
+  };
+
+  const updateThisComment = () => {
+    props.updateComment(props.categoryID, props.commentIndex);
+  };
+
+  const deleteCommentColumn = !props.isDisabled ? (
+    <TableColumn>
+      <Button
+        key="Delete"
+        className="Btn"
+        flat={true}
+        icon={true}
+        disabled={props.isDisabled}
+        onClick={deleteThisComment}
+      >
+        delete
+      </Button>
+    </TableColumn>
+  ) : null;
+
+  let unSavedChanges;
+  if (props.commentID in props.savedComments) {
+    unSavedChanges = props.savedComments[props.commentID] ? (
+      <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>done_all</FontIcon>
+        </div>
+      </Tooltipped>
+    ) : (
+      <Tooltipped label="Unsaved changes. Click anywhere to save." position="right" setPosition={true} delay={500}>
+        <div>
+          <FontIcon>cloud_off</FontIcon>
+        </div>
+      </Tooltipped>
+    );
+  }
+
+  return (
+    <div>
+      <TableRow key={props.commentID}>
+        {unSavedChanges}
+        <EditDialogColumn
+          defaultValue={props.defaultText}
+          inline={true}
+          disabled={props.isDisabled}
+          noIcon={props.isDisabled}
+          centered={true}
+          onChange={changeThisCommentText}
+          onBlur={updateThisComment}
+        />
+        <EditDialogColumn
+          type="number"
+          defaultValue={props.defaultDelta}
+          inline={true}
+          step={0.5}
+          pattern="^d+(\.|\,)\d{1}"
+          className="deduction-field"
+          disabled={props.isDisabled}
+          noIcon={props.isDisabled}
+          centered={true}
+          onChange={changeThisCommentDelta}
+          onBlur={updateThisComment}
+        />
+        {deleteCommentColumn}
+      </TableRow>
+    </div>
+  );
+};
+
+// -- Rubric Category Table  Object --
 
 interface IPropsRubricCategory {
   categoryID: number;
@@ -55,162 +142,44 @@ interface IPropsRubricCategory {
   savedCategories: { [id: number]: boolean };
 }
 
-interface IPropsDeleteLinkedDialog {
-  numCommentsAffected?: number;
-  onDelete: () => void;
-  onUnLink: () => void;
-  onCancel: () => void;
-  isVisible: boolean;
-  isDialog: boolean;
-}
-// Creating a new class to render RubricCommentRows in the admin panel, in order
-// to avoid binds and improve performance
-const RubricCommentRow = (props: IPropsRubricComment) => {
-  const {
-    categoryID,
-    commentIndex,
-    commentID,
-    isDisabled,
-    defaultText,
-    defaultDelta,
-    changeCommentText,
-    changeCommentDelta,
-    deleteComment,
-    updateComment,
-    savedComments,
-  } = props;
-
-  const changeThisCommentText = (newText: string) => {
-    changeCommentText(categoryID, commentIndex, newText);
-  };
-
-  const changeThisCommentDelta = (newDelta: number) => {
-    changeCommentDelta(categoryID, commentIndex, newDelta);
-  };
-
-  const deleteThisComment = () => {
-    deleteComment(categoryID, commentIndex);
-  };
-
-  const updateThisComment = () => {
-    updateComment(categoryID, commentIndex);
-  };
-
-  const deleteCommentColumn = !isDisabled ? (
-    <TableColumn>
-      <Button key="Delete" className="Btn" flat={true} icon={true} disabled={isDisabled} onClick={deleteThisComment}>
-        delete
-      </Button>
-    </TableColumn>
-  ) : null;
-
-  let unSavedChanges;
-  if (commentID in savedComments) {
-    unSavedChanges = savedComments[commentID] ? (
-      <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
-        <div>
-          <FontIcon>done_all</FontIcon>
-        </div>
-      </Tooltipped>
-    ) : (
-      <Tooltipped label="Unsaved changes. Click anywhere to save." position="right" setPosition={true} delay={500}>
-        <div>
-          <FontIcon>cloud_off</FontIcon>
-        </div>
-      </Tooltipped>
-    );
-  }
-
-  return (
-    <div>
-      <TableRow key={commentID}>
-        {unSavedChanges}
-        <EditDialogColumn
-          defaultValue={defaultText}
-          inline={true}
-          disabled={isDisabled}
-          noIcon={isDisabled}
-          centered={true}
-          onChange={changeThisCommentText}
-          onBlur={updateThisComment}
-        />
-        <EditDialogColumn
-          type="number"
-          defaultValue={defaultDelta}
-          inline={true}
-          step={0.5}
-          pattern="^d+(\.|\,)\d{1}"
-          className="deduction-field"
-          disabled={isDisabled}
-          noIcon={isDisabled}
-          centered={true}
-          onChange={changeThisCommentDelta}
-          onBlur={updateThisComment}
-        />
-        {deleteCommentColumn}
-      </TableRow>
-    </div>
-  );
-};
-
 const RubricCategoryTable = (props: IPropsRubricCategory) => {
-  const {
-    categoryName,
-    categoryPointLimit,
-    comments,
-    categoryID,
-    categoryIndex,
-    changeCommentText,
-    changeCommentDelta,
-    deleteComment,
-    isDisabled,
-    changeCategoryName,
-    changeCategoryCap,
-    deleteCategory,
-    addEmptyComment,
-    updateComment,
-    updateCategory,
-    savedComments,
-    savedCategories,
-  } = props;
-
   const changeThisCategoryText = (newText: string) => {
-    changeCategoryName(categoryIndex, newText);
+    props.changeCategoryName(props.categoryIndex, newText);
   };
 
   const changeThisCategoryCap = (newCap: number) => {
-    changeCategoryCap(categoryIndex, newCap);
+    props.changeCategoryCap(props.categoryIndex, newCap);
   };
 
   const deleteThisCategory = () => {
-    deleteCategory(categoryID, categoryName);
+    props.deleteCategory(props.categoryID, props.categoryName);
   };
 
   const addEmptyCommentToThis = () => {
-    addEmptyComment(categoryID);
+    props.addEmptyComment(props.categoryID);
   };
 
   const updateThisCategory = () => {
-    updateCategory(categoryIndex);
+    props.updateCategory(props.categoryIndex);
   };
 
   const renderCommentRows = () => {
-    if (comments) {
-      return comments.map((comm, commIndex) => {
+    if (props.comments) {
+      return props.comments.map((comm, commIndex) => {
         return (
           <RubricCommentRow
             key={commIndex}
             commentID={comm.id}
-            categoryID={categoryID}
+            categoryID={props.categoryID}
             commentIndex={commIndex}
-            changeCommentText={changeCommentText}
-            changeCommentDelta={changeCommentDelta}
-            deleteComment={deleteComment}
+            changeCommentText={props.changeCommentText}
+            changeCommentDelta={props.changeCommentDelta}
+            deleteComment={props.deleteComment}
             defaultText={comm.text}
             defaultDelta={comm.pointDelta}
-            isDisabled={isDisabled}
-            updateComment={updateComment}
-            savedComments={savedComments}
+            isDisabled={props.isDisabled}
+            updateComment={props.updateComment}
+            savedComments={props.savedComments}
           />
         );
       });
@@ -220,14 +189,14 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
 
   let deleteCategoryButton;
   let deleteCommentHeader;
-  if (!isDisabled) {
+  if (!props.isDisabled) {
     deleteCategoryButton = (
       <Button
         key="Delete"
         className="Btn"
         icon={true}
         fullWidth={false}
-        disabled={isDisabled}
+        disabled={props.isDisabled}
         onClick={deleteThisCategory}
       >
         delete
@@ -237,8 +206,8 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   }
 
   let unSavedChanges;
-  if (categoryID in savedCategories) {
-    unSavedChanges = savedCategories[categoryID] ? (
+  if (props.categoryID in props.savedCategories) {
+    unSavedChanges = props.savedCategories[props.categoryID] ? (
       <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
         <div>
           <FontIcon>done_all</FontIcon>
@@ -254,18 +223,18 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   }
 
   return (
-    <div key={categoryID}>
+    <div key={props.categoryID}>
       <div>
         <TextField
-          defaultValue={categoryName}
+          defaultValue={props.categoryName}
           label={'Category Name'}
           fullWidth={false}
           onChange={changeThisCategoryText}
-          disabled={isDisabled}
+          disabled={props.isDisabled}
           onBlur={updateThisCategory}
         />
         <TextField
-          defaultValue={categoryPointLimit ? categoryPointLimit : ''}
+          defaultValue={props.categoryPointLimit ? props.categoryPointLimit : ''}
           label={'Category points cap'}
           fullWidth={false}
           step={0.5}
@@ -273,13 +242,13 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           type="number"
           min={0}
           onChange={changeThisCategoryCap}
-          disabled={isDisabled}
+          disabled={props.isDisabled}
           onBlur={updateThisCategory}
         />
         {unSavedChanges}
         {deleteCategoryButton}
       </div>
-      <DataTable key={categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
+      <DataTable key={props.categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow>
             <TableColumn key={'CommentText'}>Comment text</TableColumn>
@@ -289,13 +258,24 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         </TableHeader>
         <TableBody>{renderCommentRows()}</TableBody>
       </DataTable>
-      <Button className="Btn" iconChildren={'playlist_add'} disabled={isDisabled} onClick={addEmptyCommentToThis}>
+      <Button className="Btn" iconChildren={'playlist_add'} disabled={props.isDisabled} onClick={addEmptyCommentToThis}>
         Add New Comment
       </Button>
       <div className="padding" />
     </div>
   );
 };
+
+// -- Object to ask user if they want to delete or unlink linked comments upon deletion of rubricComment/Category --
+
+interface IPropsDeleteLinkedDialog {
+  numCommentsAffected?: number;
+  onDelete: () => void;
+  onUnLink: () => void;
+  onCancel: () => void;
+  isVisible: boolean;
+  isDialog: boolean;
+}
 
 const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
   if (!props.isVisible) {

@@ -41,8 +41,8 @@ const RubricV = t.intersection(
   [
     GenericObject,
     t.type({
-      categories: t.array(RubricCategoryV),
-      comments: t.array(RubricCommentV),
+      rubricCategories: t.array(RubricCategoryV),
+      rubricComments: t.array(RubricCommentV),
     }),
     t.partial({}),
   ],

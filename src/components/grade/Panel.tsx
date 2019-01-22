@@ -32,18 +32,23 @@ interface ISubmissionInfoProps {
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
   const { assignment, submission } = props;
 
-  const studentString = `${pluralize('Student', submission.students.length)}: ${submission.students.join(',')}`;
-
+  const studentTitle = pluralize('Student', submission.students.length);
+  const studentString = `${submission.students.join(',')}`;
   const grader = submission.grader ? submission.grader : '';
-  const graderString = `Grader: ${grader}`;
-
-  const assignmentString = `Assignment: ${assignment.name}`;
 
   return (
     <div className="grade__top-container__sub-details">
-      <div>{studentString}</div>
-      <div>{graderString}</div>
-      <div>{assignmentString}</div>
+      <div>
+        <b>{`${studentTitle}: `}</b>
+        {studentString}
+      </div>
+      <div>
+        <b>Grader: </b>
+        {grader}
+      </div>
+      <div>
+        <b>Assignment: </b> {assignment.name}
+      </div>
     </div>
   );
 };
@@ -56,8 +61,13 @@ interface IGradeBoxProps {
 const GradeBox = (props: IGradeBoxProps) => {
   const { submission, assignment } = props;
 
-  const gradeString = `Grade: ${submission.grade} / ${assignment.points}`;
-  return <div className="grade__top-container__grade">{gradeString}</div>;
+  const gradeString = `${submission.grade} / ${assignment.points}`;
+  return (
+    <div className="grade__top-container__grade">
+      <b>Grade: </b>
+      {gradeString}
+    </div>
+  );
 };
 
 interface IGradeActionsProps {

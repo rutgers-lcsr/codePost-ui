@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
+import Select from 'react-select';
 import CourseData from './components/admin/CourseData';
 import ManageAssignments from './components/admin/ManageAssignments';
 import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
-import VerticalPane from './components/VerticalPane';
 // import './styles/index.scss';
 // import './styles/Student.scss';
 
@@ -305,14 +305,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public handlePanelChange = (option: IOptionNumber, event: any) => {
+  public handlePanelChange = (panelNumber: number) => {
     const { currentCourse } = this.state;
 
     if (!currentCourse) {
       return;
     }
 
-    this.setState({ loadedPanel: Number(option.value), toLoadPanel: true }, () => {
+    this.setState({ loadedPanel: Number(panelNumber), toLoadPanel: true }, () => {
       this.forceUpdate();
     });
   };
@@ -329,25 +329,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return undefined;
     }
     return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
-  };
-
-  public tabItemsFormatter = () => {
-    return Object.keys(this.panels).map((index: string) => ({
-      label: this.panels[index],
-      value: index,
-    }));
-  };
-
-  public tabCurrentFormatter = () => {
-    const loadedPanel = this.state.loadedPanel;
-    if (typeof loadedPanel !== 'undefined') {
-      return {
-        value: loadedPanel,
-        label: this.panels[loadedPanel],
-      };
-    } else {
-      return undefined;
-    }
   };
 
   // ------------------- Toast functions -------------------
@@ -459,9 +440,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Assignment.readRubric(assignmentID, {})
       .then((json) => {
         const { rubricCategories, rubricComments } = this.state;
-        rubricCategories[assignmentID] = json.categories;
-        json.categories.forEach((cat: RubricCategoryType) => {
-          rubricComments[cat.id] = json.comments.filter((comm: RubricCommentType) => {
+        rubricCategories[assignmentID] = json.rubricCategories;
+        json.rubricCategories.forEach((cat: RubricCategoryType) => {
+          rubricComments[cat.id] = json.rubricComments.filter((comm: RubricCommentType) => {
             return comm.category === cat.id;
           });
         });
@@ -1309,17 +1290,39 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       }
     }
 
+    const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
+    const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
+    const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
+
     return (
       <div className="admin">
-        <div className="admin__left-panel">
-          <VerticalPane
-            currentTab={this.tabCurrentFormatter()}
-            currentSelector={this.selectorCurrentFormatter(currentCourse)}
-            selectorItems={this.selectorItemsFormatter(courses)}
-            tabItems={this.tabItemsFormatter()}
-            handleTabChange={this.handlePanelChange}
-            handleSelectorChange={this.handleCourseChange}
+        <div className="admin__topbar">
+          <Select
+            className="admin__topbar__courseSelector"
+            options={this.selectorItemsFormatter(courses)}
+            onChange={this.handleCourseChange}
+            value={this.selectorCurrentFormatter(currentCourse)}
           />
+          <div className="admin__topbar__nav">
+            <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
+              Course Data
+            </div>
+            <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
+              Manage Assignments
+            </div>
+            <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
+              Manage Users
+            </div>
+          </div>
+          <NewCourseDialog
+            courses={this.state.courses}
+            addErrorToast={this.addErrorToast}
+            createCourse={this.createCourse}
+          />
+        </div>
+        <div className="admin__topbar__spacing" />
+        <div className="admin__main-panel">
+          {courseManagementPanel}
           <Snackbar
             id="short-snackbar"
             className="short-snackbar"
@@ -1350,13 +1353,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             onDismiss={this.dismissErrorToast}
             style={this.errorSnackBarStyl4e}
           />
-          <NewCourseDialog
-            courses={this.state.courses}
-            addErrorToast={this.addErrorToast}
-            createCourse={this.createCourse}
-          />
         </div>
-        <div className="admin__right-panel">{courseManagementPanel}</div>
       </div>
     );
   }

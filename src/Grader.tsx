@@ -3,8 +3,6 @@ import { Redirect } from 'react-router-dom';
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import VerticalPane from './components/VerticalPane';
 
-// import './styles/Grader.scss';
-
 import { ICourseToAssignmentMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
@@ -204,7 +202,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
@@ -221,8 +219,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: AssignmentType): Promise<SubmissionType> => {
-    return fetch(`/api/assignments/${assignment.id}/drawUnassigned/`, {
+  public claimSubmission = (assignment: AssignmentType): any => {
+    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -247,6 +245,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const payload = {
       id: submission.id,
       grader: '',
+      isFinalized: false,
     };
 
     return Submission.update(payload).then((json: any) => {

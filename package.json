@@ -34,6 +34,7 @@
     "react-md": "^1.9.2",
     "react-router-dom": "^4.3.1",
     "react-select": "^2.2.0",
+    "react-syntax-highlighter": "^10.1.2",
     "react-tabs": "^2.3.0",
     "reactable": "^1.1.0",
     "resolve": "1.6.0",
@@ -74,6 +75,9 @@
     "@types/react": "^16.7.18",
     "@types/react-dom": "^16.0.11",
     "@types/react-router-dom": "^4.3.1",
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.7.1",
+    "enzyme-to-json": "^3.3.5",
     "dotenv": "^4.0.0",
     "husky": "^1.3.1",
     "lint-staged": "^8.1.0",
@@ -87,17 +91,11 @@
   },
   "proxy": "http://localhost:8000",
   "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!**/*.d.ts"
-    ],
-    "setupFiles": [
-      "<rootDir>/config/polyfills.js"
-    ],
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.(j|t)s?(x)",
-      "<rootDir>/src/**/?(*.)(spec|test).(j|t)s?(x)"
-    ],
+    "collectCoverageFrom": ["src/**/*.{js,jsx,ts,tsx}", "!**/*.d.ts"],
+    "setupFiles": ["<rootDir>/config/polyfills.js"],
+    "setupTestFrameworkScriptFile": "<rootDir>/src/tests/setupTests.js",
+    "snapshotSerializers": ["enzyme-to-json/serializer"],
+    "testMatch": ["<rootDir>/src/**/__tests__/**/*.(j|t)s?(x)", "<rootDir>/src/**/?(*.)(spec|test).(j|t)s?(x)"],
     "testEnvironment": "node",
     "testURL": "http://localhost",
     "transform": {

@@ -271,7 +271,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
     const { assignments } = this.state;
-    if (!currentCourse) {
+    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
       return [];
     }
 
@@ -343,8 +343,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     } else {
       contentArea = <div>Select an assignment on the left!</div>;
     }
-
-    console.log(contentArea.props);
 
     return (
       <div className="student">

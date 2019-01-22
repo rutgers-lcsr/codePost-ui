@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { FontIcon, TextField } from 'react-md';
 import { Link } from 'react-router-dom';
+import { TopBarNoEmail } from './TopBar';
 
 import '../styles/Auth.scss';
 
@@ -18,12 +20,10 @@ type State = Readonly<typeof initialState>;
 class LoginForm extends React.Component<ILoginFormProps, State> {
   public readonly state: State = initialState;
 
-  public handleChange = (e: any) => {
-    const name = e.target.name;
-    const value = e.target.value;
+  public handleChange = (label: string, value: string) => {
     this.setState((prevstate) => {
       const newState = { ...prevstate };
-      newState[name] = value;
+      newState[label] = value;
       return newState;
     });
   };
@@ -46,18 +46,47 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   public render() {
     return (
       <div>
-        <form onSubmit={this.handleLogin} className="container-login">
-          <h4>Log In</h4>
-          <label htmlFor="username">Username</label>
-          <input type="text" name="username" value={this.state.username} onChange={this.handleChange} />
-          <label htmlFor="password">Password</label>
-          <input type="password" name="password" value={this.state.password} onChange={this.handleChange} />
-          <input type="submit" />
-          <br />
-          <br />
-          <p>{this.renderError(this.props.error)}</p>
-          <Link to="/forgot-password">Forgot your password?</Link>
-        </form>
+        <TopBarNoEmail />
+        <div className="login">
+          <div className="login__main-container">
+            <div className="login__main-container__title">Login</div>
+            <div className="login__main-container__forms">
+              <div className="login__main-container__forms__item">
+                <TextField
+                  id="username-input"
+                  floating={true}
+                  label="email"
+                  required={true}
+                  value={this.state.username}
+                  onChange={this.handleChange.bind(this, 'username')}
+                />
+              </div>
+              <div className="login__main-container__forms__item">
+                <TextField
+                  id="password-input"
+                  floating={true}
+                  label="password"
+                  required={true}
+                  type="password"
+                  value={this.state.password}
+                  onChange={this.handleChange.bind(this, 'password')}
+                />
+              </div>
+              <p>{this.renderError(this.props.error)}</p>
+              <div className="login__main-container__loginBtn" onClick={this.handleLogin}>
+                Continue
+                <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                  arrow_forward
+                </FontIcon>
+              </div>
+              <br />
+              <br />
+            </div>
+            <div className="login__main-container__footer">
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -1,20 +1,95 @@
 .tab {
   &__title {
-    display: inline-block;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+
+    &__pointDelta {
+      &--null {
+        display: none;
+      }
+      &--zero {
+        display: none;
+      }
+      &--positive {
+        @include badgeFormat($brand-color, white);
+      }
+      &--negative {
+        @include badgeFormat($dark-red, white);
+      }
+    }
+
+    &__fileName {
+      height: 16px;
+    }
+    &__comment-count {
+      @include badgeFormat($mid-grey, black);
+      z-index: 0;
+    }
   }
-  &__comment-count {
-    float: left;
-    min-width: 12px;
-    margin-top: 2px;
-    margin-right: 2px;
-    padding: 4px 3px 0 3px;
-    height: 16px;
-    font-size: 10pt;
-    color: $brand-color;
-    text-align: center;
-    background-color: $very-light-grey;
-    border: 1px solid $brand-color;
-    border-radius: 10px;
-    line-height: 5pt;
+}
+
+// This css property will prevent animation when using react-tabs
+.react-swipeable-view-container {
+  transition: None !important;
+}
+
+.md-tab {
+  text-transform: none;
+  // Media query override to disable the default md-tab behavior of expanding on smaller screens
+  @media screen and (min-width: 320px) {
+    max-width: 264px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  &-label {
+    @media screen and (min-width: 320px) {
+      font-size: $font-size-large;
+    }
+  }
+}
+
+.md-tabs {
+  &--CourseData {
+    .md-tab-indicator {
+      background-color: $brand-color;
+    }
+  }
+
+  &--ManageUsers {
+    .md-tab-indicator {
+      background-color: $brand-color;
+    }
+  }
+  &--Grade {
+    height: 35px;
+
+    .md-ink-container {
+      display: none;
+    }
+
+    .md-tooltip--bottom-active {
+      z-index: 2;
+    }
+
+    .md-fake-btn {
+      height: 35px;
+      padding-bottom: 0px;
+      line-height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background-color: shade(white, 10);
+      }
+    }
+
+    .md-tab-indicator {
+      background-color: $brand-color;
+    }
   }
 }

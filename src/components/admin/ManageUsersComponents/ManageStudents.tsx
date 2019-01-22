@@ -11,10 +11,10 @@ import {
   TextField,
 } from 'react-md';
 
-import { ISectionNoStudents, USER_APP } from '../../types/common';
+import { ISectionNoStudents, USER_APP } from '../../../types/common';
 
-import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
+import { CourseType } from '../../../infrastructure/course';
+import { SectionType } from '../../../infrastructure/section';
 
 import RosterFileUpload from './RosterFileUpload';
 

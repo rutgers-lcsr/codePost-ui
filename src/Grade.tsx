@@ -137,12 +137,12 @@ class Grade extends React.Component<IProps, IGradeState> {
   public loadRubricCategories = (assignmentId: number) => {
     return Assignment.readRubric(assignmentId, {}).then((rubric) => {
       return Promise.all(
-        rubric.categories.map((rubricCategory: RubricCategoryType) => {
+        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
           return this.loadRubricComments(rubricCategory);
         }),
       ).then(() => {
-        this.setState({ rubricCategories: rubric.categories });
-        return rubric.categories;
+        this.setState({ rubricCategories: rubric.rubricCategories });
+        return rubric.rubricCategories;
       });
     });
   };
@@ -193,6 +193,37 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.setState({ activeCommentId: id });
   };
 
+  public calculateGradeFromComments = () => {
+    const { comments, submission, assignment, commentRubricComments } = this.state;
+
+    let assignmentPoints = 0;
+    if (!submission || !assignment) {
+      return;
+    } else {
+      assignmentPoints = assignment.points;
+    }
+
+    const grade =
+      assignmentPoints -
+      Object.keys(comments)
+        .map((fileID) => {
+          return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+            if (comment.pointDelta) {
+              return accumulator + comment.pointDelta;
+            } else if (commentRubricComments[comment.id]) {
+              return accumulator + commentRubricComments[comment.id].pointDelta;
+            } else {
+              return accumulator;
+            }
+          }, 0);
+        })
+        .reduce((accumulator: number, fileGrade: number) => {
+          return accumulator + fileGrade;
+        }, 0);
+
+    return grade;
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType): void => {
     const { submission, comments } = this.state;
@@ -205,50 +236,32 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
-    const { submission, comments } = this.state;
-    if (!submission) {
+    const { assignment, submission, comments } = this.state;
+    if (!submission || !assignment) {
       return;
+    }
+
+    // Don't force the client side to always have to input a 0 for deduction
+    if (newComment.pointDelta === null) {
+      newComment.pointDelta = 0;
     }
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
     this.setState({ comments });
+
+    const grade = this.calculateGradeFromComments();
+    submission.grade = grade;
+    this.setState({ submission });
   };
 
   public saveGrade = (): any => {
-    const { comments, submission, assignment, commentRubricComments } = this.state;
-
-    let assignmentPoints = 0;
+    const { submission, assignment } = this.state;
     if (!submission || !assignment) {
       return;
-    } else {
-      assignmentPoints = assignment.points;
     }
 
-    // Horrific code that is happneing because the pointDelta is sometimes
-    // a number and sometimes a string
-    // will fix the underlying issue in a future PR
-    const grade =
-      assignmentPoints -
-      Object.keys(comments)
-        .map((fileID) => {
-          return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
-            if (comment.pointDelta) {
-              if (typeof comment.pointDelta === 'number') {
-                return accumulator + comment.pointDelta;
-              } else {
-                return accumulator + parseInt(comment.pointDelta, 10);
-              }
-            } else if (commentRubricComments[comment.id]) {
-              return accumulator + commentRubricComments[comment.id].pointDelta;
-            } else {
-              return accumulator;
-            }
-          }, 0);
-        })
-        .reduce((accumulator: number, fileGrade: number) => {
-          return accumulator + fileGrade;
-        }, 0);
+    const grade = this.calculateGradeFromComments();
 
     const payload = {
       id: submission.id,
@@ -331,7 +344,7 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     // Should include loading functionality while the submission is coming in
     return (
-      <div>
+      <div className="grade">
         <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">

@@ -1,7 +1,8 @@
 @charset 'UTF-8';
 
 // 1. Configuration and helpers
-@import 'abstracts/variables', 'abstracts/functions', 'abstracts/mixins';
+@import 'abstracts/functions', 'abstracts/mixins';
+@import 'abstracts/variables';
 
 // 2. Vendors
 @import 'vendors/react-md', 'vendors/react-tabs';
@@ -9,15 +10,15 @@
 // 3. Base stuff
 @import 'base/base', 'base/fonts', 'base/typography', 'base/helpers';
 
-// 4. Layout-related sections
+// 4. Components
+@import 'components/vertical-pane', 'components/badge', 'components/tab', 'components/code', 'components/comment',
+  'components/button', 'components/saving-spinner', 'components/grade-rubric';
+
+// 5. Layout-related sections
 @import 'layout/header';
 
-// 5. Components
-@import 'components/vertical-pane', 'components/tab', 'components/code', 'components/comment', 'components/button',
-  'components/saving-spinner', 'components/grade-rubric';
-
 // 6. Page-specific styles
-@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin';
+@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login';
 
 // 7. Themes
 @import 'themes/default';

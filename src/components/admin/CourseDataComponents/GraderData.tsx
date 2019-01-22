@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
-import { IGraderSubmissionsDataTable } from '../../types/common';
+import { IGraderSubmissionsDataTable } from '../../../types/common';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
 interface IPropsGraderOverview {
   assignments: AssignmentType[];
@@ -140,36 +140,34 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const graders = Object.keys(submissionsByGrader);
     graders.sort(this.sortFunction);
 
-    let tableBody;
-    if (submissionsbyUserLoadComplete && assignmentsLoadComplete) {
-      tableBody = graders.map((graderEmail) => {
-        if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-          return <div />;
-        }
-        return (
-          <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
-            <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
-            {assignments.map((assignment) => {
-              const submissions = submissionsByGrader[graderEmail][assignment.id];
-              const assignmentName = assignment.name;
-              if (submissions) {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
-              } else {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
-              }
-            })}
-          </TableRow>
-        );
-      });
-    } else {
-      tableBody = (
+    const tableBody =
+      submissionsbyUserLoadComplete && assignmentsLoadComplete ? (
+        graders.map((graderEmail) => {
+          if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+            return <div />;
+          }
+          return (
+            <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
+              <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
+              {assignments.map((assignment) => {
+                const submissions = submissionsByGrader[graderEmail][assignment.id];
+                const assignmentName = assignment.name;
+                if (submissions) {
+                  return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+                } else {
+                  return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+                }
+              })}
+            </TableRow>
+          );
+        })
+      ) : (
         <TableRow>
           <TableColumn>Loading...</TableColumn>
           <TableColumn />
           <TableColumn />
         </TableRow>
       );
-    }
 
     if (!activeGrader) {
       return (

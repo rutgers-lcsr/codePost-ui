@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
-import { USER_APP } from '../../types/common';
+import { USER_APP } from '../../../types/common';
 
 interface IProps {
   users: string[];
@@ -161,9 +161,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         </div>
       );
     });
-    const progress = this.state.updatingRoster ? <LinearProgress id="circle" className="progressCircle" /> : '';
-
-    const uploadFile = this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : '';
 
     let updateMessage;
     let newUsers;
@@ -270,9 +267,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               onChange={this.dummyUpload}
               disabled={this.state.updatingRoster}
             />
-            {progress}
+            {this.state.updatingRoster ? <LinearProgress id="circle" className="progressCircle" /> : ''}
             <div className="error-padding" />
-            {uploadFile}
+            {this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : ''}
             <div className="error-padding" />
             {errors}
             {updateMessage}
