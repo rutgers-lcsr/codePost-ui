@@ -340,6 +340,23 @@ class ManageAssignments extends React.Component<IProps, {}> {
     const { activeAssignment } = this.state;
     const { activeRubricCategories, activeRubricComments, savedCategories } = this.state;
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
+      // if unsaved comment in database, just delete on front end
+      if (categoryID < 0) {
+        const newRubricCategories = activeRubricCategories.filter((cat) => {
+          return cat.id !== categoryID;
+        });
+        delete activeRubricComments[categoryID];
+        delete savedCategories[categoryID];
+        this.setState({
+          activeRubricCategories: newRubricCategories,
+          activeRubricComments,
+          deleteCategoryDialogID: undefined,
+          savedCategories,
+        });
+        return;
+      }
+
+      // else, delete from database
       this.props.deleteRubricCategory(activeAssignment.id, categoryID, categoryName, deleteLinkedComments).then(() => {
         const newRubricCategories = activeRubricCategories.filter((cat) => {
           return cat.id !== categoryID;
@@ -404,7 +421,23 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public triggerDeleteCategoryDialog = (categoryID: number, categoryName: string) => {
-    this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+    const { activeRubricComments } = this.state;
+    // if any child rubircComments have a linked comment, alert the user
+    if (activeRubricComments) {
+      const theseComments = activeRubricComments[categoryID];
+      const isLinked = theseComments.some((comment) => {
+        if (comment.comments.length > 0) {
+          this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+          return true;
+        }
+        return false;
+      });
+
+      // if no linked comments, delete the category
+      if (!isLinked) {
+        this.deleteCategory(categoryID, categoryName, true);
+      }
+    }
   };
 
   public clearDeleteCommentDialog = () => {
