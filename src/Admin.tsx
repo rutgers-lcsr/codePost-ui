@@ -235,7 +235,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       if (this.state.currentCourse) {
         this.loadAllCourseData();
       }
-    }, 10000);
+    }, 20000);
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {

@@ -1,14 +1,13 @@
 // This mixin makes a react-md table have a fixed header with scrolling body.
 // Need to specify the required vh of the body, which is dependent on how much other stuff
 // is above the table
-@mixin fixedTableHeader ($table-body-vh) {
+@mixin fixedTableHeader($table-body-vh) {
   .md-table-header {
     .md-table-row {
-      display:table;
-      table-layout:fixed;
+      display: table;
+      table-layout: fixed;
       width: 100%;
       text-align: center;
-
     }
   }
 
@@ -18,8 +17,8 @@
     height: $table-body-vh;
 
     .md-table-row {
-      display:table;
-      table-layout:fixed;
+      display: table;
+      table-layout: fixed;
       width: 100%;
     }
   }

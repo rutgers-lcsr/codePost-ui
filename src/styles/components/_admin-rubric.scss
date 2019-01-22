@@ -1,0 +1,10 @@
+.admin-rubric {
+  &__commentRow {
+    &__frequency {
+      @include badgeFormat($mid-grey, white)
+      &--none {
+        display:none
+      }
+    }
+  }
+}

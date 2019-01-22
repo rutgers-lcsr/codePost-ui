@@ -91,7 +91,9 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     <TableRow key={props.commentID}>
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
-        <div className={frequencyClassName}>{props.linkedComments.length}</div>
+        <Tooltipped label="Number of linked Comments." setPosition={true} position="right" delay={500}>
+          <div className={frequencyClassName}>{props.linkedComments.length}</div>
+        </Tooltipped>
       </TableColumn>
       <EditDialogColumn
         defaultValue={props.defaultText}
@@ -296,12 +298,12 @@ const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
   const content = (
     <div>
       <div className="error-padding" />
-      Performing this action will delete some rubric comments. If there are submission comments associated with these,
-      you can choose to delete those comments or to 'unlink those comments' (keeping the comment intact with the same
-      text and point value). Which action would you like to take?
+      Performing this action will delete one or more rubricComments that are linked to comments provided on submissions.
+      Do you wish to delete those linked comments or 'unlink' them (keeping the comment intact with the same text and
+      point value)?
       <div className="error-padding" />
       <Button raised onClick={props.onDelete} primary={false} flat={true}>
-        Delete linked comments
+        Delete
       </Button>
       <div className="error-padding" />
       <Button raised onClick={props.onUnLink} primary={true} flat={true}>
