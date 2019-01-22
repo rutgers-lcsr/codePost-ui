@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, TextField } from 'react-md';
 
 import ReactMarkdown from 'react-markdown';
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { ICSSStyleObject } from '../types/common';
 
@@ -152,9 +153,9 @@ class Comment extends React.Component<IProps, IState> {
     return true;
   };
 
-  public enterKey = (event: any) => {
+  public handleShiftEnter = (event: any) => {
     const { active } = this.props;
-    if (event.key === 'Enter' && active) {
+    if (event.key === 'Enter' && event.shiftKey && active) {
       this.toggleActive();
     }
   };
@@ -245,9 +246,11 @@ class Comment extends React.Component<IProps, IState> {
             />
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
 
-            <textarea
+            <TextareaAutosize
+              minRows={1}
+              maxRows={8}
               onChange={this.updateComment}
-              onKeyPress={this.enterKey}
+              onKeyPress={this.handleShiftEnter}
               value={comment.text ? comment.text : ''}
               className="comment__textarea"
             />

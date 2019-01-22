@@ -37,6 +37,7 @@
     "react-select": "^2.2.0",
     "react-syntax-highlighter": "^10.1.2",
     "react-tabs": "^2.3.0",
+    "react-textarea-autosize": "^7.1.0",
     "reactable": "^1.1.0",
     "resolve": "1.6.0",
     "sass-loader": "^7.1.0",
