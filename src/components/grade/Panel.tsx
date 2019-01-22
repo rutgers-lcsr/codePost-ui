@@ -14,14 +14,21 @@ interface IPanelProps {
   toggleFinalized: any;
   graders: string[];
   updateGrader: any;
+  isCourseAdmin: any;
 }
 
 const Panel = (props: IPanelProps) => {
-  const { assignment, submission, toggleFinalized, graders, updateGrader } = props;
+  const { assignment, submission, toggleFinalized, graders, updateGrader, isCourseAdmin } = props;
 
   return (
     <div className="grade__top-container">
-      <SubmissionInfo submission={submission} assignment={assignment} graders={graders} updateGrader={updateGrader} />
+      <SubmissionInfo
+        submission={submission}
+        assignment={assignment}
+        graders={graders}
+        updateGrader={updateGrader}
+        isCourseAdmin={isCourseAdmin}
+      />
       <GradeBox submission={submission} assignment={assignment} />
       <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
     </div>
@@ -33,10 +40,11 @@ interface ISubmissionInfoProps {
   assignment: AssignmentType;
   graders: string[];
   updateGrader: any;
+  isCourseAdmin: any;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
-  const { assignment, submission, graders, updateGrader } = props;
+  const { assignment, submission, graders, updateGrader, isCourseAdmin } = props;
 
   const studentTitle = pluralize('Student', submission.students.length);
   const studentString = `${submission.students.join(',')}`;
@@ -63,18 +71,24 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
           onChange={handleGraderChange}
           menuItems={menuItems}
           position={SelectField.Positions.BELOW}
-          dropdownIcon={<FontIcon>assignment_ind</FontIcon>}
+          dropdownIcon={isCourseAdmin ? <FontIcon>assignment_ind</FontIcon> : <div />}
+          label={isCourseAdmin ? '' : grader}
+          disabled={!isCourseAdmin}
         />
-        <Button
-          icon={true}
-          forceIconFontSize={true}
-          forceIconSize={20}
-          tooltipLabel="Unassign grader"
-          tooltipDelay={750}
-          onClick={handleGraderChange.bind(props, '')}
-        >
-          remove_circle_outline
-        </Button>
+        {isCourseAdmin ? (
+          <Button
+            icon={true}
+            forceIconFontSize={true}
+            forceIconSize={20}
+            tooltipLabel="Unassign grader"
+            tooltipDelay={750}
+            onClick={handleGraderChange.bind(props, '')}
+          >
+            remove_circle_outline
+          </Button>
+        ) : (
+          ''
+        )}
       </div>
       <div>
         <b>Assignment: </b> {assignment.name}

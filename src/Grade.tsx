@@ -4,7 +4,12 @@ import { CodePanel } from './components/CodePanel';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
-import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
+import {
+  ICommentToRubricCommentMap,
+  IFileToCommentsMap,
+  IRubricCategoryToRubricCommentsMap,
+  IUser,
+} from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
@@ -31,9 +36,9 @@ interface IGradeState {
 
 interface IProps {
   submissionID: number;
-  email: string;
   match: any;
   history: any;
+  user: IUser;
 }
 
 class Grade extends React.Component<IProps, IGradeState> {
@@ -63,9 +68,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     // lambdas efficiently)
     this.loadSubmission().then((submission) => {
       return Promise.all([
-        this.loadAssignment(submission.assignment).then((assignment) => {
-          return this.loadGraders(assignment);
-        }),
+        this.loadAssignment(submission.assignment),
         this.loadRubricCategories(submission.assignment),
       ]).then(() => {
         this.setState({ isLoading: false });
@@ -78,14 +81,21 @@ class Grade extends React.Component<IProps, IGradeState> {
   ///////////////////////////////////////
 
   public loadAssignment = (assignmentId: number) => {
-    return Assignment.read(assignmentId).then((assignment: AssignmentType) => {
-      this.setState({ assignment });
-      return assignment;
-    });
+    return Assignment.read(assignmentId)
+      .then((assignment: AssignmentType) => {
+        this.setState({ assignment });
+        return assignment;
+      })
+      .then((assignment) => {
+        if (this.isCourseAdmin(assignment)) {
+          this.loadGraders(assignment.course!);
+        }
+        return assignment;
+      });
   };
 
-  public loadGraders = (assignment: AssignmentType) => {
-    return Course.readRoster(assignment.course!, {}).then((roster: RosterType) => {
+  public loadGraders = (courseID: number) => {
+    return Course.readRoster(courseID, {}).then((roster: RosterType) => {
       const rosterGraders = 'graders';
       this.setState({ graders: roster[rosterGraders] });
       return roster;
@@ -333,6 +343,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
     const payload = {
       id: sub.id,
+      isFinalized: false,
       grader,
     };
 
@@ -340,6 +351,18 @@ class Grade extends React.Component<IProps, IGradeState> {
       this.setState({ submission });
       return submission;
     });
+  };
+
+  public isCourseAdmin = (assignment: AssignmentType | undefined) => {
+    if (!assignment) {
+      return false;
+    }
+
+    return this.props.user.courseadminCourses
+      .map((course) => {
+        return course.id;
+      })
+      .includes(assignment.course!);
   };
 
   //////////////////////////////////////
@@ -360,6 +383,10 @@ class Grade extends React.Component<IProps, IGradeState> {
       graders,
     } = this.state;
 
+    const isCourseAdmin = this.isCourseAdmin(assignment);
+
+    console.log('submission state', this.state.submission);
+
     if (isLoading) {
       return <div>Loading...</div>;
     }
@@ -377,6 +404,7 @@ class Grade extends React.Component<IProps, IGradeState> {
           toggleFinalized={this.toggleFinalized}
           graders={graders}
           updateGrader={this.updateGrader}
+          isCourseAdmin={isCourseAdmin}
         />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
