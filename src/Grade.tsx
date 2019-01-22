@@ -345,6 +345,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       submission,
       comments,
       isLoading,
+      graders,
     } = this.state;
 
     if (isLoading) {
@@ -358,7 +359,12 @@ class Grade extends React.Component<IProps, IGradeState> {
     // Should include loading functionality while the submission is coming in
     return (
       <div className="grade">
-        <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
+        <Panel
+          submission={submission}
+          assignment={assignment}
+          toggleFinalized={this.toggleFinalized}
+          graders={graders}
+        />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
             <Rubric
