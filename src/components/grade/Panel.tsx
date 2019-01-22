@@ -58,12 +58,14 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 
   return (
     <div className="grade__top-container__sub-details">
-      <div className="grade__top-container__sub-details__row">
+      <div className="grade__top-container__sub-details__cell">
         <b>{`${studentTitle}: `}</b>
-        {studentString}
       </div>
-      <div className="grade__top-container__sub-details__row">
+      <div className="grade__top-container__sub-details__cell">{studentString}</div>
+      <div className="grade__top-container__sub-details__cell">
         <b>Grader: </b>
+      </div>
+      <div className="grade__top-container__sub-details__cell">
         <SelectField
           id="grader-select-field"
           className="grade__top-container__sub-details__grader-select"
@@ -90,9 +92,10 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
           ''
         )}
       </div>
-      <div className="grade__top-container__sub-details__row">
-        <b>Assignment: </b> {assignment.name}
+      <div className="grade__top-container__sub-details__cell">
+        <b>Assignment: </b>
       </div>
+      <div className="grade__top-container__sub-details__cell">{assignment.name}</div>
     </div>
   );
 };
