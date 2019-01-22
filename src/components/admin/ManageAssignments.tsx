@@ -392,7 +392,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   // ------------------- Delete Linked Comments Dialog functions -------------------
   public triggerDeleteCommentDialog = (categoryID: number, commentIndex: number) => {
-    this.setState({ deleteCommentDialogID: { categoryID, commentIndex } });
+    const { activeRubricComments } = this.state;
+    if (activeRubricComments) {
+      const thisComment = activeRubricComments[categoryID][commentIndex];
+      if (thisComment.comments.length > 0) {
+        this.setState({ deleteCommentDialogID: { categoryID, commentIndex } });
+      } else {
+        this.deleteComment(categoryID, commentIndex, true);
+      }
+    }
   };
 
   public triggerDeleteCategoryDialog = (categoryID: number, categoryName: string) => {

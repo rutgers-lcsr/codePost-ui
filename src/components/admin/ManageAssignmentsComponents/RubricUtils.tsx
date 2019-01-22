@@ -30,6 +30,7 @@ interface IPropsRubricComment {
   deleteComment: (categoryID: number, commentIndex: number) => void;
   updateComment: (categoryID: number, commentIndex: number) => void;
   savedComments: { [id: number]: boolean };
+  linkedComments: number[];
 }
 
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -64,7 +65,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     </TableColumn>
   ) : null;
 
-  let unSavedChanges;
+  let unSavedChanges = <div style={{ width: '20px' }} />;
   if (props.commentID in props.savedComments) {
     unSavedChanges = props.savedComments[props.commentID] ? (
       <Tooltipped label="Changes saved." position="right" setPosition={true} delay={500}>
@@ -81,35 +82,43 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     );
   }
 
+  const frequencyClassName =
+    props.linkedComments.length > 0
+      ? 'admin-rubric__commentRow__frequency'
+      : 'admin-rubric__commentRow__frequency--none';
+
   return (
-    <div>
-      <TableRow key={props.commentID}>
-        {unSavedChanges}
-        <EditDialogColumn
-          defaultValue={props.defaultText}
-          inline={true}
-          disabled={props.isDisabled}
-          noIcon={props.isDisabled}
-          centered={true}
-          onChange={changeThisCommentText}
-          onBlur={updateThisComment}
-        />
-        <EditDialogColumn
-          type="number"
-          defaultValue={props.defaultDelta}
-          inline={true}
-          step={0.5}
-          pattern="^d+(\.|\,)\d{1}"
-          className="deduction-field"
-          disabled={props.isDisabled}
-          noIcon={props.isDisabled}
-          centered={true}
-          onChange={changeThisCommentDelta}
-          onBlur={updateThisComment}
-        />
-        {deleteCommentColumn}
-      </TableRow>
-    </div>
+    <TableRow key={props.commentID}>
+      <TableColumn>{unSavedChanges}</TableColumn>
+      <TableColumn>
+        <Tooltipped label="Number of linked Comments." setPosition={true} position="right" delay={500}>
+          <div className={frequencyClassName}>{props.linkedComments.length}</div>
+        </Tooltipped>
+      </TableColumn>
+      <EditDialogColumn
+        defaultValue={props.defaultText}
+        inline={true}
+        disabled={props.isDisabled}
+        noIcon={props.isDisabled}
+        onChange={changeThisCommentText}
+        onBlur={updateThisComment}
+        centered={true}
+      />
+      <EditDialogColumn
+        type="number"
+        defaultValue={props.defaultDelta}
+        inline={true}
+        step={0.5}
+        pattern="^d+(\.|\,)\d{1}"
+        className="deduction-field"
+        disabled={props.isDisabled}
+        noIcon={props.isDisabled}
+        onChange={changeThisCommentDelta}
+        onBlur={updateThisComment}
+        centered={true}
+      />
+      {deleteCommentColumn}
+    </TableRow>
   );
 };
 
@@ -180,6 +189,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             isDisabled={props.isDisabled}
             updateComment={props.updateComment}
             savedComments={props.savedComments}
+            linkedComments={comm.comments}
           />
         );
       });
@@ -187,8 +197,8 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     return <div />;
   };
 
-  let deleteCategoryButton;
-  let deleteCommentHeader;
+  let deleteCategoryButton = null;
+  let deleteCommentHeader = null;
   if (!props.isDisabled) {
     deleteCategoryButton = (
       <Button
@@ -250,8 +260,12 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
       </div>
       <DataTable key={props.categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
-          <TableRow>
-            <TableColumn key={'CommentText'}>Comment text</TableColumn>
+          <TableRow selectable={false}>
+            <TableColumn key={'spacing1'} />
+            <TableColumn key={'spacing2'} />
+            <TableColumn key={'CommentText'} grow={true}>
+              Comment text
+            </TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
             {deleteCommentHeader}
           </TableRow>
@@ -284,12 +298,12 @@ const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
   const content = (
     <div>
       <div className="error-padding" />
-      Performing this action will delete some rubric comments. If there are submission comments associated with these,
-      you can choose to delete those comments or to 'unlink those comments' (keeping the comment intact with the same
-      text and point value). Which action would you like to take?
+      Performing this action will delete one or more rubricComments that are linked to comments provided on submissions.
+      Do you wish to delete those linked comments or 'unlink' them (keeping the comment intact with the same text and
+      point value)?
       <div className="error-padding" />
       <Button raised onClick={props.onDelete} primary={false} flat={true}>
-        Delete linked comments
+        Delete
       </Button>
       <div className="error-padding" />
       <Button raised onClick={props.onUnLink} primary={true} flat={true}>

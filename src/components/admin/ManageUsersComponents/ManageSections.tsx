@@ -100,16 +100,9 @@ class ManageSections extends React.Component<IProps, {}> {
           dropDown = undefined;
         }
 
-        const leaderMenuItems = graders
-          .filter((grader) => {
-            return section.leaders.indexOf(grader) === -1;
-          })
-          .map((grader) => {
-            return {
-              label: grader,
-              value: grader,
-            };
-          });
+        const leaderMenuItems = graders.filter((grader) => {
+          return section.leaders.indexOf(grader) === -1;
+        });
 
         return (
           <TableRow key={section.id}>
@@ -127,11 +120,13 @@ class ManageSections extends React.Component<IProps, {}> {
               })}
             </TableColumn>
             <SelectFieldColumn
+              id="selectfielex"
               dropdownIcon={dropDown}
               value={''}
               menuItems={leaderMenuItems}
               disabled={lockedSectionChange || leaderDisable}
               onChange={this.addLeaderToSection.bind(this.props, section.id)}
+              simplifiedMenu={true}
             />
           </TableRow>
         );
