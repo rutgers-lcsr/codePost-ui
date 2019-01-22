@@ -71,7 +71,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
       return (
         <div>
           <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
-          <DataTable plain={true}>
+          <DataTable className="DataTable--Grader" plain={true}>
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {

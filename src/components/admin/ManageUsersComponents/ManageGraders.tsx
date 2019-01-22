@@ -174,7 +174,7 @@ class ManageGraders extends React.Component<IProps, {}> {
           className="md-cell md-cell--bottom"
           onChange={this.changeSearch}
         />
-        <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
+        <DataTable className="DataTable--ManageUsers" baseId="Manage-admins-table" plain={true}>
           <TableHeader>
             <TableRow>
               <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>

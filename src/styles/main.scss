@@ -11,8 +11,8 @@
 @import 'base/base', 'base/fonts', 'base/typography', 'base/helpers';
 
 // 4. Components
-@import 'components/vertical-pane', 'components/badge', 'components/tab', 'components/code', 'components/comment',
-  'components/button', 'components/saving-spinner', 'components/grade-rubric';
+@import 'components/vertical-pane', 'components/badge', 'components/tab', 'components/table', 'components/code',
+  'components/comment', 'components/button', 'components/saving-spinner', 'components/grade-rubric';
 
 // 5. Layout-related sections
 @import 'layout/header';

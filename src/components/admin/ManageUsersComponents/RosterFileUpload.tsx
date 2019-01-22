@@ -226,7 +226,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           iconChildren={'vertical_align_center'}
           iconBefore={false}
           flat={true}
-          className={'fileUploadDialog'}
+          className={'manageUsers__rosterUpload'}
         >
           {`${USER_APP[userType]} Roster: Upload / Download`}
         </Button>

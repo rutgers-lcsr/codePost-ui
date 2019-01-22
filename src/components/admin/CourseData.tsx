@@ -23,30 +23,36 @@ interface IPropsCourseData {
   addToast: (text: string, action: string | undefined) => void;
   currentCourseID: number;
   initialTab: number;
+  inactiveStudents: string[];
+  inactiveGraders: string[];
+  submissionsByInactiveStudent: IStudentSubmissionsDataTable;
+  submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   // onTabChange: (newTab: number) => void;
 }
 
 interface IState {
   activeTabIndex: number;
-  activeStudent: string | undefined;
-  activeGrader: string | undefined;
+  selectedStudent: string | undefined;
+  selectedGrader: string | undefined;
+  selectedInactiveStudent: string | undefined;
+  selectedInactiveGrader: string | undefined;
 }
 
 class CourseData extends React.Component<IPropsCourseData, {}> {
   public static getDerivedStateFromProps(props: IPropsCourseData, state: IState) {
     const { students, graders } = props;
 
-    if (!state.activeStudent && !state.activeGrader) {
+    if (!state.selectedStudent && !state.selectedGrader) {
       return null;
     }
 
-    const toRet = { activeStudent: state.activeStudent, activeGrader: state.activeGrader };
+    const toRet = { activeStudent: state.selectedStudent, activeGrader: state.selectedGrader };
 
-    if (!students || students.filter((s: string) => s === state.activeStudent).length !== 1) {
+    if (!students || students.filter((s: string) => s === state.selectedStudent).length !== 1) {
       toRet.activeStudent = undefined;
     }
 
-    if (!graders || graders.filter((s: string) => s === state.activeGrader).length !== 1) {
+    if (!graders || graders.filter((s: string) => s === state.selectedGrader).length !== 1) {
       toRet.activeGrader = undefined;
     }
 
@@ -55,8 +61,10 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
 
   public state: Readonly<IState> = {
     activeTabIndex: this.props.initialTab,
-    activeStudent: undefined,
-    activeGrader: undefined,
+    selectedStudent: undefined,
+    selectedGrader: undefined,
+    selectedInactiveStudent: undefined,
+    selectedInactiveGrader: undefined,
   };
 
   public componentDidUpdate(prevProps: IPropsCourseData, prevState: IState) {
@@ -72,19 +80,35 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     }
   };
 
-  public changeActiveStudent = (student: string | undefined) => {
+  public changeSelectedStudent = (student: string | undefined) => {
     if (student) {
-      this.setState({ activeStudent: student });
+      this.setState({ selectedStudent: student });
     } else {
-      this.setState({ activeStudent: undefined });
+      this.setState({ selectedStudent: undefined });
     }
   };
 
-  public changeActiveGrader = (student: string | undefined) => {
+  public changeSelectedGrader = (student: string | undefined) => {
     if (student) {
-      this.setState({ activeGrader: student });
+      this.setState({ selectedGrader: student });
     } else {
-      this.setState({ activeGrader: undefined });
+      this.setState({ selectedGrader: undefined });
+    }
+  };
+
+  public changeSelectedInactiveStudent = (student: string | undefined) => {
+    if (student) {
+      this.setState({ selectedInactiveStudent: student });
+    } else {
+      this.setState({ selectedInactiveStudent: undefined });
+    }
+  };
+
+  public changeSelectedInactiveGrader = (student: string | undefined) => {
+    if (student) {
+      this.setState({ selectedInactiveGrader: student });
+    } else {
+      this.setState({ selectedInactiveGrader: undefined });
     }
   };
 
@@ -95,12 +119,20 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       assignments,
       submissionsByStudent,
       submissionsByGrader,
+      submissionsByInactiveStudent,
+      submissionsByInactiveGrader,
       currentCourseID,
     } = this.props;
-    const { activeStudent, activeGrader, activeTabIndex } = this.state;
+    const {
+      selectedStudent,
+      selectedGrader,
+      activeTabIndex,
+      selectedInactiveStudent,
+      selectedInactiveGrader,
+    } = this.state;
 
     return (
-      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs">
+      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" fixed={true}>
         <Tabs className="md-tabs--CourseData" tabId="simple-tab">
           <Tab style={{ color: '#000000' }} label="Students">
             <StudentData
@@ -109,8 +141,8 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               assignmentsLoadComplete={assignmentsLoadComplete}
               assignments={assignments}
               submissionsByStudent={submissionsByStudent}
-              activeStudent={activeStudent}
-              changeActiveStudent={this.changeActiveStudent}
+              activeStudent={selectedStudent}
+              changeActiveStudent={this.changeSelectedStudent}
               openSubmission={this.openSubmission}
             />
           </Tab>
@@ -121,8 +153,32 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               assignmentsLoadComplete={assignmentsLoadComplete}
               assignments={assignments}
               submissionsByGrader={submissionsByGrader}
-              activeGrader={activeGrader}
-              changeActiveGrader={this.changeActiveGrader}
+              activeGrader={selectedGrader}
+              changeActiveGrader={this.changeSelectedGrader}
+              openSubmission={this.openSubmission}
+            />
+          </Tab>
+          <Tab style={{ color: '#c8c8c8' }} label="Inactive Students">
+            <StudentData
+              key={currentCourseID}
+              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+              assignmentsLoadComplete={assignmentsLoadComplete}
+              assignments={assignments}
+              submissionsByStudent={submissionsByInactiveStudent}
+              activeStudent={selectedInactiveStudent}
+              changeActiveStudent={this.changeSelectedInactiveStudent}
+              openSubmission={this.openSubmission}
+            />
+          </Tab>
+          <Tab style={{ color: '#c8c8c8' }} label="Inactive Graders">
+            <GraderData
+              key={currentCourseID}
+              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+              assignmentsLoadComplete={assignmentsLoadComplete}
+              assignments={assignments}
+              submissionsByGrader={submissionsByInactiveGrader}
+              activeGrader={selectedInactiveGrader}
+              changeActiveGrader={this.changeSelectedInactiveGrader}
               openSubmission={this.openSubmission}
             />
           </Tab>

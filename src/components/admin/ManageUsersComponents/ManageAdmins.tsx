@@ -171,7 +171,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           className="md-cell md-cell--bottom"
           onChange={this.changeSearch}
         />
-        <DataTable className="Manage-admins-table" baseId="Manage-admins-table" plain={true}>
+        <DataTable className="DataTable--ManageUsers" baseId="Manage-admins-table" plain={true}>
           <TableHeader>
             <TableRow selectable={false}>
               <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>

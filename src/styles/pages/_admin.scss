@@ -47,3 +47,10 @@
   }
   @include setMinPageHeight($topbar-height);
 }
+
+.manageUsers {
+  &__rosterUpload {
+    text-transform: none;
+    margin-top: 30px;
+  }
+}

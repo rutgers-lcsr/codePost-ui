@@ -179,7 +179,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
             className="md-cell md-cell--bottom"
             onChange={this.changeSearch}
           />
-          <DataTable plain={true}>
+          <DataTable className="DataTable--GraderData-All" plain={true}>
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {
@@ -225,7 +225,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
           <hr />
           <div>{activeGrader}</div>
           <hr />
-          <DataTable plain={true}>
+          <DataTable className="DataTable--GraderData-Selected" plain={true}>
             <TableHeader>
               <TableRow>
                 <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
