@@ -25,25 +25,25 @@
 }
 
 .DataTable--ManageUsers {
-  @include fixedTableHeader(45vh);
+  @include fixedTableHeader(calc(100vh - 500px));
 }
 
 .DataTable--StudentData-All {
-  @include fixedTableHeader(65vh);
+  @include fixedTableHeader(calc(100vh - 300px));
 }
 
 .DataTable--StudentData-Selected {
-  @include fixedTableHeader(65vh);
+  @include fixedTableHeader(calc(100vh - 400px));
 }
 
 .DataTable--GraderData-All {
-  @include fixedTableHeader(65vh);
+  @include fixedTableHeader(calc(100vh - 300px));
 }
 
 .DataTable--GraderData-Selected {
-  @include fixedTableHeader(65vh);
+  @include fixedTableHeader(calc(100vh - 400px));
 }
 
 .DataTable--Grader {
-  @include fixedTableHeader(80vh);
+  @include fixedTableHeader(calc(100vh - 150px));
 }
