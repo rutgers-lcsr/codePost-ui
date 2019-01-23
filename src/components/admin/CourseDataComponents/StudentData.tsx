@@ -85,7 +85,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         if (studentAsub && !studentBsub) return 1;
         if (!studentAsub && !studentBsub) return 0;
         if (studentAsub.isFinalized && studentBsub.isFinalized) {
-          if (typeof studentAsub.grade !== 'undefined' && typeof studentBsub.grade !== 'undefined') {
+          if (studentAsub.grade !== null && studentBsub.grade !== null) {
             if (studentAsub.grade < studentBsub.grade) return -1;
             if (studentAsub.grade > studentBsub.grade) return 1;
           }
@@ -99,7 +99,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         if (!studentAsub && !studentBsub) return 0;
 
         if (studentAsub.isFinalized && studentBsub.isFinalized && studentAsub.grade) {
-          if (typeof studentAsub.grade !== 'undefined' && typeof studentBsub.grade !== 'undefined') {
+          if (studentAsub.grade !== null && studentBsub.grade !== null) {
             if (studentAsub.grade < studentBsub.grade) return 1;
             if (studentAsub.grade > studentBsub.grade) return -1;
           }
