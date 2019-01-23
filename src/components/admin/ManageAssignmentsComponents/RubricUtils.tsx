@@ -31,6 +31,7 @@ interface IPropsRubricComment {
   updateComment: (categoryID: number, commentIndex: number) => void;
   savedComments: { [id: number]: boolean };
   linkedComments: number[];
+  triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
 }
 
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -48,6 +49,10 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
 
   const updateThisComment = () => {
     props.updateComment(props.categoryID, props.commentIndex);
+  };
+
+  const triggerCommentExplorer = () => {
+    props.triggerCommentExplorer(props.categoryID, props.commentIndex);
   };
 
   const deleteCommentColumn = !props.isDisabled ? (
@@ -92,7 +97,9 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
         <Tooltipped label="Number of linked Comments." setPosition={true} position="right" delay={500}>
-          <div className={frequencyClassName}>{props.linkedComments.length}</div>
+          <div className={frequencyClassName} onClick={triggerCommentExplorer}>
+            {props.linkedComments.length}
+          </div>
         </Tooltipped>
       </TableColumn>
       <EditDialogColumn
@@ -149,6 +156,8 @@ interface IPropsRubricCategory {
   isDisabled: boolean;
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
+
+  triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
 }
 
 const RubricCategoryTable = (props: IPropsRubricCategory) => {
@@ -190,6 +199,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             updateComment={props.updateComment}
             savedComments={props.savedComments}
             linkedComments={comm.comments}
+            triggerCommentExplorer={props.triggerCommentExplorer}
           />
         );
       });
