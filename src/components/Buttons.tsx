@@ -21,8 +21,10 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   }
 
   return (
-    <div className="button--get-another " onClick={handleClick}>
-      Grade another
+    <div>
+      <div className="button--get-another " onClick={handleClick}>
+        Grade another
+      </div>
       {props.children}
     </div>
   );

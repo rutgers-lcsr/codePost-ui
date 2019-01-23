@@ -7,7 +7,7 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
-// var Select = require('react-select');
+import Select from 'react-select';
 
 interface IProps {
   assignment?: AssignmentType;
@@ -59,8 +59,16 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     });
   };
 
+  public handleSectionChange = (option: any) => {
+    const currentSection = this.props.sections.find((obj: SectionType) => {
+      return obj.id === option.value;
+    });
+
+    this.setState({ currentSection });
+  };
+
   public render() {
-    const { assignment, submissions, isLoadingSubmissions } = this.props;
+    const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
@@ -77,7 +85,11 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
       return (
         <div>
           <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
-            --> select section
+            <SelectSection
+              sections={sections}
+              currentSection={this.state.currentSection}
+              onChange={this.handleSectionChange}
+            />
           </GetAnotherSubmissionButton>
           <DataTable className="DataTable--Grader" plain={true}>
             <TableHeader>
@@ -122,5 +134,35 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     return <div>Select an assignment on the left</div>;
   }
 }
+
+interface ISelectSectionProps {
+  sections: SectionType[];
+  currentSection?: SectionType;
+  onChange: any;
+}
+
+export const SelectSection = (props: ISelectSectionProps) => {
+  const { sections, currentSection, onChange } = props;
+
+  const selectorItemsFormatter = (items: SectionType[]) => {
+    return items.map((section, i) => ({ value: section.id, label: `${section.name}` }));
+  };
+
+  const selectorCurrentFormatter = (currentItem: SectionType | undefined) => {
+    if (!currentItem) {
+      return undefined;
+    }
+    return { value: currentItem.id, label: `${currentItem.name}` };
+  };
+  return (
+    <Select
+      options={selectorItemsFormatter(sections)}
+      value={selectorCurrentFormatter(currentSection)}
+      clearable={false}
+      searchable={false}
+      onChange={onChange}
+    />
+  );
+};
 
 export default GraderAssignmentPanel;
