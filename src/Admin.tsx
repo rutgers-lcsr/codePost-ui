@@ -1337,7 +1337,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <div className="admin">
         <div className="admin__topbar">
           <Select
-            className="admin__topbar__courseSelector"
+            className="selector--admin-topbar"
             options={this.selectorItemsFormatter(courses)}
             onChange={this.handleCourseChange}
             value={this.selectorCurrentFormatter(currentCourse)}
@@ -1357,6 +1357,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             courses={this.state.courses}
             addErrorToast={this.addErrorToast}
             createCourse={this.createCourse}
+            selectorItemsFormatter={this.selectorItemsFormatter}
+            selectorCurrentFormatter={this.selectorCurrentFormatter}
           />
         </div>
         <div className="admin__topbar__spacing" />

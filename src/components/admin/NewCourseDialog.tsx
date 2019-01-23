@@ -1,25 +1,32 @@
 import * as React from 'react';
 import { Button, DialogContainer, TextField } from 'react-md';
+import Select from 'react-select';
 
 import { CourseType } from '../../infrastructure/course';
+
+import { IOptionNumber } from '../../types/common';
 
 interface IProps {
   courses: CourseType[];
   addErrorToast: (text: string, action: string | undefined) => void;
   createCourse: (courseName: string, coursePeriod: string) => Promise<CourseType>;
+  selectorItemsFormatter: any;
+  selectorCurrentFormatter: any;
 }
 
 interface IState {
   newCourseName: string;
   newCoursePeriod: string;
   dialogVisible: boolean;
+  currentCourse?: CourseType;
 }
 
-class NewCourseDialog extends React.Component<IProps, {}> {
+class NewCourseDialog extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     newCourseName: '',
     newCoursePeriod: '',
     dialogVisible: false,
+    currentCourse: this.props.courses.length > 0 ? this.props.courses[0] : undefined,
   };
 
   public toggleDialog = () => {
@@ -72,8 +79,17 @@ class NewCourseDialog extends React.Component<IProps, {}> {
     });
   };
 
+  public handleCourseChange = (option: IOptionNumber) => {
+    const currentCourse = this.props.courses.filter((course: CourseType) => {
+      return course.id === option.value;
+    })[0];
+
+    this.setState({ currentCourse });
+  };
+
   public render() {
-    const { dialogVisible } = this.state;
+    const { courses, selectorItemsFormatter, selectorCurrentFormatter } = this.props;
+    const { dialogVisible, currentCourse } = this.state;
     const dialogActions = [];
     dialogActions.push({
       secondary: true,
@@ -94,12 +110,15 @@ class NewCourseDialog extends React.Component<IProps, {}> {
         </Button>
         <DialogContainer
           id="newCourse-dialog"
+          className="dialog--create-course"
           visible={dialogVisible}
           title="Create a new course"
           onHide={this.toggleDialog}
           actions={dialogActions}
+          disableScrollLocking={true}
           modal
         >
+          <div>Start from scratch</div>
           <TextField
             id="newCourse-name"
             label="Course name"
@@ -113,6 +132,14 @@ class NewCourseDialog extends React.Component<IProps, {}> {
             defaultValue=""
             onChange={this.changePeriodField}
             onKeyDown={this.handleKeyPress}
+          />
+          <div>--------- OR ---------</div>
+          <div>Copy from an existing course</div>
+          <Select
+            className="selector--new-course-dialog"
+            options={selectorItemsFormatter(courses)}
+            onChange={this.handleCourseChange}
+            value={selectorCurrentFormatter(currentCourse)}
           />
         </DialogContainer>
       </div>
