@@ -164,9 +164,10 @@ export const SelectSection = (props: ISelectSectionProps) => {
     <Select
       options={selectorItemsFormatter(sections)}
       value={selectorCurrentFormatter(currentSection)}
-      clearable={false}
-      searchable={false}
+      isSearchable={false}
       onChange={onChange}
+      placeholder={'All'}
+      className={'button--select'}
     />
   );
 };

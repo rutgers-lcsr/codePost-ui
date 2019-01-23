@@ -23,7 +23,7 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   return (
     <div>
       <div className="button--get-another " onClick={handleClick}>
-        Grade another
+        Grade another from ...
       </div>
       {props.children}
     </div>
@@ -43,7 +43,7 @@ export const StartGradingButton = (props: IButtonProps) => {
       return (
         <div>
           <div className="button--start-grading" onClick={handleClick}>
-            Start grading!
+            Start grading from ...
           </div>
           {props.children}
         </div>
