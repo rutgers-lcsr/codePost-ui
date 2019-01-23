@@ -470,9 +470,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
       assignments,
       assignmentRubricLoadComplete,
     } = this.props;
-
     const { activeAssignment, commentExplorer } = this.state;
-    const lockIcon = lockManageAssignment ? 'lock' : 'lock_open';
 
     let tableBody;
     if (submissionsLoadComplete && assignmentRubricLoadComplete) {
@@ -712,7 +710,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             closeCommentExplorer={this.clearCommentExplorer}
           />
           <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-            {lockIcon}
+            {lockManageAssignment ? 'lock' : 'lock_open'}
           </Button>
         </div>
       );
