@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
 interface IPropsStudentOverview {
   assignments: AssignmentType[];
@@ -13,17 +14,20 @@ interface IPropsStudentOverview {
   openSubmission: (submissionID: number | string) => void;
   submissionsbyUserLoadComplete: boolean;
   assignmentsLoadComplete: boolean;
+  deleteSubmission: (submission: SubmissionType) => void;
 }
 
 interface IState {
   sortedIndex: { [index: string]: boolean | undefined };
   searchTerm: string;
+  deleteSub: SubmissionType | null;
 }
 
 class StudentData extends React.Component<IPropsStudentOverview, {}> {
   public state: Readonly<IState> = {
     sortedIndex: {},
     searchTerm: '',
+    deleteSub: null,
   };
 
   public studentHeader = 'student';
@@ -35,7 +39,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       sortedIndex[assn.name] = false;
     });
     sortedIndex[this.studentHeader] = true;
-    this.state = { sortedIndex, searchTerm: '' };
+    this.state = { sortedIndex, searchTerm: '', deleteSub: null };
   }
 
   public toggleSort = (assignmentName: string) => {
@@ -109,6 +113,10 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         return 0;
       }
     }
+  };
+
+  public toggleDeleteSub = (sub: SubmissionType | null) => {
+    this.setState({ deleteSub: sub });
   };
 
   public changeSearch = (value: string) => {
@@ -205,15 +213,24 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           grade = 'Not graded';
         }
         return (
-          <TableRow key={submission.id.toString()} onClick={openSubmission.bind(this.props, submission.id)}>
-            <TableColumn>
+          <TableRow key={submission.id.toString()}>
+            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
               {
                 assignments.filter((assignment) => {
                   return assignment.id === parseInt(assignmentID, 10);
                 })[0].name
               }
             </TableColumn>
-            <TableColumn>{grade}</TableColumn>
+            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+            <Button
+              key={`button--deleteSubmission-${submission.id}`}
+              onClick={this.toggleDeleteSub.bind(this.props, submission)}
+              className="button--deleteSubmission"
+              tooltipLabel="Delete Submission"
+              icon={true}
+            >
+              remove_circle
+            </Button>
           </TableRow>
         );
       });
@@ -241,6 +258,26 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>
           </DataTable>
+          <DialogContainer
+            visible={this.state.deleteSub !== null}
+            id="deleteSubmission-dialog"
+            className="Dialog--deleteSubmission"
+            title="Warning: Delete submission action cannot be undone"
+            onHide={this.toggleDeleteSub.bind(this.props, null)}
+            modal
+          >
+            <div>Are you sure you want to delete this submission? </div>
+            <Button onClick={this.toggleDeleteSub.bind(this.props, null)} primary={true} flat={true}>
+              Cancel
+            </Button>
+            <Button
+              onClick={this.props.deleteSubmission.bind(this.props, this.state.deleteSub)}
+              primary={false}
+              flat={true}
+            >
+              Delete
+            </Button>
+          </DialogContainer>
         </div>
       );
     }

@@ -10,6 +10,8 @@ import {
 import GraderData from './CourseDataComponents/GraderData';
 import StudentData from './CourseDataComponents/StudentData';
 
+import { SubmissionType } from '../../infrastructure/submission';
+
 import { openSubmission } from './AdminUtils';
 
 interface IPropsCourseData {
@@ -29,7 +31,7 @@ interface IPropsCourseData {
   inactiveGraders: string[];
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
-  // onTabChange: (newTab: number) => void;
+  deleteSubmission: (submission: SubmissionType) => void;
 }
 
 interface IState {
@@ -140,6 +142,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               activeStudent={selectedStudent}
               changeActiveStudent={this.changeSelectedStudent}
               openSubmission={openSubmission}
+              deleteSubmission={this.props.deleteSubmission}
             />
           </Tab>
           <Tab style={{ color: '#000000' }} label="Graders">
@@ -164,6 +167,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               activeStudent={selectedInactiveStudent}
               changeActiveStudent={this.changeSelectedInactiveStudent}
               openSubmission={openSubmission}
+              deleteSubmission={this.props.deleteSubmission}
             />
           </Tab>
           <Tab style={{ color: '#c8c8c8' }} label="Inactive Graders">

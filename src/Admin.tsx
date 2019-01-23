@@ -27,7 +27,7 @@ import { Course, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
-import { SubmissionType } from './infrastructure/submission';
+import { Submission, SubmissionType } from './infrastructure/submission';
 
 import { addToPayload } from './infrastructure/utils';
 
@@ -1191,6 +1191,48 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
+  public deleteSubmission = (sub: SubmissionType) => {
+    const {
+      submissions,
+      submissionsByStudent,
+      submissionsByGrader,
+      submissionsByInactiveStudent,
+      submissionsByInactiveGrader,
+    } = this.state;
+    const assignmentID = sub.assignment;
+    Submission.delete(sub.id).then(() => {
+      submissions[assignmentID] = submissions[assignmentID].filter((s) => {
+        return s.id !== sub.id;
+      });
+      this.setState({ submissions });
+      sub.students.forEach((student) => {
+        if (student in submissionsByStudent) {
+          delete submissionsByStudent[student][assignmentID];
+          this.setState({ submissionsByStudent });
+        }
+        if (student in submissionsByInactiveStudent) {
+          delete submissionsByInactiveStudent[student][assignmentID];
+          this.setState({ submissionsByInactiveStudent });
+        }
+      });
+      if (sub.grader && sub.grader in submissionsByGrader) {
+        const newSubs = submissionsByGrader[sub.grader][assignmentID].filter((s) => {
+          return s.id !== sub.id;
+        });
+        submissionsByGrader[sub.grader][assignmentID] = newSubs;
+        this.setState({ submissionsByGrader });
+      }
+      if (sub.grader && sub.grader in submissionsByInactiveGrader) {
+        const newSubs = submissionsByInactiveGrader[sub.grader][assignmentID].filter((s) => {
+          return s.id !== sub.id;
+        });
+        submissionsByInactiveGrader[sub.grader][assignmentID] = newSubs;
+        this.setState({ submissionsByInactiveGrader });
+      }
+      this.addToast('Submission deleted.', undefined);
+    });
+  };
+
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string) => {
     const { courses } = this.state;
@@ -1260,6 +1302,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             inactiveGraders={this.state.inactiveGraders}
             submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
             submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
+            deleteSubmission={this.deleteSubmission}
           />
         </div>
       );
