@@ -10,6 +10,10 @@ import {
 import GraderData from './CourseDataComponents/GraderData';
 import StudentData from './CourseDataComponents/StudentData';
 
+import { SubmissionType } from '../../infrastructure/submission';
+
+import { openSubmission } from './AdminUtils';
+
 interface IPropsCourseData {
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
@@ -27,7 +31,7 @@ interface IPropsCourseData {
   inactiveGraders: string[];
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
-  // onTabChange: (newTab: number) => void;
+  deleteSubmission: (submission: SubmissionType) => void;
 }
 
 interface IState {
@@ -73,12 +77,6 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       this.setState({ activeTabIndex: initialTab });
     }
   }
-
-  public openSubmission = (submissionID: number | string) => {
-    if (window) {
-      window.open(`/grade/${submissionID}`, 'test', `width=${screen.availWidth * 0.9},height=${screen.availHeight}0.9`);
-    }
-  };
 
   public changeSelectedStudent = (student: string | undefined) => {
     if (student) {
@@ -143,7 +141,8 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               submissionsByStudent={submissionsByStudent}
               activeStudent={selectedStudent}
               changeActiveStudent={this.changeSelectedStudent}
-              openSubmission={this.openSubmission}
+              openSubmission={openSubmission}
+              deleteSubmission={this.props.deleteSubmission}
             />
           </Tab>
           <Tab style={{ color: '#000000' }} label="Graders">
@@ -155,7 +154,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               submissionsByGrader={submissionsByGrader}
               activeGrader={selectedGrader}
               changeActiveGrader={this.changeSelectedGrader}
-              openSubmission={this.openSubmission}
+              openSubmission={openSubmission}
             />
           </Tab>
           <Tab style={{ color: '#c8c8c8' }} label="Inactive Students">
@@ -167,7 +166,8 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               submissionsByStudent={submissionsByInactiveStudent}
               activeStudent={selectedInactiveStudent}
               changeActiveStudent={this.changeSelectedInactiveStudent}
-              openSubmission={this.openSubmission}
+              openSubmission={openSubmission}
+              deleteSubmission={this.props.deleteSubmission}
             />
           </Tab>
           <Tab style={{ color: '#c8c8c8' }} label="Inactive Graders">
@@ -179,7 +179,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
               submissionsByGrader={submissionsByInactiveGrader}
               activeGrader={selectedInactiveGrader}
               changeActiveGrader={this.changeSelectedInactiveGrader}
-              openSubmission={this.openSubmission}
+              openSubmission={openSubmission}
             />
           </Tab>
         </Tabs>

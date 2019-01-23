@@ -17,6 +17,7 @@ import {
   IRubricCategoryToRubricCommentsMap,
 } from '../../types/common';
 import NewAssignmentDialog from './ManageAssignmentsComponents/NewAssignmentDialog';
+import RubricCommentExplorer from './ManageAssignmentsComponents/RubricCommentExplorer';
 import RubricFileDialog from './ManageAssignmentsComponents/RubricFileDialog';
 import { DeleteLinkedCommentsDialog, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
 
@@ -89,6 +90,7 @@ interface IState {
   newCategoryCounter: number;
   deleteCommentDialogID: { categoryID: number; commentIndex: number } | undefined;
   deleteCategoryDialogID: { categoryID: number; categoryName: string } | undefined;
+  commentExplorer: { categoryID: number; commentIndex: number } | undefined;
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
 }
@@ -101,6 +103,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     newCategoryCounter: -1,
     deleteCommentDialogID: undefined,
     deleteCategoryDialogID: undefined,
+    commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
   };
@@ -340,6 +343,23 @@ class ManageAssignments extends React.Component<IProps, {}> {
     const { activeAssignment } = this.state;
     const { activeRubricCategories, activeRubricComments, savedCategories } = this.state;
     if (activeAssignment && activeRubricCategories && activeRubricComments) {
+      // if unsaved comment in database, just delete on front end
+      if (categoryID < 0) {
+        const newRubricCategories = activeRubricCategories.filter((cat) => {
+          return cat.id !== categoryID;
+        });
+        delete activeRubricComments[categoryID];
+        delete savedCategories[categoryID];
+        this.setState({
+          activeRubricCategories: newRubricCategories,
+          activeRubricComments,
+          deleteCategoryDialogID: undefined,
+          savedCategories,
+        });
+        return;
+      }
+
+      // else, delete from database
       this.props.deleteRubricCategory(activeAssignment.id, categoryID, categoryName, deleteLinkedComments).then(() => {
         const newRubricCategories = activeRubricCategories.filter((cat) => {
           return cat.id !== categoryID;
@@ -404,7 +424,23 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public triggerDeleteCategoryDialog = (categoryID: number, categoryName: string) => {
-    this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+    const { activeRubricComments } = this.state;
+    // if any child rubricComments have a linked comment, alert the user
+    if (activeRubricComments) {
+      const theseComments = activeRubricComments[categoryID];
+      const isLinked = theseComments.some((comment) => {
+        if (comment.comments.length > 0) {
+          this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+          return true;
+        }
+        return false;
+      });
+
+      // if no linked comments, delete the category
+      if (!isLinked) {
+        this.deleteCategory(categoryID, categoryName, true);
+      }
+    }
   };
 
   public clearDeleteCommentDialog = () => {
@@ -413,6 +449,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   public clearDeleteCategoryDialog = () => {
     this.setState({ deleteCategoryDialogID: undefined });
+  };
+
+  // ------------------- RubricUI explorer -------------------
+
+  public triggerCommentExplorer = (categoryID: number, commentIndex: number) => {
+    this.setState({ commentExplorer: { categoryID, commentIndex } });
+  };
+
+  public clearCommentExplorer = () => {
+    this.setState({ commentExplorer: undefined });
   };
 
   // ------------------- Render -------------------
@@ -424,9 +470,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
       assignments,
       assignmentRubricLoadComplete,
     } = this.props;
-
-    const { activeAssignment } = this.state;
-    const lockIcon = lockManageAssignment ? 'lock' : 'lock_open';
+    const { activeAssignment, commentExplorer } = this.state;
 
     let tableBody;
     if (submissionsLoadComplete && assignmentRubricLoadComplete) {
@@ -524,6 +568,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               updateCategory={this.updateCategory}
               savedComments={this.state.savedComments}
               savedCategories={this.state.savedCategories}
+              triggerCommentExplorer={this.triggerCommentExplorer}
             />
           );
         });
@@ -655,8 +700,17 @@ class ManageAssignments extends React.Component<IProps, {}> {
             isVisible={typeof this.state.deleteCategoryDialogID !== 'undefined'}
             isDialog={true}
           />
+          <RubricCommentExplorer
+            rubricComment={
+              commentExplorer && this.state.activeRubricComments
+                ? this.state.activeRubricComments[commentExplorer.categoryID][commentExplorer.commentIndex]
+                : undefined
+            }
+            isVisible={typeof commentExplorer !== 'undefined'}
+            closeCommentExplorer={this.clearCommentExplorer}
+          />
           <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
-            {lockIcon}
+            {lockManageAssignment ? 'lock' : 'lock_open'}
           </Button>
         </div>
       );
