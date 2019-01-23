@@ -1193,7 +1193,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   // ------------------- Manage course API calls  ------------------
-  public createCourse = (courseName: string, coursePeriod: string) => {
+  public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
     const { courses } = this.state;
     const payload = {
       id: -1, // codePost convention

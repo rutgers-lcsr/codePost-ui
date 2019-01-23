@@ -9,7 +9,7 @@ import { IOptionNumber } from '../../types/common';
 interface IProps {
   courses: CourseType[];
   addErrorToast: (text: string, action: string | undefined) => void;
-  createCourse: (courseName: string, coursePeriod: string) => Promise<CourseType>;
+  createCourse: (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => Promise<CourseType>;
   selectorItemsFormatter: any;
   selectorCurrentFormatter: any;
 }
@@ -18,7 +18,7 @@ interface IState {
   newCourseName: string;
   newCoursePeriod: string;
   dialogVisible: boolean;
-  currentCourse?: CourseType;
+  copiedCourse?: CourseType;
 }
 
 class NewCourseDialog extends React.Component<IProps, IState> {
@@ -26,7 +26,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
     newCourseName: '',
     newCoursePeriod: '',
     dialogVisible: false,
-    currentCourse: this.props.courses.length > 0 ? this.props.courses[0] : undefined,
+    copiedCourse: undefined,
   };
 
   public toggleDialog = () => {
@@ -74,22 +74,22 @@ class NewCourseDialog extends React.Component<IProps, IState> {
     }
 
     // if validCourse, create the Course
-    this.props.createCourse(newCourseName, newCoursePeriod).then(() => {
+    this.props.createCourse(newCourseName, newCoursePeriod, this.state.copiedCourse).then(() => {
       this.toggleDialog();
     });
   };
 
   public handleCourseChange = (option: IOptionNumber) => {
-    const currentCourse = this.props.courses.filter((course: CourseType) => {
+    const copiedCourse = this.props.courses.filter((course: CourseType) => {
       return course.id === option.value;
     })[0];
 
-    this.setState({ currentCourse });
+    this.setState({ copiedCourse });
   };
 
   public render() {
     const { courses, selectorItemsFormatter, selectorCurrentFormatter } = this.props;
-    const { dialogVisible, currentCourse } = this.state;
+    const { dialogVisible, copiedCourse } = this.state;
     const dialogActions = [];
     dialogActions.push({
       secondary: true,
@@ -118,7 +118,6 @@ class NewCourseDialog extends React.Component<IProps, IState> {
           disableScrollLocking={true}
           modal
         >
-          <div>Start from scratch</div>
           <TextField
             id="newCourse-name"
             label="Course name"
@@ -133,14 +132,19 @@ class NewCourseDialog extends React.Component<IProps, IState> {
             onChange={this.changePeriodField}
             onKeyDown={this.handleKeyPress}
           />
-          <div>--------- OR ---------</div>
-          <div>Copy from an existing course</div>
-          <Select
-            className="selector--new-course-dialog"
-            options={selectorItemsFormatter(courses)}
-            onChange={this.handleCourseChange}
-            value={selectorCurrentFormatter(currentCourse)}
-          />
+
+          {courses.length > 0 ? (
+            <div>
+              <br />
+              <div>Copy an existing course (or leave blank to start from scratch.</div>
+              <Select
+                className="selector--new-course-dialog"
+                options={selectorItemsFormatter(courses)}
+                onChange={this.handleCourseChange}
+                value={selectorCurrentFormatter(copiedCourse)}
+              />
+            </div>
+          ) : null}
         </DialogContainer>
       </div>
     );
