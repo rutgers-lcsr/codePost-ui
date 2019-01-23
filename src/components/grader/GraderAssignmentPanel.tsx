@@ -127,7 +127,13 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     if (assignment) {
       return (
         <div>
-          <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
+          <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
+            <SelectSection
+              sections={sections}
+              currentSection={this.state.currentSection}
+              onChange={this.handleSectionChange}
+            />
+          </StartGradingButton>
         </div>
       );
     }

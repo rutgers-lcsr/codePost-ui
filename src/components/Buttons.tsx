@@ -41,8 +41,11 @@ export const StartGradingButton = (props: IButtonProps) => {
       return <div className="button--start-grading button--get-another--disabled">Loading...</div>;
     default:
       return (
-        <div className="button--start-grading" onClick={handleClick}>
-          Start grading!
+        <div>
+          <div className="button--start-grading" onClick={handleClick}>
+            Start grading!
+          </div>
+          {props.children}
         </div>
       );
   }
