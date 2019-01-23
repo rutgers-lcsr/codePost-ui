@@ -109,7 +109,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           return obj.name === formattedAssignmentName;
         });
 
-        console.log('in here');
         this.setState({ isLoadingSubmissions: true });
         this.loadSubmissions(currentAssignment).then(() => {
           this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
@@ -239,8 +238,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: AssignmentType): any => {
-    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned`, {
+  public claimSubmission = (assignment: AssignmentType, section: SectionType | undefined): any => {
+    const params = section ? `?section=${section.name}` : '';
+    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },

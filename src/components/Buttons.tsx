@@ -5,6 +5,7 @@ import { BUTTON_STATE } from '../types/common';
 interface IButtonProps {
   handleClick: any;
   buttonState: BUTTON_STATE;
+  children?: any;
 }
 
 // Callback: drawUnassigned
@@ -22,6 +23,7 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   return (
     <div className="button--get-another " onClick={handleClick}>
       Grade another
+      {props.children}
     </div>
   );
 };

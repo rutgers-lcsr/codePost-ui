@@ -7,22 +7,26 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
+// var Select = require('react-select');
+
 interface IProps {
   assignment?: AssignmentType;
   sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType) => Promise<SubmissionType>;
+  claimSubmission: (assignment: AssignmentType, section: SectionType | undefined) => Promise<SubmissionType>;
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
 interface IState {
   buttonState: BUTTON_STATE;
+  currentSection?: SectionType;
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
+    currentSection: undefined,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -39,7 +43,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment).then((claimedSubmission: SubmissionType) => {
+    this.props.claimSubmission(assignment, this.state.currentSection).then((claimedSubmission: SubmissionType) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
         this.setState({ buttonState: BUTTON_STATE.Inactive });
@@ -72,7 +76,9 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     if (assignment && submissions.length > 0) {
       return (
         <div>
-          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
+          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
+            --> select section
+          </GetAnotherSubmissionButton>
           <DataTable className="DataTable--Grader" plain={true}>
             <TableHeader>
               <TableRow>
