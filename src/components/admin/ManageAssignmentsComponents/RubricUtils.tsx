@@ -96,7 +96,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     <TableRow key={props.commentID}>
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
-        <Tooltipped label="Number of linked Comments." setPosition={true} position="right" delay={500}>
+        <Tooltipped label="Click to explore." setPosition={true} position="right" delay={500}>
           <div className={frequencyClassName} onClick={triggerCommentExplorer}>
             {props.linkedComments.length}
           </div>
@@ -272,7 +272,21 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         <TableHeader>
           <TableRow selectable={false}>
             <TableColumn key={'spacing1'} />
-            <TableColumn key={'spacing2'} />
+            <TableColumn key={'Linked comments'}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Linked Comments
+                <Tooltipped
+                  label="Warning: Edits made to items with linked comments in submissions will affect those comments. "
+                  position="right"
+                  setPosition={true}
+                  delay={500}
+                >
+                  <div style={{ paddingLeft: '2px' }}>
+                    <FontIcon>error</FontIcon>
+                  </div>
+                </Tooltipped>
+              </div>
+            </TableColumn>
             <TableColumn key={'CommentText'} grow={true}>
               Comment text
             </TableColumn>
