@@ -4,10 +4,12 @@ import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
+import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
 interface IProps {
   assignment?: AssignmentType;
+  sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
   claimSubmission: (assignment: AssignmentType) => Promise<SubmissionType>;
