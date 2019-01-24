@@ -183,7 +183,7 @@ class Grade extends React.Component<IProps, IGradeState> {
         comments[file.id][index].rubricComment = rubricComment.id;
         comments[file.id][index].pointDelta = null;
         commentRubricComments[comments[file.id][index].id] = rubricComment;
-        this.setState({ comments, commentRubricComments });
+        this.setState({ comments, commentRubricComments }, () => this.updateSubmissionGrade());
         break;
       }
     }
@@ -224,6 +224,15 @@ class Grade extends React.Component<IProps, IGradeState> {
     return grade;
   };
 
+  public updateSubmissionGrade = () => {
+    const { submission } = this.state;
+    if (submission) {
+      const grade = this.calculateGradeFromComments();
+      submission.grade = grade;
+      this.setState({ submission });
+    }
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType): void => {
     const { submission, comments } = this.state;
@@ -232,7 +241,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     }
 
     comments[file.id] = [...comments[file.id], comment];
-    this.setState({ comments });
+    this.setState({ comments }, () => this.updateSubmissionGrade());
   };
 
   public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
@@ -249,31 +258,6 @@ class Grade extends React.Component<IProps, IGradeState> {
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
     this.setState({ comments });
-
-    const grade = this.calculateGradeFromComments();
-    submission.grade = grade;
-    this.setState({ submission });
-  };
-
-  public saveGrade = (): any => {
-    const { submission, assignment } = this.state;
-    if (!submission || !assignment) {
-      return;
-    }
-
-    const grade = this.calculateGradeFromComments();
-
-    const payload = {
-      id: submission.id,
-      grade,
-    };
-
-    return Submission.update(payload).then((json: any) => {
-      this.setState({
-        submission: json,
-      });
-      return json;
-    });
   };
 
   // Delete the comment json from the submission state
@@ -294,7 +278,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     // - Keep comment rendered until DELETE completes
     // - Remove comment render, add in a global page loading icon.
     if (comment.id > 0) {
-      CommentIO.delete(comment.id);
+      CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
   };
 
@@ -366,7 +350,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
               updateComment={this.updateComment}
-              saveGrade={this.saveGrade}
+              updateSubmissionGrade={this.updateSubmissionGrade}
             />
           </div>
         </div>
