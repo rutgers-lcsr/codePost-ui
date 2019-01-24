@@ -4,23 +4,29 @@ import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
+import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
+
+import Select from 'react-select';
 
 interface IProps {
   assignment?: AssignmentType;
+  sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType) => Promise<SubmissionType>;
+  claimSubmission: (assignment: AssignmentType, section: SectionType | undefined) => Promise<SubmissionType>;
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
 interface IState {
   buttonState: BUTTON_STATE;
+  currentSection?: SectionType;
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
+    currentSection: undefined,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -37,7 +43,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment).then((claimedSubmission: SubmissionType) => {
+    this.props.claimSubmission(assignment, this.state.currentSection).then((claimedSubmission: SubmissionType) => {
       // undefined if no more submissions
       if (!claimedSubmission) {
         this.setState({ buttonState: BUTTON_STATE.Inactive });
@@ -53,8 +59,16 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     });
   };
 
+  public handleSectionChange = (option: any) => {
+    const currentSection = this.props.sections.find((obj: SectionType) => {
+      return obj.id === option.value;
+    });
+
+    this.setState({ currentSection });
+  };
+
   public render() {
-    const { assignment, submissions, isLoadingSubmissions } = this.props;
+    const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
@@ -70,7 +84,13 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     if (assignment && submissions.length > 0) {
       return (
         <div>
-          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
+          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
+            <SelectSection
+              sections={sections}
+              currentSection={this.state.currentSection}
+              onChange={this.handleSectionChange}
+            />
+          </GetAnotherSubmissionButton>
           <DataTable className="DataTable--Grader" plain={true}>
             <TableHeader>
               <TableRow>
@@ -107,12 +127,49 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     if (assignment) {
       return (
         <div>
-          <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState} />
+          <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
+            <SelectSection
+              sections={sections}
+              currentSection={this.state.currentSection}
+              onChange={this.handleSectionChange}
+            />
+          </StartGradingButton>
         </div>
       );
     }
     return <div>Select an assignment on the left</div>;
   }
 }
+
+interface ISelectSectionProps {
+  sections: SectionType[];
+  currentSection?: SectionType;
+  onChange: any;
+}
+
+export const SelectSection = (props: ISelectSectionProps) => {
+  const { sections, currentSection, onChange } = props;
+
+  const selectorItemsFormatter = (items: SectionType[]) => {
+    return items.map((section, i) => ({ value: section.id, label: `${section.name}` }));
+  };
+
+  const selectorCurrentFormatter = (currentItem: SectionType | undefined) => {
+    if (!currentItem) {
+      return undefined;
+    }
+    return { value: currentItem.id, label: `${currentItem.name}` };
+  };
+  return (
+    <Select
+      options={selectorItemsFormatter(sections)}
+      value={selectorCurrentFormatter(currentSection)}
+      isSearchable={false}
+      onChange={onChange}
+      placeholder={'All'}
+      className={'button--select'}
+    />
+  );
+};
 
 export default GraderAssignmentPanel;
