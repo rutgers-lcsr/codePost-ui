@@ -198,7 +198,7 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     let assignmentPoints = 0;
     if (!submission || !assignment) {
-      return;
+      return null;
     } else {
       assignmentPoints = assignment.points;
     }
