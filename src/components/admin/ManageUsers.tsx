@@ -71,7 +71,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           </TabList>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
-            <div style={{ paddingTop: '40px' }} />
+            <div className="tabList--ManageUsers__panelPadding" />
             <ManageStudents
               sections={this.props.sections}
               students={this.props.students}
@@ -90,7 +90,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           </TabPanel>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
-            <div style={{ paddingTop: '40px' }} />
+            <div className="tabList--ManageUsers__panelPadding" />
             <ManageGraders
               graders={this.props.graders}
               admins={this.props.admins}
@@ -107,7 +107,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           </TabPanel>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
-            <div style={{ paddingTop: '40px' }} />
+            <div className="tabList--ManageUsers__panelPadding" />
             <ManageSections
               sections={this.props.sections}
               sectionsLoadComplete={this.props.sectionsLoadComplete}
@@ -123,7 +123,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           </TabPanel>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
-            <div style={{ paddingTop: '40px' }} />
+            <div className="tabList--ManageUsers__panelPadding" />
             <ManageAdmins
               admins={this.props.admins}
               graders={this.props.graders}

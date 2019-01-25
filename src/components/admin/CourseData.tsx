@@ -143,7 +143,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
         </TabList>
         <TabPanel>
           {/* padding under the tab required because tab is position:fixed*/}
-          <div style={{ paddingTop: '40px' }} />
+          <div className="tabList--CourseData__panelPadding" />
           <StudentData
             key={currentCourseID}
             submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
@@ -158,7 +158,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
         </TabPanel>
         <TabPanel>
           {/* padding under the tab required because tab is position:fixed*/}
-          <div style={{ paddingTop: '40px' }} />
+          <div className="tabList--CourseData__panelPadding" />
           <GraderData
             key={currentCourseID}
             submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
@@ -172,7 +172,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
         </TabPanel>
         <TabPanel>
           {/* padding under the tab required because tab is position:fixed*/}
-          <div style={{ paddingTop: '40px' }} />
+          <div className="tabList--CourseData__panelPadding" />
           <StudentData
             key={currentCourseID}
             submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
@@ -187,7 +187,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
         </TabPanel>
         <TabPanel>
           {/* padding under the tab required because tab is position:fixed*/}
-          <div style={{ paddingTop: '40px' }} />
+          <div className="tabList--CourseData__panelPadding" />
           <GraderData
             key={currentCourseID}
             submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}

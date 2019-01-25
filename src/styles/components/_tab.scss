@@ -124,8 +124,16 @@
 
 .tabList--ManageUsers {
   @include StyleReact-Tabs-FixedTop();
+
+  &__panelPadding {
+    padding-top: 40px;
+  }
 }
 
 .tabList--CourseData {
   @include StyleReact-Tabs-FixedTop();
+
+  &__panelPadding {
+    padding-top: 40px;
+  }
 }
