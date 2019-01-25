@@ -1,6 +1,10 @@
 import { CommentType } from './infrastructure/comment';
 import { POSITION } from './types/common';
 
+interface IStyles {
+  [highlightID: string]: number;
+}
+
 export default class CodePanelUtils {
   public static sortComments = (comments: CommentType[]): CommentType[] => {
     return comments.sort((a: CommentType, b: CommentType) => {
@@ -40,6 +44,7 @@ export default class CodePanelUtils {
 
     const elements: any[] = [];
     let prevIDs: number[] = [];
+    let styles: IStyles = {};
 
     // tslint:disable-next-line
     for (let i = 0; i <= thetext.length; i++) {
@@ -59,6 +64,30 @@ export default class CodePanelUtils {
           return !remIDs.includes(x);
         })
         .concat(newIDs); // ids = ids - remIDs + newIDs
+
+      if (updatedIDs.length > 1) {
+        // tslint:disable-next-line
+        for (let i = 1; i < updatedIDs.length; i++) {
+          // if (styles[`${updatedIDs}`]) {
+          //   styles[`highlight-${updatedIDs}`] = Math.max(i, styles[`highlight-${updatedIDs}`])
+          // }
+          styles = {
+            ...styles,
+            [`${updatedIDs[i]}`]: Math.max(
+              i,
+              styles[`highlight-${updatedIDs}`] ? styles[`highlight-${updatedIDs}`] : 0,
+            ),
+          };
+        }
+      }
+
+      // (document.styleSheets[0] as CSSStyleSheet).insertRule(
+      // `.highlight-${updatedIDs[i]} {background-color: rgba(255, 202, 147, ${tint}) !important;}`);
+      // if (updatedIDs.length > 1) {
+      //   console.log(`.highlight-${updatedIDs[1]} {background-color: rgba(255, 202, 147, 0.8)}`);
+      //   (document.styleSheets[0] as CSSStyleSheet).insertRule(
+      //     `.highlight-${updatedIDs[1]} {background-color: rgba(255, 202, 147, 0.7) !important;}`);
+      // }
 
       let element = '';
       if (i === thetext.length) {
@@ -85,6 +114,17 @@ export default class CodePanelUtils {
       prevIDs = updatedIDs;
       elements.push(element);
     }
+
+    // This code doesn't quite work yet
+    // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
+    // highlights. It catches the first nesting, but none deeper.
+    for (const [highlight, level] of Object.entries(styles)) {
+      const tint = 0.5 + 0.2 * level;
+      (document.styleSheets[0] as CSSStyleSheet).insertRule(
+        `.highlight-${highlight} {background-color: rgba(255, 202, 147, ${tint}) !important;}`,
+      );
+    }
+
     return { __html: elements.join('') };
   };
 
