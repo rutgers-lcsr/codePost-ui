@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import VerticalPane from './components/VerticalPane';
 
@@ -35,6 +37,7 @@ interface IGraderProps {
   email: string;
   match: any;
   history: any;
+  superGraderCourses: CourseType[];
 }
 
 class Grader extends React.Component<IGraderProps, IGraderState> {
@@ -310,6 +313,55 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       }
     }
 
+    // If grader is a superGrader, return tabbed content, with viewAll data
+    console.log(this.props.superGraderCourses);
+    const isSuperGrader =
+      currentCourse &&
+      typeof this.props.superGraderCourses.find((course) => {
+        return course.id === currentCourse.id;
+      }) !== 'undefined'
+        ? true
+        : false;
+    console.log(isSuperGrader);
+    const GraderPanelContent = !currentAssignment ? (
+      <div />
+    ) : isSuperGrader ? (
+      <Tabs defaultTabIndex={0}>
+        <TabList className="tabList--Grader">
+          <Tab className="tabList--Grader__tab">My Submissions</Tab>
+          <Tab className="tabList--Grader__tab">View All</Tab>
+        </TabList>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div className="tabList--Grader__panelPadding" />
+          <GraderAssignmentPanel
+            claimSubmission={this.claimSubmission}
+            releaseSubmission={this.releaseSubmission}
+            assignment={currentAssignment}
+            submissions={currentSubmissions}
+            isLoadingSubmissions={isLoadingSubmissions}
+            sections={currentSections}
+            isSuperGrader={isSuperGrader}
+          />
+        </TabPanel>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div className="tabList--Grader__panelPadding" />
+          view all content goes here
+        </TabPanel>
+      </Tabs>
+    ) : (
+      <GraderAssignmentPanel
+        claimSubmission={this.claimSubmission}
+        releaseSubmission={this.releaseSubmission}
+        assignment={currentAssignment}
+        submissions={currentSubmissions}
+        isLoadingSubmissions={isLoadingSubmissions}
+        sections={currentSections}
+        isSuperGrader={isSuperGrader}
+      />
+    );
+
     return (
       <div className="grader">
         <div className="grader__left-panel">
@@ -322,16 +374,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             handleSelectorChange={this.handleCourseChange}
           />
         </div>
-        <div className="grader__right-panel">
-          <GraderAssignmentPanel
-            claimSubmission={this.claimSubmission}
-            releaseSubmission={this.releaseSubmission}
-            assignment={currentAssignment}
-            submissions={currentSubmissions}
-            isLoadingSubmissions={isLoadingSubmissions}
-            sections={currentSections}
-          />
-        </div>
+        <div className="grader__right-panel">{GraderPanelContent}</div>
       </div>
     );
   }
