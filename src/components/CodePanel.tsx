@@ -267,10 +267,10 @@ const Code = (props: ICodeProps) => {
   };
 
   const codeString = props.file.code;
-
   return (
     <div className="grade__main-container__tabContent">
       <div className="grade__main-container__tabContent__codePanel">
+        <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
         <div className="code__highlighted-area">
           <div className="code__syntax-highlighter">
             <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>

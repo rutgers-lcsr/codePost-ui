@@ -40,7 +40,7 @@
 
     &__tabContent {
       @media screen and (min-width: 1400px) {
-        $commentPanel-width: calc(100vw - 1400px + 300px);
+        $commentPanel-width: calc(100vw - 1400px + 280px);
         @include dual-pane-fixed-right-scrollable-left($commentPanel-width, 'codePanel', 'commentPanel');
         padding-right: 0px;
       }
@@ -58,6 +58,19 @@
         border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         background-color: $very-light-green;
         z-index: 1;
+      }
+    }
+
+    &__scrollIndicator {
+      width: 30px;
+      visibility: hidden;
+      @media screen and (max-width: 1260px) {
+        font-style: italic;
+        color: $mid-grey;
+        font-size: $font-size-normal;
+        visibility: visible;
+        position: relative;
+        left: calc(100vw - 570px);
       }
     }
   }
