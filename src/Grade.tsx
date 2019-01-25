@@ -32,6 +32,7 @@ interface IGradeState {
   graders: string[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
+  positiveNegativeAlert: boolean;
 }
 
 interface IProps {
@@ -54,6 +55,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     rubricCategories: [],
     rubricComments: {},
     submission: undefined,
+    positiveNegativeAlert: false,
   };
 
   //////////////////////////////////////
@@ -71,7 +73,8 @@ class Grade extends React.Component<IProps, IGradeState> {
         this.loadAssignment(submission.assignment),
         this.loadRubricCategories(submission.assignment),
       ]).then(() => {
-        this.setState({ isLoading: false });
+        const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+        this.setState({ isLoading: false, positiveNegativeAlert });
       });
     });
   }
@@ -247,12 +250,36 @@ class Grade extends React.Component<IProps, IGradeState> {
     return grade;
   };
 
+  public hasPositiveAndNegativeComments = () => {
+    const { comments, commentRubricComments } = this.state;
+
+    let hasPositiveDeduction = false;
+    let hasNegativeDeduction = false;
+    Object.keys(comments).forEach((fileID) => {
+      comments[fileID].forEach((comment: CommentType) => {
+        const pointDelta = comment.pointDelta
+          ? comment.pointDelta
+          : commentRubricComments[comment.id]
+          ? commentRubricComments[comment.id].pointDelta
+          : 0;
+        if (pointDelta > 0) {
+          hasPositiveDeduction = true;
+        } else if (pointDelta < 0) {
+          hasNegativeDeduction = true;
+        }
+      });
+    });
+
+    return hasPositiveDeduction && hasNegativeDeduction;
+  };
+
   public updateSubmissionGrade = () => {
     const { submission } = this.state;
     if (submission) {
       const grade = this.calculateGradeFromComments();
+      const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
       submission.grade = grade;
-      this.setState({ submission });
+      this.setState({ submission, positiveNegativeAlert });
     }
   };
 
@@ -365,6 +392,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       comments,
       isLoading,
       graders,
+      positiveNegativeAlert,
     } = this.state;
 
     const isCourseAdmin = this.isCourseAdmin(assignment);
@@ -387,6 +415,7 @@ class Grade extends React.Component<IProps, IGradeState> {
           graders={graders}
           updateGrader={this.updateGrader}
           isCourseAdmin={isCourseAdmin}
+          positiveNegativeAlert={positiveNegativeAlert}
         />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
