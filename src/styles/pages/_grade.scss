@@ -45,6 +45,19 @@
 
     &__sub-finalize {
       flex: 0 1 150px;
+
+      .positiveNegativeAlert {
+        font-size: $font-size-normal;
+        color: $mid-grey;
+        font-style: italic;
+        width: 350px;
+        position: absolute;
+        right: 10px;
+        top: 110px;
+        &--none {
+          visibility: hidden;
+        }
+      }
     }
   }
 
