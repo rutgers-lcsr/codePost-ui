@@ -102,7 +102,7 @@ class Comment extends React.Component<IProps, IState> {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'saving-spinner--success' });
-          }, 1000);
+          }, 500);
           setTimeout(() => {
             this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
             // It's important that we update the parent state
@@ -112,7 +112,7 @@ class Comment extends React.Component<IProps, IState> {
             updateComment(comment.id, json, file);
             saveGrade(); // async issue with setState
             return true;
-          }, 2000);
+          }, 1000);
           return true;
         })
         .catch((error) => {
@@ -124,13 +124,13 @@ class Comment extends React.Component<IProps, IState> {
         // this is just aesthetic wait time to watch the comment save
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--success' });
-        }, 1000);
+        }, 500);
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
           updateComment(comment.id, json, file);
           saveGrade(); // async issue with setState
           return true;
-        }, 2000);
+        }, 1000);
         return true;
       });
     }
@@ -208,12 +208,10 @@ class Comment extends React.Component<IProps, IState> {
         >
           <div className="comment__body">
             <div className={savingClass} />
+            {comment.startLine}
             <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
-            <div className="comment__footer">
-              <div className="comment__footer__author">{author}</div>
-            </div>
           </div>
         </div>
       );
@@ -281,6 +279,11 @@ class Comment extends React.Component<IProps, IState> {
                 delete
               </Button>
             </div>
+            <div className="comment__footer">
+              <div className="comment__footer__author">
+                [line {comment.startLine + 1}] {author}
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -303,7 +306,9 @@ class Comment extends React.Component<IProps, IState> {
             <ReactMarkdown source={comment.text} />
           </div>
           <div className="comment__footer">
-            <div className="comment__footer__author">{author}</div>
+            <div className="comment__footer__author">
+              [line {comment.startLine + 1}] {author}
+            </div>
             <div className="comment__footer__buttons">
               <Button
                 className="button--comment"
