@@ -202,8 +202,8 @@ class Comment extends React.Component<IProps, IState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-          onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
           id={`comment-${comment.id}`}
         >
           <div className="comment__body">
@@ -231,8 +231,8 @@ class Comment extends React.Component<IProps, IState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-          onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
           id={`comment-${comment.id}`}
         >
           <div className="comment__body">
@@ -299,8 +299,8 @@ class Comment extends React.Component<IProps, IState> {
       <div
         className={className}
         style={style}
-        onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-        onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+        onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+        onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
         id={`comment-${comment.id}`}
       >
         <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>

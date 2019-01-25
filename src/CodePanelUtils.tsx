@@ -66,16 +66,20 @@ export default class CodePanelUtils {
           element = '</strong>';
         }
       } else {
+        const className = updatedIDs
+          .map((id) => {
+            return `highlight-${id}`;
+          })
+          .join(' ');
+
         if (newIDs.length === 0 && remIDs.length === 0) {
           element = `${element}${thetext.charAt(i)}`;
         } else if (prevIDs.length === 0 && newIDs.length >= 1) {
-          element = `${element}<strong id=${line.toString()} class="${updatedIDs.join(' ')}">${thetext.charAt(i)}`;
+          element = `${element}<strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
         } else if (updatedIDs.length === 0 && remIDs.length >= 1) {
           element = `</strong>${thetext.charAt(i)}`;
         } else {
-          element = `${element}</strong><strong id=${line.toString()} class="${updatedIDs.join(' ')}">${thetext.charAt(
-            i,
-          )}`;
+          element = `${element}</strong><strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
         }
       }
       prevIDs = updatedIDs;

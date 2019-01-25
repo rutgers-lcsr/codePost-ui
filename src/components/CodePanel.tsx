@@ -189,12 +189,12 @@ const Code = (props: ICodeProps) => {
     let endLine = +extentParent.id;
 
     let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div[id='${startLine}']`),
+      document.querySelector(`div#line-${startLine}`),
       null,
       POSITION.Start,
     );
     let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div[id='${endLine}']`),
+      document.querySelector(`div#line-${endLine}`),
       null,
       POSITION.End,
     );
@@ -241,25 +241,21 @@ const Code = (props: ICodeProps) => {
         // Don't skip rendering lines with no text
         if (item == '') {
           return (
-            <div key={i} id={i.toString()}>
+            <div key={i} id={`line-${i}`}>
               &nbsp;
             </div>
           );
         }
         CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div
-            key={i}
-            id={i.toString()}
-            dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
-          />
+          <div key={i} id={`line-${i}`} dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)} />
         );
       })
     : splitCode.map((item: string, i: number) => {
         // Don't skip rendering lines with no text
         if (item == '') {
           return (
-            <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
+            <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
               &nbsp;
             </div>
           );
@@ -268,7 +264,7 @@ const Code = (props: ICodeProps) => {
         return (
           <div
             key={i}
-            id={i.toString()}
+            id={`line-${i}`}
             onMouseUp={onMouseUp}
             dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
           />
@@ -277,8 +273,8 @@ const Code = (props: ICodeProps) => {
   /* tslint:enable */
 
   const numberOfLines = linesOfCode.length;
-  const lineHeight = document.querySelector("div[id='0']")
-    ? document.querySelector("div[id='0']")!.getBoundingClientRect().height
+  const lineHeight = document.querySelector('div#line-0')
+    ? document.querySelector('div#line-0')!.getBoundingClientRect().height
     : 19; // 19 as estimate
   const lineNumberStyle = {
     height: `${numberOfLines * lineHeight}px`,
