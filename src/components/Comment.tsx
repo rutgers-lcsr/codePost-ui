@@ -182,8 +182,6 @@ class Comment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
-    console.log('comment', comment);
-
     const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
     const pointDeltaLabel = pointDelta ? (pointDelta > 0 ? `-${pointDelta}` : `+${pointDelta * -1}`) : null;
     const pointDeltaModifier =
