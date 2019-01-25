@@ -6,6 +6,10 @@
     align-items: center;
     flex-direction: row;
 
+    &__badges {
+      display: flex;
+    }
+
     &__pointDelta {
       &--null {
         display: none;
@@ -27,6 +31,7 @@
     &__comment-count {
       @include badgeFormat($mid-grey, black);
       z-index: 0;
+      margin-right: 10px;
     }
   }
 }

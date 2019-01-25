@@ -83,12 +83,14 @@ class CodePanel extends React.Component<IProps, IState> {
     return (
       <div className="tab__title">
         <div className="tab__title__fileName">{file.name}</div>
-        <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
-          {commentFlag}
-        </Tooltipped>
-        <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
-          <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
-        </Tooltipped>
+        <div className="tab__title__badges">
+          <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
+            {commentFlag}
+          </Tooltipped>
+          <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
+            <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
+          </Tooltipped>
+        </div>
       </div>
     );
   };
