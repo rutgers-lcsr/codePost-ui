@@ -1,15 +1,5 @@
 import * as React from 'react';
-import {
-  Button,
-  DataTable,
-  FontIcon,
-  SelectFieldColumn,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  TextField,
-} from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
 import { ISectionNoStudents, USER_APP } from '../../../types/common';
 
@@ -100,7 +90,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       addToast,
       changeRoster,
     } = this.props;
-    const { newStudentField, changedSectionStudents, sortAscending, searchTerm } = this.state;
+    const { newStudentField, sortAscending, searchTerm } = this.state;
 
     const showSaveNewStudentButton = newStudentField && newStudentField.includes('@');
 
@@ -109,14 +99,13 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
     sectionMenuItems.push({ label: '', value: -1 });
 
-    const iconChanged = <FontIcon>track_changes</FontIcon>;
+    // const iconChanged = <FontIcon>track_changes</FontIcon>;
     const studentType = USER_APP.Student;
 
     let tableBody;
     if (rosterLoadComplete) {
       tableBody = students.map((student) => {
         const section = sectionsByStudent[student];
-        const sectionID = section ? section.id : -1;
         const sectionName = section ? section.name : '';
 
         if (
@@ -126,26 +115,19 @@ class ManageStudents extends React.Component<IProps, {}> {
           return <div />;
         }
 
-        let dropDown;
-        let sectionDisable = false;
-
-        if (changedSectionStudents.indexOf(student) !== -1) {
-          dropDown = iconChanged;
-          sectionDisable = true;
-        } else {
-          dropDown = undefined;
-        }
+        // let dropDown;
+        // let sectionDisable = false;
+        //
+        // if (changedSectionStudents.indexOf(student) !== -1) {
+        //   dropDown = iconChanged;
+        //   sectionDisable = true;
+        // } else {
+        //   dropDown = undefined;
+        // }
 
         return (
           <TableRow key={student}>
             <TableColumn>{student}</TableColumn>
-            <SelectFieldColumn
-              dropdownIcon={dropDown}
-              value={sectionID}
-              menuItems={sectionMenuItems}
-              disabled={lockedStudentChange || sectionDisable}
-              onChange={this.rowSectionChange.bind(this.props, student)}
-            />
             <TableColumn key={'UnEnroll'}>
               <Button
                 key="unEnroll"

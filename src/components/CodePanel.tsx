@@ -83,12 +83,14 @@ class CodePanel extends React.Component<IProps, IState> {
     return (
       <div className="tab__title">
         <div className="tab__title__fileName">{file.name}</div>
-        <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
-          {commentFlag}
-        </Tooltipped>
-        <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
-          <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
-        </Tooltipped>
+        <div className="tab__title__badges">
+          <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
+            {commentFlag}
+          </Tooltipped>
+          <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
+            <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
+          </Tooltipped>
+        </div>
       </div>
     );
   };
@@ -255,10 +257,10 @@ const Code = (props: ICodeProps) => {
   };
 
   const codeString = props.file.code;
-
   return (
     <div className="grade__main-container__tabContent">
       <div className="grade__main-container__tabContent__codePanel">
+        <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
         <div className="code__highlighted-area">
           <div className="code__syntax-highlighter">
             <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
