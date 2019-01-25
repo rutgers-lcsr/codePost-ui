@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Button, Tab, Tabs, TabsContainer } from 'react-md';
+import { Button } from 'react-md';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import '../../styles/index.scss';
 
 import { ISectionNoStudents, USER_APP } from '../../types/common';
@@ -61,76 +62,83 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
 
     return (
       <div>
-        <TabsContainer
-          defaultTabIndex={activeTabIndex}
-          className="tabs"
-          fixed={true}
-          slideStyle={{ minHeight: '70vh' }}
-        >
-          <Tabs tabId="simple-tab" className="md-tabs--ManageUsers">
-            <Tab label="Students" classname="manageStudents" style={{ color: '#000000' }}>
-              <ManageStudents
-                sections={this.props.sections}
-                students={this.props.students}
-                rosterLoadComplete={this.props.rosterLoadComplete}
-                lockedStudentChange={this.props.lockChanges}
-                toggleLock={this.props.toggleLock}
-                currentCourse={this.props.currentCourse}
-                addToast={this.props.addToast}
-                addErrorToast={this.props.addErrorToast}
-                enrollUser={this.props.enrollUser}
-                unEnrollUsers={this.props.unEnrollUsers}
-                changeRoster={this.props.changeRoster}
-                sectionsByStudent={this.props.sectionsByStudent}
-                changeStudentSection={this.props.changeStudentSection}
-              />
-            </Tab>
-            <Tab label="Graders" className="manageGraders" style={{ color: '#000000' }}>
-              <ManageGraders
-                graders={this.props.graders}
-                admins={this.props.admins}
-                rosterLoadComplete={this.props.rosterLoadComplete}
-                lockedGraderChange={this.props.lockChanges}
-                toggleLock={this.props.toggleLock}
-                currentCourse={this.props.currentCourse}
-                addToast={this.props.addToast}
-                addErrorToast={this.props.addErrorToast}
-                enrollUser={this.props.enrollUser}
-                unEnrollUsers={this.props.unEnrollUsers}
-                changeRoster={this.props.changeRoster}
-              />
-            </Tab>
-            <Tab label="Sections" className="manageSections" style={{ color: '#000000' }}>
-              <ManageSections
-                sections={this.props.sections}
-                sectionsLoadComplete={this.props.sectionsLoadComplete}
-                lockedSectionChange={this.props.lockChanges}
-                toggleLock={this.props.toggleLock}
-                currentCourse={this.props.currentCourse}
-                addToast={this.props.addToast}
-                createSection={this.props.createSection}
-                graders={this.props.graders}
-                addLeader={this.props.addLeader}
-                removeLeader={this.props.removeLeader}
-              />
-            </Tab>
-            <Tab label="Admins" style={{ color: '#000000' }}>
-              <ManageAdmins
-                admins={this.props.admins}
-                graders={this.props.graders}
-                rosterLoadComplete={this.props.rosterLoadComplete}
-                lockedAdminChange={this.props.lockChanges}
-                toggleLock={this.props.toggleLock}
-                currentCourse={this.props.currentCourse}
-                addToast={this.props.addToast}
-                addErrorToast={this.props.addErrorToast}
-                enrollUser={this.props.enrollUser}
-                unEnrollUsers={this.props.unEnrollUsers}
-                changeRoster={this.props.changeRoster}
-              />
-            </Tab>
-          </Tabs>
-        </TabsContainer>
+        <Tabs defaultTabIndex={activeTabIndex}>
+          <TabList className="tabList--ManageUsers">
+            <Tab className="tabList--ManageUsers__tab">Students</Tab>
+            <Tab className="tabList--ManageUsers__tab">Grader</Tab>
+            <Tab className="tabList--ManageUsers__tab">Admin</Tab>
+            <Tab className="tabList--ManageUsers__tab">Section</Tab>
+          </TabList>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div style={{ paddingTop: '40px' }} />
+            <ManageStudents
+              sections={this.props.sections}
+              students={this.props.students}
+              rosterLoadComplete={this.props.rosterLoadComplete}
+              lockedStudentChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              currentCourse={this.props.currentCourse}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+              enrollUser={this.props.enrollUser}
+              unEnrollUsers={this.props.unEnrollUsers}
+              changeRoster={this.props.changeRoster}
+              sectionsByStudent={this.props.sectionsByStudent}
+              changeStudentSection={this.props.changeStudentSection}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div style={{ paddingTop: '40px' }} />
+            <ManageGraders
+              graders={this.props.graders}
+              admins={this.props.admins}
+              rosterLoadComplete={this.props.rosterLoadComplete}
+              lockedGraderChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              currentCourse={this.props.currentCourse}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+              enrollUser={this.props.enrollUser}
+              unEnrollUsers={this.props.unEnrollUsers}
+              changeRoster={this.props.changeRoster}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div style={{ paddingTop: '40px' }} />
+            <ManageSections
+              sections={this.props.sections}
+              sectionsLoadComplete={this.props.sectionsLoadComplete}
+              lockedSectionChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              currentCourse={this.props.currentCourse}
+              addToast={this.props.addToast}
+              createSection={this.props.createSection}
+              graders={this.props.graders}
+              addLeader={this.props.addLeader}
+              removeLeader={this.props.removeLeader}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div style={{ paddingTop: '40px' }} />
+            <ManageAdmins
+              admins={this.props.admins}
+              graders={this.props.graders}
+              rosterLoadComplete={this.props.rosterLoadComplete}
+              lockedAdminChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              currentCourse={this.props.currentCourse}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+              enrollUser={this.props.enrollUser}
+              unEnrollUsers={this.props.unEnrollUsers}
+              changeRoster={this.props.changeRoster}
+            />
+          </TabPanel>
+        </Tabs>
         <Button
           key="Lock"
           className="Btn"

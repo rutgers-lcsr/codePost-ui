@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tab, Tabs, TabsContainer } from 'react-md';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { AssignmentType } from '../../infrastructure/assignment';
 
 import {
@@ -130,60 +130,76 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     } = this.state;
 
     return (
-      <TabsContainer defaultTabIndex={activeTabIndex} className="tabs" fixed={true}>
-        <Tabs className="md-tabs--CourseData" tabId="simple-tab">
-          <Tab style={{ color: '#000000' }} label="Students">
-            <StudentData
-              key={currentCourseID}
-              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-              assignmentsLoadComplete={assignmentsLoadComplete}
-              assignments={assignments}
-              submissionsByStudent={submissionsByStudent}
-              activeStudent={selectedStudent}
-              changeActiveStudent={this.changeSelectedStudent}
-              openSubmission={openSubmission}
-              deleteSubmission={this.props.deleteSubmission}
-            />
+      <Tabs defaultTabIndex={activeTabIndex}>
+        <TabList className="tabList--CourseData">
+          <Tab className="tabList--CourseData__tab">Students</Tab>
+          <Tab className="tabList--CourseData__tab">Grader</Tab>
+          <Tab className="tabList--CourseData__tab" style={{ color: '#c8c8c8' }}>
+            Inactive Students
           </Tab>
-          <Tab style={{ color: '#000000' }} label="Graders">
-            <GraderData
-              key={currentCourseID}
-              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-              assignmentsLoadComplete={assignmentsLoadComplete}
-              assignments={assignments}
-              submissionsByGrader={submissionsByGrader}
-              activeGrader={selectedGrader}
-              changeActiveGrader={this.changeSelectedGrader}
-              openSubmission={openSubmission}
-            />
+          <Tab className="tabList--CourseData__tab" style={{ color: '#c8c8c8' }}>
+            Inactive Graders
           </Tab>
-          <Tab style={{ color: '#c8c8c8' }} label="Inactive Students">
-            <StudentData
-              key={currentCourseID}
-              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-              assignmentsLoadComplete={assignmentsLoadComplete}
-              assignments={assignments}
-              submissionsByStudent={submissionsByInactiveStudent}
-              activeStudent={selectedInactiveStudent}
-              changeActiveStudent={this.changeSelectedInactiveStudent}
-              openSubmission={openSubmission}
-              deleteSubmission={this.props.deleteSubmission}
-            />
-          </Tab>
-          <Tab style={{ color: '#c8c8c8' }} label="Inactive Graders">
-            <GraderData
-              key={currentCourseID}
-              submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
-              assignmentsLoadComplete={assignmentsLoadComplete}
-              assignments={assignments}
-              submissionsByGrader={submissionsByInactiveGrader}
-              activeGrader={selectedInactiveGrader}
-              changeActiveGrader={this.changeSelectedInactiveGrader}
-              openSubmission={openSubmission}
-            />
-          </Tab>
-        </Tabs>
-      </TabsContainer>
+        </TabList>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div style={{ paddingTop: '40px' }} />
+          <StudentData
+            key={currentCourseID}
+            submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+            assignmentsLoadComplete={assignmentsLoadComplete}
+            assignments={assignments}
+            submissionsByStudent={submissionsByStudent}
+            activeStudent={selectedStudent}
+            changeActiveStudent={this.changeSelectedStudent}
+            openSubmission={openSubmission}
+            deleteSubmission={this.props.deleteSubmission}
+          />
+        </TabPanel>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div style={{ paddingTop: '40px' }} />
+          <GraderData
+            key={currentCourseID}
+            submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+            assignmentsLoadComplete={assignmentsLoadComplete}
+            assignments={assignments}
+            submissionsByGrader={submissionsByGrader}
+            activeGrader={selectedGrader}
+            changeActiveGrader={this.changeSelectedGrader}
+            openSubmission={openSubmission}
+          />
+        </TabPanel>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div style={{ paddingTop: '40px' }} />
+          <StudentData
+            key={currentCourseID}
+            submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+            assignmentsLoadComplete={assignmentsLoadComplete}
+            assignments={assignments}
+            submissionsByStudent={submissionsByInactiveStudent}
+            activeStudent={selectedInactiveStudent}
+            changeActiveStudent={this.changeSelectedInactiveStudent}
+            openSubmission={openSubmission}
+            deleteSubmission={this.props.deleteSubmission}
+          />
+        </TabPanel>
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div style={{ paddingTop: '40px' }} />
+          <GraderData
+            key={currentCourseID}
+            submissionsbyUserLoadComplete={submissionsbyUserLoadComplete}
+            assignmentsLoadComplete={assignmentsLoadComplete}
+            assignments={assignments}
+            submissionsByGrader={submissionsByInactiveGrader}
+            activeGrader={selectedInactiveGrader}
+            changeActiveGrader={this.changeSelectedInactiveGrader}
+            openSubmission={openSubmission}
+          />
+        </TabPanel>
+      </Tabs>
     );
   }
 }
