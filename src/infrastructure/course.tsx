@@ -17,6 +17,8 @@ const CourseV = t.intersection(
       period: t.string,
       assignments: t.array(t.number),
       sections: t.array(t.number),
+      sendReleasedSubmissionsToBack: t.boolean,
+      showStudentsStatistics: t.boolean,
     }),
   ],
   'Course',
