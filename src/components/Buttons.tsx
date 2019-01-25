@@ -5,6 +5,7 @@ import { BUTTON_STATE } from '../types/common';
 interface IButtonProps {
   handleClick: any;
   buttonState: BUTTON_STATE;
+  children?: any;
 }
 
 // Callback: drawUnassigned
@@ -20,8 +21,11 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   }
 
   return (
-    <div className="button--get-another " onClick={handleClick}>
-      Grade another
+    <div>
+      <div className="button--get-another " onClick={handleClick}>
+        Grade another from ...
+      </div>
+      {props.children}
     </div>
   );
 };
@@ -37,8 +41,11 @@ export const StartGradingButton = (props: IButtonProps) => {
       return <div className="button--start-grading button--get-another--disabled">Loading...</div>;
     default:
       return (
-        <div className="button--start-grading" onClick={handleClick}>
-          Start grading!
+        <div>
+          <div className="button--start-grading" onClick={handleClick}>
+            Start grading from ...
+          </div>
+          {props.children}
         </div>
       );
   }

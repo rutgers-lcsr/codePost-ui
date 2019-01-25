@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Button, TextField } from 'react-md';
 
+import ReactMarkdown from 'react-markdown';
+import TextareaAutosize from 'react-textarea-autosize';
+
 import { ICSSStyleObject } from '../types/common';
 
 import { CommentIO, CommentType } from '../infrastructure/comment';
@@ -152,9 +155,9 @@ class Comment extends React.Component<IProps, IState> {
     return true;
   };
 
-  public enterKey = (event: any) => {
+  public handleShiftEnter = (event: any) => {
     const { active } = this.props;
-    if (event.key === 'Enter' && active) {
+    if (event.key === 'Enter' && event.shiftKey && active) {
       this.toggleActive();
     }
   };
@@ -194,6 +197,7 @@ class Comment extends React.Component<IProps, IState> {
     if (rubricComment) {
       rubricCommentText = rubricComment.text;
     }
+
     // Non-editable comment
     if (readOnly) {
       return (
@@ -207,7 +211,7 @@ class Comment extends React.Component<IProps, IState> {
             <div className={savingClass} />
             <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
-            {comment.text}
+            <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
               <div className="comment__footer__author">{author}</div>
             </div>
@@ -244,9 +248,11 @@ class Comment extends React.Component<IProps, IState> {
             />
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
 
-            <textarea
+            <TextareaAutosize
+              minRows={1}
+              maxRows={8}
               onChange={this.updateComment}
-              onKeyPress={this.enterKey}
+              onKeyPress={this.handleShiftEnter}
               value={comment.text ? comment.text : ''}
               className="comment__textarea"
             />
@@ -292,7 +298,9 @@ class Comment extends React.Component<IProps, IState> {
         <div className="comment__body">
           <div className={savingClass} />
           {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
-          <div className="comment__text">{comment.text}</div>
+          <div className="comment__text">
+            <ReactMarkdown source={comment.text} />
+          </div>
           <div className="comment__footer">
             <div className="comment__footer__author">{author}</div>
             <div className="comment__footer__buttons">

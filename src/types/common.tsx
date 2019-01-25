@@ -27,6 +27,8 @@ export interface IUser {
   studentCourses: CourseType[];
   graderCourses: CourseType[];
   courseadminCourses: CourseType[];
+  canCreateCourses: boolean;
+  canModifyRosters: boolean;
 }
 
 export interface IProfile {

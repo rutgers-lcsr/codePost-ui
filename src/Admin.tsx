@@ -2,12 +2,12 @@ import * as React from 'react';
 import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
+
 import CourseData from './components/admin/CourseData';
+import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
 import ManageAssignments from './components/admin/ManageAssignments';
 import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
-// import './styles/index.scss';
-// import './styles/Student.scss';
 
 import {
   IAssignmentToRubricCategories,
@@ -18,6 +18,7 @@ import {
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
   IToast,
+  IUser,
   USER_APP,
 } from './types/common';
 
@@ -91,7 +92,7 @@ interface IAdminState {
 
 interface IAdminProps {
   initialCourses: CourseType[];
-  email: string;
+  user: IUser;
   match: any;
   history: any;
 }
@@ -146,11 +147,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     0: 'Course Data',
     1: 'Manage Assignments',
     2: 'Manage Users',
+    3: 'Course Settings',
   };
 
-  public panelMapForURL = ['course-data', 'assignments', 'manage-users'];
+  public panelMapForURL = ['course-data', 'assignments', 'manage-users', 'settings'];
 
-  public defaultPanelArgForURL = ['students', null, null];
+  public defaultPanelArgForURL = ['students', null, null, null];
 
   public snackBarStyle = {
     width: '100%',
@@ -1234,7 +1236,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   // ------------------- Manage course API calls  ------------------
-  public createCourse = (courseName: string, coursePeriod: string) => {
+  public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
     const { courses } = this.state;
     const payload = {
       id: -1, // codePost convention
@@ -1242,14 +1244,101 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       period: coursePeriod,
       assignments: [], // ignored by API
       sections: [], // ignored by API
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {
-      courses.push(course);
-      this.setState({ courses });
-      this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
-      return course;
+      if (copiedCourse) {
+        const getData = Promise.all(
+          copiedCourse.assignments.map((assignmentID: number) => {
+            return Assignment.read(assignmentID);
+          }),
+        )
+          .then((assignments: AssignmentType[]) => {
+            return assignments;
+          })
+          .then((assignments) => {
+            return Promise.all(
+              assignments.map((assignment) => {
+                return Assignment.readRubric(assignment.id, {});
+              }),
+            ).then((rubrics: any) => {
+              return [assignments, rubrics];
+            });
+          });
+
+        return getData.then(([assignments, rubrics]) => {
+          return Promise.all(
+            assignments.map((assignment: AssignmentType) => {
+              const oldAssignmentID = assignment.id;
+              assignment.id = -1;
+              assignment.course = course.id;
+              // Create Assignments
+              return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
+                const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
+                rubric.rubricCategories.map((rubricCategory: any) => {
+                  const oldRubricCategoryId = rubricCategory.id;
+                  rubricCategory.id = -1;
+                  rubricCategory.assignment = newAssignment.id;
+                  rubricCategory.rubricComments = [];
+                  // Create Rubric Categories
+                  return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
+                    const rubricComments = rubric.rubricComments.filter((c: any) => c.category === oldRubricCategoryId);
+                    rubricComments.map((rubricComment: any) => {
+                      rubricComment.id = -1;
+                      rubricComment.category = newRubricCategory.id;
+                      rubricComment.comments = [];
+                      // Create Rubric Comments
+                      return RubricComment.create(rubricComment);
+                    });
+                  });
+                });
+              });
+            }),
+          ).then(() => {
+            courses.push(course);
+            this.setState({ courses });
+            this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+            this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+              this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+            });
+
+            return course;
+          });
+        });
+      } else {
+        courses.push(course);
+        this.setState({ courses });
+        this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+
+        this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+          this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+        });
+
+        return course;
+      }
+    });
+  };
+
+  public updateSettings = (course: CourseType) => {
+    const { currentCourse, courses } = this.state;
+    if (!currentCourse) {
+      return;
+    }
+
+    if (course.id !== currentCourse.id) {
+      return;
+    }
+
+    return Course.update(course).then((newCourse: CourseType) => {
+      const newCourses = courses.filter((el) => {
+        return el.id !== newCourse.id;
+      });
+      newCourses.push(newCourse);
+      this.setState({ currentCourse: newCourse, courses: newCourses }, () => {
+        this.addToast(`Settings for ${currentCourse.name} | ${currentCourse.period} saved.`, undefined);
+      });
     });
   };
 
@@ -1278,6 +1367,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       } else {
         return <Redirect to={'/course-admin'} />;
       }
+    }
+
+    if (!this.props.user.canCreateCourses) {
+      return <div>Sorry, you're not registered as a course admin. Want access? Contact us here</div>;
     }
 
     let courseManagementPanel = null;
@@ -1359,6 +1452,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           />
         </div>
       );
+    } else if (currentCourse && loadedPanel === 3) {
+      courseManagementPanel = (
+        <div className="content-container">
+          <CourseSettingsPanel currentCourse={currentCourse} updateSettings={this.updateSettings} />
+        </div>
+      );
     } else if (!currentCourse) {
       if (courses.length > 0) {
         courseManagementPanel = <div>Select a course to get started.</div>;
@@ -1370,31 +1469,37 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
     const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
     const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
+    const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
 
     return (
       <div className="admin">
         <div className="admin__topbar">
           <Select
-            className="admin__topbar__courseSelector"
+            className="selector--admin-topbar"
             options={this.selectorItemsFormatter(courses)}
             onChange={this.handleCourseChange}
             value={this.selectorCurrentFormatter(currentCourse)}
           />
           <div className="admin__topbar__nav">
             <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
-              Course Data
+              Submissions
             </div>
             <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
-              Manage Assignments
+              Assignments
             </div>
             <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
-              Manage Users
+              Roster
+            </div>
+            <div className={settingsNav} onClick={this.handlePanelChange.bind(this.props, 3)}>
+              Settings
             </div>
           </div>
           <NewCourseDialog
             courses={this.state.courses}
             addErrorToast={this.addErrorToast}
             createCourse={this.createCourse}
+            selectorItemsFormatter={this.selectorItemsFormatter}
+            selectorCurrentFormatter={this.selectorCurrentFormatter}
           />
         </div>
         <div className="admin__topbar__spacing" />

@@ -4,10 +4,16 @@ import { CodePanel } from './components/CodePanel';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
-import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
+import {
+  ICommentToRubricCommentMap,
+  IFileToCommentsMap,
+  IRubricCategoryToRubricCommentsMap,
+  IUser,
+} from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
+import { Course, RosterType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
@@ -23,15 +29,16 @@ interface IGradeState {
   activeCommentId?: number;
 
   files: FileType[];
+  graders: string[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
 }
 
 interface IProps {
   submissionID: number;
-  email: string;
   match: any;
   history: any;
+  user: IUser;
 }
 
 class Grade extends React.Component<IProps, IGradeState> {
@@ -41,6 +48,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     commentRubricComments: {},
     comments: {},
     files: [],
+    graders: [],
     isLoading: true,
     redirect: false,
     rubricCategories: [],
@@ -73,9 +81,24 @@ class Grade extends React.Component<IProps, IGradeState> {
   ///////////////////////////////////////
 
   public loadAssignment = (assignmentId: number) => {
-    return Assignment.read(assignmentId).then((assignment: AssignmentType) => {
-      this.setState({ assignment });
-      return assignment;
+    return Assignment.read(assignmentId)
+      .then((assignment: AssignmentType) => {
+        this.setState({ assignment });
+        return assignment;
+      })
+      .then((assignment) => {
+        if (this.isCourseAdmin(assignment)) {
+          this.loadGraders(assignment.course!);
+        }
+        return assignment;
+      });
+  };
+
+  public loadGraders = (courseID: number) => {
+    return Course.readRoster(courseID, {}).then((roster: RosterType) => {
+      const rosterGraders = 'graders';
+      this.setState({ graders: roster[rosterGraders] });
+      return roster;
     });
   };
 
@@ -198,7 +221,7 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     let assignmentPoints = 0;
     if (!submission || !assignment) {
-      return;
+      return null;
     } else {
       assignmentPoints = assignment.points;
     }
@@ -301,6 +324,31 @@ class Grade extends React.Component<IProps, IGradeState> {
     });
   };
 
+  public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
+    const payload = {
+      id: sub.id,
+      isFinalized: false,
+      grader,
+    };
+
+    return Submission.update(payload).then((submission) => {
+      this.setState({ submission });
+      return submission;
+    });
+  };
+
+  public isCourseAdmin = (assignment: AssignmentType | undefined) => {
+    if (!assignment) {
+      return false;
+    }
+
+    return this.props.user.courseadminCourses
+      .map((course) => {
+        return course.id;
+      })
+      .includes(assignment.course!);
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -316,7 +364,10 @@ class Grade extends React.Component<IProps, IGradeState> {
       submission,
       comments,
       isLoading,
+      graders,
     } = this.state;
+
+    const isCourseAdmin = this.isCourseAdmin(assignment);
 
     if (isLoading) {
       return <div>Loading...</div>;
@@ -329,7 +380,14 @@ class Grade extends React.Component<IProps, IGradeState> {
     // Should include loading functionality while the submission is coming in
     return (
       <div className="grade">
-        <Panel submission={submission} assignment={assignment} toggleFinalized={this.toggleFinalized} />
+        <Panel
+          submission={submission}
+          assignment={assignment}
+          toggleFinalized={this.toggleFinalized}
+          graders={graders}
+          updateGrader={this.updateGrader}
+          isCourseAdmin={isCourseAdmin}
+        />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
             <Rubric

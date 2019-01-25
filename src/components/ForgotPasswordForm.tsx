@@ -32,7 +32,7 @@ class ForgotPasswordForm extends React.Component<{}, State> {
       }
     }
 
-    fetch('http://localhost:8000/api/users/emailPasswordReset/', {
+    fetch('/registration/emailPasswordReset/', {
       body: payload,
       method: 'POST',
     }).then((res) => {

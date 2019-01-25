@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import PasswordResetForm from './PasswordResetForm';
 
 /****************************************************************
@@ -31,13 +32,13 @@ interface IPasswordResetProps {
 }
 
 interface IPasswordResetState {
-  error: string;
+  formErrors: { [key: string]: string };
   loadState: string; // have we validated the token? Note we need to validate on server side
 }
 
 class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetState> {
   public state: Readonly<IPasswordResetState> = {
-    error: '',
+    formErrors: {},
     loadState: '',
   };
 
@@ -50,24 +51,26 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   // For an explanation of this vulnerability:
   // https://robots.thoughtbot.com/is-your-site-leaking-password-reset-links
   public validateToken = (token: any) => {
-    const payload = new URLSearchParams();
-    const key1 = 'uid';
-    const key2 = 'token';
-    payload.append(key1, this.props.match.params.uid);
-    payload.append(key2, this.props.match.params.token);
+    const payload = {
+      uid: this.props.match.params.uid,
+      token: this.props.match.params.token,
+    };
 
-    fetch('${process.env.API_URL}/registration/isTokenValid/', {
-      body: payload,
+    fetch(`${process.env.REACT_APP_API_URL}/registration/verifyRegistrationToken/`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
       method: 'POST',
     })
       .then((res) => {
         return res.json();
       })
       .then((json) => {
-        if (json.value) {
+        if (json.isValid) {
           this.setState({ loadState: 'valid' });
         } else {
-          this.setState({ loadState: 'error', error: 'invalid_token' });
+          this.setState({ loadState: 'invalidToken' });
         }
       });
   };
@@ -75,56 +78,78 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   public handleReset = (e: any, data: any) => {
     e.preventDefault();
 
-    const payload = new URLSearchParams();
-    const key1 = 'token';
-    const key2 = 'uid';
-    const key3 = 'password';
-    payload.append(key1, this.props.match.params.token);
-    payload.append(key2, this.props.match.params.uid);
-    payload.append(key3, data.password1);
+    const payload = {
+      token: this.props.match.params.token,
+      uid: this.props.match.params.uid,
+      password1: data.password1,
+      password2: data.password2,
+    };
 
-    fetch('${process.env.API_URL}/resgistration/updatePassword/', {
-      body: payload,
+    fetch(`${process.env.REACT_APP_API_URL}/registration/registerAndSetPassword/`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
       method: 'POST',
-    }).then((res) => {
-      if (res.ok) {
-        this.setState({ loadState: 'success' });
-      }
-    });
+    })
+      .then((res) => {
+        if (res.ok || res.status === 400) {
+          return res.json();
+        } else {
+          return Promise.reject();
+        }
+      })
+      .then((json) => {
+        if (json.isValid) {
+          this.setState({ loadState: 'success' });
+        } else {
+          console.log(json);
+          this.setState({ formErrors: json.errors });
+        }
+      });
   };
 
   public render() {
+    const { loadState, formErrors } = this.state;
+
     let message;
     switch (this.props.message) {
       case 'forgot':
         message = <p>Set a new password below.</p>;
         break;
       case 'activate':
-        message = <p>Set up a codePost passowrd here to be able to access your account.</p>;
+        message = <p>Set up a codePost password here to be able to access your account.</p>;
         break;
       default:
         message = '';
     }
 
-    switch (this.state.loadState) {
+    switch (loadState) {
       case 'valid':
+        const errorList = Object.keys(formErrors).map((el, i) => {
+          return (
+            <li key={i}>
+              {el}: {formErrors[el]}
+            </li>
+          );
+        });
         return (
           <div>
             {message}
             <PasswordResetForm handleSubmit={this.handleReset} />
+            <ul>{errorList}</ul>
           </div>
         );
         break;
-      case 'updated':
-        return <button>Click here to login</button>;
-        break;
-      case 'error':
-        return <p>An error occurred. Did you already use this link to update your password?</p>;
+      case 'invalidToken':
+        return <p>Your URL is invalid. Have you used this link to reset your password before?</p>;
         break;
       case 'success':
         return (
           <div>
-            <p>Success! Try logging in now.</p>
+            <p>
+              Success! Try <Link to="/login">logging in</Link> now.
+            </p>
           </div>
         );
         break;

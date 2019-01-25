@@ -129,8 +129,8 @@ class App extends React.Component<{}, IState> {
         });
       })
       .catch((error) => {
-        this.handleLogout();
-        this.setState({ error: 'invalid' });
+        localStorage.removeItem('token');
+        this.setState({ has_token: false, user: undefined, error: 'invalid' });
       });
   };
 
@@ -169,10 +169,17 @@ class App extends React.Component<{}, IState> {
                   <Route
                     exact={true}
                     path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                    render={(props: any) => <Admin {...props} email={email} initialCourses={courseAdminCourses} />}
+                    render={(props: any) => (
+                      <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />
+                    )}
                   />
 
-                  <Route exact={true} path={`${GRADE}/:submissionId`} component={Grade} />
+                  <Route
+                    exact={true}
+                    path={`${GRADE}/:submissionId`}
+                    render={(props: any) => <Grade {...props} user={this.state.user} />}
+                  />
+
                   <Route exact={true} path={HOME} component={Home} />
                 </Switch>
               </BrowserRouter>
