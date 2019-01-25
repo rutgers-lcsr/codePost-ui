@@ -22,7 +22,14 @@ export default class CodePanelUtils {
   };
 
   public static highlight = (sortedHighlights: CommentType[], thetext: string, line: number) => {
-    // Highlights
+    // const highlights: is an array of tuples for a highlight's placement on a given line
+    // (startChar, endChar, highlight.id)
+    // Note that these are different from highlight.startChar and highlight.endChar
+    // The algorithm builds html string by opening and closing <strong> tags whenever
+    // a new highlight begins and/or ends
+    // e.g.
+    // <strong className=1> first highlight </strong><strong className=1 2>middle
+    //       </strong><strong className=2>second highlight</strong>
     const highlights: any[] = [];
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
@@ -65,12 +72,10 @@ export default class CodePanelUtils {
         })
         .concat(newIDs); // ids = ids - remIDs + newIDs
 
+      // Used for determining 'nesting depth' of a highlight
       if (updatedIDs.length > 1) {
         // tslint:disable-next-line
         for (let i = 1; i < updatedIDs.length; i++) {
-          // if (styles[`${updatedIDs}`]) {
-          //   styles[`highlight-${updatedIDs}`] = Math.max(i, styles[`highlight-${updatedIDs}`])
-          // }
           styles = {
             ...styles,
             [`${updatedIDs[i]}`]: Math.max(
@@ -80,14 +85,6 @@ export default class CodePanelUtils {
           };
         }
       }
-
-      // (document.styleSheets[0] as CSSStyleSheet).insertRule(
-      // `.highlight-${updatedIDs[i]} {background-color: rgba(255, 202, 147, ${tint}) !important;}`);
-      // if (updatedIDs.length > 1) {
-      //   console.log(`.highlight-${updatedIDs[1]} {background-color: rgba(255, 202, 147, 0.8)}`);
-      //   (document.styleSheets[0] as CSSStyleSheet).insertRule(
-      //     `.highlight-${updatedIDs[1]} {background-color: rgba(255, 202, 147, 0.7) !important;}`);
-      // }
 
       let element = '';
       if (i === thetext.length) {
