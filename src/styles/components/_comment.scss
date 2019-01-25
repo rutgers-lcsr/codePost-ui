@@ -23,11 +23,50 @@
     margin: 5px 0px 5px 0px;
     overflow-wrap: break-word;
     width: inherit;
+
+    // Markdown styling
+    h1 {
+      font-size: $font-size-large;
+      font-weight: bold;
+      color: $dark-grey;
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: $font-size-medium;
+      font-weight: bold;
+    }
+
+    h3 {
+      font-size: $font-size-medium;
+      color: $mid-grey;
+    }
+
+    td,
+    th {
+      border: 1px solid $light-grey;
+      padding: 6px;
+    }
+
+    tr:nth-child(even) {
+      background-color: $very-light-green;
+    }
+
+    tr:hover {
+      background-color: $light-grey;
+    }
+
+    th {
+      padding-top: 8px;
+      padding-bottom: 8px;
+      text-align: left;
+      background-color: $brand-color;
+      color: white;
+    }
   }
   &__textarea {
     width: 100%;
-    resize: none;
-    margin-top: 5px;
+    margin: 50px auto;
   }
 
   &__footer {
