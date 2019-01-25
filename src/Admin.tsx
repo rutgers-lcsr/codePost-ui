@@ -2,12 +2,12 @@ import * as React from 'react';
 import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
+
 import CourseData from './components/admin/CourseData';
+import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
 import ManageAssignments from './components/admin/ManageAssignments';
 import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
-// import './styles/index.scss';
-// import './styles/Student.scss';
 
 import {
   IAssignmentToRubricCategories,
@@ -147,11 +147,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     0: 'Course Data',
     1: 'Manage Assignments',
     2: 'Manage Users',
+    3: 'Course Settings',
   };
 
-  public panelMapForURL = ['course-data', 'assignments', 'manage-users'];
+  public panelMapForURL = ['course-data', 'assignments', 'manage-users', 'settings'];
 
-  public defaultPanelArgForURL = ['students', null, null];
+  public defaultPanelArgForURL = ['students', null, null, null];
 
   public snackBarStyle = {
     width: '100%',
@@ -1243,6 +1244,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       period: coursePeriod,
       assignments: [], // ignored by API
       sections: [], // ignored by API
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -1315,6 +1318,27 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         return course;
       }
+    });
+  };
+
+  public updateSettings = (course: CourseType) => {
+    const { currentCourse, courses } = this.state;
+    if (!currentCourse) {
+      return;
+    }
+
+    if (course.id !== currentCourse.id) {
+      return;
+    }
+
+    return Course.update(course).then((newCourse: CourseType) => {
+      const newCourses = courses.filter((el) => {
+        return el.id !== newCourse.id;
+      });
+      newCourses.push(newCourse);
+      this.setState({ currentCourse: newCourse, courses: newCourses }, () => {
+        this.addToast(`Settings for ${currentCourse.name} | ${currentCourse.period} saved.`, undefined);
+      });
     });
   };
 
@@ -1428,6 +1452,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           />
         </div>
       );
+    } else if (currentCourse && loadedPanel === 3) {
+      courseManagementPanel = (
+        <div className="content-container">
+          <CourseSettingsPanel currentCourse={currentCourse} updateSettings={this.updateSettings} />
+        </div>
+      );
     } else if (!currentCourse) {
       if (courses.length > 0) {
         courseManagementPanel = <div>Select a course to get started.</div>;
@@ -1439,6 +1469,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
     const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
     const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
+    const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
 
     return (
       <div className="admin">
@@ -1451,13 +1482,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           />
           <div className="admin__topbar__nav">
             <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
-              Course Data
+              Submissions
             </div>
             <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
-              Manage Assignments
+              Assignments
             </div>
             <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
-              Manage Users
+              Roster
+            </div>
+            <div className={settingsNav} onClick={this.handlePanelChange.bind(this.props, 3)}>
+              Settings
             </div>
           </div>
           <NewCourseDialog
