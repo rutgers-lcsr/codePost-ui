@@ -22,7 +22,7 @@ interface IProps {
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
-  saveGrade: () => any;
+  updateSubmissionGrade: () => void;
 }
 
 interface IState {
@@ -72,7 +72,7 @@ class Comment extends React.Component<IProps, IState> {
   };
 
   public save = () => {
-    const { comment, file, updateComment, saveGrade } = this.props;
+    const { comment, file, updateComment } = this.props;
 
     if (!this.validateSave()) {
       return Promise.resolve(false);
@@ -99,6 +99,8 @@ class Comment extends React.Component<IProps, IState> {
 
       return CommentIO.create(payload)
         .then((json) => {
+          // eagerly update submission grade
+          this.props.updateSubmissionGrade();
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'saving-spinner--success' });
@@ -110,7 +112,6 @@ class Comment extends React.Component<IProps, IState> {
             // setting the state of an unmounted component
             // (which has an out-dated, negative comment.id)
             updateComment(comment.id, json, file);
-            saveGrade(); // async issue with setState
             return true;
           }, 2000);
           return true;
@@ -122,13 +123,14 @@ class Comment extends React.Component<IProps, IState> {
       console.log('PATCH', JSON.stringify(comment));
       return CommentIO.update(comment).then((json) => {
         // this is just aesthetic wait time to watch the comment save
+        // eagerly update submission grade
+        this.props.updateSubmissionGrade();
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--success' });
         }, 1000);
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
           updateComment(comment.id, json, file);
-          saveGrade(); // async issue with setState
           return true;
         }, 2000);
         return true;

@@ -25,7 +25,7 @@ interface IProps {
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
-  saveGrade: () => any;
+  updateSubmissionGrade: () => void;
 }
 
 interface IState {
@@ -98,16 +98,7 @@ class CodePanel extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public render() {
-    const {
-      activeCommentId,
-      deleteComment,
-      readOnly,
-      files,
-      comments,
-      rubricComments,
-      updateComment,
-      saveGrade,
-    } = this.props;
+    const { activeCommentId, deleteComment, readOnly, files, comments, rubricComments, updateComment } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -130,7 +121,7 @@ class CodePanel extends React.Component<IProps, IState> {
                   changeActive={this.changeActive}
                   deleteComment={deleteComment}
                   updateComment={updateComment}
-                  saveGrade={saveGrade}
+                  updateSubmissionGrade={this.props.updateSubmissionGrade}
                 />
               </Tab>
             );
@@ -155,7 +146,7 @@ interface ICodeProps {
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
-  saveGrade: () => any;
+  updateSubmissionGrade: () => void;
 }
 
 const Code = (props: ICodeProps) => {
@@ -171,7 +162,6 @@ const Code = (props: ICodeProps) => {
     activeCommentId,
     deleteComment,
     updateComment,
-    saveGrade,
   } = props;
 
   const onMouseUp = (event: any) => {
@@ -293,7 +283,7 @@ const Code = (props: ICodeProps) => {
           changeActive={changeActive}
           deleteComment={deleteComment}
           updateComment={updateComment}
-          saveGrade={saveGrade}
+          updateSubmissionGrade={props.updateSubmissionGrade}
         />
       </div>
     </div>
@@ -309,7 +299,7 @@ interface ICommentListProps {
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
-  saveGrade: () => any;
+  updateSubmissionGrade: () => void;
 }
 
 interface IBlock {
@@ -318,16 +308,7 @@ interface IBlock {
 }
 
 const CommentList = (props: ICommentListProps) => {
-  const {
-    activeCommentId,
-    changeActive,
-    deleteComment,
-    file,
-    readOnly,
-    updateComment,
-    rubricComments,
-    saveGrade,
-  } = props;
+  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = props;
   // Store estimated pixel ranges of comment blocks to help with stacking
   const blocks: IBlock[] = [];
 
@@ -383,7 +364,7 @@ const CommentList = (props: ICommentListProps) => {
         changeActive={changeActive}
         deleteComment={deleteComment}
         updateComment={updateComment}
-        saveGrade={saveGrade}
+        updateSubmissionGrade={props.updateSubmissionGrade}
       />
     );
   });
@@ -412,10 +393,6 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
       return;
     };
 
-    public saveGrade = () => {
-      return;
-    };
-
     public render() {
       return (
         <Component
@@ -425,7 +402,6 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
           changeActive={this.changeActive}
           deleteComment={this.deleteComment}
           updateComment={this.updateComment}
-          saveGrade={this.saveGrade}
         />
       );
     }
