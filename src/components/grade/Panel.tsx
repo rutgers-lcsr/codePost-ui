@@ -3,6 +3,8 @@ import Finalize from './Finalize';
 
 import pluralize from 'pluralize';
 
+import { Button, FontIcon, SelectField } from 'react-md';
+
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SubmissionType } from '../../infrastructure/submission';
 
@@ -10,14 +12,23 @@ interface IPanelProps {
   submission: SubmissionType;
   assignment: AssignmentType;
   toggleFinalized: any;
+  graders: string[];
+  updateGrader: any;
+  isCourseAdmin: any;
 }
 
 const Panel = (props: IPanelProps) => {
-  const { assignment, submission, toggleFinalized } = props;
+  const { assignment, submission, toggleFinalized, graders, updateGrader, isCourseAdmin } = props;
 
   return (
     <div className="grade__top-container">
-      <SubmissionInfo submission={submission} assignment={assignment} />
+      <SubmissionInfo
+        submission={submission}
+        assignment={assignment}
+        graders={graders}
+        updateGrader={updateGrader}
+        isCourseAdmin={isCourseAdmin}
+      />
       <GradeBox submission={submission} assignment={assignment} />
       <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
     </div>
@@ -27,28 +38,64 @@ const Panel = (props: IPanelProps) => {
 interface ISubmissionInfoProps {
   submission: SubmissionType;
   assignment: AssignmentType;
+  graders: string[];
+  updateGrader: any;
+  isCourseAdmin: any;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
-  const { assignment, submission } = props;
+  const { assignment, submission, graders, updateGrader, isCourseAdmin } = props;
 
   const studentTitle = pluralize('Student', submission.students.length);
   const studentString = `${submission.students.join(',')}`;
-  const grader = submission.grader ? submission.grader : '';
+  const grader = submission.grader ? submission.grader : 'Unassigned';
+
+  const menuItems = ['Unassigned', ...graders];
+
+  const handleGraderChange = (value: any, index: any, event: any, details: any) => {
+    updateGrader(submission, value);
+  };
 
   return (
     <div className="grade__top-container__sub-details">
-      <div>
+      <div className="grade__top-container__sub-details__cell">
         <b>{`${studentTitle}: `}</b>
-        {studentString}
       </div>
-      <div>
+      <div className="grade__top-container__sub-details__cell">{studentString}</div>
+      <div className="grade__top-container__sub-details__cell">
         <b>Grader: </b>
-        {grader}
       </div>
-      <div>
-        <b>Assignment: </b> {assignment.name}
+      <div className="grade__top-container__sub-details__cell">
+        <SelectField
+          id="grader-select-field"
+          className="grade__top-container__sub-details__grader-select"
+          value={grader}
+          onChange={handleGraderChange}
+          menuItems={menuItems}
+          position={SelectField.Positions.BELOW}
+          dropdownIcon={isCourseAdmin ? <FontIcon>assignment_ind</FontIcon> : <div />}
+          label={isCourseAdmin ? '' : grader}
+          disabled={!isCourseAdmin}
+        />
+        {isCourseAdmin ? (
+          <Button
+            icon={true}
+            forceIconFontSize={true}
+            forceIconSize={20}
+            tooltipLabel="Unassign grader"
+            tooltipDelay={750}
+            onClick={handleGraderChange.bind(props, '')}
+          >
+            remove_circle_outline
+          </Button>
+        ) : (
+          ''
+        )}
       </div>
+      <div className="grade__top-container__sub-details__cell">
+        <b>Assignment: </b>
+      </div>
+      <div className="grade__top-container__sub-details__cell">{assignment.name}</div>
     </div>
   );
 };
