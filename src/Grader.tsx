@@ -7,6 +7,7 @@ import { ICourseToAssignmentMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
+import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
 
 interface IGraderState {
@@ -14,6 +15,7 @@ interface IGraderState {
   assignments: ICourseToAssignmentMap;
   currentAssignment?: AssignmentType;
   currentCourse?: CourseType;
+  currentSections: SectionType[];
   currentSubmissions: SubmissionType[];
 
   isLoggedIn: boolean;
@@ -41,6 +43,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     courses: this.props.initialCourses,
     currentAssignment: undefined,
     currentCourse: undefined,
+    currentSections: [],
     currentSubmissions: [],
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
@@ -94,6 +97,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       currentCourse = courses.find((obj: CourseType) => {
         return obj.name === formattedCourseName && obj.period === formattedPeriod;
       });
+
+      if (currentCourse) {
+        this.loadSections(currentCourse);
+      }
 
       // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
       if (currentCourse && assignmentName) {
@@ -152,6 +159,16 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
   };
 
+  public loadSections = (course: CourseType) => {
+    return Promise.all(
+      course.sections.map((sectionID: number) => {
+        return Section.read(sectionID);
+      }),
+    ).then((currentSections) => {
+      this.setState({ currentSections });
+    });
+  };
+
   ///////////////////////////////////////
   // Handlers
   ///////////////////////////////////////
@@ -181,11 +198,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       return obj.id === option.value;
     })[0];
 
-    this.setState({
-      currentAssignment: undefined,
-      currentCourse,
-      currentSubmissions: [],
-      toLoadCourse: true,
+    this.loadSections(currentCourse).then(() => {
+      this.setState({
+        currentAssignment: undefined,
+        currentCourse,
+        currentSubmissions: [],
+        toLoadCourse: true,
+      });
     });
   };
 
@@ -219,8 +238,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: AssignmentType): any => {
-    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned`, {
+  public claimSubmission = (assignment: AssignmentType, section: SectionType | undefined): any => {
+    const params = section ? `?section=${section.name}` : '';
+    console.log('params', params);
+    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -233,6 +254,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       })
       .then((json) => {
         if (json) {
+          console.log('json', json);
           this.setState({
             currentSubmissions: [...this.state.currentSubmissions, json],
           });
@@ -267,12 +289,12 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       courses,
       currentAssignment,
       currentCourse,
+      currentSections,
       currentSubmissions,
       isLoadingSubmissions,
       toLoadCourse,
       toLoadAssignment,
     } = this.state;
-
     if (toLoadCourse || toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
@@ -307,6 +329,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             assignment={currentAssignment}
             submissions={currentSubmissions}
             isLoadingSubmissions={isLoadingSubmissions}
+            sections={currentSections}
           />
         </div>
       </div>
