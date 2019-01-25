@@ -27,6 +27,7 @@ export interface IUser {
   studentCourses: CourseType[];
   graderCourses: CourseType[];
   courseadminCourses: CourseType[];
+  superGraderCourses: CourseType[];
   canCreateCourses: boolean;
   canModifyRosters: boolean;
 }
