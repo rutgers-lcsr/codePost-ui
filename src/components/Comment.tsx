@@ -204,6 +204,7 @@ class Comment extends React.Component<IProps, IState> {
           style={style}
           onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
           onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          id={`comment-${comment.id}`}
         >
           <div className="comment__body">
             <div className={savingClass} />
@@ -229,6 +230,7 @@ class Comment extends React.Component<IProps, IState> {
           style={style}
           onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
           onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          id={`comment-${comment.id}`}
         >
           <div className="comment__body">
             <div className={savingClass} />
@@ -291,6 +293,7 @@ class Comment extends React.Component<IProps, IState> {
         style={style}
         onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
         onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+        id={`comment-${comment.id}`}
       >
         <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
         <div className="comment__body">

@@ -1,29 +1,7 @@
 import * as React from 'react';
 import { CommentType } from './infrastructure/comment';
-import { RubricCommentType } from './infrastructure/rubricComment';
-
-const PIXELS_PER_LINE = 19;
 
 export default class CodePanelUtils {
-  public static pixelsPerLine = (): number => {
-    return PIXELS_PER_LINE;
-  };
-
-  public static heightOfComment = (
-    comment: CommentType,
-    rubricComment: RubricCommentType | undefined,
-    activeCommentId?: number,
-  ): number => {
-    const linesRubricComment = rubricComment ? rubricComment.text.length / 30 + 1 : 0;
-    const linesComment = comment.text ? comment.text.length / 36 : 0;
-    const linesButtons = activeCommentId === comment.id ? 4 : 0;
-    const buffer = 4;
-
-    const totalLines = linesRubricComment + linesComment + linesButtons + buffer;
-
-    return totalLines * PIXELS_PER_LINE;
-  };
-
   public static sortHighlights = (highlights: CommentType[]): CommentType[] => {
     return highlights.sort((a: CommentType, b: CommentType) => {
       if (a.startLine === b.startLine) {

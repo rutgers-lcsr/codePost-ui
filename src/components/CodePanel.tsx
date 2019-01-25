@@ -339,10 +339,14 @@ const CommentList = (props: ICommentListProps) => {
   const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
     // Placement model:
-    //    - Make comment position fixed
+    //    - Make comment position absolute
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodePanelUtils.pixelsPerLine();
+    let pixelsPerLine = 0;
+    if (document.getElementById('0')) {
+      pixelsPerLine = document.getElementById('0')!.offsetHeight;
+    }
+    let startAt = comment.startLine * pixelsPerLine;
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -352,7 +356,13 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodePanelUtils.heightOfComment(comment, rubricComments[comment.id], activeCommentId);
+    let heightOfComment = 0;
+    if (document.getElementById(`comment-${comment.id}`)) {
+      heightOfComment = document.getElementById(`comment-${comment.id}`)!.offsetHeight;
+    }
+
+    heightOfComment = heightOfComment + 10; // padding
+
     const newBlock: IBlock = {
       startAt,
       endAt: startAt + heightOfComment,
