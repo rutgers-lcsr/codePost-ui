@@ -6,7 +6,7 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 import Comment from './Comment';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap, POSITION } from '../types/common';
 
 import CodePanelUtils from '../CodePanelUtils';
 
@@ -188,8 +188,16 @@ const Code = (props: ICodeProps) => {
     const extentParent: any = selection.extentNode.parentNode;
     let endLine = +extentParent.id;
 
-    let startChar = selection.anchorOffset;
-    let endChar = selection.extentOffset;
+    let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+      document.querySelector(`div[id='${startLine}']`),
+      null,
+      POSITION.Start,
+    );
+    let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+      document.querySelector(`div[id='${endLine}']`),
+      null,
+      POSITION.End,
+    );
 
     // Check to see if the comment was made backwards
     if (startLine && endLine && startLine > endLine) {
@@ -224,12 +232,13 @@ const Code = (props: ICodeProps) => {
     addComment(newComment, file);
   };
 
-  const sortedHighlights = CodePanelUtils.sortHighlights(comments);
+  const sortedHighlights = CodePanelUtils.sortComments(comments);
   const splitCode = props.file.code.split('\n');
 
   /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
         if (item == '') {
           return (
             <div key={i} id={i.toString()}>
@@ -237,13 +246,17 @@ const Code = (props: ICodeProps) => {
             </div>
           );
         }
+        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div key={i} id={i.toString()}>
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
-          </div>
+          <div
+            key={i}
+            id={i.toString()}
+            dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
+          />
         );
       })
     : splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
         if (item == '') {
           return (
             <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
@@ -251,17 +264,24 @@ const Code = (props: ICodeProps) => {
             </div>
           );
         }
+        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
-          </div>
+          <div
+            key={i}
+            id={i.toString()}
+            onMouseUp={onMouseUp}
+            dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
+          />
         );
       });
   /* tslint:enable */
 
   const numberOfLines = linesOfCode.length;
+  const lineHeight = document.querySelector("div[id='0']")
+    ? document.querySelector("div[id='0']")!.getBoundingClientRect().height
+    : 19; // 19 as estimate
   const lineNumberStyle = {
-    height: `${numberOfLines * 19}px`,
+    height: `${numberOfLines * lineHeight}px`,
   };
 
   const codeString = props.file.code;
@@ -332,9 +352,7 @@ const CommentList = (props: ICommentListProps) => {
   const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
-  const comments = props.comments.sort((a: CommentType, b: CommentType) => {
-    return a.startLine > b.startLine ? 1 : -1;
-  });
+  const comments = CodePanelUtils.sortComments(props.comments);
 
   const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
@@ -344,7 +362,7 @@ const CommentList = (props: ICommentListProps) => {
 
     let pixelsPerLine = 0;
     if (document.getElementById('0')) {
-      pixelsPerLine = document.getElementById('0')!.offsetHeight;
+      pixelsPerLine = document.getElementById('0')!.getBoundingClientRect().height;
     }
     let startAt = comment.startLine * pixelsPerLine;
 
@@ -358,7 +376,7 @@ const CommentList = (props: ICommentListProps) => {
 
     let heightOfComment = 0;
     if (document.getElementById(`comment-${comment.id}`)) {
-      heightOfComment = document.getElementById(`comment-${comment.id}`)!.offsetHeight;
+      heightOfComment = document.getElementById(`comment-${comment.id}`)!.getBoundingClientRect().height;
     }
 
     heightOfComment = heightOfComment + 10; // padding
