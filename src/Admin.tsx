@@ -1235,7 +1235,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   // ------------------- Manage course API calls  ------------------
-  public createCourse = (courseName: string, coursePeriod: string) => {
+  public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
     const { courses } = this.state;
     const payload = {
       id: -1, // codePost convention
@@ -1246,11 +1246,75 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     };
 
     return Course.create(payload).then((course: CourseType) => {
-      courses.push(course);
-      this.setState({ courses });
-      this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
-      return course;
+      if (copiedCourse) {
+        const getData = Promise.all(
+          copiedCourse.assignments.map((assignmentID: number) => {
+            return Assignment.read(assignmentID);
+          }),
+        )
+          .then((assignments: AssignmentType[]) => {
+            return assignments;
+          })
+          .then((assignments) => {
+            return Promise.all(
+              assignments.map((assignment) => {
+                return Assignment.readRubric(assignment.id, {});
+              }),
+            ).then((rubrics: any) => {
+              return [assignments, rubrics];
+            });
+          });
+
+        return getData.then(([assignments, rubrics]) => {
+          return Promise.all(
+            assignments.map((assignment: AssignmentType) => {
+              const oldAssignmentID = assignment.id;
+              assignment.id = -1;
+              assignment.course = course.id;
+              // Create Assignments
+              return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
+                const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
+                rubric.rubricCategories.map((rubricCategory: any) => {
+                  const oldRubricCategoryId = rubricCategory.id;
+                  rubricCategory.id = -1;
+                  rubricCategory.assignment = newAssignment.id;
+                  rubricCategory.rubricComments = [];
+                  // Create Rubric Categories
+                  return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
+                    const rubricComments = rubric.rubricComments.filter((c: any) => c.category === oldRubricCategoryId);
+                    rubricComments.map((rubricComment: any) => {
+                      rubricComment.id = -1;
+                      rubricComment.category = newRubricCategory.id;
+                      rubricComment.comments = [];
+                      // Create Rubric Comments
+                      return RubricComment.create(rubricComment);
+                    });
+                  });
+                });
+              });
+            }),
+          ).then(() => {
+            courses.push(course);
+            this.setState({ courses });
+            this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+            this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+              this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+            });
+
+            return course;
+          });
+        });
+      } else {
+        courses.push(course);
+        this.setState({ courses });
+        this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+
+        this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+          this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+        });
+
+        return course;
+      }
     });
   };
 
@@ -1380,7 +1444,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <div className="admin">
         <div className="admin__topbar">
           <Select
-            className="admin__topbar__courseSelector"
+            className="selector--admin-topbar"
             options={this.selectorItemsFormatter(courses)}
             onChange={this.handleCourseChange}
             value={this.selectorCurrentFormatter(currentCourse)}
@@ -1400,6 +1464,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             courses={this.state.courses}
             addErrorToast={this.addErrorToast}
             createCourse={this.createCourse}
+            selectorItemsFormatter={this.selectorItemsFormatter}
+            selectorCurrentFormatter={this.selectorCurrentFormatter}
           />
         </div>
         <div className="admin__topbar__spacing" />

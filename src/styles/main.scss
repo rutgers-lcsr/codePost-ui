@@ -12,7 +12,8 @@
 
 // 4. Components
 @import 'components/vertical-pane', 'components/badge', 'components/tab', 'components/table', 'components/code',
-  'components/comment', 'components/button', 'components/saving-spinner', 'components/admin-rubric', 'components/grade-rubric';
+  'components/comment', 'components/button', 'components/saving-spinner', 'components/admin-rubric',
+  'components/grade-rubric', 'components/selector', 'components/dialog';
 
 // 5. Layout-related sections
 @import 'layout/header';
