@@ -107,7 +107,9 @@ interface IGradeBoxProps {
 
 const GradeBox = (props: IGradeBoxProps) => {
   const { submission, assignment } = props;
-  const formattedDate = new Date(submission.dateEdited);
+
+  // convert from Python DateTime format
+  const formattedDate = new Date(submission.dateEdited.substring(0, 16));
   formattedDate.setSeconds(0, 0);
 
   const gradeString = `${submission.grade} / ${assignment.points}`;
