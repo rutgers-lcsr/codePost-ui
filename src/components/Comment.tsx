@@ -182,13 +182,15 @@ class Comment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
+    console.log('comment', comment);
+
     const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
     const pointDeltaLabel = pointDelta ? (pointDelta > 0 ? `-${pointDelta}` : `+${pointDelta * -1}`) : null;
     const pointDeltaModifier =
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
     const className = this.state.isUnsaved ? 'comment--unsaved' : 'comment';
-    const author = comment.author ? comment.author : '';
+    const author = comment.author ? `| author: ${comment.author}` : '';
 
     // Ugly for type checking
     let rubricCommentText = '';
@@ -212,6 +214,11 @@ class Comment extends React.Component<IProps, IState> {
             <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
+            <div className="comment__footer">
+              <div className="comment__footer__author">
+                line: {comment.startLine + 1} {author}
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -281,7 +288,7 @@ class Comment extends React.Component<IProps, IState> {
             </div>
             <div className="comment__footer">
               <div className="comment__footer__author">
-                [line {comment.startLine + 1}] {author}
+                line: {comment.startLine + 1} {author}
               </div>
             </div>
           </div>
@@ -305,33 +312,34 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__text">
             <ReactMarkdown source={comment.text} />
           </div>
+
+          <div className="comment__footer__buttons">
+            <Button
+              className="button--comment"
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={20}
+              tooltipLabel="Edit comment"
+              tooltipDelay={750}
+              onClick={this.toggleActive}
+            >
+              edit
+            </Button>
+            <Button
+              className="button--comment"
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={20}
+              tooltipLabel="Delete comment"
+              tooltipDelay={750}
+              onClick={deleteComment.bind(this, comment, file)}
+            >
+              delete
+            </Button>
+          </div>
           <div className="comment__footer">
             <div className="comment__footer__author">
-              [line {comment.startLine + 1}] {author}
-            </div>
-            <div className="comment__footer__buttons">
-              <Button
-                className="button--comment"
-                icon={true}
-                forceIconFontSize={true}
-                forceIconSize={20}
-                tooltipLabel="Edit comment"
-                tooltipDelay={750}
-                onClick={this.toggleActive}
-              >
-                edit
-              </Button>
-              <Button
-                className="button--comment"
-                icon={true}
-                forceIconFontSize={true}
-                forceIconSize={20}
-                tooltipLabel="Delete comment"
-                tooltipDelay={750}
-                onClick={deleteComment.bind(this, comment, file)}
-              >
-                delete
-              </Button>
+              line: {comment.startLine + 1} {author}
             </div>
           </div>
         </div>
