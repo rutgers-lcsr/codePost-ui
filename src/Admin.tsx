@@ -43,6 +43,7 @@ interface IAdminState {
   graders: string[];
   inactiveGraders: string[];
   admins: string[];
+  superGraders: string[];
   rosterLoadComplete: boolean;
 
   // sections data
@@ -108,6 +109,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     graders: [],
     inactiveGraders: [],
     admins: [],
+    superGraders: [],
     rosterLoadComplete: false,
 
     sections: [],
@@ -268,6 +270,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         graders: [],
         inactiveGraders: [],
         admins: [],
+        superGraders: [],
         rosterLoadComplete: false,
 
         sections: [],
@@ -549,6 +552,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           students: roster.students,
           graders: roster.graders,
           admins: roster.courseAdmins,
+          superGraders: roster.superGraders,
           inactiveStudents: roster.inactive_students,
           inactiveGraders: roster.inactive_graders,
           rosterLoadComplete: true,
@@ -622,6 +626,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.CourseAdmin:
         addToPayload(payload, 'courseAdmins', newRoster);
         break;
+      case USER_APP.SuperGrader:
+        addToPayload(payload, 'superGraders', newRoster);
+        break;
     }
 
     return (
@@ -645,6 +652,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
                 this.addToast('Admin roster successfully updated.', undefined),
               );
               break;
+            case USER_APP.SuperGrader:
+              this.setState({ superGraders: roster.superGraders }, () =>
+                this.addToast('Grader privileges successfully updated.', undefined),
+              );
+              break;
           }
         })
         // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
@@ -661,25 +673,30 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
     switch (userType) {
       case USER_APP.Student:
-        const newStudents = this.state.students.filter((student) => {
-          return selectedUserEmails.indexOf(student) === -1;
+        const newStudents = this.state.students.filter((user) => {
+          return selectedUserEmails.indexOf(user) === -1;
         });
         return this.changeRoster(newStudents, userType);
       case USER_APP.Grader:
-        const newGraders = this.state.graders.filter((grader) => {
-          return selectedUserEmails.indexOf(grader) === -1;
+        const newGraders = this.state.graders.filter((user) => {
+          return selectedUserEmails.indexOf(user) === -1;
         });
         return this.changeRoster(newGraders, userType);
       case USER_APP.CourseAdmin:
-        const newAdmins = this.state.admins.filter((admin) => {
-          return selectedUserEmails.indexOf(admin) === -1;
+        const newAdmins = this.state.admins.filter((user) => {
+          return selectedUserEmails.indexOf(user) === -1;
         });
         return this.changeRoster(newAdmins, userType);
+      case USER_APP.SuperGrader:
+        const newSuperGraders = this.state.superGraders.filter((user) => {
+          return selectedUserEmails.indexOf(user) === -1;
+        });
+        return this.changeRoster(newSuperGraders, userType);
     }
   };
 
   public enrollUser = (userEmail: string, userType: USER_APP) => {
-    const { students, graders, admins } = this.state;
+    const { students, graders, admins, superGraders } = this.state;
     switch (userType) {
       case USER_APP.Student:
         if (students.indexOf(userEmail) !== -1) {
@@ -712,6 +729,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
         this.changeRoster(newAdmins, userType);
+        break;
+      case USER_APP.SuperGrader:
+        if (superGraders.indexOf(userEmail) !== -1) {
+          this.addErrorToast('Grader already has view all privileges.', undefined);
+          return;
+        }
+        // Need to do a deep copy of state array in case adding fails, we don't update state
+        const newSuperGraders = JSON.parse(JSON.stringify(superGraders));
+        newSuperGraders.push(userEmail);
+        this.changeRoster(newSuperGraders, userType);
         break;
     }
   };
@@ -1433,6 +1460,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             sections={this.state.sections}
             students={this.state.students}
             graders={this.state.graders}
+            superGraders={this.state.superGraders}
             admins={this.state.admins}
             sectionsByStudent={this.state.sectionsByStudent}
             rosterLoadComplete={this.state.rosterLoadComplete}
