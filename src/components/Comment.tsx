@@ -32,6 +32,7 @@ interface IState {
 }
 
 class Comment extends React.Component<IProps, IState> {
+  public textarea: any = React.createRef();
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
@@ -41,6 +42,13 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
   // Lifecycle Methods
   //////////////////////////////////////
+
+  public componentDidUpdate = () => {
+    // Hack to focus on a conditionally rendered component
+    if (this.textarea && this.textarea.style) {
+      this.textarea.focus();
+    }
+  };
 
   //////////////////////////////////////
   // Prop Methods
@@ -67,7 +75,10 @@ class Comment extends React.Component<IProps, IState> {
         changeActive(undefined);
       });
     } else {
+      // this.textarea.focus();
       changeActive(comment.id);
+
+      // this.textarea.focus();
     }
   };
 
@@ -260,6 +271,8 @@ class Comment extends React.Component<IProps, IState> {
               onKeyPress={this.handleShiftEnter}
               value={comment.text ? comment.text : ''}
               className="comment__textarea"
+              // tslint:disable-next-line
+              inputRef={(tag: any) => (this.textarea = tag)}
             />
 
             <div>
