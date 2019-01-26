@@ -1,0 +1,22 @@
+.multiselect--ViewAll {
+  &__control {
+    border-width: 0px 0px 1px 0px !important;
+    border-style: solid !important;
+    border-color: $light-grey !important;
+    border-radius: 0px !important;
+    font-weight: 500;
+    &--is-focused {
+      border-width: 0px 0px 1px 0px !important;
+      border-style: solid !important;
+      border-color: $brand-color !important;
+      box-shadow: none !important;
+    }
+  }
+  &__multi-value {
+    border-radius: 10px !important;
+    font-size: $font-size-medium !important;
+  }
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
+}
