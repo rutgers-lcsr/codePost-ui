@@ -3,6 +3,8 @@ import { Redirect } from 'react-router-dom';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
+import ViewAllPanel from './components/grader/ViewAllPanel';
+
 import VerticalPane from './components/VerticalPane';
 
 import { ICourseToAssignmentMap, IOption } from './types/common';
@@ -322,45 +324,44 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       }) !== 'undefined'
         ? true
         : false;
-    console.log(isSuperGrader);
-    const GraderPanelContent = !currentAssignment ? (
-      <div />
-    ) : isSuperGrader ? (
-      <Tabs defaultTabIndex={0}>
-        <TabList className="tabList--Grader">
-          <Tab className="tabList--Grader__tab">My Submissions</Tab>
-          <Tab className="tabList--Grader__tab">View All</Tab>
-        </TabList>
-        <TabPanel>
-          {/* padding under the tab required because tab is position:fixed*/}
-          <div className="tabList--Grader__panelPadding" />
-          <GraderAssignmentPanel
-            claimSubmission={this.claimSubmission}
-            releaseSubmission={this.releaseSubmission}
-            assignment={currentAssignment}
-            submissions={currentSubmissions}
-            isLoadingSubmissions={isLoadingSubmissions}
-            sections={currentSections}
-            isSuperGrader={isSuperGrader}
-          />
-        </TabPanel>
-        <TabPanel>
-          {/* padding under the tab required because tab is position:fixed*/}
-          <div className="tabList--Grader__panelPadding" />
-          view all content goes here
-        </TabPanel>
-      </Tabs>
-    ) : (
-      <GraderAssignmentPanel
-        claimSubmission={this.claimSubmission}
-        releaseSubmission={this.releaseSubmission}
-        assignment={currentAssignment}
-        submissions={currentSubmissions}
-        isLoadingSubmissions={isLoadingSubmissions}
-        sections={currentSections}
-        isSuperGrader={isSuperGrader}
-      />
-    );
+
+    const GraderPanelContent =
+      !currentCourse || !currentAssignment ? (
+        <div />
+      ) : isSuperGrader ? (
+        <Tabs defaultTabIndex={0}>
+          <TabList className="tabList--Grader">
+            <Tab className="tabList--Grader__tab">My Submissions</Tab>
+            <Tab className="tabList--Grader__tab">View All</Tab>
+          </TabList>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--Grader__panelPadding" />
+            <GraderAssignmentPanel
+              claimSubmission={this.claimSubmission}
+              releaseSubmission={this.releaseSubmission}
+              assignment={currentAssignment}
+              submissions={currentSubmissions}
+              isLoadingSubmissions={isLoadingSubmissions}
+              sections={currentSections}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--Grader__panelPadding" />
+            <ViewAllPanel currentCourse={currentCourse} currentAssignment={currentAssignment} />
+          </TabPanel>
+        </Tabs>
+      ) : (
+        <GraderAssignmentPanel
+          claimSubmission={this.claimSubmission}
+          releaseSubmission={this.releaseSubmission}
+          assignment={currentAssignment}
+          submissions={currentSubmissions}
+          isLoadingSubmissions={isLoadingSubmissions}
+          sections={currentSections}
+        />
+      );
 
     return (
       <div className="grader">

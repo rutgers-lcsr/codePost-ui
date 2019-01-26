@@ -61,7 +61,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         />
         <br />
         <br />
-        <input type="submit" />
+        <input type="submit" />s
       </form>
     );
   }
