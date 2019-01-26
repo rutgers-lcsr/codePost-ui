@@ -6,6 +6,8 @@ import Admin from './Admin';
 import IndexManager from './components/IndexManager';
 import { TopBar } from './components/TopBar';
 
+import LogInAs from './LogInAs';
+
 import Grade from './Grade';
 import Grader from './Grader';
 import Home from './Home';
@@ -36,6 +38,18 @@ class App extends React.Component<{}, IState> {
       this.setState({ toRedirect: false });
     }
   }
+
+  public replaceUser = (newUser: IUser) => {
+    this.setState(
+      {
+        user: newUser,
+        toRedirect: true,
+      },
+      () => {
+        localStorage.setItem('token', newUser.token);
+      },
+    );
+  };
 
   public componentDidMount() {
     if (this.state.has_token && !this.state.user) {
@@ -156,16 +170,19 @@ class App extends React.Component<{}, IState> {
                 <Switch>
                   <Route
                     exact={true}
+                    path={'/loginAs/:email'}
+                    render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+                  />
+                  <Route
+                    exact={true}
                     path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
                     render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
                   />
-
                   <Route
                     exact={true}
                     path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
                     render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
                   />
-
                   <Route
                     exact={true}
                     path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
@@ -173,13 +190,11 @@ class App extends React.Component<{}, IState> {
                       <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />
                     )}
                   />
-
                   <Route
                     exact={true}
                     path={`${GRADE}/:submissionId`}
                     render={(props: any) => <Grade {...props} user={this.state.user} />}
                   />
-
                   <Route exact={true} path={HOME} component={Home} />
                 </Switch>
               </BrowserRouter>

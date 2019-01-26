@@ -29,6 +29,7 @@ export interface IUser {
   courseadminCourses: CourseType[];
   canCreateCourses: boolean;
   canModifyRosters: boolean;
+  token: any;
 }
 
 export interface IProfile {

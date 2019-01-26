@@ -9,7 +9,7 @@ const SubmissionV = t.intersection(
       files: t.array(t.number),
       students: t.array(t.string),
       assignment: t.number,
-      dateFinalized: t.union([t.string, t.null]),
+      dateEdited: t.string,
       grade: t.union([t.number, t.null]),
     }),
     t.partial({

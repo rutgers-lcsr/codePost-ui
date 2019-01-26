@@ -19,6 +19,7 @@ const CourseV = t.intersection(
       sections: t.array(t.number),
       sendReleasedSubmissionsToBack: t.boolean,
       showStudentsStatistics: t.boolean,
+      timezone: t.string,
     }),
   ],
   'Course',
@@ -30,14 +31,16 @@ const CourseVPatch = t.intersection(
     t.partial({
       name: t.string,
       period: t.string,
-      assignments: t.array(t.number),
-      sections: t.array(t.number),
+      sendReleasedSubmissionsToBack: t.boolean,
+      showStudentsStatistics: t.boolean,
+      timezone: t.string,
     }),
   ],
   'CoursePatch',
 );
 
 type CourseType = t.TypeOf<typeof CourseV>;
+type CoursePatchType = t.TypeOf<typeof CourseVPatch>;
 
 const RosterV = t.intersection(
   [
@@ -79,4 +82,4 @@ class Course {
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
 }
 
-export { CourseType, Course, RosterType };
+export { CourseType, Course, RosterType, CoursePatchType };
