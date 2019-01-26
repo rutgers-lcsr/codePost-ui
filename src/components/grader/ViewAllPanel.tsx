@@ -81,7 +81,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     });
 
     return (
-      <div>
+      <div className="grader__viewAll">
         <Select
           classNamePrefix="multiselect--ViewAll"
           closeMenuOnSelect={false}
