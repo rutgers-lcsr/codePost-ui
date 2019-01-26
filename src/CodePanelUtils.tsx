@@ -21,6 +21,7 @@ export default class CodePanelUtils {
     });
   };
 
+  // O(NM) where N is the number of highlights and M is the length of the line
   public static highlight = (sortedHighlights: CommentType[], thetext: string, line: number) => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
@@ -29,7 +30,7 @@ export default class CodePanelUtils {
     // a new highlight begins and/or ends
     // e.g.
     // <strong className=1> first highlight </strong><strong className=1 2>middle
-    //       </strong><strong className=2>second highlight</strong>
+    //          </strong><strong className=2>second highlight</strong>
     const highlights: any[] = [];
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
@@ -53,6 +54,7 @@ export default class CodePanelUtils {
     let prevIDs: number[] = [];
     let styles: IStyles = {};
 
+    // We need to loop through each character on the line
     // tslint:disable-next-line
     for (let i = 0; i <= thetext.length; i++) {
       const newIDs: number[] = [];
@@ -66,11 +68,12 @@ export default class CodePanelUtils {
         }
       }
 
+      // updatedIDs = prevIDs - remIDs + newIDs
       const updatedIDs = prevIDs
         .filter((x) => {
           return !remIDs.includes(x);
         })
-        .concat(newIDs); // ids = ids - remIDs + newIDs
+        .concat(newIDs);
 
       // Used for determining 'nesting depth' of a highlight
       if (updatedIDs.length > 1) {
@@ -87,10 +90,10 @@ export default class CodePanelUtils {
       }
 
       let element = '';
-      if (i === thetext.length) {
-        if (remIDs.length >= 1) {
-          element = '</strong>';
-        }
+
+      // We've reached the end of the line, and there are highlights that need closing
+      if (i === thetext.length && remIDs.length >= 1) {
+        element = '</strong>';
       } else {
         const className = updatedIDs
           .map((id) => {
@@ -98,14 +101,18 @@ export default class CodePanelUtils {
           })
           .join(' ');
 
+        // No change in highlights -> ret: `{char}`
         if (newIDs.length === 0 && remIDs.length === 0) {
-          element = `${element}${thetext.charAt(i)}`;
+          element = `${thetext.charAt(i)}`;
+          // Starting new highlights with none existing -> ret: `<strong>{char}`
         } else if (prevIDs.length === 0 && newIDs.length >= 1) {
-          element = `${element}<strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
+          element = `<strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
+          // Closing highlights with no new or existing -> ret: `</strong>{char}`
         } else if (updatedIDs.length === 0 && remIDs.length >= 1) {
           element = `</strong>${thetext.charAt(i)}`;
+          // Starting and/or closing highlights -> ret: `</strong><strong>{char}`
         } else {
-          element = `${element}</strong><strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
+          element = `</strong><strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
         }
       }
       prevIDs = updatedIDs;
