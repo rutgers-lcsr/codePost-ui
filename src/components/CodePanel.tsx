@@ -175,10 +175,10 @@ const Code = (props: ICodeProps) => {
 
     // Hack to avoid messing with Node type checking
     const anchorParent: any = selection.anchorNode.parentNode;
-    let startLine = +anchorParent.id;
+    let startLine = +anchorParent.id.split('-')[1];
 
     const extentParent: any = selection.extentNode.parentNode;
-    let endLine = +extentParent.id;
+    let endLine = +extentParent.id.split('-')[1];
 
     let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
       document.querySelector(`div#line-${startLine}`),
