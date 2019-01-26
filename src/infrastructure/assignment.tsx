@@ -13,6 +13,24 @@ const AssignmentV = t.intersection(
       points: t.number,
       isReleased: t.boolean,
       rubricCategories: t.array(t.number),
+      mean: t.union([t.number, t.null]),
+      median: t.union([t.number, t.null]),
+    }),
+    t.partial({
+      course: t.number,
+    }),
+  ],
+  'Assignment',
+);
+
+const AssignmentVPost = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      name: t.string,
+      points: t.number,
+      isReleased: t.boolean,
+      rubricCategories: t.array(t.number),
     }),
     t.partial({
       course: t.number,
@@ -50,7 +68,7 @@ const RubricV = t.intersection(
 );
 
 class Assignment {
-  public static create = createObject(AssignmentV, AssignmentV, 'assignments');
+  public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
   public static read = readObject(AssignmentV, 'assignments');
   public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
   public static delete = deleteObject(AssignmentV, 'assignments');
