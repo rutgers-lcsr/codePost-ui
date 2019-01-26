@@ -121,11 +121,27 @@ interface IGradeBoxProps {
 const GradeBox = (props: IGradeBoxProps) => {
   const { submission, assignment } = props;
 
+  // convert from Python DateTime format
+  const formattedDate = new Date(submission.dateEdited.substring(0, 16));
+  formattedDate.setSeconds(0, 0);
+
   const gradeString = `${submission.grade} / ${assignment.points}`;
   return (
-    <div className="grade__top-container__grade">
-      <b>Grade: </b>
-      {gradeString}
+    <div>
+      <div className="grade__top-container__grade">
+        <b>Grade: </b>
+        {gradeString}
+      </div>
+      <div className="grade__top-container__grade">
+        <b>Last edited: </b>
+        {formattedDate.toLocaleTimeString([], {
+          year: '2-digit',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </div>
     </div>
   );
 };

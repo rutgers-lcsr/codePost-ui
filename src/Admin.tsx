@@ -24,7 +24,7 @@ import {
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course, CourseType, RosterType } from './infrastructure/course';
+import { Course, CoursePatchType, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
@@ -1273,6 +1273,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       sections: [], // ignored by API
       sendReleasedSubmissionsToBack: false,
       showStudentsStatistics: false,
+      timezone: '', // ignored by API
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -1348,7 +1349,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public updateSettings = (course: CourseType) => {
+  public updateSettings = (course: CoursePatchType) => {
     const { currentCourse, courses } = this.state;
     if (!currentCourse) {
       return;

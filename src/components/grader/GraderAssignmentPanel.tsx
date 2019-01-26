@@ -109,7 +109,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.dateFinalized}
+                      {submission.dateEdited}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>

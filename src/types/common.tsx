@@ -22,6 +22,11 @@ export enum BUTTON_STATE {
   Inactive,
 }
 
+export enum POSITION {
+  Start,
+  End,
+}
+
 export interface IUser {
   id: number;
   email: string;
@@ -31,6 +36,7 @@ export interface IUser {
   superGraderCourses: CourseType[];
   canCreateCourses: boolean;
   canModifyRosters: boolean;
+  token: any;
 }
 
 export interface IProfile {

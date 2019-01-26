@@ -32,6 +32,7 @@ interface IState {
 }
 
 class Comment extends React.Component<IProps, IState> {
+  public textarea: any = React.createRef();
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
@@ -41,6 +42,13 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
   // Lifecycle Methods
   //////////////////////////////////////
+
+  public componentDidUpdate = () => {
+    // Hack to focus on a conditionally rendered component
+    if (this.textarea && this.textarea.style) {
+      this.textarea.focus();
+    }
+  };
 
   //////////////////////////////////////
   // Prop Methods
@@ -67,7 +75,10 @@ class Comment extends React.Component<IProps, IState> {
         changeActive(undefined);
       });
     } else {
+      // this.textarea.focus();
       changeActive(comment.id);
+
+      // this.textarea.focus();
     }
   };
 
@@ -104,7 +115,7 @@ class Comment extends React.Component<IProps, IState> {
           // this is just aesthetic wait time to watch the comment save
           setTimeout(() => {
             this.setState({ savingClass: 'saving-spinner--success' });
-          }, 1000);
+          }, 500);
           setTimeout(() => {
             this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
             // It's important that we update the parent state
@@ -113,7 +124,7 @@ class Comment extends React.Component<IProps, IState> {
             // (which has an out-dated, negative comment.id)
             updateComment(comment.id, json, file);
             return true;
-          }, 2000);
+          }, 1000);
           return true;
         })
         .catch((error) => {
@@ -127,12 +138,12 @@ class Comment extends React.Component<IProps, IState> {
         this.props.updateSubmissionGrade();
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--success' });
-        }, 1000);
+        }, 500);
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
           updateComment(comment.id, json, file);
           return true;
-        }, 2000);
+        }, 1000);
         return true;
       });
     }
@@ -190,7 +201,7 @@ class Comment extends React.Component<IProps, IState> {
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
     const className = this.state.isUnsaved ? 'comment--unsaved' : 'comment';
-    const author = comment.author ? comment.author : '';
+    const author = comment.author ? `| author: ${comment.author}` : '';
 
     // Ugly for type checking
     let rubricCommentText = '';
@@ -204,16 +215,20 @@ class Comment extends React.Component<IProps, IState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-          onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+          id={`comment-${comment.id}`}
         >
           <div className="comment__body">
             <div className={savingClass} />
+            {comment.startLine}
             <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
-              <div className="comment__footer__author">{author}</div>
+              <div className="comment__footer__author">
+                line: {comment.startLine + 1} {author}
+              </div>
             </div>
           </div>
         </div>
@@ -229,8 +244,9 @@ class Comment extends React.Component<IProps, IState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-          onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+          id={`comment-${comment.id}`}
         >
           <div className="comment__body">
             <div className={savingClass} />
@@ -255,6 +271,8 @@ class Comment extends React.Component<IProps, IState> {
               onKeyPress={this.handleShiftEnter}
               value={comment.text ? comment.text : ''}
               className="comment__textarea"
+              // tslint:disable-next-line
+              inputRef={(tag: any) => (this.textarea = tag)}
             />
 
             <div>
@@ -281,6 +299,11 @@ class Comment extends React.Component<IProps, IState> {
                 delete
               </Button>
             </div>
+            <div className="comment__footer">
+              <div className="comment__footer__author">
+                line: {comment.startLine + 1} {author}
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -291,8 +314,9 @@ class Comment extends React.Component<IProps, IState> {
       <div
         className={className}
         style={style}
-        onMouseEnter={this.onMouseEnter.bind(this.props, comment.id.toString())}
-        onMouseLeave={this.onMouseLeave.bind(this.props, comment.id.toString())}
+        onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
+        onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+        id={`comment-${comment.id}`}
       >
         <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
         <div className="comment__body">
@@ -301,31 +325,34 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__text">
             <ReactMarkdown source={comment.text} />
           </div>
+
+          <div className="comment__footer__buttons">
+            <Button
+              className="button--comment"
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={20}
+              tooltipLabel="Edit comment"
+              tooltipDelay={750}
+              onClick={this.toggleActive}
+            >
+              edit
+            </Button>
+            <Button
+              className="button--comment"
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={20}
+              tooltipLabel="Delete comment"
+              tooltipDelay={750}
+              onClick={deleteComment.bind(this, comment, file)}
+            >
+              delete
+            </Button>
+          </div>
           <div className="comment__footer">
-            <div className="comment__footer__author">{author}</div>
-            <div className="comment__footer__buttons">
-              <Button
-                className="button--comment"
-                icon={true}
-                forceIconFontSize={true}
-                forceIconSize={20}
-                tooltipLabel="Edit comment"
-                tooltipDelay={750}
-                onClick={this.toggleActive}
-              >
-                edit
-              </Button>
-              <Button
-                className="button--comment"
-                icon={true}
-                forceIconFontSize={true}
-                forceIconSize={20}
-                tooltipLabel="Delete comment"
-                tooltipDelay={750}
-                onClick={deleteComment.bind(this, comment, file)}
-              >
-                delete
-              </Button>
+            <div className="comment__footer__author">
+              line: {comment.startLine + 1} {author}
             </div>
           </div>
         </div>

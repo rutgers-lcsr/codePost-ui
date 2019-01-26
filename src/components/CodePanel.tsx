@@ -6,7 +6,7 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 import Comment from './Comment';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap } from '../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap, POSITION } from '../types/common';
 
 import CodePanelUtils from '../CodePanelUtils';
 
@@ -175,13 +175,21 @@ const Code = (props: ICodeProps) => {
 
     // Hack to avoid messing with Node type checking
     const anchorParent: any = selection.anchorNode.parentNode;
-    let startLine = +anchorParent.id;
+    let startLine = +anchorParent.id.split('-')[1];
 
     const extentParent: any = selection.extentNode.parentNode;
-    let endLine = +extentParent.id;
+    let endLine = +extentParent.id.split('-')[1];
 
-    let startChar = selection.anchorOffset;
-    let endChar = selection.extentOffset;
+    let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+      document.querySelector(`div#line-${startLine}`),
+      null,
+      POSITION.Start,
+    );
+    let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+      document.querySelector(`div#line-${endLine}`),
+      null,
+      POSITION.End,
+    );
 
     // Check to see if the comment was made backwards
     if (startLine && endLine && startLine > endLine) {
@@ -216,44 +224,52 @@ const Code = (props: ICodeProps) => {
     addComment(newComment, file);
   };
 
-  const sortedHighlights = CodePanelUtils.sortHighlights(comments);
+  const sortedHighlights = CodePanelUtils.sortComments(comments);
   const splitCode = props.file.code.split('\n');
 
   /* tslint:disable */
   const linesOfCode = readOnly
     ? splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
         if (item == '') {
           return (
-            <div key={i} id={i.toString()}>
+            <div key={i} id={`line-${i}`}>
               &nbsp;
             </div>
           );
         }
+        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div key={i} id={i.toString()}>
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
-          </div>
+          <div key={i} id={`line-${i}`} dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)} />
         );
       })
     : splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
         if (item == '') {
           return (
-            <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
+            <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
               &nbsp;
             </div>
           );
         }
+        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div key={i} id={i.toString()} onMouseUp={onMouseUp}>
-            {CodePanelUtils.highlightText(sortedHighlights, item, i)}
-          </div>
+          <div
+            key={i}
+            id={`line-${i}`}
+            onMouseUp={onMouseUp}
+            dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
+          />
         );
       });
   /* tslint:enable */
 
   const numberOfLines = linesOfCode.length;
+  const lineHeight = document.querySelector('div#line-0')
+    ? document.querySelector('div#line-0')!.getBoundingClientRect().height
+    : 19; // 19 as estimate
   const lineNumberStyle = {
-    height: `${numberOfLines * 19}px`,
+    height: `${numberOfLines * lineHeight}px`,
   };
 
   const codeString = props.file.code;
@@ -315,17 +331,19 @@ const CommentList = (props: ICommentListProps) => {
   const blocks: IBlock[] = [];
 
   // Sort comments by startLine to help with stacking
-  const comments = props.comments.sort((a: CommentType, b: CommentType) => {
-    return a.startLine > b.startLine ? 1 : -1;
-  });
+  const comments = CodePanelUtils.sortComments(props.comments);
 
   const commentNodes = comments.map((comment: CommentType) => {
     // Figure out where to place comment vertically
     // Placement model:
-    //    - Make comment position fixed
+    //    - Make comment position absolute
     //    - Set upper margin at <startLine> em down from top
 
-    let startAt = comment.startLine * CodePanelUtils.pixelsPerLine();
+    let pixelsPerLine = 0;
+    if (document.getElementById('0')) {
+      pixelsPerLine = document.getElementById('0')!.getBoundingClientRect().height;
+    }
+    let startAt = comment.startLine * pixelsPerLine;
 
     // If a comment starts in the range of another block, then push it down until it fits
     // Don't need to check for trailing comments because already sorting by startLine
@@ -335,7 +353,13 @@ const CommentList = (props: ICommentListProps) => {
       }
     }
 
-    const heightOfComment = CodePanelUtils.heightOfComment(comment, rubricComments[comment.id], activeCommentId);
+    let heightOfComment = 0;
+    if (document.getElementById(`comment-${comment.id}`)) {
+      heightOfComment = document.getElementById(`comment-${comment.id}`)!.getBoundingClientRect().height;
+    }
+
+    heightOfComment = heightOfComment + 10; // padding
+
     const newBlock: IBlock = {
       startAt,
       endAt: startAt + heightOfComment,
