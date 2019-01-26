@@ -48,6 +48,7 @@ const RosterV = t.intersection(
       inactive_graders: t.array(t.string),
       inactive_courseAdmins: t.array(t.string),
       graders: t.array(t.string),
+      superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
     t.partial({}),
@@ -61,6 +62,7 @@ const RosterVPatch = t.intersection(
     t.partial({
       students: t.array(t.string),
       graders: t.array(t.string),
+      superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
   ],

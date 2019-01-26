@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  DataTable,
+  DialogContainer,
+  SelectionControl,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../../styles/index.scss';
 
 import { CourseType } from '../../../infrastructure/course';
@@ -9,6 +19,7 @@ import RosterFileUpload from './RosterFileUpload';
 interface IProps {
   graders: string[];
   admins: string[];
+  superGraders: string[];
   rosterLoadComplete: boolean;
   lockedGraderChange: boolean;
   toggleLock: () => void;
@@ -28,6 +39,7 @@ interface IState {
   // the user if they would like to unenroll the user from being an admin also, or will
   // be null if no such choice is required
   emailToAdminUnenroll: string | undefined;
+  changedGraders: string[];
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
@@ -36,6 +48,7 @@ class ManageGraders extends React.Component<IProps, {}> {
     sortAscending: true,
     searchTerm: '',
     emailToAdminUnenroll: undefined,
+    changedGraders: [],
   };
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
@@ -72,9 +85,35 @@ class ManageGraders extends React.Component<IProps, {}> {
     this.setState({ searchTerm: value });
   };
 
+  public changeSuperGrader = (grader: string, isSuperGrader: any) => {
+    const { enrollUser, unEnrollUsers } = this.props;
+    const { changedGraders } = this.state;
+    changedGraders.push(grader);
+    this.setState({ changedGraders });
+    if (isSuperGrader) {
+      enrollUser(grader, USER_APP.SuperGrader);
+    } else {
+      unEnrollUsers([grader], USER_APP.SuperGrader);
+    }
+    setTimeout(() => {
+      const newChanged = this.state.changedGraders.filter((i) => {
+        return i !== grader;
+      });
+      this.setState({ changedGraders: newChanged });
+    }, 2000);
+  };
+
   public render() {
-    const { rosterLoadComplete, lockedGraderChange, graders, addErrorToast, addToast, changeRoster } = this.props;
-    const { newField, searchTerm, sortAscending, emailToAdminUnenroll } = this.state;
+    const {
+      rosterLoadComplete,
+      lockedGraderChange,
+      graders,
+      superGraders,
+      addErrorToast,
+      addToast,
+      changeRoster,
+    } = this.props;
+    const { newField, searchTerm, sortAscending, emailToAdminUnenroll, changedGraders } = this.state;
 
     const showSaveNewButton = newField && newField.includes('@');
     const graderType = USER_APP.Grader;
@@ -85,11 +124,24 @@ class ManageGraders extends React.Component<IProps, {}> {
         if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
           return <div />;
         }
+        const isSuperGrader = superGraders.indexOf(grader) !== -1;
+        const isBeingChanged = changedGraders.indexOf(grader) !== -1;
+
         return (
           <TableRow key={grader}>
             <TableColumn>{grader}</TableColumn>
+            <TableColumn>
+              <SelectionControl
+                id={`togglegrader-${grader}`}
+                type="switch"
+                name="ManageGraders__toggleSuperGrader"
+                className="ManageGraders__toggleSuperGrader"
+                defaultChecked={isSuperGrader}
+                disabled={lockedGraderChange || isBeingChanged}
+                onChange={this.changeSuperGrader.bind(this.props, grader)}
+              />
+            </TableColumn>
             <TableColumn key={'UnEnroll'}>
-              {' '}
               <Button
                 key="unEnroll"
                 className="Btn"
@@ -180,6 +232,7 @@ class ManageGraders extends React.Component<IProps, {}> {
               <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>
                 Grader name
               </TableColumn>
+              <TableColumn key={'isSuperGrader'}>View All Privileges</TableColumn>
               <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
             </TableRow>
           </TableHeader>
