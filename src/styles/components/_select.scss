@@ -20,6 +20,10 @@
   &__multi-value {
     border-radius: 10px !important;
     font-size: $font-size-medium !important;
+
+    &__remove {
+      border-radius: 10px !important;
+    }
   }
   &__option--is-focused {
     background-color: $very-light-green !important;
