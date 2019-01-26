@@ -6,7 +6,6 @@ import { timezones } from './timezones';
 interface IProps {
   currentCourse: CourseType;
   updateSettings: (newCourse: CoursePatchType) => void;
-}
 
 interface IState {
   sendReleasedSubmissionsToBack: boolean;
@@ -36,7 +35,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       newState[label] = value;
       return newState;
     });
-  };
+  }; 
 
   public updateSettings = (e: any) => {
     e.preventDefault();
@@ -48,6 +47,8 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       sendReleasedSubmissionsToBack: this.state.sendReleasedSubmissionsToBack,
       showStudentsStatistics: this.state.showStudentsStatistics,
       timezone: this.state.timezone,
+      assignments: [], // ignored by API
+      sections: [], // ignored by API
     };
 
     this.props.updateSettings(payload);

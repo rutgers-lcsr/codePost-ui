@@ -15,10 +15,19 @@ interface IPanelProps {
   graders: string[];
   updateGrader: any;
   isCourseAdmin: any;
+  positiveNegativeAlert: boolean;
 }
 
 const Panel = (props: IPanelProps) => {
-  const { assignment, submission, toggleFinalized, graders, updateGrader, isCourseAdmin } = props;
+  const {
+    assignment,
+    submission,
+    toggleFinalized,
+    graders,
+    updateGrader,
+    isCourseAdmin,
+    positiveNegativeAlert,
+  } = props;
 
   return (
     <div className="grade__top-container">
@@ -30,7 +39,11 @@ const Panel = (props: IPanelProps) => {
         isCourseAdmin={isCourseAdmin}
       />
       <GradeBox submission={submission} assignment={assignment} />
-      <GradeActions submission={submission} toggleFinalized={toggleFinalized} />
+      <GradeActions
+        submission={submission}
+        toggleFinalized={toggleFinalized}
+        positiveNegativeAlert={positiveNegativeAlert}
+      />
     </div>
   );
 };
@@ -136,14 +149,20 @@ const GradeBox = (props: IGradeBoxProps) => {
 interface IGradeActionsProps {
   submission: SubmissionType;
   toggleFinalized: any;
+  positiveNegativeAlert: boolean;
 }
 
 const GradeActions = (props: IGradeActionsProps) => {
-  const { submission, toggleFinalized } = props;
+  const { submission, toggleFinalized, positiveNegativeAlert } = props;
+  const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
 
   return (
     <div className="grade__top-container__sub-finalize">
       <Finalize submission={submission} toggleFinalized={toggleFinalized} />
+      <div className={warningClassName}>
+        Warning: This submission has both positive and negative point comments. Please check to make sure that this is
+        intentional.
+      </div>
     </div>
   );
 };
