@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  DataTable,
+  DialogContainer,
+  FontIcon,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -222,6 +232,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               }
             </TableColumn>
             <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+              {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+            </TableColumn>
             <Button
               key={`button--deleteSubmission-${submission.id}`}
               onClick={this.toggleDeleteSub.bind(this.props, submission)}
@@ -254,6 +267,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               <TableRow>
                 <TableColumn>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
+                <TableColumn>{'Finalized'}</TableColumn>
+                <TableColumn>{'Delete'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>
