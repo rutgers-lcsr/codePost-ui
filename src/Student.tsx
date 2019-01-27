@@ -162,6 +162,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
+    this.setState({ files: [] });
+
     return Assignment.readSubmissions(assignment.id, { student: this.props.email }).then((subs) => {
       if (subs.length === 0) {
         this.setState({ currentSubmission: undefined });
