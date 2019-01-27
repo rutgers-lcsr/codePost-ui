@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
 
@@ -496,13 +497,22 @@ class ManageAssignments extends React.Component<IProps, {}> {
         });
 
         return (
-          <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
-            <TableColumn>{assignment.name}</TableColumn>
-            <TableColumn>{numSubmissions}</TableColumn>
-            <TableColumn>{numGraded}</TableColumn>
-            <TableColumn>{numUngraded}</TableColumn>
-            <TableColumn>{numUnclaimed}</TableColumn>
-          </TableRow>
+          <Tooltipped
+            key={assignmentID}
+            label="Click to open Assignment rubric"
+            delay={1000}
+            position="top"
+            setPosition={true}
+            style={{ top: '150px' }}
+          >
+            <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
+              <TableColumn>{assignment.name}</TableColumn>
+              <TableColumn>{numSubmissions}</TableColumn>
+              <TableColumn>{numGraded}</TableColumn>
+              <TableColumn>{numUngraded}</TableColumn>
+              <TableColumn>{numUnclaimed}</TableColumn>
+            </TableRow>
+          </Tooltipped>
         );
       });
     } else {
