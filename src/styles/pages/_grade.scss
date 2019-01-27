@@ -27,12 +27,19 @@
 
       &__cell {
         .md-select-field--btn {
-          padding: 0px;
+          padding: 8px;
           height: 20px;
+
+          .md-icon {
+            &:hover {
+              color: $brand-color;
+            }
+          }
         }
 
         .md-btn--icon {
           color: red;
+          margin-left: 4px;
           @include icon-button(20px, 0px);
         }
         padding: 5px;

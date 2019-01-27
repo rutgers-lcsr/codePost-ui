@@ -162,21 +162,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       return Promise.resolve(); // empty Promise
     }
 
-    return Assignment.readSubmissions(assignment.id, { student: this.props.email })
-      .then((subs) => {
-        if (subs.length === 0) {
-          this.setState({ currentSubmission: undefined });
-          return Promise.resolve(); // empty Promise
-        } else {
-          const currentSubmission = subs[0];
-          return this.loadFiles(currentSubmission).then(() => {
-            this.setState({ currentSubmission });
-          });
-        }
-      })
-      .catch(() => {
+    this.setState({ files: [] });
+
+    return Assignment.readSubmissions(assignment.id, { student: this.props.email }).then((subs) => {
+      if (subs.length === 0) {
         this.setState({ currentSubmission: undefined });
-      });
+        return Promise.resolve(); // empty Promise
+      } else {
+        const currentSubmission = subs[0];
+        return this.loadFiles(currentSubmission).then(() => {
+          this.setState({ currentSubmission });
+        });
+      }
+    });
   };
 
   public loadFiles = (submission: SubmissionType) => {

@@ -81,7 +81,7 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
       <div className="grade__top-container__sub-details__cell">
         <SelectField
           id="grader-select-field"
-          className="grade__top-container__sub-details__grader-select"
+          className="grade__top-container__sub-details__grader-select md-paper--1"
           value={grader}
           onChange={handleGraderChange}
           menuItems={menuItems}
