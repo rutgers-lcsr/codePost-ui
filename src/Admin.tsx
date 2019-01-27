@@ -1461,7 +1461,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       );
     } else if (!currentCourse) {
       if (courses.length > 0) {
-        courseManagementPanel = <div>Select a course to get started.</div>;
+        courseManagementPanel = (
+          <div className="admin__getStarted">
+            <img className="admin__getStarted__arrow" src={require('./img/get-started-arrow.png')} />
+            <div className="admin__getStarted__text">Select a course to get started.</div>
+          </div>
+        );
       } else {
         courseManagementPanel = <div>Create a course to get started!</div>;
       }
