@@ -13,10 +13,10 @@ const AssignmentV = t.intersection(
       points: t.number,
       isReleased: t.boolean,
       rubricCategories: t.array(t.number),
-      mean: t.union([t.number, t.null]),
-      median: t.union([t.number, t.null]),
     }),
     t.partial({
+      mean: t.union([t.number, t.null]),
+      median: t.union([t.number, t.null]),
       course: t.number,
     }),
   ],
