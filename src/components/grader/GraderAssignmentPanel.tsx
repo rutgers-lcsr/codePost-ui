@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -8,6 +8,8 @@ import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import Select from 'react-select';
+
+import * as moment from 'moment';
 
 interface IProps {
   assignment?: AssignmentType;
@@ -71,7 +73,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
-    const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
+    const headers = ['Student(s)', 'Grade', 'Last Edited', 'Finalized', 'Release'];
 
     const style = {
       cursor: 'pointer',
@@ -109,7 +111,10 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.dateEdited}
+                      {moment(submission.dateEdited).format('llll')}
+                    </TableColumn>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
+                      {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>
