@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { Button, DataTable, DialogContainer, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -26,6 +26,8 @@ interface IState {
 
   ascending?: boolean;
   sortedSubmissions: SubmissionType[];
+
+  releasedSubmission?: SubmissionType;
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
@@ -44,6 +46,8 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
 
     ascending: undefined,
     sortedSubmissions: this.props.submissions,
+
+    releasedSubmission: undefined,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -70,9 +74,13 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     });
   };
 
+  public toggleReleaseDialog = (submission: SubmissionType | undefined) => {
+    this.setState({ releasedSubmission: submission });
+  };
+
   public releaseSubmission = (submission: SubmissionType) => {
     this.props.releaseSubmission(submission).then((releasedSubmission: SubmissionType) => {
-      this.setState({ buttonState: BUTTON_STATE.Active });
+      this.setState({ buttonState: BUTTON_STATE.Active, releasedSubmission: undefined });
     });
   };
 
@@ -154,7 +162,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
                       {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
                     </TableColumn>
-                    <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
+                    <TableColumn onClick={this.toggleReleaseDialog.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>
                         remove_circle
                       </Button>
@@ -164,6 +172,27 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
+          <DialogContainer
+            id="release-dialog"
+            visible={this.state.releasedSubmission !== undefined}
+            onHide={this.toggleReleaseDialog.bind(this, undefined)}
+            title="Are you sure?"
+          >
+            <div>
+              Click Confirm to unassign the grader from the submission
+              {this.state.releasedSubmission ? ` (${this.state.releasedSubmission.students.join('/')})` : ''}.
+            </div>
+            <Button onClick={this.toggleReleaseDialog.bind(this.props, undefined)} primary={false} flat={true}>
+              Cancel
+            </Button>
+            <Button
+              onClick={this.releaseSubmission.bind(this, this.state.releasedSubmission)}
+              primary={true}
+              flat={true}
+            >
+              Confirm
+            </Button>
+          </DialogContainer>
         </div>
       );
     }

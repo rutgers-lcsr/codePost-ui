@@ -245,7 +245,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public claimSubmission = (assignment: AssignmentType, section: SectionType | undefined): any => {
     const params = section ? `?section=${section.name}` : '';
-    console.log('params', params);
     return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -259,7 +258,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       })
       .then((json) => {
         if (json) {
-          console.log('json', json);
           this.setState({
             currentSubmissions: [...this.state.currentSubmissions, json],
           });
@@ -316,7 +314,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     // If grader is a superGrader, return tabbed content, with viewAll data
-    console.log(this.props.superGraderCourses);
     const isSuperGrader =
       currentCourse &&
       typeof this.props.superGraderCourses.find((course) => {
