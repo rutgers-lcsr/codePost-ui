@@ -233,22 +233,21 @@ class App extends React.Component<{}, IState> {
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
             <div className="AppHome">
-              <BrowserRouter>
-                <Switch>
-                  <Route
-                    exact={true}
-                    path={'/loginAs/:email'}
-                    render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-                  />
+              <Switch>
+                <Route
+                  exact={true}
+                  path={'/loginAs/:email'}
+                  render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+                />
 
-                  {studentRoute}
-                  {graderRoute}
-                  {adminRoute}
-                  {gradeRoute}
-                  {pageSelector}
-                  <Route component={NoMatch} />
-                </Switch>
-              </BrowserRouter>
+                {pageSelector}
+                {studentRoute}
+                {graderRoute}
+                {adminRoute}
+                {gradeRoute}
+
+                <Route component={NoMatch} />
+              </Switch>
             </div>
           </div>
         </div>
