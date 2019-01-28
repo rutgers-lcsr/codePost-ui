@@ -176,6 +176,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     if (!activeStudent) {
       return (
         <div>
+          <h3 className="md-cell md-cell--bottom"> Submission grades by student. </h3>
           <TextField
             id="search-studentData"
             label="Search"
