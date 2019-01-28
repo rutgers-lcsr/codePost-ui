@@ -299,6 +299,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
+        window.clearInterval(this.interval);
+        window.clearTimeout(this.interval);
+        this.interval = setInterval(() => {
+          if (this.state.currentCourse) {
+            this.loadAllCourseData();
+          }
+        }, 25000);
       },
     );
   };
