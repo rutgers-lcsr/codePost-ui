@@ -144,6 +144,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           addToast={addToast}
           changeRoster={changeRoster}
           userType={USER_APP.CourseAdmin}
+          isDisabled={lockedAdminChange}
         />
         <TextField
           id="addAdminField"

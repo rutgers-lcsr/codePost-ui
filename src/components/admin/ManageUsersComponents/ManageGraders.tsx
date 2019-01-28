@@ -199,6 +199,7 @@ class ManageGraders extends React.Component<IProps, {}> {
           addToast={addToast}
           changeRoster={changeRoster}
           userType={USER_APP.Grader}
+          isDisabled={lockedGraderChange}
         />
         <TextField
           id="addGraderField"

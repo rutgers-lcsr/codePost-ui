@@ -9,6 +9,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
   userType: USER_APP;
+  isDisabled: boolean;
 }
 
 interface IState {
@@ -227,6 +228,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           iconBefore={false}
           flat={true}
           className={'manageUsers__rosterUpload'}
+          disabled={this.props.isDisabled}
         >
           {`${USER_APP[userType]} Roster: Upload / Download`}
         </Button>
