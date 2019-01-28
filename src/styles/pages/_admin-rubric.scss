@@ -1,4 +1,22 @@
 .admin-rubric {
+  &__lockMessage {
+    &-container {
+      position: absolute;
+      width: 100%;
+      left: 0px;
+      display: flex;
+      justify-content: space-around;
+    }
+    &-text {
+      padding: 6px 20px 6px 20px;
+      color: white;
+      background-color: #616161;
+      width: fit-content;
+      font-weight: 500;
+      opacity: 0.9;
+      $font-size: $font-size-small;
+    }
+  }
   &__top-container {
     display: flex;
     justify-content: space-between;

@@ -593,6 +593,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
       return (
         <div>
+          {lockManageAssignment ? (
+            <div className="admin-rubric__lockMessage-container">
+              <div className="admin-rubric__lockMessage-text">Edits are locked.</div>
+            </div>
+          ) : (
+            <div />
+          )}
           <Button
             key="Back"
             className="admin-rubric__back"
@@ -662,6 +669,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               deleteRubricCategory={this.props.deleteRubricCategory}
               deleteRubricComment={this.props.deleteRubricComment}
               parentUpdate={this.changeActiveAssignment}
+              isDisabled={this.props.lockManageAssignment}
             />
           </div>
           <br />
