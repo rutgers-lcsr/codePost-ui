@@ -108,6 +108,10 @@
       top: -11px;
       left: -11px;
     }
+
+    &--small {
+      font-size: $font-size-small;
+    }
   }
 
   &--unsaved {

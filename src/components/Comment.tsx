@@ -200,6 +200,8 @@ class Comment extends React.Component<IProps, IState> {
     const pointDeltaModifier =
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
+    const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'comment__pointdelta--small' : '';
+
     const className =
       this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle' ? 'comment--unsaved' : 'comment';
     const author = comment.author ? `| author: ${comment.author}` : '';
@@ -223,7 +225,7 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__body">
             <div className={savingClass} />
             {comment.startLine}
-            <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
+            <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
@@ -319,7 +321,7 @@ class Comment extends React.Component<IProps, IState> {
         onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
         id={`comment-${comment.id}`}
       >
-        <div className={`comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
+        <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
         <div className="comment__body">
           <div className={savingClass} />
           {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
