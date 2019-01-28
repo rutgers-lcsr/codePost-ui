@@ -65,9 +65,9 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
         <Tabs defaultTabIndex={activeTabIndex}>
           <TabList className="tabList--ManageUsers">
             <Tab className="tabList--ManageUsers__tab">Students</Tab>
-            <Tab className="tabList--ManageUsers__tab">Grader</Tab>
-            <Tab className="tabList--ManageUsers__tab">Admin</Tab>
-            <Tab className="tabList--ManageUsers__tab">Section</Tab>
+            <Tab className="tabList--ManageUsers__tab">Graders</Tab>
+            <Tab className="tabList--ManageUsers__tab">Admins</Tab>
+            <Tab className="tabList--ManageUsers__tab">Sections</Tab>
           </TabList>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
