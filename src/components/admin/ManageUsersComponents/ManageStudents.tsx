@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import { Button, DataTable, TableBody, TableColumn, TableHeader, TablePagination, TableRow, TextField } from 'react-md';
 import Select from 'react-select';
 
 import { IOptionNumber, ISectionNoStudents, USER_APP } from '../../../types/common';
@@ -29,19 +29,49 @@ interface IProps {
 interface IState {
   newStudentField: string | undefined;
   changedSectionStudents: string[];
-  sortAscending: boolean;
   searchTerm: string;
   sectionEdited: string | undefined;
+  paginatedStudents: string[];
+  sortedStudents: string[];
+  paginationStart: number | undefined;
+  rowsPerPage: number | undefined;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newStudentField: undefined,
     changedSectionStudents: [],
-    sortAscending: true,
     searchTerm: '',
     sectionEdited: undefined,
+    paginatedStudents: [],
+    sortedStudents: [],
+    paginationStart: undefined,
+    rowsPerPage: undefined,
   };
+
+  public componentDidMount() {
+    if (this.props.rosterLoadComplete) {
+      const sortedStudents = JSON.parse(JSON.stringify(this.props.students));
+      sortedStudents.sort();
+      this.setState({ sortedStudents });
+    }
+  }
+
+  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+    if (this.props.students !== prevProps.students) {
+      const sortedStudents = JSON.parse(JSON.stringify(this.props.students));
+      sortedStudents.sort();
+      this.setState({ sortedStudents }, () => {
+        // if props change, update pagination
+        if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
+          console.log(this.state.paginationStart, this.state.rowsPerPage);
+          this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
+        }
+      });
+    }
+  }
+
+  /////
 
   public triggerUnEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
     const { unEnrollUsers } = this.props;
@@ -75,12 +105,11 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ newStudentField: value });
   };
 
-  public toggleSort = () => {
-    this.setState({ sortAscending: !this.state.sortAscending });
-  };
-
   public changeSearch = (value: string) => {
     this.setState({ searchTerm: value });
+    if (value.length > 0) {
+      this.setState({ paginationStart: undefined, rowsPerPage: undefined });
+    }
   };
 
   public editSection = (value: string) => {
@@ -91,19 +120,29 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ sectionEdited: undefined });
   };
 
+  public handlePagination = (start: number, rowsPerPage: number) => {
+    console.log(start);
+    console.log(rowsPerPage);
+    const { sortedStudents } = this.state;
+    this.setState({
+      paginatedStudents: sortedStudents.slice(start, start + rowsPerPage),
+      paginationStart: start,
+      rowsPerPage,
+    });
+  };
+
   public render() {
     const {
       rosterLoadComplete,
       sectionsLoadComplete,
       lockedStudentChange,
-      students,
       sections,
       sectionsByStudent,
       addErrorToast,
       addToast,
       changeRoster,
     } = this.props;
-    const { newStudentField, sortAscending, searchTerm, changedSectionStudents } = this.state;
+    const { newStudentField, paginatedStudents, searchTerm, changedSectionStudents, sortedStudents } = this.state;
 
     const showSaveNewStudentButton = newStudentField && newStudentField.includes('@');
 
@@ -114,9 +153,24 @@ class ManageStudents extends React.Component<IProps, {}> {
 
     const studentType = USER_APP.Student;
 
+    let studentsToRender;
+    // If search term, filter students by those who meet search term and render those students
+    if (searchTerm.length > 0) {
+      studentsToRender = sortedStudents.filter((s) => {
+        const section = sectionsByStudent[s];
+        const sectionName = section ? section.name : '   ';
+        return (
+          s.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1 ||
+          sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+        );
+      });
+    } else {
+      // If no paginated students, render those. If not, take the default pagination (20) and return those students
+      studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 20);
+    }
     let tableBody;
     if (rosterLoadComplete && sectionsLoadComplete) {
-      tableBody = students.map((student) => {
+      tableBody = studentsToRender.map((student) => {
         const section = sectionsByStudent[student];
         const sectionID = section ? section.id : -1;
         const sectionName = section ? section.name : '   ';
@@ -128,6 +182,7 @@ class ManageStudents extends React.Component<IProps, {}> {
         ) {
           return <div />;
         }
+
         const sectionSelect =
           this.state.sectionEdited === student && !lockedStudentChange ? (
             <TableColumn>
@@ -176,11 +231,6 @@ class ManageStudents extends React.Component<IProps, {}> {
       );
     }
 
-    if (sortAscending) {
-      students.sort();
-    } else {
-      students.sort().reverse();
-    }
     return (
       <div className="roster-student">
         <div className="roster-student__top-container">
@@ -205,7 +255,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             </Button>
           </div>
           <RosterFileUpload
-            users={students}
+            users={this.props.students}
             addErrorToast={addErrorToast}
             addToast={addToast}
             changeRoster={changeRoster}
@@ -221,11 +271,19 @@ class ManageStudents extends React.Component<IProps, {}> {
           onChange={this.changeSearch}
         />
         <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
+          {searchTerm.length === 0 ? (
+            <TablePagination
+              className="DataTable--ManageUsers__pagination"
+              rows={this.state.sortedStudents.length}
+              defaultRowsPerPage={20}
+              onPagination={this.handlePagination}
+            />
+          ) : (
+            <div />
+          )}
           <TableHeader>
             <TableRow selectable={false}>
-              <TableColumn key={'Student'} sorted={sortAscending} onClick={this.toggleSort}>
-                Student
-              </TableColumn>
+              <TableColumn key={'Student'}>Student</TableColumn>
               <TableColumn key={'Section'}>Section</TableColumn>
               <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
             </TableRow>
