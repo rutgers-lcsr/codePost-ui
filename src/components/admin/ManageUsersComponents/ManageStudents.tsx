@@ -159,34 +159,37 @@ class ManageStudents extends React.Component<IProps, {}> {
       students.sort().reverse();
     }
     return (
-      <div>
-        <RosterFileUpload
-          users={students}
-          addErrorToast={addErrorToast}
-          addToast={addToast}
-          changeRoster={changeRoster}
-          userType={USER_APP.Student}
-          isDisabled={lockedStudentChange}
-        />
-        <TextField
-          id="addStudentField"
-          label="Add Student"
-          lineDirection="center"
-          placeholder="Student's email"
-          className="md-cell md-cell--bottom"
-          value={newStudentField}
-          onChange={this.newStudentFieldOnChange}
-          disabled={lockedStudentChange}
-        />
-        <Button
-          iconChildren="done"
-          className="save-Btn"
-          disabled={!showSaveNewStudentButton || lockedStudentChange}
-          onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
-        >
-          Save new student
-        </Button>
-        <hr />
+      <div className="manageUsers-student">
+        <div className="manageUsers-student__top-container">
+          <div>
+            <TextField
+              id="addStudentField"
+              label="Add Student"
+              lineDirection="center"
+              placeholder="Student's email"
+              className="manageUsers-student__addUser__Field"
+              value={newStudentField}
+              onChange={this.newStudentFieldOnChange}
+              disabled={lockedStudentChange}
+            />
+            <Button
+              iconChildren="done"
+              disabled={!showSaveNewStudentButton || lockedStudentChange}
+              className="manageUsers-student__addUser__Btn"
+              onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
+            >
+              Save new student
+            </Button>
+          </div>
+          <RosterFileUpload
+            users={students}
+            addErrorToast={addErrorToast}
+            addToast={addToast}
+            changeRoster={changeRoster}
+            userType={USER_APP.Student}
+            isDisabled={lockedStudentChange}
+          />
+        </div>
         <TextField
           id="search-manageStudents"
           label="Search"

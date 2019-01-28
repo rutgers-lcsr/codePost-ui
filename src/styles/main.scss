@@ -19,7 +19,8 @@
 @import 'layout/header';
 
 // 6. Page-specific styles
-@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric';
+@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
+  'pages/admin-manageUsers';
 
 // 7. Themes
 @import 'themes/default';

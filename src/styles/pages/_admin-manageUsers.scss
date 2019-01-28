@@ -1,0 +1,11 @@
+@mixin ManageUsersStandardFormat() {
+  &__top-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+}
+
+.manageUsers-student {
+  @include ManageUsersStandardFormat();
+}
