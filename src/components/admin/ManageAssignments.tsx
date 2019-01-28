@@ -708,6 +708,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             }
             isVisible={typeof commentExplorer !== 'undefined'}
             closeCommentExplorer={this.clearCommentExplorer}
+            submissions={this.props.submissions[activeAssignment.id]}
           />
           <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
             {lockManageAssignment ? 'lock' : 'lock_open'}

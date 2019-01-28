@@ -15,16 +15,18 @@ import { openSubmission } from './../AdminUtils';
 import { CommentIO, CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
 interface IProps {
   rubricComment: RubricCommentType | undefined;
   closeCommentExplorer: () => void;
   isVisible: boolean;
+  submissions: SubmissionType[];
 }
 
 interface IState {
   comments: CommentType[];
-  commentToSubMap: { [commentID: number]: { submission: number; fileName: string } };
+  commentToSubMap: { [commentID: number]: { submission: number; fileName: string; students: string[] } };
 }
 
 class RubricCommentExplorer extends React.Component<IProps, {}> {
@@ -55,14 +57,12 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
         return CommentIO.read(id);
       }),
     ).then((comments) => {
-      console.log(comments);
       this.setState({ comments }, () => this.getSubs());
     });
   };
 
   public getSubs = () => {
     const { comments } = this.state;
-    console.log(comments);
     if (!comments) {
       return;
     }
@@ -71,17 +71,18 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
       comments.map((comm) => {
         const fileID = comm.file;
         return File.read(fileID).then((file: FileType) => {
-          return [comm.id, file.name, file.submission];
+          const sub = this.props.submissions.find((el) => {
+            return el.files.includes(file.id);
+          });
+          return [comm.id, file.name, file.submission, sub ? sub.students : []];
         });
       }),
     ).then((data) => {
-      console.log(data);
       const commentToSubMap = {};
-      data.forEach((commSubTuple) => {
-        commentToSubMap[commSubTuple[0]] = { fileName: commSubTuple[1], submission: commSubTuple[2] };
+      data.forEach((el) => {
+        commentToSubMap[el[0] as number] = { fileName: el[1], submission: el[2], students: el[3] };
       });
       this.setState({ commentToSubMap });
-      console.log(commentToSubMap);
     });
   };
 
@@ -91,9 +92,10 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
     return comments.map((comm) => {
       const submissionID = commentToSubMap[comm.id].submission;
       const fileName = commentToSubMap[comm.id].fileName;
+      const students = commentToSubMap[comm.id].students.toString();
       return (
         <TableRow key={comm.id} onClick={openSubmission.bind(this.props, submissionID)}>
-          <TableColumn>{submissionID}</TableColumn>
+          <TableColumn>{students}</TableColumn>
           <TableColumn>{fileName}</TableColumn>
           <TableColumn>{comm.author}</TableColumn>
           <TableColumn>{comm.text}</TableColumn>
@@ -117,7 +119,7 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
           <DataTable key="rubricCommentExplorer" className="DataTable--RubricCommentExplorer" plain={true}>
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key="submissionID">Submission ID</TableColumn>
+                <TableColumn key="submissionID">Students</TableColumn>
                 <TableColumn key="fileName">File Name</TableColumn>
                 <TableColumn key="author">Comment Author</TableColumn>
                 <TableColumn key="text">Additional comment text</TableColumn>
