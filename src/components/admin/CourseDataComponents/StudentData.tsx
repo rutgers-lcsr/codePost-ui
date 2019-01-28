@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  DataTable,
+  DialogContainer,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+  Tooltipped,
+} from 'react-md';
 
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -213,25 +223,34 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           grade = 'Not graded';
         }
         return (
-          <TableRow key={submission.id.toString()}>
-            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
-              {
-                assignments.filter((assignment) => {
-                  return assignment.id === parseInt(assignmentID, 10);
-                })[0].name
-              }
-            </TableColumn>
-            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
-            <Button
-              key={`button--deleteSubmission-${submission.id}`}
-              onClick={this.toggleDeleteSub.bind(this.props, submission)}
-              className="button--deleteSubmission"
-              tooltipLabel="Delete Submission"
-              icon={true}
-            >
-              remove_circle
-            </Button>
-          </TableRow>
+          <Tooltipped
+            key={submission.id.toString()}
+            label="Click row to open Submission in a new window"
+            delay={1000}
+            position="top"
+            style={{ zIndex: 2, position: 'absolute', top: '250px' }}
+          >
+            <TableRow key={submission.id.toString()}>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+                {
+                  assignments.filter((assignment) => {
+                    return assignment.id === parseInt(assignmentID, 10);
+                  })[0].name
+                }
+              </TableColumn>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+              <Button
+                key={`button--deleteSubmission-${submission.id}`}
+                onClick={this.toggleDeleteSub.bind(this.props, submission)}
+                className="button--deleteSubmission"
+                tooltipLabel="Delete Submission"
+                tooltipDelay={250}
+                icon={true}
+              >
+                remove_circle
+              </Button>
+            </TableRow>
+          </Tooltipped>
         );
       });
 
@@ -252,8 +271,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn>{'Assignment'}</TableColumn>
+                <TableColumn grow={true}>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
+                <TableColumn>{'   '}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>

@@ -108,6 +108,11 @@
       background-color: inherit;
     }
   }
+
+  &--deleteSubmission {
+    color: red;
+    cursor: pointer;
+  }
 }
 
 .react-select__option {
