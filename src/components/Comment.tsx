@@ -200,7 +200,8 @@ class Comment extends React.Component<IProps, IState> {
     const pointDeltaModifier =
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
-    const className = this.state.isUnsaved ? 'comment--unsaved' : 'comment';
+    const className =
+      this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle' ? 'comment--unsaved' : 'comment';
     const author = comment.author ? `| author: ${comment.author}` : '';
 
     // Ugly for type checking
