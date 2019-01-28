@@ -1,0 +1,9 @@
+.md-switch-track--on {
+  background-color: darken($very-light-green, 20%);
+}
+.md-switch-thumb--on {
+  background-color: $brand-color;
+}
+.md-switch-track--disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+}

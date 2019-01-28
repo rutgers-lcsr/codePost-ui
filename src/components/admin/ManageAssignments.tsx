@@ -496,6 +496,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
           }
         });
 
+        const mean = assignment.mean ? String(assignment.mean) : '--';
+        const median = assignment.median ? String(assignment.median) : '--';
+
         return (
           <Tooltipped
             key={assignmentID}
@@ -511,6 +514,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
               <TableColumn>{numGraded}</TableColumn>
               <TableColumn>{numUngraded}</TableColumn>
               <TableColumn>{numUnclaimed}</TableColumn>
+              <TableColumn>{mean}</TableColumn>
+              <TableColumn>{median}</TableColumn>
             </TableRow>
           </Tooltipped>
         );
@@ -545,6 +550,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 <TableColumn key={'GradedNumber'}># graded</TableColumn>
                 <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
                 <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
+                <TableColumn key={'Mean'}>Mean Grade</TableColumn>
+                <TableColumn key={'Median'}>Median Grade</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tableBody}</TableBody>

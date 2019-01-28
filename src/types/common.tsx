@@ -13,6 +13,7 @@ export enum USER_APP {
   Student,
   Grader,
   CourseAdmin,
+  SuperGrader,
 }
 
 export enum BUTTON_STATE {
@@ -32,6 +33,7 @@ export interface IUser {
   studentCourses: CourseType[];
   graderCourses: CourseType[];
   courseadminCourses: CourseType[];
+  superGraderCourses: CourseType[];
   canCreateCourses: boolean;
   canModifyRosters: boolean;
   token: any;
