@@ -254,7 +254,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           onBlur={updateThisCategory}
         />
         <TextField
-          defaultValue={props.categoryPointLimit ? props.categoryPointLimit : ''}
+          defaultValue={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : ''}
           label={'Category points cap'}
           fullWidth={false}
           step={0.5}
