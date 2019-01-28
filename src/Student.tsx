@@ -324,14 +324,23 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
+    const stats =
+      currentAssignment && currentAssignment.mean && currentAssignment.median ? (
+        <div>
+          <div>{`Mean: ${currentAssignment.mean}`}</div>
+          <div>{`Median: ${currentAssignment.median}`}</div>
+        </div>
+      ) : (
+        <div />
+      );
     let contentArea;
     if (currentSubmission && currentAssignment) {
       contentArea = (
         <div>
           <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
+          <div className="student__stats">{stats}</div>
           <ReadOnlyCodePanel
             submission={currentSubmission!}
-            assignment={currentAssignment!}
             files={files}
             comments={comments}
             rubricComments={rubricComments}
