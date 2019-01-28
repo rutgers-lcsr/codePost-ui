@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import Select from 'react-select';
 
-import { ISectionNoStudents, USER_APP } from '../../../types/common';
+import { IOptionNumber, ISectionNoStudents, USER_APP } from '../../../types/common';
 
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
@@ -12,6 +13,7 @@ interface IProps {
   sections: SectionType[];
   students: string[];
   rosterLoadComplete: boolean;
+  sectionsLoadComplete: boolean;
   lockedStudentChange: boolean;
   toggleLock: () => void;
   currentCourse: CourseType | undefined;
@@ -29,6 +31,7 @@ interface IState {
   changedSectionStudents: string[];
   sortAscending: boolean;
   searchTerm: string;
+  sectionEdited: string | undefined;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
@@ -37,6 +40,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     changedSectionStudents: [],
     sortAscending: true,
     searchTerm: '',
+    sectionEdited: undefined,
   };
 
   public triggerUnEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
@@ -50,14 +54,14 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ newStudentField: '' });
   };
 
-  public rowSectionChange = (studentEmail: string, value: number) => {
+  public rowSectionChange = (studentEmail: string, newSection: IOptionNumber) => {
     let { changedSectionStudents } = this.state;
     const { changeStudentSection } = this.props;
 
     changedSectionStudents.push(studentEmail);
     this.setState({ changedSectionStudents });
 
-    const newSectionID = value > 0 ? value : undefined;
+    const newSectionID = newSection.value > 0 ? newSection.value : undefined;
 
     changeStudentSection(newSectionID, studentEmail).then(() => {
       changedSectionStudents = changedSectionStudents.filter((i) => {
@@ -79,9 +83,18 @@ class ManageStudents extends React.Component<IProps, {}> {
     this.setState({ searchTerm: value });
   };
 
+  public editSection = (value: string) => {
+    this.setState({ sectionEdited: value });
+  };
+
+  public clearSection = () => {
+    this.setState({ sectionEdited: undefined });
+  };
+
   public render() {
     const {
       rosterLoadComplete,
+      sectionsLoadComplete,
       lockedStudentChange,
       students,
       sections,
@@ -90,7 +103,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       addToast,
       changeRoster,
     } = this.props;
-    const { newStudentField, sortAscending, searchTerm } = this.state;
+    const { newStudentField, sortAscending, searchTerm, changedSectionStudents } = this.state;
 
     const showSaveNewStudentButton = newStudentField && newStudentField.includes('@');
 
@@ -99,14 +112,15 @@ class ManageStudents extends React.Component<IProps, {}> {
     });
     sectionMenuItems.push({ label: '', value: -1 });
 
-    // const iconChanged = <FontIcon>track_changes</FontIcon>;
     const studentType = USER_APP.Student;
 
     let tableBody;
-    if (rosterLoadComplete) {
+    if (rosterLoadComplete && sectionsLoadComplete) {
       tableBody = students.map((student) => {
         const section = sectionsByStudent[student];
-        const sectionName = section ? section.name : '';
+        const sectionID = section ? section.id : -1;
+        const sectionName = section ? section.name : '   ';
+        const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
 
         if (
           student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
@@ -114,20 +128,29 @@ class ManageStudents extends React.Component<IProps, {}> {
         ) {
           return <div />;
         }
-
-        // let dropDown;
-        // let sectionDisable = false;
-        //
-        // if (changedSectionStudents.indexOf(student) !== -1) {
-        //   dropDown = iconChanged;
-        //   sectionDisable = true;
-        // } else {
-        //   dropDown = undefined;
-        // }
+        const sectionSelect =
+          this.state.sectionEdited === student && !lockedStudentChange ? (
+            <TableColumn>
+              <Select
+                classNamePrefix="select--StudentSections"
+                closeMenuOnSelect={true}
+                options={sectionMenuItems}
+                disabled={lockedStudentChange}
+                onChange={this.rowSectionChange.bind(this.props, student)}
+                placeholder=""
+                value={{ label: sectionName, value: sectionID }}
+                onBlur={this.clearSection}
+                isLoading={sectionDisable}
+              />
+            </TableColumn>
+          ) : (
+            <TableColumn onClick={this.editSection.bind(this.props, student)}>{sectionName}</TableColumn>
+          );
 
         return (
           <TableRow key={student}>
             <TableColumn>{student}</TableColumn>
+            {sectionSelect}
             <TableColumn key={'UnEnroll'}>
               <Button
                 key="unEnroll"
