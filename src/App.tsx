@@ -16,6 +16,8 @@ import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
 import { IUser } from './types/common';
 
+import NoMatch from './components/NoMatch';
+
 interface IState {
   error: string;
   has_token: boolean;
@@ -241,6 +243,7 @@ class App extends React.Component<{}, IState> {
                   {adminRoute}
                   {gradeRoute}
                   {pageSelector}
+                  <Route component={NoMatch} />
                 </Switch>
               </BrowserRouter>
             </div>
