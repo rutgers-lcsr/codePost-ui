@@ -420,6 +420,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
     };
 
     public render() {
+      console.log(this.props);
       return (
         <Component
           {...this.props}
