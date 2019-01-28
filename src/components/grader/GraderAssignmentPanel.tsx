@@ -23,12 +23,18 @@ interface IProps {
 interface IState {
   buttonState: BUTTON_STATE;
   currentSection?: SectionType;
+
+  ascending?: boolean;
+  sortedSubmissions: SubmissionType[];
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
     currentSection: undefined,
+
+    ascending: undefined,
+    sortedSubmissions: this.props.submissions,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -69,6 +75,21 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     this.setState({ currentSection });
   };
 
+  public sortSubmissions = () => {
+    if (!this.state.ascending) {
+      const ascending = true;
+      const sortedSubmissions = this.state.sortedSubmissions.sort((a, b) => {
+        return a.isFinalized === b.isFinalized ? 0 : a.isFinalized ? -1 : 1;
+      });
+      this.setState({ ascending, sortedSubmissions });
+    } else {
+      const ascending = !this.state.ascending;
+      const sortedSubmissions = this.state.sortedSubmissions.slice();
+      sortedSubmissions.reverse();
+      this.setState({ ascending, sortedSubmissions });
+    }
+  };
+
   public render() {
     const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
@@ -97,12 +118,20 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {
-                  return <TableColumn key={header}>{header}</TableColumn>;
+                  if (header === 'Finalized') {
+                    return (
+                      <TableColumn key={header} sorted={this.state.ascending} onClick={this.sortSubmissions}>
+                        {header}
+                      </TableColumn>
+                    );
+                  } else {
+                    return <TableColumn key={header}>{header}</TableColumn>;
+                  }
                 })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissions.map((submission) => {
+              {this.state.sortedSubmissions.map((submission) => {
                 return (
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
