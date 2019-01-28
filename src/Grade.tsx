@@ -313,7 +313,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
-    const { assignment, submission, comments } = this.state;
+    const { assignment, commentRubricComments, submission, comments } = this.state;
     if (!submission || !assignment) {
       return;
     }
@@ -325,7 +325,8 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
-    this.setState({ comments });
+    commentRubricComments[newComment.id] = commentRubricComments[commentID];
+    this.setState({ comments, commentRubricComments });
   };
 
   // Delete the comment json from the submission state
