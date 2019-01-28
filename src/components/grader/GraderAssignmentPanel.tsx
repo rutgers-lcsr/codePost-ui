@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -8,6 +8,8 @@ import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import Select from 'react-select';
+
+import * as moment from 'moment';
 
 interface IProps {
   assignment?: AssignmentType;
@@ -21,12 +23,18 @@ interface IProps {
 interface IState {
   buttonState: BUTTON_STATE;
   currentSection?: SectionType;
+
+  ascending?: boolean;
+  sortedSubmissions: SubmissionType[];
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
     currentSection: undefined,
+
+    ascending: undefined,
+    sortedSubmissions: this.props.submissions,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -67,11 +75,26 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     this.setState({ currentSection });
   };
 
+  public sortSubmissions = () => {
+    if (!this.state.ascending) {
+      const ascending = true;
+      const sortedSubmissions = this.state.sortedSubmissions.sort((a, b) => {
+        return a.isFinalized === b.isFinalized ? 0 : a.isFinalized ? -1 : 1;
+      });
+      this.setState({ ascending, sortedSubmissions });
+    } else {
+      const ascending = !this.state.ascending;
+      const sortedSubmissions = this.state.sortedSubmissions.slice();
+      sortedSubmissions.reverse();
+      this.setState({ ascending, sortedSubmissions });
+    }
+  };
+
   public render() {
     const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
-    const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
+    const headers = ['Student(s)', 'Grade', 'Last Edited', 'Finalized', 'Release'];
 
     const style = {
       cursor: 'pointer',
@@ -95,12 +118,20 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {
-                  return <TableColumn key={header}>{header}</TableColumn>;
+                  if (header === 'Finalized') {
+                    return (
+                      <TableColumn key={header} sorted={this.state.ascending} onClick={this.sortSubmissions}>
+                        {header}
+                      </TableColumn>
+                    );
+                  } else {
+                    return <TableColumn key={header}>{header}</TableColumn>;
+                  }
                 })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissions.map((submission) => {
+              {this.state.sortedSubmissions.map((submission) => {
                 return (
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
@@ -109,7 +140,10 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.dateEdited}
+                      {moment(submission.dateEdited).format('llll')}
+                    </TableColumn>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
+                      {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
                     </TableColumn>
                     <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>

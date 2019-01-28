@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
 import { IGraderSubmissionsDataTable } from '../../../types/common';
 
@@ -113,6 +113,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         <TableColumn key={`${submission.id}-assignment`}>{assignmentName}</TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
         <TableColumn key={`${submission.id}-grade`}>{grade}</TableColumn>
+        <TableColumn key={`${submission.id}-finalized`}>
+          {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+        </TableColumn>
       </TableRow>
     );
   }
@@ -231,6 +234,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
                 <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
                 <TableColumn key={'Student'}>{'Student'}</TableColumn>
                 <TableColumn key={'Grade'}>{'Grade'}</TableColumn>
+                <TableColumn key={'Finalized'}>{'Finalized'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tablemap}</TableBody>
