@@ -614,7 +614,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 fullWidth={false}
                 disabled={lockManageAssignment}
                 onBlur={this.updateAssignmentName}
-                customSize="title"
+                customSize="font-size-xxlarge"
               />
               <TextField
                 defaultValue={activeAssignment.points}
@@ -630,13 +630,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 fullWidth={false}
                 disabled={lockManageAssignment}
                 onBlur={this.updateAssignmentPoints}
+                customSize="font-size-xxlarge"
               />
               <SelectionControl
                 id="assignment-release-checkbox"
                 name="assignment-release-checkbox"
                 className="admin-rubric__assignment__isReleased"
-                type="checkbox"
-                label="released"
+                type="switch"
+                label="Released"
                 defaultChecked={activeAssignment.isReleased}
                 disabled={lockManageAssignment}
                 onChange={this.props.updateAssignment.bind(

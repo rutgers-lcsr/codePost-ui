@@ -6,11 +6,38 @@
   &__assignment {
     display: flex;
 
-    &__name {
-      font-size: $font-size-xlarge !important;
+    .md-floating-label {
+      font-size: $font-size-large;
     }
     &__points {
-      font-size: $font-size-xlarge !important;
+      padding-left: 10px;
+      max-width: 125px;
     }
+    &__isReleased {
+      align-self: flex-end;
+    }
+  }
+
+  &__category {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding: 20px;
+    border: 1px solid $light-grey;
+    border-radius: 10px;
+  }
+
+  &__category--header {
+    display: flex;
+    .md-floating-label {
+      font-size: $font-size-medium;
+    }
+    &__unsavedChanges {
+      width: 25px;
+      align-self: flex-end;
+    }
+    &__delete {
+      align-self: flex-end;
+    }
+    margin-bottom: 25px;
   }
 }
