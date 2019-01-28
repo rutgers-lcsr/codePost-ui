@@ -433,7 +433,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       }
     }
     return (
-      <div>
+      <div className="admin-rubric__FileDialog">
         <Button
           raised
           onClick={this.toggleDialog}
@@ -441,7 +441,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           iconChildren={'vertical_align_center'}
           iconBefore={false}
           flat={true}
-          className={'fileUploadDialog'}
+          className="admin-rubric__FileDialog__triggerButton"
         >
           Upload / Download Rubric
         </Button>

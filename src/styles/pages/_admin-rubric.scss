@@ -1,0 +1,16 @@
+.admin-rubric {
+  &__top-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  &__assignment {
+    display: flex;
+
+    &__name {
+      font-size: $font-size-xlarge !important;
+    }
+    &__points {
+      font-size: $font-size-xlarge !important;
+    }
+  }
+}
