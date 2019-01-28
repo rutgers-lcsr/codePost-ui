@@ -93,6 +93,7 @@ interface IAdminState {
 
 interface IAdminProps {
   initialCourses: CourseType[];
+  addCourse: (newCourse: CourseType) => void;
   user: IUser;
   match: any;
   history: any;
@@ -102,7 +103,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public state: Readonly<IAdminState> = {
     currentCourse: undefined,
     loadedPanel: undefined,
-    courses: this.props.initialCourses,
+
+    // Can't take credit for this gem...
+    // https://medium.com/@gamshan001/javascript-deep-copy-for-array-and-object-97e3d4bc401a
+    // Deep copies array so we don't mutate the state of the parent
+    courses: JSON.parse(JSON.stringify(this.props.initialCourses)),
 
     students: [],
     inactiveStudents: [],
@@ -1273,7 +1278,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       sections: [], // ignored by API
       sendReleasedSubmissionsToBack: false,
       showStudentsStatistics: false,
-      timezone: '', // ignored by API
+      timezone: 'US/Eastern',
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -1337,7 +1342,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
       } else {
         courses.push(course);
-        this.setState({ courses });
+        this.setState({ courses }, () => this.props.addCourse(course));
         this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
 
         this.setState({ currentCourse: course, toLoadCourse: true }, () => {

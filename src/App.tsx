@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import Admin from './Admin';
 
@@ -17,6 +17,8 @@ import Student from './Student';
 import { IUser } from './types/common';
 
 import NoMatch from './components/NoMatch';
+
+import { CourseType } from './infrastructure/course';
 
 interface IState {
   error: string;
@@ -75,6 +77,16 @@ class App extends React.Component<{}, IState> {
         });
     }
   }
+
+  public addCourseToAdminList = (course: CourseType) => {
+    if (!this.state.user) {
+      return;
+    }
+
+    const newUser = this.state.user;
+    newUser.courseadminCourses.push(course);
+    this.setState({ user: newUser });
+  };
 
   public handleLogout = () => {
     localStorage.removeItem('token');
@@ -199,7 +211,14 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-            render={(props: any) => <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />}
+            render={(props: any) => (
+              <Admin
+                {...props}
+                addCourse={this.addCourseToAdminList}
+                user={this.state.user}
+                initialCourses={courseAdminCourses}
+              />
+            )}
           />
         );
       }
