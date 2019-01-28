@@ -51,6 +51,7 @@ interface IProps {
     pointDelta: number | undefined,
   ) => Promise<void>;
   parentUpdate: (assignment: AssignmentType | undefined) => void;
+  isDisabled: boolean;
 }
 
 interface IDownloadCategory {
@@ -442,6 +443,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           iconBefore={false}
           flat={true}
           className="admin-rubric__FileDialog__triggerButton"
+          disabled={this.props.isDisabled}
         >
           Upload / Download Rubric
         </Button>
