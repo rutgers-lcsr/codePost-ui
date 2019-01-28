@@ -18,6 +18,7 @@ interface IPropsManageUsers {
   sections: SectionType[];
   students: string[];
   graders: string[];
+  superGraders: string[];
   admins: string[];
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   rosterLoadComplete: boolean;
@@ -93,6 +94,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             <div className="tabList--ManageUsers__panelPadding" />
             <ManageGraders
               graders={this.props.graders}
+              superGraders={this.props.superGraders}
               admins={this.props.admins}
               rosterLoadComplete={this.props.rosterLoadComplete}
               lockedGraderChange={this.props.lockChanges}

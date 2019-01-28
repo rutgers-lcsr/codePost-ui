@@ -159,6 +159,7 @@ class App extends React.Component<{}, IState> {
       const courseAdminCourses = this.state.user.courseadminCourses;
       const graderCourses = this.state.user.graderCourses;
       const studentCourses = this.state.user.studentCourses;
+      const superGraderCourses = this.state.user.superGraderCourses;
       const email = this.state.user.email;
 
       return (
@@ -181,7 +182,14 @@ class App extends React.Component<{}, IState> {
                   <Route
                     exact={true}
                     path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
-                    render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
+                    render={(props: any) => (
+                      <Grader
+                        {...props}
+                        email={email}
+                        initialCourses={graderCourses}
+                        superGraderCourses={superGraderCourses}
+                      />
+                    )}
                   />
                   <Route
                     exact={true}

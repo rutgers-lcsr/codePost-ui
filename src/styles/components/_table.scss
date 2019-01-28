@@ -47,3 +47,7 @@
 .DataTable--Grader {
   @include fixedTableHeader(calc(100vh - 150px));
 }
+
+.DataTable--ViewAll {
+  @include fixedTableHeader(calc(100vh - 150px));
+}

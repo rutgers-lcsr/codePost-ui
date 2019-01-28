@@ -86,7 +86,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
           {timezoneOptions}
         </select>
         <br />
-        <input type="submit" />
+        <input type="submit" />s
       </form>
     );
   }
