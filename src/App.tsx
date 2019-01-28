@@ -153,13 +153,75 @@ class App extends React.Component<{}, IState> {
       return <Redirect to={'/'} />;
     }
 
-    /* tslint:disable:jsx-no-lambda */
     // Disabling this rule means we can use the render prop of Route to pass props to components
     if (typeof this.state.user !== 'undefined') {
-      const courseAdminCourses = this.state.user.courseadminCourses;
-      const graderCourses = this.state.user.graderCourses;
-      const studentCourses = this.state.user.studentCourses;
-      const email = this.state.user.email;
+      const { user } = this.state;
+      const courseAdminCourses = user.courseadminCourses;
+      const graderCourses = user.graderCourses;
+      const studentCourses = user.studentCourses;
+      const email = user.email;
+
+      const isStudent = user ? user.studentCourses.length > 0 : false;
+      const isGrader = user ? user.graderCourses.length > 0 : false;
+      const isAdmin = user ? user.courseadminCourses.length > 0 : false;
+
+      /* tslint:disable:jsx-no-lambda */
+      let studentRoute;
+      if (isStudent) {
+        studentRoute = (
+          <Route
+            exact={true}
+            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+            render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+          />
+        );
+      }
+
+      let graderRoute;
+      if (isGrader) {
+        graderRoute = (
+          <Route
+            exact={true}
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+            render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
+          />
+        );
+      }
+
+      let adminRoute;
+      if (isAdmin) {
+        adminRoute = (
+          <Route
+            exact={true}
+            path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+            render={(props: any) => <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />}
+          />
+        );
+      }
+
+      let gradeRoute;
+      if (isGrader || isAdmin) {
+        gradeRoute = (
+          <Route
+            exact={true}
+            path={`${GRADE}/:submissionId`}
+            render={(props: any) => <Grade {...props} user={this.state.user} />}
+          />
+        );
+      }
+
+      // If user has only one role, use / to redirect to relevant role's page. Otherwise, allow user to choose
+      // role from /
+      let pageSelector = null;
+      if (isStudent && !isGrader && !isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('student')} />;
+      } else if (!isStudent && isGrader && !isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
+      } else if (!isStudent && !isGrader && isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
+      } else {
+        pageSelector = <Route exact={true} path={HOME} component={Home} />;
+      }
 
       return (
         <div>
@@ -173,29 +235,12 @@ class App extends React.Component<{}, IState> {
                     path={'/loginAs/:email'}
                     render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
                   />
-                  <Route
-                    exact={true}
-                    path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-                    render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
-                    render={(props: any) => <Grader {...props} email={email} initialCourses={graderCourses} />}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                    render={(props: any) => (
-                      <Admin {...props} user={this.state.user} initialCourses={courseAdminCourses} />
-                    )}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${GRADE}/:submissionId`}
-                    render={(props: any) => <Grade {...props} user={this.state.user} />}
-                  />
-                  <Route exact={true} path={HOME} component={Home} />
+
+                  {studentRoute}
+                  {graderRoute}
+                  {adminRoute}
+                  {gradeRoute}
+                  {pageSelector}
                 </Switch>
               </BrowserRouter>
             </div>
@@ -210,5 +255,11 @@ class App extends React.Component<{}, IState> {
     );
   }
 }
+
+const RedirectPath = (route: string) => {
+  return (props: any) => {
+    return <Redirect to={`/${route}`} />;
+  };
+};
 
 export default App;
