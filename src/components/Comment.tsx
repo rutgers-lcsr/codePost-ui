@@ -254,7 +254,7 @@ class Comment extends React.Component<IProps, IState> {
             <TextField
               id="pointdelta-field"
               className="comment__pointdelta-field"
-              value={pointDelta ? pointDelta : 0}
+              value={pointDelta ? pointDelta : ''}
               step={0.5}
               pattern="^d+(\.|\,)\d{1}"
               type="number"
