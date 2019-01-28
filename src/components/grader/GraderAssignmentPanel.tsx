@@ -29,6 +29,15 @@ interface IState {
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
+  public static getDerivedStateFromProps(nextProps: IProps, prevState: IState) {
+    if (prevState.sortedSubmissions !== nextProps.submissions) {
+      return {
+        sortedSubmissions: nextProps.submissions,
+      };
+    }
+    return {};
+  }
+
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
     currentSection: undefined,
