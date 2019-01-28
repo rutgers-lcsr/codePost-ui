@@ -1,0 +1,26 @@
+@mixin RosterStandardFormat() {
+  &__top-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+}
+
+.roster-student {
+  @include RosterStandardFormat();
+}
+
+.roster-grader {
+  @include RosterStandardFormat();
+}
+
+.roster-admin {
+  @include RosterStandardFormat();
+}
+
+.roster-section {
+  &__addSection {
+    margin-bottom: 20px;
+    max-width: 140px;
+  }
+}

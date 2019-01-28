@@ -172,7 +172,7 @@ class ManageGraders extends React.Component<IProps, {}> {
     }
 
     return (
-      <div>
+      <div className="roster-grader">
         <DialogContainer
           id="rubricFile-dialog"
           visible={typeof emailToAdminUnenroll !== 'undefined'}
@@ -193,33 +193,36 @@ class ManageGraders extends React.Component<IProps, {}> {
         >
           {`Would you like to also unenroll ${emailToAdminUnenroll} from admin?`}
         </DialogContainer>
-        <RosterFileUpload
-          users={graders}
-          addErrorToast={addErrorToast}
-          addToast={addToast}
-          changeRoster={changeRoster}
-          userType={USER_APP.Grader}
-          isDisabled={lockedGraderChange}
-        />
-        <TextField
-          id="addGraderField"
-          label="Add Grader"
-          lineDirection="center"
-          placeholder="Graders's email"
-          className="md-cell md-cell--bottom"
-          value={newField}
-          onChange={this.newFieldOnChange}
-          disabled={lockedGraderChange}
-        />
-        <Button
-          iconChildren="done"
-          className="save-Btn"
-          disabled={!showSaveNewButton || lockedGraderChange}
-          onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
-        >
-          Save new grader
-        </Button>
-        <hr />
+        <div className="roster-grader__top-container">
+          <div>
+            <TextField
+              id="addGraderField"
+              label="Add Grader"
+              lineDirection="center"
+              placeholder="Graders's email"
+              className="roster-grader__addUser__Field"
+              value={newField}
+              onChange={this.newFieldOnChange}
+              disabled={lockedGraderChange}
+            />
+            <Button
+              iconChildren="done"
+              className="save-Btn"
+              disabled={!showSaveNewButton || lockedGraderChange}
+              onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
+            >
+              Save new grader
+            </Button>
+          </div>
+          <RosterFileUpload
+            users={graders}
+            addErrorToast={addErrorToast}
+            addToast={addToast}
+            changeRoster={changeRoster}
+            userType={USER_APP.Grader}
+            isDisabled={lockedGraderChange}
+          />
+        </div>
         <TextField
           id="search-manageGraders"
           label="Search"

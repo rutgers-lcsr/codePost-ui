@@ -159,15 +159,15 @@ class ManageStudents extends React.Component<IProps, {}> {
       students.sort().reverse();
     }
     return (
-      <div className="manageUsers-student">
-        <div className="manageUsers-student__top-container">
+      <div className="roster-student">
+        <div className="roster-student__top-container">
           <div>
             <TextField
               id="addStudentField"
               label="Add Student"
               lineDirection="center"
               placeholder="Student's email"
-              className="manageUsers-student__addUser__Field"
+              className="roster-student__addUser__Field"
               value={newStudentField}
               onChange={this.newStudentFieldOnChange}
               disabled={lockedStudentChange}
@@ -175,7 +175,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             <Button
               iconChildren="done"
               disabled={!showSaveNewStudentButton || lockedStudentChange}
-              className="manageUsers-student__addUser__Btn"
+              className="roster-student__addUser__Btn"
               onClick={this.triggerEnrollUser.bind(this.props, newStudentField, studentType)}
             >
               Save new student
