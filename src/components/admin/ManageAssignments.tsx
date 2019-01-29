@@ -479,6 +479,31 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   // ------------------- Render -------------------
+  // Function called upon downloading
+  public downloadGrades = (assignment: AssignmentType) => {
+    const { currentCourse, submissions } = this.props;
+    if (!currentCourse) {
+      return;
+    }
+
+    const subs = submissions[assignment.id];
+    console.log(subs);
+    console.log(assignment.id);
+    const grades = {};
+    subs.forEach((sub) => {
+      sub.students.forEach((student) => {
+        grades[student] = sub.grade;
+      });
+    });
+
+    const a = document.createElement('a');
+    a.href = `data:attachment/json, ${JSON.stringify(grades)}`;
+    a.download = `${currentCourse.name}-${currentCourse.period}-${assignment.name}-grades.json`;
+
+    document.body.appendChild(a);
+    a.click();
+  };
+
   public render() {
     const {
       submissions,
@@ -515,6 +540,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         const mean = assignment.mean ? assignment.mean.toString() : '--';
         const median = assignment.median ? assignment.median.toString() : '--';
         const onCellClick = this.changeActiveAssignment.bind(this.props, assignment);
+        const downloadGrades = this.downloadGrades.bind(this.props, assignment);
 
         return (
           <Tooltipped
@@ -547,7 +573,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
               <TableColumn key={`${assignmentID}-7`} onClick={onCellClick}>
                 {median}
               </TableColumn>
-              <TableColumn>Download</TableColumn>
+              <TableColumn>
+                <button onClick={downloadGrades}>Download</button>
+              </TableColumn>
               <TableColumn>
                 <button onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>Delete</button>
               </TableColumn>
