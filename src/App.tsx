@@ -55,11 +55,11 @@ class App extends React.Component<{}, IState> {
     }
   }
 
-  public replaceUser = (newUser: IUser) => {
+  public replaceUser = (newUser: UserType, redirect: boolean) => {
     this.setState(
       {
         user: newUser,
-        toRedirect: true,
+        toRedirect: redirect,
       },
       () => {
         localStorage.setItem('token', newUser.token);
@@ -323,6 +323,12 @@ class App extends React.Component<{}, IState> {
                   exact={true}
                   path={'/loginAs/:email'}
                   render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+                />
+
+                <Route
+                  exact={true}
+                  path={'/settings'}
+                  render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
                 />
 
                 {pageSelector}

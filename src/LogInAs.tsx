@@ -8,7 +8,7 @@ interface IState {
 interface IProps {
   match: any;
   history: any;
-  replaceUser: (user: IUser) => void;
+  replaceUser: (user: UserType, redirect: boolean) => void;
 }
 
 class LogInAs extends React.Component<IProps, IState> {
@@ -32,7 +32,7 @@ class LogInAs extends React.Component<IProps, IState> {
         return Promise.reject(res);
       })
       .then((user) => {
-        this.props.replaceUser(user);
+        this.props.replaceUser(user, true);
       })
       .catch((err) => {
         this.setState({
