@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { FontIcon, TextField } from 'react-md';
 
 interface IState {
   email: string;
@@ -15,9 +16,7 @@ class JoinSignup extends React.Component<{}, IState> {
     confirmEmailSent: false,
   };
 
-  public handleChange = (e: any) => {
-    const name = e.target.name;
-    const value = e.target.value;
+  public handleChange = (name: string, value: string) => {
     this.setState((prevstate) => {
       const newState = { ...prevstate };
       newState[name] = value;
@@ -59,24 +58,44 @@ class JoinSignup extends React.Component<{}, IState> {
   public render() {
     const { hasSubmitted, confirmEmailSent } = this.state;
 
-    if (hasSubmitted && !confirmEmailSent) {
-      return <div>Hang tight...sending your email</div>;
-    }
-
-    if (hasSubmitted && confirmEmailSent) {
-      return <div>Check your email to finish creating your account!</div>;
+    if (hasSubmitted) {
+      const message = confirmEmailSent
+        ? 'Check your email to finish creating your account!'
+        : 'Hang tight...sending your email';
+      return (
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__center-text">{message}</div>
+          </div>
+        </div>
+      );
     }
 
     return (
-      <form onSubmit={this.handleSignup}>
-        <h4>Sign Up</h4>
-        <p>Don't forget to use your organization's .edu address</p>
-        <br />
-        <label htmlFor="email">email</label>
-        <input type="text" name="email" value={this.state.email} onChange={this.handleChange} />
-        <br />
-        <input type="submit" />
-      </form>
+      <div className="SignUpManager">
+        <div className="SignUpManager__main-container">
+          <div className="SignUpManager__title">Sign up up for codePost with existing course</div>
+          <div className="SignUpManager__form">
+            <div>
+              <TextField
+                id="email-input"
+                floating={true}
+                label="Email"
+                required={true}
+                value={this.state.email}
+                onChange={this.handleChange.bind(this, 'email')}
+              />
+              <div className="SignUpManager__form__helptext">Don't forget to use your organization's edu address!</div>
+            </div>
+            <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+              Continue
+              <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                arrow_forward
+              </FontIcon>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 }

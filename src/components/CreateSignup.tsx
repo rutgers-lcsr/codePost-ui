@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { FontIcon, TextField } from 'react-md';
 import { OrganizationType } from '../infrastructure/organization';
 
 interface IState {
@@ -41,14 +42,18 @@ class CreateSignup extends React.Component<{}, IState> {
 
   private interval: any;
 
-  public handleChange = (e: any) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[name] = value;
-      return newState;
-    });
+  public handleChange = (label: string, value: string) => {
+    const name = label;
+    this.setState(
+      (prevstate) => {
+        const newState = { ...prevstate };
+        newState[name] = value;
+        return newState;
+      },
+      () => {
+        console.log(this.state);
+      },
+    );
   };
 
   public handleSignup = (e: any) => {
@@ -197,63 +202,158 @@ class CreateSignup extends React.Component<{}, IState> {
     } = this.state;
 
     if (badEmailMatch) {
-      return <div>Sorry, your email doesn't match this organization's</div>;
+      return (
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__center-text">Sorry, your email doesn't match this organization's</div>
+          </div>
+        </div>
+      );
     }
 
     if (validationFailed) {
-      return <div>Sorry, your request was denied.</div>;
+      return (
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__center-text">Sorry, your request was denied.</div>
+          </div>
+        </div>
+      );
     }
 
     if (hasSubmitted) {
       if (orgCheck) {
         return (
-          <div>
-            <form onSubmit={this.setTemporaryOrganization}>
-              <p> What is the name of your organization? </p>
-              <input type="text" name="tempOrgName" value={tempOrgName} onChange={this.handleChange} />
-              <input type="submit" />
-            </form>
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__title">Create a new course with codePost</div>
+              <div className="SignUpManager__form">
+                <form onSubmit={this.setTemporaryOrganization}>
+                  <div> What is the name of your organization? </div>
+                  <TextField
+                    id="org-input"
+                    floating={true}
+                    label="Organization Name"
+                    required={true}
+                    value={tempOrgName}
+                    onChange={this.handleChange.bind(this, 'tempOrgName')}
+                  />
+                  <div className="SignUpManager__submitBtn" onClick={this.setTemporaryOrganization}>
+                    Continue
+                    <FontIcon
+                      style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
+                      inherit={true}
+                    >
+                      arrow_forward
+                    </FontIcon>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         );
       }
 
       if (confirmAuthority && organization) {
         return (
-          <div>
-            <p>By hitting submit, you confirm you have the authority to create a class for {organization.name}</p>
-            <input type="checkbox" />
-            <button onClick={this.validateCreatingUser}>Continue</button>
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__title">Create a new course with codePost</div>
+              <div className="SignUpManager__form">
+                <div className="SignUpManager__subtitle">
+                  By clicking 'I Confirm', you confirm you have the authority to create a class for{' '}
+                  <b>{organization.name}</b>.
+                </div>
+                <div className="SignUpManager__form__ConfirmAuthority">
+                  <div className="SignUpManager__form__helptext">
+                    I Confirm that I haave the authority to create a class for <b>{organization.name}</b>.
+                  </div>
+                  <input type="checkbox" />
+                </div>
+                <div className="SignUpManager__submitBtn" onClick={this.validateCreatingUser}>
+                  Continue
+                  <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                    arrow_forward
+                  </FontIcon>
+                </div>
+              </div>
+            </div>
           </div>
         );
       }
 
       if (confirmEmailSent) {
-        return <div>Check your email to continue activating your account!</div>;
+        return (
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Check your email to continue activating your account!</div>
+            </div>
+          </div>
+        );
       }
 
       if (pendingValidation) {
-        return <div>Hang tight...we're validating your email</div>;
+        return (
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+            </div>
+          </div>
+        );
       }
 
-      return <div>Hang tight...</div>;
+      return (
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__center-text">Hang tight...</div>
+          </div>
+        </div>
+      );
     }
 
     return (
-      <form onSubmit={this.handleSignup}>
-        <h4>Sign Up</h4>
-        <p>Don't forget to use your organization's .edu address</p>
-        <br />
-        <label htmlFor="email">email</label>
-        <input type="text" name="email" value={this.state.email} onChange={this.handleChange} />
-        <br />
-        <label htmlFor="password">password</label>
-        <input type="password" name="password1" value={this.state.password1} onChange={this.handleChange} />
-        <br />
-        <label htmlFor="password">confirm password</label>
-        <input type="password" name="password2" value={this.state.password2} onChange={this.handleChange} />
-        <br />
-        <input type="submit" />
-      </form>
+      <div className="SignUpManager">
+        <div className="SignUpManager__main-container">
+          <div className="SignUpManager__title">Create a new course with codePost</div>
+          <div className="SignUpManager__form--lessPadding">
+            <div className="SignUpManager__form__email--abovePass">
+              <TextField
+                id="email-input"
+                floating={true}
+                label="Email"
+                required={true}
+                value={this.state.email}
+                onChange={this.handleChange.bind(this, 'email')}
+              />
+              <div className="SignUpManager__form__helptext">Don't forget to use your organization's edu address!</div>
+            </div>
+            <TextField
+              id="password-input"
+              floating={true}
+              label="Password"
+              required={true}
+              type="password"
+              value={this.state.password1}
+              onChange={this.handleChange.bind(this, 'password1')}
+            />
+            <TextField
+              id="password-input"
+              floating={true}
+              label="Confirm Password"
+              required={true}
+              type="password"
+              value={this.state.password2}
+              onChange={this.handleChange.bind(this, 'password2')}
+            />
+            <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+              Continue
+              <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                arrow_forward
+              </FontIcon>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 }
