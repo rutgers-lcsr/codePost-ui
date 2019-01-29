@@ -23,7 +23,6 @@ class Home extends React.Component<{}, IAppState> {
   }
 
   public render() {
-    console.log('here');
     switch (this.state.redirect) {
       case USER_APP.Student:
         console.log('redirecting');
