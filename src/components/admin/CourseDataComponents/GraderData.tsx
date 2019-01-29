@@ -39,6 +39,17 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     this.state = { sortedIndex, searchTerm: '' };
   }
 
+  public componentDidUpdate(prevProps: any, prevState: any) {
+    if (prevProps.assignments !== this.props.assignments && !prevProps.assignmentsLoadComplete) {
+      const sortedIndex = {};
+      this.props.assignments.forEach((assn) => {
+        sortedIndex[assn.name] = undefined;
+      });
+      sortedIndex[this.graderHeader] = true;
+      this.setState({ sortedIndex });
+    }
+  }
+
   public toggleSort = (assignmentName: string) => {
     const { sortedIndex } = this.state;
     Object.keys(sortedIndex).map((key) => {
@@ -132,6 +143,10 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
+    if (!assignmentsLoadComplete || !submissionsbyUserLoadComplete) {
+      return <div>Loading..</div>;
+    }
+
     const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
 
     sortedAssignments.sort((a: any, b: any) => {
@@ -148,36 +163,27 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const graders = Object.keys(submissionsByGrader);
     graders.sort(this.sortFunction);
 
-    const tableBody =
-      submissionsbyUserLoadComplete && assignmentsLoadComplete ? (
-        graders.map((graderEmail) => {
-          if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-            return <div />;
-          }
-          return (
-            <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
-              <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
-              {sortedAssignments.map((assignment) => {
-                const submissions = submissionsByGrader[graderEmail][assignment.id];
-                const assignmentName = assignment.name;
-                if (submissions) {
-                  return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
-                } else {
-                  return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
-                }
-              })}
-            </TableRow>
-          );
-        })
-      ) : (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-          <TableColumn />
-        </TableRow>
-      );
-
     if (!activeGrader) {
+      const tableBody = graders.map((graderEmail) => {
+        if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
+            <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
+            {sortedAssignments.map((assignment) => {
+              const submissions = submissionsByGrader[graderEmail][assignment.id];
+              const assignmentName = assignment.name;
+              if (submissions) {
+                return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+              } else {
+                return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+              }
+            })}
+          </TableRow>
+        );
+      });
+
       return (
         <div>
           <TextField
