@@ -1,6 +1,5 @@
-.multiselect--ViewAll {
+@mixin react-select-format() {
   &__control {
-    margin-bottom: 20px;
     max-width: 70% !important;
     border-width: 0px 0px 1px 0px !important;
     border-style: solid !important;
@@ -17,6 +16,18 @@
   &__menu {
     max-width: 70% !important;
   }
+
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
+}
+.multiselect--ViewAll {
+  @include react-select-format();
+
+  &__control {
+    margin-bottom: 20px;
+  }
+
   &__multi-value {
     border-radius: 10px !important;
     font-size: $font-size-medium !important;
@@ -25,7 +36,12 @@
       border-radius: 10px !important;
     }
   }
-  &__option--is-focused {
-    background-color: $very-light-green !important;
+}
+
+.select--StudentSections {
+  &__option--is-selected {
+    background-color: $brand-color;
+    color: white;
   }
+  @include react-select-format();
 }

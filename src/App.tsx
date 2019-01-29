@@ -1,5 +1,8 @@
 import * as React from 'react';
+
 import { Redirect, Route, Switch } from 'react-router-dom';
+
+import { Snackbar } from 'react-md';
 
 import Admin from './Admin';
 
@@ -14,7 +17,7 @@ import Home from './Home';
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
-import { IUser } from './types/common';
+import { IToast, IUser } from './types/common';
 
 import NoMatch from './components/NoMatch';
 
@@ -25,6 +28,9 @@ interface IState {
   has_token: boolean;
   user?: IUser;
   toRedirect: boolean;
+  toasts: IToast[];
+  longToasts: IToast[];
+  errorToasts: IToast[];
 }
 
 class App extends React.Component<{}, IState> {
@@ -34,6 +40,9 @@ class App extends React.Component<{}, IState> {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
       toRedirect: false,
+      toasts: [],
+      longToasts: [],
+      errorToasts: [],
     };
   }
 
@@ -162,6 +171,41 @@ class App extends React.Component<{}, IState> {
       });
   };
 
+  // ------------------- Toast functions -------------------
+
+  public addToast = (text: string, action: string | undefined) => {
+    const toasts = this.state.toasts.slice();
+    toasts.push({ text, action });
+    this.setState({ toasts });
+  };
+
+  public addLongToast = (text: string, action: string | undefined) => {
+    const longToasts = this.state.longToasts.slice();
+    longToasts.push({ text, action });
+    this.setState({ longToasts });
+  };
+
+  public addErrorToast = (text: string, action: string | undefined) => {
+    const errorToasts = this.state.errorToasts.slice();
+    errorToasts.push({ text, action });
+    this.setState({ errorToasts });
+  };
+
+  public dismissToast = () => {
+    const [, ...toasts] = this.state.toasts;
+    this.setState({ toasts });
+  };
+
+  public dismissLongToast = () => {
+    const [, ...longToasts] = this.state.longToasts;
+    this.setState({ longToasts });
+  };
+
+  public dismissErrorToast = () => {
+    const [, ...errorToasts] = this.state.errorToasts;
+    this.setState({ errorToasts });
+  };
+
   public render() {
     if (this.state.toRedirect) {
       return <Redirect to={'/'} />;
@@ -217,6 +261,9 @@ class App extends React.Component<{}, IState> {
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
+                addToast={this.addToast}
+                addLongToast={this.addLongToast}
+                addErrorToast={this.addErrorToast}
               />
             )}
           />
@@ -247,6 +294,22 @@ class App extends React.Component<{}, IState> {
         pageSelector = <Route exact={true} path={HOME} component={Home} />;
       }
 
+      const snackBarStyle = {
+        width: '100%',
+        fontWeight: 500,
+        fontSize: 14,
+        backgroundColor: '#2ecd70',
+        maxWidth: '100%',
+      };
+
+      const errorSnackBarStyle = {
+        width: '100%',
+        fontWeight: 500,
+        fontSize: 14,
+        backgroundColor: 'red',
+        maxWidth: '100%',
+      };
+
       return (
         <div>
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
@@ -266,6 +329,36 @@ class App extends React.Component<{}, IState> {
                 {gradeRoute}
 
                 <Route component={NoMatch} />
+                <Snackbar
+                  id="short-snackbar"
+                  className="short-snackbar"
+                  toasts={this.state.toasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={2000}
+                  onDismiss={this.dismissToast}
+                  style={snackBarStyle}
+                />
+                <Snackbar
+                  id="long-snackbar"
+                  className="long-snackbar"
+                  toasts={this.state.longToasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={4000}
+                  onDismiss={this.dismissLongToast}
+                  style={snackBarStyle}
+                />
+                <Snackbar
+                  id="error-snackbar"
+                  className="error-snackbar"
+                  toasts={this.state.errorToasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={2000}
+                  onDismiss={this.dismissErrorToast}
+                  style={errorSnackBarStyle}
+                />
               </Switch>
             </div>
           </div>

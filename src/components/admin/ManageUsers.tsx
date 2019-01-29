@@ -76,6 +76,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             <ManageStudents
               sections={this.props.sections}
               students={this.props.students}
+              sectionsLoadComplete={this.props.sectionsLoadComplete}
               rosterLoadComplete={this.props.rosterLoadComplete}
               lockedStudentChange={this.props.lockChanges}
               toggleLock={this.props.toggleLock}

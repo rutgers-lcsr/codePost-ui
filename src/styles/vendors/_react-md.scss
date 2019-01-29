@@ -2,5 +2,20 @@ $material-icons-font-path: '~material-icons/iconfont/';
 @import '../../node_modules/react-md/src/scss/react-md';
 @import '~material-icons/iconfont/material-icons.scss';
 
+$md-text-field-custom-sizes: (
+  font-size-large: (
+    16px,
+    0.25s,
+    22px,
+    20px,
+  ),
+  font-size-xxlarge: (
+    30px,
+    0.25s,
+    36px,
+    34px,
+  ),
+);
+
 @include react-md-everything;
 @include react-md-theme-everything($brand-color, $theme-grey);

@@ -1,0 +1,69 @@
+.admin-rubric {
+  &__lockMessage {
+    &-container {
+      position: absolute;
+      width: 100%;
+      left: 0px;
+      display: flex;
+      justify-content: space-around;
+    }
+    &-text {
+      padding: 6px 20px 6px 20px;
+      color: white;
+      background-color: #616161;
+      width: fit-content;
+      font-weight: 500;
+      opacity: 0.9;
+      $font-size: $font-size-small;
+    }
+  }
+  &__top-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  &__assignment {
+    display: flex;
+
+    .md-floating-label {
+      font-size: $font-size-large;
+    }
+    &__points {
+      padding-left: 10px;
+      max-width: 125px;
+    }
+    &__isReleased {
+      align-self: flex-end;
+    }
+  }
+
+  &__category {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding: 20px;
+    border: 1px solid $light-grey;
+    border-radius: 10px;
+  }
+
+  &__category--header {
+    display: flex;
+    .md-floating-label {
+      font-size: $font-size-medium;
+    }
+    &__unsavedChanges {
+      width: 25px;
+      align-self: flex-end;
+    }
+    &__delete {
+      align-self: flex-end;
+    }
+    margin-bottom: 25px;
+  }
+
+  &__commentRow {
+    &__frequency {
+      @include badgeFormat($mid-grey, white) &--none {
+        display: none;
+      }
+    }
+  }
+}

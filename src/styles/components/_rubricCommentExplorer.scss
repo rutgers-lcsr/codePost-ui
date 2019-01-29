@@ -1,0 +1,12 @@
+.RubricCommentExplorer {
+  &__title-container {
+    display: flex;
+    justify-content: space-between;
+    word-break: break-all;
+  }
+  &__close {
+    @include icon-button(24px, 4px);
+    justify-content: flex-start;
+    top: -10px;
+  }
+}
