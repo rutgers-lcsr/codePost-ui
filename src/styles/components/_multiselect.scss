@@ -1,6 +1,5 @@
 @mixin react-select-format() {
   &__control {
-    max-width: 70% !important;
     border-width: 0px 0px 1px 0px !important;
     border-style: solid !important;
     border-color: $light-grey !important;
@@ -13,9 +12,6 @@
       box-shadow: none !important;
     }
   }
-  &__menu {
-    max-width: 70% !important;
-  }
 
   &__option--is-focused {
     background-color: $very-light-green !important;
@@ -26,6 +22,10 @@
 
   &__control {
     margin-bottom: 20px;
+    max-width: 70% !important;
+  }
+  &__menu {
+    max-width: 70% !important;
   }
 
   &__multi-value {
