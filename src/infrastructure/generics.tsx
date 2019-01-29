@@ -97,7 +97,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
 // Should change the return value to accept an object of type T (mandated to have an id field) instead of an id
 function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number) => Promise<void>) {
   const foo = async (id: number) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',

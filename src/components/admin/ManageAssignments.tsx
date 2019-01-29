@@ -27,6 +27,8 @@ import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionType } from '../../infrastructure/submission';
 
+import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
+
 interface IProps {
   submissions: IAssignmentToSubmissionsMap;
   rubricCategories: IAssignmentToRubricCategories;
@@ -39,6 +41,7 @@ interface IProps {
   addErrorToast: (text: string, action: string | undefined) => void;
   assignments: AssignmentType[];
   assignmentRubricLoadComplete: boolean;
+  deleteAssignment: (assignment: AssignmentType) => void;
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
@@ -94,6 +97,7 @@ interface IState {
   commentExplorer: { categoryID: number; commentIndex: number } | undefined;
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
+  deletingAssignment?: AssignmentType;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -462,6 +466,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ commentExplorer: undefined });
   };
 
+  // ------------------- Delete Assignment functions -------------------
+  public toggleDeleteAssignment = (assignment: AssignmentType | undefined) => {
+    this.setState({ deletingAssignment: assignment });
+  };
+
+  public deleteAssignment = () => {
+    const deletingAssignment = this.state.deletingAssignment;
+    if (deletingAssignment) {
+      this.props.deleteAssignment(deletingAssignment);
+    }
+  };
+
   // ------------------- Render -------------------
   public render() {
     const {
@@ -496,8 +512,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
           }
         });
 
-        const mean = assignment.mean ? String(assignment.mean) : '--';
-        const median = assignment.median ? String(assignment.median) : '--';
+        const mean = assignment.mean ? assignment.mean.toString() : '--';
+        const median = assignment.median ? assignment.median.toString() : '--';
+        const onCellClick = this.changeActiveAssignment.bind(this.props, assignment);
 
         return (
           <Tooltipped
@@ -508,14 +525,32 @@ class ManageAssignments extends React.Component<IProps, {}> {
             setPosition={true}
             style={{ top: '150px' }}
           >
-            <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
-              <TableColumn>{assignment.name}</TableColumn>
-              <TableColumn>{numSubmissions}</TableColumn>
-              <TableColumn>{numGraded}</TableColumn>
-              <TableColumn>{numUngraded}</TableColumn>
-              <TableColumn>{numUnclaimed}</TableColumn>
-              <TableColumn>{mean}</TableColumn>
-              <TableColumn>{median}</TableColumn>
+            <TableRow key={assignmentID}>
+              <TableColumn key={`${assignmentID}-1`} onClick={onCellClick}>
+                {assignment.name}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-2`} onClick={onCellClick}>
+                {numSubmissions}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-3`} onClick={onCellClick}>
+                {numGraded}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-4`} onClick={onCellClick}>
+                {numUngraded}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-5`} onClick={onCellClick}>
+                {numUnclaimed}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-6`} onClick={onCellClick}>
+                {mean}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-7`} onClick={onCellClick}>
+                {median}
+              </TableColumn>
+              <TableColumn>Download</TableColumn>
+              <TableColumn>
+                <button onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>Delete</button>
+              </TableColumn>
             </TableRow>
           </Tooltipped>
         );
@@ -552,10 +587,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
                 <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                 <TableColumn key={'Median'}>Median Grade</TableColumn>
+                <TableColumn key={'Grades'}>Grades</TableColumn>
+                <TableColumn key={'Delete'}>Delete</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tableBody}</TableBody>
           </DataTable>
+          <DeleteAssignmentDialog
+            isVisible={typeof this.state.deletingAssignment !== 'undefined'}
+            assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
+            onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
+            onDelete={this.deleteAssignment}
+          />
         </div>
       );
     } else {

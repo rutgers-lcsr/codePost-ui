@@ -1202,6 +1202,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
+  public deleteAssignment = (toDelete: AssignmentType) => {
+    const { currentCourse, assignments } = this.state;
+    if (!currentCourse) {
+      return;
+    }
+
+    Assignment.delete(toDelete.id).then(() => {
+      assignments.filter((el) => {
+        return el.id !== toDelete.id;
+      });
+      this.setState({ assignments }, () => {
+        this.props.addToast('Assignment deleted.', undefined);
+      });
+    });
+  };
+
   public deleteSubmission = (sub: SubmissionType) => {
     const {
       submissions,
@@ -1491,6 +1507,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           updateRubricCategory={this.updateRubricCategory}
           updateAssignment={this.updateAssignment}
           createAssignment={this.createAssignment}
+          deleteAssignment={this.deleteAssignment}
         />
       );
     } else if (currentCourse && loadedPanel === 2) {
