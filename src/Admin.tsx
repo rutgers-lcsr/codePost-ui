@@ -1320,7 +1320,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       } else {
         courses.push(course);
         this.setState({ courses }, () => this.props.addCourse(course));
-        this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+        this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
         this.setState({ currentCourse: course, toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
         });

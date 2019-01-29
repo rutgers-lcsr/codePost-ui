@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
+
 import { Snackbar } from 'react-md';
 
 import Admin from './Admin';
@@ -260,9 +261,9 @@ class App extends React.Component<{}, IState> {
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
-                        addToast={this.addToast}
-                        addLongToast={this.addLongToast}
-                        addErrorToast={this.addErrorToast}
+                addToast={this.addToast}
+                addLongToast={this.addLongToast}
+                addErrorToast={this.addErrorToast}
               />
             )}
           />
@@ -328,37 +329,36 @@ class App extends React.Component<{}, IState> {
                 {gradeRoute}
 
                 <Route component={NoMatch} />
-              <Snackbar
-                id="short-snackbar"
-                className="short-snackbar"
-                toasts={this.state.toasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={2000}
-                onDismiss={this.dismissToast}
-                style={snackBarStyle}
-              />
-              <Snackbar
-                id="long-snackbar"
-                className="long-snackbar"
-                toasts={this.state.longToasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={4000}
-                onDismiss={this.dismissLongToast}
-                style={snackBarStyle}
-              />
-              <Snackbar
-                id="error-snackbar"
-                className="error-snackbar"
-                toasts={this.state.errorToasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={2000}
-                onDismiss={this.dismissErrorToast}
-                style={errorSnackBarStyle}
-              />                  
-                  
+                <Snackbar
+                  id="short-snackbar"
+                  className="short-snackbar"
+                  toasts={this.state.toasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={2000}
+                  onDismiss={this.dismissToast}
+                  style={snackBarStyle}
+                />
+                <Snackbar
+                  id="long-snackbar"
+                  className="long-snackbar"
+                  toasts={this.state.longToasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={4000}
+                  onDismiss={this.dismissLongToast}
+                  style={snackBarStyle}
+                />
+                <Snackbar
+                  id="error-snackbar"
+                  className="error-snackbar"
+                  toasts={this.state.errorToasts}
+                  autohide={true}
+                  lastChild={true}
+                  autohideTimeout={2000}
+                  onDismiss={this.dismissErrorToast}
+                  style={errorSnackBarStyle}
+                />
               </Switch>
             </div>
           </div>
