@@ -148,7 +148,6 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     }
 
     const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
-
     sortedAssignments.sort((a: any, b: any) => {
       if (a.id > b.id) return 1;
       else if (a.id === b.id) return 0;

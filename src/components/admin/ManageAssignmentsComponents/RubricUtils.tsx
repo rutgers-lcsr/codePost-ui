@@ -3,7 +3,6 @@ import {
   Button,
   DataTable,
   DialogContainer,
-  EditDialogColumn,
   FontIcon,
   TableBody,
   TableColumn,
@@ -102,28 +101,30 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
           </div>
         </Tooltipped>
       </TableColumn>
-      <EditDialogColumn
-        defaultValue={props.defaultText}
-        inline={true}
-        disabled={props.isDisabled}
-        noIcon={props.isDisabled}
-        onChange={changeThisCommentText}
-        onBlur={updateThisComment}
-        centered={true}
-      />
-      <EditDialogColumn
-        type="number"
-        defaultValue={props.defaultDelta}
-        inline={true}
-        step={0.5}
-        pattern="^d+(\.|\,)\d{1}"
-        className="deduction-field"
-        disabled={props.isDisabled}
-        noIcon={props.isDisabled}
-        onChange={changeThisCommentDelta}
-        onBlur={updateThisComment}
-        centered={true}
-      />
+      <TableColumn grow={true}>
+        <TextField
+          defaultValue={props.defaultText}
+          disabled={props.isDisabled}
+          onChange={changeThisCommentText}
+          onBlur={updateThisComment}
+          maxRows={5}
+          rows={2}
+          style={{ width: '100%' }}
+        />
+      </TableColumn>
+      <TableColumn style={{ position: 'relative' }}>
+        <TextField
+          type="number"
+          defaultValue={props.defaultDelta}
+          step={0.5}
+          pattern="^d+(\.|\,)\d{1}"
+          className="deduction-field"
+          disabled={props.isDisabled}
+          onChange={changeThisCommentDelta}
+          onBlur={updateThisComment}
+          style={{ width: '100%', position: 'absolute', bottom: '0px' }}
+        />
+      </TableColumn>
       {deleteCommentColumn}
     </TableRow>
   );
@@ -289,9 +290,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
                 </Tooltipped>
               </div>
             </TableColumn>
-            <TableColumn key={'CommentText'} grow={true}>
-              Comment text
-            </TableColumn>
+            <TableColumn key={'CommentText'}>Comment text</TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
             {deleteCommentHeader}
           </TableRow>
