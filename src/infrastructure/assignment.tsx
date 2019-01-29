@@ -3,7 +3,7 @@ import { createObject, deleteObject, GenericObject, readObject, readObjectDetail
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { SubmissionV } from './submission';
+import { SubmissionStatusV, SubmissionV } from './submission';
 
 const AssignmentV = t.intersection(
   [
@@ -75,6 +75,7 @@ class Assignment {
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissionsStudent = readObjectDetail(t.array(SubmissionStatusV), 'assignments', 'submissions');
 }
 
 export { AssignmentType, Assignment };

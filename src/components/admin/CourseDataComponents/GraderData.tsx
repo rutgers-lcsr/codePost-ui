@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
 import { IGraderSubmissionsDataTable } from '../../../types/common';
 
@@ -33,10 +33,21 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     super(props);
     const sortedIndex = {};
     this.props.assignments.forEach((assn) => {
-      sortedIndex[assn.name] = false;
+      sortedIndex[assn.name] = undefined;
     });
     sortedIndex[this.graderHeader] = true;
     this.state = { sortedIndex, searchTerm: '' };
+  }
+
+  public componentDidUpdate(prevProps: any, prevState: any) {
+    if (prevProps.assignments !== this.props.assignments && !prevProps.assignmentsLoadComplete) {
+      const sortedIndex = {};
+      this.props.assignments.forEach((assn) => {
+        sortedIndex[assn.name] = undefined;
+      });
+      sortedIndex[this.graderHeader] = true;
+      this.setState({ sortedIndex });
+    }
   }
 
   public toggleSort = (assignmentName: string) => {
@@ -113,6 +124,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         <TableColumn key={`${submission.id}-assignment`}>{assignmentName}</TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
         <TableColumn key={`${submission.id}-grade`}>{grade}</TableColumn>
+        <TableColumn key={`${submission.id}-finalized`}>
+          {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+        </TableColumn>
       </TableRow>
     );
   }
@@ -132,7 +146,18 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
-    const headers = this.props.assignments.map((assignment: AssignmentType) => {
+    if (!assignmentsLoadComplete || !submissionsbyUserLoadComplete) {
+      return <div>Loading..</div>;
+    }
+
+    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
+    sortedAssignments.sort((a: any, b: any) => {
+      if (a.id > b.id) return 1;
+      else if (a.id === b.id) return 0;
+      return -1;
+    });
+
+    const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.graderHeader);
@@ -140,36 +165,27 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const graders = Object.keys(submissionsByGrader);
     graders.sort(this.sortFunction);
 
-    const tableBody =
-      submissionsbyUserLoadComplete && assignmentsLoadComplete ? (
-        graders.map((graderEmail) => {
-          if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-            return <div />;
-          }
-          return (
-            <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
-              <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
-              {assignments.map((assignment) => {
-                const submissions = submissionsByGrader[graderEmail][assignment.id];
-                const assignmentName = assignment.name;
-                if (submissions) {
-                  return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
-                } else {
-                  return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
-                }
-              })}
-            </TableRow>
-          );
-        })
-      ) : (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-          <TableColumn />
-        </TableRow>
-      );
-
     if (!activeGrader) {
+      const tableBody = graders.map((graderEmail) => {
+        if (graderEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
+            <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
+            {sortedAssignments.map((assignment) => {
+              const submissions = submissionsByGrader[graderEmail][assignment.id];
+              const assignmentName = assignment.name;
+              if (submissions) {
+                return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+              } else {
+                return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+              }
+            })}
+          </TableRow>
+        );
+      });
+
       return (
         <div>
           <h3 className="md-cell md-cell--bottom"> Graded submissions by grader. </h3>
@@ -201,8 +217,14 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         </div>
       );
     } else {
+      const graderAssignments = Object.keys(submissionsByGrader[activeGrader]);
+      graderAssignments.sort((a, b) => {
+        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
+        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
+        return 0;
+      });
       const tablemap: any = [];
-      Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
+      graderAssignments.forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
         submissions.forEach((submission: SubmissionType) => {
           const assnName = assignments.filter((assignment) => {
@@ -232,6 +254,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
                 <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
                 <TableColumn key={'Student'}>{'Student'}</TableColumn>
                 <TableColumn key={'Grade'}>{'Grade'}</TableColumn>
+                <TableColumn key={'Finalized'}>{'Finalized'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tablemap}</TableBody>

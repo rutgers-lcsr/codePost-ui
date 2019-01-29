@@ -141,27 +141,28 @@ class ManageSections extends React.Component<IProps, {}> {
     }
 
     return (
-      <div>
-        <TextField
-          id="addSectionField"
-          label="Add a Section"
-          lineDirection="center"
-          placeholder="Section Name"
-          className="md-cell md-cell--bottom"
-          maxLength={16}
-          value={newSectionField}
-          onChange={this.newSectionFieldOnChange}
-          disabled={lockedSectionChange}
-        />
-        <Button
-          iconChildren="done"
-          className="save-Btn"
-          disabled={!allowAddSection || lockedSectionChange}
-          onClick={createSection.bind(this.props, newSectionField)}
-        >
-          Add new section
-        </Button>
-        <hr />
+      <div className="roster-section">
+        <div className="roster-section__addSection">
+          <TextField
+            id="addSectionField"
+            label="Add a Section"
+            lineDirection="center"
+            placeholder="Section Name"
+            className="roster-section__addSection__Field"
+            maxLength={16}
+            value={newSectionField}
+            onChange={this.newSectionFieldOnChange}
+            disabled={lockedSectionChange}
+          />
+          <Button
+            iconChildren="done"
+            className="roster-section__addSection__Btn"
+            disabled={!allowAddSection || lockedSectionChange}
+            onClick={createSection.bind(this.props, newSectionField)}
+          >
+            Add new section
+          </Button>
+        </div>
         <DataTable className="DataTable--ManageUsers" baseId="Manage-sections-table" plain={true}>
           <TableHeader>
             <TableRow>

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Snackbar } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 
@@ -97,6 +96,9 @@ interface IAdminProps {
   user: IUser;
   match: any;
   history: any;
+  addToast: (text: string, action: string | undefined) => void;
+  addLongToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
@@ -304,6 +306,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
+        window.clearInterval(this.interval);
+        window.clearTimeout(this.interval);
+        this.interval = setInterval(() => {
+          if (this.state.currentCourse) {
+            this.loadAllCourseData();
+          }
+        }, 25000);
       },
     );
   };
@@ -346,40 +355,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
-  // ------------------- Toast functions -------------------
-
-  public addToast = (text: string, action: string | undefined) => {
-    const toasts = this.state.toasts.slice();
-    toasts.push({ text, action });
-    this.setState({ toasts });
-  };
-
-  public addLongToast = (text: string, action: string | undefined) => {
-    const longToasts = this.state.longToasts.slice();
-    longToasts.push({ text, action });
-    this.setState({ longToasts });
-  };
-
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissToast = () => {
-    const [, ...toasts] = this.state.toasts;
-    this.setState({ toasts });
-  };
-
-  public dismissLongToast = () => {
-    const [, ...longToasts] = this.state.longToasts;
-    this.setState({ longToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
-  };
   // ------------------- Initial data load functions  -------------------
   public loadAllCourseData = () => {
     this.loadSubmissions();
@@ -497,7 +472,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -539,7 +514,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -598,7 +573,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -642,24 +617,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           switch (userType) {
             case USER_APP.Student:
               this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-                this.addToast('Student roster successfully updated.', undefined);
+                this.props.addToast('Student roster successfully updated.', undefined);
                 this.generateSubmissionsByStudent();
               });
               break;
             case USER_APP.Grader:
               this.setState({ graders: roster.graders }, () => {
-                this.addToast('Grader roster successfully updated.', undefined);
+                this.props.addToast('Grader roster successfully updated.', undefined);
                 this.generateSubmissionsByStudent();
               });
               break;
             case USER_APP.CourseAdmin:
               this.setState({ admins: roster.courseAdmins }, () =>
-                this.addToast('Admin roster successfully updated.', undefined),
+                this.props.addToast('Admin roster successfully updated.', undefined),
               );
               break;
             case USER_APP.SuperGrader:
               this.setState({ superGraders: roster.superGraders }, () =>
-                this.addToast('Grader privileges successfully updated.', undefined),
+                this.props.addToast('Grader privileges successfully updated.', undefined),
               );
               break;
           }
@@ -668,7 +643,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         .catch((errors) => {
           Object.keys(errors).forEach((key) => {
             errors[key].forEach((error: string) => {
-              this.addErrorToast(error, undefined);
+              this.props.addErrorToast(error, undefined);
             });
           });
         })
@@ -705,7 +680,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     switch (userType) {
       case USER_APP.Student:
         if (students.indexOf(userEmail) !== -1) {
-          this.addErrorToast('Student is already enrolled in course', undefined);
+          this.props.addErrorToast('Student is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
@@ -717,7 +692,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
-          this.addErrorToast('Grader is already enrolled in course', undefined);
+          this.props.addErrorToast('Grader is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
@@ -727,7 +702,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
-          this.addErrorToast('Admin is already enrolled in course', undefined);
+          this.props.addErrorToast('Admin is already enrolled in course', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
@@ -737,7 +712,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         break;
       case USER_APP.SuperGrader:
         if (superGraders.indexOf(userEmail) !== -1) {
-          this.addErrorToast('Grader already has view all privileges.', undefined);
+          this.props.addErrorToast('Grader already has view all privileges.', undefined);
           return;
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
@@ -766,7 +741,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Section.create(payload).then((section: SectionType) => {
       sections.push(section);
       currentCourse.sections.push(section.id);
-      this.setState({ sections, currentCourse }, () => this.addToast(`New section ${section.name} created`, undefined));
+      this.setState({ sections, currentCourse }, () =>
+        this.props.addToast(`New section ${section.name} created`, undefined),
+      );
     });
   };
 
@@ -797,7 +774,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       delete sectionsByStudent[studentEmail];
 
       this.setState({ sections: newSections, sectionsByStudent }, () =>
-        this.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
+        this.props.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
       );
       return json;
     });
@@ -828,7 +805,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       };
 
       this.setState({ sections: newSections, sectionsByStudent }, () => {
-        this.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
+        this.props.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
       });
       return json;
     });
@@ -846,7 +823,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     } else if (newSectionID) {
       return this.addStudentToSection(newSectionID, studentEmail);
     }
-    this.addErrorToast('Error - both old section and new section are empty.', undefined);
+    this.props.addErrorToast('Error - both old section and new section are empty.', undefined);
     return Promise.reject();
   };
 
@@ -861,7 +838,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     newLeaders.push(leaderEmail);
 
     return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
-      this.addToast(`${leaderEmail} added as leader of section ${sectionName}`, undefined);
+      this.props.addToast(`${leaderEmail} added as leader of section ${sectionName}`, undefined);
       return leaders;
     });
   };
@@ -878,7 +855,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
-      this.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
+      this.props.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
       return leaders;
     });
   };
@@ -911,7 +888,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { assignments, rubricCategories, rubricComments } = this.state;
 
     if (categoryName.length === 0) {
-      this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+      this.props.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
       return Promise.reject();
     }
 
@@ -978,7 +955,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         .catch((errors) => {
           Object.keys(errors).forEach((key) => {
             errors[key].forEach((error: string) => {
-              this.addErrorToast(error, undefined);
+              this.props.addErrorToast(error, undefined);
             });
           });
         });
@@ -995,7 +972,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   ): Promise<void> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
-      this.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
+      this.props.addErrorToast('Cannot save rubric. Cateory name cannot be empty.', undefined);
       return Promise.reject();
     }
 
@@ -1024,7 +1001,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -1038,7 +1015,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   ): Promise<RubricCommentType> => {
     const { rubricCategories, rubricComments } = this.state;
     if (commentText.length === 0) {
-      this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
+      this.props.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return Promise.reject();
     }
     const payload = { text: commentText, category: categoryID, pointDelta: commentDelta, id: -1 };
@@ -1108,7 +1085,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -1125,7 +1102,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { rubricComments } = this.state;
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
-      this.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
+      this.props.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
       return Promise.reject();
     }
 
@@ -1149,7 +1126,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -1184,13 +1161,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assn.isReleased = assignment.isReleased;
           }
         });
-        this.setState({ assignments }, () => this.addToast('Assignment has been updated', undefined));
+        this.setState({ assignments }, () => this.props.addToast('Assignment has been updated', undefined));
         return;
       })
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
         return;
@@ -1219,7 +1196,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       rubricCategories[assignment.id] = [];
       assignments.push(assignment);
       this.setState({ currentCourse, submissions, rubricCategories, assignments }, () => {
-        this.addLongToast(`Assignment ${assignment.name} successfully created.`, undefined);
+        this.props.addLongToast(`Assignment ${assignment.name} successfully created.`, undefined);
       });
       return assignment;
     });
@@ -1263,7 +1240,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         submissionsByInactiveGrader[sub.grader][assignmentID] = newSubs;
         this.setState({ submissionsByInactiveGrader });
       }
-      this.addToast('Submission deleted.', undefined);
+      this.props.addToast('Submission deleted.', undefined);
     });
   };
 
@@ -1332,7 +1309,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           ).then(() => {
             courses.push(course);
             this.setState({ courses });
-            this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
+            this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
             this.setState({ currentCourse: course, toLoadCourse: true }, () => {
               this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
             });
@@ -1344,7 +1321,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         courses.push(course);
         this.setState({ courses }, () => this.props.addCourse(course));
         this.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-
         this.setState({ currentCourse: course, toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
         });
@@ -1370,23 +1346,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
       newCourses.push(newCourse);
       this.setState({ currentCourse: newCourse, courses: newCourses }, () => {
-        this.addToast(`Settings for ${currentCourse.name} | ${currentCourse.period} saved.`, undefined);
+        this.props.addToast(`Settings for ${currentCourse.name} | ${currentCourse.period} saved.`, undefined);
       });
     });
   };
 
   // ------------------- Render -------------------
   public render() {
-    const {
-      courses,
-      currentCourse,
-      loadedPanel,
-      toasts,
-      longToasts,
-      errorToasts,
-      toLoadCourse,
-      toLoadPanel,
-    } = this.state;
+    const { courses, currentCourse, loadedPanel, toLoadCourse, toLoadPanel } = this.state;
 
     if (toLoadCourse || toLoadPanel) {
       if (currentCourse) {
@@ -1422,7 +1389,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsLoadComplete={this.state.submissionsLoadComplete}
             submissionsByStudent={this.state.submissionsByStudent}
             submissionsByGrader={this.state.submissionsByGrader}
-            addToast={this.addToast}
+            addToast={this.props.addToast}
             initialTab={this.state.initialTab}
             inactiveStudents={this.state.inactiveStudents}
             inactiveGraders={this.state.inactiveGraders}
@@ -1443,8 +1410,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           lockManageAssignment={this.state.lockChanges}
           toggleLock={this.toggleLock}
           currentCourse={this.state.currentCourse}
-          addToast={this.addToast}
-          addErrorToast={this.addErrorToast}
+          addToast={this.props.addToast}
+          addErrorToast={this.props.addErrorToast}
           assignments={this.state.assignments}
           assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
           createRubricCategory={this.createRubricCategory}
@@ -1480,8 +1447,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             createSection={this.createSection}
             addLeader={this.addLeaderToSection}
             removeLeader={this.removeLeaderFromSection}
-            addToast={this.addToast}
-            addErrorToast={this.addErrorToast}
+            addToast={this.props.addToast}
+            addErrorToast={this.props.addErrorToast}
             initialTab={this.state.initialTab}
           />
         </div>
@@ -1494,7 +1461,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       );
     } else if (!currentCourse) {
       if (courses.length > 0) {
-        courseManagementPanel = <div>Select a course to get started.</div>;
+        courseManagementPanel = (
+          <div className="admin__getStarted">
+            <img className="admin__getStarted__arrow" src={require('./img/get-started-arrow.png')} />
+            <div className="admin__getStarted__text">Select a course to get started.</div>
+          </div>
+        );
       } else {
         courseManagementPanel = <div>Create a course to get started!</div>;
       }
@@ -1530,46 +1502,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           </div>
           <NewCourseDialog
             courses={this.state.courses}
-            addErrorToast={this.addErrorToast}
+            addErrorToast={this.props.addErrorToast}
             createCourse={this.createCourse}
             selectorItemsFormatter={this.selectorItemsFormatter}
             selectorCurrentFormatter={this.selectorCurrentFormatter}
           />
         </div>
         <div className="admin__topbar__spacing" />
-        <div className="admin__main-panel">
-          {courseManagementPanel}
-          <Snackbar
-            id="short-snackbar"
-            className="short-snackbar"
-            toasts={toasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={2000}
-            onDismiss={this.dismissToast}
-            style={this.snackBarStyle}
-          />
-          <Snackbar
-            id="long-snackbar"
-            className="long-snackbar"
-            toasts={longToasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={4000}
-            onDismiss={this.dismissLongToast}
-            style={this.snackBarStyle}
-          />
-          <Snackbar
-            id="error-snackbar"
-            className="error-snackbar"
-            toasts={errorToasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={2000}
-            onDismiss={this.dismissErrorToast}
-            style={this.errorSnackBarStyl4e}
-          />
-        </div>
+        <div className="admin__main-panel">{courseManagementPanel}</div>
       </div>
     );
   }

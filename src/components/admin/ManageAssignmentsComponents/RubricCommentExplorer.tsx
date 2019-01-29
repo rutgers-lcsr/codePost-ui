@@ -127,9 +127,6 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
             </TableHeader>
             <TableBody>{this.renderRows()}</TableBody>
           </DataTable>
-          <Button raised onClick={closeCommentExplorer} primary={false} flat={true}>
-            Close
-          </Button>
         </div>
       );
 
@@ -138,7 +135,23 @@ class RubricCommentExplorer extends React.Component<IProps, {}> {
         id="rubricCommentExplorer"
         className="RubricCommentExplorer"
         visible={true}
-        title={`Usage of Rubric Comment - ${rubricComment.text}`}
+        title={
+          <div className="RubricCommentExplorer__title-container">
+            <div>{`Usage of Rubric Comment - ${rubricComment.text}`}</div>
+            <Button
+              raised
+              onClick={closeCommentExplorer}
+              primary={false}
+              flat={true}
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={24}
+              className="RubricCommentExplorer__close"
+            >
+              clear
+            </Button>
+          </div>
+        }
         onHide={closeCommentExplorer}
         modal={true}
         focusOnMount={false}

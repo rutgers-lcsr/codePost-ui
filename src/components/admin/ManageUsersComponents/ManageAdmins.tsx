@@ -117,7 +117,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       admins.sort().reverse();
     }
     return (
-      <div>
+      <div className="roster-admin">
         <DialogContainer
           id="rubricFile-dialog"
           visible={typeof emailToGraderUnenroll !== 'undefined'}
@@ -138,32 +138,36 @@ class ManageStudents extends React.Component<IProps, {}> {
         >
           {`Would you like to also unenroll ${emailToGraderUnenroll} from grader?`}
         </DialogContainer>
-        <RosterFileUpload
-          users={admins}
-          addErrorToast={addErrorToast}
-          addToast={addToast}
-          changeRoster={changeRoster}
-          userType={USER_APP.CourseAdmin}
-        />
-        <TextField
-          id="addAdminField"
-          label="Add Admin"
-          lineDirection="center"
-          placeholder="Student's email"
-          className="md-cell md-cell--bottom"
-          value={newAdminField}
-          onChange={this.newAdminFieldOnChange}
-          disabled={lockedAdminChange}
-        />
-        <Button
-          iconChildren="done"
-          className="save-Btn"
-          disabled={!showSaveNewAdminButton || lockedAdminChange}
-          onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
-        >
-          Save new admin
-        </Button>
-        <hr />
+        <div className="roster-admin__top-container">
+          <div>
+            <TextField
+              id="addAdminField"
+              label="Add Admin"
+              lineDirection="center"
+              placeholder="Student's email"
+              className="roster-admin__addUser__Field"
+              value={newAdminField}
+              onChange={this.newAdminFieldOnChange}
+              disabled={lockedAdminChange}
+            />
+            <Button
+              iconChildren="done"
+              className="save-Btn"
+              disabled={!showSaveNewAdminButton || lockedAdminChange}
+              onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
+            >
+              Save new admin
+            </Button>
+          </div>
+          <RosterFileUpload
+            users={admins}
+            addErrorToast={addErrorToast}
+            addToast={addToast}
+            changeRoster={changeRoster}
+            userType={USER_APP.CourseAdmin}
+            isDisabled={lockedAdminChange}
+          />
+        </div>
         <TextField
           id="search-manageAdmins"
           label="Search"

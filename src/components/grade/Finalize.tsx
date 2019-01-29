@@ -32,9 +32,10 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     const { toggleFinalized } = this.props;
     this.setState({ buttonState: BUTTON_STATE.Loading });
 
-    const promise = toggleFinalized();
-    promise.then((submission: SubmissionType) => {
-      if (submission.isFinalized) {
+    toggleFinalized().then((submission: SubmissionType) => {
+      if (!submission) {
+        this.setState({ buttonState: BUTTON_STATE.Active });
+      } else if (submission.isFinalized) {
         this.setState({ buttonState: BUTTON_STATE.Active });
       } else {
         this.setState({ buttonState: BUTTON_STATE.Inactive });

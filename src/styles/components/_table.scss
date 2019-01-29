@@ -21,15 +21,53 @@
       table-layout: fixed;
       width: 100%;
     }
+
+    .frame::-webkit-scrollbar:vertical {
+      width: 11px;
+    }
+
+    .frame::-webkit-scrollbar-thumb {
+      border-radius: 8px;
+      border: 2px solid white; /* should match background, can't be transparent */
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+@mixin wrapHeaders($first-column-width) {
+  .md-table-column:first-child {
+    width: $first-column-width;
+  }
+  .md-table-column--header {
+    overflow-wrap: break-word;
+    white-space: pre-line;
+  }
+  .md-table-column--adjusted {
+    padding-right: 0px !important;
+  }
+  .md-table-column--sortable {
+    .md-icon-text {
+      padding-left: 0px !important;
+      overflow-wrap: break-word;
+      max-width: calc(100% - 21px);
+    }
   }
 }
 
 .DataTable--ManageUsers {
-  @include fixedTableHeader(calc(100vh - 500px));
+  @include fixedTableHeader(calc(100vh - 450px));
+
+  &__pagination {
+    .md-table-pagination {
+      margin-left: calc(100vw - 500px) !important;
+      margin-bottom: 40px;
+    }
+  }
 }
 
 .DataTable--StudentData-All {
   @include fixedTableHeader(calc(100vh - 300px));
+  @include wrapHeaders(200px);
 }
 
 .DataTable--StudentData-Selected {
@@ -38,6 +76,7 @@
 
 .DataTable--GraderData-All {
   @include fixedTableHeader(calc(100vh - 300px));
+  @include wrapHeaders(200px);
 }
 
 .DataTable--GraderData-Selected {

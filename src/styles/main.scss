@@ -12,15 +12,16 @@
 
 // 4. Components
 @import 'components/vertical-pane', 'components/badge', 'components/tab', 'components/table', 'components/code',
-  'components/comment', 'components/button', 'components/saving-spinner', 'components/admin-rubric',
-  'components/grade-rubric', 'components/selector', 'components/dialog', 'components/multiselect',
-  'components/controlToggle';
+  'components/comment', 'components/button', 'components/saving-spinner', 'components/grade-rubric',
+  'components/selector', 'components/dialog', 'components/multiselect', 'components/controlToggle',
+  'components/rubricCommentExplorer';
 
 // 5. Layout-related sections
 @import 'layout/header';
 
 // 6. Page-specific styles
-@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login';
+@import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
+  'pages/admin-roster';
 
 // 7. Themes
 @import 'themes/default';

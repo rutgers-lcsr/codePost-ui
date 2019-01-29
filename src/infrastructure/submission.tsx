@@ -19,6 +19,24 @@ const SubmissionV = t.intersection(
   'Submission',
 );
 
+const SubmissionStatusV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      isFinalized: t.boolean,
+      students: t.array(t.string),
+      assignment: t.number,
+    }),
+    t.partial({
+      files: t.array(t.number),
+      dateEdited: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+    }),
+  ],
+  'Submission',
+);
+
 const SubmissionVPost = t.intersection(
   [
     GenericObject,
@@ -50,6 +68,7 @@ const SubmissionVPatch = t.intersection(
 );
 
 type SubmissionType = t.TypeOf<typeof SubmissionV>;
+type SubmissionStatusType = t.TypeOf<typeof SubmissionStatusV>;
 
 class Submission {
   public static create = createObject(SubmissionV, SubmissionVPost, 'submissions');
@@ -58,4 +77,4 @@ class Submission {
   public static delete = deleteObject(SubmissionV, 'submissions');
 }
 
-export { SubmissionType, Submission, SubmissionV };
+export { SubmissionType, Submission, SubmissionV, SubmissionStatusV, SubmissionStatusType };

@@ -1,7 +1,26 @@
 .dialog {
+  &--section {
+    border: 1px solid $brand-color;
+    padding: 10px;
+  }
+
   &--create-course {
     .md-dialog-content {
       overflow: visible;
+    }
+
+    &__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+      grid-gap: 2px;
+
+      &--left {
+        grid-column: 1 / 6;
+      }
+
+      &--right {
+        grid-column: 6;
+      }
     }
   }
 }
