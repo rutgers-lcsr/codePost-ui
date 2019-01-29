@@ -1,4 +1,16 @@
 .admin {
+  &__getStarted {
+    display: flex;
+    &__arrow {
+      padding-left: 20px;
+      padding-right: 15px;
+    }
+    &__text {
+      font-size: $font-size-xlarge;
+      margin-top: auto;
+      font-weight: 325;
+    }
+  }
   &__topbar {
     @include topbar(50px, $very-light-green);
     display: flex;

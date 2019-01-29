@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 import { AssignmentType } from '../../infrastructure/assignment';
 
@@ -499,15 +500,24 @@ class ManageAssignments extends React.Component<IProps, {}> {
         const median = assignment.median ? String(assignment.median) : '--';
 
         return (
-          <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
-            <TableColumn>{assignment.name}</TableColumn>
-            <TableColumn>{numSubmissions}</TableColumn>
-            <TableColumn>{numGraded}</TableColumn>
-            <TableColumn>{numUngraded}</TableColumn>
-            <TableColumn>{numUnclaimed}</TableColumn>
-            <TableColumn>{mean}</TableColumn>
-            <TableColumn>{median}</TableColumn>
-          </TableRow>
+          <Tooltipped
+            key={assignmentID}
+            label="Click to open Assignment rubric"
+            delay={1000}
+            position="top"
+            setPosition={true}
+            style={{ top: '150px' }}
+          >
+            <TableRow key={assignmentID} onClick={this.changeActiveAssignment.bind(this.props, assignment)}>
+              <TableColumn>{assignment.name}</TableColumn>
+              <TableColumn>{numSubmissions}</TableColumn>
+              <TableColumn>{numGraded}</TableColumn>
+              <TableColumn>{numUngraded}</TableColumn>
+              <TableColumn>{numUnclaimed}</TableColumn>
+              <TableColumn>{mean}</TableColumn>
+              <TableColumn>{median}</TableColumn>
+            </TableRow>
+          </Tooltipped>
         );
       });
     } else {
@@ -583,16 +593,69 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
       return (
         <div>
+          {lockManageAssignment ? (
+            <div className="admin-rubric__lockMessage-container">
+              <div className="admin-rubric__lockMessage-text">Edits are locked.</div>
+            </div>
+          ) : (
+            <div />
+          )}
           <Button
             key="Back"
-            className="Btn"
+            className="admin-rubric__back"
             flat={true}
             icon={true}
             onClick={this.changeActiveAssignment.bind(this.props, undefined)}
           >
             arrow_back
           </Button>
-          <div>
+          <div className="admin-rubric__top-container">
+            <div className="admin-rubric__assignment">
+              <TextField
+                defaultValue={activeAssignment.name}
+                ref={(field) => {
+                  this.assignmentNameField = field;
+                }}
+                label={'Assignment Name'}
+                className="admin-rubric__assignment__name"
+                fullWidth={false}
+                disabled={lockManageAssignment}
+                onBlur={this.updateAssignmentName}
+                customSize="font-size-xxlarge"
+              />
+              <TextField
+                defaultValue={activeAssignment.points}
+                step={0.5}
+                pattern="^d+(\.|\,)\d{1}"
+                type="number"
+                className="admin-rubric__assignment__points"
+                min={0}
+                ref={(field) => {
+                  this.assignmentPointsField = field;
+                }}
+                label={'Total Points'}
+                fullWidth={false}
+                disabled={lockManageAssignment}
+                onBlur={this.updateAssignmentPoints}
+                customSize="font-size-xxlarge"
+              />
+              <SelectionControl
+                id="assignment-release-checkbox"
+                name="assignment-release-checkbox"
+                className="admin-rubric__assignment__isReleased"
+                type="switch"
+                label="Released"
+                defaultChecked={activeAssignment.isReleased}
+                disabled={lockManageAssignment}
+                onChange={this.props.updateAssignment.bind(
+                  this.props,
+                  activeAssignment.id,
+                  undefined,
+                  undefined,
+                  !activeAssignment.isReleased,
+                )}
+              />
+            </div>
             <RubricFileDialog
               activeAssignment={this.state.activeAssignment}
               activeRubricComments={this.state.activeRubricComments}
@@ -606,51 +669,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
               deleteRubricCategory={this.props.deleteRubricCategory}
               deleteRubricComment={this.props.deleteRubricComment}
               parentUpdate={this.changeActiveAssignment}
-            />
-            <TextField
-              defaultValue={activeAssignment.name}
-              ref={(field) => {
-                this.assignmentNameField = field;
-              }}
-              label={'Assignment Name'}
-              fullWidth={false}
-              disabled={lockManageAssignment}
-              onBlur={this.updateAssignmentName}
-            />
-            <TextField
-              defaultValue={activeAssignment.points}
-              step={0.5}
-              pattern="^d+(\.|\,)\d{1}"
-              type="number"
-              min={0}
-              ref={(field) => {
-                this.assignmentPointsField = field;
-              }}
-              label={'Total Points'}
-              fullWidth={false}
-              disabled={lockManageAssignment}
-              onBlur={this.updateAssignmentPoints}
-            />
-            <SelectionControl
-              id="assignment-release-checkbox"
-              name="assignment-release-checkbox"
-              type="checkbox"
-              label="released"
-              defaultChecked={activeAssignment.isReleased}
-              disabled={lockManageAssignment}
-              onChange={this.props.updateAssignment.bind(
-                this.props,
-                activeAssignment.id,
-                undefined,
-                undefined,
-                !activeAssignment.isReleased,
-              )}
+              isDisabled={this.props.lockManageAssignment}
             />
           </div>
           <br />
           {categoryTables}
           <Button
-            className="Btn"
+            className="admin-rubric__category__addbutton"
             iconChildren={'playlist_add'}
             disabled={lockManageAssignment}
             onClick={this.addEmptyCategory}

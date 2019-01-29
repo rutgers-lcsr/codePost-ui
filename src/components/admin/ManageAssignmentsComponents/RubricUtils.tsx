@@ -3,7 +3,6 @@ import {
   Button,
   DataTable,
   DialogContainer,
-  EditDialogColumn,
   FontIcon,
   TableBody,
   TableColumn,
@@ -102,28 +101,30 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
           </div>
         </Tooltipped>
       </TableColumn>
-      <EditDialogColumn
-        defaultValue={props.defaultText}
-        inline={true}
-        disabled={props.isDisabled}
-        noIcon={props.isDisabled}
-        onChange={changeThisCommentText}
-        onBlur={updateThisComment}
-        centered={true}
-      />
-      <EditDialogColumn
-        type="number"
-        defaultValue={props.defaultDelta}
-        inline={true}
-        step={0.5}
-        pattern="^d+(\.|\,)\d{1}"
-        className="deduction-field"
-        disabled={props.isDisabled}
-        noIcon={props.isDisabled}
-        onChange={changeThisCommentDelta}
-        onBlur={updateThisComment}
-        centered={true}
-      />
+      <TableColumn grow={true}>
+        <TextField
+          defaultValue={props.defaultText}
+          disabled={props.isDisabled}
+          onChange={changeThisCommentText}
+          onBlur={updateThisComment}
+          maxRows={5}
+          rows={2}
+          style={{ width: '100%' }}
+        />
+      </TableColumn>
+      <TableColumn style={{ position: 'relative' }}>
+        <TextField
+          type="number"
+          defaultValue={props.defaultDelta}
+          step={0.5}
+          pattern="^d+(\.|\,)\d{1}"
+          className="deduction-field"
+          disabled={props.isDisabled}
+          onChange={changeThisCommentDelta}
+          onBlur={updateThisComment}
+          style={{ width: '100%', position: 'absolute', bottom: '0px' }}
+        />
+      </TableColumn>
       {deleteCommentColumn}
     </TableRow>
   );
@@ -213,7 +214,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
     deleteCategoryButton = (
       <Button
         key="Delete"
-        className="Btn"
+        className="admin-rubric__category--header__delete-btn"
         icon={true}
         fullWidth={false}
         disabled={props.isDisabled}
@@ -243,8 +244,8 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   }
 
   return (
-    <div key={props.categoryID}>
-      <div>
+    <div className="admin-rubric__category" key={props.categoryID}>
+      <div className="admin-rubric__category--header">
         <TextField
           defaultValue={props.categoryName}
           label={'Category Name'}
@@ -252,6 +253,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           onChange={changeThisCategoryText}
           disabled={props.isDisabled}
           onBlur={updateThisCategory}
+          customSize="font-size-large"
         />
         <TextField
           defaultValue={props.categoryPointLimit ? props.categoryPointLimit : ''}
@@ -264,9 +266,10 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           onChange={changeThisCategoryCap}
           disabled={props.isDisabled}
           onBlur={updateThisCategory}
+          customSize="font-size-large"
         />
-        {unSavedChanges}
-        {deleteCategoryButton}
+        <div className="admin-rubric__category--header__unsavedChanges">{unSavedChanges}</div>
+        <div className="admin-rubric__category--header__delete">{deleteCategoryButton}</div>
       </div>
       <DataTable key={props.categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
@@ -287,9 +290,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
                 </Tooltipped>
               </div>
             </TableColumn>
-            <TableColumn key={'CommentText'} grow={true}>
-              Comment text
-            </TableColumn>
+            <TableColumn key={'CommentText'}>Comment text</TableColumn>
             <TableColumn key={'Deduction'}>Deduction</TableColumn>
             {deleteCommentHeader}
           </TableRow>

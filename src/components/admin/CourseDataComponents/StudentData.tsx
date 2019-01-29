@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 
 import { IStudentSubmissionsDataTable } from '../../../types/common';
@@ -46,10 +47,21 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     super(props);
     const sortedIndex = {};
     this.props.assignments.forEach((assn) => {
-      sortedIndex[assn.name] = false;
+      sortedIndex[assn.name] = undefined;
     });
     sortedIndex[this.studentHeader] = true;
     this.state = { sortedIndex, searchTerm: '', deleteSub: null };
+  }
+
+  public componentDidUpdate(prevProps: any, prevState: any) {
+    if (prevProps.assignments !== this.props.assignments && !prevProps.assignmentsLoadComplete) {
+      const sortedIndex = {};
+      this.props.assignments.forEach((assn) => {
+        sortedIndex[assn.name] = undefined;
+      });
+      sortedIndex[this.studentHeader] = true;
+      this.setState({ sortedIndex });
+    }
   }
 
   public toggleSort = (assignmentName: string) => {
@@ -144,7 +156,20 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       assignmentsLoadComplete,
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
-    const headers = assignments.map((assignment: AssignmentType) => {
+
+    if (!assignmentsLoadComplete || !submissionsbyUserLoadComplete) {
+      return <div>Loading..</div>;
+    }
+
+    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
+
+    sortedAssignments.sort((a: any, b: any) => {
+      if (a.id > b.id) return 1;
+      else if (a.id === b.id) return 0;
+      return -1;
+    });
+
+    const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.studentHeader);
@@ -152,38 +177,42 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     const students = Object.keys(submissionsByStudent);
     students.sort(this.sortFunction);
 
-    const tableBody =
-      submissionsbyUserLoadComplete && assignmentsLoadComplete ? (
-        students.map((studentEmail) => {
-          if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-            return <div />;
-          }
-          return (
-            <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
-              <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
-              {this.props.assignments.map((assignment) => {
-                const submission = submissionsByStudent[studentEmail][assignment.id];
-                if (submission && submission.isFinalized) {
-                  return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
-                } else if (submission) {
-                  return <TableColumn key={assignment.name}>Not graded</TableColumn>;
-                } else {
-                  return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
-                }
-              })}
-            </TableRow>
-          );
-        })
-      ) : (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-          <TableColumn />
-          <TableColumn />
-        </TableRow>
-      );
-
     if (!activeStudent) {
+      const tableBody = students.map((studentEmail) => {
+        if (studentEmail.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+          return <div />;
+        }
+        return (
+          <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
+            <TableColumn key={studentEmail} plain={true}>
+              {studentEmail}
+            </TableColumn>
+            {sortedAssignments.map((assignment) => {
+              const submission = submissionsByStudent[studentEmail][assignment.id];
+              if (submission && submission.isFinalized) {
+                return (
+                  <TableColumn key={assignment.name} plain={true}>
+                    {submission.grade}
+                  </TableColumn>
+                );
+              } else if (submission) {
+                return (
+                  <TableColumn key={assignment.name} plain={true}>
+                    Not graded
+                  </TableColumn>
+                );
+              } else {
+                return (
+                  <TableColumn key={assignment.name} plain={true}>
+                    Not submitted
+                  </TableColumn>
+                );
+              }
+            })}
+          </TableRow>
+        );
+      });
+
       return (
         <div>
           <TextField
@@ -202,6 +231,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                       sorted={sortedIndex[header]}
                       onClick={this.toggleSort.bind(this.props, header)}
                       key={header}
+                      plain={true}
                     >
                       {header}
                     </TableColumn>
@@ -214,7 +244,13 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         </div>
       );
     } else {
-      const studentSubmissions = Object.keys(submissionsByStudent[activeStudent]).map((assignmentID) => {
+      const studentAssignments = Object.keys(submissionsByStudent[activeStudent]);
+      studentAssignments.sort((a, b) => {
+        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
+        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
+        return 0;
+      });
+      const studentSubmissions = studentAssignments.map((assignmentID) => {
         const submission = submissionsByStudent[activeStudent][assignmentID];
         let grade = 'Not submitted';
         if (submission && submission.isFinalized) {
@@ -223,28 +259,37 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           grade = 'Not graded';
         }
         return (
-          <TableRow key={submission.id.toString()}>
-            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
-              {
-                assignments.filter((assignment) => {
-                  return assignment.id === parseInt(assignmentID, 10);
-                })[0].name
-              }
-            </TableColumn>
-            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
-            <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
-              {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
-            </TableColumn>
-            <Button
-              key={`button--deleteSubmission-${submission.id}`}
-              onClick={this.toggleDeleteSub.bind(this.props, submission)}
-              className="button--deleteSubmission"
-              tooltipLabel="Delete Submission"
-              icon={true}
-            >
-              remove_circle
-            </Button>
-          </TableRow>
+          <Tooltipped
+            key={submission.id.toString()}
+            label="Click row to open Submission in a new window"
+            delay={1000}
+            position="top"
+            style={{ zIndex: 2, position: 'absolute', top: '250px' }}
+          >
+            <TableRow key={submission.id.toString()}>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+                {
+                  assignments.filter((assignment) => {
+                    return assignment.id === parseInt(assignmentID, 10);
+                  })[0].name
+                }
+              </TableColumn>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+                {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+              </TableColumn>
+              <Button
+                key={`button--deleteSubmission-${submission.id}`}
+                onClick={this.toggleDeleteSub.bind(this.props, submission)}
+                className="button--deleteSubmission"
+                tooltipLabel="Delete Submission"
+                tooltipDelay={250}
+                icon={true}
+              >
+                delete
+              </Button>
+            </TableRow>
+          </Tooltipped>
         );
       });
 
@@ -265,7 +310,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn>{'Assignment'}</TableColumn>
+                <TableColumn grow={true}>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
                 <TableColumn>{'Finalized'}</TableColumn>
                 <TableColumn>{'Delete'}</TableColumn>
