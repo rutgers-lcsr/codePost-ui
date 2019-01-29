@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
 
-import { IStudentSubmissionsDataTable } from '../../../types/common';
+import Select from 'react-select';
+
+import { IOption, IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
@@ -15,6 +17,8 @@ interface IPropsStudentOverview {
   submissionsbyUserLoadComplete: boolean;
   assignmentsLoadComplete: boolean;
   deleteSubmission: (submission: SubmissionType) => void;
+  graders: string[];
+  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
 }
 
 interface IState {
@@ -23,13 +27,7 @@ interface IState {
   deleteSub: SubmissionType | null;
 }
 
-class StudentData extends React.Component<IPropsStudentOverview, {}> {
-  public state: Readonly<IState> = {
-    sortedIndex: {},
-    searchTerm: '',
-    deleteSub: null,
-  };
-
+class StudentData extends React.Component<IPropsStudentOverview, IState> {
   public studentHeader = 'student';
 
   public constructor(props: any) {
@@ -39,6 +37,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       sortedIndex[assn.name] = false;
     });
     sortedIndex[this.studentHeader] = true;
+
     this.state = { sortedIndex, searchTerm: '', deleteSub: null };
   }
 
@@ -123,6 +122,10 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     this.setState({ searchTerm: value });
   };
 
+  public onGraderChange = (sub: SubmissionType, selectedOption: IOption) => {
+    this.props.changeSubmissionGrader(sub, selectedOption.label);
+  };
+
   public render() {
     const {
       submissionsByStudent,
@@ -205,6 +208,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         </div>
       );
     } else {
+      const graderOptions = this.props.graders.map((el: string) => {
+        return { label: el, value: el };
+      });
       const studentSubmissions = Object.keys(submissionsByStudent[activeStudent]).map((assignmentID) => {
         const submission = submissionsByStudent[activeStudent][assignmentID];
         let grade = 'Not submitted';
@@ -223,6 +229,13 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               }
             </TableColumn>
             <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+            <TableColumn>
+              <Select
+                value={{ label: submission.grader, value: submission.grader }}
+                options={graderOptions}
+                onChange={this.onGraderChange.bind(this.props, submission)}
+              />
+            </TableColumn>
             <Button
               key={`button--deleteSubmission-${submission.id}`}
               onClick={this.toggleDeleteSub.bind(this.props, submission)}
@@ -255,6 +268,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               <TableRow>
                 <TableColumn>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
+                <TableColumn>{'Grader'}</TableColumn>
+                <TableColumn>{'Delete'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>

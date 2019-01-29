@@ -1267,6 +1267,74 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
+  // ------------------- Manage submission API calls  ------------------
+  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
+    const payload = {
+      id: sub.id,
+      grader,
+    };
+
+    const {
+      students,
+      graders,
+      submissionsByStudent,
+      submissionsByInactiveStudent,
+      submissionsByGrader,
+      submissionsByInactiveGrader,
+    } = this.state;
+
+    const oldGrader = sub.grader;
+
+    Submission.update(payload).then((submission) => {
+      // Add submission to appropriate student and grader entries in cached data structures
+      const subStudents = submission.students;
+      const subGrader = submission.grader;
+
+      subStudents.forEach((student) => {
+        if (students.includes(student)) {
+          submissionsByStudent[student][submission.assignment] = submission;
+        } else {
+          // Account for partner, who might be inactive
+          submissionsByInactiveStudent[student][submission.assignment] = submission;
+        }
+      });
+
+      // Shouldn't be assigning this submission to an inactive grader
+      if (typeof subGrader === 'string' && graders.includes(subGrader)) {
+        if (submissionsByGrader[subGrader][submission.assignment]) {
+          submissionsByGrader[subGrader][submission.assignment].push(submission);
+        } else {
+          submissionsByGrader[subGrader][submission.assignment] = [submission];
+        }
+      }
+
+      // Unassign old grader, if she exists
+      if (typeof oldGrader === 'string') {
+        if (graders.includes(oldGrader)) {
+          submissionsByGrader[oldGrader][submission.assignment].filter((el) => {
+            return el.id !== submission.id;
+          });
+        } else {
+          submissionsByInactiveGrader[oldGrader][submission.assignment].filter((el) => {
+            return el.id !== submission.id;
+          });
+        }
+      }
+
+      this.setState(
+        {
+          submissionsByStudent,
+          submissionsByInactiveStudent,
+          submissionsByGrader,
+          submissionsByInactiveGrader,
+        },
+        () => {
+          this.addToast('Submission successfully updated.', undefined);
+        },
+      );
+    });
+  };
+
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
     const { courses } = this.state;
@@ -1429,6 +1497,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
             submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
             deleteSubmission={this.deleteSubmission}
+            changeSubmissionGrader={this.changeSubmissionGrader}
           />
         </div>
       );
