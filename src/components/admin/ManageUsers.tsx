@@ -66,9 +66,9 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
         <Tabs defaultTabIndex={activeTabIndex}>
           <TabList className="tabList--ManageUsers">
             <Tab className="tabList--ManageUsers__tab">Students</Tab>
-            <Tab className="tabList--ManageUsers__tab">Grader</Tab>
-            <Tab className="tabList--ManageUsers__tab">Admin</Tab>
-            <Tab className="tabList--ManageUsers__tab">Section</Tab>
+            <Tab className="tabList--ManageUsers__tab">Graders</Tab>
+            <Tab className="tabList--ManageUsers__tab">Admins</Tab>
+            <Tab className="tabList--ManageUsers__tab">Sections</Tab>
           </TabList>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
@@ -111,22 +111,6 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
             <div className="tabList--ManageUsers__panelPadding" />
-            <ManageSections
-              sections={this.props.sections}
-              sectionsLoadComplete={this.props.sectionsLoadComplete}
-              lockedSectionChange={this.props.lockChanges}
-              toggleLock={this.props.toggleLock}
-              currentCourse={this.props.currentCourse}
-              addToast={this.props.addToast}
-              createSection={this.props.createSection}
-              graders={this.props.graders}
-              addLeader={this.props.addLeader}
-              removeLeader={this.props.removeLeader}
-            />
-          </TabPanel>
-          <TabPanel>
-            {/* padding under the tab required because tab is position:fixed*/}
-            <div className="tabList--ManageUsers__panelPadding" />
             <ManageAdmins
               admins={this.props.admins}
               graders={this.props.graders}
@@ -139,6 +123,22 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               enrollUser={this.props.enrollUser}
               unEnrollUsers={this.props.unEnrollUsers}
               changeRoster={this.props.changeRoster}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--ManageUsers__panelPadding" />
+            <ManageSections
+              sections={this.props.sections}
+              sectionsLoadComplete={this.props.sectionsLoadComplete}
+              lockedSectionChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              currentCourse={this.props.currentCourse}
+              addToast={this.props.addToast}
+              createSection={this.props.createSection}
+              graders={this.props.graders}
+              addLeader={this.props.addLeader}
+              removeLeader={this.props.removeLeader}
             />
           </TabPanel>
         </Tabs>

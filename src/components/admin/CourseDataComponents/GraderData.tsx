@@ -188,6 +188,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
       return (
         <div>
+          <h3 className="md-cell md-cell--bottom"> Graded submissions by grader. </h3>
           <TextField
             id="search-graderData"
             label="Search"

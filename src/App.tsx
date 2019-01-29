@@ -1,6 +1,7 @@
 import * as React from 'react';
+
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { Snackbar } from 'react-md';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import Admin from './Admin';
 
@@ -16,6 +17,10 @@ import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
 import { IToast, IUser } from './types/common';
+
+import NoMatch from './components/NoMatch';
+
+import { CourseType } from './infrastructure/course';
 
 interface IState {
   error: string;
@@ -80,6 +85,16 @@ class App extends React.Component<{}, IState> {
         });
     }
   }
+
+  public addCourseToAdminList = (course: CourseType) => {
+    if (!this.state.user) {
+      return;
+    }
+
+    const newUser = this.state.user;
+    newUser.courseadminCourses.push(course);
+    this.setState({ user: newUser });
+  };
 
   public handleLogout = () => {
     localStorage.removeItem('token');
@@ -195,14 +210,88 @@ class App extends React.Component<{}, IState> {
       return <Redirect to={'/'} />;
     }
 
-    /* tslint:disable:jsx-no-lambda */
     // Disabling this rule means we can use the render prop of Route to pass props to components
     if (typeof this.state.user !== 'undefined') {
-      const courseAdminCourses = this.state.user.courseadminCourses;
-      const graderCourses = this.state.user.graderCourses;
-      const studentCourses = this.state.user.studentCourses;
+      const { user } = this.state;
+      const courseAdminCourses = user.courseadminCourses;
+      const graderCourses = user.graderCourses;
+      const studentCourses = user.studentCourses;
       const superGraderCourses = this.state.user.superGraderCourses;
-      const email = this.state.user.email;
+      const email = user.email;
+
+      const isStudent = user ? user.studentCourses.length > 0 : false;
+      const isGrader = user ? user.graderCourses.length > 0 : false;
+      const isAdmin = user ? user.courseadminCourses.length > 0 : false;
+
+      /* tslint:disable:jsx-no-lambda */
+      let studentRoute;
+      if (isStudent) {
+        studentRoute = (
+          <Route
+            exact={true}
+            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+            render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+          />
+        );
+      }
+
+      let graderRoute;
+      if (isGrader) {
+        graderRoute = (
+          <Route
+            exact={true}
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+            render={(props: any) => (
+              <Grader {...props} email={email} superGraderCourses={superGraderCourses} initialCourses={graderCourses} />
+            )}
+          />
+        );
+      }
+
+      let adminRoute;
+      if (isAdmin) {
+        adminRoute = (
+          <Route
+            exact={true}
+            path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+            render={(props: any) => (
+              <Admin
+                {...props}
+                addCourse={this.addCourseToAdminList}
+                user={this.state.user}
+                initialCourses={courseAdminCourses}
+                        addToast={this.addToast}
+                        addLongToast={this.addLongToast}
+                        addErrorToast={this.addErrorToast}
+              />
+            )}
+          />
+        );
+      }
+
+      let gradeRoute;
+      if (isGrader || isAdmin) {
+        gradeRoute = (
+          <Route
+            exact={true}
+            path={`${GRADE}/:submissionId`}
+            render={(props: any) => <Grade {...props} user={this.state.user} />}
+          />
+        );
+      }
+
+      // If user has only one role, use / to redirect to relevant role's page. Otherwise, allow user to choose
+      // role from /
+      let pageSelector = null;
+      if (isStudent && !isGrader && !isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('student')} />;
+      } else if (!isStudent && isGrader && !isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
+      } else if (!isStudent && !isGrader && isAdmin) {
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
+      } else {
+        pageSelector = <Route exact={true} path={HOME} component={Home} />;
+      }
 
       const snackBarStyle = {
         width: '100%',
@@ -225,52 +314,20 @@ class App extends React.Component<{}, IState> {
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div>
             <div className="AppHome">
-              <BrowserRouter>
-                <Switch>
-                  <Route
-                    exact={true}
-                    path={'/loginAs/:email'}
-                    render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-                    render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
-                    render={(props: any) => (
-                      <Grader
-                        {...props}
-                        email={email}
-                        initialCourses={graderCourses}
-                        superGraderCourses={superGraderCourses}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
-                    render={(props: any) => (
-                      <Admin
-                        {...props}
-                        user={this.state.user}
-                        initialCourses={courseAdminCourses}
-                        addToast={this.addToast}
-                        addLongToast={this.addLongToast}
-                        addErrorToast={this.addErrorToast}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact={true}
-                    path={`${GRADE}/:submissionId`}
-                    render={(props: any) => <Grade {...props} user={this.state.user} />}
-                  />
-                  <Route exact={true} path={HOME} component={Home} />
-                </Switch>
-              </BrowserRouter>
+              <Switch>
+                <Route
+                  exact={true}
+                  path={'/loginAs/:email'}
+                  render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+                />
+
+                {pageSelector}
+                {studentRoute}
+                {graderRoute}
+                {adminRoute}
+                {gradeRoute}
+
+                <Route component={NoMatch} />
               <Snackbar
                 id="short-snackbar"
                 className="short-snackbar"
@@ -300,7 +357,9 @@ class App extends React.Component<{}, IState> {
                 autohideTimeout={2000}
                 onDismiss={this.dismissErrorToast}
                 style={errorSnackBarStyle}
-              />
+              />                  
+                  
+              </Switch>
             </div>
           </div>
         </div>
@@ -313,5 +372,11 @@ class App extends React.Component<{}, IState> {
     );
   }
 }
+
+const RedirectPath = (route: string) => {
+  return (props: any) => {
+    return <Redirect to={`/${route}`} />;
+  };
+};
 
 export default App;

@@ -215,6 +215,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
 
       return (
         <div>
+          <h3 className="md-cell md-cell--bottom"> Submission grades by student. </h3>
           <TextField
             id="search-studentData"
             label="Search"
