@@ -17,16 +17,19 @@ import Home from './Home';
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
-import { IToast, IUser } from './types/common';
+import { IToast } from './types/common';
 
 import NoMatch from './components/NoMatch';
 
 import { CourseType } from './infrastructure/course';
+import { UserType } from './infrastructure/user';
+
+import Settings from './settings';
 
 interface IState {
   error: string;
   has_token: boolean;
-  user?: IUser;
+  user?: UserType;
   toRedirect: boolean;
   toasts: IToast[];
   longToasts: IToast[];

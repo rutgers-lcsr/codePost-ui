@@ -17,7 +17,6 @@ import {
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
   IToast,
-  IUser,
   USER_APP,
 } from './types/common';
 
@@ -28,6 +27,7 @@ import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCateg
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
+import { UserType } from './infrastructure/user';
 
 import { addToPayload } from './infrastructure/utils';
 
@@ -93,7 +93,7 @@ interface IAdminState {
 interface IAdminProps {
   initialCourses: CourseType[];
   addCourse: (newCourse: CourseType) => void;
-  user: IUser;
+  user: UserType;
   match: any;
   history: any;
   addToast: (text: string, action: string | undefined) => void;
