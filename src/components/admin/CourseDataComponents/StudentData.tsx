@@ -326,7 +326,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn>{'Assignment'}</TableColumn>
+                <TableColumn grow={true}>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
                 <TableColumn>{'Grader'}</TableColumn>
                 <TableColumn>{'Finalized'}</TableColumn>
