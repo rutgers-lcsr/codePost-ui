@@ -134,7 +134,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
       <Tabs defaultTabIndex={activeTabIndex}>
         <TabList className="tabList--CourseData">
           <Tab className="tabList--CourseData__tab">Students</Tab>
-          <Tab className="tabList--CourseData__tab">Grader</Tab>
+          <Tab className="tabList--CourseData__tab">Graders</Tab>
           <Tab className="tabList--CourseData__tab" style={{ color: '#c8c8c8' }}>
             Inactive Students
           </Tab>
