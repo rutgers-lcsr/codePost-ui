@@ -5,14 +5,22 @@ import { CodePanel, makeReadOnly } from './components/CodePanel';
 
 import VerticalPane from './components/VerticalPane';
 
-import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
+import { Snackbar } from 'react-md';
+
+import {
+  ICommentToRubricCommentMap,
+  ICourseToAssignmentMap,
+  IFileToCommentsMap,
+  IOption,
+  IToast,
+} from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
 import { RubricComment } from './infrastructure/rubricComment';
-import { SubmissionType } from './infrastructure/submission';
+import { SubmissionStatusType } from './infrastructure/submission';
 
 interface IStudentState {
   courses: CourseType[];
@@ -23,7 +31,7 @@ interface IStudentState {
 
   currentCourse?: CourseType;
   currentAssignment?: AssignmentType;
-  currentSubmission?: SubmissionType;
+  currentSubmission?: SubmissionStatusType;
 
   isLoggedIn: boolean;
   redirect: boolean;
@@ -35,6 +43,8 @@ interface IStudentState {
   // URL variables
   toLoadCourse: boolean;
   toLoadAssignment: boolean;
+
+  errorToasts: IToast[];
 }
 
 interface IStudentProps {
@@ -60,6 +70,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     rubricComments: {},
     toLoadCourse: false,
     toLoadAssignment: false,
+    errorToasts: [],
   };
 
   public componentDidMount() {
@@ -88,6 +99,18 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });
     }
   }
+
+  // ------------------- Toast functions -------------------
+  public addErrorToast = (text: string, action: string | undefined) => {
+    const errorToasts = this.state.errorToasts.slice();
+    errorToasts.push({ text, action });
+    this.setState({ errorToasts });
+  };
+
+  public dismissErrorToast = () => {
+    const [, ...errorToasts] = this.state.errorToasts;
+    this.setState({ errorToasts });
+  };
 
   ///////////////////////////////////////
   // URL handler methods
@@ -164,35 +187,44 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     this.setState({ files: [] });
 
-    return Assignment.readSubmissions(assignment.id, { student: this.props.email }).then((subs) => {
-      if (subs.length === 0) {
+    return Assignment.readSubmissionsStudent(assignment.id, { student: this.props.email })
+      .then((subs) => {
+        if (subs.length === 0) {
+          this.setState({ currentSubmission: undefined });
+          return Promise.resolve(); // empty Promise
+        } else {
+          const currentSubmission = subs[0];
+          return this.loadFiles(currentSubmission).then(() => {
+            this.setState({ currentSubmission });
+          });
+        }
+      })
+      .catch((errors) => {
         this.setState({ currentSubmission: undefined });
-        return Promise.resolve(); // empty Promise
-      } else {
-        const currentSubmission = subs[0];
-        return this.loadFiles(currentSubmission).then(() => {
-          this.setState({ currentSubmission });
-        });
-      }
-    });
+        this.addErrorToast(errors, undefined);
+      });
   };
 
-  public loadFiles = (submission: SubmissionType) => {
-    return Promise.all(
-      submission.files.map((fileId: number) => {
-        return File.read(fileId).then((file: FileType) => {
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: [],
-            },
+  public loadFiles = (submission: SubmissionStatusType) => {
+    if (submission.files) {
+      return Promise.all(
+        submission.files.map((fileId: number) => {
+          return File.read(fileId).then((file: FileType) => {
+            this.setState({
+              comments: {
+                ...this.state.comments,
+                [file.id]: [],
+              },
+            });
+            return this.loadComments(file).then(() => {
+              this.setState({ files: [...this.state.files, file] });
+            });
           });
-          return this.loadComments(file).then(() => {
-            this.setState({ files: [...this.state.files, file] });
-          });
-        });
-      }),
-    );
+        }),
+      );
+    } else {
+      return Promise.all([Promise.resolve()]);
+    }
   };
 
   public loadComments = (file: FileType) => {
@@ -307,6 +339,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       toLoadAssignment,
     } = this.state;
 
+    const errorSnackBarStyle = {
+      width: '100%',
+      fontWeight: 500,
+      fontSize: 14,
+      backgroundColor: 'red',
+      maxWidth: '100%',
+    };
+
     if (toLoadCourse || toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
@@ -334,7 +374,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         <div />
       );
     let contentArea;
-    if (currentSubmission && currentAssignment) {
+    if (currentSubmission && currentAssignment && currentSubmission.isFinalized) {
       contentArea = (
         <div>
           <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
@@ -347,10 +387,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
         </div>
       );
+    } else if (currentSubmission && currentAssignment && !currentSubmission.isFinalized) {
+      contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
     } else if (currentAssignment && this.state.isLoadingSubmission) {
       contentArea = <div>Loading...</div>;
-    } else if (currentAssignment) {
-      contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
     } else {
       contentArea = <div>Select an assignment on the left!</div>;
     }
@@ -368,6 +408,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
         </div>
         <div className="student__right-panel">{contentArea}</div>
+        <Snackbar
+          id="error-snackbar"
+          className="error-snackbar"
+          toasts={this.state.errorToasts}
+          autohide={true}
+          lastChild={true}
+          autohideTimeout={2000}
+          onDismiss={this.dismissErrorToast}
+          style={errorSnackBarStyle}
+        />
       </div>
     );
   }
