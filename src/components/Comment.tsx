@@ -224,7 +224,6 @@ class Comment extends React.Component<IProps, IState> {
         >
           <div className="comment__body">
             <div className={savingClass} />
-            {comment.startLine}
             <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
