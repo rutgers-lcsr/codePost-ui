@@ -34,6 +34,26 @@
   }
 }
 
+@mixin wrapHeaders($first-column-width) {
+  .md-table-column:first-child {
+    width: $first-column-width;
+  }
+  .md-table-column--header {
+    overflow-wrap: break-word;
+    white-space: pre-line;
+  }
+  .md-table-column--adjusted {
+    padding-right: 0px !important;
+  }
+  .md-table-column--sortable {
+    .md-icon-text {
+      padding-left: 0px !important;
+      overflow-wrap: break-word;
+      max-width: calc(100% - 21px);
+    }
+  }
+}
+
 .DataTable--ManageUsers {
   @include fixedTableHeader(calc(100vh - 450px));
 
@@ -47,6 +67,7 @@
 
 .DataTable--StudentData-All {
   @include fixedTableHeader(calc(100vh - 300px));
+  @include wrapHeaders(200px);
 }
 
 .DataTable--StudentData-Selected {
@@ -55,6 +76,7 @@
 
 .DataTable--GraderData-All {
   @include fixedTableHeader(calc(100vh - 300px));
+  @include wrapHeaders(200px);
 }
 
 .DataTable--GraderData-Selected {

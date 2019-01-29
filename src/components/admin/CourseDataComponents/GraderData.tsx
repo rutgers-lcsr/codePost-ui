@@ -33,7 +33,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     super(props);
     const sortedIndex = {};
     this.props.assignments.forEach((assn) => {
-      sortedIndex[assn.name] = false;
+      sortedIndex[assn.name] = undefined;
     });
     sortedIndex[this.graderHeader] = true;
     this.state = { sortedIndex, searchTerm: '' };
@@ -132,7 +132,15 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     } = this.props;
     const { searchTerm, sortedIndex } = this.state;
 
-    const headers = this.props.assignments.map((assignment: AssignmentType) => {
+    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
+
+    sortedAssignments.sort((a: any, b: any) => {
+      if (a.id > b.id) return 1;
+      else if (a.id === b.id) return 0;
+      return -1;
+    });
+
+    const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.graderHeader);
@@ -149,7 +157,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
           return (
             <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
               <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
-              {assignments.map((assignment) => {
+              {sortedAssignments.map((assignment) => {
                 const submissions = submissionsByGrader[graderEmail][assignment.id];
                 const assignmentName = assignment.name;
                 if (submissions) {
@@ -200,8 +208,14 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         </div>
       );
     } else {
+      const graderAssignments = Object.keys(submissionsByGrader[activeGrader]);
+      graderAssignments.sort((a, b) => {
+        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
+        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
+        return 0;
+      });
       const tablemap: any = [];
-      Object.keys(submissionsByGrader[activeGrader]).forEach((assignmentID) => {
+      graderAssignments.forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
         submissions.forEach((submission: SubmissionType) => {
           const assnName = assignments.filter((assignment) => {

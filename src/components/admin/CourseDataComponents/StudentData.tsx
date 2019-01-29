@@ -46,7 +46,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
     super(props);
     const sortedIndex = {};
     this.props.assignments.forEach((assn) => {
-      sortedIndex[assn.name] = false;
+      sortedIndex[assn.name] = undefined;
     });
     sortedIndex[this.studentHeader] = true;
     this.state = { sortedIndex, searchTerm: '', deleteSub: null };
@@ -144,7 +144,16 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       assignmentsLoadComplete,
     } = this.props;
     const { sortedIndex, searchTerm } = this.state;
-    const headers = assignments.map((assignment: AssignmentType) => {
+
+    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
+
+    sortedAssignments.sort((a: any, b: any) => {
+      if (a.id > b.id) return 1;
+      else if (a.id === b.id) return 0;
+      return -1;
+    });
+
+    const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
     headers.unshift(this.studentHeader);
@@ -160,15 +169,29 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           }
           return (
             <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
-              <TableColumn key={studentEmail}>{studentEmail}</TableColumn>
-              {this.props.assignments.map((assignment) => {
+              <TableColumn key={studentEmail} plain={true}>
+                {studentEmail}
+              </TableColumn>
+              {sortedAssignments.map((assignment) => {
                 const submission = submissionsByStudent[studentEmail][assignment.id];
                 if (submission && submission.isFinalized) {
-                  return <TableColumn key={assignment.name}>{submission.grade}</TableColumn>;
+                  return (
+                    <TableColumn key={assignment.name} plain={true}>
+                      {submission.grade}
+                    </TableColumn>
+                  );
                 } else if (submission) {
-                  return <TableColumn key={assignment.name}>Not graded</TableColumn>;
+                  return (
+                    <TableColumn key={assignment.name} plain={true}>
+                      Not graded
+                    </TableColumn>
+                  );
                 } else {
-                  return <TableColumn key={assignment.name}>Not submitted</TableColumn>;
+                  return (
+                    <TableColumn key={assignment.name} plain={true}>
+                      Not submitted
+                    </TableColumn>
+                  );
                 }
               })}
             </TableRow>
@@ -202,6 +225,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                       sorted={sortedIndex[header]}
                       onClick={this.toggleSort.bind(this.props, header)}
                       key={header}
+                      plain={true}
                     >
                       {header}
                     </TableColumn>
@@ -214,7 +238,14 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         </div>
       );
     } else {
-      const studentSubmissions = Object.keys(submissionsByStudent[activeStudent]).map((assignmentID) => {
+      const studentAssignments = Object.keys(submissionsByStudent[activeStudent]);
+      studentAssignments.sort((a, b) => {
+        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
+        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
+        return 0;
+      });
+      console.log(studentAssignments);
+      const studentSubmissions = studentAssignments.map((assignmentID) => {
         const submission = submissionsByStudent[activeStudent][assignmentID];
         let grade = 'Not submitted';
         if (submission && submission.isFinalized) {
