@@ -12,7 +12,9 @@ import {
   Tooltipped,
 } from 'react-md';
 
-import { IStudentSubmissionsDataTable } from '../../../types/common';
+import Select from 'react-select';
+
+import { IOption, IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
@@ -26,6 +28,8 @@ interface IPropsStudentOverview {
   submissionsbyUserLoadComplete: boolean;
   assignmentsLoadComplete: boolean;
   deleteSubmission: (submission: SubmissionType) => void;
+  graders: string[];
+  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
 }
 
 interface IState {
@@ -34,13 +38,7 @@ interface IState {
   deleteSub: SubmissionType | null;
 }
 
-class StudentData extends React.Component<IPropsStudentOverview, {}> {
-  public state: Readonly<IState> = {
-    sortedIndex: {},
-    searchTerm: '',
-    deleteSub: null,
-  };
-
+class StudentData extends React.Component<IPropsStudentOverview, IState> {
   public studentHeader = 'student';
 
   public constructor(props: any) {
@@ -50,6 +48,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
       sortedIndex[assn.name] = undefined;
     });
     sortedIndex[this.studentHeader] = true;
+
     this.state = { sortedIndex, searchTerm: '', deleteSub: null };
   }
 
@@ -143,6 +142,10 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
 
   public changeSearch = (value: string) => {
     this.setState({ searchTerm: value });
+  };
+
+  public onGraderChange = (sub: SubmissionType, selectedOption: IOption) => {
+    this.props.changeSubmissionGrader(sub, selectedOption.label);
   };
 
   public render() {
@@ -245,6 +248,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         </div>
       );
     } else {
+      const graderOptions = this.props.graders.map((el: string) => {
+        return { label: el, value: el };
+      });
       const studentAssignments = Object.keys(submissionsByStudent[activeStudent]);
       studentAssignments.sort((a, b) => {
         if (parseInt(a, 10) > parseInt(b, 10)) return 1;
@@ -259,6 +265,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
         } else if (submission) {
           grade = 'Not graded';
         }
+
+        const cellClick = openSubmission.bind(this.props, submission.id);
         return (
           <Tooltipped
             key={submission.id.toString()}
@@ -268,27 +276,34 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
             style={{ zIndex: 2, position: 'absolute', top: '250px' }}
           >
             <TableRow key={submission.id.toString()}>
-              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+              <TableColumn onClick={cellClick}>
                 {
                   assignments.filter((assignment) => {
                     return assignment.id === parseInt(assignmentID, 10);
                   })[0].name
                 }
               </TableColumn>
-              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
-              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
-                {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+              <TableColumn onClick={cellClick}>{grade}</TableColumn>
+              <TableColumn>
+                <Select
+                  value={{ label: submission.grader, value: submission.grader }}
+                  options={graderOptions}
+                  onChange={this.onGraderChange.bind(this.props, submission)}
+                />
               </TableColumn>
-              <Button
-                key={`button--deleteSubmission-${submission.id}`}
-                onClick={this.toggleDeleteSub.bind(this.props, submission)}
-                className="button--deleteSubmission"
-                tooltipLabel="Delete Submission"
-                tooltipDelay={250}
-                icon={true}
-              >
-                delete
-              </Button>
+              <TableColumn onClick={cellClick}>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
+              <TableColumn>
+                <Button
+                  key={`button--deleteSubmission-${submission.id}`}
+                  onClick={this.toggleDeleteSub.bind(this.props, submission)}
+                  className="button--deleteSubmission"
+                  tooltipLabel="Delete Submission"
+                  tooltipDelay={250}
+                  icon={true}
+                >
+                  delete
+                </Button>
+              </TableColumn>
             </TableRow>
           </Tooltipped>
         );
@@ -311,14 +326,16 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn grow={true}>{'Assignment'}</TableColumn>
-                <TableColumn>{'Grade'}</TableColumn>
-                <TableColumn>{'Finalized'}</TableColumn>
-                <TableColumn>{'Delete'}</TableColumn>
+                <TableColumn>Assignment</TableColumn>
+                <TableColumn>Grade</TableColumn>
+                <TableColumn>Grader'</TableColumn>
+                <TableColumn>Finalized</TableColumn>
+                <TableColumn>Delete</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>
           </DataTable>
+
           <DialogContainer
             visible={this.state.deleteSub !== null}
             id="deleteSubmission-dialog"

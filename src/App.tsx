@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
+
 import { Snackbar } from 'react-md';
 
 import Admin from './Admin';
@@ -260,9 +261,9 @@ class App extends React.Component<{}, IState> {
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
-                        addToast={this.addToast}
-                        addLongToast={this.addLongToast}
-                        addErrorToast={this.addErrorToast}
+                addToast={this.addToast}
+                addLongToast={this.addLongToast}
+                addErrorToast={this.addErrorToast}
               />
             )}
           />
@@ -328,6 +329,7 @@ class App extends React.Component<{}, IState> {
                 {gradeRoute}
 
                 <Route component={NoMatch} />
+              </Switch>
               <Snackbar
                 id="short-snackbar"
                 className="short-snackbar"
@@ -357,9 +359,7 @@ class App extends React.Component<{}, IState> {
                 autohideTimeout={2000}
                 onDismiss={this.dismissErrorToast}
                 style={errorSnackBarStyle}
-              />                  
-                  
-              </Switch>
+              />
             </div>
           </div>
         </div>
