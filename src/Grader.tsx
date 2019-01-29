@@ -59,7 +59,19 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public componentDidMount() {
-    this.loadAllAssignments();
+    this.loadAllAssignments().then(() => {
+      const sortedAssignmentMap = {};
+      Object.keys(this.state.assignments).forEach((courseID) => {
+        const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(this.state.assignments[courseID]));
+        sortedAssignments.sort((a: any, b: any) => {
+          if (a.id > b.id) return 1;
+          else if (a.id === b.id) return 0;
+          return -1;
+        });
+        sortedAssignmentMap[courseID] = sortedAssignments;
+      });
+      this.setState({ assignments: sortedAssignmentMap });
+    });
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
