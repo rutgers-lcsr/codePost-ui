@@ -282,7 +282,7 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                 tooltipDelay={250}
                 icon={true}
               >
-                remove_circle
+                delete
               </Button>
             </TableRow>
           </Tooltipped>
