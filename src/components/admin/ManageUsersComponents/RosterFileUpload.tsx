@@ -1,4 +1,5 @@
 import * as React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import { USER_APP } from '../../../types/common';
@@ -217,6 +218,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         );
       }
     }
+    const exampleText = "    [\n    'user1@emaildomain.edu', \n    'user2@emaildomain.edu',\n    ...\n    ]";
 
     return (
       <div>
@@ -233,7 +235,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           {`${USER_APP[userType]} Roster: Upload / Download`}
         </Button>
         <DialogContainer
-          id="rosterFile-dialog"
+          id="dialog--rosterUpload"
+          className="dialog--rosterUpload"
           visible={dialogVisible}
           title={`${USER_APP[userType]}: Manage roster files`}
           onHide={this.toggleDialog}
@@ -242,33 +245,44 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           component={'object'}
           portal={true}
         >
+          {!this.state.uploadFileName ? (
+            <div>
+              {`Download ${USER_APP[userType]} roster as a json format:`}
+              <div className="error-padding" />
+              <Button
+                key="download-roster"
+                className="Btn"
+                iconBefore={false}
+                iconChildren={'save'}
+                onClick={this.downloadRoster}
+                primary={true}
+                raised={true}
+              >
+                Download JSON roster
+              </Button>
+            </div>
+          ) : (
+            <div />
+          )}
+          <div className="error-padding" />
           <div>
-            {`Download ${USER_APP[userType]} roster as a json format:`}
-            <div className="error-padding" />
-            <Button
-              key="download-roster"
-              className="Btn"
-              iconBefore={false}
-              iconChildren={'save'}
-              onClick={this.downloadRoster}
-              primary={true}
-              raised={true}
-            >
-              Download JSON roster
-            </Button>
-          </div>
-          <div className="padding" />
-          <div>
-            {`Upload file to replace ${USER_APP[userType]} roster:`}
-            <div className="error-padding" />
-            <FileUpload
-              id="rosterUpload-FileInput"
-              accept="application/json"
-              multiple={false}
-              onLoad={this.onRosterUpload}
-              onChange={this.dummyUpload}
-              disabled={this.state.updatingRoster}
-            />
+            {!this.state.uploadFileName ? (
+              <div>
+                {`Upload file to replace ${USER_APP[userType]} roster:`}
+                <ReactMarkdown source={exampleText} />
+                <div className="error-padding" />
+                <FileUpload
+                  id="rosterUpload-FileInput"
+                  accept="application/json"
+                  multiple={false}
+                  onLoad={this.onRosterUpload}
+                  onChange={this.dummyUpload}
+                  disabled={this.state.updatingRoster}
+                />
+              </div>
+            ) : (
+              <div />
+            )}
             {this.state.updatingRoster ? <LinearProgress id="circle" className="progressCircle" /> : ''}
             <div className="error-padding" />
             {this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : ''}
