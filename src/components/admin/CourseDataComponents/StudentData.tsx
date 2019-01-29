@@ -3,6 +3,7 @@ import {
   Button,
   DataTable,
   DialogContainer,
+  FontIcon,
   TableBody,
   TableColumn,
   TableHeader,
@@ -274,6 +275,9 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
                 }
               </TableColumn>
               <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>{grade}</TableColumn>
+              <TableColumn onClick={openSubmission.bind(this.props, submission.id)}>
+                {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+              </TableColumn>
               <Button
                 key={`button--deleteSubmission-${submission.id}`}
                 onClick={this.toggleDeleteSub.bind(this.props, submission)}
@@ -308,7 +312,8 @@ class StudentData extends React.Component<IPropsStudentOverview, {}> {
               <TableRow>
                 <TableColumn grow={true}>{'Assignment'}</TableColumn>
                 <TableColumn>{'Grade'}</TableColumn>
-                <TableColumn>{'   '}</TableColumn>
+                <TableColumn>{'Finalized'}</TableColumn>
+                <TableColumn>{'Delete'}</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>

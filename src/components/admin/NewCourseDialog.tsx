@@ -132,11 +132,21 @@ class NewCourseDialog extends React.Component<IProps, IState> {
             onChange={this.changePeriodField}
             onKeyDown={this.handleKeyPress}
           />
-
+          <br />
           {courses.length > 0 ? (
-            <div>
+            <div className="dialog--section">
+              <div className="dialog--create-course__grid">
+                <div className="dialog--create-course__grid--left">
+                  <b>Copy an existing course</b> <br />
+                  (or leave blank to start from scratch).
+                </div>
+                <div className="dialog--create-course__grid--right">
+                  <Button icon tooltipLabel="Copying a course will copy all assignments and rubrics to the new course.">
+                    info
+                  </Button>
+                </div>
+              </div>
               <br />
-              <div>Copy an existing course (or leave blank to start from scratch.</div>
               <Select
                 className="selector--new-course-dialog"
                 options={selectorItemsFormatter(courses)}

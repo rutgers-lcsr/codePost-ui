@@ -4,10 +4,13 @@ import { CodePanel } from './components/CodePanel';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
+import { Snackbar } from 'react-md';
+
 import {
   ICommentToRubricCommentMap,
   IFileToCommentsMap,
   IRubricCategoryToRubricCommentsMap,
+  IToast,
   IUser,
 } from './types/common';
 
@@ -33,6 +36,8 @@ interface IGradeState {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   positiveNegativeAlert: boolean;
+
+  errorToasts: IToast[];
 }
 
 interface IProps {
@@ -56,6 +61,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     rubricComments: {},
     submission: undefined,
     positiveNegativeAlert: false,
+    errorToasts: [],
   };
 
   //////////////////////////////////////
@@ -78,6 +84,18 @@ class Grade extends React.Component<IProps, IGradeState> {
       });
     });
   }
+
+  // ------------------- Toast functions -------------------
+  public addErrorToast = (text: string, action: string | undefined) => {
+    const errorToasts = this.state.errorToasts.slice();
+    errorToasts.push({ text, action });
+    this.setState({ errorToasts });
+  };
+
+  public dismissErrorToast = () => {
+    const [, ...errorToasts] = this.state.errorToasts;
+    this.setState({ errorToasts });
+  };
 
   ///////////////////////////////////////
   // Loading methods
@@ -295,7 +313,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
-    const { assignment, submission, comments } = this.state;
+    const { assignment, commentRubricComments, submission, comments } = this.state;
     if (!submission || !assignment) {
       return;
     }
@@ -307,7 +325,8 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
-    this.setState({ comments });
+    commentRubricComments[newComment.id] = commentRubricComments[commentID];
+    this.setState({ comments, commentRubricComments });
   };
 
   // Delete the comment json from the submission state
@@ -343,12 +362,20 @@ class Grade extends React.Component<IProps, IGradeState> {
       isFinalized: !submission.isFinalized,
     };
 
-    return Submission.update(payload).then((json: any) => {
-      this.setState({
-        submission: json,
+    return Submission.update(payload)
+      .then((json: any) => {
+        this.setState({
+          submission: json,
+        });
+        return json;
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.addErrorToast(error, undefined);
+          });
+        });
       });
-      return json;
-    });
   };
 
   public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
@@ -397,6 +424,14 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const isCourseAdmin = this.isCourseAdmin(assignment);
 
+    const errorSnackBarStyle = {
+      width: '100%',
+      fontWeight: 500,
+      fontSize: 14,
+      backgroundColor: 'red',
+      maxWidth: '100%',
+    };
+
     if (isLoading) {
       return <div>Loading...</div>;
     }
@@ -440,6 +475,17 @@ class Grade extends React.Component<IProps, IGradeState> {
               updateSubmissionGrade={this.updateSubmissionGrade}
             />
           </div>
+
+          <Snackbar
+            id="error-snackbar"
+            className="error-snackbar"
+            toasts={this.state.errorToasts}
+            autohide={true}
+            lastChild={true}
+            autohideTimeout={2000}
+            onDismiss={this.dismissErrorToast}
+            style={errorSnackBarStyle}
+          />
         </div>
       </div>
     );

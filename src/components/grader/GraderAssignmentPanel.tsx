@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { Button, DataTable, DialogContainer, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -8,6 +8,8 @@ import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import Select from 'react-select';
+
+import * as moment from 'moment';
 
 interface IProps {
   assignment?: AssignmentType;
@@ -21,12 +23,31 @@ interface IProps {
 interface IState {
   buttonState: BUTTON_STATE;
   currentSection?: SectionType;
+
+  ascending?: boolean;
+  sortedSubmissions: SubmissionType[];
+
+  releasedSubmission?: SubmissionType;
 }
 
 class GraderAssignmentPanel extends React.Component<IProps, {}> {
+  public static getDerivedStateFromProps(nextProps: IProps, prevState: IState) {
+    if (prevState.sortedSubmissions !== nextProps.submissions) {
+      return {
+        sortedSubmissions: nextProps.submissions,
+      };
+    }
+    return {};
+  }
+
   public state: Readonly<IState> = {
     buttonState: BUTTON_STATE.Active,
     currentSection: undefined,
+
+    ascending: undefined,
+    sortedSubmissions: this.props.submissions,
+
+    releasedSubmission: undefined,
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -53,9 +74,13 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     });
   };
 
+  public toggleReleaseDialog = (submission: SubmissionType | undefined) => {
+    this.setState({ releasedSubmission: submission });
+  };
+
   public releaseSubmission = (submission: SubmissionType) => {
     this.props.releaseSubmission(submission).then((releasedSubmission: SubmissionType) => {
-      this.setState({ buttonState: BUTTON_STATE.Active });
+      this.setState({ buttonState: BUTTON_STATE.Active, releasedSubmission: undefined });
     });
   };
 
@@ -67,11 +92,26 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     this.setState({ currentSection });
   };
 
+  public sortSubmissions = () => {
+    if (!this.state.ascending) {
+      const ascending = true;
+      const sortedSubmissions = this.state.sortedSubmissions.sort((a, b) => {
+        return a.isFinalized === b.isFinalized ? 0 : a.isFinalized ? -1 : 1;
+      });
+      this.setState({ ascending, sortedSubmissions });
+    } else {
+      const ascending = !this.state.ascending;
+      const sortedSubmissions = this.state.sortedSubmissions.slice();
+      sortedSubmissions.reverse();
+      this.setState({ ascending, sortedSubmissions });
+    }
+  };
+
   public render() {
     const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
     const { buttonState } = this.state;
 
-    const headers = ['Student(s)', 'Grade', 'Date Finalized', 'Release'];
+    const headers = ['Student(s)', 'Grade', 'Last Edited', 'Finalized', 'Release'];
 
     const style = {
       cursor: 'pointer',
@@ -95,12 +135,20 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
             <TableHeader>
               <TableRow>
                 {headers.map((header) => {
-                  return <TableColumn key={header}>{header}</TableColumn>;
+                  if (header === 'Finalized') {
+                    return (
+                      <TableColumn key={header} sorted={this.state.ascending} onClick={this.sortSubmissions}>
+                        {header}
+                      </TableColumn>
+                    );
+                  } else {
+                    return <TableColumn key={header}>{header}</TableColumn>;
+                  }
                 })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissions.map((submission) => {
+              {this.state.sortedSubmissions.map((submission) => {
                 return (
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
@@ -109,9 +157,12 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.dateEdited}
+                      {moment(submission.dateEdited).format('llll')}
                     </TableColumn>
-                    <TableColumn onClick={this.releaseSubmission.bind(this, submission)}>
+                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
+                      {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+                    </TableColumn>
+                    <TableColumn onClick={this.toggleReleaseDialog.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>
                         remove_circle
                       </Button>
@@ -121,6 +172,27 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
               })}
             </TableBody>
           </DataTable>
+          <DialogContainer
+            id="release-dialog"
+            visible={this.state.releasedSubmission !== undefined}
+            onHide={this.toggleReleaseDialog.bind(this, undefined)}
+            title="Are you sure?"
+          >
+            <div>
+              Click Confirm to unassign the grader from the submission
+              {this.state.releasedSubmission ? ` (${this.state.releasedSubmission.students.join('/')})` : ''}.
+            </div>
+            <Button onClick={this.toggleReleaseDialog.bind(this.props, undefined)} primary={false} flat={true}>
+              Cancel
+            </Button>
+            <Button
+              onClick={this.releaseSubmission.bind(this, this.state.releasedSubmission)}
+              primary={true}
+              flat={true}
+            >
+              Confirm
+            </Button>
+          </DialogContainer>
         </div>
       );
     }
