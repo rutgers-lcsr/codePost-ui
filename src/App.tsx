@@ -329,37 +329,37 @@ class App extends React.Component<{}, IState> {
                 {gradeRoute}
 
                 <Route component={NoMatch} />
-                <Snackbar
-                  id="short-snackbar"
-                  className="short-snackbar"
-                  toasts={this.state.toasts}
-                  autohide={true}
-                  lastChild={true}
-                  autohideTimeout={2000}
-                  onDismiss={this.dismissToast}
-                  style={snackBarStyle}
-                />
-                <Snackbar
-                  id="long-snackbar"
-                  className="long-snackbar"
-                  toasts={this.state.longToasts}
-                  autohide={true}
-                  lastChild={true}
-                  autohideTimeout={4000}
-                  onDismiss={this.dismissLongToast}
-                  style={snackBarStyle}
-                />
-                <Snackbar
-                  id="error-snackbar"
-                  className="error-snackbar"
-                  toasts={this.state.errorToasts}
-                  autohide={true}
-                  lastChild={true}
-                  autohideTimeout={2000}
-                  onDismiss={this.dismissErrorToast}
-                  style={errorSnackBarStyle}
-                />
               </Switch>
+              <Snackbar
+                id="short-snackbar"
+                className="short-snackbar"
+                toasts={this.state.toasts}
+                autohide={true}
+                lastChild={true}
+                autohideTimeout={2000}
+                onDismiss={this.dismissToast}
+                style={snackBarStyle}
+              />
+              <Snackbar
+                id="long-snackbar"
+                className="long-snackbar"
+                toasts={this.state.longToasts}
+                autohide={true}
+                lastChild={true}
+                autohideTimeout={4000}
+                onDismiss={this.dismissLongToast}
+                style={snackBarStyle}
+              />
+              <Snackbar
+                id="error-snackbar"
+                className="error-snackbar"
+                toasts={this.state.errorToasts}
+                autohide={true}
+                lastChild={true}
+                autohideTimeout={2000}
+                onDismiss={this.dismissErrorToast}
+                style={errorSnackBarStyle}
+              />
             </div>
           </div>
         </div>

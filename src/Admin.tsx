@@ -1306,7 +1306,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           submissionsByInactiveGrader,
         },
         () => {
-          this.addToast('Submission successfully updated.', undefined);
+          this.props.addToast('Submission successfully updated.', undefined);
         },
       );
     });
