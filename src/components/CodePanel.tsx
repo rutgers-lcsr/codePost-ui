@@ -374,9 +374,9 @@ const CommentList = (props: ICommentListProps) => {
     //    - Make comment position absolute
     //    - Set upper margin at <startLine> em down from top
 
-    let pixelsPerLine = 0;
-    if (document.getElementById('0')) {
-      pixelsPerLine = document.getElementById('0')!.getBoundingClientRect().height;
+    let pixelsPerLine = 18;
+    if (document.getElementById('line-0')) {
+      pixelsPerLine = document.getElementById('line-0')!.getBoundingClientRect().height;
     }
     let startAt = comment.startLine * pixelsPerLine;
 
