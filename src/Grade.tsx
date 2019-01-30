@@ -192,22 +192,32 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public loadRubricComments = (rubricCategory: RubricCategoryType) => {
-    return Promise.all(
-      rubricCategory.rubricComments.map((rubricCommentId: number) => {
-        return RubricComment.read(rubricCommentId).then((rubricComment: RubricCommentType) => {
-          let rubricComments = [rubricComment];
-          if (this.state.rubricComments[rubricCategory.id]) {
-            rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
-          }
-          this.setState({
-            rubricComments: {
-              ...this.state.rubricComments,
-              [rubricCategory.id]: rubricComments,
-            },
+    if (rubricCategory.rubricComments.length === 0) {
+      this.setState({
+        rubricComments: {
+          ...this.state.rubricComments,
+          [rubricCategory.id]: [],
+        },
+      });
+      return Promise.all([Promise.resolve()]);
+    } else {
+      return Promise.all(
+        rubricCategory.rubricComments.map((rubricCommentId: number) => {
+          return RubricComment.read(rubricCommentId).then((rubricComment: RubricCommentType) => {
+            let rubricComments = [rubricComment];
+            if (this.state.rubricComments[rubricCategory.id]) {
+              rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
+            }
+            this.setState({
+              rubricComments: {
+                ...this.state.rubricComments,
+                [rubricCategory.id]: rubricComments,
+              },
+            });
           });
-        });
-      }),
-    );
+        }),
+      );
+    }
   };
 
   ///////////////////////////////////////
