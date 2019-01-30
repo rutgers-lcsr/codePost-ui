@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
-import { DeleteLinkedCommentsDialog } from './RubricUtils';
+import { LinkedCommentsAlert } from './RubricUtils';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
@@ -390,6 +390,11 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       disabled: this.state.updatingRubric,
     });
 
+    // void funcrtion due to typescript constraints. Need to pass it into onUpdate for
+    // LinkedCommentsAlert
+    const voidFunction = () => {
+      return;
+    };
     const exampleText =
       '    [\n\
         {"id" : 2,\n\
@@ -515,7 +520,9 @@ class RubricFileDialog extends React.Component<IProps, {}> {
             {uploadFile}
             <div className="error-padding" />
             {content}
-            <DeleteLinkedCommentsDialog
+            <LinkedCommentsAlert
+              isDelete={true}
+              onUpdate={voidFunction}
               onDelete={this.triggerUpdate.bind(this.props, true)}
               onUnLink={this.triggerUpdate.bind(this.props, false)}
               onCancel={this.toggleDialog}
