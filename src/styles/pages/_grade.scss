@@ -110,6 +110,7 @@
 
     &__scrollIndicator {
       width: 30px;
+      margin-bottom: -10px;
       visibility: hidden;
       @media screen and (max-width: 1260px) {
         font-style: italic;

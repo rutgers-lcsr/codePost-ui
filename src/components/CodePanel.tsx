@@ -121,6 +121,7 @@ class CodePanel extends React.Component<IProps, IState> {
           {files.map((file: FileType, i: number) => {
             return (
               <TabPanel key={`${file.id}-code`}>
+                <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
                 <Code
                   file={file}
                   comments={comments[file.id]}
@@ -312,7 +313,6 @@ const Code = (props: ICodeProps) => {
   return (
     <div className="grade__main-container__tabContent">
       <div className="grade__main-container__tabContent__codePanel">
-        <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
         <div className="code__highlighted-area">
           <div className="code__syntax-highlighter">
             <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
