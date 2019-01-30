@@ -294,7 +294,15 @@ class App extends React.Component<{}, IState> {
       } else if (!isStudent && !isGrader && isAdmin) {
         pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
       } else {
-        pageSelector = <Route exact={true} path={HOME} component={Home} />;
+        pageSelector = (
+          <Route
+            exact={true}
+            path={HOME}
+            render={(props: any) => (
+              <Home {...props} isAuthed={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+            )}
+          />
+        );
       }
 
       const snackBarStyle = {
