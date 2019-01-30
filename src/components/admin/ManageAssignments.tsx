@@ -591,7 +591,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             delay={1000}
             position="top"
             setPosition={true}
-            style={{ top: '150px' }}
+            style={{ top: '150px', height: '50px' }}
           >
             <TableRow key={assignmentID}>
               <TableColumn key={`${assignmentID}-1`} onClick={onCellClick}>
