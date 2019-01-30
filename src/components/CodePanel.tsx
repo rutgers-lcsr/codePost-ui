@@ -106,41 +106,39 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <div>
-        <Tabs defaultTabIndex={0}>
-          <TabList className="tabList--Grade">
-            {files.map((file: FileType, i: number) => {
-              const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
-              return (
-                <Tab key={file.id} className="tabList--Grade__tab">
-                  {tabTitle}
-                </Tab>
-              );
-            })}
-          </TabList>
+      <Tabs defaultTabIndex={0} style={{ height: '100%' }}>
+        <TabList className="tabList--Grade">
           {files.map((file: FileType, i: number) => {
+            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <TabPanel key={`${file.id}-code`}>
-                <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
-                <Code
-                  file={file}
-                  comments={comments[file.id]}
-                  rubricComments={rubricComments}
-                  readOnly={readOnly}
-                  addComment={this.addComment}
-                  commentCounter={commentCounter}
-                  updateCommentCounter={this.updateCommentCounter}
-                  activeCommentId={activeCommentId}
-                  changeActive={this.changeActive}
-                  deleteComment={deleteComment}
-                  updateComment={updateComment}
-                  updateSubmissionGrade={this.props.updateSubmissionGrade}
-                />
-              </TabPanel>
+              <Tab key={file.id} className="tabList--Grade__tab">
+                {tabTitle}
+              </Tab>
             );
           })}
-        </Tabs>
-      </div>
+        </TabList>
+        {files.map((file: FileType, i: number) => {
+          return (
+            <TabPanel key={`${file.id}-code`} style={{ height: '100%' }}>
+              <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+              <Code
+                file={file}
+                comments={comments[file.id]}
+                rubricComments={rubricComments}
+                readOnly={readOnly}
+                addComment={this.addComment}
+                commentCounter={commentCounter}
+                updateCommentCounter={this.updateCommentCounter}
+                activeCommentId={activeCommentId}
+                changeActive={this.changeActive}
+                deleteComment={deleteComment}
+                updateComment={updateComment}
+                updateSubmissionGrade={this.props.updateSubmissionGrade}
+              />
+            </TabPanel>
+          );
+        })}
+      </Tabs>
     );
   }
 }
@@ -318,6 +316,7 @@ const Code = (props: ICodeProps) => {
             <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
               {codeString}
             </SyntaxHighlighter>
+            <div className="code__syntax-highlighter--extender">&nbsp;</div>
           </div>
           <div className="code__underlay">
             <div className="code__underlay--line-numbers" style={lineNumberStyle}>
