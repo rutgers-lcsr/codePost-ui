@@ -83,11 +83,11 @@
 }
 
 .DataTable--Grader {
-  @include fixedTableHeader(calc(100vh - 150px));
+  @include fixedTableHeader(calc(100vh - 250px));
 }
 
 .DataTable--ViewAll {
-  @include fixedTableHeader(calc(100vh - 150px));
+  @include fixedTableHeader(calc(100vh - 260px));
 }
 
 .DataTable--RubricCategory {
