@@ -7,19 +7,16 @@ import '../styles/landing.scss';
 const LandingTopBar = () => (
   <Toolbar
     fixed={true}
-    className="topbar"
+    className="topbar--Landing"
     title="codePost"
     actions={[
-      <Button key="About" className="Btn" flat={true}>
-        About
-      </Button>,
-      <Button href="/login" key="Login" className="Btn" flat={true}>
+      <Button href="/login" key="Login" className="LandingBtn" flat={true}>
         Login
       </Button>,
-      <Button href="/signup/staff" key="SignUp" className="SignupBtn" raised={true}>
+      <Button href="/signup/staff" key="SignUp" className="LandingBtn" primary={true} raised={true}>
         Sign Up | Course Staff
       </Button>,
-      <Button href="/signup/student" key="SignUp" className="SignupBtn" raised={true}>
+      <Button href="/signup/student" key="SignUp" className="LandingBtn" primary={true} raised={true}>
         Sign Up | Students
       </Button>,
     ]}

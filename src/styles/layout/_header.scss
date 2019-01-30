@@ -48,3 +48,18 @@
     }
   }
 }
+
+.topbar--Landing {
+  @include topbar($topbar-height, white);
+  border-color: $brand-color;
+  border-style: solid;
+  border-width: 0px 0px 3px 0px;
+
+  &__spacing {
+    height: $topbar-height;
+  }
+  .LandingBtn {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+}
