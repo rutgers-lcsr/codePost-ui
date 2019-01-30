@@ -275,7 +275,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             <TablePagination
               className="DataTable--ManageUsers__pagination"
               rows={this.state.sortedStudents.length}
-              defaultRowsPerPage={20}
+              defaultRowsPerPage={10}
               onPagination={this.handlePagination}
             />
           ) : (
