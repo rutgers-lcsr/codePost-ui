@@ -24,6 +24,20 @@
     color: $dark-grey;
     font-size: 20px;
     margin-left: 20px;
+
+    a:hover {
+      text-decoration: none;
+      color: black;
+    }
+
+    a:active {
+      text-decoration: none;
+      color: black;
+    }
+    a:focus {
+      text-decoration: none;
+      color: black;
+    }
   }
 
   &__codePost-P {
@@ -61,5 +75,10 @@
   .LandingBtn {
     margin-left: 2px;
     margin-right: 2px;
+
+    &:hover {
+      text-decoration: none;
+      color: black;
+    }
   }
 }
