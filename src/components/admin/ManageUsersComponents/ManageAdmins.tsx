@@ -144,7 +144,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               id="addAdminField"
               label="Add Admin"
               lineDirection="center"
-              placeholder="Student's email"
+              placeholder="Admin's email"
               className="roster-admin__addUser__Field"
               value={newAdminField}
               onChange={this.newAdminFieldOnChange}

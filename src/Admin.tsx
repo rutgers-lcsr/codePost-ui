@@ -459,6 +459,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Assignment.readRubric(assignmentID, {})
       .then((json) => {
         const { rubricCategories, rubricComments } = this.state;
+        console.log(json);
         rubricCategories[assignmentID] = json.rubricCategories;
         json.rubricCategories.forEach((cat: RubricCategoryType) => {
           rubricComments[cat.id] = json.rubricComments.filter((comm: RubricCommentType) => {

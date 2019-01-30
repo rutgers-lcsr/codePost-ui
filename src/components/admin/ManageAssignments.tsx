@@ -20,7 +20,7 @@ import {
 import NewAssignmentDialog from './ManageAssignmentsComponents/NewAssignmentDialog';
 import RubricCommentExplorer from './ManageAssignmentsComponents/RubricCommentExplorer';
 import RubricFileDialog from './ManageAssignmentsComponents/RubricFileDialog';
-import { DeleteLinkedCommentsDialog, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
+import { LinkedCommentsAlert, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
 
 import { CourseType } from '../../infrastructure/course';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -92,8 +92,12 @@ interface IState {
   activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
   newCategoryCounter: number;
-  deleteCommentDialogID: { categoryID: number; commentIndex: number } | undefined;
-  deleteCategoryDialogID: { categoryID: number; categoryName: string } | undefined;
+  // isDelete boolean for change dialogs indicate whether the change is a delete or an update
+  // Dialog ID is the id of a comment that has a pending change (delete or update) based on a dialog FileInput
+  changeCommentDialogID: { categoryID: number; commentIndex: number; isDelete: boolean } | undefined;
+  changeCategoryDialogID:
+    | { categoryID: number; categoryIndex: number; categoryName: string; isDelete: boolean }
+    | undefined;
   commentExplorer: { categoryID: number; commentIndex: number } | undefined;
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
@@ -106,8 +110,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
     activeRubricCategories: undefined,
     activeRubricComments: undefined,
     newCategoryCounter: -1,
-    deleteCommentDialogID: undefined,
-    deleteCategoryDialogID: undefined,
+    changeCommentDialogID: undefined,
+    changeCategoryDialogID: undefined,
     commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
@@ -242,13 +246,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
           activeRubricComments[categoryID][commentIndex].id = data.id;
           savedComments[data.id] = true;
           delete savedComments[-1];
-          this.setState({ activeRubricComments, savedComments });
+          this.setState({ activeRubricComments, savedComments, changeCommentDialogID: undefined });
           setTimeout(this.clearSaveComment.bind(this.props, data.id), 2000);
         });
       } else {
         this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta).then(() => {
           savedComments[comm.id] = true;
-          this.setState({ savedComments });
+          this.setState({ savedComments, changeCommentDialogID: undefined });
           setTimeout(this.clearSaveComment.bind(this.props, comm.id), 2000);
         });
       }
@@ -299,6 +303,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 activeRubricCategories: newRubricCategories,
                 activeRubricComments,
                 savedCategories,
+                changeCategoryDialogID: undefined,
               });
               setTimeout(this.clearSaveCategory.bind(this.props, data.id), 2000);
             }
@@ -306,7 +311,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         } else {
           this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit).then(() => {
             savedCategories[cat.id] = true;
-            this.setState({ savedCategories });
+            this.setState({ savedCategories, changeCategoryDialogID: undefined });
             setTimeout(this.clearSaveCategory.bind(this.props, cat.id), 2000);
           });
         }
@@ -337,7 +342,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.setState({
           activeRubricComments: newRubricComments,
           activeRubricCategories: newRubricCategories,
-          deleteCommentDialogID: undefined,
+          changeCommentDialogID: undefined,
           savedComments,
         });
       });
@@ -358,7 +363,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.setState({
           activeRubricCategories: newRubricCategories,
           activeRubricComments,
-          deleteCategoryDialogID: undefined,
+          changeCategoryDialogID: undefined,
           savedCategories,
         });
         return;
@@ -374,7 +379,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         this.setState({
           activeRubricCategories: newRubricCategories,
           activeRubricComments,
-          deleteCategoryDialogID: undefined,
+          changeCategoryDialogID: undefined,
           savedCategories,
         });
       });
@@ -416,26 +421,37 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   // ------------------- Delete Linked Comments Dialog functions -------------------
-  public triggerDeleteCommentDialog = (categoryID: number, commentIndex: number) => {
+  public triggerChangeCommentDialog = (isDelete: boolean, categoryID: number, commentIndex: number) => {
     const { activeRubricComments } = this.state;
     if (activeRubricComments) {
       const thisComment = activeRubricComments[categoryID][commentIndex];
       if (thisComment.comments.length > 0) {
-        this.setState({ deleteCommentDialogID: { categoryID, commentIndex } });
+        this.setState({ changeCommentDialogID: { categoryID, commentIndex, isDelete } });
       } else {
-        this.deleteComment(categoryID, commentIndex, true);
+        if (isDelete) {
+          this.deleteComment(categoryID, commentIndex, true);
+        } else {
+          this.updateComment(categoryID, commentIndex);
+        }
       }
     }
   };
 
-  public triggerDeleteCategoryDialog = (categoryID: number, categoryName: string) => {
+  public triggerChangeCategoryDialog = (
+    isDelete: boolean,
+    categoryID: number,
+    categoryIndex: number,
+    categoryName: string,
+  ) => {
     const { activeRubricComments } = this.state;
     // if any child rubricComments have a linked comment, alert the user
+    console.log(categoryID);
+    console.log(activeRubricComments);
     if (activeRubricComments) {
       const theseComments = activeRubricComments[categoryID];
       const isLinked = theseComments.some((comment) => {
         if (comment.comments.length > 0) {
-          this.setState({ deleteCategoryDialogID: { categoryID, categoryName } });
+          this.setState({ changeCategoryDialogID: { categoryID, categoryName, categoryIndex, isDelete } });
           return true;
         }
         return false;
@@ -443,17 +459,43 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
       // if no linked comments, delete the category
       if (!isLinked) {
-        this.deleteCategory(categoryID, categoryName, true);
+        if (isDelete) {
+          this.deleteCategory(categoryID, categoryName, true);
+        } else {
+          this.updateCategory(categoryIndex);
+        }
       }
     }
   };
 
-  public clearDeleteCommentDialog = () => {
-    this.setState({ deleteCommentDialogID: undefined });
+  public clearChangeCommentDialog = () => {
+    const { changeCommentDialogID, activeRubricComments } = this.state;
+    const { rubricComments } = this.props;
+
+    // If a change to an item with linked comments is cancelled, revert to previous data
+    if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
+      const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
+      console.log(oldComment);
+      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text = oldComment.text;
+      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
+        oldComment.pointDelta;
+      console.log(activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex]);
+      this.setState({ activeRubricComments });
+    }
+    this.setState({ changeCommentDialogID: undefined });
   };
 
-  public clearDeleteCategoryDialog = () => {
-    this.setState({ deleteCategoryDialogID: undefined });
+  public clearChangeCategoryDialog = () => {
+    const { changeCategoryDialogID, activeRubricCategories, activeAssignment } = this.state;
+    const { rubricCategories } = this.props;
+
+    // If a change to an item with linked comments is cancelled, revert to previous data
+    if (activeAssignment && activeRubricCategories && changeCategoryDialogID && !changeCategoryDialogID.isDelete) {
+      const oldCat = rubricCategories[activeAssignment.id][changeCategoryDialogID.categoryIndex];
+      activeRubricCategories[changeCategoryDialogID.categoryIndex].pointLimit = oldCat.pointLimit;
+      this.setState({ activeRubricCategories });
+    }
+    this.setState({ changeCategoryDialogID: undefined });
   };
 
   // ------------------- RubricUI explorer -------------------
@@ -644,16 +686,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
               comments={activeRubricComments[cat.id]}
               categoryName={cat.name}
               categoryPointLimit={cat.pointLimit}
-              deleteCategory={this.triggerDeleteCategoryDialog}
+              // bind the trigger change with true for isDelete
+              deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
               changeCategoryName={this.changeCategoryName}
               changeCategoryCap={this.changeCategoryCap}
               addEmptyComment={this.addEmptyComment}
               changeCommentText={this.changeCommentText}
               changeCommentDelta={this.changeCommentDelta}
-              deleteComment={this.triggerDeleteCommentDialog}
+              deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
               isDisabled={lockManageAssignment}
-              updateComment={this.updateComment}
-              updateCategory={this.updateCategory}
+              updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
+              updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
+              updateCategoryName={this.updateCategory}
               savedComments={this.state.savedComments}
               savedCategories={this.state.savedCategories}
               triggerCommentExplorer={this.triggerCommentExplorer}
@@ -753,54 +797,70 @@ class ManageAssignments extends React.Component<IProps, {}> {
           >
             Add New Category
           </Button>
-          <DeleteLinkedCommentsDialog
+          <LinkedCommentsAlert
+            isDelete={this.state.changeCommentDialogID ? this.state.changeCommentDialogID.isDelete : false}
             onDelete={
-              typeof this.state.deleteCommentDialogID !== 'undefined'
+              typeof this.state.changeCommentDialogID !== 'undefined'
                 ? this.deleteComment.bind(
                     this.props,
-                    this.state.deleteCommentDialogID.categoryID,
-                    this.state.deleteCommentDialogID.commentIndex,
+                    this.state.changeCommentDialogID.categoryID,
+                    this.state.changeCommentDialogID.commentIndex,
                     true,
                   )
                 : ''
             }
             onUnLink={
-              typeof this.state.deleteCommentDialogID !== 'undefined'
+              typeof this.state.changeCommentDialogID !== 'undefined'
                 ? this.deleteComment.bind(
                     this.props,
-                    this.state.deleteCommentDialogID.categoryID,
-                    this.state.deleteCommentDialogID.commentIndex,
+                    this.state.changeCommentDialogID.categoryID,
+                    this.state.changeCommentDialogID.commentIndex,
                     false,
                   )
                 : ''
             }
-            onCancel={this.clearDeleteCommentDialog}
-            isVisible={typeof this.state.deleteCommentDialogID !== 'undefined'}
+            onUpdate={
+              typeof this.state.changeCommentDialogID !== 'undefined'
+                ? this.updateComment.bind(
+                    this.props,
+                    this.state.changeCommentDialogID.categoryID,
+                    this.state.changeCommentDialogID.commentIndex,
+                  )
+                : ''
+            }
+            onCancel={this.clearChangeCommentDialog}
+            isVisible={typeof this.state.changeCommentDialogID !== 'undefined'}
             isDialog={true}
           />
-          <DeleteLinkedCommentsDialog
+          <LinkedCommentsAlert
+            isDelete={this.state.changeCommentDialogID ? this.state.changeCommentDialogID.isDelete : false}
             onDelete={
-              typeof this.state.deleteCategoryDialogID !== 'undefined'
+              typeof this.state.changeCategoryDialogID !== 'undefined'
                 ? this.deleteCategory.bind(
                     this.props,
-                    this.state.deleteCategoryDialogID.categoryID,
-                    this.state.deleteCategoryDialogID.categoryName,
+                    this.state.changeCategoryDialogID.categoryID,
+                    this.state.changeCategoryDialogID.categoryName,
                     true,
                   )
                 : ''
             }
             onUnLink={
-              typeof this.state.deleteCategoryDialogID !== 'undefined'
+              typeof this.state.changeCategoryDialogID !== 'undefined'
                 ? this.deleteCategory.bind(
                     this.props,
-                    this.state.deleteCategoryDialogID.categoryID,
-                    this.state.deleteCategoryDialogID.categoryName,
+                    this.state.changeCategoryDialogID.categoryID,
+                    this.state.changeCategoryDialogID.categoryName,
                     false,
                   )
                 : ''
             }
-            onCancel={this.clearDeleteCategoryDialog}
-            isVisible={typeof this.state.deleteCategoryDialogID !== 'undefined'}
+            onUpdate={
+              typeof this.state.changeCategoryDialogID !== 'undefined'
+                ? this.updateCategory.bind(this.props, this.state.changeCategoryDialogID.categoryIndex)
+                : ''
+            }
+            onCancel={this.clearChangeCategoryDialog}
+            isVisible={typeof this.state.changeCategoryDialogID !== 'undefined'}
             isDialog={true}
           />
           <RubricCommentExplorer

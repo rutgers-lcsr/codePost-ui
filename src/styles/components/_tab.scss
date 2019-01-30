@@ -66,71 +66,32 @@
     }
     &__comment-count {
       @include badgeFormat($mid-grey, black);
+      margin-left: 10px;
       z-index: 0;
       margin-right: 10px;
     }
   }
 }
 
-// This css property will prevent animation when using react-tabs
-.react-swipeable-view-container {
-  transition: None !important;
-}
-
-.md-tab {
-  text-transform: none;
-  // Media query override to disable the default md-tab behavior of expanding on smaller screens
-  @media screen and (min-width: 320px) {
-    max-width: 264px;
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  &-label {
-    @media screen and (min-width: 320px) {
-      font-size: $font-size-large;
-    }
-  }
-}
-
-.md-tabs {
-  &--CourseData {
-    .md-tab-indicator {
-      background-color: $brand-color;
-    }
-    background-color: white;
-    padding-top: 30px;
-    margin-top: 90px;
-  }
-  &--Grade {
-    height: 35px;
-
-    .md-ink-container {
-      display: none;
-    }
-
-    .md-tooltip--bottom-active {
-      z-index: 2;
-    }
-
-    .md-fake-btn {
-      height: 35px;
-      padding-bottom: 0px;
-      line-height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &:hover {
-        background-color: shade(white, 10);
-      }
-    }
-
-    .md-tab-indicator {
-      background-color: $brand-color;
-    }
-  }
-}
+// // This css property will prevent animation when using react-tabs
+// .react-swipeable-view-container {
+//   transition: None !important;
+// }
+//
+// .md-tab {
+//   // Media query override to disable the default md-tab behavior of expanding on smaller screens
+//   @media screen and (min-width: 320px) {
+//     max-width: 264px;
+//     padding-left: 24px;
+//     padding-right: 24px;
+//   }
+//
+//   &-label {
+//     @media screen and (min-width: 320px) {
+//       font-size: $font-size-large;
+//     }
+//   }
+// }
 
 .tabList--ManageUsers {
   @include StyleReact-Tabs-FixedTop();
@@ -155,5 +116,22 @@
 
   &__panelPadding {
     padding-top: 40px;
+  }
+}
+
+.tabList--Grade {
+  @include StyleReact-Tabs-FixedTop();
+  position: relative !important;
+  &__panelPadding {
+    padding-top: 40px;
+  }
+  &__tab {
+    padding-top: 10px;
+    max-width: 25%;
+    min-width: 10%;
+    width: min-content;
+    &:hover {
+      background-color: shade(white, 10);
+    }
   }
 }

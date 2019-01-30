@@ -1,8 +1,9 @@
 import * as React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
-import { DeleteLinkedCommentsDialog } from './RubricUtils';
+import { LinkedCommentsAlert } from './RubricUtils';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
@@ -389,6 +390,26 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       disabled: this.state.updatingRubric,
     });
 
+    // void funcrtion due to typescript constraints. Need to pass it into onUpdate for
+    // LinkedCommentsAlert
+    const voidFunction = () => {
+      return;
+    };
+    const exampleText =
+      '    [\n\
+        {"id" : 2,\n\
+        "name" : "Hello",\n\
+        "pointLimit" : 2,\n\
+        "rubricComments" : [{ \n\
+          "id" : -1,\n\
+          "text" : "this is a new comment",\n\
+          "pointDelta" : 0,\n\
+          "category" : 2,\n\
+          "comments" : [2, 3]}, ... \n\
+        ]},\n\
+        ...\n\
+      ]';
+
     const progress = this.state.updatingRubric ? <LinearProgress id="circle" className="progressCircle" /> : '';
     const uploadFile = this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : '';
     let content;
@@ -448,46 +469,60 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           Upload / Download Rubric
         </Button>
         <DialogContainer
-          id="rubricFile-dialog"
+          id="dialog--rubricUpload"
+          className="dialog--rubricUpload"
           visible={dialogVisible}
           title="Manage rubric files"
           onHide={this.toggleDialog}
           actions={dialogActions}
           modal
         >
-          <div>
-            Download rubric as a json format:
-            <div className="error-padding" />
-            <Button
-              key="download-rubric"
-              className="Btn"
-              iconBefore={false}
-              iconChildren={'save'}
-              onClick={this.downloadRubric}
-              primary={true}
-              raised={true}
-            >
-              Download JSON rubric
-            </Button>
-          </div>
+          {!this.state.uploadFileName ? (
+            <div>
+              Download rubric as a json format:
+              <div className="error-padding" />
+              <Button
+                key="download-rubric"
+                className="Btn"
+                iconBefore={false}
+                iconChildren={'save'}
+                onClick={this.downloadRubric}
+                primary={true}
+                raised={true}
+              >
+                Download JSON rubric
+              </Button>
+            </div>
+          ) : (
+            <div />
+          )}
           <div className="padding" />
           <div>
-            Upload file to replace rubric:
-            <div className="error-padding" />
-            <FileUpload
-              id="rubricUpload-FileInput"
-              accept="application/json"
-              multiple={false}
-              onLoad={this.onRubricUpload}
-              onChange={this.dummyUpload}
-              disabled={this.state.updatingRubric}
-            />
+            {!this.state.uploadFileName ? (
+              <div>
+                <div>Upload file to replace rubric:</div>
+                <ReactMarkdown source={exampleText} />
+                <div className="error-padding" />
+                <FileUpload
+                  id="rubricUpload-FileInput"
+                  accept="application/json"
+                  multiple={false}
+                  onLoad={this.onRubricUpload}
+                  onChange={this.dummyUpload}
+                  disabled={this.state.updatingRubric}
+                />
+              </div>
+            ) : (
+              <div />
+            )}
             {progress}
             <div className="error-padding" />
             {uploadFile}
             <div className="error-padding" />
             {content}
-            <DeleteLinkedCommentsDialog
+            <LinkedCommentsAlert
+              isDelete={true}
+              onUpdate={voidFunction}
               onDelete={this.triggerUpdate.bind(this.props, true)}
               onUnLink={this.triggerUpdate.bind(this.props, false)}
               onCancel={this.toggleDialog}

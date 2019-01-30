@@ -103,19 +103,20 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       </TableColumn>
       <TableColumn grow={true}>
         <TextField
-          defaultValue={props.defaultText}
+          value={props.defaultText}
           disabled={props.isDisabled}
           onChange={changeThisCommentText}
           onBlur={updateThisComment}
+          className={'comment-text'}
           maxRows={5}
-          rows={2}
+          rows={1}
           style={{ width: '100%' }}
         />
       </TableColumn>
       <TableColumn style={{ position: 'relative' }}>
         <TextField
           type="number"
-          defaultValue={props.defaultDelta}
+          value={props.defaultDelta}
           step={0.5}
           pattern="^d+(\.|\,)\d{1}"
           className="deduction-field"
@@ -147,11 +148,12 @@ interface IPropsRubricCategory {
   categoryPointLimit: number | null;
 
   // Category fuctions
-  deleteCategory: (categoryID: number, categoryName: string) => void;
+  deleteCategory: (categoryID: number, categoryIndex: number, categoryName: string) => void;
   changeCategoryName: (categoryIndex: number, newText: string) => void;
   changeCategoryCap: (categoryIndex: number, newCap: number | null) => void;
   addEmptyComment: (categoryIndex: number) => void;
-  updateCategory: (catetgoryIndex: number) => void;
+  updateCategoryCaps: (categoryID: number, categoryIndex: number, categoryName: string) => void;
+  updateCategoryName: (catetgoryIndex: number) => void;
 
   // General props
   isDisabled: boolean;
@@ -171,15 +173,19 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
   };
 
   const deleteThisCategory = () => {
-    props.deleteCategory(props.categoryID, props.categoryName);
+    props.deleteCategory(props.categoryID, props.categoryIndex, props.categoryName);
   };
 
   const addEmptyCommentToThis = () => {
     props.addEmptyComment(props.categoryID);
   };
 
-  const updateThisCategory = () => {
-    props.updateCategory(props.categoryIndex);
+  const updateThisCategoryCaps = () => {
+    props.updateCategoryCaps(props.categoryID, props.categoryIndex, props.categoryName);
+  };
+
+  const updateThisCategoryName = () => {
+    props.updateCategoryName(props.categoryIndex);
   };
 
   const renderCommentRows = () => {
@@ -252,11 +258,11 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           fullWidth={false}
           onChange={changeThisCategoryText}
           disabled={props.isDisabled}
-          onBlur={updateThisCategory}
+          onBlur={updateThisCategoryName}
           customSize="font-size-large"
         />
         <TextField
-          defaultValue={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : ''}
+          value={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : ''}
           label={'Category points cap'}
           fullWidth={false}
           step={0.5}
@@ -265,13 +271,13 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           min={0}
           onChange={changeThisCategoryCap}
           disabled={props.isDisabled}
-          onBlur={updateThisCategory}
+          onBlur={updateThisCategoryCaps}
           customSize="font-size-large"
         />
         <div className="admin-rubric__category--header__unsavedChanges">{unSavedChanges}</div>
         <div className="admin-rubric__category--header__delete">{deleteCategoryButton}</div>
       </div>
-      <DataTable key={props.categoryID} className="edit-rubric-table" baseId="edit-rubric-table" plain={true}>
+      <DataTable key={props.categoryID} className="DataTable--RubricCategory" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow selectable={false}>
             <TableColumn key={'spacing1'} />
@@ -310,37 +316,59 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
 interface IPropsDeleteLinkedDialog {
   numCommentsAffected?: number;
   onDelete: () => void;
+  onUpdate: () => void;
   onUnLink: () => void;
   onCancel: () => void;
   isVisible: boolean;
   isDialog: boolean;
+  isDelete: boolean;
 }
 
-const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
+const LinkedCommentsAlert = (props: IPropsDeleteLinkedDialog) => {
   if (!props.isVisible) {
     return <div />;
   }
-  const content = (
-    <div>
-      <div className="error-padding" />
-      Performing this action will delete one or more rubricComments that are linked to comments provided on submissions.
-      Do you wish to delete those linked comments or 'unlink' them (keeping the comment intact with the same text and
-      point value)?
-      <div className="error-padding" />
-      <Button raised onClick={props.onDelete} primary={false} flat={true}>
-        Delete
-      </Button>
-      <div className="error-padding" />
-      <Button raised onClick={props.onUnLink} primary={true} flat={true}>
-        Unlink
-      </Button>
-      <div className="error-padding" />
-      <Button raised onClick={props.onCancel} primary={false} flat={true}>
-        Cancel
-      </Button>
-      <div className="error-padding" />
-    </div>
-  );
+  let content;
+  if (props.isDelete) {
+    content = (
+      <div>
+        <div className="error-padding" />
+        Performing this action will delete one or more rubricComments that are linked to comments provided on
+        submissions. Do you wish to delete those linked comments or 'unlink' them (keeping the comment intact with the
+        same text and point value)?
+        <div className="error-padding" />
+        <Button raised onClick={props.onDelete} primary={false} flat={true}>
+          Delete
+        </Button>
+        <div className="error-padding" />
+        <Button raised onClick={props.onUnLink} primary={true} flat={true}>
+          Unlink
+        </Button>
+        <div className="error-padding" />
+        <Button raised onClick={props.onCancel} primary={false} flat={true}>
+          Cancel
+        </Button>
+        <div className="error-padding" />
+      </div>
+    );
+  } else {
+    content = (
+      <div>
+        <div className="error-padding" />
+        Performing this action will update one or more rubricComments that are linked to comments provided on
+        submissions. Do you wish to continue with this change?
+        <div className="error-padding" />
+        <Button raised onClick={props.onUpdate} primary={false} flat={true}>
+          Continue
+        </Button>
+        <div className="error-padding" />
+        <Button raised onClick={props.onCancel} primary={false} flat={true}>
+          Cancel
+        </Button>
+        <div className="error-padding" />
+      </div>
+    );
+  }
 
   if (props.isDialog) {
     return (
@@ -353,4 +381,4 @@ const DeleteLinkedCommentsDialog = (props: IPropsDeleteLinkedDialog) => {
   }
 };
 
-export { RubricCategoryTable, DeleteLinkedCommentsDialog };
+export { RubricCategoryTable, LinkedCommentsAlert };

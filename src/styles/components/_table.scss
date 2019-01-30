@@ -66,7 +66,7 @@
 }
 
 .DataTable--StudentData-All {
-  @include fixedTableHeader(calc(100vh - 300px));
+  @include fixedTableHeader(calc(100vh - 350px));
   @include wrapHeaders(200px);
 }
 
@@ -75,7 +75,7 @@
 }
 
 .DataTable--GraderData-All {
-  @include fixedTableHeader(calc(100vh - 300px));
+  @include fixedTableHeader(calc(100vh - 350px));
   @include wrapHeaders(200px);
 }
 
@@ -89,4 +89,11 @@
 
 .DataTable--ViewAll {
   @include fixedTableHeader(calc(100vh - 150px));
+}
+
+.DataTable--RubricCategory {
+  .md-divider--text-field {
+    margin-bottom: 0px;
+    margin-top: 3px;
+  }
 }

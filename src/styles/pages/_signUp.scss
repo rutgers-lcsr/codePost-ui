@@ -1,0 +1,84 @@
+.SignUpManager {
+  @include formatAsWhiteBox();
+  padding-top: 100px;
+  min-height: 20vh;
+  &__main-container {
+    height: 425px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 700px;
+  }
+  &__title {
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  &__item {
+    flex: 1 1 auto;
+    align-items: center;
+    padding: 10px 150px 10px 150px;
+    display: flex;
+  }
+
+  &__subtitle {
+    font-size: $font-size-large;
+  }
+
+  &__Btn {
+    @include button(white, $brand-color);
+    flex-grow: 1;
+    font-size: $font-size-xxlarge;
+    font-weight: 500;
+    border-radius: 16px;
+    border: 1px solid $brand-color;
+    padding: 20px 30px 20px 30px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: 0.2s;
+    &:hover {
+      @include button($brand-color, white);
+      transition: 0.4s;
+    }
+  }
+
+  &__form {
+    width: 100%;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30px 60px 30px 60px;
+    &__helptext {
+      font-style: italic;
+    }
+    &--lessPadding {
+      padding: 10px 60px 30px 60px;
+    }
+    &__email--abovePass {
+      margin-bottom: 35px;
+    }
+    &__ConfirmAuthority {
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+  &__submitBtn {
+    @include button($brand-color, white);
+    font-size: $font-size-xlarge;
+    border-radius: 6px;
+    padding: 4px 60px 4px 60px;
+    margin-top: 20px;
+  }
+
+  &__center-text {
+    font-size: $font-size-xlarge;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-left: 60px;
+    padding-bottom: 150px;
+  }
+}

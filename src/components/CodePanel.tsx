@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Tab, Tabs, TabsContainer, Tooltipped } from 'react-md';
+import { Tooltipped } from 'react-md';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
@@ -105,12 +106,21 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <TabsContainer defaultTabIndex={0} className="grade__main-container__right-panel__tabs">
-        <Tabs className="md-tabs--Grade" tabId="simple-tab">
+      <div>
+        <Tabs defaultTabIndex={0}>
+          <TabList className="tabList--Grade">
+            {files.map((file: FileType, i: number) => {
+              const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
+              return (
+                <Tab key={file.id} className="tabList--Grade__tab">
+                  {tabTitle}
+                </Tab>
+              );
+            })}
+          </TabList>
           {files.map((file: FileType, i: number) => {
-            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <Tab key={i} style={{ color: '#000000' }} label={tabTitle}>
+              <TabPanel key={`${file.id}-code`}>
                 <Code
                   file={file}
                   comments={comments[file.id]}
@@ -125,14 +135,40 @@ class CodePanel extends React.Component<IProps, IState> {
                   updateComment={updateComment}
                   updateSubmissionGrade={this.props.updateSubmissionGrade}
                 />
-              </Tab>
+              </TabPanel>
             );
           })}
         </Tabs>
-      </TabsContainer>
+      </div>
     );
   }
 }
+
+// //       <TabsContainer defaultTabIndex={0} className="grade__main-container__right-panel__tabs">
+//         <Tabs className="md-tabs--Grade" tabId="simple-tab">
+//           {files.map((file: FileType, i: number) => {
+//             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
+//             return (
+//               <Tab key={i} style={{ color: '#000000' }} label={tabTitle}>
+//                 <Code
+//                   file={file}
+//                   comments={comments[file.id]}
+//                   rubricComments={rubricComments}
+//                   readOnly={readOnly}
+//                   addComment={this.addComment}
+//                   commentCounter={commentCounter}
+//                   updateCommentCounter={this.updateCommentCounter}
+//                   activeCommentId={activeCommentId}
+//                   changeActive={this.changeActive}
+//                   deleteComment={deleteComment}
+//                   updateComment={updateComment}
+//                   updateSubmissionGrade={this.props.updateSubmissionGrade}
+//                 />
+//               </Tab>
+//             );
+//           })}
+//         </Tabs>
+//       </TabsContainer>
 
 interface ICodeProps {
   file: FileType;
