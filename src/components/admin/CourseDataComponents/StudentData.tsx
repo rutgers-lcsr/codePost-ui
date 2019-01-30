@@ -273,7 +273,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             label="Click row to open Submission in a new window"
             delay={1000}
             position="top"
-            style={{ zIndex: 2, position: 'absolute', top: '250px' }}
+            style={{ zIndex: 2, position: 'absolute', top: '250px', height: '50px' }}
           >
             <TableRow key={submission.id.toString()}>
               <TableColumn onClick={cellClick}>
