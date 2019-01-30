@@ -1,6 +1,5 @@
 .grade {
   @include setMinPageHeight($topbar-height);
-  height: 100%;
   display: flex;
   flex-direction: column;
 
@@ -97,7 +96,6 @@
         padding-right: 0px;
       }
       min-height: 80vh;
-      height: 100%;
 
       &__commentPanel {
         padding-top: 20px;
