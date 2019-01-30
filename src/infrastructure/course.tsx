@@ -84,4 +84,4 @@ class Course {
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
 }
 
-export { CourseType, Course, RosterType, CoursePatchType };
+export { CourseType, Course, RosterType, CoursePatchType, CourseV };

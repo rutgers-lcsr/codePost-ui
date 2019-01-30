@@ -19,6 +19,9 @@ const TopBar = (props: IProps) => {
         <div key="topbar__spacing" className="topbar__spacing" />
         <div key="topbar__welcome" className="topbar__welcome">
           <div className="topbar__welcome__text"> Hello, {props.email} </div>
+          <div>
+            <Link to={'/settings'}>settings</Link>
+          </div>
           <div key="Logout" className="topbar__welcome__logout" onClick={props.handleLogout}>
             Logout
           </div>

@@ -4,7 +4,6 @@
 
 import { AssignmentType } from '../infrastructure/assignment';
 import { CommentType } from '../infrastructure/comment';
-import { CourseType } from '../infrastructure/course';
 import { RubricCategoryType } from '../infrastructure/rubricCategory';
 import { RubricCommentType } from '../infrastructure/rubricComment';
 import { SubmissionType } from '../infrastructure/submission';
@@ -25,18 +24,6 @@ export enum BUTTON_STATE {
 export enum POSITION {
   Start,
   End,
-}
-
-export interface IUser {
-  id: number;
-  email: string;
-  studentCourses: CourseType[];
-  graderCourses: CourseType[];
-  courseadminCourses: CourseType[];
-  superGraderCourses: CourseType[];
-  canCreateCourses: boolean;
-  canModifyRosters: boolean;
-  token: any;
 }
 
 export interface IProfile {

@@ -11,7 +11,6 @@ import {
   IFileToCommentsMap,
   IRubricCategoryToRubricCommentsMap,
   IToast,
-  IUser,
 } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
@@ -21,6 +20,7 @@ import { File, FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Submission, SubmissionType } from './infrastructure/submission';
+import { UserType } from './infrastructure/user';
 
 interface IGradeState {
   isLoading: boolean;
@@ -44,7 +44,7 @@ interface IProps {
   submissionID: number;
   match: any;
   history: any;
-  user: IUser;
+  user: UserType;
 }
 
 class Grade extends React.Component<IProps, IGradeState> {

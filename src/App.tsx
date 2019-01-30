@@ -17,16 +17,19 @@ import Home from './Home';
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import Student from './Student';
-import { IToast, IUser } from './types/common';
+import { IToast } from './types/common';
 
 import NoMatch from './components/NoMatch';
 
 import { CourseType } from './infrastructure/course';
+import { UserType } from './infrastructure/user';
+
+import Settings from './settings';
 
 interface IState {
   error: string;
   has_token: boolean;
-  user?: IUser;
+  user?: UserType;
   toRedirect: boolean;
   toasts: IToast[];
   longToasts: IToast[];
@@ -52,11 +55,11 @@ class App extends React.Component<{}, IState> {
     }
   }
 
-  public replaceUser = (newUser: IUser) => {
+  public replaceUser = (newUser: UserType, redirect: boolean) => {
     this.setState(
       {
         user: newUser,
-        toRedirect: true,
+        toRedirect: redirect,
       },
       () => {
         localStorage.setItem('token', newUser.token);
@@ -320,6 +323,12 @@ class App extends React.Component<{}, IState> {
                   exact={true}
                   path={'/loginAs/:email'}
                   render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+                />
+
+                <Route
+                  exact={true}
+                  path={'/settings'}
+                  render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
                 />
 
                 {pageSelector}
