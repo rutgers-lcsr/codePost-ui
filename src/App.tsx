@@ -314,7 +314,7 @@ class App extends React.Component<{}, IState> {
       };
 
       return (
-        <div style={{ height: '100%' }}>
+        <div>
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
           <div className="AppHome">
             <Switch>
