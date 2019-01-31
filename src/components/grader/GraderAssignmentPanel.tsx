@@ -179,7 +179,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
             title="Are you sure?"
           >
             <div>
-              Click Confirm to unassign the grader from the submission
+              Are you sure that you want to release this submission?
               {this.state.releasedSubmission ? ` (${this.state.releasedSubmission.students.join('/')})` : ''}.
             </div>
             <Button onClick={this.toggleReleaseDialog.bind(this.props, undefined)} primary={false} flat={true}>

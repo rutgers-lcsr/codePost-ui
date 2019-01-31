@@ -70,7 +70,7 @@
 
   &__main-container {
     @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
-    padding: 0px 0px 10px 0px;
+    padding: 0px 0px 0px 0px;
     flex-grow: 1;
 
     &__left-panel {
@@ -86,12 +86,12 @@
     }
 
     &__tabContent {
-      @media screen and (min-width: 1400px) {
-        $commentPanel-width: calc(100vw - 1400px + 280px);
+      @media screen and (min-width: 1330px) {
+        $commentPanel-width: calc(100vw - 1330px + 280px);
         @include dual-pane-fixed-right-scrollable-left($commentPanel-width, 'codePanel', 'commentPanel');
         padding-right: 0px;
       }
-      @media screen and (max-width: 1400px) {
+      @media screen and (max-width: 1330px) {
         @include dual-pane-fixed-right-scrollable-left(280px, 'codePanel', 'commentPanel');
         padding-right: 0px;
       }
@@ -103,6 +103,7 @@
         border-left: 1px solid rgba(0, 0, 0, 0.2);
         border-top: 1px solid rgba(0, 0, 0, 0.2);
         border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
         background-color: $very-light-green;
         z-index: 1;
       }
@@ -110,6 +111,7 @@
 
     &__scrollIndicator {
       width: 30px;
+      margin-bottom: -10px;
       visibility: hidden;
       @media screen and (max-width: 1260px) {
         font-style: italic;

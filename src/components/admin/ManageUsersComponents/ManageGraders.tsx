@@ -7,6 +7,7 @@ import {
   TableBody,
   TableColumn,
   TableHeader,
+  TablePagination,
   TableRow,
   TextField,
 } from 'react-md';
@@ -40,6 +41,10 @@ interface IState {
   // be null if no such choice is required
   emailToAdminUnenroll: string | undefined;
   changedGraders: string[];
+  sortedUsers: string[];
+  paginatedUsers: string[];
+  paginationStart: number | undefined;
+  rowsPerPage: number | undefined;
 }
 
 class ManageGraders extends React.Component<IProps, {}> {
@@ -49,7 +54,31 @@ class ManageGraders extends React.Component<IProps, {}> {
     searchTerm: '',
     emailToAdminUnenroll: undefined,
     changedGraders: [],
+    sortedUsers: [],
+    paginatedUsers: [],
+    paginationStart: undefined,
+    rowsPerPage: undefined,
   };
+
+  public componentDidMount() {
+    if (this.props.rosterLoadComplete) {
+      const sortedUsers = JSON.parse(JSON.stringify(this.props.graders));
+      sortedUsers.sort();
+      this.setState({ sortedUsers });
+    }
+  }
+
+  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+    if (this.props.graders !== prevProps.graders) {
+      const sortedUsers = JSON.parse(JSON.stringify(this.props.graders));
+      sortedUsers.sort();
+      this.setState({ sortedUsers }, () => {
+        if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
+          this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
+        }
+      });
+    }
+  }
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     const { unEnrollUsers, admins } = this.props;
@@ -103,6 +132,15 @@ class ManageGraders extends React.Component<IProps, {}> {
     }, 2000);
   };
 
+  public handlePagination = (start: number, rowsPerPage: number) => {
+    const { sortedUsers } = this.state;
+    this.setState({
+      paginatedUsers: sortedUsers.slice(start, start + rowsPerPage),
+      paginationStart: start,
+      rowsPerPage,
+    });
+  };
+
   public render() {
     const {
       rosterLoadComplete,
@@ -113,17 +151,33 @@ class ManageGraders extends React.Component<IProps, {}> {
       addToast,
       changeRoster,
     } = this.props;
-    const { newField, searchTerm, sortAscending, emailToAdminUnenroll, changedGraders } = this.state;
+    const {
+      newField,
+      searchTerm,
+      sortAscending,
+      emailToAdminUnenroll,
+      changedGraders,
+      sortedUsers,
+      paginatedUsers,
+    } = this.state;
 
     const showSaveNewButton = newField && newField.includes('@');
     const graderType = USER_APP.Grader;
 
+    let usersToRender;
+    // If search term, filter users by those who meet search term and render those users
+    if (searchTerm.length > 0) {
+      usersToRender = sortedUsers.filter((s) => {
+        return s.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+      });
+    } else {
+      // If no paginated students, render those. If not, take the default pagination (20) and return those students
+      usersToRender = paginatedUsers.length > 0 ? paginatedUsers : this.state.sortedUsers.slice(0, 10);
+    }
+
     let tableBody;
     if (rosterLoadComplete) {
-      tableBody = graders.map((grader) => {
-        if (grader.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
-          return <div />;
-        }
+      tableBody = usersToRender.map((grader) => {
         const isSuperGrader = superGraders.indexOf(grader) !== -1;
         const isBeingChanged = changedGraders.indexOf(grader) !== -1;
 
@@ -231,6 +285,16 @@ class ManageGraders extends React.Component<IProps, {}> {
           onChange={this.changeSearch}
         />
         <DataTable className="DataTable--ManageUsers" baseId="Manage-admins-table" plain={true}>
+          {searchTerm.length === 0 ? (
+            <TablePagination
+              className="DataTable--ManageUsers__pagination"
+              rows={this.state.sortedUsers.length}
+              defaultRowsPerPage={10}
+              onPagination={this.handlePagination}
+            />
+          ) : (
+            <div />
+          )}
           <TableHeader>
             <TableRow>
               <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>

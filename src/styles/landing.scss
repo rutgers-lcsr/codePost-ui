@@ -33,18 +33,13 @@ $buffer-height: 150px;
 
 .Landing {
   min-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  min-height: 760px;
+  height: 100vh;
   background-color: white;
 }
 
-.topbar {
-  background-color: white;
-  $md-toolbar-relative: true;
-
-  .SignupBtn {
-    color: white;
-    background-color: $codePost-color;
-  }
-}
 .Hero {
   height: 550px;
   background-color: $dark-grey;
@@ -73,10 +68,11 @@ $buffer-height: 150px;
 }
 
 .Numbers {
+  flex-grow: 1;
   background-color: $light-grey;
   padding: 20px;
 
-  padding-top: 0px;
+  padding-top: 30px;
   padding-bottom: 10px;
   color: $Stats-text-color;
   font-size: $header-font-size;
@@ -101,188 +97,6 @@ $buffer-height: 150px;
 
 .buffer {
   height: $buffer-height;
-}
-
-.newFlow {
-  display: flex;
-
-  .headline {
-    @extend %landing-headline;
-    margin: auto;
-  }
-
-  .diagram {
-    height: inherit;
-    text-align: center;
-
-    .admin,
-    .cP-logo,
-    .grader-student {
-      height: 33.3%;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .grader-student {
-      margin: 0px;
-    }
-
-    .admin {
-      padding-top: 5%;
-      max-width: 500px;
-    }
-
-    .logo-icon {
-      transform: translate(0, 50%);
-      display: block;
-      margin: auto;
-    }
-
-    .text {
-      font-size: $text-font-size;
-
-      b {
-        opacity: 0.75;
-      }
-    }
-
-    .title {
-      font-size: $header-font-size;
-      font-weight: bold;
-      padding-top: 10px;
-      padding-bottom: 10px;
-    }
-
-    .admin-new-icon {
-      z-index: -1;
-      transform: translate(0px, 0px);
-    }
-
-    .grader-new-icon {
-      z-index: -1;
-      transform: translate(75px, -185px);
-    }
-
-    .student-new-icon {
-      z-index: -1;
-      transform: translate(-75px, -150px);
-    }
-  }
-}
-
-.oldFlow {
-  display: flex;
-
-  .problems {
-    height: inherit;
-    padding-left: 50px;
-    padding-right: 20px;
-
-    .admin,
-    .grader,
-    .student {
-      padding-top: 30px;
-      padding-bottom: 30px;
-    }
-
-    .icons {
-      margin-top: 5%;
-    }
-
-    .headline {
-      font-size: $big-header-font-size;
-      font-weight: 375;
-      text-align: center;
-      opacity: 0.5;
-      font-weight: bold;
-      padding-bottom: 30px;
-
-      b {
-        color: red;
-      }
-    }
-    .title {
-      font-size: $header-font-size;
-      font-weight: bold;
-      opacity: 0.5;
-    }
-
-    .text {
-      height: 100%;
-      padding-top: 30px;
-    }
-    .bullet {
-      height: 20%;
-      font-weight: 350;
-      font-size: $text-font-size;
-
-      b {
-        opacity: 0.75;
-      }
-    }
-  }
-
-  .CP-headline {
-    margin: auto;
-    padding-left: 20px;
-    padding-right: 50px;
-    .bullet-bold {
-      text-align: center;
-      @extend %landing-headline;
-    }
-  }
-}
-
-.siteVideos {
-  background-image: linear-gradient($codePost-color-light, white);
-  display: flex;
-
-  .navButtons {
-    display: flex;
-    $md-btn-tb-padding: 55px !global;
-    $md-btn-font-size: $big-header-font-size !global;
-    @include react-md-buttons;
-
-    .active {
-      background-color: $codePost-color-light;
-    }
-
-    .admins-btn,
-    .graders-btn,
-    .students-btn {
-      width: 200px;
-    }
-  }
-
-  .videos {
-    margin: auto;
-
-    .video {
-      width: 720px;
-      height: 540px;
-    }
-  }
-
-  .rows {
-    margin: auto;
-  }
-}
-
-.testomonials {
-  height: 300px;
-  display: flex;
-
-  .trustedBy {
-    text-align: center;
-    margin: auto;
-    font-size: $header-font-size;
-    font-weight: bold;
-    color: $Stats-text-color;
-  }
-
-  .princeton-logo {
-    padding-top: 30px;
-  }
 }
 
 ///////////////

@@ -294,7 +294,15 @@ class App extends React.Component<{}, IState> {
       } else if (!isStudent && !isGrader && isAdmin) {
         pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
       } else {
-        pageSelector = <Route exact={true} path={HOME} component={Home} />;
+        pageSelector = (
+          <Route
+            exact={true}
+            path={HOME}
+            render={(props: any) => (
+              <Home {...props} isAuthed={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+            )}
+          />
+        );
       }
 
       const snackBarStyle = {
@@ -316,60 +324,58 @@ class App extends React.Component<{}, IState> {
       return (
         <div>
           <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
-          <div>
-            <div className="AppHome">
-              <Switch>
-                <Route
-                  exact={true}
-                  path={'/loginAs/:email'}
-                  render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-                />
-
-                <Route
-                  exact={true}
-                  path={'/settings'}
-                  render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
-                />
-
-                {pageSelector}
-                {studentRoute}
-                {graderRoute}
-                {adminRoute}
-                {gradeRoute}
-
-                <Route component={NoMatch} />
-              </Switch>
-              <Snackbar
-                id="short-snackbar"
-                className="short-snackbar"
-                toasts={this.state.toasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={2000}
-                onDismiss={this.dismissToast}
-                style={snackBarStyle}
+          <div className="AppHome">
+            <Switch>
+              <Route
+                exact={true}
+                path={'/loginAs/:email'}
+                render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
               />
-              <Snackbar
-                id="long-snackbar"
-                className="long-snackbar"
-                toasts={this.state.longToasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={4000}
-                onDismiss={this.dismissLongToast}
-                style={snackBarStyle}
+
+              <Route
+                exact={true}
+                path={'/settings'}
+                render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
               />
-              <Snackbar
-                id="error-snackbar"
-                className="error-snackbar"
-                toasts={this.state.errorToasts}
-                autohide={true}
-                lastChild={true}
-                autohideTimeout={2000}
-                onDismiss={this.dismissErrorToast}
-                style={errorSnackBarStyle}
-              />
-            </div>
+
+              {pageSelector}
+              {studentRoute}
+              {graderRoute}
+              {adminRoute}
+              {gradeRoute}
+
+              <Route component={NoMatch} />
+            </Switch>
+            <Snackbar
+              id="short-snackbar"
+              className="short-snackbar"
+              toasts={this.state.toasts}
+              autohide={true}
+              lastChild={true}
+              autohideTimeout={2000}
+              onDismiss={this.dismissToast}
+              style={snackBarStyle}
+            />
+            <Snackbar
+              id="long-snackbar"
+              className="long-snackbar"
+              toasts={this.state.longToasts}
+              autohide={true}
+              lastChild={true}
+              autohideTimeout={4000}
+              onDismiss={this.dismissLongToast}
+              style={snackBarStyle}
+            />
+            <Snackbar
+              id="error-snackbar"
+              className="error-snackbar"
+              toasts={this.state.errorToasts}
+              autohide={true}
+              lastChild={true}
+              autohideTimeout={2000}
+              onDismiss={this.dismissErrorToast}
+              style={errorSnackBarStyle}
+            />
           </div>
         </div>
       );

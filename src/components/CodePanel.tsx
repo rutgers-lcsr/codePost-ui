@@ -5,9 +5,9 @@ import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
-import Comment from './Comment';
+import CommentList from './CommentList';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject, IFileToCommentsMap, POSITION } from '../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap, POSITION } from '../types/common';
 
 import CodePanelUtils from '../CodePanelUtils';
 
@@ -106,40 +106,39 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <div>
-        <Tabs defaultTabIndex={0}>
-          <TabList className="tabList--Grade">
-            {files.map((file: FileType, i: number) => {
-              const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
-              return (
-                <Tab key={file.id} className="tabList--Grade__tab">
-                  {tabTitle}
-                </Tab>
-              );
-            })}
-          </TabList>
+      <Tabs defaultTabIndex={0}>
+        <TabList className="tabList--Grade">
           {files.map((file: FileType, i: number) => {
+            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <TabPanel key={`${file.id}-code`}>
-                <Code
-                  file={file}
-                  comments={comments[file.id]}
-                  rubricComments={rubricComments}
-                  readOnly={readOnly}
-                  addComment={this.addComment}
-                  commentCounter={commentCounter}
-                  updateCommentCounter={this.updateCommentCounter}
-                  activeCommentId={activeCommentId}
-                  changeActive={this.changeActive}
-                  deleteComment={deleteComment}
-                  updateComment={updateComment}
-                  updateSubmissionGrade={this.props.updateSubmissionGrade}
-                />
-              </TabPanel>
+              <Tab key={file.id} className="tabList--Grade__tab">
+                {tabTitle}
+              </Tab>
             );
           })}
-        </Tabs>
-      </div>
+        </TabList>
+        {files.map((file: FileType, i: number) => {
+          return (
+            <TabPanel key={`${file.id}-code`}>
+              <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+              <Code
+                file={file}
+                comments={comments[file.id]}
+                rubricComments={rubricComments}
+                readOnly={readOnly}
+                addComment={this.addComment}
+                commentCounter={commentCounter}
+                updateCommentCounter={this.updateCommentCounter}
+                activeCommentId={activeCommentId}
+                changeActive={this.changeActive}
+                deleteComment={deleteComment}
+                updateComment={updateComment}
+                updateSubmissionGrade={this.props.updateSubmissionGrade}
+              />
+            </TabPanel>
+          );
+        })}
+      </Tabs>
     );
   }
 }
@@ -311,8 +310,7 @@ const Code = (props: ICodeProps) => {
   const codeString = props.file.code;
   return (
     <div className="grade__main-container__tabContent">
-      <div className="grade__main-container__tabContent__codePanel">
-        <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+      <div id="scroll-area" className="grade__main-container__tabContent__codePanel">
         <div className="code__highlighted-area">
           <div className="code__syntax-highlighter">
             <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
@@ -342,96 +340,6 @@ const Code = (props: ICodeProps) => {
       </div>
     </div>
   );
-};
-
-interface ICommentListProps {
-  file: FileType;
-  comments: CommentType[];
-  rubricComments: ICommentToRubricCommentMap;
-  readOnly: boolean;
-  activeCommentId?: number;
-  changeActive: (id: number | number) => void;
-  deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
-  updateSubmissionGrade: () => void;
-}
-
-interface IBlock {
-  startAt: number;
-  endAt: number;
-}
-
-const CommentList = (props: ICommentListProps) => {
-  const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = props;
-  // Store estimated pixel ranges of comment blocks to help with stacking
-  const blocks: IBlock[] = [];
-
-  // Sort comments by startLine to help with stacking
-  const comments = CodePanelUtils.sortComments(props.comments);
-
-  const commentNodes = comments.map((comment: CommentType) => {
-    // Figure out where to place comment vertically
-    // Placement model:
-    //    - Make comment position absolute
-    //    - Set upper margin at <startLine> em down from top
-
-    let pixelsPerLine = 0;
-    if (document.getElementById('0')) {
-      pixelsPerLine = document.getElementById('0')!.getBoundingClientRect().height;
-    }
-    let startAt = comment.startLine * pixelsPerLine;
-
-    // If a comment starts in the range of another block, then push it down until it fits
-    // Don't need to check for trailing comments because already sorting by startLine
-    for (const block of blocks) {
-      if (startAt >= block.startAt && startAt < block.endAt) {
-        startAt = block.endAt;
-      }
-    }
-
-    let heightOfComment = 0;
-    if (document.getElementById(`comment-${comment.id}`)) {
-      heightOfComment = document.getElementById(`comment-${comment.id}`)!.getBoundingClientRect().height;
-    }
-
-    heightOfComment = heightOfComment + 10; // padding
-
-    const newBlock: IBlock = {
-      startAt,
-      endAt: startAt + heightOfComment,
-    };
-    blocks.push(newBlock);
-
-    blocks.sort((a: IBlock, b: IBlock) => {
-      return a.startAt - b.startAt;
-    });
-
-    const zindex = 100000 - startAt;
-    const style: ICSSStyleObject = {
-      top: `${startAt}px`,
-      zIndex: zindex.toString(),
-    };
-
-    const isActive = activeCommentId === comment.id;
-
-    return (
-      <Comment
-        key={comment.id}
-        comment={comment}
-        rubricComment={rubricComments[comment.id]}
-        style={style}
-        readOnly={readOnly}
-        file={file}
-        active={isActive}
-        changeActive={changeActive}
-        deleteComment={deleteComment}
-        updateComment={updateComment}
-        updateSubmissionGrade={props.updateSubmissionGrade}
-      />
-    );
-  });
-
-  return <div className="code__comments">{commentNodes}</div>;
 };
 
 const makeReadOnly = (Component: React.ComponentType<any>) => {
