@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataTable, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import Select from 'react-select';
 
 import { openSubmission } from '../admin/AdminUtils';
@@ -9,6 +9,8 @@ import { Course, CourseType, RosterType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
+
+import * as moment from 'moment';
 
 interface IProps {
   currentCourse: CourseType;
@@ -71,6 +73,8 @@ class ViewAllPanel extends React.Component<IProps, IState> {
             <TableColumn>{submission.students.toString()}</TableColumn>
             <TableColumn>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
+            <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
+            <TableColumn>{moment(submission.dateEdited).format('llll')}</TableColumn>
           </TableRow>
         );
       });
@@ -96,6 +100,8 @@ class ViewAllPanel extends React.Component<IProps, IState> {
               <TableColumn key={'Student'}>Student Name</TableColumn>
               <TableColumn key={'Grade'}>Grade</TableColumn>
               <TableColumn key={'Grader'}>Grader</TableColumn>
+              <TableColumn key={'Finalized'}>Finalized</TableColumn>
+              <TableColumn key={'Last Edited'}>Last Edited</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>{tableBody}</TableBody>

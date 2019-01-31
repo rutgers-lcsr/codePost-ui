@@ -2,6 +2,13 @@
   @include setMinPageHeight($topbar-height);
   @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
 
+  &__left-panel {
+    margin-top: -10px;
+    padding-top: 10px;
+    padding-right: 10px;
+    border-right: 1px solid $mid-grey;
+  }
+
   &__viewAll {
     padding-left: 30px;
     padding-right: 30px;

@@ -2,6 +2,21 @@
   @include setMinPageHeight($topbar-height);
   @include dual-pane-fixed-left(200, 'left-panel', 'right-panel');
 
+  &__left-panel {
+    margin-top: -10px;
+    padding-top: 10px;
+    padding-right: 10px;
+    border-right: 1px solid $mid-grey;
+  }
+
+  &__submission-view {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__grade-container {
+    width: 100%;
+  }
   &__grade {
     float: left;
     width: 200px;

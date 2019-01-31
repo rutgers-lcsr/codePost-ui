@@ -388,9 +388,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     let contentArea;
     if (currentSubmission && currentAssignment && currentSubmission.isFinalized) {
       contentArea = (
-        <div>
-          <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
-          <div className="student__stats">{stats}</div>
+        <div className="student__submission-view">
+          <div className="student__grade-container">
+            <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
+            <div className="student__stats">{stats}</div>
+          </div>
           <ReadOnlyCodePanel
             submission={currentSubmission!}
             files={files}
