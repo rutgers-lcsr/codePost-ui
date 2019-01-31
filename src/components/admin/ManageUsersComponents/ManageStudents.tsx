@@ -64,7 +64,6 @@ class ManageStudents extends React.Component<IProps, {}> {
       this.setState({ sortedStudents }, () => {
         // if props change, update pagination
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
-          console.log(this.state.paginationStart, this.state.rowsPerPage);
           this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
         }
       });
@@ -121,8 +120,6 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public handlePagination = (start: number, rowsPerPage: number) => {
-    console.log(start);
-    console.log(rowsPerPage);
     const { sortedStudents } = this.state;
     this.setState({
       paginatedStudents: sortedStudents.slice(start, start + rowsPerPage),
