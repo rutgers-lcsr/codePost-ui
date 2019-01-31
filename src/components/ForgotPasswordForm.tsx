@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import { TextField } from 'react-md';
 const initialState = {
   email: '',
   status: '',
@@ -10,9 +10,7 @@ type State = Readonly<typeof initialState>;
 class ForgotPasswordForm extends React.Component<{}, State> {
   public readonly state: State = initialState;
 
-  public handleChange = (e: any) => {
-    const name = e.target.name;
-    const value = e.target.value;
+  public handleChange = (name: string, value: string) => {
     this.setState((prevstate) => {
       const newState = { ...prevstate };
       newState[name] = value;
@@ -50,24 +48,43 @@ class ForgotPasswordForm extends React.Component<{}, State> {
     // like the only error state occurs if someone enters an email address that
     // isn't associated with a user
     // We should differentiate this from a random server error (resp. code = 500)
+
+    let content;
     switch (this.state.status) {
       case 'success':
-        return <div> Email sent successfully! </div>;
+        content = <div className="SignUpManager__center-text"> Email sent successfully! </div>;
         break;
       case 'failure':
-        return <div> An unknown error occurred... </div>;
+        content = <div className="SignUpManager__center-text"> An unknown error occurred... </div>;
         break;
       default:
+        content = (
+          <div className="SignUpManager__form">
+            <div>
+              <TextField
+                id="email-input"
+                floating={true}
+                label="Email"
+                required={true}
+                value={this.state.email}
+                onChange={this.handleChange.bind(this, 'email')}
+              />
+            </div>
+            <div className="SignUpManager__submitBtn" onClick={this.handleReset}>
+              Submit
+            </div>
+          </div>
+        );
         break;
     }
 
     return (
-      <form onSubmit={this.handleReset}>
-        <h4>Reset your password</h4>
-        <label htmlFor="email">Email</label>
-        <input type="email" name="email" id="id_email" value={this.state.email} onChange={this.handleChange} />
-        <input type="submit" />
-      </form>
+      <div className="SignUpManager">
+        <div className="SignUpManager__main-container">
+          <div className="SignUpManager__title">Reset your password</div>
+          {content}
+        </div>
+      </div>
     );
   }
 }

@@ -1,7 +1,6 @@
 .SignUpManager {
   @include formatAsWhiteBox();
   padding-top: 100px;
-  min-height: 20vh;
   &__main-container {
     height: 425px;
     display: flex;
