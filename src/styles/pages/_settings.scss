@@ -1,8 +1,7 @@
-.CourseSettings {
-  @include formatAsWhiteBox();
+@mixin settings($container-width, $container-height) {
+  @include formatAsWhiteBox($container-width, $container-height);
   padding-top: 50px;
   background-color: white;
-  min-height: 70vh;
   &__title {
     padding-bottom: 20px;
     padding-left: 30px;
@@ -15,7 +14,6 @@
     justify-content: space-between;
     padding-left: 0px;
     padding-right: 0px;
-    width: 700px;
 
     &__items {
       flex-grow: 1;
@@ -77,5 +75,18 @@
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
+  }
+}
+
+.CourseSettings {
+  @include settings(700px, 500px);
+}
+.UserSettings {
+  @include settings(800px, 250px);
+
+  &__settingItem {
+    &__content {
+      max-width: 40%;
+    }
   }
 }

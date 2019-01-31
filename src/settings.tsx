@@ -52,48 +52,77 @@ class Settings extends React.Component<IProps, IState> {
   public render() {
     const { user } = this.props;
 
+    let settingsContent;
     if (user.canModifyRosters) {
       if (user.api_token) {
-        return (
-          <div>
-            <p>
-              API token: {user.api_token}
-              <button onClick={this.toggleResetStatus}>reset</button>
-              <DialogContainer
-                visible={this.state.askedToReset}
-                id="deleteSubmission-dialog"
-                className="Dialog--deleteSubmission"
-                title="Are you sure you want to reset your API token?"
-                modal
-              >
-                <div>
-                  Your old API key will no longer work. You will need to replace all instances of your old key with your
-                  new key.
-                </div>
-                <br />
-                <Button onClick={this.toggleResetStatus} primary={true} flat={true}>
-                  Cancel
-                </Button>
-                <Button onClick={this.requestToken} primary={false} flat={true}>
-                  Reset
-                </Button>
-              </DialogContainer>
-            </p>
+        settingsContent = (
+          <div className="UserSettings__settingItem-top">
+            <div className="UserSettings__settingItem__content">
+              <div className="UserSettings__settingItem__name">API token</div>
+              <div className="UserSettings__settingItem__description">
+                This token can be used to authenticate yourself with the codePost API. For more information on how to
+                use this token, please see our API documentation.
+              </div>
+            </div>
+            <div>{user.api_token}</div>
+            <div>
+              <Button primary={true} raised={true} onClick={this.toggleResetStatus}>
+                Reset
+              </Button>
+            </div>
+            <DialogContainer
+              visible={this.state.askedToReset}
+              id="deleteSubmission-dialog"
+              className="Dialog--deleteSubmission"
+              title="Are you sure you want to reset your API token?"
+              modal
+            >
+              <div>
+                Your old API key will no longer work. You will need to replace all instances of your old key with your
+                new key.
+              </div>
+              <br />
+              <Button onClick={this.toggleResetStatus} primary={true} flat={true}>
+                Cancel
+              </Button>
+              <Button onClick={this.requestToken} primary={false} flat={true}>
+                Reset
+              </Button>
+            </DialogContainer>
           </div>
         );
       } else {
-        return (
-          <div>
-            <p>
-              API token: <button onClick={this.requestToken}>create</button>
-            </p>
-            )
+        settingsContent = (
+          <div className="UserSettings__settingItem-top">
+            <div className="UserSettings__settingItem__content">
+              <div className="UserSettings__settingItem__name">API token</div>
+              <div className="UserSettings__settingItem__description">
+                This token can be used to authenticate yourself with the codePost API. For more information on how to
+                use this token, please see our API documentation.
+              </div>
+            </div>
+            <div>Create a token: </div>
+            <div>
+              <button onClick={this.requestToken}>create</button>
+            </div>
           </div>
         );
       }
     } else {
-      return <p> Your settings go here! </p>;
+      settingsContent = (
+        <div className="UserSettings__settingItem-top">
+          <div> Your Setings Go Here! </div>
+        </div>
+      );
     }
+    return (
+      <div className="UserSettings">
+        <div className="UserSettings__main-container">
+          <div className="UserSettings__title">User Settings</div>
+          <div className="UserSettings__main-container__items">{settingsContent}</div>
+        </div>
+      </div>
+    );
   }
 }
 
