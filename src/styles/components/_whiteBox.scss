@@ -1,5 +1,5 @@
 // Format for white box with grey background
-@mixin formatAsWhiteBox() {
+@mixin formatAsWhiteBox($width: 500px, $height: 500px) {
   min-height: 100vh;
   padding-top: 100px;
   background-color: $very-light-grey;
@@ -9,8 +9,8 @@
     margin: auto;
     padding: 30px;
     border: 1px solid $mid-grey;
-    width: 500px;
-    height: 500px;
+    width: $width;
+    height: $height;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

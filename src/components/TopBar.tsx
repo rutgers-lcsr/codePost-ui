@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { FontIcon } from 'react-md';
 import { Link } from 'react-router-dom';
 import { HOME } from '../routes';
 
@@ -19,8 +20,10 @@ const TopBar = (props: IProps) => {
         <div key="topbar__spacing" className="topbar__spacing" />
         <div key="topbar__welcome" className="topbar__welcome">
           <div className="topbar__welcome__text"> Hello, {props.email} </div>
-          <div>
-            <Link to={'/settings'}>settings</Link>
+          <div className="topbar__settingsIcon">
+            <Link to={'/settings'}>
+              <FontIcon>settings</FontIcon>
+            </Link>
           </div>
           <div key="Logout" className="topbar__welcome__logout" onClick={props.handleLogout}>
             Logout

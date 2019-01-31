@@ -64,7 +64,6 @@ class ManageStudents extends React.Component<IProps, {}> {
       this.setState({ sortedStudents }, () => {
         // if props change, update pagination
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
-          console.log(this.state.paginationStart, this.state.rowsPerPage);
           this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
         }
       });
@@ -121,8 +120,6 @@ class ManageStudents extends React.Component<IProps, {}> {
   };
 
   public handlePagination = (start: number, rowsPerPage: number) => {
-    console.log(start);
-    console.log(rowsPerPage);
     const { sortedStudents } = this.state;
     this.setState({
       paginatedStudents: sortedStudents.slice(start, start + rowsPerPage),
@@ -150,7 +147,6 @@ class ManageStudents extends React.Component<IProps, {}> {
       return { label: section.name, value: section.id };
     });
     sectionMenuItems.push({ label: '', value: -1 });
-
     const studentType = USER_APP.Student;
 
     let studentsToRender;
@@ -166,7 +162,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       });
     } else {
       // If no paginated students, render those. If not, take the default pagination (20) and return those students
-      studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 20);
+      studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 10);
     }
     let tableBody;
     if (rosterLoadComplete && sectionsLoadComplete) {
@@ -175,13 +171,6 @@ class ManageStudents extends React.Component<IProps, {}> {
         const sectionID = section ? section.id : -1;
         const sectionName = section ? section.name : '   ';
         const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
-
-        if (
-          student.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1 &&
-          sectionName.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1
-        ) {
-          return <div />;
-        }
 
         const sectionSelect =
           this.state.sectionEdited === student && !lockedStudentChange ? (
@@ -275,7 +264,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             <TablePagination
               className="DataTable--ManageUsers__pagination"
               rows={this.state.sortedStudents.length}
-              defaultRowsPerPage={20}
+              defaultRowsPerPage={10}
               onPagination={this.handlePagination}
             />
           ) : (

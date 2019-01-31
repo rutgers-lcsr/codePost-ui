@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
   TextField,
-  Tooltipped,
 } from 'react-md';
 
 import Select from 'react-select';
@@ -268,44 +267,40 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
 
         const cellClick = openSubmission.bind(this.props, submission.id);
         return (
-          <Tooltipped
-            key={submission.id.toString()}
-            label="Click row to open Submission in a new window"
-            delay={1000}
-            position="top"
-            style={{ zIndex: 2, position: 'absolute', top: '250px' }}
-          >
-            <TableRow key={submission.id.toString()}>
-              <TableColumn onClick={cellClick}>
-                {
-                  assignments.filter((assignment) => {
-                    return assignment.id === parseInt(assignmentID, 10);
-                  })[0].name
-                }
-              </TableColumn>
-              <TableColumn onClick={cellClick}>{grade}</TableColumn>
-              <TableColumn>
-                <Select
-                  value={{ label: submission.grader, value: submission.grader }}
-                  options={graderOptions}
-                  onChange={this.onGraderChange.bind(this.props, submission)}
-                />
-              </TableColumn>
-              <TableColumn onClick={cellClick}>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
-              <TableColumn>
-                <Button
-                  key={`button--deleteSubmission-${submission.id}`}
-                  onClick={this.toggleDeleteSub.bind(this.props, submission)}
-                  className="button--deleteSubmission"
-                  tooltipLabel="Delete Submission"
-                  tooltipDelay={250}
-                  icon={true}
-                >
-                  delete
-                </Button>
-              </TableColumn>
-            </TableRow>
-          </Tooltipped>
+          <TableRow key={submission.id.toString()}>
+            <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
+              {
+                assignments.filter((assignment) => {
+                  return assignment.id === parseInt(assignmentID, 10);
+                })[0].name
+              }
+            </TableColumn>
+            <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
+              {grade}
+            </TableColumn>
+            <TableColumn>
+              <Select
+                value={{ label: submission.grader, value: submission.grader }}
+                options={graderOptions}
+                onChange={this.onGraderChange.bind(this.props, submission)}
+              />
+            </TableColumn>
+            <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
+              {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+            </TableColumn>
+            <TableColumn>
+              <Button
+                key={`button--deleteSubmission-${submission.id}`}
+                onClick={this.toggleDeleteSub.bind(this.props, submission)}
+                className="button--deleteSubmission"
+                tooltipLabel="Delete Submission"
+                tooltipDelay={250}
+                icon={true}
+              >
+                delete
+              </Button>
+            </TableColumn>
+          </TableRow>
         );
       });
 
@@ -326,11 +321,11 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn>Assignment</TableColumn>
-                <TableColumn>Grade</TableColumn>
-                <TableColumn>Grader'</TableColumn>
-                <TableColumn>Finalized</TableColumn>
-                <TableColumn>Delete</TableColumn>
+                <TableColumn key="Assignment">Assignment</TableColumn>
+                <TableColumn key="Grade">Grade</TableColumn>
+                <TableColumn key="Grader">Grader'</TableColumn>
+                <TableColumn key="Finalized">Finalized</TableColumn>
+                <TableColumn key="Delete">Delete</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{studentSubmissions}</TableBody>

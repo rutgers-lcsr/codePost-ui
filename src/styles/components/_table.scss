@@ -60,22 +60,21 @@
   &__pagination {
     .md-table-pagination {
       margin-left: calc(100vw - 500px) !important;
-      margin-bottom: 40px;
     }
   }
 }
 
 .DataTable--StudentData-All {
-  @include fixedTableHeader(calc(100vh - 350px));
+  @include fixedTableHeader(calc(100vh - 325px));
   @include wrapHeaders(200px);
 }
 
 .DataTable--StudentData-Selected {
-  @include fixedTableHeader(calc(100vh - 400px));
+  @include fixedTableHeader(calc(100vh - 360px));
 }
 
 .DataTable--GraderData-All {
-  @include fixedTableHeader(calc(100vh - 350px));
+  @include fixedTableHeader(calc(100vh - 325px));
   @include wrapHeaders(200px);
 }
 
@@ -84,11 +83,11 @@
 }
 
 .DataTable--Grader {
-  @include fixedTableHeader(calc(100vh - 150px));
+  @include fixedTableHeader(calc(100vh - 250px));
 }
 
 .DataTable--ViewAll {
-  @include fixedTableHeader(calc(100vh - 150px));
+  @include fixedTableHeader(calc(100vh - 260px));
 }
 
 .DataTable--RubricCategory {

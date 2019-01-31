@@ -591,7 +591,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             delay={1000}
             position="top"
             setPosition={true}
-            style={{ top: '150px' }}
+            style={{ top: '150px', height: '50px' }}
           >
             <TableRow key={assignmentID}>
               <TableColumn key={`${assignmentID}-1`} onClick={onCellClick}>
@@ -616,10 +616,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 {median}
               </TableColumn>
               <TableColumn>
-                <button onClick={downloadGrades}>Download</button>
+                <Button icon={true} onClick={downloadGrades}>
+                  vertical_align_bottom
+                </Button>
               </TableColumn>
               <TableColumn>
-                <button onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>Delete</button>
+                <Button icon={true} onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>
+                  cancel
+                </Button>
               </TableColumn>
             </TableRow>
           </Tooltipped>

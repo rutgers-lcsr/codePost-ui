@@ -8,7 +8,13 @@ interface IAppState {
   redirect: USER_APP | null;
 }
 
-class Home extends React.Component<{}, IAppState> {
+interface IProps {
+  isStudent: boolean;
+  isGrader: boolean;
+  isAdmin: boolean;
+}
+
+class Home extends React.Component<IProps, IAppState> {
   public state: Readonly<IAppState> = {
     redirect: null,
   };
@@ -33,17 +39,34 @@ class Home extends React.Component<{}, IAppState> {
         return <Redirect push to={ADMIN} />;
     }
 
+    const studentBtn = this.props.isStudent ? (
+      <div className="App__splashBtn--top" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
+        Student
+      </div>
+    ) : (
+      <div />
+    );
+    const graderBtn = this.props.isGrader ? (
+      <div className="App__splashBtn--middle" onClick={this.toggleRedirect.bind(this, USER_APP.Grader)}>
+        Grader
+      </div>
+    ) : (
+      <div />
+    );
+
+    const adminBtn = this.props.isAdmin ? (
+      <div className="App__splashBtn--bottom" onClick={this.toggleRedirect.bind(this, USER_APP.CourseAdmin)}>
+        Admin
+      </div>
+    ) : (
+      <div />
+    );
+
     return (
       <div className="App">
-        <div className="App__splashBtn--top" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
-          Student
-        </div>
-        <div className="App__splashBtn--middle" onClick={this.toggleRedirect.bind(this, USER_APP.Grader)}>
-          Grader
-        </div>
-        <div className="App__splashBtn--bottom" onClick={this.toggleRedirect.bind(this, USER_APP.CourseAdmin)}>
-          Admin
-        </div>
+        {studentBtn}
+        {graderBtn}
+        {adminBtn}
       </div>
     );
   }
