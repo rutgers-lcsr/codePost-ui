@@ -336,7 +336,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     const GraderPanelContent =
       !currentCourse || !currentAssignment ? (
-        <div />
+        <div className="grader__getStarted">
+          <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
+          <div className="grader__getStarted__text">Select a course to get started.</div>
+        </div>
       ) : isSuperGrader ? (
         <Tabs defaultTabIndex={0}>
           <TabList className="tabList--Grader">

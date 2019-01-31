@@ -23,4 +23,18 @@
     height: 30px;
     font-size: 18pt;
   }
+
+  &__getStarted {
+    display: flex;
+    min-width: 500px;
+    &__arrow {
+      padding-left: 0px;
+      padding-right: 15px;
+    }
+    &__text {
+      font-size: $font-size-xlarge;
+      margin-top: auto;
+      font-weight: 325;
+    }
+  }
 }

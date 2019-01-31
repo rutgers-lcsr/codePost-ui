@@ -405,8 +405,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
     } else if (currentAssignment && this.state.isLoadingSubmission) {
       contentArea = <div>Loading...</div>;
-    } else {
+    } else if (currentCourse) {
       contentArea = <div>Select an assignment on the left!</div>;
+    } else {
+      contentArea = (
+        <div className="student__getStarted">
+          <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
+          <div className="student__getStarted__text">Select a course to get started.</div>
+        </div>
+      );
     }
 
     return (
