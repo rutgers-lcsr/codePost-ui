@@ -6,9 +6,21 @@ import { HOME } from '../routes';
 interface IProps {
   email: string;
   handleLogout: (event: any) => void;
+  showSettings: boolean;
 }
 
 const TopBar = (props: IProps) => {
+  let settingsButton = null;
+  if (props.showSettings) {
+    settingsButton = (
+      <div className="topbar__settingsIcon">
+        <Link to={'/settings'}>
+          <FontIcon>settings</FontIcon>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="topbar">
@@ -20,11 +32,7 @@ const TopBar = (props: IProps) => {
         <div key="topbar__spacing" className="topbar__spacing" />
         <div key="topbar__welcome" className="topbar__welcome">
           <div className="topbar__welcome__text"> Hello, {props.email} </div>
-          <div className="topbar__settingsIcon">
-            <Link to={'/settings'}>
-              <FontIcon>settings</FontIcon>
-            </Link>
-          </div>
+          {settingsButton}
           <div key="Logout" className="topbar__welcome__logout" onClick={props.handleLogout}>
             Logout
           </div>
