@@ -242,11 +242,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     this.setStateFromURL();
-    this.interval = setInterval(() => {
-      if (this.state.currentCourse) {
-        this.loadAllCourseData();
-      }
-    }, 20000);
+    // this.interval = setInterval(() => {
+    //   if (this.state.currentCourse) {
+    //     this.loadAllCourseData();
+    //   }
+    // }, 20000);
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
@@ -306,13 +306,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
-        window.clearInterval(this.interval);
-        window.clearTimeout(this.interval);
-        this.interval = setInterval(() => {
-          if (this.state.currentCourse) {
-            this.loadAllCourseData();
-          }
-        }, 25000);
+        // window.clearInterval(this.interval);
+        // window.clearTimeout(this.interval);
+        // this.interval = setInterval(() => {
+        //   if (this.state.currentCourse) {
+        //     this.loadAllCourseData();
+        //   }
+        // }, 25000);
       },
     );
   };
@@ -1205,16 +1205,23 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public deleteAssignment = (toDelete: AssignmentType) => {
     const { currentCourse, assignments } = this.state;
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
-    Assignment.delete(toDelete.id).then(() => {
-      assignments.filter((el) => {
+    return Assignment.delete(toDelete.id).then(() => {
+      const newAssignments = assignments.filter((el) => {
         return el.id !== toDelete.id;
       });
-      this.setState({ assignments }, () => {
-        this.props.addToast('Assignment deleted.', undefined);
-      });
+      const { rubricCategories, submissions } = this.state;
+      delete rubricCategories[toDelete.id];
+      delete submissions[toDelete.id];
+      this.setState(
+        { assignments: newAssignments, submissions, rubricCategories, submissionsbyUserLoadComplete: false },
+        () => {
+          this.props.addToast('Assignment deleted.', undefined);
+          this.generateSubmissionsByStudent();
+        },
+      );
     });
   };
 

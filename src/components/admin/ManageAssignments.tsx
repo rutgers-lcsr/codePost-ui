@@ -41,7 +41,7 @@ interface IProps {
   addErrorToast: (text: string, action: string | undefined) => void;
   assignments: AssignmentType[];
   assignmentRubricLoadComplete: boolean;
-  deleteAssignment: (assignment: AssignmentType) => void;
+  deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
@@ -102,6 +102,7 @@ interface IState {
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
   deletingAssignment?: AssignmentType;
+  isDeleteLoading: boolean;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -115,6 +116,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
+    isDeleteLoading: false,
   };
 
   public assignmentNameField: any;
@@ -511,7 +513,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public deleteAssignment = () => {
     const deletingAssignment = this.state.deletingAssignment;
     if (deletingAssignment) {
-      this.props.deleteAssignment(deletingAssignment);
+      this.setState({ isDeleteLoading: true });
+      this.props.deleteAssignment(deletingAssignment).then(() => {
+        this.setState({ deletingAssignment: undefined, isDeleteLoading: false });
+      });
     }
   };
 
@@ -661,6 +666,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             <TableBody>{tableBody}</TableBody>
           </DataTable>
           <DeleteAssignmentDialog
+            isLoading={this.state.isDeleteLoading}
             isVisible={typeof this.state.deletingAssignment !== 'undefined'}
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
