@@ -106,7 +106,7 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <Tabs defaultTabIndex={0}>
+      <Tabs>
         <TabList className="tabList--Grade">
           {files.map((file: FileType, i: number) => {
             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
