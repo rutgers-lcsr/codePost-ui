@@ -5,6 +5,7 @@
     border-color: $light-grey !important;
     border-radius: 0px !important;
     font-weight: 500;
+    background-color: transparent;
     &--is-focused {
       border-width: 0px 0px 1px 0px !important;
       border-style: solid !important;
@@ -12,13 +13,13 @@
       box-shadow: none !important;
     }
   }
+}
+.multiselect--ViewAll {
+  @include react-select-format();
 
   &__option--is-focused {
     background-color: $very-light-green !important;
   }
-}
-.multiselect--ViewAll {
-  @include react-select-format();
 
   &__control {
     margin-bottom: 20px;
@@ -43,6 +44,23 @@
     background-color: $brand-color;
     color: white;
   }
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
+
+  @include react-select-format();
+}
+
+.select--assign-grader {
+  &__option--is-selected {
+    background-color: black;
+    color: white;
+  }
+  &__option--is-focused {
+    background-color: black !important;
+    color: white;
+  }
+
   @include react-select-format();
 }
 
