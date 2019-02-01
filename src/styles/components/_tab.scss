@@ -121,6 +121,7 @@
 
 .tabList--Grade {
   @include StyleReact-Tabs-FixedTop();
+  width: calc(100% - 180px);
   position: relative !important;
   &__panelPadding {
     padding-top: 40px;

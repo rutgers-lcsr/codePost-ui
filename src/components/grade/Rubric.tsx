@@ -59,9 +59,8 @@ class Rubric extends React.Component<IProps, IState> {
     const { handleRubricCommentClick, rubricCategories, rubricComments } = this.props;
     const { searchTerm, visibles } = this.state;
 
-    console.log('[Rubric] rubriccomments:', rubricComments);
     return (
-      <div>
+      <div className="grade-rubric">
         <div className="grade-rubric__title">Assignment Rubric</div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
@@ -97,9 +96,6 @@ const RubricCategory = (props: IRubricCategoryProps) => {
 
   const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
   const arrowClassName = visible ? 'button--rubric-arrow button--rubric-arrow--up' : 'button--rubric-arrow';
-
-  console.log('[RubricCategory] rubriccomments:', rubricComments);
-  console.log('[RubricCategory] visible: ', visible);
 
   return (
     <div className="grade-rubric__category">
