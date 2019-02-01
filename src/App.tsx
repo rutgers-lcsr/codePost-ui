@@ -83,15 +83,16 @@ class App extends React.Component<{}, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          this.setState({ user: json });
+          this.setState({ user: json, triedLoading: true });
           this.refreshToken();
         })
         .catch((error) => {
+          this.setState({ triedLoading: true });
           this.handleLogout();
         });
+    } else {
+      this.setState({ triedLoading: true });
     }
-
-    this.setState({ triedLoading: true });
   }
 
   public addCourseToAdminList = (course: CourseType) => {
