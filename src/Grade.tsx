@@ -180,6 +180,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   public loadRubric = (assignmentID: number) => {
     return Assignment.readRubric(assignmentID, {}).then((rubric) => {
       const newRubricComments = {};
+      console.log('es6');
       rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
         newRubricComments[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
           return rubricComment.category === rubricCategory.id;
