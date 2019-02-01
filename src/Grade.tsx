@@ -77,8 +77,13 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.loadSubmission().then((submission) => {
       return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
         () => {
-          const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-          this.setState({ isLoading: false, positiveNegativeAlert });
+          console.log('waiting...');
+          setTimeout(() => {
+            console.log('rubricComments after wait', this.state.rubricComments);
+            const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+            this.setState({ isLoading: false, positiveNegativeAlert });
+            return true;
+          }, 3000);
         },
       );
     });
@@ -179,14 +184,20 @@ class Grade extends React.Component<IProps, IGradeState> {
 
   public loadRubric = (assignmentID: number) => {
     return Assignment.readRubric(assignmentID, {}).then((rubric) => {
-      const newRubricComments = {};
-      console.log('es6');
-      rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-        newRubricComments[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
-          return rubricComment.category === rubricCategory.id;
-        });
-      });
-      this.setState({ rubricCategories: rubric.rubricCategories, rubricComments: newRubricComments });
+      this.setState({ rubricCategories: rubric.rubricCategories });
+      return Promise.all(
+        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+          console.log('-- interim, updating rubricComments', this.state.rubricComments);
+          return this.setState({
+            rubricComments: {
+              ...this.state.rubricComments,
+              [rubricCategory.id]: rubric.rubricComments.filter((rubricComment) => {
+                return rubricComment.category === rubricCategory.id;
+              }),
+            },
+          });
+        }),
+      );
     });
   };
 
