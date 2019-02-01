@@ -459,7 +459,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Assignment.readRubric(assignmentID, {})
       .then((json) => {
         const { rubricCategories, rubricComments } = this.state;
-        console.log(json);
         rubricCategories[assignmentID] = json.rubricCategories;
         json.rubricCategories.forEach((cat: RubricCategoryType) => {
           rubricComments[cat.id] = json.rubricComments.filter((comm: RubricCommentType) => {
@@ -1206,16 +1205,23 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public deleteAssignment = (toDelete: AssignmentType) => {
     const { currentCourse, assignments } = this.state;
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
-    Assignment.delete(toDelete.id).then(() => {
-      assignments.filter((el) => {
+    return Assignment.delete(toDelete.id).then(() => {
+      const newAssignments = assignments.filter((el) => {
         return el.id !== toDelete.id;
       });
-      this.setState({ assignments }, () => {
-        this.props.addToast('Assignment deleted.', undefined);
-      });
+      const { rubricCategories, submissions } = this.state;
+      delete rubricCategories[toDelete.id];
+      delete submissions[toDelete.id];
+      this.setState(
+        { assignments: newAssignments, submissions, rubricCategories, submissionsbyUserLoadComplete: false },
+        () => {
+          this.props.addToast('Assignment deleted.', undefined);
+          this.generateSubmissionsByStudent();
+        },
+      );
     });
   };
 

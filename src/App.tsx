@@ -19,8 +19,6 @@ import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 import Student from './Student';
 import { IToast } from './types/common';
 
-import NoMatch from './components/NoMatch';
-
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
@@ -34,6 +32,7 @@ interface IState {
   toasts: IToast[];
   longToasts: IToast[];
   errorToasts: IToast[];
+  triedLoading: boolean;
 }
 
 class App extends React.Component<{}, IState> {
@@ -46,6 +45,7 @@ class App extends React.Component<{}, IState> {
       toasts: [],
       longToasts: [],
       errorToasts: [],
+      triedLoading: false,
     };
   }
 
@@ -62,6 +62,8 @@ class App extends React.Component<{}, IState> {
         toRedirect: redirect,
       },
       () => {
+        console.log('bump');
+        console.log(newUser.token);
         localStorage.setItem('token', newUser.token);
       },
     );
@@ -88,6 +90,8 @@ class App extends React.Component<{}, IState> {
           this.handleLogout();
         });
     }
+
+    this.setState({ triedLoading: true });
   }
 
   public addCourseToAdminList = (course: CourseType) => {
@@ -106,6 +110,7 @@ class App extends React.Component<{}, IState> {
       has_token: false,
       user: undefined,
       toRedirect: true,
+      triedLoading: true,
     });
   };
 
@@ -323,7 +328,7 @@ class App extends React.Component<{}, IState> {
 
       return (
         <div>
-          <TopBar email={this.state.user.email} handleLogout={this.handleLogout} />
+          <TopBar email={this.state.user.email} handleLogout={this.handleLogout} showSettings={isAdmin} />
           <div className="AppHome">
             <Switch>
               <Route
@@ -343,8 +348,6 @@ class App extends React.Component<{}, IState> {
               {graderRoute}
               {adminRoute}
               {gradeRoute}
-
-              <Route component={NoMatch} />
             </Switch>
             <Snackbar
               id="short-snackbar"
@@ -380,11 +383,15 @@ class App extends React.Component<{}, IState> {
         </div>
       );
     }
-    return (
-      <div>
-        <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
-      </div>
-    );
+    if (this.state.triedLoading) {
+      return (
+        <div>
+          <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
+        </div>
+      );
+    } else {
+      return <div />;
+    }
   }
 }
 

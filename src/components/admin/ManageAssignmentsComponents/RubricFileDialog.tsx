@@ -271,8 +271,6 @@ class RubricFileDialog extends React.Component<IProps, {}> {
                 (oldComments[cat.id][comIndex].text !== com.text ||
                   oldComments[cat.id][comIndex].pointDelta !== com.pointDelta)
               ) {
-                console.log(oldComments[cat.id][comIndex]);
-                console.log(com);
                 if (makeDBUpdate) {
                   const result = this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta);
                   promises.push(result);

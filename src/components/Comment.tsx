@@ -33,6 +33,8 @@ interface IState {
 
 class Comment extends React.Component<IProps, IState> {
   public textarea: any = React.createRef();
+  public deductionField: any = React.createRef();
+
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
@@ -44,8 +46,12 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public componentDidUpdate = () => {
+    // Is the deduction field active?
+    const activeDeductionField =
+      this.deductionField && this.deductionField.context && this.deductionField.getField() === document.activeElement;
+
     // Hack to focus on a conditionally rendered component
-    if (this.textarea && this.textarea.style) {
+    if (!activeDeductionField && this.textarea && this.textarea.style) {
       this.textarea.focus();
     }
   };
@@ -260,6 +266,8 @@ class Comment extends React.Component<IProps, IState> {
               pattern="^d+(\.|\,)\d{1}"
               type="number"
               placeholder={'Deduction'}
+              // tslint:disable-next-line
+              ref={(field) => (this.deductionField = field)}
               fullWidth={true}
               disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}

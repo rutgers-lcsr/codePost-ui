@@ -41,7 +41,7 @@ interface IProps {
   addErrorToast: (text: string, action: string | undefined) => void;
   assignments: AssignmentType[];
   assignmentRubricLoadComplete: boolean;
-  deleteAssignment: (assignment: AssignmentType) => void;
+  deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   createRubricCategory: (
     assignmentID: number,
     categoryName: string,
@@ -102,6 +102,7 @@ interface IState {
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
   deletingAssignment?: AssignmentType;
+  isDeleteLoading: boolean;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -115,6 +116,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
+    isDeleteLoading: false,
   };
 
   public assignmentNameField: any;
@@ -388,7 +390,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   public updateAssignmentName = () => {
     const { activeAssignment } = this.state;
-    console.log(this.assignmentNameField);
     if (activeAssignment) {
       this.props.updateAssignment(activeAssignment.id, this.assignmentNameField.getField().value, undefined, undefined);
     }
@@ -445,8 +446,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
   ) => {
     const { activeRubricComments } = this.state;
     // if any child rubricComments have a linked comment, alert the user
-    console.log(categoryID);
-    console.log(activeRubricComments);
     if (activeRubricComments) {
       const theseComments = activeRubricComments[categoryID];
       const isLinked = theseComments.some((comment) => {
@@ -475,11 +474,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
     // If a change to an item with linked comments is cancelled, revert to previous data
     if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
       const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
-      console.log(oldComment);
       activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text = oldComment.text;
       activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
         oldComment.pointDelta;
-      console.log(activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex]);
       this.setState({ activeRubricComments });
     }
     this.setState({ changeCommentDialogID: undefined });
@@ -516,7 +513,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public deleteAssignment = () => {
     const deletingAssignment = this.state.deletingAssignment;
     if (deletingAssignment) {
-      this.props.deleteAssignment(deletingAssignment);
+      this.setState({ isDeleteLoading: true });
+      this.props.deleteAssignment(deletingAssignment).then(() => {
+        this.setState({ deletingAssignment: undefined, isDeleteLoading: false });
+      });
     }
   };
 
@@ -529,8 +529,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
 
     const subs = submissions[assignment.id];
-    console.log(subs);
-    console.log(assignment.id);
     const grades = {};
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
@@ -668,6 +666,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             <TableBody>{tableBody}</TableBody>
           </DataTable>
           <DeleteAssignmentDialog
+            isLoading={this.state.isDeleteLoading}
             isVisible={typeof this.state.deletingAssignment !== 'undefined'}
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
