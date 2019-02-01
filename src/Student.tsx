@@ -5,7 +5,7 @@ import { CodePanel, makeReadOnly } from './components/CodePanel';
 
 import VerticalPane from './components/VerticalPane';
 
-import { Snackbar } from 'react-md';
+import { CircularProgress, Snackbar } from 'react-md';
 
 import {
   ICommentToRubricCommentMap,
@@ -404,7 +404,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     } else if (currentSubmission && currentAssignment && !currentSubmission.isFinalized) {
       contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
     } else if (currentAssignment && this.state.isLoadingSubmission) {
-      contentArea = <div>Loading...</div>;
+      contentArea = <CircularProgress id="progress" />;
     } else if (currentCourse) {
       contentArea = <div>Select an assignment on the left!</div>;
     } else {

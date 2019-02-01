@@ -4,7 +4,7 @@ import { CodePanel } from './components/CodePanel';
 import Panel from './components/grade/Panel';
 import Rubric from './components/grade/Rubric';
 
-import { Snackbar } from 'react-md';
+import { CircularProgress, Snackbar } from 'react-md';
 
 import {
   ICommentToRubricCommentMap,
@@ -184,20 +184,13 @@ class Grade extends React.Component<IProps, IGradeState> {
 
   public loadRubric = (assignmentID: number) => {
     return Assignment.readRubric(assignmentID, {}).then((rubric) => {
-      this.setState({ rubricCategories: rubric.rubricCategories });
-      return Promise.all(
-        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          console.log('-- interim, updating rubricComments', this.state.rubricComments);
-          return this.setState({
-            rubricComments: {
-              ...this.state.rubricComments,
-              [rubricCategory.id]: rubric.rubricComments.filter((rubricComment) => {
-                return rubricComment.category === rubricCategory.id;
-              }),
-            },
-          });
-        }),
-      );
+      const rubricCommentMap = {};
+      rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+        rubricCommentMap[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
+          return rubricComment.category === rubricCategory.id;
+        });
+      });
+      this.setState({ rubricCategories: rubric.rubricCategories, rubricComments: rubricCommentMap });
     });
   };
 
@@ -424,7 +417,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     };
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return <CircularProgress id="progress" />;
     }
 
     if (!submission || !assignment) {
