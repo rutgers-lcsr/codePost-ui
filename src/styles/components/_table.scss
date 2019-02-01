@@ -90,6 +90,10 @@
   @include fixedTableHeader(calc(100vh - 260px));
 }
 
+.DataTable--Section {
+  @include fixedTableHeader(calc(100vh - 280px));
+}
+
 .DataTable--RubricCategory {
   .md-divider--text-field {
     margin-bottom: 0px;

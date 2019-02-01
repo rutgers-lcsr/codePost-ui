@@ -45,3 +45,10 @@
   }
   @include react-select-format();
 }
+
+.select--Grader-section {
+  @include react-select-format();
+  &__control {
+    max-width: 200px;
+  }
+}

@@ -13,6 +13,14 @@
     padding-left: 30px;
     padding-right: 30px;
   }
+  &__Section {
+    &__title {
+      font-size: 20px;
+      font-weight: 500px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
 
   &__getStarted {
     display: flex;
