@@ -32,8 +32,7 @@ interface IPropsManageUsers {
   changeRoster: (emails: string[], type: USER_APP) => Promise<void>;
 
   createSection: (newSection: string) => void;
-  addLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
-  removeLeader: (sectionID: number, leaderEmail: string) => Promise<string[]>;
+  changeLeaders: (sectionID: number, leaderEmails: string[]) => Promise<string[]>;
   changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
 
   addToast: (text: string, action: string | undefined) => void;
@@ -137,8 +136,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               addToast={this.props.addToast}
               createSection={this.props.createSection}
               graders={this.props.graders}
-              addLeader={this.props.addLeader}
-              removeLeader={this.props.removeLeader}
+              changeLeaders={this.props.changeLeaders}
             />
           </TabPanel>
         </Tabs>

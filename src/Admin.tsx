@@ -827,39 +827,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Promise.reject();
   };
 
-  public addLeaderToSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
-    const { sections } = this.state;
-
-    const thisSection = sections.filter((section) => {
-      return section.id === sectionID;
-    })[0];
-    const sectionName = thisSection.name;
-    const newLeaders = thisSection.leaders;
-    newLeaders.push(leaderEmail);
-
-    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
-      this.props.addToast(`${leaderEmail} added as leader of section ${sectionName}`, undefined);
-      return leaders;
-    });
-  };
-
-  public removeLeaderFromSection = (sectionID: number, leaderEmail: string): Promise<string[]> => {
-    const { sections } = this.state;
-
-    const thisSection = sections.filter((section) => {
-      return section.id === sectionID;
-    })[0];
-    const sectionName = thisSection.name;
-    const newLeaders = thisSection.leaders.filter((leader) => {
-      return leader !== leaderEmail;
-    });
-
-    return this.changeSectionLeaders(sectionID, newLeaders).then((leaders) => {
-      this.props.addToast(`${leaderEmail} removed as leader of section ${sectionName}`, undefined);
-      return leaders;
-    });
-  };
-
   public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
     const { sections } = this.state;
     const payload = { id: sectionID, leaders: newLeaders };
@@ -873,6 +840,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
 
       this.setState({ sections: newSections });
+      this.props.addToast(`Section ${json.name} leaders updated`, undefined);
       return json.leaders;
     });
   };
@@ -1538,8 +1506,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             changeRoster={this.changeRoster}
             changeStudentSection={this.changeStudentSection}
             createSection={this.createSection}
-            addLeader={this.addLeaderToSection}
-            removeLeader={this.removeLeaderFromSection}
+            changeLeaders={this.changeSectionLeaders}
             addToast={this.props.addToast}
             addErrorToast={this.props.addErrorToast}
             initialTab={this.state.initialTab}
