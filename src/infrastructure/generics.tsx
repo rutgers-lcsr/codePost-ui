@@ -50,7 +50,7 @@ function createObject<T, Q, O, I>(
 
 function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number) => Promise<T>) {
   const foo = async (id: number) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ function readObjectDetail<T, O, I>(
       }
     });
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       }
     });
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
