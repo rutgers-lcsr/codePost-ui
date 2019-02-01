@@ -16,6 +16,13 @@
       grid-gap: 5px;
 
       &__grader-select {
+        min-width: 200px;
+        height: 25px;
+
+        .md-floating-label--inactive {
+          transform: translate3d(4px, 5px, 0);
+        }
+
         .md-icon-text {
           font-size: $font-size-normal;
         }
