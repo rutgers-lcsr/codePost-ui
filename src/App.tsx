@@ -228,6 +228,7 @@ class App extends React.Component<{}, IState> {
       const studentCourses = user.studentCourses;
       const superGraderCourses = this.state.user.superGraderCourses;
       const email = user.email;
+      const sectionsLed = user.leader_sections;
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
       const isGrader = user ? user.graderCourses.length > 0 : false;
@@ -252,7 +253,13 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
             render={(props: any) => (
-              <Grader {...props} email={email} superGraderCourses={superGraderCourses} initialCourses={graderCourses} />
+              <Grader
+                {...props}
+                email={email}
+                superGraderCourses={superGraderCourses}
+                initialCourses={graderCourses}
+                sectionsLed={sectionsLed}
+              />
             )}
           />
         );
