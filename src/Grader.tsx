@@ -341,7 +341,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           <div className="grader__getStarted__text">Select a course to get started.</div>
         </div>
       ) : isSuperGrader ? (
-        <Tabs defaultTabIndex={0}>
+        <Tabs>
           <TabList className="tabList--Grader">
             <Tab className="tabList--Grader__tab">My Submissions</Tab>
             <Tab className="tabList--Grader__tab">View All</Tab>
