@@ -242,11 +242,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     this.setStateFromURL();
-    // this.interval = setInterval(() => {
-    //   if (this.state.currentCourse) {
-    //     this.loadAllCourseData();
-    //   }
-    // }, 20000);
+    this.interval = setInterval(() => {
+      if (this.state.currentCourse) {
+        this.loadAllCourseData();
+      }
+    }, 20000);
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
@@ -306,13 +306,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
-        // window.clearInterval(this.interval);
-        // window.clearTimeout(this.interval);
-        // this.interval = setInterval(() => {
-        //   if (this.state.currentCourse) {
-        //     this.loadAllCourseData();
-        //   }
-        // }, 25000);
+        window.clearInterval(this.interval);
+        window.clearTimeout(this.interval);
+        this.interval = setInterval(() => {
+          if (this.state.currentCourse) {
+            this.loadAllCourseData();
+          }
+        }, 25000);
       },
     );
   };
