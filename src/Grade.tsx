@@ -75,13 +75,12 @@ class Grade extends React.Component<IProps, IGradeState> {
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
     this.loadSubmission().then((submission) => {
-      return Promise.all([
-        this.loadAssignment(submission.assignment),
-        this.loadRubricCategories(submission.assignment),
-      ]).then(() => {
-        const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-        this.setState({ isLoading: false, positiveNegativeAlert });
-      });
+      return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
+        () => {
+          const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+          this.setState({ isLoading: false, positiveNegativeAlert });
+        },
+      );
     });
   }
 
@@ -178,46 +177,22 @@ class Grade extends React.Component<IProps, IGradeState> {
     );
   };
 
-  public loadRubricCategories = (assignmentId: number) => {
-    return Assignment.readRubric(assignmentId, {}).then((rubric) => {
+  public loadRubric = (assignmentID: number) => {
+    return Assignment.readRubric(assignmentID, {}).then((rubric) => {
+      this.setState({ rubricCategories: rubric.rubricCategories });
       return Promise.all(
         rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          return this.loadRubricComments(rubricCategory);
-        }),
-      ).then(() => {
-        this.setState({ rubricCategories: rubric.rubricCategories });
-        return rubric.rubricCategories;
-      });
-    });
-  };
-
-  public loadRubricComments = (rubricCategory: RubricCategoryType) => {
-    if (rubricCategory.rubricComments.length === 0) {
-      this.setState({
-        rubricComments: {
-          ...this.state.rubricComments,
-          [rubricCategory.id]: [],
-        },
-      });
-      return Promise.all([Promise.resolve()]);
-    } else {
-      return Promise.all(
-        rubricCategory.rubricComments.map((rubricCommentId: number) => {
-          return RubricComment.read(rubricCommentId).then((rubricComment: RubricCommentType) => {
-            let rubricComments = [rubricComment];
-            if (this.state.rubricComments[rubricCategory.id]) {
-              rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
-            }
-            this.setState({
-              rubricComments: {
-                ...this.state.rubricComments,
-                [rubricCategory.id]: rubricComments,
-              },
-            });
+          return this.setState({
+            rubricComments: {
+              ...this.state.rubricComments,
+              [rubricCategory.id]: rubric.rubricComments.filter((rubricComment) => {
+                return rubricComment.category === rubricCategory.id;
+              }),
+            },
           });
         }),
       );
-    }
+    });
   };
 
   ///////////////////////////////////////
