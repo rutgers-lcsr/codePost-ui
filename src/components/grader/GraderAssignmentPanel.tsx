@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, DialogContainer, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import {
+  Button,
+  CircularProgress,
+  DataTable,
+  DialogContainer,
+  FontIcon,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
 import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
@@ -118,7 +128,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     };
 
     if (isLoadingSubmissions) {
-      return <div>Loading..</div>;
+      return <CircularProgress id="progress" />;
     }
 
     if (assignment && submissions.length > 0) {

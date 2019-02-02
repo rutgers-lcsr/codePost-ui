@@ -1,10 +1,11 @@
 import * as React from 'react';
 
 import { CodePanel } from './components/CodePanel';
-import Panel from './components/grade/Panel';
+import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
+import SubmissionInfo from './components/grade/SubmissionInfo';
 
-import { Snackbar } from 'react-md';
+import { CircularProgress, Snackbar } from 'react-md';
 
 import {
   ICommentToRubricCommentMap,
@@ -363,11 +364,11 @@ class Grade extends React.Component<IProps, IGradeState> {
       });
   };
 
-  public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
+  public updateGrader = (sub: SubmissionType, graderUsername: string | undefined) => {
     const payload = {
       id: sub.id,
       isFinalized: false,
-      grader,
+      grader: graderUsername,
     };
 
     return Submission.update(payload).then((submission) => {
@@ -418,7 +419,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     };
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return <CircularProgress id="progress" />;
     }
 
     if (!submission || !assignment) {
@@ -428,17 +429,15 @@ class Grade extends React.Component<IProps, IGradeState> {
     // Should include loading functionality while the submission is coming in
     return (
       <div className="grade">
-        <Panel
-          submission={submission}
-          assignment={assignment}
-          toggleFinalized={this.toggleFinalized}
-          graders={graders}
-          updateGrader={this.updateGrader}
-          isCourseAdmin={isCourseAdmin}
-          positiveNegativeAlert={positiveNegativeAlert}
-        />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
+            <SubmissionInfo
+              submission={submission}
+              assignment={assignment}
+              graders={graders}
+              updateGrader={this.updateGrader}
+              isCourseAdmin={isCourseAdmin}
+            />
             <Rubric
               rubricCategories={rubricCategories}
               rubricComments={rubricComments}
@@ -446,6 +445,11 @@ class Grade extends React.Component<IProps, IGradeState> {
             />
           </div>
           <div className="grade__main-container__right-panel">
+            <ToggleFinalize
+              submission={submission}
+              toggleFinalized={this.toggleFinalized}
+              positiveNegativeAlert={positiveNegativeAlert}
+            />
             <CodePanel
               submission={submission}
               files={files}
@@ -476,5 +480,26 @@ class Grade extends React.Component<IProps, IGradeState> {
     );
   }
 }
+
+interface IToggleFinalizeProps {
+  submission: SubmissionType;
+  toggleFinalized: any;
+  positiveNegativeAlert: boolean;
+}
+
+const ToggleFinalize = (props: IToggleFinalizeProps) => {
+  const { submission, toggleFinalized, positiveNegativeAlert } = props;
+  const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
+
+  return (
+    <div className="grade__finalize">
+      <Finalize submission={submission} toggleFinalized={toggleFinalized} />
+      <div className={warningClassName}>
+        Warning: This submission has both positive and negative point comments. Please check to make sure that this is
+        intentional.
+      </div>
+    </div>
+  );
+};
 
 export default Grade;

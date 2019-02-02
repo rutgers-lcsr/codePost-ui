@@ -24,6 +24,8 @@ $Stats-font-size: 24px;
 $path-box-height: 50px;
 $buffer-height: 150px;
 
+$md-toolbar-height: 100px;
+
 %landing-headline {
   font-size: $big-header-font-size;
   font-weight: bold;
@@ -47,7 +49,7 @@ $buffer-height: 150px;
 
   .logo {
     padding-top: 200px;
-    font-size: 40px;
+    font-size: 70px;
   }
 
   .Description-head {

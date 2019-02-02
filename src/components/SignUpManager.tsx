@@ -33,7 +33,7 @@ class SignUpManager extends React.Component<{}, IState> {
     return (
       <div className="SignUpManager">
         <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Sign up up for codePost</div>
+          <div className="SignUpManager__title">Join codePost</div>
           <div className="SignUpManager__item">
             <div
               onClick={this.toggleRedirect.bind(this, SignUpType.existingCourse)}

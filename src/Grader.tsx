@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
+import SectionPanel from './components/grader/SectionPanel';
 import ViewAllPanel from './components/grader/ViewAllPanel';
 
 import VerticalPane from './components/VerticalPane';
@@ -40,6 +41,7 @@ interface IGraderProps {
   match: any;
   history: any;
   superGraderCourses: CourseType[];
+  sectionsLed: number[];
 }
 
 class Grader extends React.Component<IGraderProps, IGraderState> {
@@ -334,37 +336,17 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         ? true
         : false;
 
-    const GraderPanelContent =
-      !currentCourse || !currentAssignment ? (
+    let graderPanelContent;
+    // if not loaded yet, render a get started div
+    if (!currentCourse || !currentAssignment) {
+      graderPanelContent = (
         <div className="grader__getStarted">
           <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
           <div className="grader__getStarted__text">Select a course to get started.</div>
         </div>
-      ) : isSuperGrader ? (
-        <Tabs>
-          <TabList className="tabList--Grader">
-            <Tab className="tabList--Grader__tab">My Submissions</Tab>
-            <Tab className="tabList--Grader__tab">View All</Tab>
-          </TabList>
-          <TabPanel>
-            {/* padding under the tab required because tab is position:fixed*/}
-            <div className="tabList--Grader__panelPadding" />
-            <GraderAssignmentPanel
-              claimSubmission={this.claimSubmission}
-              releaseSubmission={this.releaseSubmission}
-              assignment={currentAssignment}
-              submissions={currentSubmissions}
-              isLoadingSubmissions={isLoadingSubmissions}
-              sections={currentSections}
-            />
-          </TabPanel>
-          <TabPanel>
-            {/* padding under the tab required because tab is position:fixed*/}
-            <div className="tabList--Grader__panelPadding" />
-            <ViewAllPanel currentCourse={currentCourse} currentAssignment={currentAssignment} />
-          </TabPanel>
-        </Tabs>
-      ) : (
+      );
+    } else {
+      const graderAssignmentPanel = (
         <GraderAssignmentPanel
           claimSubmission={this.claimSubmission}
           releaseSubmission={this.releaseSubmission}
@@ -374,6 +356,60 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           sections={currentSections}
         />
       );
+      // if superGrader show a course
+      const sections = this.props.sectionsLed.slice();
+      const sectionsInThisCourse = sections.filter((id) => {
+        return currentCourse.sections.indexOf(id) !== -1;
+      });
+      const hasSections = sectionsInThisCourse.length > 0;
+
+      const viewAllPanel = isSuperGrader ? (
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div className="tabList--Grader__panelPadding" />
+          <ViewAllPanel currentCourse={currentCourse} currentAssignment={currentAssignment} />
+        </TabPanel>
+      ) : (
+        ''
+      );
+      const viewAllTab = isSuperGrader ? <Tab className="tabList--Grader__tab">View All</Tab> : '';
+      const sectionPanel = hasSections ? (
+        <TabPanel>
+          {/* padding under the tab required because tab is position:fixed*/}
+          <div className="tabList--Grader__panelPadding" />
+          <SectionPanel
+            sectionsLed={sectionsInThisCourse}
+            currentCourse={currentCourse}
+            currentAssignment={currentAssignment}
+          />
+        </TabPanel>
+      ) : (
+        ''
+      );
+      const sectionTab = hasSections ? <Tab className="tabList--Grader__tab">Sections</Tab> : '';
+
+      // if superGrader or hasSections, render tabs
+      if (isSuperGrader || hasSections) {
+        graderPanelContent = (
+          <Tabs defaultTabIndex={0}>
+            <TabList className="tabList--Grader">
+              <Tab className="tabList--Grader__tab">My Submissions</Tab>
+              {viewAllTab}
+              {sectionTab}
+            </TabList>
+            <TabPanel>
+              {/* padding under the tab required because tab is position:fixed*/}
+              <div className="tabList--Grader__panelPadding" />
+              {graderAssignmentPanel}
+            </TabPanel>
+            {viewAllPanel}
+            {sectionPanel}
+          </Tabs>
+        );
+      } else {
+        graderPanelContent = graderAssignmentPanel;
+      }
+    }
 
     return (
       <div className="grader">
@@ -387,7 +423,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             handleSelectorChange={this.handleCourseChange}
           />
         </div>
-        <div className="grader__right-panel">{GraderPanelContent}</div>
+        <div className="grader__right-panel">{graderPanelContent}</div>
       </div>
     );
   }
