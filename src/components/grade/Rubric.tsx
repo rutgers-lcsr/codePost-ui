@@ -122,6 +122,8 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           hideFilterInput={true}
         >
           {rubricComments.map((rubricComment: RubricCommentType, index: number) => {
+            console.log('[RubricCategoryTable]: rubricComment', rubricComment);
+            console.log('[RubricCategoryTable]: rubricComment', index);
             return (
               <Tr key={index}>
                 <Td column=" " value={rubricComment.text}>
