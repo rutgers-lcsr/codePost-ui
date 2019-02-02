@@ -6,7 +6,7 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-import { Table, Td, Tr } from 'reactable';
+// import { Table, Td, Tr } from 'reactable';
 
 import { Button } from 'react-md';
 
@@ -59,7 +59,7 @@ class Rubric extends React.Component<IProps, IState> {
     const { handleRubricCommentClick, rubricCategories, rubricComments } = this.props;
     const { searchTerm, visibles } = this.state;
 
-    console.log('[Rubric] rubriccomments 2:', rubricComments);
+    console.log('[Rubric] rubriccomments:', rubricComments);
     return (
       <div>
         <div className="grade-rubric__title">Assignment Rubric</div>
@@ -82,7 +82,6 @@ class Rubric extends React.Component<IProps, IState> {
     );
   }
 }
-// <RubricComment rubricComment={rubricComment} handleRubricCommentClick={handleRubricCommentClick} />
 
 interface IRubricCategoryProps {
   rubricCategory: RubricCategoryType;
@@ -94,7 +93,7 @@ interface IRubricCategoryProps {
 }
 
 const RubricCategory = (props: IRubricCategoryProps) => {
-  const { rubricCategory, rubricComments, searchTerm, visible } = props;
+  const { rubricCategory, rubricComments, handleRubricCommentClick, searchTerm, visible } = props;
 
   const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
   const arrowClassName = visible ? 'button--rubric-arrow button--rubric-arrow--up' : 'button--rubric-arrow';
@@ -115,48 +114,44 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           {rubricCategory.name}
         </div>
       </div>
-      {visible && (
-        <Table
-          className={'grade-rubric__category__table'}
-          filterable={['-']}
-          filterBy={searchTerm}
-          hideFilterInput={true}
-          id="table"
-        >
-          <Tr>
-            <Td column="a">1 </Td>
-            <Td column=" ">2 </Td>
-          </Tr>
-          <Tr>
-            <Td column="a">3 </Td>
-            <Td column=" ">4 </Td>
-          </Tr>
-        </Table>
-      )}
+      {visible &&
+        rubricComments
+          .filter((rubricComment: RubricCommentType) => {
+            return rubricComment.text.toUpperCase().includes(searchTerm.toUpperCase());
+          })
+          .map((rubricComment: RubricCommentType, index: number) => {
+            return (
+              <RubricComment
+                key={index}
+                rubricComment={rubricComment}
+                handleRubricCommentClick={handleRubricCommentClick}
+              />
+            );
+          })}
     </div>
   );
 };
 
-// interface IRubricCommentProps {
-//   rubricComment: RubricCommentType;
-//   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
-// }
+interface IRubricCommentProps {
+  rubricComment: RubricCommentType;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
+}
 
-// const RubricComment = (props: IRubricCommentProps) => {
-//   const { rubricComment } = props;
+const RubricComment = (props: IRubricCommentProps) => {
+  const { rubricComment } = props;
 
-//   const onClick = (event: any) => {
-//     props.handleRubricCommentClick(rubricComment);
-//   };
+  const onClick = (event: any) => {
+    props.handleRubricCommentClick(rubricComment);
+  };
 
-//   console.log('[RubricComment]', rubricComment);
+  console.log('[RubricComment]', rubricComment);
 
-//   return (
-//     <div className="grade-rubric__category__comment-row" onClick={onClick}>
-//       <div className="grade-rubric__category__comment-row__text">{rubricComment.text}</div>
-//       <div className="grade-rubric__category__comment-row__point-delta">{rubricComment.pointDelta}</div>
-//     </div>
-//   );
-// };
+  return (
+    <div className="grade-rubric__category__comment-row" onClick={onClick}>
+      <div className="grade-rubric__category__comment-row__text">{rubricComment.text}</div>
+      <div className="grade-rubric__category__comment-row__point-delta">{rubricComment.pointDelta}</div>
+    </div>
+  );
+};
 
 export default Rubric;
