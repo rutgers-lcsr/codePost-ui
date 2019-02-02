@@ -118,19 +118,19 @@ const RubricCategory = (props: IRubricCategoryProps) => {
       {visible && (
         <Table
           className={'grade-rubric__category__table'}
-          filterable={[' ']}
+          filterable={['-']}
           filterBy={searchTerm}
           hideFilterInput={true}
+          id="table"
         >
-          {rubricComments.map((rubricComment: RubricCommentType, index: number) => {
-            console.log('[RubricCategoryTable]: rubricComment', rubricComment);
-            console.log('[RubricCategoryTable]: rubricComment', index);
-            return (
-              <Tr key={index}>
-                <Td column="-">{rubricComment.text}</Td>
-              </Tr>
-            );
-          })}
+          <Tr>
+            <Td column="a">1 </Td>
+            <Td column=" ">2 </Td>
+          </Tr>
+          <Tr>
+            <Td column="a">3 </Td>
+            <Td column=" ">4 </Td>
+          </Tr>
         </Table>
       )}
     </div>
