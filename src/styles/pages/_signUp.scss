@@ -2,7 +2,7 @@
   @include formatAsWhiteBox();
   padding-top: 100px;
   &__main-container {
-    height: 425px;
+    height: 475px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -14,6 +14,7 @@
     padding-bottom: 20px;
     padding-left: 30px;
     padding-right: 30px;
+    text-align: center;
   }
 
   &__item {
@@ -70,7 +71,7 @@
     font-size: $font-size-xlarge;
     border-radius: 6px;
     padding: 4px 60px 4px 60px;
-    margin-top: 20px;
+    margin-top: 60px;
   }
 
   &__center-text {

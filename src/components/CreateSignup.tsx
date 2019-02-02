@@ -44,16 +44,11 @@ class CreateSignup extends React.Component<{}, IState> {
 
   public handleChange = (label: string, value: string) => {
     const name = label;
-    this.setState(
-      (prevstate) => {
-        const newState = { ...prevstate };
-        newState[name] = value;
-        return newState;
-      },
-      () => {
-        console.log(this.state);
-      },
-    );
+    this.setState((prevstate) => {
+      const newState = { ...prevstate };
+      newState[name] = value;
+      return newState;
+    });
   };
 
   public handleSignup = (e: any) => {
@@ -135,7 +130,6 @@ class CreateSignup extends React.Component<{}, IState> {
         }
       })
       .then((json) => {
-        console.log(json);
         if (!json.pending) {
           clearInterval(this.interval);
           if (json.status) {
@@ -233,6 +227,7 @@ class CreateSignup extends React.Component<{}, IState> {
                   <TextField
                     id="org-input"
                     floating={true}
+                    placeholder="Princeton University"
                     label="Organization Name"
                     required={true}
                     value={tempOrgName}
@@ -266,7 +261,7 @@ class CreateSignup extends React.Component<{}, IState> {
                 </div>
                 <div className="SignUpManager__form__ConfirmAuthority">
                   <div className="SignUpManager__form__helptext">
-                    I Confirm that I haave the authority to create a class for <b>{organization.name}</b>.
+                    I Confirm that I have the authority to create a class for <b>{organization.name}</b>.
                   </div>
                   <input type="checkbox" />
                 </div>

@@ -5,7 +5,11 @@
     border-color: $light-grey !important;
     border-radius: 0px !important;
     font-weight: 500;
+<<<<<<< HEAD
     background-color: transparent !important;
+=======
+    background-color: transparent;
+>>>>>>> 6f7890737fcce7d58eeeebf610c4b8df46f3de6d
     &--is-focused {
       border-width: 0px 0px 1px 0px !important;
       border-style: solid !important;
@@ -13,10 +17,14 @@
       box-shadow: none !important;
     }
   }
+}
+.multiselect--ViewAll {
+  @include react-select-format();
 
   &__option--is-focused {
     background-color: $very-light-green !important;
   }
+<<<<<<< HEAD
 }
 
 @mixin multiSelect-remove-format() {
@@ -32,6 +40,8 @@
 .multiselect--ViewAll {
   @include react-select-format();
   @include multiSelect-remove-format();
+=======
+>>>>>>> 6f7890737fcce7d58eeeebf610c4b8df46f3de6d
 
   &__control {
     margin-bottom: 20px;
@@ -56,6 +66,23 @@
     background-color: $brand-color;
     color: white;
   }
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
+
+  @include react-select-format();
+}
+
+.select--assign-grader {
+  &__option--is-selected {
+    background-color: black;
+    color: white;
+  }
+  &__option--is-focused {
+    background-color: black !important;
+    color: white;
+  }
+
   @include react-select-format();
 }
 

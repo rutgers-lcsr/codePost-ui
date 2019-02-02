@@ -50,7 +50,7 @@ function createObject<T, Q, O, I>(
 
 function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number) => Promise<T>) {
   const foo = async (id: number) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',

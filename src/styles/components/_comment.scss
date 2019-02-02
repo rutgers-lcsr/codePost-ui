@@ -77,10 +77,10 @@
       width: calc(100% - 60px);
     }
     &__buttons {
-      width: 60px;
-      float: right;
-      display: flex;
-      justify-content: space-between;
+      width: 20px;
+      position: absolute;
+      right: 11px;
+      bottom: 1px;
     }
   }
 

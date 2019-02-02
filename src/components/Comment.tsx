@@ -33,6 +33,8 @@ interface IState {
 
 class Comment extends React.Component<IProps, IState> {
   public textarea: any = React.createRef();
+  public deductionField: any = React.createRef();
+
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
@@ -44,8 +46,12 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public componentDidUpdate = () => {
+    // Is the deduction field active?
+    const activeDeductionField =
+      this.deductionField && this.deductionField.context && this.deductionField.getField() === document.activeElement;
+
     // Hack to focus on a conditionally rendered component
-    if (this.textarea && this.textarea.style) {
+    if (!activeDeductionField && this.textarea && this.textarea.style) {
       this.textarea.focus();
     }
   };
@@ -239,9 +245,6 @@ class Comment extends React.Component<IProps, IState> {
 
     // Editable-active comment
     if (active) {
-      // SaveWarning unused right now. But leaving it here in case we want to include
-      // it in a form validation
-      // const pointDeltaClassName = saveWarning ? 'point-delta warning' : 'point-delta';
       return (
         <div
           className={className}
@@ -260,6 +263,8 @@ class Comment extends React.Component<IProps, IState> {
               pattern="^d+(\.|\,)\d{1}"
               type="number"
               placeholder={'Deduction'}
+              // tslint:disable-next-line
+              ref={(field) => (this.deductionField = field)}
               fullWidth={true}
               disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}
@@ -312,13 +317,15 @@ class Comment extends React.Component<IProps, IState> {
     }
 
     // Editable-inactive comment
+    const styleWithCursor = { ...style, cursor: 'pointer' };
     return (
       <div
         className={className}
-        style={style}
+        style={styleWithCursor}
         onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
         onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
         id={`comment-${comment.id}`}
+        onClick={this.toggleActive}
       >
         <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
         <div className="comment__body">
@@ -329,17 +336,6 @@ class Comment extends React.Component<IProps, IState> {
           </div>
 
           <div className="comment__footer__buttons">
-            <Button
-              className="button--comment"
-              icon={true}
-              forceIconFontSize={true}
-              forceIconSize={20}
-              tooltipLabel="Edit comment"
-              tooltipDelay={750}
-              onClick={this.toggleActive}
-            >
-              edit
-            </Button>
             <Button
               className="button--comment"
               icon={true}
