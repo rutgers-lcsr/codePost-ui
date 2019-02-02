@@ -127,7 +127,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
             console.log('[RubricCategoryTable]: rubricComment', index);
             return (
               <Tr key={index}>
-                <Td column=" ">{rubricComment.text}</Td>
+                <Td column="-">{rubricComment.text}</Td>
               </Tr>
             );
           })}
