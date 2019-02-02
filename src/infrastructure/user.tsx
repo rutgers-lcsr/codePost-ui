@@ -17,6 +17,7 @@ const UserV = t.intersection(
       graderCourses: t.array(CourseV),
       superGraderCourses: t.array(CourseV),
       courseadminCourses: t.array(CourseV),
+      leader_sections: t.array(t.string),
     }),
     t.partial({}),
   ],

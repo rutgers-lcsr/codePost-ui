@@ -1,10 +1,11 @@
 import * as React from 'react';
 
 import { CodePanel } from './components/CodePanel';
-import Panel from './components/grade/Panel';
+import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
+import SubmissionInfo from './components/grade/SubmissionInfo';
 
-import { Snackbar } from 'react-md';
+import { CircularProgress, Snackbar } from 'react-md';
 
 import {
   ICommentToRubricCommentMap,
@@ -75,13 +76,12 @@ class Grade extends React.Component<IProps, IGradeState> {
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
     this.loadSubmission().then((submission) => {
-      return Promise.all([
-        this.loadAssignment(submission.assignment),
-        this.loadRubricCategories(submission.assignment),
-      ]).then(() => {
-        const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-        this.setState({ isLoading: false, positiveNegativeAlert });
-      });
+      return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
+        () => {
+          const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+          this.setState({ isLoading: false, positiveNegativeAlert });
+        },
+      );
     });
   }
 
@@ -178,46 +178,16 @@ class Grade extends React.Component<IProps, IGradeState> {
     );
   };
 
-  public loadRubricCategories = (assignmentId: number) => {
-    return Assignment.readRubric(assignmentId, {}).then((rubric) => {
-      return Promise.all(
-        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          return this.loadRubricComments(rubricCategory);
-        }),
-      ).then(() => {
-        this.setState({ rubricCategories: rubric.rubricCategories });
-        return rubric.rubricCategories;
+  public loadRubric = (assignmentID: number) => {
+    return Assignment.readRubric(assignmentID, {}).then((rubric) => {
+      const rubricCommentMap = {};
+      rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+        rubricCommentMap[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
+          return rubricComment.category === rubricCategory.id;
+        });
       });
+      this.setState({ rubricCategories: rubric.rubricCategories, rubricComments: rubricCommentMap });
     });
-  };
-
-  public loadRubricComments = (rubricCategory: RubricCategoryType) => {
-    if (rubricCategory.rubricComments.length === 0) {
-      this.setState({
-        rubricComments: {
-          ...this.state.rubricComments,
-          [rubricCategory.id]: [],
-        },
-      });
-      return Promise.all([Promise.resolve()]);
-    } else {
-      return Promise.all(
-        rubricCategory.rubricComments.map((rubricCommentId: number) => {
-          return RubricComment.read(rubricCommentId).then((rubricComment: RubricCommentType) => {
-            let rubricComments = [rubricComment];
-            if (this.state.rubricComments[rubricCategory.id]) {
-              rubricComments = [...this.state.rubricComments[rubricCategory.id], rubricComment];
-            }
-            this.setState({
-              rubricComments: {
-                ...this.state.rubricComments,
-                [rubricCategory.id]: rubricComments,
-              },
-            });
-          });
-        }),
-      );
-    }
   };
 
   ///////////////////////////////////////
@@ -388,11 +358,11 @@ class Grade extends React.Component<IProps, IGradeState> {
       });
   };
 
-  public updateGrader = (sub: SubmissionType, grader: string | undefined) => {
+  public updateGrader = (sub: SubmissionType, graderUsername: string | undefined) => {
     const payload = {
       id: sub.id,
       isFinalized: false,
-      grader,
+      grader: graderUsername,
     };
 
     return Submission.update(payload).then((submission) => {
@@ -443,7 +413,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     };
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return <CircularProgress id="progress" />;
     }
 
     if (!submission || !assignment) {
@@ -453,17 +423,15 @@ class Grade extends React.Component<IProps, IGradeState> {
     // Should include loading functionality while the submission is coming in
     return (
       <div className="grade">
-        <Panel
-          submission={submission}
-          assignment={assignment}
-          toggleFinalized={this.toggleFinalized}
-          graders={graders}
-          updateGrader={this.updateGrader}
-          isCourseAdmin={isCourseAdmin}
-          positiveNegativeAlert={positiveNegativeAlert}
-        />
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
+            <SubmissionInfo
+              submission={submission}
+              assignment={assignment}
+              graders={graders}
+              updateGrader={this.updateGrader}
+              isCourseAdmin={isCourseAdmin}
+            />
             <Rubric
               rubricCategories={rubricCategories}
               rubricComments={rubricComments}
@@ -471,6 +439,11 @@ class Grade extends React.Component<IProps, IGradeState> {
             />
           </div>
           <div className="grade__main-container__right-panel">
+            <ToggleFinalize
+              submission={submission}
+              toggleFinalized={this.toggleFinalized}
+              positiveNegativeAlert={positiveNegativeAlert}
+            />
             <CodePanel
               submission={submission}
               files={files}
@@ -501,5 +474,26 @@ class Grade extends React.Component<IProps, IGradeState> {
     );
   }
 }
+
+interface IToggleFinalizeProps {
+  submission: SubmissionType;
+  toggleFinalized: any;
+  positiveNegativeAlert: boolean;
+}
+
+const ToggleFinalize = (props: IToggleFinalizeProps) => {
+  const { submission, toggleFinalized, positiveNegativeAlert } = props;
+  const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
+
+  return (
+    <div className="grade__finalize">
+      <Finalize submission={submission} toggleFinalized={toggleFinalized} />
+      <div className={warningClassName}>
+        Warning: This submission has both positive and negative point comments. Please check to make sure that this is
+        intentional.
+      </div>
+    </div>
+  );
+};
 
 export default Grade;

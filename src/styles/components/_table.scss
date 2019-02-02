@@ -20,6 +20,7 @@
       display: table;
       table-layout: fixed;
       width: 100%;
+      cursor: pointer;
     }
 
     .frame::-webkit-scrollbar:vertical {
@@ -88,6 +89,10 @@
 
 .DataTable--ViewAll {
   @include fixedTableHeader(calc(100vh - 260px));
+}
+
+.DataTable--Section {
+  @include fixedTableHeader(calc(100vh - 280px));
 }
 
 .DataTable--RubricCategory {

@@ -130,7 +130,7 @@ function readObjectDetail<T, O, I>(
       }
     });
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}/`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
       }
     });
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}/`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',

@@ -60,7 +60,7 @@ class Rubric extends React.Component<IProps, IState> {
     const { searchTerm, visibles } = this.state;
 
     return (
-      <div>
+      <div className="grade-rubric">
         <div className="grade-rubric__title">Assignment Rubric</div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
@@ -143,6 +143,8 @@ const RubricComment = (props: IRubricCommentProps) => {
   const onClick = (event: any) => {
     props.handleRubricCommentClick(rubricComment);
   };
+
+  console.log('[RubricComment]', rubricComment);
 
   return (
     <div className="grade-rubric__category__comment-row" onClick={onClick}>
