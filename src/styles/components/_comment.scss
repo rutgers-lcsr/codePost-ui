@@ -78,9 +78,9 @@
     }
     &__buttons {
       width: 20px;
-      float: right;
-      display: flex;
-      justify-content: space-between;
+      position: absolute;
+      right: 11px;
+      bottom: 1px;
     }
   }
 
