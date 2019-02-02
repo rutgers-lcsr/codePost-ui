@@ -77,13 +77,8 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.loadSubmission().then((submission) => {
       return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
         () => {
-          console.log('waiting...');
-          setTimeout(() => {
-            console.log('rubricComments after wait', this.state.rubricComments);
-            const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-            this.setState({ isLoading: false, positiveNegativeAlert });
-            return true;
-          }, 3000);
+          const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+          this.setState({ isLoading: false, positiveNegativeAlert });
         },
       );
     });
@@ -187,7 +182,6 @@ class Grade extends React.Component<IProps, IGradeState> {
       this.setState({ rubricCategories: rubric.rubricCategories });
       return Promise.all(
         rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          console.log('-- interim, updating rubricComments', this.state.rubricComments);
           return this.setState({
             rubricComments: {
               ...this.state.rubricComments,
