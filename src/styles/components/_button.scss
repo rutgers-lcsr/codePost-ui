@@ -80,6 +80,7 @@
   &--finalize {
     @include button($brand-color, white);
     @extend %large-button;
+    right: 60px;
   }
 
   &--takeback {
