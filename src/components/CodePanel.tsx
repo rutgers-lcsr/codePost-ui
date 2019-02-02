@@ -305,7 +305,7 @@ const Code = (props: ICodeProps) => {
       </div>
       <div className="grade__main-container__tabContent__commentPanel">
         <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
-          Last edited: {moment(props.submission.dateEdited).format('llll')}
+          Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
         </div>
         <CommentList
           file={file}
