@@ -6,8 +6,6 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-import { Table, Td, Tr } from 'reactable';
-
 import { Button } from 'react-md';
 
 interface IVisibleMap {
@@ -110,24 +108,20 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           {rubricCategory.name}
         </div>
       </div>
-      {visible && (
-        <Table
-          className={'grade-rubric__category__table'}
-          filterable={[' ']}
-          filterBy={searchTerm}
-          hideFilterInput={true}
-        >
-          {rubricComments.map((rubricComment: RubricCommentType, index: number) => {
+      {visible &&
+        rubricComments
+          .filter((rubricComment: RubricCommentType) => {
+            return rubricComment.text.toUpperCase().includes(searchTerm.toUpperCase());
+          })
+          .map((rubricComment: RubricCommentType, index: number) => {
             return (
-              <Tr key={index}>
-                <Td column=" " value={rubricComment.text}>
-                  <RubricComment rubricComment={rubricComment} handleRubricCommentClick={handleRubricCommentClick} />
-                </Td>
-              </Tr>
+              <RubricComment
+                key={index}
+                rubricComment={rubricComment}
+                handleRubricCommentClick={handleRubricCommentClick}
+              />
             );
           })}
-        </Table>
-      )}
     </div>
   );
 };
@@ -143,8 +137,6 @@ const RubricComment = (props: IRubricCommentProps) => {
   const onClick = (event: any) => {
     props.handleRubricCommentClick(rubricComment);
   };
-
-  console.log('[RubricComment]', rubricComment);
 
   return (
     <div className="grade-rubric__category__comment-row" onClick={onClick}>
