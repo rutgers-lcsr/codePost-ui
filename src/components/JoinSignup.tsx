@@ -74,12 +74,13 @@ class JoinSignup extends React.Component<{}, IState> {
     return (
       <div className="SignUpManager">
         <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Sign up up for codePost with existing course</div>
+          <div className="SignUpManager__title">Join a course on codePost</div>
           <div className="SignUpManager__form">
             <div>
               <TextField
                 id="email-input"
                 floating={true}
+                placeholder="jill@princeton.edu"
                 label="Email"
                 required={true}
                 value={this.state.email}

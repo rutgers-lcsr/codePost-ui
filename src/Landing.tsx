@@ -8,11 +8,13 @@ class Landing extends React.Component {
         <LandingTopBar />
         <div className="Hero">
           <div className="Description col-md-5">
-            <div className="logo">codePost</div>
-            <div className="Description-head">Teach Computer Science Better.</div>
+            <div className="logo">
+              code<b>Post</b>
+            </div>
+            <div className="Description-head">Give better feedback on CS assignments</div>
             <div className="Description-text">
-              codePost makes grading and course management easy, allowing you to focus on what's important: helping your
-              students improve and become power programmers!
+              codePost makes it easy to provide high-quality feedback on programming assignments, so you focus on
+              teaching.
             </div>
           </div>
           <div className="Hero-image col-md-7" />
@@ -24,22 +26,18 @@ class Landing extends React.Component {
         </div>
         <div className="Numbers">
           <div className="stats">
-            <div className="stats col-md-3 text-center">
-              >30000+
+            <div className="stats col-md-4 text-center">
+              >30,000
               <div className="stats subtext text-center">assignments graded</div>
             </div>
-            <div className="stats col-md-3 text-center">
-              >3000+
-              <div className="stats subtext text-center">student users</div>
+            <div className="stats col-md-4 text-center">
+              >3,000
+              <div className="stats subtext text-center">students</div>
             </div>
-            <div className="stats col-md-3 text-center">
-              20
-              <div className="stats subtext text-center">courses managed*</div>
+            <div className="stats col-md-4 text-center">
+              >20
+              <div className="stats subtext text-center">courses managed</div>
             </div>
-            <div className="stats col-md-3 text-center">
-              3<div className="stats subtext text-center">years of battle-tested use</div>
-            </div>
-            <div className="footnote">And thousands of administrator headaches prevented!</div>
           </div>
         </div>
       </div>
