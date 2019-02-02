@@ -6,8 +6,6 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-// import { Table, Td, Tr } from 'reactable';
-
 import { Button } from 'react-md';
 
 interface IVisibleMap {
