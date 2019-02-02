@@ -5,7 +5,7 @@ import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
 import SubmissionInfo from './components/grade/SubmissionInfo';
 
-import { CircularProgress, Snackbar } from 'react-md';
+import { Button, CircularProgress, Snackbar } from 'react-md';
 
 import {
   ICommentToRubricCommentMap,
@@ -490,14 +490,22 @@ interface IToggleFinalizeProps {
 const ToggleFinalize = (props: IToggleFinalizeProps) => {
   const { submission, toggleFinalized, positiveNegativeAlert } = props;
   const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
-
+  // <div className={warningClassName}>
+  //   Warning: This submission has both positive and negative point comments. Please check to make sure that this is
+  //   intentional.
+  // </div>
   return (
     <div className="grade__finalize">
       <Finalize submission={submission} toggleFinalized={toggleFinalized} />
-      <div className={warningClassName}>
-        Warning: This submission has both positive and negative point comments. Please check to make sure that this is
-        intentional.
-      </div>
+      <Button
+        icon
+        tooltipLabel="Warning: This submission has both positive and negative point comments.
+        Please check to make sure that this is intentional."
+        tooltipPosition="left"
+        className={warningClassName}
+      >
+        warning
+      </Button>
     </div>
   );
 };
