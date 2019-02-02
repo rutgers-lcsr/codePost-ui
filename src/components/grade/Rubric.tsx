@@ -59,7 +59,7 @@ class Rubric extends React.Component<IProps, IState> {
     const { handleRubricCommentClick, rubricCategories, rubricComments } = this.props;
     const { searchTerm, visibles } = this.state;
 
-    console.log('[Rubric] rubriccomments:', rubricComments);
+    console.log('[Rubric] rubriccomments 2:', rubricComments);
     return (
       <div>
         <div className="grade-rubric__title">Assignment Rubric</div>
@@ -82,6 +82,7 @@ class Rubric extends React.Component<IProps, IState> {
     );
   }
 }
+// <RubricComment rubricComment={rubricComment} handleRubricCommentClick={handleRubricCommentClick} />
 
 interface IRubricCategoryProps {
   rubricCategory: RubricCategoryType;
@@ -93,7 +94,7 @@ interface IRubricCategoryProps {
 }
 
 const RubricCategory = (props: IRubricCategoryProps) => {
-  const { rubricCategory, rubricComments, handleRubricCommentClick, searchTerm, visible } = props;
+  const { rubricCategory, rubricComments, searchTerm, visible } = props;
 
   const buttonIcon = visible ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
   const arrowClassName = visible ? 'button--rubric-arrow button--rubric-arrow--up' : 'button--rubric-arrow';
@@ -126,9 +127,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
             console.log('[RubricCategoryTable]: rubricComment', index);
             return (
               <Tr key={index}>
-                <Td column=" " value={rubricComment.text}>
-                  <RubricComment rubricComment={rubricComment} handleRubricCommentClick={handleRubricCommentClick} />
-                </Td>
+                <Td column=" ">{rubricComment.text}</Td>
               </Tr>
             );
           })}
@@ -138,26 +137,26 @@ const RubricCategory = (props: IRubricCategoryProps) => {
   );
 };
 
-interface IRubricCommentProps {
-  rubricComment: RubricCommentType;
-  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
-}
+// interface IRubricCommentProps {
+//   rubricComment: RubricCommentType;
+//   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
+// }
 
-const RubricComment = (props: IRubricCommentProps) => {
-  const { rubricComment } = props;
+// const RubricComment = (props: IRubricCommentProps) => {
+//   const { rubricComment } = props;
 
-  const onClick = (event: any) => {
-    props.handleRubricCommentClick(rubricComment);
-  };
+//   const onClick = (event: any) => {
+//     props.handleRubricCommentClick(rubricComment);
+//   };
 
-  console.log('[RubricComment]', rubricComment);
+//   console.log('[RubricComment]', rubricComment);
 
-  return (
-    <div className="grade-rubric__category__comment-row" onClick={onClick}>
-      <div className="grade-rubric__category__comment-row__text">{rubricComment.text}</div>
-      <div className="grade-rubric__category__comment-row__point-delta">{rubricComment.pointDelta}</div>
-    </div>
-  );
-};
+//   return (
+//     <div className="grade-rubric__category__comment-row" onClick={onClick}>
+//       <div className="grade-rubric__category__comment-row__text">{rubricComment.text}</div>
+//       <div className="grade-rubric__category__comment-row__point-delta">{rubricComment.pointDelta}</div>
+//     </div>
+//   );
+// };
 
 export default Rubric;
