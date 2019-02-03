@@ -1,7 +1,9 @@
 import * as t from 'io-ts';
 
-import { CourseV } from './course';
 import { GenericObject, readObject } from './generics';
+
+import { CourseV } from './course';
+import { SectionV } from './section';
 
 const UserV = t.intersection(
   [
@@ -17,7 +19,7 @@ const UserV = t.intersection(
       graderCourses: t.array(CourseV),
       superGraderCourses: t.array(CourseV),
       courseadminCourses: t.array(CourseV),
-      leader_sections: t.array(t.string),
+      leaderSections: t.array(SectionV),
     }),
     t.partial({}),
   ],
