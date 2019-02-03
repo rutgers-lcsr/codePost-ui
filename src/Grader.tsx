@@ -337,6 +337,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         : false;
 
     let graderPanelContent;
+
     // if not loaded yet, render a get started div
     if (!currentCourse || !currentAssignment) {
       graderPanelContent = (
@@ -356,6 +357,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           sections={currentSections}
         />
       );
+
       // if superGrader show a course
       const sections = this.props.sectionsLed.slice();
       const sectionsInThisCourse = sections.filter((id) => {

@@ -35,4 +35,4 @@ class Section {
   public static delete = deleteObject(SectionV, 'sections');
 }
 
-export { SectionType, Section };
+export { SectionType, Section, SectionV };
