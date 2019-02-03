@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  CircularProgress,
   DataTable,
   DialogContainer,
   FontIcon,
@@ -160,7 +161,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
     const { sortedIndex, searchTerm } = this.state;
 
     if (!assignmentsLoadComplete || !submissionsbyUserLoadComplete) {
-      return <div>Loading..</div>;
+      return <CircularProgress id="progress" className="progress-circle" />;
     }
 
     const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));

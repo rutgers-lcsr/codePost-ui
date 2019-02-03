@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, TableBody, TableColumn, TableHeader, TablePagination, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  CircularProgress,
+  DataTable,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TablePagination,
+  TableRow,
+  TextField,
+} from 'react-md';
 import Select from 'react-select';
 
 import { IOptionNumber, ISectionNoStudents, USER_APP } from '../../../types/common';
@@ -211,13 +221,7 @@ class ManageStudents extends React.Component<IProps, {}> {
         );
       });
     } else {
-      tableBody = (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-          <TableColumn />
-        </TableRow>
-      );
+      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     }
 
     return (

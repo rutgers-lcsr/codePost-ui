@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  CircularProgress,
+  DataTable,
+  FontIcon,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 
 import { IGraderSubmissionsDataTable } from '../../../types/common';
 
@@ -147,7 +157,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const { searchTerm, sortedIndex } = this.state;
 
     if (!assignmentsLoadComplete || !submissionsbyUserLoadComplete) {
-      return <div>Loading..</div>;
+      return <CircularProgress id="progress" className="progress-circle" />;
     }
 
     const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));

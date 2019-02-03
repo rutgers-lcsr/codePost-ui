@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  CircularProgress,
   DataTable,
   SelectionControl,
   TableBody,
@@ -628,15 +629,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         );
       });
     } else {
-      tableBody = (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-          <TableColumn />
-          <TableColumn />
-          <TableColumn />
-        </TableRow>
-      );
+      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     }
 
     if (!activeAssignment) {

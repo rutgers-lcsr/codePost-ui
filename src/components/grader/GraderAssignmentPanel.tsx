@@ -128,7 +128,7 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     };
 
     if (isLoadingSubmissions) {
-      return <CircularProgress id="progress" />;
+      return <CircularProgress id="progress" className="progress-circle" />;
     }
 
     if (assignment && submissions.length > 0) {

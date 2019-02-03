@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { CircularProgress, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import Select from 'react-select';
 
 import { openSubmission } from '../admin/AdminUtils';
@@ -85,7 +85,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     let title;
     if (sections.length === 0) {
       // Sections haven't been loaded yet
-      tableBody = <div>Loading</div>;
+      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else if (sections.length === 1 || activeSection) {
       // If only one section or a section is selected, render that section
       const thisSection = activeSection ? activeSection : sections[0];
