@@ -4,7 +4,7 @@
 
   &--saving {
     float: right;
-    margin-top: 6px;
+    margin-top: 2px;
     border: 2px solid $light-grey;
     border-top: 2px solid $brand-color;
     border-radius: 50%;
@@ -15,7 +15,7 @@
 
   &--success {
     float: right;
-    margin-top: 6px;
+    margin-top: 0px;
     background-image: url(../img/baseline-done-24px.svg);
     height: 20px;
     width: 20px;
