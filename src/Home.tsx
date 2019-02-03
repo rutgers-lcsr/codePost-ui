@@ -40,23 +40,29 @@ class Home extends React.Component<IProps, IAppState> {
     }
 
     const studentBtn = this.props.isStudent ? (
-      <div className="App__splashBtn--top" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
-        Student
+      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
+        <div className="App__splash-header">Student</div>
+        <div className="App__splash-divider" />
+        <img className="App__splashIcon" src={require('./img/splash-code.png')} />
       </div>
     ) : (
       <div />
     );
     const graderBtn = this.props.isGrader ? (
-      <div className="App__splashBtn--middle" onClick={this.toggleRedirect.bind(this, USER_APP.Grader)}>
-        Grader
+      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.Grader)}>
+        <div className="App__splash-header">Grader</div>
+        <div className="App__splash-divider" />
+        <img className="App__splashIcon" src={require('./img/splash-speech-bubble.png')} />
       </div>
     ) : (
       <div />
     );
 
     const adminBtn = this.props.isAdmin ? (
-      <div className="App__splashBtn--bottom" onClick={this.toggleRedirect.bind(this, USER_APP.CourseAdmin)}>
-        Admin
+      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.CourseAdmin)}>
+        <div className="App__splash-header">Admin</div>
+        <div className="App__splash-divider" />
+        <img className="App__splashIcon" src={require('./img/splash-stats.png')} />
       </div>
     ) : (
       <div />
@@ -64,9 +70,12 @@ class Home extends React.Component<IProps, IAppState> {
 
     return (
       <div className="App">
-        {studentBtn}
-        {graderBtn}
-        {adminBtn}
+        <div className="App__splash-text">Select your role:</div>
+        <div className="App__splash-buttonContainer">
+          {studentBtn}
+          {graderBtn}
+          {adminBtn}
+        </div>
       </div>
     );
   }
