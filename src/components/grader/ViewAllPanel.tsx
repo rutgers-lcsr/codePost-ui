@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import { CircularProgress, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
 import Select from 'react-select';
 
 import { openSubmission } from '../admin/AdminUtils';
@@ -57,7 +57,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     const { graders, submissions, selectedGraders } = this.state;
     let tableBody;
     if (graders.length === 0 || submissions.length === 0) {
-      tableBody = <div>Loading</div>;
+      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
       tableBody = submissions.map((submission) => {
         // If select bar is populated, filter by submissions who meet search conditions

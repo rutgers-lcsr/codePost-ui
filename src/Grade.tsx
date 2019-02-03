@@ -419,7 +419,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     };
 
     if (isLoading) {
-      return <CircularProgress id="progress" />;
+      return <CircularProgress id="progress" className="progress-circle" />;
     }
 
     if (!submission || !assignment) {

@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, DataTable, DialogContainer, TableBody, TableColumn, TableHeader, TableRow, TextField } from 'react-md';
+import {
+  Button,
+  CircularProgress,
+  DataTable,
+  DialogContainer,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  TextField,
+} from 'react-md';
 import '../../../styles/index.scss';
 
 import { CourseType } from '../../../infrastructure/course';
@@ -105,10 +115,7 @@ class ManageStudents extends React.Component<IProps, {}> {
         );
       })
     ) : (
-      <TableRow>
-        <TableColumn>Loading...</TableColumn>
-        <TableColumn />
-      </TableRow>
+      <CircularProgress id="progress" className="progress-circle" />
     );
 
     if (sortAscending) {

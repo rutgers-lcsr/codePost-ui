@@ -2,6 +2,8 @@ $material-icons-font-path: '~material-icons/iconfont/';
 @import '../../node_modules/react-md/src/scss/react-md';
 @import '~material-icons/iconfont/material-icons.scss';
 
+$md-linear-progress-fallback-color: $very-light-green;
+@include react-md-progress-circular($secondary-color: $very-light-green);
 $md-text-field-custom-sizes: (
   font-size-large: (
     16px,

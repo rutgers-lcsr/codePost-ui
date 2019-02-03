@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  CircularProgress,
   DataTable,
   DialogContainer,
   SelectionControl,
@@ -211,12 +212,7 @@ class ManageGraders extends React.Component<IProps, {}> {
         );
       });
     } else {
-      tableBody = (
-        <TableRow>
-          <TableColumn>Loading...</TableColumn>
-          <TableColumn />
-        </TableRow>
-      );
+      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     }
 
     if (sortAscending) {
