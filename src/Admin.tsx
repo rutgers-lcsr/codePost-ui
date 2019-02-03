@@ -250,9 +250,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
-    const { toLoadCourse, toLoadPanel } = this.state;
+    const { toLoadCourse, toLoadPanel, courses, currentCourse } = this.state;
     if (toLoadCourse || toLoadPanel) {
       this.setState({ toLoadCourse: false, toLoadPanel: false });
+    }
+
+    // Eagerly load most rececently created course, using id as a (perfect) proxy
+    // for creation date.
+    if (courses && courses.length > 0 && !currentCourse) {
+      const courseToLoad = courses.sort((a, b) => {
+        if (a.id < b.id) {
+          return 1;
+        }
+
+        if (a.id > b.id) {
+          return -1;
+        }
+
+        return 0;
+      })[0];
+      this.updateNewCourse({ value: courseToLoad.id, label: '' });
     }
   }
 
@@ -1423,11 +1440,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
 
         // hacky way to set default to 0
-        const panelName = this.stringFromPanel(typeof loadedPanel !== 'undefined' ? loadedPanel : 0);
+        let panel = 0;
+        if (typeof loadedPanel !== 'undefined') {
+          panel = loadedPanel;
+        }
+        const panelName = this.stringFromPanel(panel);
 
         return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
       } else {
-        return <Redirect to={'/course-admin'} />;
+        // Eagerly load first course in list
+        const courseToLoad = courses[0];
+        const panelName = this.stringFromPanel(0);
+        return <Redirect to={`/course-admin/${courseToLoad.name}/${courseToLoad.period}/${panelName}`} />;
       }
     }
 
