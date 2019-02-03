@@ -5,19 +5,13 @@
 
   &__finalize {
     .positiveNegativeAlert {
-      font-size: $font-size-normal;
-      color: $mid-grey;
-      font-style: italic;
-      width: 350px;
-      position: absolute;
-      right: 10px;
-      top: 110px;
       &--none {
         visibility: hidden;
       }
     }
 
-    float: right;
+    position: absolute;
+    right: 30px;
     z-index: 1000;
   }
 

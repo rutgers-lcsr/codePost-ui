@@ -5,7 +5,7 @@
     border-color: $light-grey !important;
     border-radius: 0px !important;
     font-weight: 500;
-    background-color: transparent;
+    background-color: transparent !important;
     &--is-focused {
       border-width: 0px 0px 1px 0px !important;
       border-style: solid !important;
@@ -20,6 +20,21 @@
   &__option--is-focused {
     background-color: $very-light-green !important;
   }
+}
+
+@mixin multiSelect-remove-format() {
+  &__multi-value {
+    border-radius: 10px !important;
+    font-size: $font-size-medium !important;
+
+    &__remove {
+      border-radius: 10px !important;
+    }
+  }
+}
+.multiselect--ViewAll {
+  @include react-select-format();
+  @include multiSelect-remove-format();
 
   &__control {
     margin-bottom: 20px;
@@ -28,14 +43,14 @@
   &__menu {
     max-width: 70% !important;
   }
+}
 
-  &__multi-value {
-    border-radius: 10px !important;
-    font-size: $font-size-medium !important;
+.multiselect--ManageSections {
+  @include react-select-format();
+  @include multiSelect-remove-format();
 
-    &__remove {
-      border-radius: 10px !important;
-    }
+  &__control {
+    max-width: 500px;
   }
 }
 

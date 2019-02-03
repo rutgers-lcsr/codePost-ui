@@ -146,32 +146,6 @@ class CodePanel extends React.Component<IProps, IState> {
   }
 }
 
-// //       <TabsContainer defaultTabIndex={0} className="grade__main-container__right-panel__tabs">
-//         <Tabs className="md-tabs--Grade" tabId="simple-tab">
-//           {files.map((file: FileType, i: number) => {
-//             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
-//             return (
-//               <Tab key={i} style={{ color: '#000000' }} label={tabTitle}>
-//                 <Code
-//                   file={file}
-//                   comments={comments[file.id]}
-//                   rubricComments={rubricComments}
-//                   readOnly={readOnly}
-//                   addComment={this.addComment}
-//                   commentCounter={commentCounter}
-//                   updateCommentCounter={this.updateCommentCounter}
-//                   activeCommentId={activeCommentId}
-//                   changeActive={this.changeActive}
-//                   deleteComment={deleteComment}
-//                   updateComment={updateComment}
-//                   updateSubmissionGrade={this.props.updateSubmissionGrade}
-//                 />
-//               </Tab>
-//             );
-//           })}
-//         </Tabs>
-//       </TabsContainer>
-
 interface ICodeProps {
   submission: SubmissionType;
   file: FileType;
@@ -331,7 +305,7 @@ const Code = (props: ICodeProps) => {
       </div>
       <div className="grade__main-container__tabContent__commentPanel">
         <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
-          Last edited: {moment(props.submission.dateEdited).format('llll')}
+          Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
         </div>
         <CommentList
           file={file}

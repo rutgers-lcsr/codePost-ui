@@ -115,10 +115,10 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     let message;
     switch (this.props.message) {
       case 'forgot':
-        message = <p>Set a new password below.</p>;
+        message = 'Set a new password below';
         break;
       case 'activate':
-        message = <p>Set up a codePost password here to be able to access your account.</p>;
+        message = 'Set up a new codePost password';
         break;
       default:
         message = '';
@@ -134,10 +134,12 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
           );
         });
         return (
-          <div>
-            {message}
-            <PasswordResetForm handleSubmit={this.handleReset} />
-            <ul>{errorList}</ul>
+          <div className="passwordReset">
+            <div className="passwordReset__main-container">
+              <div className="passwordReset__title"> {message}</div>
+              <PasswordResetForm handleSubmit={this.handleReset} />
+              <ul>{errorList}</ul>
+            </div>
           </div>
         );
         break;
@@ -146,10 +148,12 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         break;
       case 'success':
         return (
-          <div>
-            <p>
-              Success! Try <Link to="/login">logging in</Link> now.
-            </p>
+          <div className="passwordReset">
+            <div className="passwordReset__main-container">
+              <div>
+                Success! Try <Link to="/login">logging in</Link> now.
+              </div>
+            </div>
           </div>
         );
         break;
