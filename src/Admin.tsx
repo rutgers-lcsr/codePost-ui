@@ -259,15 +259,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     // for creation date.
     if (courses && courses.length > 0 && !currentCourse) {
       const courseToLoad = courses.sort((a, b) => {
-        if (a.id < b.id) {
-          return 1;
-        }
-
-        if (a.id > b.id) {
-          return -1;
-        }
-
-        return 0;
+        return b.id - a.id; // sort descending by id
       })[0];
       this.updateNewCourse({ value: courseToLoad.id, label: '' });
     }
