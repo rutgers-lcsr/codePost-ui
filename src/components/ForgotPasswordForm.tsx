@@ -30,7 +30,7 @@ class ForgotPasswordForm extends React.Component<{}, State> {
       }
     }
 
-    fetch('/registration/emailPasswordReset/', {
+    fetch(`${process.env.REACT_APP_API_URL}/registration/emailPasswordReset/`, {
       body: payload,
       method: 'POST',
     }).then((res) => {
@@ -43,12 +43,6 @@ class ForgotPasswordForm extends React.Component<{}, State> {
   };
 
   public render() {
-    // Should perform more granular error checking based on response code
-    // We can do this as we encounter different types of errors. For now, it seems
-    // like the only error state occurs if someone enters an email address that
-    // isn't associated with a user
-    // We should differentiate this from a random server error (resp. code = 500)
-
     let content;
     switch (this.state.status) {
       case 'success':

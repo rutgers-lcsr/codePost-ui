@@ -112,18 +112,6 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   public render() {
     const { loadState, formErrors } = this.state;
 
-    let message;
-    switch (this.props.message) {
-      case 'forgot':
-        message = 'Set a new password below';
-        break;
-      case 'activate':
-        message = 'Set up a new codePost password';
-        break;
-      default:
-        message = '';
-    }
-
     switch (loadState) {
       case 'valid':
         const errorList = Object.keys(formErrors).map((el, i) => {
@@ -133,6 +121,19 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
             </li>
           );
         });
+
+        let message;
+        switch (this.props.message) {
+          case 'forgot':
+            message = 'Set a new password below';
+            break;
+          case 'activate':
+            message = 'Set up a codePost password';
+            break;
+          default:
+            message = '';
+        }
+
         return (
           <div className="passwordReset">
             <div className="passwordReset__main-container">
@@ -144,7 +145,36 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         );
         break;
       case 'invalidToken':
-        return <p>Your URL is invalid. Have you used this link to reset your password before?</p>;
+        let newLinkDiv;
+        switch (this.props.message) {
+          case 'forgot':
+            newLinkDiv = (
+              <div className="passwordReset__subtitle">
+                Request a new password reset link <Link to="/forgot-password/">here</Link>
+              </div>
+            );
+            break;
+          case 'activate':
+            newLinkDiv = (
+              <div className="passwordReset__subtitle">
+                Request a new account acvtiation link <Link to="/signup/student/">here</Link>
+              </div>
+            );
+            break;
+          default:
+            newLinkDiv = '';
+        }
+
+        return (
+          <div className="passwordReset">
+            <div className="passwordReset__main-container">
+              <div className="passwordReset__title">
+                Whoops. there's something wrong with your link.
+                {newLinkDiv}
+              </div>
+            </div>
+          </div>
+        );
         break;
       case 'success':
         return (
