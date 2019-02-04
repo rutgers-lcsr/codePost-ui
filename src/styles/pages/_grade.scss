@@ -21,7 +21,7 @@
     flex-grow: 1;
 
     &__left-panel {
-      height: inherit;
+      height: 100vh;
       border-right: 2px solid $mid-grey;
     }
 
@@ -42,7 +42,7 @@
         @include dual-pane-fixed-right-scrollable-left(130px, 'codePanel', 'commentPanel');
         padding-right: 0px;
       }
-      min-height: 80vh;
+      min-height: 100vh;
 
       &__commentPanel {
         padding-top: 20px;
