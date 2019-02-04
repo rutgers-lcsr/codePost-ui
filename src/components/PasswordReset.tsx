@@ -130,6 +130,9 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
           case 'activate':
             message = 'Set up a codePost password';
             break;
+          case 'upgrade':
+            message = 'Set up a new codePost password to access your old account';
+            break;
           default:
             message = '';
         }
@@ -158,6 +161,13 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
             newLinkDiv = (
               <div className="passwordReset__subtitle">
                 Request a new account acvtiation link <Link to="/signup/student/">here</Link>
+              </div>
+            );
+            break;
+          case 'upgrade':
+            newLinkDiv = (
+              <div className="passwordReset__subtitle">
+                Request a new account upgrade link <Link to="/upgrade/">here</Link>
               </div>
             );
             break;

@@ -32,6 +32,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} />}
             />
 
+            <Route exact={true} path={'/upgrade'} component={ForgotPasswordForm} />
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
             <Route exact={true} path={'/signup/student'} component={JoinSignup} />
             <Route exact={true} path={'/signup/staff/join'} component={JoinSignup} />
@@ -48,6 +49,12 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/activate/:uid/:token'}
               render={(props: any) => <PasswordReset {...props} message={'activate'} />}
+            />
+
+            <Route
+              exact={true}
+              path={'/upgrade/:uid/:token'}
+              render={(props: any) => <PasswordReset {...props} message={'upgrade'} />}
             />
 
             <Route component={NoMatch} />

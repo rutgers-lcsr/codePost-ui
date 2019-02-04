@@ -19,6 +19,11 @@
       }
     }
 
+    a {
+      color: green;
+      text-decoration: underline;
+    }
+
     &__loginBtn {
       @include button($brand-color, white);
       font-size: $font-size-xlarge;

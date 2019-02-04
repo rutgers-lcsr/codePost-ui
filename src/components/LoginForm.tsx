@@ -50,6 +50,10 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
         <div className="login">
           <div className="login__main-container">
             <div className="login__main-container__title">Login</div>
+            <div>
+              Note: if you used codePost in a previous semester, click <Link to="/upgrade/">here</Link> to upgrade your
+              account before logging in for the first time.
+            </div>
             <div className="login__main-container__forms">
               <div className="login__main-container__forms__item">
                 <TextField
