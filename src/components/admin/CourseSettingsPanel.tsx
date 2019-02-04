@@ -18,6 +18,7 @@ interface IState {
   sendReleasedSubmissionsToBack: boolean;
   showStudentsStatistics: boolean;
   timezone: string;
+  emailNewUsers: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
@@ -25,6 +26,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     sendReleasedSubmissionsToBack: this.props.currentCourse.sendReleasedSubmissionsToBack,
     showStudentsStatistics: this.props.currentCourse.showStudentsStatistics,
     timezone: this.props.currentCourse.timezone,
+    emailNewUsers: this.props.currentCourse.emailNewUsers,
   };
 
   public toggleValue = (label: string) => {
@@ -54,6 +56,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       sendReleasedSubmissionsToBack: this.state.sendReleasedSubmissionsToBack,
       showStudentsStatistics: this.state.showStudentsStatistics,
       timezone: this.state.timezone,
+      emailNewUsers: this.state.emailNewUsers,
       assignments: [], // ignored by API
       sections: [], // ignored by API
     };
@@ -62,7 +65,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
   };
 
   public render() {
-    const { sendReleasedSubmissionsToBack, showStudentsStatistics, timezone } = this.state;
+    const { sendReleasedSubmissionsToBack, showStudentsStatistics, timezone, emailNewUsers } = this.state;
     const timezoneOptions = timezones.map((el) => {
       return { label: el, value: el };
     });
@@ -94,8 +97,8 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                   Send released submissions to back of grader queue
                 </div>
                 <div className="CourseSettings__settingItem__description">
-                  Selecting will move released assignments to the back of the course queue, so that graders cannot
-                  easily get the same assignment they just released.
+                  Selecting will move released assignments to the back of the course queue, preventing situations in
+                  which a grader reclaims a submission that was just released.
                 </div>
               </div>
               <SelectionControl
@@ -109,10 +112,26 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
-                <div className="CourseSettings__settingItem__name">Select a timezone</div>
+                <div className="CourseSettings__settingItem__name">Email users when added to roster</div>
                 <div className="CourseSettings__settingItem__description">
-                  All date edited fields for the course will be in this timezone, even if a other course users' devices
-                  are in a different time zone.
+                  If selected, emails will be sent to users notifying them that they have been added to this course's
+                  roster. New codePost users will be prompted to create an account.
+                </div>
+              </div>
+              <SelectionControl
+                id="toggleEmailSetting"
+                type="switch"
+                name="CourseSettings__Email"
+                className="CourseSettings__settingItem__control"
+                defaultChecked={emailNewUsers}
+                onChange={this.toggleValue.bind(this.props, 'emailNewUsers')}
+              />
+            </div>
+            <div className="CourseSettings__settingItem">
+              <div className="CourseSettings__settingItem__content">
+                <div className="CourseSettings__settingItem__name">Course timezone</div>
+                <div className="CourseSettings__settingItem__description">
+                  Timezone in which all time fields for this course (for all users) will appear.
                 </div>
               </div>
               <Select
