@@ -29,7 +29,7 @@ interface IProps {
   currentCourse: CourseType | undefined;
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
-  enrollUser: (email: string, type: USER_APP) => void;
+  enrollUser: (email: string, type: USER_APP) => Promise<void>;
   unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;

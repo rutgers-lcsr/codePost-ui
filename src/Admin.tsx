@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { CircularProgress, DialogContainer } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 
@@ -88,6 +89,11 @@ interface IAdminState {
 
   // Pre-loaded initializtion paramters for children
   initialTab: number;
+
+  // Generic loading dialog for actions
+  isLoading: boolean;
+  loadingMessage: string;
+  loadingTitle: string;
 }
 
 interface IAdminProps {
@@ -150,6 +156,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     toLoadCourse: false,
     toLoadPanel: false,
+
+    isLoading: false,
+    loadingMessage: '',
+    loadingTitle: '',
   };
 
   public panels: { [key: string]: string } = {
@@ -309,6 +319,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         submissionsByInactiveStudent: {},
         submissionsByInactiveGrader: {},
         submissionsbyUserLoadComplete: false,
+
+        isLoading: false,
+        loadingMessage: '',
+        loadingTitle: '',
 
         // Props for Enroll panels
         lockChanges: true,
@@ -697,8 +711,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newStudents.push(userEmail);
 
         // Check if the student is in the inactives for the course, and remove them if so
-        this.changeRoster(newStudents, userType);
-        break;
+        return this.changeRoster(newStudents, userType);
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader is already enrolled in course', undefined);
@@ -707,8 +720,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
         newGraders.push(userEmail);
-        this.changeRoster(newGraders, userType);
-        break;
+        return this.changeRoster(newGraders, userType);
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Admin is already enrolled in course', undefined);
@@ -717,8 +729,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
         newAdmins.push(userEmail);
-        this.changeRoster(newAdmins, userType);
-        break;
+        return this.changeRoster(newAdmins, userType);
       case USER_APP.SuperGrader:
         if (superGraders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader already has view all privileges.', undefined);
@@ -727,8 +738,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newSuperGraders = JSON.parse(JSON.stringify(superGraders));
         newSuperGraders.push(userEmail);
-        this.changeRoster(newSuperGraders, userType);
-        break;
+        return this.changeRoster(newSuperGraders, userType);
     }
   };
 
@@ -1192,8 +1202,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       const { rubricCategories, submissions } = this.state;
       delete rubricCategories[toDelete.id];
       delete submissions[toDelete.id];
+
+      const newAssignmentIDs = newAssignments.map((i) => {
+        return i.id;
+      });
+
+      const newCurrentCourse = currentCourse;
+      newCurrentCourse.assignments = newAssignmentIDs;
+
       this.setState(
-        { assignments: newAssignments, submissions, rubricCategories, submissionsbyUserLoadComplete: false },
+        {
+          assignments: newAssignments,
+          submissions,
+          rubricCategories,
+          currentCourse: newCurrentCourse,
+          submissionsbyUserLoadComplete: false,
+        },
         () => {
           this.props.addToast('Assignment deleted.', undefined);
           this.generateSubmissionsByStudent();
@@ -1211,7 +1235,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissionsByInactiveGrader,
     } = this.state;
     const assignmentID = sub.assignment;
-    Submission.delete(sub.id).then(() => {
+    return Submission.delete(sub.id).then(() => {
       submissions[assignmentID] = submissions[assignmentID].filter((s) => {
         return s.id !== sub.id;
       });
@@ -1422,6 +1446,29 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
     });
   };
+  // ------------------- Set loading dialogs -------------------
+  public setLoadingDialog = (message: string, title: string) => {
+    this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
+  };
+
+  public clearLoadingDialog = () => {
+    this.setState({ isLoading: false, loadingMessage: '', loadingTitle: '' });
+  };
+
+  // A function that takes another function as argument and wraps it such that, while the function is executing,
+  // a loading Dialog will appear. For use with functions that take a long time (like deletion, unenroll),
+  // because quicker functions will look odd with a flash of loading
+  public wrapLoading = (
+    message: string,
+    title: string,
+    func: ((...args: any[]) => Promise<void>),
+    ...props: any[]
+  ): Promise<void> => {
+    this.setLoadingDialog(message, title);
+    return func(...props).then(() => {
+      this.clearLoadingDialog();
+    });
+  };
 
   // ------------------- Render -------------------
   public render() {
@@ -1449,7 +1496,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     if (!this.props.user.canCreateCourses) {
-      return <div>Sorry, you're not registered as a course admin. Want access? Contact us here</div>;
+      return (
+        <div className="admin__getStarted__text">
+          Sorry, you're not registered as a course admin. Want access? Email us at team@codepost.io
+        </div>
+      );
     }
 
     let courseManagementPanel = null;
@@ -1474,7 +1525,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             inactiveGraders={this.state.inactiveGraders}
             submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
             submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
-            deleteSubmission={this.deleteSubmission}
+            deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
             changeSubmissionGrader={this.changeSubmissionGrader}
           />
         </div>
@@ -1501,8 +1552,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           updateRubricComment={this.updateRubricComment}
           updateRubricCategory={this.updateRubricCategory}
           updateAssignment={this.updateAssignment}
-          createAssignment={this.createAssignment}
-          deleteAssignment={this.deleteAssignment}
+          createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
+          deleteAssignment={this.wrapLoading.bind(
+            this,
+            'Deleting Assignment',
+            'This action can impact a lot of data and may take a few minutes.',
+            this.deleteAssignment,
+          )}
+          setLoadingDialog={this.setLoadingDialog}
+          clearLoadingDialog={this.clearLoadingDialog}
         />
       );
     } else if (currentCourse && loadedPanel === 2) {
@@ -1521,15 +1579,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             sectionsLoadComplete={this.state.sectionsLoadComplete}
             lockChanges={this.state.lockChanges}
             toggleLock={this.toggleLock}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
-            changeRoster={this.changeRoster}
+            enrollUser={this.wrapLoading.bind(this, '', '', this.enrollUser)}
+            unEnrollUsers={this.wrapLoading.bind(this, '', '', this.unEnrollUsers)}
+            changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
             changeStudentSection={this.changeStudentSection}
             createSection={this.createSection}
             changeLeaders={this.changeSectionLeaders}
             addToast={this.props.addToast}
             addErrorToast={this.props.addErrorToast}
             initialTab={this.state.initialTab}
+            setLoadingDialog={this.setLoadingDialog}
+            clearLoadingDialog={this.clearLoadingDialog}
           />
         </div>
       );
@@ -1556,6 +1616,30 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
     const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
     const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
+    const isLoading = this.state.isLoading ? (
+      <div>
+        <DialogContainer
+          id="loading-dialog"
+          className={
+            !this.state.loadingMessage && !this.state.loadingTitle
+              ? 'dialog--generalLoading-notext'
+              : 'dialog--generalLoading-text'
+          }
+          visible={true}
+          title={this.state.loadingTitle}
+          modal
+          portal={true}
+          focusOnMount={false}
+          containFocus={false}
+          disableScrollLocking={true}
+        >
+          <div className="dialog--generalLoading__message">{this.state.loadingMessage}</div>
+          <CircularProgress id="progress" className="progress-circle--dialogLoading" style={{ color: 'black' }} />
+        </DialogContainer>
+      </div>
+    ) : (
+      <div />
+    );
 
     return (
       <div className="admin">
@@ -1589,7 +1673,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           />
         </div>
         <div className="admin__topbar__spacing" />
-        <div className="admin__main-panel">{courseManagementPanel}</div>
+        <div className="admin__main-panel">
+          {courseManagementPanel}
+          {isLoading}
+        </div>
       </div>
     );
   }

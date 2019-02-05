@@ -20,6 +20,8 @@ interface IState {
   graders: string[];
   submissions: SubmissionType[];
   selectedGraders: string[];
+  loadSubmissionsComplete: boolean;
+  loadGradersComplete: boolean;
 }
 
 class ViewAllPanel extends React.Component<IProps, IState> {
@@ -27,6 +29,8 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     graders: [],
     submissions: [],
     selectedGraders: [],
+    loadSubmissionsComplete: false,
+    loadGradersComplete: false,
   };
 
   public constructor(props: any) {
@@ -36,13 +40,13 @@ class ViewAllPanel extends React.Component<IProps, IState> {
   }
   public loadSubmissions = () => {
     Assignment.readSubmissions(this.props.currentAssignment.id, {}).then((submissions: SubmissionType[]) => {
-      this.setState({ submissions });
+      this.setState({ submissions, loadSubmissionsComplete: true });
     });
   };
 
   public loadRoster = () => {
     Course.readRoster(this.props.currentCourse.id, {}).then((roster: RosterType) => {
-      this.setState({ graders: roster.graders });
+      this.setState({ graders: roster.graders, loadGradersComplete: true });
     });
   };
 
@@ -54,9 +58,9 @@ class ViewAllPanel extends React.Component<IProps, IState> {
   };
 
   public render() {
-    const { graders, submissions, selectedGraders } = this.state;
+    const { graders, submissions, selectedGraders, loadSubmissionsComplete, loadGradersComplete } = this.state;
     let tableBody;
-    if (graders.length === 0 || submissions.length === 0) {
+    if (!loadSubmissionsComplete || !loadGradersComplete) {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
       tableBody = submissions.map((submission) => {
