@@ -59,6 +59,10 @@
       &--negative {
         @include badgeFormat($dark-red, white);
       }
+
+      &--small {
+        font-size: $font-size-small;
+      }
     }
 
     &__fileName {

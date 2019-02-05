@@ -80,6 +80,8 @@ class CodePanel extends React.Component<IProps, IState> {
     const pointDeltaModifier =
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
+    const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'tab__title__pointDelta--small' : '';
+
     const numComments = comments.length;
     const commentFlag = numComments > 0 ? <div className="tab__title__comment-count">{numComments}</div> : <div />;
 
@@ -91,7 +93,7 @@ class CodePanel extends React.Component<IProps, IState> {
             {commentFlag}
           </Tooltipped>
           <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
-            <div className={`tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
+            <div className={`${pointDeltaSize} tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
           </Tooltipped>
         </div>
       </div>
