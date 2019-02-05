@@ -181,7 +181,8 @@ export default class CodePanelUtils {
       const commentPanel = selectedTabElement.getElementsByClassName(
         'grade__main-container__tabContent__commentPanel',
       )[0];
-      const currentHeight = height ? height : commentPanel.getBoundingClientRect().height;
+      const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
+      const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
 
       let newHeight = currentHeight;
       const commentElements = document.getElementsByClassName('comment');
