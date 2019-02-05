@@ -1643,6 +1643,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <div />
     );
 
+    const stillLoadingCourse =
+      !this.state.assignmentsLoadComplete ||
+      !this.state.assignmentRubricLoadComplete ||
+      !this.state.submissionsLoadComplete ||
+      !this.state.submissionsbyUserLoadComplete ||
+      !this.state.sectionsLoadComplete;
+
     return (
       <div className="admin">
         <div className="admin__topbar">
@@ -1651,6 +1658,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             options={this.selectorItemsFormatter(courses)}
             onChange={this.handleCourseChange}
             value={this.selectorCurrentFormatter(currentCourse)}
+            isLoading={stillLoadingCourse}
+            isDisabled={stillLoadingCourse}
           />
           <div className="admin__topbar__nav">
             <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
