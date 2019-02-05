@@ -339,11 +339,18 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     let graderPanelContent;
 
     // if not loaded yet, render a get started div
-    if (!currentCourse || !currentAssignment) {
+    if (!currentCourse) {
       graderPanelContent = (
         <div className="grader__getStarted">
           <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
           <div className="grader__getStarted__text">Select a course to get started.</div>
+        </div>
+      );
+    } else if (!currentAssignment) {
+      graderPanelContent = (
+        <div className="grader__getStarted--assignment">
+          <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
+          <div className="grader__getStarted__text">Select an assignment.</div>
         </div>
       );
     } else {
