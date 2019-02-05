@@ -75,7 +75,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public componentDidMount() {
     this.loadAllAssignments().then(() => {
-      console.log('abcd');
       const sortedAssignmentMap = {};
       Object.keys(this.state.assignments).forEach((courseID) => {
         const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(this.state.assignments[courseID]));
@@ -85,7 +84,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           else if (a.id === b.id) return 0;
           return -1;
         });
-        console.log('sortedAssignments', sortedAssignments);
         sortedAssignmentMap[courseID] = sortedAssignments;
       });
       this.setState({ assignments: sortedAssignmentMap });
@@ -192,7 +190,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             });
           })
           .catch((errors) => {
-            console.log(errors);
+            return;
           });
       }),
     );
@@ -226,21 +224,24 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public loadFiles = (submission: SubmissionStatusType) => {
     if (submission.files) {
+      const newFiles: FileType[] = [];
       return Promise.all(
         submission.files.map((fileId: number) => {
           return File.read(fileId).then((file: FileType) => {
+            newFiles.push(file);
             this.setState({
               comments: {
                 ...this.state.comments,
                 [file.id]: [],
               },
             });
-            return this.loadComments(file).then(() => {
-              this.setState({ files: [...this.state.files, file] });
-            });
+            return this.loadComments(file);
           });
         }),
-      );
+      ).then(() => {
+        this.setState({ files: newFiles });
+        return Promise.all([Promise.resolve()]);
+      });
     } else {
       return Promise.all([Promise.resolve()]);
     }
