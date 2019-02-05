@@ -31,7 +31,7 @@ interface IPropsCourseData {
   inactiveGraders: string[];
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
-  deleteSubmission: (submission: SubmissionType) => void;
+  deleteSubmission: (submission: SubmissionType) => Promise<void>;
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
 }
 

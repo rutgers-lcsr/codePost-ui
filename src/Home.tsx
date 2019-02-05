@@ -39,6 +39,15 @@ class Home extends React.Component<IProps, IAppState> {
         return <Redirect push to={ADMIN} />;
     }
 
+    // If user hsa no courses:
+    if (!this.props.isStudent && !this.props.isGrader && !this.props.isAdmin) {
+      return (
+        <div className="App">
+          <div className="App__splash-text">You are not enrolled in any courses.</div>
+        </div>
+      );
+    }
+
     const studentBtn = this.props.isStudent ? (
       <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
         <div className="App__splash-header">Student</div>

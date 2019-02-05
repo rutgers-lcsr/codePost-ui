@@ -27,7 +27,7 @@ interface IPropsManageUsers {
   lockChanges: boolean;
   toggleLock: () => void;
 
-  enrollUser: (email: string, type: USER_APP) => void;
+  enrollUser: (email: string, type: USER_APP) => Promise<void>;
   unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   changeRoster: (emails: string[], type: USER_APP) => Promise<void>;
 
@@ -38,6 +38,8 @@ interface IPropsManageUsers {
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
   initialTab: number;
+  setLoadingDialog: (message: string, title: string) => void;
+  clearLoadingDialog: () => void;
 }
 
 interface IState {
