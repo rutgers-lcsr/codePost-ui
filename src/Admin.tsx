@@ -520,16 +520,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (!currentCourse || !currentCourse.assignments) {
       return;
     }
-    let assignments;
-    if (this.state.assignmentsLoadComplete) {
-      assignments = this.state.assignments.map((i) => {
-        return i.id;
-      });
-    } else {
-      assignments = currentCourse.assignments;
-    }
     Promise.all(
-      assignments.map((assignmentID) => {
+      currentCourse.assignments.map((assignmentID) => {
         return Assignment.readSubmissions(assignmentID, {}).then((subs: SubmissionType[]) => {
           const submissions = this.state.submissions;
           submissions[assignmentID] = subs;
