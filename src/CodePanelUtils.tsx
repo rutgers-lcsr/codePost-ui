@@ -176,8 +176,12 @@ export default class CodePanelUtils {
   };
 
   public static updateCommentPanelHeight = (height?: number) => {
-    if (document.getElementById('commentPanel')) {
-      const currentHeight = height ? height : document.getElementById('commentPanel')!.getBoundingClientRect().height;
+    const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
+    if (selectedTabElement) {
+      const commentPanel = selectedTabElement.getElementsByClassName(
+        'grade__main-container__tabContent__commentPanel',
+      )[0];
+      const currentHeight = height ? height : commentPanel.getBoundingClientRect().height;
 
       let newHeight = currentHeight;
       const commentElements = document.getElementsByClassName('comment');
@@ -186,7 +190,7 @@ export default class CodePanelUtils {
         const elem = document.getElementById(commentElements[i].id)!;
         newHeight = Math.max(currentHeight, +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30);
       }
-      document.getElementById('commentPanel')!.style.setProperty('height', `${newHeight}px`);
+      document.getElementById(commentPanel.id)!.style.setProperty('height', `${newHeight}px`);
     }
   };
 }

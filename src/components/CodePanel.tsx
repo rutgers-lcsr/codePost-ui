@@ -33,11 +33,13 @@ interface IProps {
 
 interface IState {
   commentCounter: number;
+  tabIndex: number;
 }
 
 class CodePanel extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     commentCounter: -1,
+    tabIndex: 0,
   };
 
   //////////////////////////////////////
@@ -102,6 +104,12 @@ class CodePanel extends React.Component<IProps, IState> {
     );
   };
 
+  public onTabSelect = (tabIndex: number) => {
+    this.setState({ tabIndex }, () => {
+      CodePanelUtils.updateCommentPanelHeight();
+    });
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -112,7 +120,7 @@ class CodePanel extends React.Component<IProps, IState> {
     const { commentCounter } = this.state;
 
     return (
-      <Tabs>
+      <Tabs selectedIndex={this.state.tabIndex} onSelect={this.onTabSelect}>
         <TabList className="tabList--Grade">
           {files.map((file: FileType, i: number) => {
             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
@@ -286,8 +294,8 @@ const Code = (props: ICodeProps) => {
     ? document.querySelector('div#line-0')!.getBoundingClientRect().height
     : 18; // 19 as estimate
 
-  const codeHeight = document.getElementById('syntax-highlighter')
-    ? document.getElementById('syntax-highlighter')!.getBoundingClientRect().height
+  const codeHeight = document.getElementById(`syntax-highlighter-${props.file.id}`)
+    ? document.getElementById(`syntax-highlighter-${props.file.id}`)!.getBoundingClientRect().height
     : numberOfLines * lineHeight;
 
   const lineNumberStyle = {
@@ -307,7 +315,7 @@ const Code = (props: ICodeProps) => {
         <div className="grade__main-container__tabContent__codePanel">
           <div className="grade__main-container__tabContent__codePanel-container">
             <div className="code__highlighted-area">
-              <div id="syntax-highlighter" className="code__syntax-highlighter">
+              <div id={`syntax-highlighter-${props.file.id}`} className="code__syntax-highlighter">
                 <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
                   {codeString}
                 </SyntaxHighlighter>
@@ -323,7 +331,11 @@ const Code = (props: ICodeProps) => {
             </div>
           </div>
         </div>
-        <div id="commentPanel" className="grade__main-container__tabContent__commentPanel" style={commentPanelStyle}>
+        <div
+          id={`comment-panel-${props.file.id}`}
+          className="grade__main-container__tabContent__commentPanel"
+          style={commentPanelStyle}
+        >
           <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
             Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
           </div>
