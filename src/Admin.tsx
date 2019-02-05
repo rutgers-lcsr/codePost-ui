@@ -1496,7 +1496,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     if (!this.props.user.canCreateCourses) {
-      return <div>Sorry, you're not registered as a course admin. Want access? Contact us here</div>;
+      return (
+        <div className="admin__getStarted__text">
+          Sorry, you're not registered as a course admin. Want access? Email us at team@codepost.io
+        </div>
+      );
     }
 
     let courseManagementPanel = null;
