@@ -1338,7 +1338,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
-    const { courses } = this.state;
     const payload = {
       id: -1, // codePost convention
       name: courseName,
@@ -1357,21 +1356,20 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           copiedCourse.assignments.map((assignmentID: number) => {
             return Assignment.read(assignmentID);
           }),
-        )
-          .then((assignments: AssignmentType[]) => {
-            return assignments;
-          })
-          .then((assignments) => {
-            return Promise.all(
-              assignments.map((assignment) => {
-                return Assignment.readRubric(assignment.id, {});
-              }),
-            ).then((rubrics: any) => {
-              return [assignments, rubrics];
-            });
+        ).then((assignments: AssignmentType[]) => {
+          return Promise.all(
+            assignments.map((assignment) => {
+              return Assignment.readRubric(assignment.id, {});
+            }),
+          ).then((rubrics: any) => {
+            return [assignments, rubrics];
           });
+        });
 
         return getData.then(([assignments, rubrics]) => {
+          course.assignments = assignments.map((i: AssignmentType) => {
+            return i.id;
+          });
           return Promise.all(
             assignments.map((assignment: AssignmentType) => {
               const oldAssignmentID = assignment.id;
@@ -1400,12 +1398,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               });
             }),
           ).then(() => {
-            courses.push(course);
-            this.setState({ courses });
-            this.props.addLongToast(
-              `Course ${course.name} | ${course.period} successfully created. Please refresh the page.`,
-              undefined,
-            );
+            const newCourses = this.state.courses;
+            newCourses.push(course);
+            this.setState({ courses: newCourses }, () => this.props.addCourse(course));
+            this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
             this.setState({ currentCourse: course, toLoadCourse: true }, () => {
               this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
             });
@@ -1414,8 +1410,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           });
         });
       } else {
-        courses.push(course);
-        this.setState({ courses }, () => this.props.addCourse(course));
+        const newCourses = this.state.courses;
+        newCourses.push(course);
+        this.setState({ courses: newCourses }, () => this.props.addCourse(course));
         this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
         this.setState({ currentCourse: course, toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
