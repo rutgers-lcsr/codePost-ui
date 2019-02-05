@@ -400,7 +400,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       // if superGrader or hasSections, render tabs
       if (isSuperGrader || hasSections) {
         graderPanelContent = (
-          <Tabs defaultTabIndex={0}>
+          <Tabs defaultIndex={0}>
             <TabList className="tabList--Grader">
               <Tab className="tabList--Grader__tab">My Submissions</Tab>
               {viewAllTab}

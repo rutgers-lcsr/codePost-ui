@@ -64,7 +64,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
 
     return (
       <div>
-        <Tabs defaultTabIndex={activeTabIndex}>
+        <Tabs defaultIndex={activeTabIndex}>
           <TabList className="tabList--ManageUsers">
             <Tab className="tabList--ManageUsers__tab">Students</Tab>
             <Tab className="tabList--ManageUsers__tab">Graders</Tab>
