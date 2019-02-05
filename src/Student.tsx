@@ -340,6 +340,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public render() {
     const {
+      assignments,
       courses,
       currentAssignment,
       currentCourse,
@@ -407,13 +408,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       );
     } else if (currentAssignment && this.state.isLoadingSubmission) {
       contentArea = <CircularProgress id="progress" className="progress-circle" />;
-    } else if (currentCourse) {
+    } else if (currentCourse && assignments[currentCourse.id] && assignments[currentCourse.id].length > 0) {
       contentArea = (
         <div className="student__getStarted--assignment">
           <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
           <div className="student__getStarted__text">Select an assignment.</div>
         </div>
       );
+    } else if (currentCourse) {
+      contentArea = <div className="student__getStarted__text">This course has no assignments to view.</div>;
     } else {
       contentArea = (
         <div className="student__getStarted">
