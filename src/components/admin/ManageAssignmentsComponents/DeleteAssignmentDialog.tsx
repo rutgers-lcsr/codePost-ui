@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { Button, DialogContainer, LinearProgress, TextField } from 'react-md';
+import { Button, DialogContainer, TextField } from 'react-md';
 
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
   onDelete: () => void;
   assignmentName: string;
-  isLoading: boolean;
 }
 
 interface IState {
@@ -25,22 +24,6 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
   public render() {
     if (!this.props.isVisible) {
       return <div />;
-    }
-    if (this.props.isLoading) {
-      return (
-        <DialogContainer
-          id="rubricFile-dialog"
-          visible={true}
-          title="Deleting Assignment..."
-          onHide={this.props.onCancel}
-          modal
-        >
-          <div>
-            <LinearProgress id="circle" className="progressCircle" />
-            <div>This action may impact a lot of data and may take a few minutes. </div>
-          </div>
-        </DialogContainer>
-      );
     }
     const content = (
       <div>
