@@ -21,12 +21,35 @@ interface IProps {
   updateSubmissionGrade: () => void;
 }
 
+interface IState {
+  placeholder: number;
+}
+
 interface IBlock {
   startAt: number;
   endAt: number;
 }
 
-class CommentList extends React.Component<IProps, {}> {
+class CommentList extends React.Component<IProps, IState> {
+  public state: Readonly<IState> = {
+    placeholder: 0,
+  };
+
+  public componentDidMount() {
+    window.addEventListener('resize', this.rerender.bind(this));
+    document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener('resize', this.rerender.bind(this));
+    document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
+  }
+
+  public rerender = () => {
+    this.setState({ placeholder: 0 });
+    CodePanelUtils.updateCommentPanelHeight();
+  };
+
   public getCommentNodes = (comments: CommentType[]) => {
     const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = this.props;
     // Store estimated pixel ranges of comment blocks to help with stacking
