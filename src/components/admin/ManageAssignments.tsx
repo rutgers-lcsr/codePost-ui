@@ -179,9 +179,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public changeCategoryCap = (categoryIndex: number, newCap: number | null) => {
+    console.log(newCap);
     const { activeRubricCategories, savedCategories } = this.state;
     if (activeRubricCategories) {
-      activeRubricCategories[categoryIndex].pointLimit = Number(newCap);
+      const newCategoryCap = newCap ? newCap : null;
+      activeRubricCategories[categoryIndex].pointLimit = newCategoryCap;
       const categoryID = activeRubricCategories[categoryIndex].id;
       savedCategories[categoryID] = false;
     }

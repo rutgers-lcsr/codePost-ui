@@ -262,13 +262,14 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           customSize="font-size-large"
         />
         <TextField
-          value={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : ''}
+          defaultValue={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : undefined}
           label={'Category points cap'}
           fullWidth={false}
           step={0.5}
           pattern="^d+(\.|\,)\d{1}"
-          type="number"
+          required={false}
           min={0}
+          type="number"
           onChange={changeThisCategoryCap}
           disabled={props.isDisabled}
           onBlur={updateThisCategoryCaps}
