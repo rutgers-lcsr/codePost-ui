@@ -1375,6 +1375,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               const oldAssignmentID = assignment.id;
               assignment.id = -1;
               assignment.course = course.id;
+              assignment.isReleased = false;
               // Create Assignments
               return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
                 const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
