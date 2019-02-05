@@ -11,6 +11,7 @@ import PasswordReset from './PasswordReset';
 import CreateSignup from './CreateSignup';
 import JoinSignup from './JoinSignup';
 import SignUpManager from './SignUpManager';
+import UpgradeSignup from './UpgradeSignup';
 
 interface IndexManagerProps {
   error: string;
@@ -32,7 +33,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} />}
             />
 
-            <Route exact={true} path={'/upgrade'} component={ForgotPasswordForm} />
+            <Route exact={true} path={'/upgrade'} component={UpgradeSignup} />
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
             <Route exact={true} path={'/signup/student'} component={JoinSignup} />
             <Route exact={true} path={'/signup/staff/join'} component={JoinSignup} />
