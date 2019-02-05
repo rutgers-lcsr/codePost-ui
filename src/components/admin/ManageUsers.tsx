@@ -152,7 +152,6 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           tooltipTransitionEnterTimeout={0}
           tooltipTransitionLeaveTimeout={0}
           fixed={true}
-          icon={true}
           onClick={this.props.toggleLock}
         >
           {lockChanges ? 'lock' : 'lock_open'}

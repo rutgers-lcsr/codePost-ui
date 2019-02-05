@@ -223,12 +223,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     return (
       <div>
         <Button
-          raised
+          raised={true}
           onClick={this.toggleDialog}
           primary={true}
           iconChildren={'vertical_align_center'}
           iconBefore={false}
-          flat={true}
           className={'manageUsers__rosterUpload'}
           disabled={this.props.isDisabled}
         >

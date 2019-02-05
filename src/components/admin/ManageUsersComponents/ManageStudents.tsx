@@ -174,55 +174,49 @@ class ManageStudents extends React.Component<IProps, {}> {
       // If no paginated students, render those. If not, take the default pagination (20) and return those students
       studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 10);
     }
-    let tableBody;
-    if (rosterLoadComplete && sectionsLoadComplete) {
-      tableBody = studentsToRender.map((student) => {
-        const section = sectionsByStudent[student];
-        const sectionID = section ? section.id : -1;
-        const sectionName = section ? section.name : '   ';
-        const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
+    const tableBody = studentsToRender.map((student) => {
+      const section = sectionsByStudent[student];
+      const sectionID = section ? section.id : -1;
+      const sectionName = section ? section.name : '   ';
+      const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
 
-        const sectionSelect =
-          this.state.sectionEdited === student && !lockedStudentChange ? (
-            <TableColumn>
-              <Select
-                classNamePrefix="select--StudentSections"
-                closeMenuOnSelect={true}
-                options={sectionMenuItems}
-                disabled={lockedStudentChange}
-                onChange={this.rowSectionChange.bind(this.props, student)}
-                placeholder=""
-                value={{ label: sectionName, value: sectionID }}
-                onBlur={this.clearSection}
-                isLoading={sectionDisable}
-              />
-            </TableColumn>
-          ) : (
-            <TableColumn onClick={this.editSection.bind(this.props, student)}>{sectionName}</TableColumn>
-          );
-
-        return (
-          <TableRow key={student}>
-            <TableColumn>{student}</TableColumn>
-            {sectionSelect}
-            <TableColumn key={'UnEnroll'}>
-              <Button
-                key="unEnroll"
-                className="Btn"
-                flat={true}
-                icon={true}
-                disabled={lockedStudentChange}
-                onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
-              >
-                cancel
-              </Button>
-            </TableColumn>
-          </TableRow>
+      const sectionSelect =
+        this.state.sectionEdited === student && !lockedStudentChange ? (
+          <TableColumn>
+            <Select
+              classNamePrefix="select--StudentSections"
+              closeMenuOnSelect={true}
+              options={sectionMenuItems}
+              disabled={lockedStudentChange}
+              onChange={this.rowSectionChange.bind(this.props, student)}
+              placeholder=""
+              value={{ label: sectionName, value: sectionID }}
+              onBlur={this.clearSection}
+              isLoading={sectionDisable}
+            />
+          </TableColumn>
+        ) : (
+          <TableColumn onClick={this.editSection.bind(this.props, student)}>{sectionName}</TableColumn>
         );
-      });
-    } else {
-      tableBody = <CircularProgress id="progress" className="progress-circle" />;
-    }
+
+      return (
+        <TableRow key={student}>
+          <TableColumn>{student}</TableColumn>
+          {sectionSelect}
+          <TableColumn key={'UnEnroll'}>
+            <Button
+              key="unEnroll"
+              className="Btn"
+              icon={true}
+              disabled={lockedStudentChange}
+              onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+            >
+              cancel
+            </Button>
+          </TableColumn>
+        </TableRow>
+      );
+    });
 
     return (
       <div className="roster-student">
@@ -239,6 +233,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               disabled={lockedStudentChange}
             />
             <Button
+              flat={true}
               iconChildren="done"
               disabled={!showSaveNewStudentButton || lockedStudentChange}
               className="roster-student__addUser__Btn"
@@ -263,26 +258,30 @@ class ManageStudents extends React.Component<IProps, {}> {
           className="md-cell md-cell--bottom"
           onChange={this.changeSearch}
         />
-        <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
-          {searchTerm.length === 0 ? (
-            <TablePagination
-              className="DataTable--ManageUsers__pagination"
-              rows={this.state.sortedStudents.length}
-              defaultRowsPerPage={10}
-              onPagination={this.handlePagination}
-            />
-          ) : (
-            <div />
-          )}
-          <TableHeader>
-            <TableRow selectable={false}>
-              <TableColumn key={'Student'}>Student</TableColumn>
-              <TableColumn key={'Section'}>Section</TableColumn>
-              <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
-            </TableRow>
-          </TableHeader>
-          <TableBody>{tableBody}</TableBody>
-        </DataTable>
+        {rosterLoadComplete && sectionsLoadComplete ? (
+          <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
+            {searchTerm.length === 0 ? (
+              <TablePagination
+                className="DataTable--ManageUsers__pagination"
+                rows={this.state.sortedStudents.length}
+                defaultRowsPerPage={10}
+                onPagination={this.handlePagination}
+              />
+            ) : (
+              <div />
+            )}
+            <TableHeader>
+              <TableRow selectable={false}>
+                <TableColumn key={'Student'}>Student</TableColumn>
+                <TableColumn key={'Section'}>Section</TableColumn>
+                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>{tableBody}</TableBody>
+          </DataTable>
+        ) : (
+          <CircularProgress id="progress" className="progress-circle" />
+        )}
       </div>
     );
   }
