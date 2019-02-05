@@ -21,41 +21,12 @@ interface IProps {
   updateSubmissionGrade: () => void;
 }
 
-interface IState {
-  scrollTop: number;
-}
-
 interface IBlock {
   startAt: number;
   endAt: number;
 }
 
-class CommentList extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
-    scrollTop: 0,
-  };
-
-  public componentDidMount() {
-    document.getElementById('scroll-container')!.addEventListener('scroll', this.handleScroll);
-  }
-
-  // Update the height of the commentPanel box if there are comments sitting outside of it
-  // If we don't do this, then the scrolling gets messed up
-  public handleScroll = () => {
-    if (document.getElementById('commentPanel')) {
-      const currentHeight = document.getElementById('commentPanel')!.getBoundingClientRect().height;
-
-      let newHeight = currentHeight;
-      const commentElements = document.getElementsByClassName('comment');
-      // tslint:disable-next-line
-      for (let i = 0; i < commentElements.length; i++) {
-        const elem = document.getElementById(commentElements[i].id)!;
-        newHeight = Math.max(currentHeight, +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30);
-      }
-      document.getElementById('commentPanel')!.style.setProperty('height', `${newHeight}px`);
-    }
-  };
-
+class CommentList extends React.Component<IProps, {}> {
   public getCommentNodes = (comments: CommentType[]) => {
     const { activeCommentId, changeActive, deleteComment, file, readOnly, updateComment, rubricComments } = this.props;
     // Store estimated pixel ranges of comment blocks to help with stacking
@@ -71,7 +42,7 @@ class CommentList extends React.Component<IProps, IState> {
       if (document.getElementById('line-0')) {
         pixelsPerLine = document.getElementById('line-0')!.getBoundingClientRect().height;
       }
-      let startAt = comment.startLine * pixelsPerLine - this.state.scrollTop;
+      let startAt = comment.startLine * pixelsPerLine;
 
       // If a comment starts in the range of another block, then push it down until it fits
       // Don't need to check for trailing comments because already sorting by startLine

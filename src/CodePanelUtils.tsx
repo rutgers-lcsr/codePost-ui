@@ -174,4 +174,19 @@ export default class CodePanelUtils {
 
     return offset + CodePanelUtils.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
   };
+
+  public static updateCommentPanelHeight = (height?: number) => {
+    if (document.getElementById('commentPanel')) {
+      const currentHeight = height ? height : document.getElementById('commentPanel')!.getBoundingClientRect().height;
+
+      let newHeight = currentHeight;
+      const commentElements = document.getElementsByClassName('comment');
+      // tslint:disable-next-line
+      for (let i = 0; i < commentElements.length; i++) {
+        const elem = document.getElementById(commentElements[i].id)!;
+        newHeight = Math.max(currentHeight, +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30);
+      }
+      document.getElementById('commentPanel')!.style.setProperty('height', `${newHeight}px`);
+    }
+  };
 }

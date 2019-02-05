@@ -52,10 +52,12 @@ class CodePanel extends React.Component<IProps, IState> {
     const { addComment } = this.props;
     this.props.changeActive(comment.id);
     addComment(comment, file);
+    CodePanelUtils.updateCommentPanelHeight();
   };
 
   public changeActive = (id: number) => {
     this.props.changeActive(id);
+    CodePanelUtils.updateCommentPanelHeight();
   };
 
   public updateCommentCounter = (): void => {
@@ -295,6 +297,8 @@ const Code = (props: ICodeProps) => {
   const commentPanelStyle = {
     height: `${codeHeight + 20}px`,
   };
+
+  CodePanelUtils.updateCommentPanelHeight(codeHeight + 20);
 
   const codeString = props.file.code;
   return (
