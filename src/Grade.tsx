@@ -428,7 +428,7 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     // Should include loading functionality while the submission is coming in
     return (
-      <div className="grade">
+      <div id="grade" className="grade">
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
             <SubmissionInfo

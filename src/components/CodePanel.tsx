@@ -280,44 +280,59 @@ const Code = (props: ICodeProps) => {
   const numberOfLines = linesOfCode.length;
   const lineHeight = document.querySelector('div#line-0')
     ? document.querySelector('div#line-0')!.getBoundingClientRect().height
-    : 19; // 19 as estimate
+    : 18; // 19 as estimate
+
+  const codeHeight = document.getElementById('syntax-highlighter')
+    ? document.getElementById('syntax-highlighter')!.getBoundingClientRect().height
+    : numberOfLines * lineHeight;
+
   const lineNumberStyle = {
-    height: `${numberOfLines * lineHeight}px`,
+    height: `${codeHeight}px`,
+  };
+
+  const commentPanelStyle = {
+    height: `${codeHeight + 20}px`,
   };
 
   const codeString = props.file.code;
   return (
-    <div className="grade__main-container__tabContent">
-      <div id="scroll-area" className="grade__main-container__tabContent__codePanel">
-        <div className="code__highlighted-area">
-          <div className="code__syntax-highlighter">
-            <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
-              {codeString}
-            </SyntaxHighlighter>
-          </div>
-          <div className="code__underlay">
-            <div className="code__underlay--line-numbers" style={lineNumberStyle}>
-              {numberOfLines}
+    <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
+      <div className="grade__main-container__tabContent">
+        <div className="grade__main-container__tabContent__codePanel">
+          <div className="grade__main-container__tabContent__codePanel-container">
+            <div className="code__highlighted-area">
+              <div id="syntax-highlighter" className="code__syntax-highlighter">
+                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
+                  {codeString}
+                </SyntaxHighlighter>
+              </div>
+              <div className="code__underlay">
+                <div className="code__underlay__pre">
+                  <div className="code__underlay--line-numbers" style={lineNumberStyle}>
+                    {numberOfLines}
+                  </div>
+                  <div className="code__underlay--code">{linesOfCode}</div>
+                </div>
+              </div>
             </div>
-            <div className="code__underlay--code">{linesOfCode}</div>
           </div>
         </div>
-      </div>
-      <div className="grade__main-container__tabContent__commentPanel">
-        <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
-          Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
+        <div id="commentPanel" className="grade__main-container__tabContent__commentPanel" style={commentPanelStyle}>
+          <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
+            Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
+          </div>
+          <CommentList
+            file={file}
+            readOnly={readOnly}
+            comments={comments}
+            rubricComments={rubricComments}
+            activeCommentId={activeCommentId}
+            changeActive={changeActive}
+            deleteComment={deleteComment}
+            updateComment={updateComment}
+            updateSubmissionGrade={props.updateSubmissionGrade}
+          />
         </div>
-        <CommentList
-          file={file}
-          readOnly={readOnly}
-          comments={comments}
-          rubricComments={rubricComments}
-          activeCommentId={activeCommentId}
-          changeActive={changeActive}
-          deleteComment={deleteComment}
-          updateComment={updateComment}
-          updateSubmissionGrade={props.updateSubmissionGrade}
-        />
       </div>
     </div>
   );
