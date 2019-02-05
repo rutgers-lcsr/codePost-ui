@@ -402,7 +402,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         </div>
       );
     } else if (currentSubmission && currentAssignment && !currentSubmission.isFinalized) {
-      contentArea = <div>Your {currentAssignment.name} has not yet been graded.</div>;
+      contentArea = (
+        <div className="student__getStarted__text">Your {currentAssignment.name} has not yet been graded.</div>
+      );
     } else if (currentAssignment && this.state.isLoadingSubmission) {
       contentArea = <CircularProgress id="progress" className="progress-circle" />;
     } else if (currentCourse) {
