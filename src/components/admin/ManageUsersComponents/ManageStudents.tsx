@@ -174,49 +174,53 @@ class ManageStudents extends React.Component<IProps, {}> {
       // If no paginated students, render those. If not, take the default pagination (20) and return those students
       studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 10);
     }
-    const tableBody = studentsToRender.map((student) => {
-      const section = sectionsByStudent[student];
-      const sectionID = section ? section.id : -1;
-      const sectionName = section ? section.name : '   ';
-      const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
 
-      const sectionSelect =
-        this.state.sectionEdited === student && !lockedStudentChange ? (
-          <TableColumn>
-            <Select
-              classNamePrefix="select--StudentSections"
-              closeMenuOnSelect={true}
-              options={sectionMenuItems}
-              disabled={lockedStudentChange}
-              onChange={this.rowSectionChange.bind(this.props, student)}
-              placeholder=""
-              value={{ label: sectionName, value: sectionID }}
-              onBlur={this.clearSection}
-              isLoading={sectionDisable}
-            />
-          </TableColumn>
-        ) : (
-          <TableColumn onClick={this.editSection.bind(this.props, student)}>{sectionName}</TableColumn>
+    let tableBody;
+    if (rosterLoadComplete && sectionsLoadComplete) {
+      tableBody = studentsToRender.map((student) => {
+        const section = sectionsByStudent[student];
+        const sectionID = section ? section.id : -1;
+        const sectionName = section ? section.name : '   ';
+        const sectionDisable = changedSectionStudents.indexOf(student) !== -1 ? true : false;
+
+        const sectionSelect =
+          this.state.sectionEdited === student && !lockedStudentChange ? (
+            <TableColumn>
+              <Select
+                classNamePrefix="select--StudentSections"
+                closeMenuOnSelect={true}
+                options={sectionMenuItems}
+                disabled={lockedStudentChange}
+                onChange={this.rowSectionChange.bind(this.props, student)}
+                placeholder=""
+                value={{ label: sectionName, value: sectionID }}
+                onBlur={this.clearSection}
+                isLoading={sectionDisable}
+              />
+            </TableColumn>
+          ) : (
+            <TableColumn onClick={this.editSection.bind(this.props, student)}>{sectionName}</TableColumn>
+          );
+
+        return (
+          <TableRow key={student}>
+            <TableColumn>{student}</TableColumn>
+            {sectionSelect}
+            <TableColumn key={'UnEnroll'}>
+              <Button
+                key="unEnroll"
+                className="Btn"
+                icon={true}
+                disabled={lockedStudentChange}
+                onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
+              >
+                cancel
+              </Button>
+            </TableColumn>
+          </TableRow>
         );
-
-      return (
-        <TableRow key={student}>
-          <TableColumn>{student}</TableColumn>
-          {sectionSelect}
-          <TableColumn key={'UnEnroll'}>
-            <Button
-              key="unEnroll"
-              className="Btn"
-              icon={true}
-              disabled={lockedStudentChange}
-              onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
-            >
-              cancel
-            </Button>
-          </TableColumn>
-        </TableRow>
-      );
-    });
+      });
+    }
 
     return (
       <div className="roster-student">

@@ -635,7 +635,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         );
       });
     } else {
-      tableBody = <CircularProgress id="progress" className="progress-circle" />;
+      tableBody = <div />;
     }
 
     if (!activeAssignment) {
@@ -648,22 +648,26 @@ class ManageAssignments extends React.Component<IProps, {}> {
             createAssignment={this.props.createAssignment}
           />
           <div className="padding" />
-          <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
-            <TableHeader>
-              <TableRow>
-                <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
-                <TableColumn key={'SubNumber'}># of submissions</TableColumn>
-                <TableColumn key={'GradedNumber'}># graded</TableColumn>
-                <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
-                <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
-                <TableColumn key={'Mean'}>Mean Grade</TableColumn>
-                <TableColumn key={'Median'}>Median Grade</TableColumn>
-                <TableColumn key={'Grades'}>Grades</TableColumn>
-                <TableColumn key={'Delete'}>Delete</TableColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>{tableBody}</TableBody>
-          </DataTable>
+          {submissionsLoadComplete && assignmentRubricLoadComplete ? (
+            <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
+              <TableHeader>
+                <TableRow>
+                  <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
+                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
+                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
+                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
+                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
+                  <TableColumn key={'Mean'}>Mean Grade</TableColumn>
+                  <TableColumn key={'Median'}>Median Grade</TableColumn>
+                  <TableColumn key={'Grades'}>Grades</TableColumn>
+                  <TableColumn key={'Delete'}>Delete</TableColumn>
+                </TableRow>
+              </TableHeader>
+              <TableBody>{tableBody}</TableBody>
+            </DataTable>
+          ) : (
+            <CircularProgress id="progress" className="progress-circle" />
+          )}
           <DeleteAssignmentDialog
             isVisible={typeof this.state.deletingAssignment !== 'undefined'}
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
