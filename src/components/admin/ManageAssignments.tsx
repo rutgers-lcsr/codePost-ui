@@ -86,6 +86,9 @@ interface IProps {
     isReleased: boolean | undefined,
   ) => Promise<void>;
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+
+  setLoadingDialog: (message: string, title: string) => void;
+  clearLoadingDialog: () => void;
 }
 
 interface IState {
@@ -103,7 +106,6 @@ interface IState {
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
   deletingAssignment?: AssignmentType;
-  isDeleteLoading: boolean;
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -117,7 +119,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
-    isDeleteLoading: false,
   };
 
   public assignmentNameField: any;
@@ -514,9 +515,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public deleteAssignment = () => {
     const deletingAssignment = this.state.deletingAssignment;
     if (deletingAssignment) {
-      this.setState({ isDeleteLoading: true });
+      this.setState({ deletingAssignment: undefined });
+      this.props.setLoadingDialog(
+        'This action could impact a lot of data and may take a few minutes.',
+        'Assignment is being deleted',
+      );
       this.props.deleteAssignment(deletingAssignment).then(() => {
-        this.setState({ deletingAssignment: undefined, isDeleteLoading: false });
+        this.props.clearLoadingDialog();
+        console.log('clearing');
       });
     }
   };
@@ -659,7 +665,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
             <TableBody>{tableBody}</TableBody>
           </DataTable>
           <DeleteAssignmentDialog
-            isLoading={this.state.isDeleteLoading}
             isVisible={typeof this.state.deletingAssignment !== 'undefined'}
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}

@@ -27,7 +27,7 @@ interface IPropsStudentOverview {
   openSubmission: (submissionID: number | string) => void;
   submissionsbyUserLoadComplete: boolean;
   assignmentsLoadComplete: boolean;
-  deleteSubmission: (submission: SubmissionType) => void;
+  deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
 }
@@ -146,6 +146,14 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
 
   public onGraderChange = (sub: SubmissionType, selectedOption: IOption) => {
     this.props.changeSubmissionGrader(sub, selectedOption.label);
+  };
+
+  public deleteSubmission = () => {
+    if (this.state.deleteSub) {
+      const subToBeDeleted = this.state.deleteSub;
+      this.setState({ deleteSub: null });
+      this.props.deleteSubmission(subToBeDeleted);
+    }
   };
 
   public render() {
@@ -344,11 +352,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             <Button onClick={this.toggleDeleteSub.bind(this.props, null)} primary={true} flat={true}>
               Cancel
             </Button>
-            <Button
-              onClick={this.props.deleteSubmission.bind(this.props, this.state.deleteSub)}
-              primary={false}
-              flat={true}
-            >
+            <Button onClick={this.deleteSubmission} primary={false} flat={true}>
               Delete
             </Button>
           </DialogContainer>

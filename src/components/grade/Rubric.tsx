@@ -61,20 +61,22 @@ class Rubric extends React.Component<IProps, IState> {
       <div className="grade-rubric">
         <div className="grade-rubric__title">Assignment Rubric</div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
-        {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
-          const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
-          return (
-            <RubricCategory
-              rubricCategory={rubricCategory}
-              rubricComments={rubricComments[rubricCategory.id]}
-              key={`${rubricCategory}-${index}`}
-              handleDropDown={this.toggleVisible}
-              visible={visible}
-              searchTerm={searchTerm}
-              handleRubricCommentClick={handleRubricCommentClick}
-            />
-          );
-        })}
+        <div className="grade-rubric__scrollable-container">
+          {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {
+            const visible = visibles[rubricCategory.id] === undefined ? false : visibles[rubricCategory.id];
+            return (
+              <RubricCategory
+                rubricCategory={rubricCategory}
+                rubricComments={rubricComments[rubricCategory.id]}
+                key={`${rubricCategory}-${index}`}
+                handleDropDown={this.toggleVisible}
+                visible={visible}
+                searchTerm={searchTerm}
+                handleRubricCommentClick={handleRubricCommentClick}
+              />
+            );
+          })}
+        </div>
       </div>
     );
   }

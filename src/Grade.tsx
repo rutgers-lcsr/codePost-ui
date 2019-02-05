@@ -75,14 +75,18 @@ class Grade extends React.Component<IProps, IGradeState> {
     // ...annoying that typescript doesn't allow usage of lambdas
     // in render prop of Route object (which is designed to handle
     // lambdas efficiently)
-    this.loadSubmission().then((submission) => {
-      return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
-        () => {
-          const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-          this.setState({ isLoading: false, positiveNegativeAlert });
-        },
-      );
-    });
+    this.loadSubmission()
+      .then((submission) => {
+        return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
+          () => {
+            const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
+            this.setState({ isLoading: false, positiveNegativeAlert });
+          },
+        );
+      })
+      .catch((errors) => {
+        this.setState({ isLoading: false });
+      });
   }
 
   // ------------------- Toast functions -------------------
@@ -423,12 +427,12 @@ class Grade extends React.Component<IProps, IGradeState> {
     }
 
     if (!submission || !assignment) {
-      return <div>No Submission Found </div>;
+      return <div>No Submission Found</div>;
     }
 
     // Should include loading functionality while the submission is coming in
     return (
-      <div className="grade">
+      <div id="grade" className="grade">
         <div className="grade__main-container">
           <div className="grade__main-container__left-panel">
             <SubmissionInfo

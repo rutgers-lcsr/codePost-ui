@@ -3,8 +3,6 @@ import { FontIcon, TextField } from 'react-md';
 import { OrganizationType } from '../infrastructure/organization';
 
 interface IState {
-  password1: string;
-  password2: string;
   email: string;
 
   // Join Flow states
@@ -26,8 +24,6 @@ interface IState {
 
 class CreateSignup extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
-    password1: '',
-    password2: '',
     email: '',
     hasSubmitted: false,
     confirmEmailSent: false,
@@ -57,8 +53,6 @@ class CreateSignup extends React.Component<{}, IState> {
       const payload = {
         username: this.state.email,
         email: this.state.email,
-        password1: this.state.password1,
-        password2: this.state.password2,
       };
 
       fetch(`${process.env.REACT_APP_API_URL}/registration/getOrganizationFromEmail/`, {
@@ -92,8 +86,6 @@ class CreateSignup extends React.Component<{}, IState> {
     const payload = {
       email: this.state.email,
       organization: orgName,
-      password1: this.state.password1,
-      password2: this.state.password2,
     };
 
     this.setState({ pendingValidation: true }, () => {
@@ -322,24 +314,6 @@ class CreateSignup extends React.Component<{}, IState> {
               />
               <div className="SignUpManager__form__helptext">Don't forget to use your organization's edu address!</div>
             </div>
-            <TextField
-              id="password-input"
-              floating={true}
-              label="Password"
-              required={true}
-              type="password"
-              value={this.state.password1}
-              onChange={this.handleChange.bind(this, 'password1')}
-            />
-            <TextField
-              id="password-input"
-              floating={true}
-              label="Confirm Password"
-              required={true}
-              type="password"
-              value={this.state.password2}
-              onChange={this.handleChange.bind(this, 'password2')}
-            />
             <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
               Continue
               <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>

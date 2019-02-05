@@ -36,15 +36,24 @@ class CommentList extends React.Component<IProps, IState> {
   };
 
   public componentDidMount() {
-    document.getElementById('scroll-area')!.addEventListener('scroll', this.handleScroll);
-
-    // this 'setState' is just to ensure that the comment list re-renders after mounting
-    // (and we can measure the exact height of the comment objects)
-    this.setState({ scrollTop: document.getElementById('scroll-area')!.scrollTop });
+    document.getElementById('scroll-container')!.addEventListener('scroll', this.handleScroll);
   }
 
+  // Update the height of the commentPanel box if there are comments sitting outside of it
+  // If we don't do this, then the scrolling gets messed up
   public handleScroll = () => {
-    this.setState({ scrollTop: document.getElementById('scroll-area')!.scrollTop });
+    if (document.getElementById('commentPanel')) {
+      const currentHeight = document.getElementById('commentPanel')!.getBoundingClientRect().height;
+
+      let newHeight = currentHeight;
+      const commentElements = document.getElementsByClassName('comment');
+      // tslint:disable-next-line
+      for (let i = 0; i < commentElements.length; i++) {
+        const elem = document.getElementById(commentElements[i].id)!;
+        newHeight = Math.max(currentHeight, +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30);
+      }
+      document.getElementById('commentPanel')!.style.setProperty('height', `${newHeight}px`);
+    }
   };
 
   public getCommentNodes = (comments: CommentType[]) => {
@@ -120,20 +129,6 @@ class CommentList extends React.Component<IProps, IState> {
     const comments = CodePanelUtils.sortComments(this.props.comments);
     const commentNodes = this.getCommentNodes(comments);
 
-    // console.log(scroll);
-    // console.log(scroll[0]);
-
-    // const abc = document.getElementsByTagName('html');
-    // if (abc[0]) {
-    //   console.log('html', abc[0].scrollTop);
-    // }
-
-    // if (scroll[0]) {
-    //   console.log('top', scroll[0].scrollTop);
-    //   // @ts-ignore
-    //   console.log('offsetTop', scroll[0].offsetTop);
-    //   console.log('s', scroll[0].attributes);
-    // }
     return <div className="code__comments">{commentNodes}</div>;
   }
 }

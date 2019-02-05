@@ -21,7 +21,7 @@
     flex-grow: 1;
 
     &__left-panel {
-      height: inherit;
+      height: calc(100vh - $topbar-height - 20px);
       border-right: 2px solid $mid-grey;
     }
 
@@ -29,6 +29,11 @@
       padding-top: 10px;
       &__tabs {
         width: inherit;
+      }
+
+      &__scroll-container {
+        height: calc(100vh);
+        overflow-y: scroll;
       }
     }
 
@@ -41,8 +46,9 @@
       @media screen and (max-width: 1330px) {
         @include dual-pane-fixed-right-scrollable-left(130px, 'codePanel', 'commentPanel');
         padding-right: 0px;
-      }
-      min-height: 80vh;
+      } // min-height: calc(100vh - 130px);
+      // this is to make sure that the parent isn't scrollable, which is fine because code panel overwrites overflow parameter
+      // overflow-y: scroll;
 
       &__commentPanel {
         padding-top: 20px;
