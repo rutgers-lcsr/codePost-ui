@@ -1465,9 +1465,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     ...props: any[]
   ): Promise<void> => {
     this.setLoadingDialog(message, title);
-    return func(...props).then(() => {
-      this.clearLoadingDialog();
-    });
+    return func(...props)
+      .then(() => {
+        this.clearLoadingDialog();
+      })
+      .catch(() => {
+        this.clearLoadingDialog();
+      });
   };
 
   // ------------------- Render -------------------
