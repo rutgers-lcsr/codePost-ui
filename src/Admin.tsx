@@ -1445,7 +1445,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
   // ------------------- Set loading dialogs -------------------
-  public setLoadingDialog = (message: string, title: string) => {
+  public setLoadingDialog = (title: string, message: string) => {
     this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
   };
 
@@ -1457,12 +1457,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // a loading Dialog will appear. For use with functions that take a long time (like deletion, unenroll),
   // because quicker functions will look odd with a flash of loading
   public wrapLoading = (
-    message: string,
     title: string,
+    message: string,
     func: ((...args: any[]) => Promise<void>),
     ...props: any[]
   ): Promise<void> => {
-    this.setLoadingDialog(message, title);
+    this.setLoadingDialog(title, message);
     return func(...props)
       .then(() => {
         this.clearLoadingDialog();
@@ -1548,16 +1548,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           assignments={this.state.assignments}
           assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
           createRubricCategory={this.createRubricCategory}
-          deleteRubricCategory={this.deleteRubricCategory}
+          deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
           createRubricComment={this.createRubricComment}
-          deleteRubricComment={this.deleteRubricComment}
-          updateRubricComment={this.updateRubricComment}
-          updateRubricCategory={this.updateRubricCategory}
+          deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
+          updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
+          updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
           updateAssignment={this.updateAssignment}
           createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
           deleteAssignment={this.wrapLoading.bind(
             this,
-            'Deleting Assignment',
+            'Deleting Assignment...',
             'This action can impact a lot of data and may take a few minutes.',
             this.deleteAssignment,
           )}

@@ -450,6 +450,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     categoryIndex: number,
     categoryName: string,
   ) => {
+    console.log(isDelete);
     const { activeRubricComments } = this.state;
     // if any child rubricComments have a linked comment, alert the user
     if (activeRubricComments) {
@@ -473,30 +474,35 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  public clearChangeCommentDialog = () => {
+  public clearChangeCommentDialog = (revert: boolean) => {
     const { changeCommentDialogID, activeRubricComments } = this.state;
     const { rubricComments } = this.props;
 
     // If a change to an item with linked comments is cancelled, revert to previous data
-    if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
-      const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
-      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text = oldComment.text;
-      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
-        oldComment.pointDelta;
-      this.setState({ activeRubricComments });
+    if (revert) {
+      if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
+        const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
+        activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text =
+          oldComment.text;
+        activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
+          oldComment.pointDelta;
+        this.setState({ activeRubricComments });
+      }
     }
     this.setState({ changeCommentDialogID: undefined });
   };
 
-  public clearChangeCategoryDialog = () => {
+  public clearChangeCategoryDialog = (revert: boolean) => {
     const { changeCategoryDialogID, activeRubricCategories, activeAssignment } = this.state;
     const { rubricCategories } = this.props;
 
     // If a change to an item with linked comments is cancelled, revert to previous data
-    if (activeAssignment && activeRubricCategories && changeCategoryDialogID && !changeCategoryDialogID.isDelete) {
-      const oldCat = rubricCategories[activeAssignment.id][changeCategoryDialogID.categoryIndex];
-      activeRubricCategories[changeCategoryDialogID.categoryIndex].pointLimit = oldCat.pointLimit;
-      this.setState({ activeRubricCategories });
+    if (revert) {
+      if (activeAssignment && activeRubricCategories && changeCategoryDialogID && !changeCategoryDialogID.isDelete) {
+        const oldCat = rubricCategories[activeAssignment.id][changeCategoryDialogID.categoryIndex];
+        activeRubricCategories[changeCategoryDialogID.categoryIndex].pointLimit = oldCat.pointLimit;
+        this.setState({ activeRubricCategories });
+      }
     }
     this.setState({ changeCategoryDialogID: undefined });
   };
@@ -838,7 +844,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             isDialog={true}
           />
           <LinkedCommentsAlert
-            isDelete={this.state.changeCommentDialogID ? this.state.changeCommentDialogID.isDelete : false}
+            isDelete={this.state.changeCategoryDialogID ? this.state.changeCategoryDialogID.isDelete : false}
             onDelete={
               typeof this.state.changeCategoryDialogID !== 'undefined'
                 ? this.deleteCategory.bind(
