@@ -277,6 +277,11 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         />
         <div className="admin-rubric__category--header__unsavedChanges">{unSavedChanges}</div>
         <div className="admin-rubric__category--header__delete">{deleteCategoryButton}</div>
+        <div className="admin-rubric__category--header__warning">
+          {props.categoryPointLimit === 0
+            ? 'Warning: A Category Limit of 0 means that no submissions will receive deductions for this category'
+            : ''}
+        </div>
       </div>
       <DataTable key={props.categoryID} className="DataTable--RubricCategory" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
