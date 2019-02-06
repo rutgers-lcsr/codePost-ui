@@ -89,6 +89,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 className="CourseSettings__settingItem__control"
                 defaultChecked={showStudentsStatistics}
                 onChange={this.toggleValue.bind(this.props, 'showStudentsStatistics')}
+                aria-label={'Show statistics to students'}
               />
             </div>
             <div className="CourseSettings__settingItem">
@@ -108,6 +109,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 className="CourseSettings__settingItem__control"
                 defaultChecked={sendReleasedSubmissionsToBack}
                 onChange={this.toggleValue.bind(this.props, 'sendReleasedSubmissionsToBack')}
+                aria-label={'Send released submissions to back of grader queue'}
               />
             </div>
             <div className="CourseSettings__settingItem">
@@ -125,6 +127,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 className="CourseSettings__settingItem__control"
                 defaultChecked={emailNewUsers}
                 onChange={this.toggleValue.bind(this.props, 'emailNewUsers')}
+                aria-label={'Email users when added to roster'}
               />
             </div>
             <div className="CourseSettings__settingItem">

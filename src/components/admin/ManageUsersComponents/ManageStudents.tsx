@@ -174,6 +174,7 @@ class ManageStudents extends React.Component<IProps, {}> {
       // If no paginated students, render those. If not, take the default pagination (20) and return those students
       studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 10);
     }
+
     let tableBody;
     if (rosterLoadComplete && sectionsLoadComplete) {
       tableBody = studentsToRender.map((student) => {
@@ -209,7 +210,6 @@ class ManageStudents extends React.Component<IProps, {}> {
               <Button
                 key="unEnroll"
                 className="Btn"
-                flat={true}
                 icon={true}
                 disabled={lockedStudentChange}
                 onClick={this.triggerUnEnrollUser.bind(this.props, student, studentType)}
@@ -220,8 +220,6 @@ class ManageStudents extends React.Component<IProps, {}> {
           </TableRow>
         );
       });
-    } else {
-      tableBody = <CircularProgress id="progress" className="progress-circle" />;
     }
 
     return (
@@ -239,6 +237,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               disabled={lockedStudentChange}
             />
             <Button
+              flat={true}
               iconChildren="done"
               disabled={!showSaveNewStudentButton || lockedStudentChange}
               className="roster-student__addUser__Btn"
@@ -263,26 +262,30 @@ class ManageStudents extends React.Component<IProps, {}> {
           className="md-cell md-cell--bottom"
           onChange={this.changeSearch}
         />
-        <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
-          {searchTerm.length === 0 ? (
-            <TablePagination
-              className="DataTable--ManageUsers__pagination"
-              rows={this.state.sortedStudents.length}
-              defaultRowsPerPage={10}
-              onPagination={this.handlePagination}
-            />
-          ) : (
-            <div />
-          )}
-          <TableHeader>
-            <TableRow selectable={false}>
-              <TableColumn key={'Student'}>Student</TableColumn>
-              <TableColumn key={'Section'}>Section</TableColumn>
-              <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
-            </TableRow>
-          </TableHeader>
-          <TableBody>{tableBody}</TableBody>
-        </DataTable>
+        {rosterLoadComplete && sectionsLoadComplete ? (
+          <DataTable className="DataTable--ManageUsers" baseId="Enroll-students-table" plain={true}>
+            {searchTerm.length === 0 ? (
+              <TablePagination
+                className="DataTable--ManageUsers__pagination"
+                rows={this.state.sortedStudents.length}
+                defaultRowsPerPage={10}
+                onPagination={this.handlePagination}
+              />
+            ) : (
+              <div />
+            )}
+            <TableHeader>
+              <TableRow selectable={false}>
+                <TableColumn key={'Student'}>Student</TableColumn>
+                <TableColumn key={'Section'}>Section</TableColumn>
+                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>{tableBody}</TableBody>
+          </DataTable>
+        ) : (
+          <CircularProgress id="progress" className="progress-circle" />
+        )}
       </div>
     );
   }

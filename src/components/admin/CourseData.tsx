@@ -131,7 +131,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
     } = this.state;
 
     return (
-      <Tabs defaultTabIndex={activeTabIndex}>
+      <Tabs defaultIndex={activeTabIndex}>
         <TabList className="tabList--CourseData">
           <Tab className="tabList--CourseData__tab">Students</Tab>
           <Tab className="tabList--CourseData__tab">Graders</Tab>

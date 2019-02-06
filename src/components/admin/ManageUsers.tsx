@@ -64,7 +64,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
 
     return (
       <div>
-        <Tabs defaultTabIndex={activeTabIndex}>
+        <Tabs defaultIndex={activeTabIndex}>
           <TabList className="tabList--ManageUsers">
             <Tab className="tabList--ManageUsers__tab">Students</Tab>
             <Tab className="tabList--ManageUsers__tab">Graders</Tab>
@@ -152,7 +152,6 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           tooltipTransitionEnterTimeout={0}
           tooltipTransitionLeaveTimeout={0}
           fixed={true}
-          icon={true}
           onClick={this.props.toggleLock}
         >
           {lockChanges ? 'lock' : 'lock_open'}

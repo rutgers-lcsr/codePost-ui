@@ -34,12 +34,14 @@ interface IPasswordResetProps {
 interface IPasswordResetState {
   formErrors: { [key: string]: string };
   loadState: string; // have we validated the token? Note we need to validate on server side
+  email: string;
 }
 
 class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetState> {
   public state: Readonly<IPasswordResetState> = {
     formErrors: {},
     loadState: '',
+    email: '',
   };
 
   public componentDidMount = () => {
@@ -68,7 +70,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
       })
       .then((json) => {
         if (json.isValid) {
-          this.setState({ loadState: 'valid' });
+          this.setState({ loadState: 'valid', email: json.email });
         } else {
           this.setState({ loadState: 'invalidToken' });
         }
@@ -125,13 +127,13 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         let message;
         switch (this.props.message) {
           case 'forgot':
-            message = 'Set a new password below';
+            message = `Set a new password below for ${this.state.email}`;
             break;
           case 'activate':
-            message = 'Set up a codePost password';
+            message = `Set up a codePost password for ${this.state.email}`;
             break;
           case 'upgrade':
-            message = 'Set up a new codePost password to access your old account';
+            message = `Set up a new codePost password to access your old account for ${this.state.email}`;
             break;
           default:
             message = '';
@@ -140,7 +142,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         return (
           <div className="passwordReset">
             <div className="passwordReset__main-container">
-              <div className="passwordReset__title"> {message}</div>
+              <div className="passwordReset__title">{message}</div>
               <PasswordResetForm handleSubmit={this.handleReset} />
               <ul>{errorList}</ul>
             </div>

@@ -6,7 +6,10 @@ import pluralize from 'pluralize';
 import { Divider } from 'react-md';
 
 import { AssignmentType } from '../../infrastructure/assignment';
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { SubmissionType } from '../../infrastructure/submission';
+
+import { ICommentToRubricCommentMap } from '../../types/common';
 
 interface ISubmissionInfoProps {
   submission: SubmissionType;
@@ -15,10 +18,21 @@ interface ISubmissionInfoProps {
   graders: string[];
   updateGrader: any;
   isCourseAdmin: any;
+
+  commentRubricComments: ICommentToRubricCommentMap;
+  rubricCategories: RubricCategoryType[];
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
-  const { assignment, submission, graders, updateGrader, isCourseAdmin } = props;
+  const {
+    assignment,
+    submission,
+    graders,
+    updateGrader,
+    isCourseAdmin,
+    commentRubricComments,
+    rubricCategories,
+  } = props;
 
   const studentTitle = pluralize('Student', submission.students.length).toUpperCase();
   const studentString = `${submission.students.join(',')}`;
@@ -49,6 +63,32 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
     }
   };
 
+  const pointsPerCategory = {};
+  for (const commentID in commentRubricComments) {
+    if (commentRubricComments.hasOwnProperty(commentID)) {
+      if (!pointsPerCategory[commentRubricComments[commentID].category]) {
+        pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
+      } else {
+        pointsPerCategory[commentRubricComments[commentID].category] =
+          pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
+      }
+    }
+  }
+
+  const messages: string[] = [];
+  rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+    if (pointsPerCategory[rubricCategory.id]) {
+      if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
+        const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
+        messages.push(`${rubricCategory.name} exceeded by ${diff}`);
+      }
+    }
+  });
+
+  const caps = messages.map((message: string, index: number) => {
+    return <div key={index}>{message}</div>;
+  });
+
   return (
     <div className="submission-info">
       <div className="submission-info--container">
@@ -78,7 +118,9 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
         <Divider />
         <div className="submission-info__info">
           <div>GRADE</div>
-          <div>{gradeString}</div>
+          <div>{gradeString} </div>
+          {messages.length > 0 ? <div>CATEGORIES</div> : <div />}
+          <div>{caps}</div>
         </div>
       </div>
     </div>

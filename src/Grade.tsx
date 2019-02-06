@@ -138,21 +138,24 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public loadFiles = (submission: SubmissionType) => {
+    const newFiles: FileType[] = [];
     return Promise.all(
       submission.files.map((fileId: number) => {
         return File.read(fileId).then((file: FileType) => {
+          newFiles.push(file);
           this.setState({
             comments: {
               ...this.state.comments,
               [file.id]: [],
             },
           });
-          return this.loadComments(file).then(() => {
-            this.setState({ files: [...this.state.files, file] });
-          });
+          return this.loadComments(file);
         });
       }),
-    );
+    ).then(() => {
+      this.setState({ files: newFiles });
+      return Promise.all([Promise.resolve()]);
+    });
   };
 
   public loadComments = (file: FileType) => {
@@ -441,6 +444,8 @@ class Grade extends React.Component<IProps, IGradeState> {
               graders={graders}
               updateGrader={this.updateGrader}
               isCourseAdmin={isCourseAdmin}
+              commentRubricComments={commentRubricComments}
+              rubricCategories={rubricCategories}
             />
             <Rubric
               rubricCategories={rubricCategories}
@@ -466,6 +471,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               deleteComment={this.deleteComment}
               updateComment={this.updateComment}
               updateSubmissionGrade={this.updateSubmissionGrade}
+              showLastEdited={true}
             />
           </div>
 

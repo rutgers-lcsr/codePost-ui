@@ -209,13 +209,13 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               } else if (submission) {
                 return (
                   <TableColumn key={assignment.name} plain={true}>
-                    Not graded
+                    Unfinalized
                   </TableColumn>
                 );
               } else {
                 return (
                   <TableColumn key={assignment.name} plain={true}>
-                    Not submitted
+                    Missing
                   </TableColumn>
                 );
               }

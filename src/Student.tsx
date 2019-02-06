@@ -78,6 +78,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       const sortedAssignmentMap = {};
       Object.keys(this.state.assignments).forEach((courseID) => {
         const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(this.state.assignments[courseID]));
+
         sortedAssignments.sort((a: any, b: any) => {
           if (a.id > b.id) return 1;
           else if (a.id === b.id) return 0;
@@ -175,18 +176,22 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadAssignments = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentId: number) => {
-        return Assignment.read(assignmentId).then((assignment) => {
-          let assignments = [assignment];
-          if (this.state.assignments[course.id]) {
-            assignments = [...this.state.assignments[course.id], assignment];
-          }
-          this.setState({
-            assignments: {
-              ...this.state.assignments,
-              [course.id]: assignments,
-            },
+        return Assignment.read(assignmentId)
+          .then((assignment) => {
+            let assignments = [assignment];
+            if (this.state.assignments[course.id]) {
+              assignments = [...this.state.assignments[course.id], assignment];
+            }
+            this.setState({
+              assignments: {
+                ...this.state.assignments,
+                [course.id]: assignments,
+              },
+            });
+          })
+          .catch((errors) => {
+            return;
           });
-        });
       }),
     );
   };
@@ -219,21 +224,24 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public loadFiles = (submission: SubmissionStatusType) => {
     if (submission.files) {
+      const newFiles: FileType[] = [];
       return Promise.all(
         submission.files.map((fileId: number) => {
           return File.read(fileId).then((file: FileType) => {
+            newFiles.push(file);
             this.setState({
               comments: {
                 ...this.state.comments,
                 [file.id]: [],
               },
             });
-            return this.loadComments(file).then(() => {
-              this.setState({ files: [...this.state.files, file] });
-            });
+            return this.loadComments(file);
           });
         }),
-      );
+      ).then(() => {
+        this.setState({ files: newFiles });
+        return Promise.all([Promise.resolve()]);
+      });
     } else {
       return Promise.all([Promise.resolve()]);
     }
@@ -284,8 +292,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (currentAssignment) {
       // Need to test these callbacks to avoid first setState following completion
       this.setState({ isLoadingSubmission: true }, () => {
+        this.setState({ currentAssignment });
         this.loadSubmission(currentAssignment).then(() => {
-          this.setState({ currentAssignment, toLoadAssignment: true, isLoadingSubmission: false });
+          this.setState({ toLoadAssignment: true, isLoadingSubmission: false });
         });
       });
     }
@@ -408,15 +417,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       );
     } else if (currentAssignment && this.state.isLoadingSubmission) {
       contentArea = <CircularProgress id="progress" className="progress-circle" />;
-    } else if (currentCourse && assignments[currentCourse.id] && assignments[currentCourse.id].length > 0) {
-      contentArea = (
-        <div className="student__getStarted--assignment">
-          <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
-          <div className="student__getStarted__text">Select an assignment.</div>
-        </div>
-      );
     } else if (currentCourse) {
-      contentArea = <div className="student__getStarted__text">This course has no assignments to view.</div>;
+      if (!this.state.assignments[currentCourse.id]) {
+        contentArea = <div className="student__getStarted__text">No assignments available.</div>;
+      } else {
+        contentArea = (
+          <div className="student__getStarted--assignment">
+            <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
+            <div className="student__getStarted__text">Select an assignment.</div>
+          </div>
+        );
+      }
     } else {
       contentArea = (
         <div className="student__getStarted">
