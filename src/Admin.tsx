@@ -1086,7 +1086,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     commentText: string | undefined,
     commentDelta: number | undefined,
   ): Promise<void> => {
-    const { rubricComments } = this.state;
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
       this.props.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
@@ -1098,6 +1097,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     return RubricComment.update(payload)
       .then((rubricComment) => {
+        const { rubricComments } = this.state;
         const comIndex = rubricComments[categoryID]
           .map((com) => {
             return com.id;

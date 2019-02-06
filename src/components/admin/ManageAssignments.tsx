@@ -258,6 +258,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
           setTimeout(this.clearSaveComment.bind(this.props, data.id), 2000);
         });
       } else {
+        const oldComm = this.props.rubricComments[categoryID].find((i) => {
+          return i.id === comm.id;
+        });
+        // If no change, then return
+        if (oldComm && oldComm.text === comm.text && oldComm.pointDelta === comm.pointDelta) {
+          return;
+        }
         this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta).then(() => {
           savedComments[comm.id] = true;
           this.setState({ savedComments, changeCommentDialogID: undefined });
@@ -317,6 +324,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
             }
           });
         } else {
+          const oldCat = this.props.rubricCategories[activeAssignment.id].find((i) => {
+            return i.id === cat.id;
+          });
+          // If no change, then return
+          if (oldCat && oldCat.name === cat.name && oldCat.pointLimit === cat.pointLimit) {
+            return;
+          }
           this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit).then(() => {
             savedCategories[cat.id] = true;
             this.setState({ savedCategories, changeCategoryDialogID: undefined });
@@ -396,14 +410,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   public updateAssignmentName = () => {
     const { activeAssignment } = this.state;
-    if (activeAssignment) {
+    if (activeAssignment && activeAssignment.name !== this.assignmentNameField.getField().value) {
       this.props.updateAssignment(activeAssignment.id, this.assignmentNameField.getField().value, undefined, undefined);
     }
   };
 
   public updateAssignmentPoints = () => {
     const { activeAssignment } = this.state;
-    if (activeAssignment) {
+    if (activeAssignment && activeAssignment.points !== Number(this.assignmentPointsField.getField().value)) {
+      console.log('bump');
       this.props.updateAssignment(
         activeAssignment.id,
         undefined,
@@ -450,7 +465,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     categoryIndex: number,
     categoryName: string,
   ) => {
-    console.log(isDelete);
     const { activeRubricComments } = this.state;
     // if any child rubricComments have a linked comment, alert the user
     if (activeRubricComments) {
