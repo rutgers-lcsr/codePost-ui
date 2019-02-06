@@ -469,6 +469,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               deleteComment={this.deleteComment}
               updateComment={this.updateComment}
               updateSubmissionGrade={this.updateSubmissionGrade}
+              showLastEdited={true}
             />
           </div>
 
