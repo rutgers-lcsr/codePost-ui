@@ -444,6 +444,8 @@ class Grade extends React.Component<IProps, IGradeState> {
               graders={graders}
               updateGrader={this.updateGrader}
               isCourseAdmin={isCourseAdmin}
+              commentRubricComments={commentRubricComments}
+              rubricCategories={rubricCategories}
             />
             <Rubric
               rubricCategories={rubricCategories}
