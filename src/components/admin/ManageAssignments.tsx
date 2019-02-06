@@ -222,10 +222,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricComments, savedComments });
   };
 
-  public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
+  public changeCommentDelta = (categoryID: number, commentIndex: number, delta: number) => {
     const { activeRubricComments, savedComments } = this.state;
+    const newDelta = delta ? delta : 0;
+    console.log(newDelta);
     if (activeRubricComments) {
-      activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
+      activeRubricComments[categoryID][commentIndex].pointDelta = newDelta;
       const commentID = activeRubricComments[categoryID][commentIndex].id;
       savedComments[commentID] = false;
     }

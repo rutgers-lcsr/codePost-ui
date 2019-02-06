@@ -116,7 +116,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       <TableColumn style={{ position: 'relative' }}>
         <TextField
           type="number"
-          value={props.defaultDelta}
+          defaultValue={props.defaultDelta}
           step={0.5}
           pattern="^d+(\.|\,)\d{1}"
           className="deduction-field"
