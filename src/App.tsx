@@ -62,8 +62,6 @@ class App extends React.Component<{}, IState> {
         toRedirect: redirect,
       },
       () => {
-        console.log('bump');
-        console.log(newUser.token);
         localStorage.setItem('token', newUser.token);
       },
     );
