@@ -65,7 +65,8 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 
   const pointsPerCategory = {};
   for (const commentID in commentRubricComments) {
-    if (commentRubricComments.hasOwnProperty(commentID)) {
+    // Don't count unsaved comments
+    if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
       if (!pointsPerCategory[commentRubricComments[commentID].category]) {
         pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
       } else {

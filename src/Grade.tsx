@@ -325,14 +325,16 @@ class Grade extends React.Component<IProps, IGradeState> {
   // Delete the comment json from the submission state
   // Then delete the comment from the remote db
   public deleteComment = (comment: CommentType, file: FileType): void => {
-    const { submission, comments } = this.state;
+    const { submission, comments, commentRubricComments } = this.state;
     if (!submission) {
       return;
     }
 
     const index = comments[file.id].findIndex((c: CommentType) => c.id === comment.id);
     comments[file.id] = [...comments[file.id].slice(0, index), ...comments[file.id].slice(index + 1)];
-    this.setState({ comments });
+
+    delete commentRubricComments[comment.id];
+    this.setState({ comments, commentRubricComments });
 
     // Think about how to handle this case
     // Options:
