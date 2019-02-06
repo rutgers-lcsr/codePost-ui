@@ -42,10 +42,17 @@
         $commentPanel-width: calc(100vw - 1330px + 130px);
         @include dual-pane-fixed-right-scrollable-left($commentPanel-width, 'codePanel', 'commentPanel');
         padding-right: 0px;
+
+        &__codePanel {
+          overflow: hidden;
+        }
       }
       @media screen and (max-width: 1330px) {
         @include dual-pane-fixed-right-scrollable-left(130px, 'codePanel', 'commentPanel');
         padding-right: 0px;
+        &__codePanel {
+          overflow: hidden;
+        }
       } // min-height: calc(100vh - 130px);
       // this is to make sure that the parent isn't scrollable, which is fine because code panel overwrites overflow parameter
       // overflow-y: scroll;
