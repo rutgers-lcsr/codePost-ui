@@ -318,7 +318,10 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
-    commentRubricComments[newComment.id] = commentRubricComments[commentID];
+
+    if (newComment.rubricComment) {
+      commentRubricComments[newComment.id] = commentRubricComments[commentID];
+    }
     this.setState({ comments, commentRubricComments });
   };
 
