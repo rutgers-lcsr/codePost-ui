@@ -6,6 +6,7 @@ class Landing extends React.Component {
     return (
       <div className="Landing">
         <LandingTopBar />
+        <div className="topbar--Landing__spacing" />
         <div className="Hero">
           <div className="Description col-md-5">
             <div className="logo">
