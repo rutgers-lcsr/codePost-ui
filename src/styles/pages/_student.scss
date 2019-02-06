@@ -16,7 +16,33 @@
 
   &__grade-container {
     width: 100%;
+    border-radius: 8px;
+    border: 1px solid $dark-grey;
+
+    &__top {
+      padding: 5px 10px 2px 20px;
+
+      div:first-child {
+        font-weight: bold;
+        padding-left: 0px;
+      }
+
+      div {
+        display: inline-block;
+        padding-left: 20px;
+        font-size: $font-size-large;
+      }
+    }
+    &__bottom {
+      padding: 0px 10px 5px 20px;
+      div {
+        font-style: italic;
+        color: $mid-grey;
+        font-size: $font-size-normal;
+      }
+    }
   }
+
   &__grade {
     float: left;
     width: 200px;
