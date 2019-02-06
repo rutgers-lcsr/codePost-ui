@@ -62,8 +62,6 @@ class App extends React.Component<{}, IState> {
         toRedirect: redirect,
       },
       () => {
-        console.log('bump');
-        console.log(newUser.token);
         localStorage.setItem('token', newUser.token);
       },
     );
@@ -336,7 +334,11 @@ class App extends React.Component<{}, IState> {
 
       return (
         <div>
-          <TopBar email={this.state.user.email} handleLogout={this.handleLogout} showSettings={isAdmin} />
+          <TopBar
+            email={this.state.user.email}
+            handleLogout={this.handleLogout}
+            showSettings={this.state.user.canCreateCourses}
+          />
           <div className="AppHome">
             <Switch>
               <Route
