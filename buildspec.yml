@@ -17,4 +17,4 @@ phases:
   post_build:
     commands:
       - echo "post_build step"
-      - aws s3 sync --delete build/ $S3_BUCKET
+      - aws s3 sync --delete build/ "$S3_BUCKET"
