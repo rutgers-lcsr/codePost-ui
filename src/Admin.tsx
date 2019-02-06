@@ -1086,7 +1086,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     commentText: string | undefined,
     commentDelta: number | undefined,
   ): Promise<void> => {
-    const { rubricComments } = this.state;
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
       this.props.addErrorToast('Cannot save comment. Comment text cannot be empty.', undefined);
@@ -1098,6 +1097,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     return RubricComment.update(payload)
       .then((rubricComment) => {
+        const { rubricComments } = this.state;
         const comIndex = rubricComments[categoryID]
           .map((com) => {
             return com.id;
@@ -1338,7 +1338,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
-    const { courses } = this.state;
     const payload = {
       id: -1, // codePost convention
       name: courseName,
@@ -1357,26 +1356,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           copiedCourse.assignments.map((assignmentID: number) => {
             return Assignment.read(assignmentID);
           }),
-        )
-          .then((assignments: AssignmentType[]) => {
-            return assignments;
-          })
-          .then((assignments) => {
-            return Promise.all(
-              assignments.map((assignment) => {
-                return Assignment.readRubric(assignment.id, {});
-              }),
-            ).then((rubrics: any) => {
-              return [assignments, rubrics];
-            });
+        ).then((assignments: AssignmentType[]) => {
+          return Promise.all(
+            assignments.map((assignment) => {
+              return Assignment.readRubric(assignment.id, {});
+            }),
+          ).then((rubrics: any) => {
+            return [assignments, rubrics];
           });
+        });
 
         return getData.then(([assignments, rubrics]) => {
+          course.assignments = assignments.map((i: AssignmentType) => {
+            return i.id;
+          });
           return Promise.all(
             assignments.map((assignment: AssignmentType) => {
               const oldAssignmentID = assignment.id;
               assignment.id = -1;
               assignment.course = course.id;
+              assignment.isReleased = false;
               // Create Assignments
               return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
                 const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
@@ -1400,12 +1399,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               });
             }),
           ).then(() => {
-            courses.push(course);
-            this.setState({ courses });
-            this.props.addLongToast(
-              `Course ${course.name} | ${course.period} successfully created. Please refresh the page.`,
-              undefined,
-            );
+            const newCourses = this.state.courses;
+            newCourses.push(course);
+            this.setState({ courses: newCourses }, () => this.props.addCourse(course));
+            this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
             this.setState({ currentCourse: course, toLoadCourse: true }, () => {
               this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
             });
@@ -1414,8 +1411,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           });
         });
       } else {
-        courses.push(course);
-        this.setState({ courses }, () => this.props.addCourse(course));
+        const newCourses = this.state.courses;
+        newCourses.push(course);
+        this.setState({ courses: newCourses }, () => this.props.addCourse(course));
         this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
         this.setState({ currentCourse: course, toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
@@ -1447,7 +1445,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
   // ------------------- Set loading dialogs -------------------
-  public setLoadingDialog = (message: string, title: string) => {
+  public setLoadingDialog = (title: string, message: string) => {
     this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
   };
 
@@ -1459,12 +1457,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // a loading Dialog will appear. For use with functions that take a long time (like deletion, unenroll),
   // because quicker functions will look odd with a flash of loading
   public wrapLoading = (
-    message: string,
     title: string,
+    message: string,
     func: ((...args: any[]) => Promise<void>),
     ...props: any[]
   ): Promise<void> => {
-    this.setLoadingDialog(message, title);
+    this.setLoadingDialog(title, message);
     return func(...props)
       .then(() => {
         this.clearLoadingDialog();
@@ -1550,16 +1548,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           assignments={this.state.assignments}
           assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
           createRubricCategory={this.createRubricCategory}
-          deleteRubricCategory={this.deleteRubricCategory}
+          deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
           createRubricComment={this.createRubricComment}
-          deleteRubricComment={this.deleteRubricComment}
-          updateRubricComment={this.updateRubricComment}
-          updateRubricCategory={this.updateRubricCategory}
+          deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
+          updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
+          updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
           updateAssignment={this.updateAssignment}
           createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
           deleteAssignment={this.wrapLoading.bind(
             this,
-            'Deleting Assignment',
+            'Deleting Assignment...',
             'This action can impact a lot of data and may take a few minutes.',
             this.deleteAssignment,
           )}
@@ -1645,6 +1643,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <div />
     );
 
+    const stillLoadingCourse =
+      !this.state.assignmentsLoadComplete ||
+      !this.state.assignmentRubricLoadComplete ||
+      !this.state.submissionsLoadComplete ||
+      !this.state.submissionsbyUserLoadComplete ||
+      !this.state.sectionsLoadComplete;
+
     return (
       <div className="admin">
         <div className="admin__topbar">
@@ -1653,6 +1658,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             options={this.selectorItemsFormatter(courses)}
             onChange={this.handleCourseChange}
             value={this.selectorCurrentFormatter(currentCourse)}
+            isLoading={stillLoadingCourse}
+            isDisabled={stillLoadingCourse}
           />
           <div className="admin__topbar__nav">
             <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>

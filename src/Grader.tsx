@@ -41,7 +41,7 @@ interface IGraderProps {
   match: any;
   history: any;
   superGraderCourses: CourseType[];
-  sectionsLed: number[];
+  sectionsLed: SectionType[];
 }
 
 class Grader extends React.Component<IGraderProps, IGraderState> {
@@ -367,8 +367,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
       // if superGrader show a course
       const sections = this.props.sectionsLed.slice();
-      const sectionsInThisCourse = sections.filter((id) => {
-        return currentCourse.sections.indexOf(id) !== -1;
+      const sectionsInThisCourse = sections.filter((section) => {
+        return currentCourse.sections.indexOf(section.id) !== -1;
+      });
+
+      // Pass the IDs to sectionPanel. SectionPanel will do another read to get the
+      // most up to date section roster and leaders
+      const sectionsIDsInThisCourse = sectionsInThisCourse.map((section) => {
+        return section.id;
       });
       const hasSections = sectionsInThisCourse.length > 0;
 
@@ -387,7 +393,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           {/* padding under the tab required because tab is position:fixed*/}
           <div className="tabList--Grader__panelPadding" />
           <SectionPanel
-            sectionsLed={sectionsInThisCourse}
+            sectionsLed={sectionsIDsInThisCourse}
             currentCourse={currentCourse}
             currentAssignment={currentAssignment}
           />

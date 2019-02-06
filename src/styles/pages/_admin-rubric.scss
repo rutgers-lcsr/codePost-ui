@@ -56,6 +56,13 @@
     &__delete {
       align-self: flex-end;
     }
+    &__warning {
+      margin-left: 10px;
+      font-size: $font-size-medium;
+      font-style: italic;
+      padding-top: 35px;
+      color: $dark-red;
+    }
     margin-bottom: 25px;
   }
 

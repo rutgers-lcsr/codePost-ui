@@ -116,7 +116,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       <TableColumn style={{ position: 'relative' }}>
         <TextField
           type="number"
-          value={props.defaultDelta}
+          defaultValue={props.defaultDelta}
           step={0.5}
           pattern="^d+(\.|\,)\d{1}"
           className="deduction-field"
@@ -262,13 +262,14 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
           customSize="font-size-large"
         />
         <TextField
-          value={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : ''}
+          defaultValue={typeof props.categoryPointLimit === 'number' ? props.categoryPointLimit : undefined}
           label={'Category points cap'}
           fullWidth={false}
           step={0.5}
           pattern="^d+(\.|\,)\d{1}"
-          type="number"
+          required={false}
           min={0}
+          type="number"
           onChange={changeThisCategoryCap}
           disabled={props.isDisabled}
           onBlur={updateThisCategoryCaps}
@@ -276,6 +277,11 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         />
         <div className="admin-rubric__category--header__unsavedChanges">{unSavedChanges}</div>
         <div className="admin-rubric__category--header__delete">{deleteCategoryButton}</div>
+        <div className="admin-rubric__category--header__warning">
+          {props.categoryPointLimit === 0
+            ? 'Warning: A Category Limit of 0 means that no submissions will receive deductions for this category'
+            : ''}
+        </div>
       </div>
       <DataTable key={props.categoryID} className="DataTable--RubricCategory" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
@@ -313,18 +319,38 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
 
 // -- Object to ask user if they want to delete or unlink linked comments upon deletion of rubricComment/Category --
 
-interface IPropsDeleteLinkedDialog {
+interface IPropsLinkedCommentsAlert {
   numCommentsAffected?: number;
   onDelete: () => void;
   onUpdate: () => void;
   onUnLink: () => void;
-  onCancel: () => void;
+  onCancel: (revert: boolean) => void;
   isVisible: boolean;
   isDialog: boolean;
   isDelete: boolean;
 }
 
-const LinkedCommentsAlert = (props: IPropsDeleteLinkedDialog) => {
+const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
+  // Redefine change functions in order to remove the dialog upon button click
+  const onDelete = () => {
+    props.onDelete();
+    props.onCancel(false);
+  };
+
+  const onUnlink = () => {
+    props.onUnLink();
+    props.onCancel(false);
+  };
+
+  const onCancel = () => {
+    props.onCancel(true);
+  };
+
+  const onUpdate = () => {
+    props.onUpdate();
+    props.onCancel(false);
+  };
+
   if (!props.isVisible) {
     return <div />;
   }
@@ -337,15 +363,15 @@ const LinkedCommentsAlert = (props: IPropsDeleteLinkedDialog) => {
         submissions. Do you wish to delete those linked comments or 'unlink' them (keeping the comment intact with the
         same text and point value)?
         <div className="error-padding" />
-        <Button raised onClick={props.onDelete} primary={false} flat={true}>
+        <Button raised onClick={onDelete} primary={false} flat={true}>
           Delete
         </Button>
         <div className="error-padding" />
-        <Button raised onClick={props.onUnLink} primary={true} flat={true}>
+        <Button raised onClick={onUnlink} primary={true} flat={true}>
           Unlink
         </Button>
         <div className="error-padding" />
-        <Button raised onClick={props.onCancel} primary={false} flat={true}>
+        <Button raised onClick={onCancel} primary={false} flat={true}>
           Cancel
         </Button>
         <div className="error-padding" />
@@ -358,11 +384,11 @@ const LinkedCommentsAlert = (props: IPropsDeleteLinkedDialog) => {
         Performing this action will update one or more rubricComments that are linked to comments provided on
         submissions. Do you wish to continue with this change?
         <div className="error-padding" />
-        <Button raised onClick={props.onUpdate} primary={false} flat={true}>
+        <Button raised onClick={onUpdate} primary={false} flat={true}>
           Continue
         </Button>
         <div className="error-padding" />
-        <Button raised onClick={props.onCancel} primary={false} flat={true}>
+        <Button raised onClick={onCancel} primary={false} flat={true}>
           Cancel
         </Button>
         <div className="error-padding" />
@@ -372,7 +398,13 @@ const LinkedCommentsAlert = (props: IPropsDeleteLinkedDialog) => {
 
   if (props.isDialog) {
     return (
-      <DialogContainer id="rubricFile-dialog" visible={true} title="Manage rubric files" onHide={props.onCancel} modal>
+      <DialogContainer
+        id="rubricFile-dialog"
+        visible={true}
+        title="Warning: Linked Comments"
+        onHide={props.onCancel}
+        modal
+      >
         {content}
       </DialogContainer>
     );

@@ -179,9 +179,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public changeCategoryCap = (categoryIndex: number, newCap: number | null) => {
+    console.log(newCap);
     const { activeRubricCategories, savedCategories } = this.state;
     if (activeRubricCategories) {
-      activeRubricCategories[categoryIndex].pointLimit = Number(newCap);
+      const newCategoryCap = newCap ? newCap : null;
+      activeRubricCategories[categoryIndex].pointLimit = newCategoryCap;
       const categoryID = activeRubricCategories[categoryIndex].id;
       savedCategories[categoryID] = false;
     }
@@ -220,10 +222,12 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ activeRubricComments, savedComments });
   };
 
-  public changeCommentDelta = (categoryID: number, commentIndex: number, newDelta: number) => {
+  public changeCommentDelta = (categoryID: number, commentIndex: number, delta: number) => {
     const { activeRubricComments, savedComments } = this.state;
+    const newDelta = delta ? delta : 0;
+    console.log(newDelta);
     if (activeRubricComments) {
-      activeRubricComments[categoryID][commentIndex].pointDelta = Number(newDelta);
+      activeRubricComments[categoryID][commentIndex].pointDelta = newDelta;
       const commentID = activeRubricComments[categoryID][commentIndex].id;
       savedComments[commentID] = false;
     }
@@ -254,6 +258,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
           setTimeout(this.clearSaveComment.bind(this.props, data.id), 2000);
         });
       } else {
+        const oldComm = this.props.rubricComments[categoryID].find((i) => {
+          return i.id === comm.id;
+        });
+        // If no change, then return
+        if (oldComm && oldComm.text === comm.text && oldComm.pointDelta === comm.pointDelta) {
+          return;
+        }
         this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta).then(() => {
           savedComments[comm.id] = true;
           this.setState({ savedComments, changeCommentDialogID: undefined });
@@ -313,6 +324,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
             }
           });
         } else {
+          const oldCat = this.props.rubricCategories[activeAssignment.id].find((i) => {
+            return i.id === cat.id;
+          });
+          // If no change, then return
+          if (oldCat && oldCat.name === cat.name && oldCat.pointLimit === cat.pointLimit) {
+            return;
+          }
           this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit).then(() => {
             savedCategories[cat.id] = true;
             this.setState({ savedCategories, changeCategoryDialogID: undefined });
@@ -392,14 +410,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
   public updateAssignmentName = () => {
     const { activeAssignment } = this.state;
-    if (activeAssignment) {
+    if (activeAssignment && activeAssignment.name !== this.assignmentNameField.getField().value) {
       this.props.updateAssignment(activeAssignment.id, this.assignmentNameField.getField().value, undefined, undefined);
     }
   };
 
   public updateAssignmentPoints = () => {
     const { activeAssignment } = this.state;
-    if (activeAssignment) {
+    if (activeAssignment && activeAssignment.points !== Number(this.assignmentPointsField.getField().value)) {
+      console.log('bump');
       this.props.updateAssignment(
         activeAssignment.id,
         undefined,
@@ -469,30 +488,35 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  public clearChangeCommentDialog = () => {
+  public clearChangeCommentDialog = (revert: boolean) => {
     const { changeCommentDialogID, activeRubricComments } = this.state;
     const { rubricComments } = this.props;
 
     // If a change to an item with linked comments is cancelled, revert to previous data
-    if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
-      const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
-      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text = oldComment.text;
-      activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
-        oldComment.pointDelta;
-      this.setState({ activeRubricComments });
+    if (revert) {
+      if (activeRubricComments && changeCommentDialogID && !changeCommentDialogID.isDelete) {
+        const oldComment = rubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex];
+        activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].text =
+          oldComment.text;
+        activeRubricComments[changeCommentDialogID.categoryID][changeCommentDialogID.commentIndex].pointDelta =
+          oldComment.pointDelta;
+        this.setState({ activeRubricComments });
+      }
     }
     this.setState({ changeCommentDialogID: undefined });
   };
 
-  public clearChangeCategoryDialog = () => {
+  public clearChangeCategoryDialog = (revert: boolean) => {
     const { changeCategoryDialogID, activeRubricCategories, activeAssignment } = this.state;
     const { rubricCategories } = this.props;
 
     // If a change to an item with linked comments is cancelled, revert to previous data
-    if (activeAssignment && activeRubricCategories && changeCategoryDialogID && !changeCategoryDialogID.isDelete) {
-      const oldCat = rubricCategories[activeAssignment.id][changeCategoryDialogID.categoryIndex];
-      activeRubricCategories[changeCategoryDialogID.categoryIndex].pointLimit = oldCat.pointLimit;
-      this.setState({ activeRubricCategories });
+    if (revert) {
+      if (activeAssignment && activeRubricCategories && changeCategoryDialogID && !changeCategoryDialogID.isDelete) {
+        const oldCat = rubricCategories[activeAssignment.id][changeCategoryDialogID.categoryIndex];
+        activeRubricCategories[changeCategoryDialogID.categoryIndex].pointLimit = oldCat.pointLimit;
+        this.setState({ activeRubricCategories });
+      }
     }
     this.setState({ changeCategoryDialogID: undefined });
   };
@@ -838,7 +862,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
             isDialog={true}
           />
           <LinkedCommentsAlert
-            isDelete={this.state.changeCommentDialogID ? this.state.changeCommentDialogID.isDelete : false}
+            isDelete={this.state.changeCategoryDialogID ? this.state.changeCategoryDialogID.isDelete : false}
             onDelete={
               typeof this.state.changeCategoryDialogID !== 'undefined'
                 ? this.deleteCategory.bind(

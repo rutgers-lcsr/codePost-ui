@@ -32,6 +32,12 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
     return this.props.handleLogin(e, this.state);
   };
 
+  public handleKeyPress = (event: any) => {
+    if (event.keyCode === 13) {
+      this.handleLogin(event);
+    }
+  };
+
   public renderError = (error: string) => {
     switch (error) {
       case '':
@@ -63,6 +69,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
                   required={true}
                   value={this.state.username}
                   onChange={this.handleChange.bind(this, 'username')}
+                  onKeyDown={this.handleKeyPress}
                 />
               </div>
               <div className="login__main-container__forms__item">
@@ -74,6 +81,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
                   type="password"
                   value={this.state.password}
                   onChange={this.handleChange.bind(this, 'password')}
+                  onKeyDown={this.handleKeyPress}
                 />
               </div>
               <p>{this.renderError(this.props.error)}</p>

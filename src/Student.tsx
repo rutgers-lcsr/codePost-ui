@@ -349,6 +349,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public render() {
     const {
+      assignments,
       courses,
       currentAssignment,
       currentCourse,
@@ -418,11 +419,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       contentArea = <CircularProgress id="progress" className="progress-circle" />;
     } else if (currentCourse) {
       if (!this.state.assignments[currentCourse.id]) {
-        contentArea = (
-          <div className="student__getStarted--assignment">
-            <div className="student__getStarted__text">No assignments available.</div>
-          </div>
-        );
+        contentArea = <div className="student__getStarted__text">No assignments available.</div>;
       } else {
         contentArea = (
           <div className="student__getStarted--assignment">
