@@ -349,7 +349,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public render() {
     const {
-      assignments,
       courses,
       currentAssignment,
       currentCourse,
