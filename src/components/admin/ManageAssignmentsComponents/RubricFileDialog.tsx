@@ -123,11 +123,12 @@ class RubricFileDialog extends React.Component<IProps, {}> {
   public downloadRubric = () => {
     const rubric = this.getNestedRubricForDownload();
     const a = document.createElement('a');
-    a.href = `data:attachment/json, ${JSON.stringify(rubric)}`;
+    a.href = `data:text/json;charset=utf-8, ${encodeURIComponent(JSON.stringify(rubric))}`;
     a.download = 'rubric.json';
 
     document.body.appendChild(a);
     a.click();
+    a.remove();
     this.props.addToast('Rubric downloaded succesfully', undefined);
   };
 
