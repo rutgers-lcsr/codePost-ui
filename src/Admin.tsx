@@ -284,6 +284,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return course.id === option.value;
     })[0];
 
+    window.clearInterval(this.interval);
+    window.clearTimeout(this.interval);
+
     const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
 
     this.setState(
@@ -329,8 +332,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
-        window.clearInterval(this.interval);
-        window.clearTimeout(this.interval);
         this.interval = setInterval(() => {
           if (this.state.currentCourse) {
             this.loadAllCourseData();
@@ -520,6 +521,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (!currentCourse || !currentCourse.assignments) {
       return;
     }
+
     Promise.all(
       currentCourse.assignments.map((assignmentID) => {
         return Assignment.readSubmissions(assignmentID, {}).then((subs: SubmissionType[]) => {
@@ -1367,9 +1369,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
 
         return getData.then(([assignments, rubrics]) => {
-          course.assignments = assignments.map((i: AssignmentType) => {
-            return i.id;
-          });
           return Promise.all(
             assignments.map((assignment: AssignmentType) => {
               const oldAssignmentID = assignment.id;
@@ -1379,35 +1378,45 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               // Create Assignments
               return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
                 const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
-                rubric.rubricCategories.map((rubricCategory: any) => {
-                  const oldRubricCategoryId = rubricCategory.id;
-                  rubricCategory.id = -1;
-                  rubricCategory.assignment = newAssignment.id;
-                  rubricCategory.rubricComments = [];
-                  // Create Rubric Categories
-                  return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
-                    const rubricComments = rubric.rubricComments.filter((c: any) => c.category === oldRubricCategoryId);
-                    rubricComments.map((rubricComment: any) => {
-                      rubricComment.id = -1;
-                      rubricComment.category = newRubricCategory.id;
-                      rubricComment.comments = [];
-                      // Create Rubric Comments
-                      return RubricComment.create(rubricComment);
+                return Promise.all(
+                  rubric.rubricCategories.map((rubricCategory: any) => {
+                    const oldRubricCategoryId = rubricCategory.id;
+                    rubricCategory.id = -1;
+                    rubricCategory.assignment = newAssignment.id;
+                    rubricCategory.rubricComments = [];
+                    // Create Rubric Categories
+                    return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
+                      const rubricComments = rubric.rubricComments.filter(
+                        (c: any) => c.category === oldRubricCategoryId,
+                      );
+                      rubricComments.map((rubricComment: any) => {
+                        rubricComment.id = -1;
+                        rubricComment.category = newRubricCategory.id;
+                        rubricComment.comments = [];
+                        // Create Rubric Comments
+                        return RubricComment.create(rubricComment);
+                      });
                     });
-                  });
+                  }),
+                ).then(() => {
+                  // Return the new assignment so that it can be assigned to the course
+                  return newAssignment;
                 });
               });
             }),
-          ).then(() => {
+          ).then((newAssignments) => {
+            course.assignments = newAssignments.map((i: AssignmentType) => {
+              return i.id;
+            });
             const newCourses = this.state.courses;
             newCourses.push(course);
             this.setState({ courses: newCourses }, () => this.props.addCourse(course));
             this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-            this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+            this.setState({ toLoadCourse: true }, () => {
               this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
             });
 
-            return course;
+            return;
           });
         });
       } else {
@@ -1415,11 +1424,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newCourses.push(course);
         this.setState({ courses: newCourses }, () => this.props.addCourse(course));
         this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-        this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+        this.setState({ toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
         });
 
-        return course;
+        return;
       }
     });
   };
@@ -1546,6 +1555,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           addToast={this.props.addToast}
           addErrorToast={this.props.addErrorToast}
           assignments={this.state.assignments}
+          assignmentsLoadComplete={this.state.assignmentsLoadComplete}
           assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
           createRubricCategory={this.createRubricCategory}
           deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
@@ -1678,7 +1688,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <NewCourseDialog
             courses={this.state.courses}
             addErrorToast={this.props.addErrorToast}
-            createCourse={this.createCourse}
+            createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
             selectorItemsFormatter={this.selectorItemsFormatter}
             selectorCurrentFormatter={this.selectorCurrentFormatter}
           />

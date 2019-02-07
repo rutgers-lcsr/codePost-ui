@@ -80,7 +80,10 @@ class Grade extends React.Component<IProps, IGradeState> {
         return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
           () => {
             const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-            this.setState({ isLoading: false, positiveNegativeAlert });
+            if (!submission.isFinalized) {
+              submission.grade = this.calculateGradeFromComments();
+            }
+            this.setState({ isLoading: false, positiveNegativeAlert, submission });
           },
         );
       })
@@ -231,7 +234,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public calculateGradeFromComments = () => {
-    const { comments, submission, assignment, commentRubricComments } = this.state;
+    const { comments, submission, assignment, commentRubricComments, rubricCategories } = this.state;
 
     let assignmentPoints = 0;
     if (!submission || !assignment) {
@@ -247,8 +250,6 @@ class Grade extends React.Component<IProps, IGradeState> {
           return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
             if (comment.pointDelta) {
               return accumulator + comment.pointDelta;
-            } else if (commentRubricComments[comment.id]) {
-              return accumulator + commentRubricComments[comment.id].pointDelta;
             } else {
               return accumulator;
             }
@@ -258,7 +259,31 @@ class Grade extends React.Component<IProps, IGradeState> {
           return accumulator + fileGrade;
         }, 0);
 
-    return grade;
+    const pointsPerCategory = {};
+    for (const commentID in commentRubricComments) {
+      // Don't count unsaved comments
+      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
+        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
+          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
+        } else {
+          pointsPerCategory[commentRubricComments[commentID].category] =
+            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
+        }
+      }
+    }
+
+    let categoryPoints = 0;
+    for (const category in pointsPerCategory) {
+      if (pointsPerCategory.hasOwnProperty(category)) {
+        const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
+          return rubricCategory.id === +category;
+        });
+        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 1000) : 1000;
+        categoryPoints = categoryPoints + Math.min(pointsPerCategory[category], pointLimit);
+      }
+    }
+
+    return grade - categoryPoints;
   };
 
   public hasPositiveAndNegativeComments = () => {
@@ -318,7 +343,10 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
-    commentRubricComments[newComment.id] = commentRubricComments[commentID];
+
+    if (newComment.rubricComment) {
+      commentRubricComments[newComment.id] = commentRubricComments[commentID];
+    }
     this.setState({ comments, commentRubricComments });
   };
 

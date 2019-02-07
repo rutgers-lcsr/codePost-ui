@@ -19,6 +19,7 @@ import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
+import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment } from './infrastructure/rubricComment';
 import { SubmissionStatusType } from './infrastructure/submission';
 
@@ -28,6 +29,7 @@ interface IStudentState {
   files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
+  rubricCategories: RubricCategoryType[];
 
   currentCourse?: CourseType;
   currentAssignment?: AssignmentType;
@@ -67,6 +69,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     isLoadingSubmission: false,
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
+    rubricCategories: [],
     rubricComments: {},
     toLoadCourse: false,
     toLoadAssignment: false,
@@ -151,8 +154,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         });
 
         this.setState({ isLoadingSubmission: true });
-        this.loadSubmission(currentAssignment).then(() => {
-          this.setState({ currentCourse, currentAssignment, isLoadingSubmission: false });
+
+        this.loadRubricCategories(currentAssignment).then(() => {
+          this.loadSubmission(currentAssignment).then(() => {
+            this.setState({ currentCourse, currentAssignment, isLoadingSubmission: false });
+          });
         });
       }
     }
@@ -220,6 +226,21 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         this.setState({ currentSubmission: undefined });
         this.addErrorToast(errors, undefined);
       });
+  };
+
+  public loadRubricCategories = (assignment: AssignmentType) => {
+    const loadedRubricCategories: RubricCategoryType[] = [];
+    return Promise.all(
+      assignment.rubricCategories.map((rubricCategoryID: number) => {
+        return RubricCategory.read(rubricCategoryID).then((rubricCategory: RubricCategoryType) => {
+          loadedRubricCategories.push(rubricCategory);
+          return;
+        });
+      }),
+    ).then(() => {
+      this.setState({ rubricCategories: loadedRubricCategories });
+      return;
+    });
   };
 
   public loadFiles = (submission: SubmissionStatusType) => {
@@ -293,8 +314,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       // Need to test these callbacks to avoid first setState following completion
       this.setState({ isLoadingSubmission: true }, () => {
         this.setState({ currentAssignment });
-        this.loadSubmission(currentAssignment).then(() => {
-          this.setState({ toLoadAssignment: true, isLoadingSubmission: false });
+        this.loadRubricCategories(currentAssignment).then(() => {
+          this.loadSubmission(currentAssignment).then(() => {
+            this.setState({ toLoadAssignment: true, isLoadingSubmission: false });
+          });
         });
       });
     }
@@ -358,6 +381,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       rubricComments,
       toLoadCourse,
       toLoadAssignment,
+      rubricCategories,
     } = this.state;
 
     const errorSnackBarStyle = {
@@ -385,22 +409,53 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
-    const stats =
-      currentAssignment && currentAssignment.mean && currentAssignment.median ? (
-        <div>
-          <div>{`Mean: ${currentAssignment.mean}`}</div>
-          <div>{`Median: ${currentAssignment.median}`}</div>
-        </div>
-      ) : (
-        <div />
-      );
+    const pointsPerCategory = {};
+    for (const commentID in rubricComments) {
+      // Don't count unsaved comments
+      if (+commentID > 0 && rubricComments.hasOwnProperty(commentID)) {
+        if (!pointsPerCategory[rubricComments[commentID].category]) {
+          pointsPerCategory[rubricComments[commentID].category] = rubricComments[commentID].pointDelta;
+        } else {
+          pointsPerCategory[rubricComments[commentID].category] =
+            pointsPerCategory[rubricComments[commentID].category] + rubricComments[commentID].pointDelta;
+        }
+      }
+    }
+
+    const messages: string[] = [];
+    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+      if (pointsPerCategory[rubricCategory.id]) {
+        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
+          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
+          messages.push(`${rubricCategory.name} (${diff})`);
+        }
+      }
+    });
+
+    const stats = [];
+    if (currentAssignment && currentAssignment.mean && currentAssignment.median) {
+      stats.push(<div>Mean: {currentAssignment.mean}</div>);
+      stats.push(<div>Median: {currentAssignment.median}</div>);
+    }
+
     let contentArea;
     if (currentSubmission && currentAssignment && currentSubmission.isFinalized) {
       contentArea = (
         <div className="student__submission-view">
           <div className="student__grade-container">
-            <div className="student__grade">{`Grade: ${currentSubmission!.grade}/${currentAssignment!.points}`}</div>
-            <div className="student__stats">{stats}</div>
+            <div className="student__grade-container__top">
+              <div>
+                Grade: {currentSubmission!.grade} / {currentAssignment!.points}
+              </div>
+              {stats}
+            </div>
+            {messages.length > 0 ? (
+              <div className="student__grade-container__bottom">
+                <div>Category points exceeded: {messages.join(', ')}</div>
+              </div>
+            ) : (
+              <div />
+            )}
           </div>
           <ReadOnlyCodePanel
             submission={currentSubmission!}
