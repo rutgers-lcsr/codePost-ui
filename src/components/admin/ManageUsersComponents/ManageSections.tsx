@@ -139,7 +139,7 @@ class ManageSections extends React.Component<IProps, {}> {
             Add new section
           </Button>
         </div>
-        <DataTable className="DataTable--ManageUsers" baseId="Manage-sections-table" plain={true}>
+        <DataTable className="DataTable--ManageSections" baseId="Manage-sections-table" plain={true}>
           <TableHeader>
             <TableRow>
               <TableColumn key={'sectionName'}>Section Name</TableColumn>

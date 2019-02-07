@@ -58,7 +58,7 @@
 }
 
 .DataTable--ManageUsers {
-  @include fixedTableHeader(calc(100vh - 450px));
+  @include fixedTableHeader(calc(100vh - 470px));
 
   &__pagination {
     .md-table-pagination {
@@ -67,22 +67,26 @@
   }
 }
 
+.DataTable--ManageSections {
+  @include fixedTableHeader(calc(100vh - 400px));
+}
+
 .DataTable--StudentData-All {
-  @include fixedTableHeader(calc(100vh - 325px));
+  @include fixedTableHeader(calc(100vh - 350px));
   @include wrapHeaders(200px);
 }
 
 .DataTable--StudentData-Selected {
-  @include fixedTableHeader(calc(100vh - 360px));
+  @include fixedTableHeader(calc(100vh - 380px));
 }
 
 .DataTable--GraderData-All {
-  @include fixedTableHeader(calc(100vh - 325px));
+  @include fixedTableHeader(calc(100vh - 350px));
   @include wrapHeaders(200px);
 }
 
 .DataTable--GraderData-Selected {
-  @include fixedTableHeader(calc(100vh - 400px));
+  @include fixedTableHeader(calc(100vh - 420px));
 }
 
 .DataTable--Grader {
