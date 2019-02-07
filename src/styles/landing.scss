@@ -40,16 +40,31 @@ $md-toolbar-height: 100px;
   min-height: 760px;
   height: 100vh;
   background-color: white;
+
+  @media only screen and (max-width: 768px) {
+    min-width: 0px;
+  }
 }
 
 .Hero {
   height: 550px;
   background-color: $dark-grey;
   padding-left: 60px;
+  padding-top: 100px;
+
+  @media only screen and (max-width: 768px) {
+    padding-left: 15px;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    height: fit-content;
+  }
 
   .logo {
-    padding-top: 200px;
     font-size: 70px;
+
+    @media only screen and (max-width: 768px) {
+      font-size: 40px;
+    }
   }
 
   .Description-head {
