@@ -499,6 +499,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -542,6 +543,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -601,6 +603,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -671,6 +674,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               this.props.addErrorToast(error, undefined);
             });
           });
+          return Promise.reject();
         })
     );
   };
@@ -706,7 +710,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.Student:
         if (students.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Student is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newStudents = JSON.parse(JSON.stringify(students));
@@ -717,7 +721,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
@@ -726,7 +730,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Admin is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
@@ -735,7 +739,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.SuperGrader:
         if (superGraders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader already has view all privileges.', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newSuperGraders = JSON.parse(JSON.stringify(superGraders));
@@ -749,7 +753,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { currentCourse, sections } = this.state;
 
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
     const payload = {
       name: newSection,
@@ -947,6 +951,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               this.props.addErrorToast(error, undefined);
             });
           });
+          return Promise.reject();
         });
     });
   };
@@ -993,6 +998,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1077,6 +1083,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1118,6 +1125,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1159,7 +1167,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
-        return;
+        return Promise.reject();
       });
   };
 
@@ -1436,11 +1444,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public updateSettings = (course: CoursePatchType) => {
     const { currentCourse, courses } = this.state;
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
     if (course.id !== currentCourse.id) {
-      return;
+      return Promise.reject();
     }
 
     return Course.update(course).then((newCourse: CourseType) => {
@@ -1472,13 +1480,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     ...props: any[]
   ): Promise<void> => {
     this.setLoadingDialog(title, message);
-    return func(...props)
-      .then(() => {
-        this.clearLoadingDialog();
-      })
-      .catch(() => {
-        this.clearLoadingDialog();
-      });
+    console.log('hello');
+    const promise = func(...props);
+    console.log(promise);
+    if (promise) {
+      return promise
+        .then(() => {
+          this.clearLoadingDialog();
+        })
+        .catch(() => {
+          this.clearLoadingDialog();
+          console.log('here');
+        });
+    } else {
+      // This clause is purely a catch in case we haven't been strict on making sure the promises
+      // return an error instead of returning nothing
+      this.clearLoadingDialog();
+      return Promise.reject();
+    }
   };
 
   // ------------------- Render -------------------
