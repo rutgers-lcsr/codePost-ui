@@ -1,7 +1,7 @@
 // This mixin makes a react-md table have a fixed header with scrolling body.
 // Need to specify the required vh of the body, which is dependent on how much other stuff
 // is above the table
-@mixin fixedTableHeader($table-body-vh) {
+@mixin fixedTableHeader($table-body-vh, $minimum-height) {
   .md-table-header {
     .md-table-row {
       display: table;
@@ -15,6 +15,7 @@
     display: block;
     overflow: auto;
     height: $table-body-vh;
+    min-height: $minimum-height;
 
     .md-table-row {
       display: table;
@@ -58,7 +59,7 @@
 }
 
 .DataTable--ManageUsers {
-  @include fixedTableHeader(calc(100vh - 470px));
+  @include fixedTableHeader(calc(100vh - 470px), 400px);
 
   &__pagination {
     .md-table-pagination {
@@ -68,39 +69,39 @@
 }
 
 .DataTable--ManageSections {
-  @include fixedTableHeader(calc(100vh - 400px));
+  @include fixedTableHeader(calc(100vh - 400px), 400px);
 }
 
 .DataTable--StudentData-All {
-  @include fixedTableHeader(calc(100vh - 350px));
+  @include fixedTableHeader(calc(100vh - 350px), 400px);
   @include wrapHeaders(200px);
 }
 
 .DataTable--StudentData-Selected {
-  @include fixedTableHeader(calc(100vh - 380px));
+  @include fixedTableHeader(calc(100vh - 380px), 400px);
 }
 
 .DataTable--GraderData-All {
-  @include fixedTableHeader(calc(100vh - 350px));
+  @include fixedTableHeader(calc(100vh - 350px), 400px);
   @include wrapHeaders(200px);
 }
 
 .DataTable--GraderData-Selected {
-  @include fixedTableHeader(calc(100vh - 420px));
+  @include fixedTableHeader(calc(100vh - 420px), 400px);
 }
 
 .DataTable--Grader {
-  @include fixedTableHeader(calc(100vh - 250px));
+  @include fixedTableHeader(calc(100vh - 250px), 400px);
   @include wrapHeaders(200px);
 }
 
 .DataTable--ViewAll {
-  @include fixedTableHeader(calc(100vh - 260px));
+  @include fixedTableHeader(calc(100vh - 260px), 400px);
   @include wrapHeaders(200px);
 }
 
 .DataTable--Section {
-  @include fixedTableHeader(calc(100vh - 280px));
+  @include fixedTableHeader(calc(100vh - 280px), 400px);
   @include wrapHeaders(200px);
 }
 
