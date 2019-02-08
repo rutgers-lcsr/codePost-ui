@@ -214,6 +214,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       .then((subs) => {
         if (subs.length === 0) {
           this.setState({ currentSubmission: undefined });
+          this.addErrorToast('No submission found.', undefined);
           return Promise.resolve(); // empty Promise
         } else {
           const currentSubmission = subs[0];
