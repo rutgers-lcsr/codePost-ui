@@ -327,6 +327,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         loadingMessage: '',
         loadingTitle: '',
 
+        // trigger URL change
+        toLoadCourse: true,
+
         // Props for Enroll panels
         lockChanges: true,
       },
@@ -1532,11 +1535,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const panelName = this.stringFromPanel(panel);
 
         return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
-      } else {
-        // Eagerly load first course in list
-        const courseToLoad = courses[0];
-        const panelName = this.stringFromPanel(0);
-        return <Redirect to={`/course-admin/${courseToLoad.name}/${courseToLoad.period}/${panelName}`} />;
       }
     }
 
