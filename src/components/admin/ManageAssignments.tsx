@@ -41,6 +41,7 @@ interface IProps {
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
   assignments: AssignmentType[];
+  assignmentsLoadComplete: boolean;
   assignmentRubricLoadComplete: boolean;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   createRubricCategory: (
@@ -179,7 +180,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
   };
 
   public changeCategoryCap = (categoryIndex: number, newCap: number | null) => {
-    console.log(newCap);
     const { activeRubricCategories, savedCategories } = this.state;
     if (activeRubricCategories) {
       const newCategoryCap = newCap ? newCap : null;
@@ -225,7 +225,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public changeCommentDelta = (categoryID: number, commentIndex: number, delta: number) => {
     const { activeRubricComments, savedComments } = this.state;
     const newDelta = delta ? delta : 0;
-    console.log(newDelta);
     if (activeRubricComments) {
       activeRubricComments[categoryID][commentIndex].pointDelta = newDelta;
       const commentID = activeRubricComments[categoryID][commentIndex].id;
@@ -418,7 +417,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public updateAssignmentPoints = () => {
     const { activeAssignment } = this.state;
     if (activeAssignment && activeAssignment.points !== Number(this.assignmentPointsField.getField().value)) {
-      console.log('bump');
       this.props.updateAssignment(
         activeAssignment.id,
         undefined,
@@ -546,7 +544,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
       );
       this.props.deleteAssignment(deletingAssignment).then(() => {
         this.props.clearLoadingDialog();
-        console.log('clearing');
       });
     }
   };
@@ -581,12 +578,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
       submissionsLoadComplete,
       lockManageAssignment,
       assignments,
+      assignmentsLoadComplete,
       assignmentRubricLoadComplete,
     } = this.props;
     const { activeAssignment, commentExplorer } = this.state;
 
     let tableBody;
-    if (submissionsLoadComplete && assignmentRubricLoadComplete) {
+    if (submissionsLoadComplete && assignmentsLoadComplete && assignmentRubricLoadComplete) {
       tableBody = Object.keys(submissions).map((assignmentID) => {
         const assignmentSubs = submissions[assignmentID];
         const numSubmissions = assignmentSubs.length;
@@ -597,6 +595,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
         const assignment = assignments.filter((assn) => {
           return assn.id === Number(assignmentID);
         })[0];
+
+        if (!assignment) {
+          return <div />;
+        }
 
         assignmentSubs.forEach((submission: SubmissionType) => {
           if (submission.isFinalized) {

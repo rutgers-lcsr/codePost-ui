@@ -1,7 +1,7 @@
 .grade-rubric {
   border-top: 2px solid $mid-grey;
   // border-bottom: 2px solid $mid-grey;
-  height: calc(100vh - 280px);
+  height: calc(100vh - 320px);
   &__title {
     padding: 10px 10px 10px 10px;
     font-size: $font-size-large;
@@ -18,7 +18,7 @@
   }
 
   &__scrollable-container {
-    height: calc(100vh - 360px);
+    height: calc(100vh - 420px);
     overflow: auto;
     overflow-y: scroll;
   }

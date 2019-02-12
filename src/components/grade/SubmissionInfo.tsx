@@ -21,6 +21,8 @@ interface ISubmissionInfoProps {
 
   commentRubricComments: ICommentToRubricCommentMap;
   rubricCategories: RubricCategoryType[];
+
+  calculateGradeFromComments: any;
 }
 
 const SubmissionInfo = (props: ISubmissionInfoProps) => {
@@ -37,7 +39,9 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
   const studentTitle = pluralize('Student', submission.students.length).toUpperCase();
   const studentString = `${submission.students.join(',')}`;
 
-  const gradeString = `${submission.grade} / ${assignment.points}`;
+  const gradeString = submission.isFinalized
+    ? `${submission.grade} / ${assignment.points}`
+    : `${props.calculateGradeFromComments()} / ${assignment.points}`;
 
   let menuItems: any = [];
   if (!submission.grader) {
@@ -65,7 +69,8 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
 
   const pointsPerCategory = {};
   for (const commentID in commentRubricComments) {
-    if (commentRubricComments.hasOwnProperty(commentID)) {
+    // Don't count unsaved comments
+    if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
       if (!pointsPerCategory[commentRubricComments[commentID].category]) {
         pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
       } else {

@@ -284,6 +284,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return course.id === option.value;
     })[0];
 
+    window.clearInterval(this.interval);
+    window.clearTimeout(this.interval);
+
     const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
 
     this.setState(
@@ -332,8 +335,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       },
       () => {
         this.loadAllCourseData();
-        window.clearInterval(this.interval);
-        window.clearTimeout(this.interval);
         this.interval = setInterval(() => {
           if (this.state.currentCourse) {
             this.loadAllCourseData();
@@ -501,6 +502,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -523,6 +525,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (!currentCourse || !currentCourse.assignments) {
       return;
     }
+
     Promise.all(
       currentCourse.assignments.map((assignmentID) => {
         return Assignment.readSubmissions(assignmentID, {}).then((subs: SubmissionType[]) => {
@@ -543,6 +546,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -602,6 +606,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -672,6 +677,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               this.props.addErrorToast(error, undefined);
             });
           });
+          return Promise.reject();
         })
     );
   };
@@ -707,7 +713,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.Student:
         if (students.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Student is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newStudents = JSON.parse(JSON.stringify(students));
@@ -718,7 +724,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.Grader:
         if (graders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newGraders = JSON.parse(JSON.stringify(graders));
@@ -727,7 +733,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.CourseAdmin:
         if (admins.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Admin is already enrolled in course', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newAdmins = JSON.parse(JSON.stringify(admins));
@@ -736,7 +742,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       case USER_APP.SuperGrader:
         if (superGraders.indexOf(userEmail) !== -1) {
           this.props.addErrorToast('Grader already has view all privileges.', undefined);
-          return;
+          return Promise.reject();
         }
         // Need to do a deep copy of state array in case adding fails, we don't update state
         const newSuperGraders = JSON.parse(JSON.stringify(superGraders));
@@ -750,7 +756,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const { currentCourse, sections } = this.state;
 
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
     const payload = {
       name: newSection,
@@ -948,6 +954,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               this.props.addErrorToast(error, undefined);
             });
           });
+          return Promise.reject();
         });
     });
   };
@@ -994,6 +1001,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1078,6 +1086,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1119,6 +1128,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
+        return Promise.reject();
       });
   };
 
@@ -1160,7 +1170,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             this.props.addErrorToast(error, undefined);
           });
         });
-        return;
+        return Promise.reject();
       });
   };
 
@@ -1370,9 +1380,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
 
         return getData.then(([assignments, rubrics]) => {
-          course.assignments = assignments.map((i: AssignmentType) => {
-            return i.id;
-          });
           return Promise.all(
             assignments.map((assignment: AssignmentType) => {
               const oldAssignmentID = assignment.id;
@@ -1382,35 +1389,45 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               // Create Assignments
               return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
                 const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
-                rubric.rubricCategories.map((rubricCategory: any) => {
-                  const oldRubricCategoryId = rubricCategory.id;
-                  rubricCategory.id = -1;
-                  rubricCategory.assignment = newAssignment.id;
-                  rubricCategory.rubricComments = [];
-                  // Create Rubric Categories
-                  return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
-                    const rubricComments = rubric.rubricComments.filter((c: any) => c.category === oldRubricCategoryId);
-                    rubricComments.map((rubricComment: any) => {
-                      rubricComment.id = -1;
-                      rubricComment.category = newRubricCategory.id;
-                      rubricComment.comments = [];
-                      // Create Rubric Comments
-                      return RubricComment.create(rubricComment);
+                return Promise.all(
+                  rubric.rubricCategories.map((rubricCategory: any) => {
+                    const oldRubricCategoryId = rubricCategory.id;
+                    rubricCategory.id = -1;
+                    rubricCategory.assignment = newAssignment.id;
+                    rubricCategory.rubricComments = [];
+                    // Create Rubric Categories
+                    return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
+                      const rubricComments = rubric.rubricComments.filter(
+                        (c: any) => c.category === oldRubricCategoryId,
+                      );
+                      rubricComments.map((rubricComment: any) => {
+                        rubricComment.id = -1;
+                        rubricComment.category = newRubricCategory.id;
+                        rubricComment.comments = [];
+                        // Create Rubric Comments
+                        return RubricComment.create(rubricComment);
+                      });
                     });
-                  });
+                  }),
+                ).then(() => {
+                  // Return the new assignment so that it can be assigned to the course
+                  return newAssignment;
                 });
               });
             }),
-          ).then(() => {
+          ).then((newAssignments) => {
+            course.assignments = newAssignments.map((i: AssignmentType) => {
+              return i.id;
+            });
             const newCourses = this.state.courses;
             newCourses.push(course);
             this.setState({ courses: newCourses }, () => this.props.addCourse(course));
             this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-            this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+            this.setState({ toLoadCourse: true }, () => {
               this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
             });
 
-            return course;
+            return;
           });
         });
       } else {
@@ -1418,11 +1435,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newCourses.push(course);
         this.setState({ courses: newCourses }, () => this.props.addCourse(course));
         this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-        this.setState({ currentCourse: course, toLoadCourse: true }, () => {
+        this.setState({ toLoadCourse: true }, () => {
           this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
         });
 
-        return course;
+        return;
       }
     });
   };
@@ -1430,11 +1447,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public updateSettings = (course: CoursePatchType) => {
     const { currentCourse, courses } = this.state;
     if (!currentCourse) {
-      return;
+      return Promise.reject();
     }
 
     if (course.id !== currentCourse.id) {
-      return;
+      return Promise.reject();
     }
 
     return Course.update(course).then((newCourse: CourseType) => {
@@ -1466,13 +1483,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     ...props: any[]
   ): Promise<void> => {
     this.setLoadingDialog(title, message);
-    return func(...props)
-      .then(() => {
-        this.clearLoadingDialog();
-      })
-      .catch(() => {
-        this.clearLoadingDialog();
-      });
+    console.log('hello');
+    const promise = func(...props);
+    console.log(promise);
+    if (promise) {
+      return promise
+        .then(() => {
+          this.clearLoadingDialog();
+        })
+        .catch(() => {
+          this.clearLoadingDialog();
+          console.log('here');
+        });
+    } else {
+      // This clause is purely a catch in case we haven't been strict on making sure the promises
+      // return an error instead of returning nothing
+      this.clearLoadingDialog();
+      return Promise.reject();
+    }
   };
 
   // ------------------- Render -------------------
@@ -1544,6 +1572,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           addToast={this.props.addToast}
           addErrorToast={this.props.addErrorToast}
           assignments={this.state.assignments}
+          assignmentsLoadComplete={this.state.assignmentsLoadComplete}
           assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
           createRubricCategory={this.createRubricCategory}
           deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
@@ -1676,7 +1705,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <NewCourseDialog
             courses={this.state.courses}
             addErrorToast={this.props.addErrorToast}
-            createCourse={this.createCourse}
+            createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
             selectorItemsFormatter={this.selectorItemsFormatter}
             selectorCurrentFormatter={this.selectorCurrentFormatter}
           />

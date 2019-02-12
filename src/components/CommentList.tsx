@@ -23,6 +23,7 @@ interface IProps {
 
 interface IState {
   placeholder: number;
+  isMounted: boolean;
 }
 
 interface IBlock {
@@ -33,20 +34,27 @@ interface IBlock {
 class CommentList extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     placeholder: 0,
+    isMounted: false,
   };
 
   public componentDidMount() {
+    this.setState({ isMounted: true });
     window.addEventListener('resize', this.rerender.bind(this));
     document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
+    document.addEventListener('scroll', this.rerender.bind(this));
   }
 
   public componentWillUnmount() {
+    this.setState({ isMounted: false });
     window.removeEventListener('resize', this.rerender.bind(this));
     document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
+    document.removeEventListener('scroll', this.rerender.bind(this));
   }
 
   public rerender = () => {
-    this.setState({ placeholder: 0 });
+    if (this.state.isMounted) {
+      this.setState({ placeholder: 0 });
+    }
     CodePanelUtils.updateCommentPanelHeight();
   };
 

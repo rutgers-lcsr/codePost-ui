@@ -112,6 +112,8 @@
   &__panelPadding {
     padding-top: 80px;
   }
+  // fix to make sure text doesn't appear behind tabs on scroll
+  top: 60px;
 }
 
 .tabList--CourseData {

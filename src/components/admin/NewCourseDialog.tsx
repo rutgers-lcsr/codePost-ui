@@ -9,7 +9,7 @@ import { IOptionNumber } from '../../types/common';
 interface IProps {
   courses: CourseType[];
   addErrorToast: (text: string, action: string | undefined) => void;
-  createCourse: (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => Promise<CourseType>;
+  createCourse: (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => Promise<void>;
   selectorItemsFormatter: any;
   selectorCurrentFormatter: any;
 }
@@ -74,9 +74,8 @@ class NewCourseDialog extends React.Component<IProps, IState> {
     }
 
     // if validCourse, create the Course
-    this.props.createCourse(newCourseName, newCoursePeriod, this.state.copiedCourse).then(() => {
-      this.toggleDialog();
-    });
+    this.props.createCourse(newCourseName, newCoursePeriod, this.state.copiedCourse);
+    this.toggleDialog();
   };
 
   public handleCourseChange = (option: IOptionNumber) => {
