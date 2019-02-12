@@ -476,6 +476,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               isCourseAdmin={isCourseAdmin}
               commentRubricComments={commentRubricComments}
               rubricCategories={rubricCategories}
+              calculateGradeFromComments={this.calculateGradeFromComments}
             />
             <Rubric
               rubricCategories={rubricCategories}

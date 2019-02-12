@@ -327,6 +327,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         loadingMessage: '',
         loadingTitle: '',
 
+        // trigger URL change
+        toLoadCourse: true,
+
         // Props for Enroll panels
         lockChanges: true,
       },
@@ -772,7 +775,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public removeStudentFromSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
+  public removeStudentFromSection = (
+    sectionID: number,
+    studentEmail: string,
+    showToast: boolean,
+  ): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.find((section) => {
@@ -798,14 +805,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       delete sectionsByStudent[studentEmail];
 
-      this.setState({ sections: newSections, sectionsByStudent }, () =>
-        this.props.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined),
-      );
+      this.setState({ sections: newSections, sectionsByStudent }, () => {
+        if (showToast) {
+          this.props.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined);
+        }
+      });
       return json;
     });
   };
 
-  public addStudentToSection = (sectionID: number, studentEmail: string): Promise<SectionType> => {
+  public addStudentToSection = (sectionID: number, studentEmail: string, showToast: boolean): Promise<SectionType> => {
     const { sections, sectionsByStudent } = this.state;
 
     const thisSection = sections.filter((section) => {
@@ -830,23 +839,32 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       };
 
       this.setState({ sections: newSections, sectionsByStudent }, () => {
-        this.props.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
+        if (showToast) {
+          this.props.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
+        }
       });
       return json;
     });
   };
 
-  public changeStudentSection = (newSectionID: number | undefined, studentEmail: string): Promise<SectionType> => {
+  public changeStudentSection = (
+    newSectionID: number | undefined,
+    studentEmail: string,
+    showToast: boolean,
+  ): Promise<SectionType> => {
     const { sectionsByStudent } = this.state;
     const previousSection = sectionsByStudent[studentEmail];
     if (previousSection && newSectionID) {
-      return this.removeStudentFromSection(previousSection.id, studentEmail).then(() => {
-        return this.addStudentToSection(newSectionID, studentEmail);
+      if (previousSection.id === newSectionID) {
+        return Promise.reject();
+      }
+      return this.removeStudentFromSection(previousSection.id, studentEmail, showToast).then(() => {
+        return this.addStudentToSection(newSectionID, studentEmail, showToast);
       });
     } else if (previousSection) {
-      return this.removeStudentFromSection(previousSection.id, studentEmail);
+      return this.removeStudentFromSection(previousSection.id, studentEmail, showToast);
     } else if (newSectionID) {
-      return this.addStudentToSection(newSectionID, studentEmail);
+      return this.addStudentToSection(newSectionID, studentEmail, showToast);
     }
     this.props.addErrorToast('Error - both old section and new section are empty.', undefined);
     return Promise.reject();
@@ -1517,11 +1535,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const panelName = this.stringFromPanel(panel);
 
         return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
-      } else {
-        // Eagerly load first course in list
-        const courseToLoad = courses[0];
-        const panelName = this.stringFromPanel(0);
-        return <Redirect to={`/course-admin/${courseToLoad.name}/${courseToLoad.period}/${panelName}`} />;
       }
     }
 
