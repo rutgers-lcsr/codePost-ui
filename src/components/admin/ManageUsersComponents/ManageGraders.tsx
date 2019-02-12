@@ -271,6 +271,9 @@ class ManageGraders extends React.Component<IProps, {}> {
             changeRoster={changeRoster}
             userType={USER_APP.Grader}
             isDisabled={lockedGraderChange}
+            getSectionIDFromName={null}
+            sectionsByStudent={null}
+            changeStudentSection={null}
           />
         </div>
         <TextField
