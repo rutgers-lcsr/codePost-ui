@@ -32,7 +32,11 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => Promise<void>;
   unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-  changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
+  changeStudentSection: (
+    sectionID: number | undefined,
+    studentEmail: string,
+    showToast: boolean,
+  ) => Promise<SectionType>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
 }
 
@@ -102,7 +106,7 @@ class ManageStudents extends React.Component<IProps, {}> {
 
     const newSectionID = newSection.value > 0 ? newSection.value : undefined;
 
-    changeStudentSection(newSectionID, studentEmail).then(() => {
+    changeStudentSection(newSectionID, studentEmail, true).then(() => {
       changedSectionStudents = changedSectionStudents.filter((i) => {
         return i !== studentEmail;
       });
@@ -136,6 +140,13 @@ class ManageStudents extends React.Component<IProps, {}> {
       paginationStart: start,
       rowsPerPage,
     });
+  };
+
+  public getSectionIDFromName = (sectionName: string) => {
+    const thisSection = this.props.sections.find((section) => {
+      return section.name === sectionName;
+    });
+    return thisSection ? thisSection.id : undefined;
   };
 
   public render() {
@@ -248,6 +259,9 @@ class ManageStudents extends React.Component<IProps, {}> {
           </div>
           <RosterFileUpload
             users={this.props.students}
+            getSectionIDFromName={this.getSectionIDFromName}
+            sectionsByStudent={this.props.sectionsByStudent}
+            changeStudentSection={this.props.changeStudentSection}
             addErrorToast={addErrorToast}
             addToast={addToast}
             changeRoster={changeRoster}
