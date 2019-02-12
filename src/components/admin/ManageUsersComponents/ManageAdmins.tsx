@@ -173,6 +173,9 @@ class ManageStudents extends React.Component<IProps, {}> {
             changeRoster={changeRoster}
             userType={USER_APP.CourseAdmin}
             isDisabled={lockedAdminChange}
+            getSectionIDFromName={null}
+            sectionsByStudent={null}
+            changeStudentSection={null}
           />
         </div>
         <TextField
