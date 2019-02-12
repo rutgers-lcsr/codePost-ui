@@ -218,7 +218,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         );
       }
     }
-    const exampleText = "    [\n    'user1@emaildomain.edu', \n    'user2@emaildomain.edu',\n    ...\n    ]";
+    const exampleText = '    [\n    "user1@emaildomain.edu", \n    "user2@emaildomain.edu",\n    ...\n    ]';
 
     return (
       <div>
