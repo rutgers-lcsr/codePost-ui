@@ -636,7 +636,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         const mean = assignment.mean
           ? assignment.mean.toString()
           : sortedFinalized.length
-          ? (totalScore / numGraded).toString()
+          ? (totalScore / numGraded).toFixed(2).toString()
           : '--';
         const median = assignment.median
           ? assignment.median.toString()
