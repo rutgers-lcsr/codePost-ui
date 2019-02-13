@@ -591,6 +591,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
         let numGraded = 0;
         let numUngraded = 0;
         let numUnclaimed = 0;
+        let totalScore = 0;
 
         const assignment = assignments.filter((assn) => {
           return assn.id === Number(assignmentID);
@@ -603,6 +604,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
         assignmentSubs.forEach((submission: SubmissionType) => {
           if (submission.isFinalized) {
             numGraded += 1;
+            if (submission.grade !== null) {
+              totalScore += submission.grade;
+            }
           } else if (submission.grader) {
             numUngraded += 1;
           } else {
@@ -610,8 +614,36 @@ class ManageAssignments extends React.Component<IProps, {}> {
           }
         });
 
-        const mean = assignment.mean ? assignment.mean.toString() : '--';
-        const median = assignment.median ? assignment.median.toString() : '--';
+        const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
+          if (sub.isFinalized && sub.grade !== null) {
+            grades.push(sub.grade);
+          }
+          return grades;
+        }, []);
+
+        let calculatedMedian;
+        if (sortedFinalized) {
+          sortedFinalized.sort();
+          const index = Math.floor(sortedFinalized.length / 2);
+          // if odd, get the index, if even average the two middle elements
+          if (sortedFinalized.length % 2) {
+            calculatedMedian = sortedFinalized[index];
+          } else {
+            calculatedMedian = (sortedFinalized[index - 1] + sortedFinalized[index]) / 2;
+          }
+        }
+
+        const mean = assignment.mean
+          ? assignment.mean.toString()
+          : sortedFinalized.length
+          ? (totalScore / numGraded).toString()
+          : '--';
+        const median = assignment.median
+          ? assignment.median.toString()
+          : sortedFinalized.length
+          ? calculatedMedian
+          : '--';
+
         const onCellClick = this.changeActiveAssignment.bind(this.props, assignment);
         const downloadGrades = this.downloadGrades.bind(this.props, assignment);
 
