@@ -306,7 +306,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         shouldUpdate = true;
         newUsers = (
           <div>
-            <b>{`The following ${USER_APP[userType]}(s) will be added from the course:`}</b>
+            <b>{`The following ${USER_APP[userType]}(s) will be added to the course:`}</b>
             {updates.newUsers.map((elem, index) => {
               return (
                 <div className="uploadChangesText" key={index}>
