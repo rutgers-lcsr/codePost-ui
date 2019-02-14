@@ -133,9 +133,17 @@ class CodePanel extends React.Component<IProps, IState> {
           })}
         </TabList>
         {files.map((file: FileType, i: number) => {
+          const box = document.getElementById(`syntax-highlighter-${file.id}`);
+          const code = box ? box!.getElementsByTagName('code')[1] : null;
+
+          let requireScroll = false;
+          if (box && code && code.getBoundingClientRect().width > box.getBoundingClientRect().width) {
+            requireScroll = true;
+          }
+
           return (
             <TabPanel key={`${file.id}-code`}>
-              <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+              {requireScroll ? <div className={'grade__main-container__scrollIndicator'}>scroll>>></div> : null}
               <Code
                 submission={this.props.submission}
                 file={file}
