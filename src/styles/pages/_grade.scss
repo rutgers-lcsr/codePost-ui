@@ -27,6 +27,7 @@
 
     &__right-panel {
       padding-top: 10px;
+      min-width: 0;
       &__tabs {
         width: inherit;
       }

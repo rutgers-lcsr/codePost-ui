@@ -42,6 +42,10 @@ class CommentList extends React.Component<IProps, IState> {
     window.addEventListener('resize', this.rerender.bind(this));
     document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
     document.addEventListener('scroll', this.rerender.bind(this));
+
+    document
+      .getElementById(`code-underlay-pre-${this.props.file.id}`)!
+      .addEventListener('scroll', this.updateHighlighScroll.bind(this));
   }
 
   public componentWillUnmount() {
@@ -49,6 +53,9 @@ class CommentList extends React.Component<IProps, IState> {
     window.removeEventListener('resize', this.rerender.bind(this));
     document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
     document.removeEventListener('scroll', this.rerender.bind(this));
+    document
+      .getElementById(`code-underlay-pre-${this.props.file.id}`)!
+      .removeEventListener('scroll', this.updateHighlighScroll.bind(this));
   }
 
   public rerender = () => {
@@ -56,6 +63,13 @@ class CommentList extends React.Component<IProps, IState> {
       this.setState({ placeholder: 0 });
     }
     CodePanelUtils.updateCommentPanelHeight();
+  };
+
+  public updateHighlighScroll = () => {
+    const syntaxHighlighter = document
+      .getElementById(`syntax-highlighter-${this.props.file.id}`)!
+      .getElementsByTagName('pre')[0];
+    syntaxHighlighter.scrollLeft = document.getElementById(`code-underlay-pre-${this.props.file.id}`)!.scrollLeft;
   };
 
   public getCommentNodes = (comments: CommentType[]) => {
