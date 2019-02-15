@@ -18,6 +18,7 @@ import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
 
 import RosterFileUpload from './RosterFileUpload';
+import { getSortIndex } from './SortUtils';
 
 interface IProps {
   sections: SectionType[];
@@ -46,7 +47,7 @@ interface IState {
   searchTerm: string;
   sectionEdited: string | undefined;
   paginatedStudents: string[];
-  sortedStudents: string[];
+  sortedUsers: string[];
   sortedIndex: Array<boolean | undefined>;
   paginationStart: number | undefined;
   rowsPerPage: number | undefined;
@@ -63,7 +64,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       searchTerm: '',
       sectionEdited: undefined,
       paginatedStudents: [],
-      sortedStudents: [],
+      sortedUsers: [],
       paginationStart: undefined,
       rowsPerPage: undefined,
       sortedIndex,
@@ -73,9 +74,9 @@ class ManageStudents extends React.Component<IProps, IState> {
   public componentDidMount() {
     // on mount, if roster is complete, sort roster
     if (this.props.rosterLoadComplete) {
-      const sortedStudents = this.props.students.slice();
-      sortedStudents.sort();
-      this.setState({ sortedStudents });
+      const sortedUsers = this.props.students.slice();
+      sortedUsers.sort();
+      this.setState({ sortedUsers });
     }
   }
 
@@ -83,12 +84,12 @@ class ManageStudents extends React.Component<IProps, IState> {
     // on each students, if the array of students has changed, re-sort
     if (this.props.students !== prevProps.students) {
       // make a copy
-      const sortedStudents = this.props.students.slice();
+      const sortedUsers = this.props.students.slice();
       // sort by sortedIndex
-      sortedStudents.sort(this.studentSortFunction.bind(this));
+      sortedUsers.sort(this.sortFunction.bind(this));
 
       // update pagination of students
-      this.setState({ sortedStudents }, () => {
+      this.setState({ sortedUsers }, () => {
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
           this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
         }
@@ -96,10 +97,9 @@ class ManageStudents extends React.Component<IProps, IState> {
     }
   }
 
-  public studentSortFunction(a: string, b: string) {
+  public sortFunction(a: string, b: string) {
     const { sortedIndex } = this.state;
-    console.log(sortedIndex);
-    // Sort by student column case
+    // Sort by email column case
     if (typeof sortedIndex[0] !== 'undefined') {
       if (a < b) return sortedIndex[0] ? -1 : 1;
       else if (a > b) return sortedIndex[0] ? 1 : -1;
@@ -170,9 +170,9 @@ class ManageStudents extends React.Component<IProps, IState> {
   };
 
   public handlePagination = (start: number, rowsPerPage: number) => {
-    const { sortedStudents } = this.state;
+    const { sortedUsers } = this.state;
     this.setState({
-      paginatedStudents: sortedStudents.slice(start, start + rowsPerPage),
+      paginatedStudents: sortedUsers.slice(start, start + rowsPerPage),
       paginationStart: start,
       rowsPerPage,
     });
@@ -187,32 +187,17 @@ class ManageStudents extends React.Component<IProps, IState> {
 
   public toggleSort = (columnIndex: number) => {
     const { sortedIndex } = this.state;
-    if (columnIndex > sortedIndex.length - 1) {
-      // invalid column Index
-      return;
-    }
-
-    // set the sortedIndex to proper values
-    const newSortedIndex = sortedIndex.map((elem, i) => {
-      console.log(elem);
-      if (i === columnIndex) {
-        if (typeof elem !== 'undefined') {
-          return !elem;
-        } else return true;
-      } else {
-        return undefined;
-      }
-    });
+    const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
 
     // set new sortedIndex to state
     this.setState({ sortedIndex: newSortedIndex }, () => {
       // re-sort students
-      const newSortedStudents = this.state.sortedStudents.slice();
-      newSortedStudents.sort(this.studentSortFunction.bind(this));
+      const newsortedUsers = this.state.sortedUsers.slice();
+      newsortedUsers.sort(this.sortFunction.bind(this));
       // re-do pagination
       this.setState(
         {
-          sortedStudents: newSortedStudents,
+          sortedUsers: newsortedUsers,
         },
         () => {
           if (
@@ -242,7 +227,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       paginatedStudents,
       searchTerm,
       changedSectionStudents,
-      sortedStudents,
+      sortedUsers,
       sortedIndex,
     } = this.state;
 
@@ -257,7 +242,7 @@ class ManageStudents extends React.Component<IProps, IState> {
     let studentsToRender;
     // If search term, filter students by those who meet search term and render those students
     if (searchTerm.length > 0) {
-      studentsToRender = sortedStudents.filter((s) => {
+      studentsToRender = sortedUsers.filter((s) => {
         const section = sectionsByStudent[s];
         const sectionName = section ? section.name : '   ';
         return (
@@ -267,7 +252,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       });
     } else {
       // If no paginated students, render those. If not, take the default pagination (20) and return those students
-      studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedStudents.slice(0, 10);
+      studentsToRender = paginatedStudents.length > 0 ? paginatedStudents : this.state.sortedUsers.slice(0, 10);
     }
 
     let tableBody;
@@ -365,7 +350,7 @@ class ManageStudents extends React.Component<IProps, IState> {
             {searchTerm.length === 0 ? (
               <TablePagination
                 className="DataTable--ManageUsers__pagination"
-                rows={this.state.sortedStudents.length}
+                rows={this.state.sortedUsers.length}
                 defaultRowsPerPage={10}
                 onPagination={this.handlePagination}
               />
