@@ -14,7 +14,7 @@ import Select from 'react-select';
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
 import { IOption } from '../../../types/common';
-import { getSortIndex } from './SortUtils';
+import { getSortIndex } from '../../Utils/SortUtils';
 
 interface IProps {
   sections: SectionType[];

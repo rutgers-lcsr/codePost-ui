@@ -17,8 +17,8 @@ import { IOptionNumber, ISectionNoStudents, USER_APP } from '../../../types/comm
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
 
+import { getSortIndex } from '../../Utils/SortUtils';
 import RosterFileUpload from './RosterFileUpload';
-import { getSortIndex } from './SortUtils';
 
 interface IProps {
   sections: SectionType[];

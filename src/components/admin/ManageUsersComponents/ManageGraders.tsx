@@ -16,8 +16,8 @@ import '../../../styles/index.scss';
 
 import { CourseType } from '../../../infrastructure/course';
 import { USER_APP } from '../../../types/common';
+import { getSortIndex } from '../../Utils/SortUtils';
 import RosterFileUpload from './RosterFileUpload';
-import { getSortIndex } from './SortUtils';
 
 interface IProps {
   graders: string[];
