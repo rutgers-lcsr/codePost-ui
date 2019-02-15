@@ -487,8 +487,12 @@ class Grade extends React.Component<IProps, IGradeState> {
           <div className="grade__main-container__right-panel">
             <ToggleFinalize
               submission={submission}
+              comments={comments}
               toggleFinalized={this.toggleFinalized}
               positiveNegativeAlert={positiveNegativeAlert}
+              updateSubmissionGrade={this.updateSubmissionGrade}
+              updateComment={this.updateComment}
+              files={files}
             />
             <CodePanel
               submission={submission}
@@ -524,12 +528,24 @@ class Grade extends React.Component<IProps, IGradeState> {
 
 interface IToggleFinalizeProps {
   submission: SubmissionType;
+  comments: IFileToCommentsMap;
   toggleFinalized: any;
   positiveNegativeAlert: boolean;
+  updateSubmissionGrade: any;
+  updateComment: any;
+  files: FileType[];
 }
 
 const ToggleFinalize = (props: IToggleFinalizeProps) => {
-  const { submission, toggleFinalized, positiveNegativeAlert } = props;
+  const {
+    submission,
+    comments,
+    toggleFinalized,
+    positiveNegativeAlert,
+    updateSubmissionGrade,
+    updateComment,
+    files,
+  } = props;
   const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
   // <div className={warningClassName}>
   //   Warning: This submission has both positive and negative point comments. Please check to make sure that this is
@@ -537,7 +553,14 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
   // </div>
   return (
     <div className="grade__finalize">
-      <Finalize submission={submission} toggleFinalized={toggleFinalized} />
+      <Finalize
+        submission={submission}
+        comments={comments}
+        toggleFinalized={toggleFinalized}
+        updateSubmissionGrade={updateSubmissionGrade}
+        updateComment={updateComment}
+        files={files}
+      />
       <Button
         icon
         tooltipLabel="Warning: This submission has both positive and negative point comments.
