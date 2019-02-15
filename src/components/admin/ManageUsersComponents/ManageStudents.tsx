@@ -47,41 +47,77 @@ interface IState {
   sectionEdited: string | undefined;
   paginatedStudents: string[];
   sortedStudents: string[];
+  sortedIndex: Array<boolean | undefined>;
   paginationStart: number | undefined;
   rowsPerPage: number | undefined;
 }
 
-class ManageStudents extends React.Component<IProps, {}> {
-  public state: Readonly<IState> = {
-    newStudentField: undefined,
-    changedSectionStudents: [],
-    searchTerm: '',
-    sectionEdited: undefined,
-    paginatedStudents: [],
-    sortedStudents: [],
-    paginationStart: undefined,
-    rowsPerPage: undefined,
-  };
+class ManageStudents extends React.Component<IProps, IState> {
+  public constructor(props: any) {
+    super(props);
+    // SortedIndex index corresp0 is student email, index at 1 is section
+    const sortedIndex = [true, undefined];
+    this.state = {
+      newStudentField: undefined,
+      changedSectionStudents: [],
+      searchTerm: '',
+      sectionEdited: undefined,
+      paginatedStudents: [],
+      sortedStudents: [],
+      paginationStart: undefined,
+      rowsPerPage: undefined,
+      sortedIndex,
+    };
+  }
 
   public componentDidMount() {
+    // on mount, if roster is complete, sort roster
     if (this.props.rosterLoadComplete) {
-      const sortedStudents = JSON.parse(JSON.stringify(this.props.students));
+      const sortedStudents = this.props.students.slice();
       sortedStudents.sort();
       this.setState({ sortedStudents });
     }
   }
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
+    // on each students, if the array of students has changed, re-sort
     if (this.props.students !== prevProps.students) {
-      const sortedStudents = JSON.parse(JSON.stringify(this.props.students));
-      sortedStudents.sort();
+      // make a copy
+      const sortedStudents = this.props.students.slice();
+      // sort by sortedIndex
+      sortedStudents.sort(this.studentSortFunction.bind(this));
+
+      // update pagination of students
       this.setState({ sortedStudents }, () => {
-        // if props change, update pagination
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
           this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
         }
       });
     }
+  }
+
+  public studentSortFunction(a: string, b: string) {
+    const { sortedIndex } = this.state;
+    console.log(sortedIndex);
+    // Sort by student column case
+    if (typeof sortedIndex[0] !== 'undefined') {
+      if (a < b) return sortedIndex[0] ? -1 : 1;
+      else if (a > b) return sortedIndex[0] ? 1 : -1;
+      else return 0;
+    }
+    // Sort by section column case
+    if (typeof sortedIndex[1] !== 'undefined') {
+      const { sectionsByStudent } = this.props;
+      const aSection = sectionsByStudent[a];
+      const bSection = sectionsByStudent[b];
+      if (!aSection && bSection) return sortedIndex[1] ? 1 : -1;
+      else if (aSection && !bSection) return sortedIndex[1] ? -1 : 1;
+      else if (!aSection && !bSection) return 0;
+      else if (aSection.name < bSection.name) return sortedIndex[1] ? -1 : 1;
+      else if (aSection.name > bSection.name) return sortedIndex[1] ? 1 : -1;
+      else return 0;
+    }
+    return 0;
   }
 
   /////
@@ -149,6 +185,47 @@ class ManageStudents extends React.Component<IProps, {}> {
     return thisSection ? thisSection.id : undefined;
   };
 
+  public toggleSort = (columnIndex: number) => {
+    const { sortedIndex } = this.state;
+    if (columnIndex > sortedIndex.length - 1) {
+      // invalid column Index
+      return;
+    }
+
+    // set the sortedIndex to proper values
+    const newSortedIndex = sortedIndex.map((elem, i) => {
+      console.log(elem);
+      if (i === columnIndex) {
+        if (typeof elem !== 'undefined') {
+          return !elem;
+        } else return true;
+      } else {
+        return undefined;
+      }
+    });
+
+    // set new sortedIndex to state
+    this.setState({ sortedIndex: newSortedIndex }, () => {
+      // re-sort students
+      const newSortedStudents = this.state.sortedStudents.slice();
+      newSortedStudents.sort(this.studentSortFunction.bind(this));
+      // re-do pagination
+      this.setState(
+        {
+          sortedStudents: newSortedStudents,
+        },
+        () => {
+          if (
+            !(typeof this.state.paginationStart === 'undefined') &&
+            !(typeof this.state.rowsPerPage === 'undefined')
+          ) {
+            this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
+          }
+        },
+      );
+    });
+  };
+
   public render() {
     const {
       rosterLoadComplete,
@@ -160,7 +237,14 @@ class ManageStudents extends React.Component<IProps, {}> {
       addToast,
       changeRoster,
     } = this.props;
-    const { newStudentField, paginatedStudents, searchTerm, changedSectionStudents, sortedStudents } = this.state;
+    const {
+      newStudentField,
+      paginatedStudents,
+      searchTerm,
+      changedSectionStudents,
+      sortedStudents,
+      sortedIndex,
+    } = this.state;
 
     const showSaveNewStudentButton = newStudentField && newStudentField.includes('@');
 
@@ -290,8 +374,12 @@ class ManageStudents extends React.Component<IProps, {}> {
             )}
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Student'}>Student</TableColumn>
-                <TableColumn key={'Section'}>Section</TableColumn>
+                <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+                  Student
+                </TableColumn>
+                <TableColumn key={'Section'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
+                  Section
+                </TableColumn>
                 <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
               </TableRow>
             </TableHeader>
