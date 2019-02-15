@@ -53,7 +53,6 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
         }
       }
     }
-
     return existUnsavedComments;
   };
 
@@ -67,8 +66,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
   public tryToToggleFinalized = () => {
     const { submission } = this.props;
     this.setState({ buttonState: BUTTON_STATE.Loading });
-
-    if (!submission.isFinalized && this.checkForUnsavedComments) {
+    if (!submission.isFinalized && this.checkForUnsavedComments()) {
       this.toggleDialog();
     } else {
       this.toggle();
