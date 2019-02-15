@@ -64,7 +64,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     });
   };
 
-  public toggleFinalized = () => {
+  public tryToToggleFinalized = () => {
     const { submission } = this.props;
     this.setState({ buttonState: BUTTON_STATE.Loading });
 
@@ -77,7 +77,6 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
 
   public toggle = () => {
     const { toggleFinalized } = this.props;
-
     toggleFinalized().then((submission: SubmissionType) => {
       if (!submission) {
         this.setState({ buttonState: BUTTON_STATE.Active });
@@ -89,72 +88,77 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     });
   };
 
-  public saveComments = () => {
+  public handleUnsavedComments = (shouldSave: boolean) => {
     const { comments, updateSubmissionGrade, updateComment, files } = this.props;
-    const promises = [];
-    for (const fileID in comments) {
-      if (comments.hasOwnProperty(fileID)) {
-        promises.push(
-          comments[fileID].map((comment: CommentType) => {
-            if (comment.id < 0) {
-              const payload = {
-                id: comment.id, // codePost convention
-                endChar: comment.endChar,
-                endLine: comment.endLine,
-                file: comment.file,
-                pointDelta: comment.pointDelta,
-                rubricComment: comment.rubricComment,
-                startChar: comment.startChar,
-                startLine: comment.startLine,
-                text: comment.text,
-              };
+    if (shouldSave) {
+      const promises = [];
+      for (const fileID in comments) {
+        if (comments.hasOwnProperty(fileID)) {
+          promises.push(
+            comments[fileID].map((comment: CommentType) => {
+              if (comment.id < 0) {
+                const payload = {
+                  id: comment.id, // codePost convention
+                  endChar: comment.endChar,
+                  endLine: comment.endLine,
+                  file: comment.file,
+                  pointDelta: comment.pointDelta,
+                  rubricComment: comment.rubricComment,
+                  startChar: comment.startChar,
+                  startLine: comment.startLine,
+                  text: comment.text,
+                };
 
-              return CommentIO.create(payload)
-                .then((json) => {
-                  // eagerly update submission grade
-                  updateSubmissionGrade();
-                  const file = files.filter((f: FileType) => {
-                    return f.id === +fileID;
-                  })[0];
-                  updateComment(comment.id, json, file);
+                return CommentIO.create(payload)
+                  .then((json) => {
+                    // eagerly update submission grade
+                    updateSubmissionGrade();
+                    const file = files.filter((f: FileType) => {
+                      return f.id === +fileID;
+                    })[0];
+                    updateComment(comment.id, json, file);
 
-                  return true;
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return Promise.resolve();
-            }
-          }),
-        );
+                    return true;
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              } else {
+                return Promise.resolve();
+              }
+            }),
+          );
+        }
       }
-    }
-    Promise.all(promises).then(() => {
+      Promise.all(promises).then(() => {
+        this.toggleDialog();
+        this.toggle();
+      });
+    } else {
       this.toggleDialog();
       this.toggle();
-    });
+    }
   };
 
   public render() {
     const { buttonState } = this.state;
 
     const dialogActions = [];
-    dialogActions.push({
-      secondary: true,
-      children: 'Cancel',
-      onClick: this.toggleDialog,
-    });
+    dialogActions.push(
+      <Button secondary flat onClick={this.handleUnsavedComments.bind(this, false)}>
+        Finalize without Saving
+      </Button>,
+    );
 
     dialogActions.push(
-      <Button primary flat onClick={this.saveComments}>
+      <Button primary flat onClick={this.handleUnsavedComments.bind(this, true)}>
         Save and Finalize
       </Button>,
     );
 
     return (
       <div>
-        <FinalizeButton buttonState={buttonState} handleClick={this.toggleFinalized} />
+        <FinalizeButton buttonState={buttonState} handleClick={this.tryToToggleFinalized} />
         <DialogContainer
           id="finalize-dialog"
           className="dialog--finalize-submission"
@@ -163,7 +167,6 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
           onHide={this.toggleDialog}
           actions={dialogActions}
           disableScrollLocking={true}
-          modal
         >
           Do you want to save them?
         </DialogContainer>
