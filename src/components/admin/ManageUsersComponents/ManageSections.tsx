@@ -108,6 +108,7 @@ class ManageSections extends React.Component<IProps, {}> {
               })}
               isDisabled={leaderDisable || lockedSectionChange}
               isLoading={leaderDisable}
+              menuPlacement="auto"
             />
           </TableRow>
         );
