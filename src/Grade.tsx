@@ -248,7 +248,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       Object.keys(comments)
         .map((fileID) => {
           return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
-            if (comment.pointDelta) {
+            if (comment.id > 0 && comment.pointDelta) {
               return accumulator + comment.pointDelta;
             } else {
               return accumulator;
