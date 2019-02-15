@@ -86,6 +86,7 @@
   &--takeback {
     @include button($mid-grey, white);
     @extend %large-button;
+    right: 60px;
   }
 
   &--comment {
