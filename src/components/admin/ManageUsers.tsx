@@ -44,6 +44,7 @@ interface IPropsManageUsers {
   initialTab: number;
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
+  deleteSection: (sectionID: number) => Promise<void>;
 }
 
 interface IState {
@@ -143,6 +144,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               createSection={this.props.createSection}
               graders={this.props.graders}
               changeLeaders={this.props.changeLeaders}
+              deleteSection={this.props.deleteSection}
             />
           </TabPanel>
         </Tabs>

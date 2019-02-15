@@ -25,6 +25,7 @@ interface IProps {
   createSection: (newSection: string) => void;
   changeLeaders: (sectionID: number, leaderEmails: string[]) => Promise<string[]>;
   graders: string[];
+  deleteSection: (sectionID: number) => Promise<void>;
 }
 
 interface IState {
@@ -109,6 +110,18 @@ class ManageSections extends React.Component<IProps, {}> {
               isDisabled={leaderDisable || lockedSectionChange}
               isLoading={leaderDisable}
             />
+            <TableColumn key={'delete-${section.id}'}>
+              <Button
+                key={`deleteBtn-${section.id}`}
+                className="Btn"
+                icon={true}
+                disabled={lockedSectionChange}
+                onClick={this.props.deleteSection.bind(this.props, section.id)}
+                style={{ marginLeft: '40px' }}
+              >
+                cancel
+              </Button>
+            </TableColumn>
           </TableRow>
         );
       });
@@ -144,6 +157,7 @@ class ManageSections extends React.Component<IProps, {}> {
             <TableRow>
               <TableColumn key={'sectionName'}>Section Name</TableColumn>
               <TableColumn key={'sectionLeaders'}>Section Leaders</TableColumn>
+              <TableColumn key={'deleteSection'}>Delete Section</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
