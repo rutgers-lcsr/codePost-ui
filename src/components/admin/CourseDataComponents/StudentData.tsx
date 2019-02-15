@@ -83,16 +83,14 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
     const { sortedIndex } = this.state;
     const { submissionsByStudent } = this.props;
     if (typeof sortedIndex[this.studentHeader] !== 'undefined') {
-      if (sortedIndex[this.studentHeader] === true) {
-        if (a < b) return -1;
-        if (a > b) return 1;
-        return 0;
-      } else {
-        if (a < b) return 1;
-        if (a > b) return -1;
-        return 0;
-      }
+      // sort key is student email
+      if (a < b) return sortedIndex[this.studentHeader] ? -1 : 1;
+      if (a > b) return sortedIndex[this.studentHeader] ? 1 : -1;
+      return 0;
     } else {
+      // sort key is an assignment
+
+      // get assignment
       const assignmentName = Object.keys(sortedIndex).filter((key) => {
         return typeof sortedIndex[key] !== 'undefined';
       })[0];
@@ -102,37 +100,22 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         })
         .indexOf(assignmentName);
       if (assignmentIndex === -1) return 0;
+      // if assignment found, get student submissions
       const assignmentID = this.props.assignments[assignmentIndex].id;
       const studentAsub = submissionsByStudent[a][assignmentID];
       const studentBsub = submissionsByStudent[b][assignmentID];
-      if (sortedIndex[assignmentName]) {
-        if (!studentAsub && studentBsub) return -1;
-        if (studentAsub && !studentBsub) return 1;
-        if (!studentAsub && !studentBsub) return 0;
-        if (studentAsub.isFinalized && studentBsub.isFinalized) {
-          if (studentAsub.grade !== null && studentBsub.grade !== null) {
-            if (studentAsub.grade < studentBsub.grade) return -1;
-            if (studentAsub.grade > studentBsub.grade) return 1;
-          }
-          return 0;
-        } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return 1;
-        else if (!studentAsub.isFinalized && studentBsub.isFinalized) return -1;
+      if (!studentAsub && studentBsub) return sortedIndex[assignmentName] ? -1 : 1;
+      if (studentAsub && !studentBsub) return sortedIndex[assignmentName] ? 1 : -1;
+      if (!studentAsub && !studentBsub) return 0;
+      if (studentAsub.isFinalized && studentBsub.isFinalized) {
+        if (studentAsub.grade !== null && studentBsub.grade !== null) {
+          if (studentAsub.grade < studentBsub.grade) return sortedIndex[assignmentName] ? -1 : 1;
+          if (studentAsub.grade > studentBsub.grade) return sortedIndex[assignmentName] ? 1 : -1;
+        }
         return 0;
-      } else {
-        if (!studentAsub && studentBsub) return 1;
-        if (studentAsub && !studentBsub) return -1;
-        if (!studentAsub && !studentBsub) return 0;
-
-        if (studentAsub.isFinalized && studentBsub.isFinalized && studentAsub.grade) {
-          if (studentAsub.grade !== null && studentBsub.grade !== null) {
-            if (studentAsub.grade < studentBsub.grade) return 1;
-            if (studentAsub.grade > studentBsub.grade) return -1;
-          }
-          return 0;
-        } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return -1;
-        else if (!studentAsub.isFinalized && studentBsub.isFinalized) return 1;
-        return 0;
-      }
+      } else if (studentAsub.isFinalized && !studentBsub.isFinalized) return sortedIndex[assignmentName] ? 1 : -1;
+      else if (!studentAsub.isFinalized && studentBsub.isFinalized) return sortedIndex[assignmentName] ? -1 : 1;
+      return 0;
     }
   };
 

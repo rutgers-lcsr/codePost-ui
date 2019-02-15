@@ -19,5 +19,13 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true
   },
+  "rules": {
+    "prefer-array-literal": [
+      true,
+      {
+        "allow-type-parameters": true
+      }
+    ]
+  },
   "exclude": ["node_modules/**", "build", "scripts", "acceptance-tests", "webpack", "jest", "src/setupTests.ts", "venv"]
 }

@@ -22,6 +22,7 @@ interface IState {
   selectedGraders: string[];
   loadSubmissionsComplete: boolean;
   loadGradersComplete: boolean;
+  sortedIndex: Array<boolean | undefined>;
 }
 
 class ViewAllPanel extends React.Component<IProps, IState> {
@@ -31,6 +32,8 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     selectedGraders: [],
     loadSubmissionsComplete: false,
     loadGradersComplete: false,
+    // SortedIndex index corresponds to columns: index 0 is email
+    sortedIndex: [true, undefined, undefined, undefined, undefined],
   };
 
   public constructor(props: any) {

@@ -14,6 +14,7 @@ import Select from 'react-select';
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
 import { IOption } from '../../../types/common';
+import { getSortIndex } from '../../Utils/SortUtils';
 
 interface IProps {
   sections: SectionType[];
@@ -25,17 +26,21 @@ interface IProps {
   createSection: (newSection: string) => void;
   changeLeaders: (sectionID: number, leaderEmails: string[]) => Promise<string[]>;
   graders: string[];
+  deleteSection: (sectionID: number) => Promise<void>;
 }
 
 interface IState {
   newSectionField: string | undefined;
   changedSections: number[];
+  sortedIndex: Array<boolean | undefined>;
 }
 
 class ManageSections extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     newSectionField: undefined,
     changedSections: [],
+    // SortedIndex index corresponds to columns: index 0 is section name, index at 1 is leader
+    sortedIndex: [true, undefined],
   };
 
   public newSectionFieldOnChange = (value: string) => {
@@ -71,15 +76,48 @@ class ManageSections extends React.Component<IProps, {}> {
     });
   };
 
+  public sectionSortFunction(a: SectionType, b: SectionType) {
+    const { sortedIndex } = this.state;
+    // Sort by email
+    if (typeof sortedIndex[0] !== 'undefined') {
+      if (a.name < b.name) return sortedIndex[0] ? -1 : 1;
+      else if (a.name > b.name) return sortedIndex[0] ? 1 : -1;
+      else return 0;
+    }
+    // Sort by viewAll column case
+    if (typeof sortedIndex[1] !== 'undefined') {
+      const aLeader = a.leaders ? a.leaders[0] : null;
+      const bLeader = b.leaders ? b.leaders[0] : null;
+      if (aLeader && !bLeader) return sortedIndex[1] ? -1 : 1;
+      else if (!aLeader && bLeader) return sortedIndex[1] ? 1 : -1;
+      if (aLeader && bLeader) {
+        if (aLeader < bLeader) return sortedIndex[1] ? -1 : 1;
+        if (aLeader > bLeader) return sortedIndex[1] ? 1 : -1;
+        return 0;
+      } else return 0;
+    }
+    return 0;
+  }
+
+  public toggleSort = (columnIndex: number) => {
+    const { sortedIndex } = this.state;
+    const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
+    // set new sortedIndex to state
+    this.setState({ sortedIndex: newSortedIndex });
+  };
+
   public render() {
     const { sectionsLoadComplete, lockedSectionChange, sections, createSection, graders } = this.props;
-    const { newSectionField, changedSections } = this.state;
+    const { newSectionField, changedSections, sortedIndex } = this.state;
 
     const allowAddSection = newSectionField && 0 < newSectionField.length && newSectionField.length <= 16;
 
     let tableBody;
     if (sectionsLoadComplete) {
-      tableBody = sections.map((section) => {
+      // make a copy before sorting
+      const sectionsSorted = JSON.parse(JSON.stringify(sections));
+      sectionsSorted.sort(this.sectionSortFunction.bind(this));
+      tableBody = sectionsSorted.map((section: SectionType) => {
         // Reminder - need to change to represent multiple leaders
         let leaderDisable = false;
 
@@ -110,6 +148,18 @@ class ManageSections extends React.Component<IProps, {}> {
               isLoading={leaderDisable}
               menuPlacement="auto"
             />
+            <TableColumn key={'delete-${section.id}'}>
+              <Button
+                key={`deleteBtn-${section.id}`}
+                className="Btn"
+                icon={true}
+                disabled={lockedSectionChange}
+                onClick={this.props.deleteSection.bind(this.props, section.id)}
+                style={{ marginLeft: '40px' }}
+              >
+                cancel
+              </Button>
+            </TableColumn>
           </TableRow>
         );
       });
@@ -143,8 +193,13 @@ class ManageSections extends React.Component<IProps, {}> {
         <DataTable className="DataTable--ManageSections" baseId="Manage-sections-table" plain={true}>
           <TableHeader>
             <TableRow>
-              <TableColumn key={'sectionName'}>Section Name</TableColumn>
-              <TableColumn key={'sectionLeaders'}>Section Leaders</TableColumn>
+              <TableColumn key={'sectionName'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+                Section Name
+              </TableColumn>
+              <TableColumn key={'sectionLeaders'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
+                Section Leaders
+              </TableColumn>
+              <TableColumn key={'deleteSection'}>Delete Section</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>{tableBody}</TableBody>

@@ -775,6 +775,44 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
+  public deleteSection = (sectionID: number) => {
+    const { sections } = this.state;
+
+    if (!sections) {
+      return Promise.reject();
+    }
+
+    const thisSection = sections.find((section) => {
+      return section.id === sectionID;
+    });
+
+    if (!thisSection) {
+      return Promise.reject();
+    }
+
+    const students = thisSection.students;
+    return Section.delete(sectionID).then(() => {
+      const { currentCourse, sectionsByStudent } = this.state;
+      // remove deleted section from state
+      const newSections = sections.filter((section) => {
+        return section.id !== sectionID;
+      });
+      // remove section from currentCourseID
+      const newSectionIDs = newSections.map((section) => {
+        return section.id;
+      });
+      if (currentCourse) {
+        currentCourse.sections = newSectionIDs;
+      }
+      // remove each student from deleted section from section mapping
+      students.forEach((student) => {
+        delete sectionsByStudent[student];
+      });
+      this.setState({ currentCourse, sections: newSections, sectionsByStudent });
+      return;
+    });
+  };
+
   public removeStudentFromSection = (
     sectionID: number,
     studentEmail: string,
@@ -1634,6 +1672,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             initialTab={this.state.initialTab}
             setLoadingDialog={this.setLoadingDialog}
             clearLoadingDialog={this.clearLoadingDialog}
+            deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
           />
         </div>
       );
