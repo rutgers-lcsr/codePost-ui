@@ -12,7 +12,7 @@ import {
 import Select from 'react-select';
 
 import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { SECTION_SORT_TYPE, sectionSort, SectionType } from '../../../infrastructure/section';
 import { IOption } from '../../../types/common';
 import { getSortIndex } from '../../Utils/SortUtils';
 
@@ -76,25 +76,15 @@ class ManageSections extends React.Component<IProps, {}> {
     });
   };
 
-  public sectionSortFunction(a: SectionType, b: SectionType) {
+  public sort(a: SectionType, b: SectionType) {
     const { sortedIndex } = this.state;
     // Sort by email
     if (typeof sortedIndex[0] !== 'undefined') {
-      if (a.name < b.name) return sortedIndex[0] ? -1 : 1;
-      else if (a.name > b.name) return sortedIndex[0] ? 1 : -1;
-      else return 0;
-    }
-    // Sort by viewAll column case
-    if (typeof sortedIndex[1] !== 'undefined') {
-      const aLeader = a.leaders ? a.leaders[0] : null;
-      const bLeader = b.leaders ? b.leaders[0] : null;
-      if (aLeader && !bLeader) return sortedIndex[1] ? -1 : 1;
-      else if (!aLeader && bLeader) return sortedIndex[1] ? 1 : -1;
-      if (aLeader && bLeader) {
-        if (aLeader < bLeader) return sortedIndex[1] ? -1 : 1;
-        if (aLeader > bLeader) return sortedIndex[1] ? 1 : -1;
-        return 0;
-      } else return 0;
+      const ascending = sortedIndex[0] ? true : false;
+      return sectionSort(SECTION_SORT_TYPE.name, ascending, a, b);
+    } else if (typeof sortedIndex[1] !== 'undefined') {
+      const ascending = sortedIndex[0] ? true : false;
+      return sectionSort(SECTION_SORT_TYPE.leader, ascending, a, b);
     }
     return 0;
   }
@@ -116,7 +106,7 @@ class ManageSections extends React.Component<IProps, {}> {
     if (sectionsLoadComplete) {
       // make a copy before sorting
       const sectionsSorted = JSON.parse(JSON.stringify(sections));
-      sectionsSorted.sort(this.sectionSortFunction.bind(this));
+      sectionsSorted.sort(this.sort.bind(this));
       tableBody = sectionsSorted.map((section: SectionType) => {
         // Reminder - need to change to represent multiple leaders
         let leaderDisable = false;

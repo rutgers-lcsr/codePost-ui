@@ -35,4 +35,31 @@ class Section {
   public static delete = deleteObject(SectionV, 'sections');
 }
 
-export { SectionType, Section, SectionV };
+export enum SECTION_SORT_TYPE {
+  name,
+  leader,
+}
+
+function sectionSort(sortType: SECTION_SORT_TYPE, ascending: boolean, a: SectionType, b: SectionType) {
+  // Sort by email
+  if (sortType === SECTION_SORT_TYPE.name) {
+    if (a.name < b.name) return ascending ? -1 : 1;
+    else if (a.name > b.name) return ascending ? 1 : -1;
+    else return 0;
+  }
+  // Sort by viewAll column case
+  if (sortType === SECTION_SORT_TYPE.leader) {
+    const aLeader = a.leaders ? a.leaders[0] : null;
+    const bLeader = b.leaders ? b.leaders[0] : null;
+    if (aLeader && !bLeader) return ascending ? -1 : 1;
+    else if (!aLeader && bLeader) return ascending ? 1 : -1;
+    if (aLeader && bLeader) {
+      if (aLeader < bLeader) return ascending ? -1 : 1;
+      if (aLeader > bLeader) return ascending ? 1 : -1;
+      return 0;
+    } else return 0;
+  }
+  return 0;
+}
+
+export { SectionType, Section, SectionV, sectionSort };
