@@ -34,6 +34,10 @@
 
     pre {
       margin: 0px;
+      &::-webkit-scrollbar {
+        width: 0px; /* remove scrollbar space */
+        background: transparent; /* optional: just make scrollbar invisible */
+      }
     }
 
     code {
@@ -64,6 +68,10 @@
       border: 1px solid transparent;
       font-size: $font-size-syntax-highlighter;
       overflow-x: auto;
+      &::-webkit-scrollbar {
+        width: 0px; /* remove scrollbar space */
+        background: transparent; /* optional: just make scrollbar invisible */
+      }
     }
 
     &--line-numbers {
