@@ -33,7 +33,11 @@ interface IPropsManageUsers {
 
   createSection: (newSection: string) => void;
   changeLeaders: (sectionID: number, leaderEmails: string[]) => Promise<string[]>;
-  changeStudentSection: (sectionID: number | undefined, studentEmail: string) => Promise<SectionType>;
+  changeStudentSection: (
+    sectionID: number | undefined,
+    studentEmail: string,
+    showToast: boolean,
+  ) => Promise<SectionType>;
 
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
