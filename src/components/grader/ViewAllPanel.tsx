@@ -44,6 +44,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
   }
   public loadSubmissions = () => {
     Assignment.readSubmissions(this.props.currentAssignment.id, {}).then((submissions: SubmissionType[]) => {
+      submissions.sort(this.sort.bind(this));
       this.setState({ submissions, loadSubmissionsComplete: true });
     });
   };
@@ -65,7 +66,12 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     const { sortedIndex } = this.state;
     const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
     // set new sortedIndex to state
-    this.setState({ sortedIndex: newSortedIndex });
+    this.setState({ sortedIndex: newSortedIndex }, () => {
+      // sort submissions
+      const newSubmissions = this.state.submissions;
+      newSubmissions.sort(this.sort.bind(this));
+      this.setState({ submissions: newSubmissions });
+    });
   };
 
   public sort(a: SubmissionType, b: SubmissionType) {
@@ -96,7 +102,6 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     if (!loadSubmissionsComplete || !loadGradersComplete) {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
-      submissions.sort(this.sort.bind(this));
       tableBody = submissions.map((submission) => {
         // If select bar is populated, filter by submissions who meet search conditions
         if (
