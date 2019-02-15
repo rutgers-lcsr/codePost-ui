@@ -172,13 +172,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
       return <CircularProgress id="progress" className="progress-circle" />;
     }
 
-    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
-
-    sortedAssignments.sort((a: any, b: any) => {
-      if (a.id > b.id) return 1;
-      else if (a.id === b.id) return 0;
-      return -1;
-    });
+    const sortedAssignments: AssignmentType[] = assignments;
 
     const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
@@ -259,12 +253,15 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
       const graderOptions = this.props.graders.map((el: string) => {
         return { label: el, value: el };
       });
-      const studentAssignments = Object.keys(submissionsByStudent[activeStudent]);
-      studentAssignments.sort((a, b) => {
-        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
-        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
-        return 0;
-      });
+
+      const studentAssignments = this.props.assignments
+        .filter((assignment) => {
+          return assignment.id in submissionsByStudent[activeStudent];
+        })
+        .map((assignment) => {
+          return assignment.id;
+        });
+
       const studentSubmissions = studentAssignments.map((assignmentID) => {
         const submission = submissionsByStudent[activeStudent][assignmentID];
         let grade = 'Not submitted';
@@ -280,7 +277,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
               {
                 assignments.filter((assignment) => {
-                  return assignment.id === parseInt(assignmentID, 10);
+                  return assignment.id === assignmentID;
                 })[0].name
               }
             </TableColumn>
@@ -332,7 +329,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               <TableRow>
                 <TableColumn key="Assignment">Assignment</TableColumn>
                 <TableColumn key="Grade">Grade</TableColumn>
-                <TableColumn key="Grader">Grader'</TableColumn>
+                <TableColumn key="Grader">Grader</TableColumn>
                 <TableColumn key="Finalized">Finalized</TableColumn>
                 <TableColumn key="Delete">Delete</TableColumn>
               </TableRow>

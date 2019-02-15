@@ -10,7 +10,7 @@ import VerticalPane from './components/VerticalPane';
 
 import { ICourseToAssignmentMap, IOption } from './types/common';
 
-import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
 import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
@@ -64,12 +64,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     this.loadAllAssignments().then(() => {
       const sortedAssignmentMap = {};
       Object.keys(this.state.assignments).forEach((courseID) => {
-        const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(this.state.assignments[courseID]));
-        sortedAssignments.sort((a: any, b: any) => {
-          if (a.id > b.id) return 1;
-          else if (a.id === b.id) return 0;
-          return -1;
-        });
+        const sortedAssignments = sortAssignments(this.state.assignments[courseID]);
         sortedAssignmentMap[courseID] = sortedAssignments;
       });
       this.setState({ assignments: sortedAssignmentMap });
