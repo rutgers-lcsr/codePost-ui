@@ -83,7 +83,7 @@ class ManageSections extends React.Component<IProps, {}> {
       const ascending = sortedIndex[0] ? true : false;
       return sectionSort(SECTION_SORT_TYPE.name, ascending, a, b);
     } else if (typeof sortedIndex[1] !== 'undefined') {
-      const ascending = sortedIndex[0] ? true : false;
+      const ascending = sortedIndex[1] ? true : false;
       return sectionSort(SECTION_SORT_TYPE.leader, ascending, a, b);
     }
     return 0;
