@@ -80,15 +80,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const { sortedIndex } = this.state;
     const { submissionsByGrader } = this.props;
     if (typeof sortedIndex[this.graderHeader] !== 'undefined') {
-      if (sortedIndex[this.graderHeader] === true) {
-        if (a < b) return -1;
-        if (a > b) return 1;
-        return 0;
-      } else {
-        if (a < b) return 1;
-        if (a > b) return -1;
-        return 0;
-      }
+      if (a < b) return sortedIndex[this.graderHeader] ? -1 : 1;
+      if (a > b) return sortedIndex[this.graderHeader] ? 1 : -1;
+      return 0;
     } else {
       const assignmentName = Object.keys(sortedIndex).filter((key) => {
         return typeof sortedIndex[key] !== 'undefined';
@@ -102,21 +96,12 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       const assignmentID = this.props.assignments[assignmentIndex].id;
       const graderASubs = submissionsByGrader[a][assignmentID];
       const graderBSubs = submissionsByGrader[b][assignmentID];
-      if (sortedIndex[assignmentName]) {
-        if (!graderASubs && graderBSubs) return -1;
-        if (graderASubs && !graderBSubs) return 1;
-        if (!graderASubs && !graderBSubs) return 0;
-        if (graderASubs.length > graderBSubs.length) return 1;
-        if (graderASubs.length < graderBSubs.length) return -1;
-        return 0;
-      } else {
-        if (!graderASubs && graderBSubs) return 1;
-        if (graderASubs && !graderBSubs) return -1;
-        if (!graderASubs && !graderBSubs) return 0;
-        if (graderASubs.length > graderBSubs.length) return -1;
-        if (graderASubs.length < graderBSubs.length) return 1;
-        return 0;
-      }
+      if (!graderASubs && graderBSubs) return sortedIndex[assignmentName] ? -1 : 1;
+      if (graderASubs && !graderBSubs) return sortedIndex[assignmentName] ? 1 : -1;
+      if (!graderASubs && !graderBSubs) return 0;
+      if (graderASubs.length > graderBSubs.length) return sortedIndex[assignmentName] ? 1 : -1;
+      if (graderASubs.length < graderBSubs.length) return sortedIndex[assignmentName] ? -1 : 1;
+      return 0;
     }
   };
 
