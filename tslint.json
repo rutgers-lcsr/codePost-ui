@@ -21,7 +21,13 @@
     "import-name": false,
     "object-shorthand-properties-first": false,
     "jsx-boolean-value": ["never"],
-    "align": [true, "parameters", "statements", "members", "elements"]
+    "align": [true, "parameters", "statements", "members", "elements"],
+    "prefer-array-literal": [
+      true,
+      {
+        "allow-type-parameters": true
+      }
+    ]
   },
   "jsRules": {
     "object-literal-sort-keys": false
