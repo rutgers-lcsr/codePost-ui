@@ -287,7 +287,7 @@ class ManageGraders extends React.Component<IProps, IState> {
           {`Would you like to also unenroll ${emailToAdminUnenroll} from admin?`}
         </DialogContainer>
         <div className="roster-grader__top-container">
-          <div>
+          <div className="roster-admin__top-container__newUser">
             <TextField
               id="addGraderField"
               label="Add Grader"
@@ -300,7 +300,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             />
             <Button
               iconChildren="done"
-              className="save-Btn"
+              className="roster-grader__addUser__Btn"
               disabled={!showSaveNewButton || lockedGraderChange}
               onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
             >
