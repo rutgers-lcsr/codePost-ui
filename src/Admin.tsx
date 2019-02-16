@@ -909,6 +909,36 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return Promise.reject();
   };
 
+  // Set section's students. Warning: This is not a partial add, you must include all of the section's students
+  // For a partial roster change see changeStudentSection()
+  public changeSectionStudents = (sectionID: number, students: string[], showToast: boolean): Promise<SectionType> => {
+    const { sections, sectionsByStudent } = this.state;
+    const payload = { id: sectionID, students };
+
+    return Section.update(payload).then((json: SectionType) => {
+      const newSections = sections.map((section) => {
+        if (section.id === json.id) {
+          section.students = json.students;
+        }
+        return section;
+      });
+
+      students.forEach((studentEmail) => {
+        sectionsByStudent[studentEmail] = {
+          name: json.name,
+          id: json.id,
+        };
+      });
+
+      this.setState({ sections: newSections, sectionsByStudent }, () => {
+        if (showToast) {
+          this.props.addToast('Section updated.', undefined);
+        }
+      });
+      return json;
+    });
+  };
+
   public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
     const { sections } = this.state;
     const payload = { id: sectionID, leaders: newLeaders };
@@ -1667,6 +1697,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             unEnrollUsers={this.wrapLoading.bind(this, '', '', this.unEnrollUsers)}
             changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
             changeStudentSection={this.changeStudentSection}
+            changeSectionStudents={this.changeSectionStudents}
             createSection={this.createSection}
             changeLeaders={this.changeSectionLeaders}
             addToast={this.props.addToast}

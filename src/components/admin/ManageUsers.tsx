@@ -38,6 +38,7 @@ interface IPropsManageUsers {
     studentEmail: string,
     showToast: boolean,
   ) => Promise<SectionType>;
+  changeSectionStudents: (sectionID: number, students: string[], showToast: boolean) => Promise<SectionType>;
 
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
@@ -94,6 +95,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               changeRoster={this.props.changeRoster}
               sectionsByStudent={this.props.sectionsByStudent}
               changeStudentSection={this.props.changeStudentSection}
+              changeSectionStudents={this.props.changeSectionStudents}
             />
           </TabPanel>
           <TabPanel>

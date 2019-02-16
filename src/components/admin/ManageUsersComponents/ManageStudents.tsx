@@ -39,10 +39,12 @@ interface IProps {
     showToast: boolean,
   ) => Promise<SectionType>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  changeSectionStudents: (sectionID: number, students: string[], showToast: boolean) => Promise<SectionType>;
 }
 
 interface IState {
   newStudentField: string | undefined;
+  newStudentSectionField: number | undefined;
   changedSectionStudents: string[];
   searchTerm: string;
   sectionEdited: string | undefined;
@@ -60,6 +62,7 @@ class ManageStudents extends React.Component<IProps, IState> {
     const sortedIndex = [true, undefined];
     this.state = {
       newStudentField: undefined,
+      newStudentSectionField: undefined,
       changedSectionStudents: [],
       searchTerm: '',
       sectionEdited: undefined,
@@ -129,8 +132,13 @@ class ManageStudents extends React.Component<IProps, IState> {
   };
 
   public triggerEnrollUser = (newStudentEmail: string, studentType: USER_APP) => {
-    this.props.enrollUser(newStudentEmail, studentType);
-    this.setState({ newStudentField: '' });
+    const { newStudentSectionField } = this.state;
+    this.props.enrollUser(newStudentEmail, studentType).then(() => {
+      if (typeof newStudentSectionField !== 'undefined' && newStudentSectionField >= 0) {
+        this.props.changeStudentSection(newStudentSectionField, newStudentEmail, true);
+      }
+      this.setState({ newStudentField: '', newStudentSectionField: undefined });
+    });
   };
 
   public rowSectionChange = (studentEmail: string, newSection: IOptionNumber) => {
@@ -152,6 +160,10 @@ class ManageStudents extends React.Component<IProps, IState> {
 
   public newStudentFieldOnChange = (value: string) => {
     this.setState({ newStudentField: value });
+  };
+
+  public newStudentSectionFieldOnChange = (section: IOptionNumber) => {
+    this.setState({ newStudentSectionField: section.value });
   };
 
   public changeSearch = (value: string) => {
@@ -270,7 +282,7 @@ class ManageStudents extends React.Component<IProps, IState> {
                 classNamePrefix="select--StudentSections"
                 closeMenuOnSelect={true}
                 options={sectionMenuItems}
-                disabled={lockedStudentChange}
+                isDisabled={lockedStudentChange}
                 onChange={this.rowSectionChange.bind(this.props, student)}
                 placeholder=""
                 value={{ label: sectionName, value: sectionID }}
@@ -316,6 +328,14 @@ class ManageStudents extends React.Component<IProps, IState> {
               onChange={this.newStudentFieldOnChange}
               disabled={lockedStudentChange}
             />
+            <Select
+              classNamePrefix="select--NewStudentSections"
+              closeMenuOnSelect={true}
+              options={sectionMenuItems}
+              onChange={this.newStudentSectionFieldOnChange.bind(this.props)}
+              placeholder="New student section.."
+              isDisabled={!showSaveNewStudentButton || lockedStudentChange}
+            />
             <Button
               flat={true}
               iconChildren="done"
@@ -330,12 +350,12 @@ class ManageStudents extends React.Component<IProps, IState> {
             users={this.props.students}
             getSectionIDFromName={this.getSectionIDFromName}
             sectionsByStudent={this.props.sectionsByStudent}
-            changeStudentSection={this.props.changeStudentSection}
             addErrorToast={addErrorToast}
             addToast={addToast}
             changeRoster={changeRoster}
             userType={USER_APP.Student}
             isDisabled={lockedStudentChange}
+            changeSectionStudents={this.props.changeSectionStudents}
           />
         </div>
         <TextField
