@@ -108,15 +108,20 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
   public renderSubmissionRow(submission: SubmissionType, assignmentName: string) {
     const { openSubmission } = this.props;
     let grade = 'Not uploaded';
+    let cellType = '--unsubmitted';
     if (submission && submission.isFinalized) {
       grade = String(submission.grade);
+      cellType = '--graded';
     } else if (submission) {
       grade = 'Not finalized';
+      cellType = '--unfinalized';
     }
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn key={`${submission.id}-assignment`}>{assignmentName}</TableColumn>
+        <TableColumn key={`${submission.id}-assignment`} className={`cellType${cellType}`}>
+          {assignmentName}
+        </TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
         <TableColumn key={`${submission.id}-grade`}>{grade}</TableColumn>
         <TableColumn key={`${submission.id}-finalized`}>
@@ -172,9 +177,21 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
               const submissions = submissionsByGrader[graderEmail][assignment.id];
               const assignmentName = assignment.name;
               if (submissions) {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+                return (
+                  <TableColumn key={`${graderEmail}-${assignmentName}`} className="cellType--graded">
+                    {submissions.length}
+                  </TableColumn>
+                );
               } else {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+                return (
+                  <TableColumn
+                    key={`${graderEmail}-${assignmentName}`}
+                    className="cellType--unsubmitted
+                "
+                  >
+                    --
+                  </TableColumn>
+                );
               }
             })}
           </TableRow>

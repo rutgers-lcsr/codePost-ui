@@ -150,7 +150,9 @@ class SectionPanel extends React.Component<IProps, IState> {
             <TableRow key={student} onClick={openSubmission.bind(this.props, sub.id)}>
               <TableColumn>{student}</TableColumn>
               <TableColumn>{sub.students.toString()}</TableColumn>
-              <TableColumn>{sub.isFinalized ? String(sub.grade) : 'Not graded'}</TableColumn>
+              <TableColumn className={sub.isFinalized ? 'cellType--graded' : 'cellType--unfinalized'}>
+                {sub.isFinalized ? String(sub.grade) : 'Not graded'}
+              </TableColumn>
               <TableColumn>{sub.grader}</TableColumn>
               <TableColumn>{sub.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
               <TableColumn>{moment(sub.dateEdited).format('llll')}</TableColumn>
@@ -161,7 +163,7 @@ class SectionPanel extends React.Component<IProps, IState> {
             <TableRow key={student}>
               <TableColumn>{student}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
-              <TableColumn>{'No submission uploaded'}</TableColumn>
+              <TableColumn className="cellType--unsubmitted">{'No submission uploaded'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>

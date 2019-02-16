@@ -111,10 +111,11 @@ class ViewAllPanel extends React.Component<IProps, IState> {
           return <div />;
         }
         const grade = submission.isFinalized ? String(submission.grade) : 'Not graded';
+        const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
             <TableColumn>{submission.students.toString()}</TableColumn>
-            <TableColumn>{grade}</TableColumn>
+            <TableColumn className={`cellType${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
             <TableColumn>{moment(submission.dateEdited).format('llll')}</TableColumn>
