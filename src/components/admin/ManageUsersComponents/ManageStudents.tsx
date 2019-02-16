@@ -39,6 +39,7 @@ interface IProps {
     showToast: boolean,
   ) => Promise<SectionType>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  changeSectionStudents: (sectionID: number, students: string[], showToast: boolean) => Promise<SectionType>;
 }
 
 interface IState {
@@ -349,12 +350,12 @@ class ManageStudents extends React.Component<IProps, IState> {
             users={this.props.students}
             getSectionIDFromName={this.getSectionIDFromName}
             sectionsByStudent={this.props.sectionsByStudent}
-            changeStudentSection={this.props.changeStudentSection}
             addErrorToast={addErrorToast}
             addToast={addToast}
             changeRoster={changeRoster}
             userType={USER_APP.Student}
             isDisabled={lockedStudentChange}
+            changeSectionStudents={this.props.changeSectionStudents}
           />
         </div>
         <TextField

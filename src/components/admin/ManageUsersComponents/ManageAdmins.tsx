@@ -175,7 +175,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             isDisabled={lockedAdminChange}
             getSectionIDFromName={null}
             sectionsByStudent={null}
-            changeStudentSection={null}
+            changeSectionStudents={null}
           />
         </div>
         <TextField
