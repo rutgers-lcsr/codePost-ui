@@ -354,17 +354,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         </div>
       );
     } else {
-      const graderAssignmentPanel = (
-        <GraderAssignmentPanel
-          claimSubmission={this.claimSubmission}
-          releaseSubmission={this.releaseSubmission}
-          assignment={currentAssignment}
-          submissions={currentSubmissions}
-          isLoadingSubmissions={isLoadingSubmissions}
-          sections={currentSections}
-        />
-      );
-
       // if superGrader show a course
       const sections = this.props.sectionsLed.slice();
       const sectionsInThisCourse = sections.filter((section) => {
@@ -403,27 +392,29 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       );
       const sectionTab = hasSections ? <Tab className="tabList--Grader__tab">Sections</Tab> : '';
 
-      // if superGrader or hasSections, render tabs
-      if (isSuperGrader || hasSections) {
-        graderPanelContent = (
-          <Tabs defaultIndex={0}>
-            <TabList className="tabList--Grader">
-              <Tab className="tabList--Grader__tab">My Submissions</Tab>
-              {viewAllTab}
-              {sectionTab}
-            </TabList>
-            <TabPanel>
-              {/* padding under the tab required because tab is position:fixed*/}
-              <div className="tabList--Grader__panelPadding" />
-              {graderAssignmentPanel}
-            </TabPanel>
-            {viewAllPanel}
-            {sectionPanel}
-          </Tabs>
-        );
-      } else {
-        graderPanelContent = graderAssignmentPanel;
-      }
+      graderPanelContent = (
+        <Tabs defaultIndex={0}>
+          <TabList className="tabList--Grader">
+            <Tab className="tabList--Grader__tab">My Submissions</Tab>
+            {viewAllTab}
+            {sectionTab}
+          </TabList>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--Grader__panelPadding" />
+            <GraderAssignmentPanel
+              claimSubmission={this.claimSubmission}
+              releaseSubmission={this.releaseSubmission}
+              assignment={currentAssignment}
+              submissions={currentSubmissions}
+              isLoadingSubmissions={isLoadingSubmissions}
+              sections={currentSections}
+            />
+          </TabPanel>
+          {viewAllPanel}
+          {sectionPanel}
+        </Tabs>
+      );
     }
 
     return (

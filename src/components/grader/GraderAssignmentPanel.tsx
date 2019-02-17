@@ -15,7 +15,8 @@ import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SUBMISSION_SORT_TYPE, submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { getSortIndex } from '../Utils/SortUtils';
 
 import Select from 'react-select';
 
@@ -38,26 +39,43 @@ interface IState {
   sortedSubmissions: SubmissionType[];
 
   releasedSubmission?: SubmissionType;
+  sortedIndex: Array<boolean | undefined>;
 }
 
-class GraderAssignmentPanel extends React.Component<IProps, {}> {
-  public static getDerivedStateFromProps(nextProps: IProps, prevState: IState) {
-    if (prevState.sortedSubmissions !== nextProps.submissions) {
-      return {
-        sortedSubmissions: nextProps.submissions,
-      };
-    }
-    return {};
+class GraderAssignmentPanel extends React.Component<IProps, IState> {
+  public constructor(props: any) {
+    super(props);
+    this.state = {
+      buttonState: BUTTON_STATE.Active,
+      currentSection: undefined,
+
+      ascending: undefined,
+      sortedSubmissions: this.props.submissions,
+      releasedSubmission: undefined,
+      sortedIndex: [undefined, undefined, undefined, undefined],
+    };
   }
 
-  public state: Readonly<IState> = {
-    buttonState: BUTTON_STATE.Active,
-    currentSection: undefined,
+  public sort = (a: SubmissionType, b: SubmissionType) => {
+    const { sortedIndex } = this.state;
 
-    ascending: undefined,
-    sortedSubmissions: this.props.submissions,
+    const sortAttribute = sortedIndex.findIndex((elem) => {
+      return typeof elem !== 'undefined';
+    });
 
-    releasedSubmission: undefined,
+    if (sortAttribute === -1) {
+      return 0;
+    }
+
+    const ascending = sortedIndex[sortAttribute] ? true : false;
+
+    const sortAttributeMap = {
+      0: SUBMISSION_SORT_TYPE.students,
+      1: SUBMISSION_SORT_TYPE.grade,
+      2: SUBMISSION_SORT_TYPE.isFinalized,
+      3: SUBMISSION_SORT_TYPE.dateEdited,
+    };
+    return submissionSort(sortAttributeMap[sortAttribute], ascending, a, b);
   };
 
   public openGradePage = (submission: SubmissionType) => {
@@ -102,26 +120,21 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
     this.setState({ currentSection });
   };
 
-  public sortSubmissions = () => {
-    if (!this.state.ascending) {
-      const ascending = true;
-      const sortedSubmissions = this.state.sortedSubmissions.sort((a, b) => {
-        return a.isFinalized === b.isFinalized ? 0 : a.isFinalized ? -1 : 1;
-      });
-      this.setState({ ascending, sortedSubmissions });
-    } else {
-      const ascending = !this.state.ascending;
-      const sortedSubmissions = this.state.sortedSubmissions.slice();
-      sortedSubmissions.reverse();
-      this.setState({ ascending, sortedSubmissions });
-    }
+  public toggleSort = (columnIndex: number) => {
+    const { sortedIndex } = this.state;
+    const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
+    this.setState({ sortedIndex: newSortedIndex }, () => {
+      const { sortedSubmissions } = this.state;
+      sortedSubmissions.sort(this.sort.bind(this));
+      this.setState({ sortedSubmissions });
+    });
   };
 
   public render() {
     const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
-    const { buttonState } = this.state;
+    const { buttonState, sortedIndex } = this.state;
 
-    const headers = ['Student(s)', 'Grade', 'Last Edited', 'Finalized', 'Release'];
+    const headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
 
     const style = {
       cursor: 'pointer',
@@ -144,16 +157,16 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
           <DataTable className="DataTable--Grader" plain={true}>
             <TableHeader>
               <TableRow>
-                {headers.map((header) => {
-                  if (header === 'Finalized') {
-                    return (
-                      <TableColumn key={header} sorted={this.state.ascending} onClick={this.sortSubmissions}>
-                        {header}
-                      </TableColumn>
-                    );
-                  } else {
-                    return <TableColumn key={header}>{header}</TableColumn>;
-                  }
+                {headers.map((header, index) => {
+                  return (
+                    <TableColumn
+                      key={header}
+                      sorted={sortedIndex[index]}
+                      onClick={this.toggleSort.bind(this.props, index)}
+                    >
+                      {header}
+                    </TableColumn>
+                  );
                 })}
               </TableRow>
             </TableHeader>
@@ -167,10 +180,10 @@ class GraderAssignmentPanel extends React.Component<IProps, {}> {
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {moment(submission.dateEdited).format('llll')}
+                      {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
+                      {moment(submission.dateEdited).format('llll')}
                     </TableColumn>
                     <TableColumn onClick={this.toggleReleaseDialog.bind(this, submission)}>
                       <Button key={`button--release-${submission.id}`} className="button--release" icon={true}>

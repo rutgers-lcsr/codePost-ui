@@ -66,6 +66,23 @@
   @include react-select-format();
 }
 
+.select--NewStudentSections {
+  &__option--is-selected {
+    background-color: $brand-color;
+    color: white;
+  }
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
+  &__control {
+    width: 120px;
+    margin-left: 10px;
+    bottom: 4px;
+  }
+
+  @include react-select-format();
+}
+
 .select--assign-grader {
   &__option--is-selected {
     background-color: black;

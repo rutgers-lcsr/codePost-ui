@@ -12,6 +12,7 @@
   &__body {
     height: 100%;
     padding-top: 5px;
+    overflow: hidden;
   }
 
   &__rubric-comment {
@@ -65,7 +66,24 @@
     }
   }
   &__textarea {
-    width: 100%;
+    width: 96%;
+    border-radius: 5px;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    outline: none;
+    padding: 3px 0px 3px 3px;
+    margin: 5px 3px 3px 3px;
+    border: 1px solid $light-grey;
+
+    &:focus {
+      box-shadow: 0 0 5px $brand-color;
+      padding: 3px 0px 3px 3px;
+      margin: 5px 3px 3px 3px;
+      border-radius: 5px;
+      border: 1px solid $light-grey;
+    }
   }
 
   &__footer {

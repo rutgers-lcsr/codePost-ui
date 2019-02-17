@@ -80,15 +80,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
     const { sortedIndex } = this.state;
     const { submissionsByGrader } = this.props;
     if (typeof sortedIndex[this.graderHeader] !== 'undefined') {
-      if (sortedIndex[this.graderHeader] === true) {
-        if (a < b) return -1;
-        if (a > b) return 1;
-        return 0;
-      } else {
-        if (a < b) return 1;
-        if (a > b) return -1;
-        return 0;
-      }
+      if (a < b) return sortedIndex[this.graderHeader] ? -1 : 1;
+      if (a > b) return sortedIndex[this.graderHeader] ? 1 : -1;
+      return 0;
     } else {
       const assignmentName = Object.keys(sortedIndex).filter((key) => {
         return typeof sortedIndex[key] !== 'undefined';
@@ -102,36 +96,32 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       const assignmentID = this.props.assignments[assignmentIndex].id;
       const graderASubs = submissionsByGrader[a][assignmentID];
       const graderBSubs = submissionsByGrader[b][assignmentID];
-      if (sortedIndex[assignmentName]) {
-        if (!graderASubs && graderBSubs) return -1;
-        if (graderASubs && !graderBSubs) return 1;
-        if (!graderASubs && !graderBSubs) return 0;
-        if (graderASubs.length > graderBSubs.length) return 1;
-        if (graderASubs.length < graderBSubs.length) return -1;
-        return 0;
-      } else {
-        if (!graderASubs && graderBSubs) return 1;
-        if (graderASubs && !graderBSubs) return -1;
-        if (!graderASubs && !graderBSubs) return 0;
-        if (graderASubs.length > graderBSubs.length) return -1;
-        if (graderASubs.length < graderBSubs.length) return 1;
-        return 0;
-      }
+      if (!graderASubs && graderBSubs) return sortedIndex[assignmentName] ? -1 : 1;
+      if (graderASubs && !graderBSubs) return sortedIndex[assignmentName] ? 1 : -1;
+      if (!graderASubs && !graderBSubs) return 0;
+      if (graderASubs.length > graderBSubs.length) return sortedIndex[assignmentName] ? 1 : -1;
+      if (graderASubs.length < graderBSubs.length) return sortedIndex[assignmentName] ? -1 : 1;
+      return 0;
     }
   };
 
   public renderSubmissionRow(submission: SubmissionType, assignmentName: string) {
     const { openSubmission } = this.props;
     let grade = 'Not uploaded';
+    let cellType = '--unsubmitted';
     if (submission && submission.isFinalized) {
       grade = String(submission.grade);
+      cellType = '--graded';
     } else if (submission) {
       grade = 'Not finalized';
+      cellType = '--unfinalized';
     }
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn key={`${submission.id}-assignment`}>{assignmentName}</TableColumn>
+        <TableColumn key={`${submission.id}-assignment`} className={`cellType${cellType}`}>
+          {assignmentName}
+        </TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
         <TableColumn key={`${submission.id}-grade`}>{grade}</TableColumn>
         <TableColumn key={`${submission.id}-finalized`}>
@@ -187,9 +177,21 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
               const submissions = submissionsByGrader[graderEmail][assignment.id];
               const assignmentName = assignment.name;
               if (submissions) {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}>{submissions.length}</TableColumn>;
+                return (
+                  <TableColumn key={`${graderEmail}-${assignmentName}`} className="cellType--graded">
+                    {submissions.length}
+                  </TableColumn>
+                );
               } else {
-                return <TableColumn key={`${graderEmail}-${assignmentName}`}> - </TableColumn>;
+                return (
+                  <TableColumn
+                    key={`${graderEmail}-${assignmentName}`}
+                    className="cellType--unsubmitted
+                "
+                  >
+                    --
+                  </TableColumn>
+                );
               }
             })}
           </TableRow>
