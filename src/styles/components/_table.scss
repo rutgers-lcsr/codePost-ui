@@ -16,6 +16,10 @@
     overflow: auto;
     height: $table-body-vh;
     min-height: $minimum-height;
+    font-weight: 350;
+    .md-table-column:first-child {
+      font-weight: 400;
+    }
 
     .md-table-row {
       display: table;
@@ -32,6 +36,21 @@
       border-radius: 8px;
       border: 2px solid white; /* should match background, can't be transparent */
       background-color: rgba(0, 0, 0, 0.5);
+    }
+  }
+  // Used to color cell based on the type of data
+  .cellType {
+    &--unsubmitted {
+      color: $mid-grey;
+      font-weight: 300;
+    }
+    &--unfinalized {
+      color: $dark-grey;
+      font-weight: 500;
+    }
+    &--graded {
+      color: darken($brand-color, 10%);
+      font-weight: 500;
     }
   }
 }
