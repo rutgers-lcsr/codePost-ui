@@ -15,7 +15,7 @@ import {
   IToast,
 } from './types/common';
 
-import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
+import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
 import { File, FileType } from './infrastructure/file';
@@ -80,7 +80,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     this.loadAllAssignments().then(() => {
       const sortedAssignmentMap = {};
       Object.keys(this.state.assignments).forEach((courseID) => {
-        const sortedAssignments: AssignmentType[] = sortAssignments(this.state.assignments[courseID]);
+        const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(this.state.assignments[courseID]));
+
+        sortedAssignments.sort((a: any, b: any) => {
+          if (a.id > b.id) return 1;
+          else if (a.id === b.id) return 0;
+          return -1;
+        });
         sortedAssignmentMap[courseID] = sortedAssignments;
       });
       this.setState({ assignments: sortedAssignmentMap });

@@ -150,7 +150,13 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       return <CircularProgress id="progress" className="progress-circle" />;
     }
 
-    const sortedAssignments: AssignmentType[] = assignments;
+    const sortedAssignments: AssignmentType[] = JSON.parse(JSON.stringify(assignments));
+    sortedAssignments.sort((a: any, b: any) => {
+      if (a.id > b.id) return 1;
+      else if (a.id === b.id) return 0;
+      return -1;
+    });
+
     const headers = sortedAssignments.map((assignment: AssignmentType) => {
       return assignment.name;
     });
@@ -223,20 +229,18 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         </div>
       );
     } else {
-      const graderAssignments = this.props.assignments
-        .filter((assignment) => {
-          return assignment.id in submissionsByGrader[activeGrader];
-        })
-        .map((assignment) => {
-          return assignment.id;
-        });
-
+      const graderAssignments = Object.keys(submissionsByGrader[activeGrader]);
+      graderAssignments.sort((a, b) => {
+        if (parseInt(a, 10) > parseInt(b, 10)) return 1;
+        if (parseInt(a, 10) < parseInt(b, 10)) return -1;
+        return 0;
+      });
       const tablemap: any = [];
       graderAssignments.forEach((assignmentID) => {
         const submissions = submissionsByGrader[activeGrader][assignmentID];
         submissions.forEach((submission: SubmissionType) => {
           const assnName = assignments.filter((assignment) => {
-            return assignment.id === assignmentID;
+            return assignment.id === parseInt(assignmentID, 10);
           })[0].name;
           tablemap.push(this.renderSubmissionRow(submission, assnName));
         });
