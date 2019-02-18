@@ -1,0 +1,130 @@
+$carousel-width: 920px;
+$carousel-height: 550px;
+$container-padding: 0px;
+$container-border-radius: 8px;
+
+.carousel {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 16777270; /* Sit on top */
+  min-width: 100vw; /* Full width */
+  min-height: 100vh; /* Full height */
+  height: 100%;
+  width: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &__box {
+    z-index: 16777271;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  &__close {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+  }
+  &__leftBtn {
+    z-index: 16777271;
+    background-color: white;
+    @include icon-button(32px, 4px);
+    &--hidden {
+      visibility: hidden;
+      width: 40px !important;
+      @include icon-button(32px, 4px);
+      transition: 0.3s;
+    }
+  }
+
+  &__rightBtn {
+    z-index: 16777271;
+    background-color: white;
+    @include icon-button(32px, 4px);
+    transition: 0.3s;
+    &--hidden {
+      visibility: hidden;
+      width: 40px !important;
+      @include icon-button(32px, 4px);
+      transition: 0.3s;
+    }
+  }
+
+  &__navDots {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+
+    &__navDot {
+      width: 10px;
+      height: 10px;
+      margin-left: 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+      background-color: $dark-grey;
+      transition: 0.3s;
+
+      &--active {
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background-color: white;
+        transition: 0.3s;
+      }
+    }
+  }
+
+  &__content {
+    position: relative;
+    padding-left: $container-padding;
+    padding-right: $container-padding;
+    width: $carousel-width;
+    height: $carousel-height;
+    background-color: white;
+    z-index: 16777271;
+    border-radius: $container-border-radius;
+    margin-right: 30px;
+    margin-left: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    &__title {
+      opacity: 0.9;
+      background-color: $dark-grey;
+      color: white;
+      font-size: $font-size-large;
+      width: calc(#{$carousel-width} - 2 * #{$container-padding});
+      font-weight: 450;
+      position: absolute;
+      border-radius: $container-border-radius $container-border-radius 0px 0px;
+      padding: 10px 0px 10px 10px;
+    }
+    &__image {
+      border-radius: $container-border-radius $container-border-radius 0px 0px;
+      width: auto;
+      height: auto;
+      max-width: calc(#{$carousel-width} - 2 * #{$container-padding});
+      // max-height: calc(#{$carousel-height} - 200px);
+    }
+    &__text {
+      position: absolute;
+      bottom: 0;
+      width: calc(#{$carousel-width} - 2 * #{$container-padding});
+      padding: 15px 40px 15px 40px;
+      text-align: center;
+      font-size: $font-size-xlarge;
+      font-weight: 450;
+      background-color: $brand-color;
+      color: white;
+      flex-grow: 1;
+      border-radius: 0px 0px$container-border-radius $container-border-radius;
+    }
+  }
+}
