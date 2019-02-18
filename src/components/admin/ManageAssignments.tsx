@@ -3,6 +3,7 @@ import {
   Button,
   CircularProgress,
   DataTable,
+  Drawer,
   SelectionControl,
   TableBody,
   TableColumn,
@@ -17,6 +18,7 @@ import {
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
+  IStudentSubmissionsDataTable,
 } from '../../types/common';
 import NewAssignmentDialog from './ManageAssignmentsComponents/NewAssignmentDialog';
 import RubricCommentExplorer from './ManageAssignmentsComponents/RubricCommentExplorer';
@@ -30,10 +32,14 @@ import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
 
+import { openSubmission } from './AdminUtils';
+
 interface IProps {
   submissions: IAssignmentToSubmissionsMap;
   rubricCategories: IAssignmentToRubricCategories;
   rubricComments: IRubricCategoryToRubricCommentsMap;
+  submissionsByStudent: IStudentSubmissionsDataTable;
+  submissionsbyUserLoadComplete: boolean;
   submissionsLoadComplete: boolean;
   lockManageAssignment: boolean;
   toggleLock: () => void;
@@ -107,6 +113,16 @@ interface IState {
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
   deletingAssignment?: AssignmentType;
+  drawerVisible: boolean;
+  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+}
+
+export enum DRAWER_TYPE {
+  Submitted,
+  Graded,
+  Ungraded,
+  Unclaimed,
+  Missing,
 }
 
 class ManageAssignments extends React.Component<IProps, {}> {
@@ -120,6 +136,8 @@ class ManageAssignments extends React.Component<IProps, {}> {
     commentExplorer: undefined,
     savedComments: {},
     savedCategories: {},
+    drawerVisible: false,
+    drawerContent: { title: '', subtitle: '', content: [] },
   };
 
   public assignmentNameField: any;
@@ -548,7 +566,6 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
   };
 
-  // ------------------- Render -------------------
   // Function called upon downloading
   public downloadGrades = (assignment: AssignmentType) => {
     const { currentCourse, submissions } = this.props;
@@ -572,6 +589,94 @@ class ManageAssignments extends React.Component<IProps, {}> {
     a.click();
   };
 
+  // This function is called when a an assignment drawer is opened
+  // Depending on the type of data (DRAWER_TYPE), different sets of data will
+  // be stored in state. We need to store the data in state of on render because
+  // the drawer sliding takes time and looks bad if the data changes while it's sliding
+  public openDrawer = (assignmentID: number, type: DRAWER_TYPE) => {
+    const { submissionsByStudent } = this.props;
+
+    // Get the assignment for the assignment name, displayed as the drawer title
+    const assignment = this.props.assignments.filter((assn) => {
+      return assn.id === Number(assignmentID);
+    })[0];
+
+    if (!assignment) {
+      return;
+    }
+
+    const newContent = Object.keys(submissionsByStudent).reduce(
+      (students: Array<{ email: string; subID: number | null }>, student: string) => {
+        const sub = submissionsByStudent[student][assignmentID];
+        switch (type) {
+          case DRAWER_TYPE.Submitted:
+            if (sub) {
+              students.push({ email: student, subID: sub.id });
+            }
+            return students;
+          case DRAWER_TYPE.Graded:
+            if (sub && sub.isFinalized) {
+              students.push({ email: student, subID: sub.id });
+            }
+            return students;
+          case DRAWER_TYPE.Ungraded:
+            if (sub && !sub.isFinalized && sub.grader) {
+              students.push({ email: student, subID: sub.id });
+            }
+            return students;
+          case DRAWER_TYPE.Unclaimed:
+            if (sub && !sub.isFinalized && !sub.grader) {
+              students.push({ email: student, subID: sub.id });
+            }
+            return students;
+          case DRAWER_TYPE.Missing:
+            if (!sub) {
+              students.push({ email: student, subID: null });
+            }
+            return students;
+        }
+      },
+      [],
+    );
+
+    // Get the subtitle text to pass to the drawer
+    const getText = () => {
+      switch (type) {
+        case DRAWER_TYPE.Submitted:
+          return `Submissions (${newContent.length})`;
+        case DRAWER_TYPE.Graded:
+          return `Graded Submissions (${newContent.length})`;
+        case DRAWER_TYPE.Ungraded:
+          return `Ungraded Submissions (${newContent.length})`;
+        case DRAWER_TYPE.Unclaimed:
+          return `Unclaimed Submissions (${newContent.length})`;
+        case DRAWER_TYPE.Missing:
+          return `Students with missing submission (${newContent.length})`;
+      }
+    };
+
+    this.setState({
+      drawerContent: { title: assignment.name, subtitle: getText(), content: newContent },
+    });
+
+    this.setState({ drawerVisible: true });
+  };
+
+  // We don't reset the data to null on close because we don't want the data to change
+  // while the drawer is sliding
+  public closeDrawer = (e: any) => {
+    e.stopPropagation();
+    this.setState({ drawerVisible: false });
+  };
+
+  // Called when external area is clicked
+  public handleDrawerChange = (visible: boolean) => {
+    if (!visible) {
+      this.setState({ drawerVisible: false });
+    }
+  };
+
+  // ------------------- Render -------------------
   public render() {
     const {
       submissions,
@@ -580,11 +685,21 @@ class ManageAssignments extends React.Component<IProps, {}> {
       assignments,
       assignmentsLoadComplete,
       assignmentRubricLoadComplete,
+      submissionsbyUserLoadComplete,
+      submissionsByStudent,
     } = this.props;
-    const { activeAssignment, commentExplorer } = this.state;
+    const { activeAssignment, commentExplorer, drawerVisible, drawerContent } = this.state;
 
     let tableBody;
-    if (submissionsLoadComplete && assignmentsLoadComplete && assignmentRubricLoadComplete) {
+    const dummyFunction = () => {
+      return;
+    };
+    if (
+      submissionsLoadComplete &&
+      assignmentsLoadComplete &&
+      assignmentRubricLoadComplete &&
+      submissionsbyUserLoadComplete
+    ) {
       tableBody = Object.keys(submissions).map((assignmentID) => {
         const assignmentSubs = submissions[assignmentID];
         const numSubmissions = assignmentSubs.length;
@@ -633,6 +748,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
           }
         }
 
+        const missingStudents = Object.keys(submissionsByStudent).reduce((missing: string[], student: string) => {
+          if (!submissionsByStudent[student][assignment.id]) {
+            missing.push(student);
+          }
+          return missing;
+        }, []);
+
         const mean = assignment.mean
           ? assignment.mean.toString()
           : sortedFinalized.length
@@ -660,22 +782,50 @@ class ManageAssignments extends React.Component<IProps, {}> {
               <TableColumn key={`${assignmentID}-1`} onClick={onCellClick}>
                 {assignment.name}
               </TableColumn>
-              <TableColumn key={`${assignmentID}-2`} onClick={onCellClick}>
+              <TableColumn
+                key={`${assignmentID}-2`}
+                onClick={
+                  numSubmissions > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Submitted) : dummyFunction
+                }
+              >
                 {numSubmissions}
               </TableColumn>
-              <TableColumn key={`${assignmentID}-3`} onClick={onCellClick}>
+              <TableColumn
+                key={`${assignmentID}-3`}
+                onClick={numGraded > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Graded) : dummyFunction}
+              >
                 {numGraded}
               </TableColumn>
-              <TableColumn key={`${assignmentID}-4`} onClick={onCellClick}>
+              <TableColumn
+                key={`${assignmentID}-4`}
+                onClick={
+                  numUngraded > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Ungraded) : dummyFunction
+                }
+              >
                 {numUngraded}
               </TableColumn>
-              <TableColumn key={`${assignmentID}-5`} onClick={onCellClick}>
+              <TableColumn
+                key={`${assignmentID}-5`}
+                onClick={
+                  numUnclaimed > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Unclaimed) : dummyFunction
+                }
+              >
                 {numUnclaimed}
               </TableColumn>
-              <TableColumn key={`${assignmentID}-6`} onClick={onCellClick}>
-                {mean}
+              <TableColumn
+                key={`${assignmentID}-6`}
+                onClick={
+                  missingStudents.length > 0
+                    ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Missing)
+                    : dummyFunction
+                }
+              >
+                {missingStudents.length}
               </TableColumn>
               <TableColumn key={`${assignmentID}-7`} onClick={onCellClick}>
+                {mean}
+              </TableColumn>
+              <TableColumn key={`${assignmentID}-8`} onClick={onCellClick}>
                 {median}
               </TableColumn>
               <TableColumn>
@@ -715,6 +865,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                   <TableColumn key={'GradedNumber'}># graded</TableColumn>
                   <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
                   <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
+                  <TableColumn key={'NumMissing'}># missing</TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <TableColumn key={'Grades'}>Grades</TableColumn>
@@ -732,6 +883,42 @@ class ManageAssignments extends React.Component<IProps, {}> {
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
             onDelete={this.deleteAssignment}
           />
+          <div
+            className={`drawer__background${!drawerVisible ? '--hidden' : ''}`}
+            onClick={drawerVisible ? this.closeDrawer : dummyFunction}
+          />
+          <Drawer
+            id="drawer--ManageAssignments"
+            type={Drawer.DrawerTypes.TEMPORARY}
+            className="drawer--ManageAssignments"
+            visible={drawerVisible}
+            position={'right'}
+            onVisibilityChange={this.handleDrawerChange}
+            style={{ zIndex: 16777271 }}
+            header={
+              <div className="drawer__header">
+                <div className="drawer__title">{drawerContent.title}</div>
+                <Button className="drawer__close" icon={true} flat={true} onClick={this.closeDrawer}>
+                  clear
+                </Button>
+                <div className="drawer__subtitle">{drawerContent.subtitle}</div>
+              </div>
+            }
+          >
+            <div className="drawer__content">
+              {drawerContent.content.map((item: { email: string; subID: number | null }) => {
+                return (
+                  <div
+                    key={item.email}
+                    className={`drawer__item${item.subID ? '--allowHover' : ''}`}
+                    onClick={item.subID ? openSubmission.bind(this, item.subID) : dummyFunction}
+                  >
+                    {item.email}
+                  </div>
+                );
+              })}
+            </div>
+          </Drawer>
         </div>
       );
     } else {
