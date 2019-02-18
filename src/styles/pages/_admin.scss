@@ -74,7 +74,12 @@
 
 .RubricCommentExplorer {
   .md-dialog {
-    width: 50%;
-    min-width: 300px;
+    width: 70%;
+    min-width: 400px;
+    max-height: calc(100vh - 200px);
+    overflow-y: scroll;
+    /* height problem caused by dialog adding html to the page to move 'top'
+     Short fix now is to max the div height always be less than the view size minus topbar
+      This way the close button is always visible */
   }
 }
