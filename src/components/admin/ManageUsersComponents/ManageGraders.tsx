@@ -16,6 +16,7 @@ import '../../../styles/index.scss';
 
 import { CourseType } from '../../../infrastructure/course';
 import { USER_APP } from '../../../types/common';
+import { getSortIndex } from '../../Utils/SortUtils';
 import RosterFileUpload from './RosterFileUpload';
 
 interface IProps {
@@ -35,7 +36,6 @@ interface IProps {
 
 interface IState {
   newField: string | undefined;
-  sortAscending: boolean;
   searchTerm: string;
   // This field will either be the grader's username who is also an admin, to prompt
   // the user if they would like to unenroll the user from being an admin also, or will
@@ -46,24 +46,30 @@ interface IState {
   paginatedUsers: string[];
   paginationStart: number | undefined;
   rowsPerPage: number | undefined;
+  sortedIndex: Array<boolean | undefined>;
 }
 
-class ManageGraders extends React.Component<IProps, {}> {
-  public state: Readonly<IState> = {
-    newField: undefined,
-    sortAscending: true,
-    searchTerm: '',
-    emailToAdminUnenroll: undefined,
-    changedGraders: [],
-    sortedUsers: [],
-    paginatedUsers: [],
-    paginationStart: undefined,
-    rowsPerPage: undefined,
-  };
+class ManageGraders extends React.Component<IProps, IState> {
+  public constructor(props: any) {
+    super(props);
+    // SortedIndex index corresp0 is student email, index at 1 is section
+    const sortedIndex = [true, undefined];
+    this.state = {
+      newField: undefined,
+      searchTerm: '',
+      emailToAdminUnenroll: undefined,
+      changedGraders: [],
+      sortedUsers: [],
+      paginatedUsers: [],
+      paginationStart: undefined,
+      rowsPerPage: undefined,
+      sortedIndex,
+    };
+  }
 
   public componentDidMount() {
     if (this.props.rosterLoadComplete) {
-      const sortedUsers = JSON.parse(JSON.stringify(this.props.graders));
+      const sortedUsers = this.props.graders.slice();
       sortedUsers.sort();
       this.setState({ sortedUsers });
     }
@@ -71,14 +77,35 @@ class ManageGraders extends React.Component<IProps, {}> {
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
     if (this.props.graders !== prevProps.graders) {
-      const sortedUsers = JSON.parse(JSON.stringify(this.props.graders));
-      sortedUsers.sort();
+      const sortedUsers = this.props.graders.slice();
+      sortedUsers.sort(this.graderSortFunction.bind(this));
       this.setState({ sortedUsers }, () => {
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {
           this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
         }
       });
     }
+  }
+
+  public graderSortFunction(a: string, b: string) {
+    const { sortedIndex } = this.state;
+    // Sort by email
+    if (typeof sortedIndex[0] !== 'undefined') {
+      if (a < b) return sortedIndex[0] ? -1 : 1;
+      else if (a > b) return sortedIndex[0] ? 1 : -1;
+      else return 0;
+    }
+    // Sort by viewAll column case
+    if (typeof sortedIndex[1] !== 'undefined') {
+      const { superGraders } = this.props;
+      const aIsSuperGrader = superGraders.indexOf(a) !== -1;
+      const bIsSuperGrader = superGraders.indexOf(b) !== -1;
+      if (aIsSuperGrader !== bIsSuperGrader) {
+        if (aIsSuperGrader) return sortedIndex[1] ? 1 : -1;
+        else return sortedIndex[1] ? -1 : 1;
+      } else return 0;
+    }
+    return 0;
   }
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
@@ -105,10 +132,6 @@ class ManageGraders extends React.Component<IProps, {}> {
 
   public newFieldOnChange = (value: string) => {
     this.setState({ newField: value });
-  };
-
-  public toggleSort = () => {
-    this.setState({ sortAscending: !this.state.sortAscending });
   };
 
   public changeSearch = (value: string) => {
@@ -142,6 +165,32 @@ class ManageGraders extends React.Component<IProps, {}> {
     });
   };
 
+  public toggleSort = (columnIndex: number) => {
+    const { sortedIndex } = this.state;
+    const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
+
+    // set new sortedIndex to state
+    this.setState({ sortedIndex: newSortedIndex }, () => {
+      // re-sort students
+      const newSortedUsers = this.state.sortedUsers.slice();
+      newSortedUsers.sort(this.graderSortFunction.bind(this));
+      // re-do pagination
+      this.setState(
+        {
+          sortedUsers: newSortedUsers,
+        },
+        () => {
+          if (
+            !(typeof this.state.paginationStart === 'undefined') &&
+            !(typeof this.state.rowsPerPage === 'undefined')
+          ) {
+            this.handlePagination(this.state.paginationStart, this.state.rowsPerPage);
+          }
+        },
+      );
+    });
+  };
+
   public render() {
     const {
       rosterLoadComplete,
@@ -155,11 +204,11 @@ class ManageGraders extends React.Component<IProps, {}> {
     const {
       newField,
       searchTerm,
-      sortAscending,
       emailToAdminUnenroll,
       changedGraders,
       sortedUsers,
       paginatedUsers,
+      sortedIndex,
     } = this.state;
 
     const showSaveNewButton = newField && newField.includes('@');
@@ -215,12 +264,6 @@ class ManageGraders extends React.Component<IProps, {}> {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     }
 
-    if (sortAscending) {
-      graders.sort();
-    } else {
-      graders.sort().reverse();
-    }
-
     return (
       <div className="roster-grader">
         <DialogContainer
@@ -244,7 +287,7 @@ class ManageGraders extends React.Component<IProps, {}> {
           {`Would you like to also unenroll ${emailToAdminUnenroll} from admin?`}
         </DialogContainer>
         <div className="roster-grader__top-container">
-          <div>
+          <div className="roster-admin__top-container__newUser">
             <TextField
               id="addGraderField"
               label="Add Grader"
@@ -257,7 +300,7 @@ class ManageGraders extends React.Component<IProps, {}> {
             />
             <Button
               iconChildren="done"
-              className="save-Btn"
+              className="roster-grader__addUser__Btn"
               disabled={!showSaveNewButton || lockedGraderChange}
               onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
             >
@@ -273,7 +316,7 @@ class ManageGraders extends React.Component<IProps, {}> {
             isDisabled={lockedGraderChange}
             getSectionIDFromName={null}
             sectionsByStudent={null}
-            changeStudentSection={null}
+            changeSectionStudents={null}
           />
         </div>
         <TextField
@@ -296,10 +339,12 @@ class ManageGraders extends React.Component<IProps, {}> {
           )}
           <TableHeader>
             <TableRow>
-              <TableColumn key={'Grader'} sorted={sortAscending} onClick={this.toggleSort}>
+              <TableColumn key={'Grader'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
                 Grader name
               </TableColumn>
-              <TableColumn key={'isSuperGrader'}>View All Privileges</TableColumn>
+              <TableColumn key={'isSuperGrader'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
+                View All Privileges
+              </TableColumn>
               <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
             </TableRow>
           </TableHeader>

@@ -38,12 +38,14 @@ interface IPropsManageUsers {
     studentEmail: string,
     showToast: boolean,
   ) => Promise<SectionType>;
+  changeSectionStudents: (sectionID: number, students: string[], showToast: boolean) => Promise<SectionType>;
 
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
   initialTab: number;
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
+  deleteSection: (sectionID: number) => Promise<void>;
 }
 
 interface IState {
@@ -93,6 +95,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               changeRoster={this.props.changeRoster}
               sectionsByStudent={this.props.sectionsByStudent}
               changeStudentSection={this.props.changeStudentSection}
+              changeSectionStudents={this.props.changeSectionStudents}
             />
           </TabPanel>
           <TabPanel>
@@ -143,6 +146,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               createSection={this.props.createSection}
               graders={this.props.graders}
               changeLeaders={this.props.changeLeaders}
+              deleteSection={this.props.deleteSection}
             />
           </TabPanel>
         </Tabs>

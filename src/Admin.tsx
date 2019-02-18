@@ -775,6 +775,44 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
+  public deleteSection = (sectionID: number) => {
+    const { sections } = this.state;
+
+    if (!sections) {
+      return Promise.reject();
+    }
+
+    const thisSection = sections.find((section) => {
+      return section.id === sectionID;
+    });
+
+    if (!thisSection) {
+      return Promise.reject();
+    }
+
+    const students = thisSection.students;
+    return Section.delete(sectionID).then(() => {
+      const { currentCourse, sectionsByStudent } = this.state;
+      // remove deleted section from state
+      const newSections = sections.filter((section) => {
+        return section.id !== sectionID;
+      });
+      // remove section from currentCourseID
+      const newSectionIDs = newSections.map((section) => {
+        return section.id;
+      });
+      if (currentCourse) {
+        currentCourse.sections = newSectionIDs;
+      }
+      // remove each student from deleted section from section mapping
+      students.forEach((student) => {
+        delete sectionsByStudent[student];
+      });
+      this.setState({ currentCourse, sections: newSections, sectionsByStudent });
+      return;
+    });
+  };
+
   public removeStudentFromSection = (
     sectionID: number,
     studentEmail: string,
@@ -868,6 +906,36 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
     this.props.addErrorToast('Error - both old section and new section are empty.', undefined);
     return Promise.reject();
+  };
+
+  // Set section's students. Warning: This is not a partial add, you must include all of the section's students
+  // For a partial roster change see changeStudentSection()
+  public changeSectionStudents = (sectionID: number, students: string[], showToast: boolean): Promise<SectionType> => {
+    const { sections, sectionsByStudent } = this.state;
+    const payload = { id: sectionID, students };
+
+    return Section.update(payload).then((json: SectionType) => {
+      const newSections = sections.map((section) => {
+        if (section.id === json.id) {
+          section.students = json.students;
+        }
+        return section;
+      });
+
+      students.forEach((studentEmail) => {
+        sectionsByStudent[studentEmail] = {
+          name: json.name,
+          id: json.id,
+        };
+      });
+
+      this.setState({ sections: newSections, sectionsByStudent }, () => {
+        if (showToast) {
+          this.props.addToast('Section updated.', undefined);
+        }
+      });
+      return json;
+    });
   };
 
   public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
@@ -1627,6 +1695,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             unEnrollUsers={this.wrapLoading.bind(this, '', '', this.unEnrollUsers)}
             changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
             changeStudentSection={this.changeStudentSection}
+            changeSectionStudents={this.changeSectionStudents}
             createSection={this.createSection}
             changeLeaders={this.changeSectionLeaders}
             addToast={this.props.addToast}
@@ -1634,6 +1703,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             initialTab={this.state.initialTab}
             setLoadingDialog={this.setLoadingDialog}
             clearLoadingDialog={this.clearLoadingDialog}
+            deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
           />
         </div>
       );

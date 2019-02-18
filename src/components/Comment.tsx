@@ -272,7 +272,7 @@ class Comment extends React.Component<IProps, IState> {
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
 
             <TextareaAutosize
-              minRows={1}
+              minRows={2}
               maxRows={8}
               onChange={this.updateComment}
               onKeyPress={this.handleShiftEnter}
@@ -288,8 +288,9 @@ class Comment extends React.Component<IProps, IState> {
                 className="button--comment"
                 forceIconFontSize={true}
                 forceIconSize={20}
-                tooltipLabel="Save comment"
-                tooltipDelay={750}
+                tooltipLabel="Save comment [SHIFT + ENTER]"
+                tooltipDelay={1}
+                tooltipPosition="right"
                 onClick={this.toggleActive}
               >
                 save
@@ -300,7 +301,8 @@ class Comment extends React.Component<IProps, IState> {
                 forceIconFontSize={true}
                 forceIconSize={20}
                 tooltipLabel="Delete comment"
-                tooltipDelay={750}
+                tooltipDelay={50}
+                tooltipPosition="right"
                 onClick={deleteComment.bind(this, comment, file)}
               >
                 delete
@@ -342,7 +344,7 @@ class Comment extends React.Component<IProps, IState> {
               forceIconFontSize={true}
               forceIconSize={20}
               tooltipLabel="Delete comment"
-              tooltipDelay={750}
+              tooltipDelay={50}
               onClick={deleteComment.bind(this, comment, file)}
             >
               delete

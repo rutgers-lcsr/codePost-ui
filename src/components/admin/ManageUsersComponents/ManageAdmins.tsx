@@ -146,7 +146,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           {`Would you like to also unenroll ${emailToGraderUnenroll} from grader?`}
         </DialogContainer>
         <div className="roster-admin__top-container">
-          <div>
+          <div className="roster-admin__top-container__newUser">
             <TextField
               id="addAdminField"
               label="Add Admin"
@@ -159,7 +159,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             />
             <Button
               iconChildren="done"
-              className="save-Btn"
+              className="roster-admin__addUser__Btn"
               disabled={!showSaveNewAdminButton || lockedAdminChange}
               onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
             >
@@ -175,7 +175,7 @@ class ManageStudents extends React.Component<IProps, {}> {
             isDisabled={lockedAdminChange}
             getSectionIDFromName={null}
             sectionsByStudent={null}
-            changeStudentSection={null}
+            changeSectionStudents={null}
           />
         </div>
         <TextField

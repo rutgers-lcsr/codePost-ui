@@ -12,8 +12,8 @@ interface IProps {
   addErrorToast: (text: string, action: string | undefined) => void;
   addToast: (text: string, action: string | undefined) => void;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
-  changeStudentSection:
-    | ((sectionID: number | undefined, studentEmail: string, showToast: boolean) => Promise<SectionType>)
+  changeSectionStudents:
+    | ((sectionID: number | undefined, students: string[], showToast: boolean) => Promise<SectionType>)
     | null;
   userType: USER_APP;
   isDisabled: boolean;
@@ -30,6 +30,7 @@ interface IState {
   updatingRoster: boolean;
   updates: { [index: string]: string[] } | undefined;
   userList: string[];
+  // JsonUpload is for use in student upload because we need a richer data structure than just string array of emailsS
   jsonUpload: IStudentUpload[];
   uploadFileName: string | undefined;
 }
@@ -95,6 +96,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     }
 
     let userList;
+    // For student uploads, the roster type is a {email: string, section: string} object
+    // For admins and graders, it's a string[] of emails
     if (userType === USER_APP.Student) {
       userList = roster.map((i: IStudentUpload) => {
         return i.email;
@@ -103,13 +106,16 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       userList = roster;
     }
 
-    let uploadErrors = this.isRoster(userList);
+    // upload Errors is a pre-processing of data to make sure it's valid before updating database
+    // For students, we need the union of roster errors and section errors
+    let uploadErrors = this.checkRoster(userList);
     if (userType === USER_APP.Student) {
       const sectionUploadErrors = this.checkSections(roster);
       uploadErrors = [...uploadErrors, ...sectionUploadErrors];
     }
 
     if (uploadErrors.length === 0) {
+      // No upload errors
       this.setState({ updatingRoster: true, userList, updates: undefined });
       // If Student, update both roster and sections
       if (userType === USER_APP.Student) {
@@ -124,12 +130,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         });
       }
     } else {
+      // there are upload errors, notify the user and don't do anything
       this.setState({ uploadErrors, updates: undefined });
     }
   };
 
   // Check to make sure the uploaded file is a valid roster
-  public isRoster = (users: string[]) => {
+  public checkRoster = (users: string[]) => {
     const uploadErrors: string[] = [];
     if (users) {
       if (users.length === 0) {
@@ -173,7 +180,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     return uploadErrors;
   };
 
-  // If makeDBUpdate === false, check to see what changes would be makeDBUpdate
+  // If makeDBUpdate === false, check to see what changes would be made and notify user
   // If makeDBUpdate === true, actually make the api calls to make the changes
   public updateRoster = (newUsers: string[], makeDBUpdate: boolean) => {
     const { users, changeRoster, userType } = this.props;
@@ -199,29 +206,38 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     }
   };
 
-  // If makeDBUpdate === false, check to see what changes would be makeDBUpdate
+  // If makeDBUpdate === false, check to see what changes would be made and notify user
   // If makeDBUpdate === true, actually make the api calls to make the changes
   public updateSections = (newUsers: IStudentUpload[], makeDBUpdate: boolean) => {
-    const { sectionsByStudent, getSectionIDFromName, changeStudentSection } = this.props;
+    const { sectionsByStudent, getSectionIDFromName, changeSectionStudents } = this.props;
 
-    if (sectionsByStudent === null || changeStudentSection === null || getSectionIDFromName === null) {
+    if (sectionsByStudent === null || changeSectionStudents === null || getSectionIDFromName === null) {
       return Promise.reject();
     }
 
     const updatedSections: string[] = [];
-    const studentsToChange: IStudentUpload[] = [];
+    const newSections: { [sectionID: number]: string[] } = {};
     newUsers.forEach((i: IStudentUpload) => {
+      const sectionID = getSectionIDFromName(i.section);
       const currentSection = sectionsByStudent[i.email];
       if ((currentSection && i.section !== currentSection.name) || (i.section && !currentSection)) {
         updatedSections.push(i.email);
-        studentsToChange.push(i);
+      }
+      if (sectionID) {
+        if (newSections[sectionID]) {
+          newSections[sectionID].push(i.email);
+        } else {
+          newSections[sectionID] = [i.email];
+        }
       }
     });
     if (makeDBUpdate) {
       return Promise.all(
-        studentsToChange.map((i: IStudentUpload) => {
-          const sectionID = getSectionIDFromName(i.section);
-          return changeStudentSection(sectionID, i.email, false);
+        Object.keys(newSections).map((sectionID: string) => {
+          const students = newSections[sectionID];
+          // Javscript sets all keys to a string, so need to cast
+          const sectionIDNumber = Number(sectionID);
+          return changeSectionStudents(sectionIDNumber, students, false);
         }),
       ).then(() => {
         return Promise.resolve();
@@ -274,6 +290,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public dummyUpload = (file: File) => {
     return;
   };
+
+  // User flow is (Download, Upload).
+  //   On Upload: check for errors, and if errors notify user
+  //              if no errors, see what changes will be made to the course and notify user
+  //              If the user agrees, make the api calls to make changes to course
+  //   On Download: Trigger download of json file
 
   public render() {
     const { dialogVisible, updates } = this.state;

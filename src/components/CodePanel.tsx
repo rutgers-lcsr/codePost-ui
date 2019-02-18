@@ -133,9 +133,17 @@ class CodePanel extends React.Component<IProps, IState> {
           })}
         </TabList>
         {files.map((file: FileType, i: number) => {
+          const box = document.getElementById(`syntax-highlighter-${file.id}`);
+          const code = box ? box!.getElementsByTagName('code')[1] : null;
+
+          let requireScroll = false;
+          if (box && code && code.getBoundingClientRect().width > box.getBoundingClientRect().width) {
+            requireScroll = true;
+          }
+
           return (
             <TabPanel key={`${file.id}-code`}>
-              <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+              {requireScroll ? <div className={'grade__main-container__scrollIndicator'}>scroll>>></div> : null}
               <Code
                 submission={this.props.submission}
                 file={file}
@@ -296,11 +304,9 @@ const Code = (props: ICodeProps) => {
   const numberOfLines = linesOfCode.length;
   const lineHeight = document.querySelector('div#line-0')
     ? document.querySelector('div#line-0')!.getBoundingClientRect().height
-    : 18; // 19 as estimate
+    : 18; // 18 as estimate
 
-  const codeHeight = document.getElementById(`syntax-highlighter-${props.file.id}`)
-    ? document.getElementById(`syntax-highlighter-${props.file.id}`)!.getBoundingClientRect().height
-    : numberOfLines * lineHeight;
+  const codeHeight = numberOfLines * lineHeight;
 
   const lineNumberStyle = {
     height: `${codeHeight}px`,
@@ -320,12 +326,12 @@ const Code = (props: ICodeProps) => {
           <div className="grade__main-container__tabContent__codePanel-container">
             <div className="code__highlighted-area">
               <div id={`syntax-highlighter-${props.file.id}`} className="code__syntax-highlighter">
-                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true}>
+                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
                   {codeString}
                 </SyntaxHighlighter>
               </div>
               <div className="code__underlay">
-                <div className="code__underlay__pre">
+                <div id={`code-underlay-pre-${props.file.id}`} className="code__underlay__pre">
                   <div className="code__underlay--line-numbers" style={lineNumberStyle}>
                     {numberOfLines}
                   </div>
