@@ -25,13 +25,15 @@ class ModalCarousel extends React.Component<IProps, IState> {
 
   public slideRight = () => {
     const oldIndex = this.state.index;
-    this.setState({ index: oldIndex + 1 });
+    const newIndex = oldIndex < this.props.content.length - 1 ? oldIndex + 1 : oldIndex;
+    this.setState({ index: newIndex });
   };
 
   public slideLeft = () => {
     const oldIndex = this.state.index;
+    const newIndex = oldIndex > 0 ? oldIndex - 1 : oldIndex;
     if (oldIndex > 0) {
-      this.setState({ index: oldIndex - 1 });
+      this.setState({ index: newIndex });
     }
   };
 
