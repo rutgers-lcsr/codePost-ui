@@ -192,13 +192,13 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               } else if (submission) {
                 return (
                   <TableColumn className="cellType--unfinalized" key={assignment.name} plain={true}>
-                    Not finalized
+                    Unfinalized
                   </TableColumn>
                 );
               } else {
                 return (
                   <TableColumn className="cellType--unsubmitted" key={assignment.name} plain={true}>
-                    Not submitted
+                    ---
                   </TableColumn>
                 );
               }
