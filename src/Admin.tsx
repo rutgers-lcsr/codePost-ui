@@ -1453,12 +1453,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             return Assignment.read(assignmentID);
           }),
         ).then((assignments: AssignmentType[]) => {
+          const sortedAssignments: AssignmentType[] = sortAssignments(assignments);
           return Promise.all(
-            assignments.map((assignment) => {
+            sortedAssignments.map((assignment) => {
               return Assignment.readRubric(assignment.id, {});
             }),
           ).then((rubrics: any) => {
-            return [assignments, rubrics];
+            return [sortedAssignments, rubrics];
           });
         });
 
