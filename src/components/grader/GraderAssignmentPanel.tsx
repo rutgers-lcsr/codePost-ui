@@ -56,6 +56,18 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     };
   }
 
+  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+    // if submissions change, re-sort
+    if (this.props.submissions !== prevProps.submissions) {
+      // make a copy
+      const sortedSubmissions = JSON.parse(JSON.stringify(this.props.submissions));
+      // sort by sortedIndex
+      sortedSubmissions.sort(this.sort.bind(this));
+      // update state
+      this.setState({ sortedSubmissions });
+    }
+  }
+
   public sort = (a: SubmissionType, b: SubmissionType) => {
     const { sortedIndex } = this.state;
 
