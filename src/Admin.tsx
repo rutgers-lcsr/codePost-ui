@@ -21,7 +21,7 @@ import {
   USER_APP,
 } from './types/common';
 
-import { Assignment, AssignmentType } from './infrastructure/assignment';
+import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CoursePatchType, CourseType, RosterType } from './infrastructure/course';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
@@ -396,7 +396,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return Assignment.read(assignmentID);
       });
       Promise.all(getData).then((newAssignments: AssignmentType[]) => {
-        this.setState({ assignments: newAssignments, assignmentsLoadComplete: true }, () => {
+        const sortedAssignments = sortAssignments(newAssignments);
+        this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true }, () => {
           this.loadRubrics();
         });
       });
