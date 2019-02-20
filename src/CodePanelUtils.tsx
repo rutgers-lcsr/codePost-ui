@@ -179,6 +179,10 @@ export default class CodePanelUtils {
       return offset;
     }
 
+    if (!parentElement) {
+      return -1;
+    }
+
     if (!parentElement.contains(currNode)) {
       return -1;
     }
