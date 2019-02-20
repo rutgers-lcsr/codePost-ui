@@ -22,7 +22,7 @@ export default class CodePanelUtils {
   };
 
   // O(NM) where N is the number of highlights and M is the length of the line
-  public static highlight = (sortedHighlights: CommentType[], thetext: string, line: number) => {
+  public static highlight = (sortedHighlights: CommentType[], thetextUnEscaped: string, line: number) => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
     // Note that these are different from highlight.startChar and highlight.endChar
@@ -31,6 +31,10 @@ export default class CodePanelUtils {
     // e.g.
     // <strong className=1> first highlight </strong><strong className=1 2>middle
     //          </strong><strong className=2>second highlight</strong>
+    const thetext = thetextUnEscaped
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
     const highlights: any[] = [];
     for (const highlight of sortedHighlights) {
       if (highlight.startLine < line && highlight.endLine > line) {
@@ -129,7 +133,9 @@ export default class CodePanelUtils {
       );
     }
 
-    return { __html: elements.join('') };
+    return {
+      __html: elements.join(''),
+    };
   };
 
   // https://stackoverflow.com/questions/48810664/get-click-range-relative-to-parent-element
@@ -160,6 +166,10 @@ export default class CodePanelUtils {
 
     if (currNode === parentElement) {
       return offset;
+    }
+
+    if (!parentElement) {
+      return -1;
     }
 
     if (!parentElement.contains(currNode)) {
