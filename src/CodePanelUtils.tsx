@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { CommentType } from './infrastructure/comment';
 import { POSITION } from './types/common';
 
@@ -133,9 +134,34 @@ export default class CodePanelUtils {
       );
     }
 
-    return {
-      __html: elements.join(''),
-    };
+    const finalString = elements.join('');
+
+    if (!finalString.includes('<strong')) {
+      return [finalString];
+    }
+
+    const strongStrings = finalString.match(/<strong .*?>.*?<\/strong>/g);
+
+    const returnElements = strongStrings!.map((html: string, i: number) => {
+      let className = html.match(/class=".*?"/g)![0].split('=')[1];
+      className = className.substring(1, className.length - 1);
+      const text = html.replace(/<\/?strong.*?>/g, '');
+      return (
+        <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
+          {text}
+        </strong>
+      );
+    });
+
+    const beginText = finalString.match(/[^<strong]*/i)![0];
+    const endText = finalString.slice(finalString.lastIndexOf('</strong>') + '</strong>'.length);
+
+    // @ts-ignore
+    returnElements.unshift(beginText);
+    // @ts-ignore
+    returnElements.push(endText);
+
+    return returnElements;
   };
 
   // https://stackoverflow.com/questions/48810664/get-click-range-relative-to-parent-element

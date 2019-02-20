@@ -275,9 +275,10 @@ const Code = (props: ICodeProps) => {
             </div>
           );
         }
-        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div key={i} id={`line-${i}`} dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)} />
+          <div key={i} id={`line-${i}`}>
+            {CodePanelUtils.highlight(sortedHighlights, item, i)}
+          </div>
         );
       })
     : splitCode.map((item: string, i: number) => {
@@ -289,14 +290,10 @@ const Code = (props: ICodeProps) => {
             </div>
           );
         }
-        CodePanelUtils.highlight(sortedHighlights, item, i);
         return (
-          <div
-            key={i}
-            id={`line-${i}`}
-            onMouseUp={onMouseUp}
-            dangerouslySetInnerHTML={CodePanelUtils.highlight(sortedHighlights, item, i)}
-          />
+          <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
+            {CodePanelUtils.highlight(sortedHighlights, item, i)}
+          </div>
         );
       });
   /* tslint:enable */
