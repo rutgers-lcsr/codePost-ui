@@ -217,6 +217,14 @@ const Code = (props: ICodeProps) => {
     const extentParent: any = selection.extentNode.parentNode;
     let endLine = +extentParent.id.split('-')[1];
 
+    // Check to see if the comment was made backwards
+    if (startLine !== null && endLine != null && startLine > endLine) {
+      // swap endlines
+      const temp1 = startLine;
+      startLine = endLine;
+      endLine = temp1;
+    }
+
     let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
       document.querySelector(`div#line-${startLine}`),
       null,
@@ -228,18 +236,7 @@ const Code = (props: ICodeProps) => {
       POSITION.End,
     );
 
-    // Check to see if the comment was made backwards
-    if (startLine && endLine && startLine > endLine) {
-      // swap endlines
-      const temp1 = startLine;
-      startLine = endLine;
-      endLine = temp1;
-
-      // swap char indices
-      const temp2 = startChar;
-      startChar = endChar;
-      endChar = temp2;
-    } else if (startLine === endLine) {
+    if (startLine === endLine) {
       // Handle reverse highlight in a single line
       const temp1 = startChar;
       const temp2 = endChar;
