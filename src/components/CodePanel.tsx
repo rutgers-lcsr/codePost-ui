@@ -398,6 +398,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
           deleteComment={this.deleteComment}
           updateComment={this.updateComment}
           showLastEdited={false}
+          unsavedComments={[]}
         />
       );
     }
