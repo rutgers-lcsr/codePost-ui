@@ -17,8 +17,9 @@ interface IProps {
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
+  unsavedComments: number[];
 }
 
 interface IState {
@@ -135,6 +136,7 @@ class CommentList extends React.Component<IProps, IState> {
           deleteComment={deleteComment}
           updateComment={updateComment}
           updateSubmissionGrade={this.props.updateSubmissionGrade}
+          unsavedComments={this.props.unsavedComments}
         />
       );
     });

@@ -31,6 +31,7 @@ interface IGradeState {
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   activeCommentId?: number;
+  unsavedComments: number[];
 
   files: FileType[];
   graders: string[];
@@ -61,6 +62,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     rubricCategories: [],
     rubricComments: {},
     submission: undefined,
+    unsavedComments: [],
     positiveNegativeAlert: false,
     errorToasts: [],
   };
@@ -330,7 +332,7 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.setState({ comments }, () => this.updateSubmissionGrade());
   };
 
-  public updateComment = (commentID: number, newComment: CommentType, file: FileType): void => {
+  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): void => {
     const { assignment, commentRubricComments, submission, comments } = this.state;
     if (!submission || !assignment) {
       return;
@@ -344,9 +346,20 @@ class Grade extends React.Component<IProps, IGradeState> {
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
 
+    let unsavedComments = this.state.unsavedComments;
+    if (isSaved) {
+      unsavedComments = this.state.unsavedComments.filter((i: number) => {
+        return i !== commentID;
+      });
+    } else if (!this.state.unsavedComments.includes(commentID)) {
+      unsavedComments = this.state.unsavedComments.concat(commentID);
+    }
+
+    this.setState({ unsavedComments });
     if (newComment.rubricComment) {
       commentRubricComments[newComment.id] = commentRubricComments[commentID];
     }
+
     this.setState({ comments, commentRubricComments });
   };
 
@@ -363,6 +376,13 @@ class Grade extends React.Component<IProps, IGradeState> {
 
     delete commentRubricComments[comment.id];
     this.setState({ comments, commentRubricComments });
+
+    if (this.state.unsavedComments.includes(comment.id)) {
+      const unsavedComments = this.state.unsavedComments.filter((i: number) => {
+        return i !== comment.id;
+      });
+      this.setState({ unsavedComments });
+    }
 
     // Think about how to handle this case
     // Options:
@@ -493,6 +513,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               updateSubmissionGrade={this.updateSubmissionGrade}
               updateComment={this.updateComment}
               files={files}
+              unsavedComments={this.state.unsavedComments}
             />
             <CodePanel
               submission={submission}
@@ -507,6 +528,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               updateComment={this.updateComment}
               updateSubmissionGrade={this.updateSubmissionGrade}
               showLastEdited={true}
+              unsavedComments={this.state.unsavedComments}
             />
           </div>
 
@@ -534,6 +556,7 @@ interface IToggleFinalizeProps {
   updateSubmissionGrade: any;
   updateComment: any;
   files: FileType[];
+  unsavedComments: number[];
 }
 
 const ToggleFinalize = (props: IToggleFinalizeProps) => {
@@ -560,6 +583,7 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
         updateSubmissionGrade={updateSubmissionGrade}
         updateComment={updateComment}
         files={files}
+        unsavedComments={props.unsavedComments}
       />
       <Button
         icon

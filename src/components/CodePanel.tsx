@@ -27,9 +27,10 @@ interface IProps {
   activeCommentId?: number;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
   showLastEdited: boolean;
+  unsavedComments: number[];
 }
 
 interface IState {
@@ -159,6 +160,7 @@ class CodePanel extends React.Component<IProps, IState> {
                 updateComment={updateComment}
                 updateSubmissionGrade={this.props.updateSubmissionGrade}
                 showLastEdited={this.props.showLastEdited}
+                unsavedComments={this.props.unsavedComments}
               />
             </TabPanel>
           );
@@ -182,9 +184,10 @@ interface ICodeProps {
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
   showLastEdited: boolean;
+  unsavedComments: number[];
 }
 
 const Code = (props: ICodeProps) => {
@@ -355,6 +358,7 @@ const Code = (props: ICodeProps) => {
             deleteComment={deleteComment}
             updateComment={updateComment}
             updateSubmissionGrade={props.updateSubmissionGrade}
+            unsavedComments={props.unsavedComments}
           />
         </div>
       </div>
