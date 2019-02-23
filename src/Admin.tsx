@@ -1675,6 +1675,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           )}
           setLoadingDialog={this.setLoadingDialog}
           clearLoadingDialog={this.clearLoadingDialog}
+          submissionsByStudent={this.state.submissionsByStudent}
+          submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
         />
       );
     } else if (currentCourse && loadedPanel === 2) {

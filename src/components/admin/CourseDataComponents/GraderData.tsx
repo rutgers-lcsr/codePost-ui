@@ -107,13 +107,13 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
   public renderSubmissionRow(submission: SubmissionType, assignmentName: string) {
     const { openSubmission } = this.props;
-    let grade = 'Not uploaded';
+    let grade = '---';
     let cellType = '--unsubmitted';
     if (submission && submission.isFinalized) {
       grade = String(submission.grade);
       cellType = '--graded';
     } else if (submission) {
-      grade = 'Not finalized';
+      grade = 'Unfinalized';
       cellType = '--unfinalized';
     }
 
