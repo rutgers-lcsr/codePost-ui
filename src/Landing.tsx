@@ -4,6 +4,8 @@ import * as CodeMirror from 'react-codemirror';
 import { Button } from 'react-md';
 import LandingTopBar from './components/LandingTopBar';
 
+import { ModalCarousel } from './components/Utils/ModalCarousel';
+
 interface IState {
   viewPanelIndex: number;
   apiTabIndex: number;
@@ -74,20 +76,54 @@ class Landing extends React.Component<{}, IState> {
 
   public render() {
     const { viewPanelIndex, apiTabIndex } = this.state;
+    const carouselContent = [
+      {
+        imgLink: require('./img/landing/landing-admin_assignments.png'),
+        text: 'Keep track of all assignments, including real-time data on statistics ',
+      },
+      {
+        imgLink: require('./img/landing/landing-admin_rubric.png'),
+        text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
+      },
+      {
+        imgLink: require('./img/landing/landing-admin_roster.png'),
+        text: 'Manage the course roster of students, graders, administrators, and sections.',
+      },
+    ];
+    const dummy = () => {
+      return;
+    };
+    const adminCarousel = (
+      <ModalCarousel
+        closeModal={dummy}
+        isVisible={true}
+        content={carouselContent}
+        defaultIndex={0}
+        isModal={false}
+        className="landing-carousel"
+        onlyImage={true}
+      />
+    );
     let viewPanelContent;
     let viewPanelTitle;
     switch (viewPanelIndex) {
       case 0:
-        viewPanelContent = <img className="PanelViews__content__image" src={require('./img/student-landing.png')} />;
-        viewPanelTitle = 'student__title';
+        viewPanelContent = (
+          <img className="PanelViews__content__image" src={require('./img/landing/landing-student.png')} />
+        );
+        viewPanelTitle =
+          'Access clear and comprehensive feedback to continue improving. \
+          Easily reference throughout the course and before interviews.';
         break;
       case 1:
-        viewPanelContent = <img className="PanelViews__content__image" src={require('./img/grade-landing.png')} />;
-        viewPanelTitle = 'grader__title';
+        viewPanelContent = (
+          <img className="PanelViews__content__image" src={require('./img/landing/landing-grade.png')} />
+        );
+        viewPanelTitle = 'Grade better, more consistently, and more quickly';
         break;
       case 2:
-        viewPanelContent = 'admin__placeholder';
-        viewPanelTitle = 'admin__title';
+        viewPanelTitle = '     ';
+        viewPanelContent = adminCarousel;
         break;
     }
 
