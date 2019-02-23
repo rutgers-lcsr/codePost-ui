@@ -1827,6 +1827,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           isVisible={this.state.onboardingModalVisible}
           content={adminCarouselContent}
           defaultIndex={0}
+          isModal={true}
+          className="onboarding-carousel-modal"
+          onlyImage={false}
         />
       </div>
     );
