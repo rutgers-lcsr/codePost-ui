@@ -235,7 +235,17 @@ $md-toolbar-height: 100px;
       max-width: 700px;
 
       @media only screen and (max-width: 750px) {
+        width: 600px;
+      }
+
+      @media only screen and (max-width: 650px) {
+        width: 500px;
+      }
+      @media only screen and (max-width: 550px) {
         width: 400px;
+      }
+      @media only screen and (max-width: 450px) {
+        width: 350px;
       }
     }
   }
@@ -352,6 +362,9 @@ $md-toolbar-height: 100px;
   @media only screen and (max-width: 550px) {
     width: 400px;
   }
+  @media only screen and (max-width: 450px) {
+    width: 350px;
+  }
 }
 
 .SignUp {
@@ -404,7 +417,7 @@ $md-toolbar-height: 100px;
 
 .LandingAPIBtn {
   @include button($dark-grey, $mid-grey);
-  margin: 5px 0px 5px 0px;
+  margin: 2px 0px 2px 0px;
   height: auto;
   text-transform: none !important;
   transition: 0.3s;
@@ -415,7 +428,7 @@ $md-toolbar-height: 100px;
     background-color: shade($dark-grey, 20);
     color: white;
     height: auto;
-    margin: 5px 0px 5px 0px;
+    margin: 2px 0px 2px 0px;
     text-transform: none !important;
     transition: 0.3s;
     font-size: $font-size-large;
