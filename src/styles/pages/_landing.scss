@@ -343,7 +343,7 @@ $md-toolbar-height: 100px;
       }
     }
     &__code-separator {
-      width: 220px;
+      width: calc(100% - 20px);
       border: 1px solid $mid-grey;
       margin-top: 20px;
       margin-bottom: 10px;
