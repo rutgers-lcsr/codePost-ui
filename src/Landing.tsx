@@ -9,6 +9,55 @@ interface IState {
   apiTabIndex: number;
 }
 
+const apiCodeExamples = [
+  {
+    title: 'Export grades',
+    code:
+      'import requests as r\nimport csv\n\n\
+# Get all submissions for a given assignment\n\
+submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
+headers={"Authorization": "api_key"}).json()\n\n\
+# Create a data structure for all graded assignments, i.e. sub["grade"] != null\n\
+# Because this assignment has no partners, \
+sub["students"] has only one element\n\
+grades = [(sub["students"][0], sub["grade"]) for sub in submissions if sub["grade"]]\n\n\
+# Export list of students and grades to a csv; Alternatively, can use an LMS API to post \
+the grades directly to an LMS\n\
+with open("grades.csv", "w") as writeFile:\n\
+    writer = csv.writer(writeFile) \n\
+    writer.writerows(grades)',
+  },
+  {
+    title: 'Assign submission to graders',
+    code:
+      'import requests as r\n\
+# We have already defined a mapping "studentToGrader" of {studentEmail: graderEmail}\n\n\
+# Get all submissions for a given assignment\n\
+submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
+headers={"Authorization": "api_key"})\n\n\
+for sub in submissions.json():\n\
+  # What grader should grade this assignment?\n\
+  graderEmail = studentToGrader[sub.students[0]]\n\
+  # Assign the submisison to the grader\n\
+  payload = {grader: graderEmail}\n\
+  r.post("http://api.codepost.io/submissions/"% str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
+  },
+  {
+    title: 'Calculate the most comment rubric mistakes',
+    code:
+      'import requests as r\n\n\
+# Get list of rubricComments for an assignment\n\
+rubric = r.get("https://api.codepost.io/assignments/%s/rubric/" % str(assignmentID), headers=headers)\n\
+rubricComments = rubric.json()["rubricComments"]\n\n\
+# Create a list of (text, usage frequency) for every rubric comment\n\
+_list = [(i["text"], i["comments"].length) for i in rubricComments]\n\n\
+# Sort list by frequency\n\
+_list.sort((key=lambda tup: tup[1]))\n\
+# Print out result\n\
+print("Rubric comments sorted by  highest frequency: %s" str(_list))',
+  },
+];
+
 class Landing extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
     viewPanelIndex: 0,
@@ -41,35 +90,11 @@ class Landing extends React.Component<{}, IState> {
         viewPanelTitle = 'admin__title';
         break;
     }
-    const getAssignmentGrade =
-      'import requests\nimport functools\n\n\
-# Get all submissions for a given assignment\n\
-submissions = requests.get("http://api.codepost.io/assignments/%s/submissions/"\
-% str(assignmentID), headers={"Authorization": "api_key"})\n\
-# Filter out ungraded submissions (grade == null)\n\
-graded_submissions = [sub for sub in submissions if sub["grade"]]\n\n\
-# Calculate and print average\n\
-avg_grade = functools.reduce(lambda x,y: x + y["grade"], graded_submissions, 0) / len(graded_submissions)\n\
-print("Average grade on this assignment is %s" % avg_grade)';
-    const print = 'print 3';
-    const hello = 'hello';
 
-    let apiCodeExample;
-    switch (apiTabIndex) {
-      case 0:
-        apiCodeExample = getAssignmentGrade;
-        break;
-      case 1:
-        apiCodeExample = hello;
-        break;
-      case 2:
-        apiCodeExample = print;
-        break;
-    }
     const codeMirror = (
       <CodeMirror
         key={`codeMirror${apiTabIndex}`}
-        value={apiCodeExample}
+        value={apiCodeExamples[apiTabIndex].code}
         options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'python' }}
       />
     );
@@ -165,21 +190,21 @@ print("Average grade on this assignment is %s" % avg_grade)';
                 className={`LandingAPIBtn${apiTabIndex === 0 ? '--active' : ''}`}
                 flat={true}
               >
-                Calculate assignment mean
+                {apiCodeExamples[0].title}
               </Button>
               <Button
                 onClick={this.changeAPITabIndex.bind(this, 1)}
                 className={`LandingAPIBtn${apiTabIndex === 1 ? '--active' : ''}`}
                 flat={true}
               >
-                Print
+                {apiCodeExamples[1].title}
               </Button>
               <Button
                 onClick={this.changeAPITabIndex.bind(this, 2)}
                 className={`LandingAPIBtn${apiTabIndex === 2 ? '--active' : ''}`}
                 flat={true}
               >
-                Hello
+                {apiCodeExamples[2].title}
               </Button>
               <div className="API__exampleBox__code-separator" />
               <Button
