@@ -21,8 +21,9 @@ interface IProps {
   active: boolean;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
+  unsavedComments: number[];
 }
 
 interface IState {
@@ -38,14 +39,19 @@ class Comment extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     saveWarning: false,
     savingClass: 'saving-spinner--idle',
-    isUnsaved: this.props.comment.id < 0,
+    isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
   };
 
   //////////////////////////////////////
   // Lifecycle Methods
   //////////////////////////////////////
 
-  public componentDidUpdate = () => {
+  public componentDidUpdate = (prevProps: any) => {
+    if (this.props.unsavedComments !== prevProps.unsavedComments) {
+      this.setState({
+        isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
+      });
+    }
     // Is the deduction field active?
     const activeDeductionField =
       this.deductionField && this.deductionField.context && this.deductionField.getField() === document.activeElement;
@@ -64,14 +70,14 @@ class Comment extends React.Component<IProps, IState> {
     const { comment, updateComment, file } = this.props;
     comment.text = event.target.value;
     this.setState({ isUnsaved: true });
-    updateComment(comment.id, comment, file);
+    updateComment(comment.id, comment, file, false);
   };
 
   public updateDeduction = (value: string) => {
     const { comment, updateComment, file } = this.props;
     comment.pointDelta = parseFloat(value);
     this.setState({ isUnsaved: true });
-    updateComment(comment.id, comment, file);
+    updateComment(comment.id, comment, file, false);
   };
 
   public toggleActive = () => {
@@ -128,7 +134,7 @@ class Comment extends React.Component<IProps, IState> {
             // after this timeout, otherwise we face memory-leaks
             // setting the state of an unmounted component
             // (which has an out-dated, negative comment.id)
-            updateComment(comment.id, json, file);
+            updateComment(comment.id, json, file, true);
             return true;
           }, 1000);
           return true;
@@ -137,7 +143,6 @@ class Comment extends React.Component<IProps, IState> {
           console.log(error);
         });
     } else {
-      console.log('PATCH', JSON.stringify(comment));
       return CommentIO.update(comment).then((json) => {
         // this is just aesthetic wait time to watch the comment save
         // eagerly update submission grade
@@ -147,7 +152,7 @@ class Comment extends React.Component<IProps, IState> {
         }, 500);
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
-          updateComment(comment.id, json, file);
+          updateComment(comment.id, json, file, true);
           return true;
         }, 1000);
         return true;
@@ -160,9 +165,9 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public validateSave = () => {
-    const { comment, file, updateComment } = this.props;
+    // const { comment, file, updateComment } = this.props;
 
-    updateComment(comment.id, comment, file);
+    // updateComment(comment.id, comment, file);
 
     // if (isNaN(comment.pointDelta)) {
     //   this.setState({ saveWarning: true });
