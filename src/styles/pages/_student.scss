@@ -1,6 +1,7 @@
 .student {
-  @include setMinPageHeight($topbar-height);
+  @include setMinPageHeight(calc(#{$topbar-height} + 10px));
   @include dual-pane-fixed-left(320, 'left-panel', 'right-panel');
+  padding-right: 0px;
 
   &__left-panel {
     margin-top: -10px;
@@ -15,11 +16,11 @@
   }
 
   &__grade-container {
-    width: 100%;
+    width: calc(100% - 30px);
     border-radius: 8px;
     border: 1px solid $dark-grey;
     background-color: $dark-grey;
-    padding: 0px 10px 0px 10px;
+    margin-left: 15px;
     color: white;
 
     &__top {
