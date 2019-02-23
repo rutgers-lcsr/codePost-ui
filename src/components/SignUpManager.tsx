@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 import '../styles/index.scss';
-import '../styles/landing.scss';
 
 enum SignUpType {
   newCourse,
