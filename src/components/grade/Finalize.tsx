@@ -16,6 +16,7 @@ interface IFinalizeProps {
   updateSubmissionGrade: any;
   updateComment: any;
   files: FileType[];
+  unsavedComments: number[];
 }
 
 interface IFinalizeState {
@@ -45,7 +46,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
       if (comments.hasOwnProperty(fileID)) {
         if (
           comments[fileID].filter((comment: CommentType) => {
-            return comment.id < 0;
+            return comment.id < 0 || this.props.unsavedComments.includes(comment.id);
           }).length > 0
         ) {
           existUnsavedComments = true;
@@ -94,28 +95,37 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
         if (comments.hasOwnProperty(fileID)) {
           promises.push(
             comments[fileID].map((comment: CommentType) => {
+              const payload = {
+                id: comment.id, // codePost convention
+                endChar: comment.endChar,
+                endLine: comment.endLine,
+                file: comment.file,
+                pointDelta: comment.pointDelta,
+                rubricComment: comment.rubricComment,
+                startChar: comment.startChar,
+                startLine: comment.startLine,
+                text: comment.text,
+              };
+              const file = files.filter((f: FileType) => {
+                return f.id === +fileID;
+              })[0];
               if (comment.id < 0) {
-                const payload = {
-                  id: comment.id, // codePost convention
-                  endChar: comment.endChar,
-                  endLine: comment.endLine,
-                  file: comment.file,
-                  pointDelta: comment.pointDelta,
-                  rubricComment: comment.rubricComment,
-                  startChar: comment.startChar,
-                  startLine: comment.startLine,
-                  text: comment.text,
-                };
-
                 return CommentIO.create(payload)
                   .then((json) => {
                     // eagerly update submission grade
                     updateSubmissionGrade();
-                    const file = files.filter((f: FileType) => {
-                      return f.id === +fileID;
-                    })[0];
-                    updateComment(comment.id, json, file);
+                    updateComment(comment.id, json, file, true);
 
+                    return true;
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              } else if (this.props.unsavedComments.includes(comment.id)) {
+                return CommentIO.update(payload)
+                  .then((json) => {
+                    updateSubmissionGrade();
+                    updateComment(comment.id, json, file, true);
                     return true;
                   })
                   .catch((error) => {
