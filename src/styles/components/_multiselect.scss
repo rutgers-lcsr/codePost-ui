@@ -13,6 +13,9 @@
       box-shadow: none !important;
     }
   }
+  &__option--is-focused {
+    background-color: $very-light-green !important;
+  }
 }
 .multiselect--ViewAll {
   @include react-select-format();
@@ -38,10 +41,10 @@
 
   &__control {
     margin-bottom: 20px;
-    max-width: 70% !important;
+    width: 400px !important;
   }
   &__menu {
-    max-width: 70% !important;
+    width: 400px !important;
   }
 }
 
@@ -100,5 +103,8 @@
   @include react-select-format();
   &__control {
     max-width: 200px;
+  }
+  &__menu {
+    width: 200px !important;
   }
 }
