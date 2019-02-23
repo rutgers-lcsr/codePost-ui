@@ -1,7 +1,25 @@
 import * as React from 'react';
 import LandingTopBar from './components/LandingTopBar';
 
-class Landing extends React.Component {
+interface IState {
+  viewPanelIndex: number;
+  apiTabIndex: number;
+}
+
+class Landing extends React.Component<{}, IState> {
+  public state: Readonly<IState> = {
+    viewPanelIndex: 0,
+    apiTabIndex: 0,
+  };
+
+  public changePanelIndex = (newIndex: number) => {
+    this.setState({ viewPanelIndex: newIndex });
+  };
+
+  public changeAPITabIndex = (newIndex: number) => {
+    this.setState({ apiTabIndex: newIndex });
+  };
+
   public render() {
     return (
       <div className="Landing">
