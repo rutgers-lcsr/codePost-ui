@@ -182,7 +182,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     width: '100%',
     fontWeight: 500,
     fontSize: 14,
-    backgroundColor: '#2ecd70',
+    backgroundColor: '#24b47e',
     maxWidth: '100%',
   };
 
