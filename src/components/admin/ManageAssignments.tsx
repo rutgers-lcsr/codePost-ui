@@ -709,7 +709,15 @@ class ManageAssignments extends React.Component<IProps, {}> {
       assignmentRubricLoadComplete &&
       submissionsbyUserLoadComplete
     ) {
-      tableBody = Object.keys(submissions).map((assignmentID) => {
+      const submissionAssignments = this.props.assignments
+        .filter((assignment) => {
+          return assignment.id in submissions;
+        })
+        .map((assignment) => {
+          return `${assignment.id}`;
+        });
+
+      tableBody = submissionAssignments.map((assignmentID) => {
         const assignmentSubs = submissions[assignmentID];
         const numSubmissions = assignmentSubs.length;
 
