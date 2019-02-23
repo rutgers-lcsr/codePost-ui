@@ -345,7 +345,7 @@ class ManageGraders extends React.Component<IProps, IState> {
               <TableColumn key={'isSuperGrader'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
                 View All Privileges
               </TableColumn>
-              <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
+              <TableColumn key={'Unenroll'}>Unenroll user</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>{tableBody}</TableBody>
