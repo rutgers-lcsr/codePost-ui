@@ -207,6 +207,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <TextField
             id="search-studentData"
             label="Search"
+            defaultValue={searchTerm}
             lineDirection="center"
             className="md-cell md-cell--bottom"
             onChange={this.changeSearch}
