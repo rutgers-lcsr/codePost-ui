@@ -18,6 +18,9 @@
     width: 100%;
     border-radius: 8px;
     border: 1px solid $dark-grey;
+    background-color: $dark-grey;
+    padding: 0px 10px 0px 10px;
+    color: white;
 
     &__top {
       padding: 5px 10px 2px 20px;
@@ -37,7 +40,6 @@
       padding: 0px 10px 5px 20px;
       div {
         font-style: italic;
-        color: $mid-grey;
         font-size: $font-size-normal;
       }
     }
