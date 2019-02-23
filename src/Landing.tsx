@@ -182,7 +182,13 @@ print("Average grade on this assignment is %s" % avg_grade)';
                 Hello
               </Button>
               <div className="API__exampleBox__code-separator" />
-              <Button key="SignUp" href="http://docs.codepost.io" className="LandingAPIBtn--docs" flat={true}>
+              <Button
+                key="SignUp"
+                href="http://docs.codepost.io"
+                target="_blank"
+                className="LandingAPIBtn--docs"
+                flat={true}
+              >
                 Full API docs
               </Button>
             </div>
