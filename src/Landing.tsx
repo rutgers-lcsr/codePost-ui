@@ -73,7 +73,7 @@ print("Average grade on this assignment is %s" % avg_grade)';
         options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'python' }}
       />
     );
-    console.log(apiCodeExample);
+
     return (
       <div className="Landing">
         <LandingTopBar />
