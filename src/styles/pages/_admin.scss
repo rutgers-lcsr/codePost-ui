@@ -37,7 +37,7 @@
       border-left: 1px solid tint($brand-color, 50%);
       font-size: $font-size-medium;
 
-      @media screen and (max-width: 1200px) {
+      @media screen and (max-width: 1300px) {
         padding: 6px 20px 6px 20px;
       }
 
@@ -48,7 +48,7 @@
         padding: 6px 80px 6px 80px;
         border-radius: 2px;
 
-        @media screen and (max-width: 1200px) {
+        @media screen and (max-width: 1300px) {
           padding: 6px 20px 6px 20px;
         }
       }
