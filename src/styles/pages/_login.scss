@@ -1,5 +1,6 @@
 .login {
   @include formatAsWhiteBox();
+  min-height: calc(100vh - 60px);
 
   &__main-container {
     &__forms {

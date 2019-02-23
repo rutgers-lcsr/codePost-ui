@@ -335,7 +335,7 @@ class ManageStudents extends React.Component<IProps, IState> {
               options={sectionMenuItems}
               onChange={this.newStudentSectionFieldOnChange.bind(this.props)}
               value={newStudentSectionField}
-              placeholder="Student's section"
+              placeholder="Section"
               isDisabled={!showSaveNewStudentButton || lockedStudentChange}
             />
             <Button
@@ -386,7 +386,7 @@ class ManageStudents extends React.Component<IProps, IState> {
                 <TableColumn key={'Section'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
                   Section
                 </TableColumn>
-                <TableColumn key={'UnEnroll'}>UnEnroll Student</TableColumn>
+                <TableColumn key={'UnEnroll'}>Unenroll Student</TableColumn>
               </TableRow>
             </TableHeader>
             <TableBody>{tableBody}</TableBody>
