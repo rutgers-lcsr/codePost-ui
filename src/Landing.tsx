@@ -60,6 +60,27 @@ print("Rubric comments sorted by  highest frequency: %s" str(_list))',
   },
 ];
 
+const adminCarouselContent = [
+  {
+    imgLink: require('./img/landing/landing-admin_assignments.png'),
+    text: 'Keep track of all assignments, including real-time data on statistics..',
+  },
+  {
+    imgLink: require('./img/landing/landing-admin_rubric.png'),
+    text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
+  },
+  {
+    imgLink: require('./img/landing/landing-admin_roster.png'),
+    text: 'Manage the course roster of students, graders, administrators, and sections.',
+  },
+];
+
+const studentPanelText =
+  'Access clear and comprehensive feedback to continue improving. \
+Easily reference throughout the course and before interviews.';
+
+const graderPanelText = 'Grade better, more consistently, and more quickly.';
+
 class Landing extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
     viewPanelIndex: 0,
@@ -76,20 +97,7 @@ class Landing extends React.Component<{}, IState> {
 
   public render() {
     const { viewPanelIndex, apiTabIndex } = this.state;
-    const carouselContent = [
-      {
-        imgLink: require('./img/landing/landing-admin_assignments.png'),
-        text: 'Keep track of all assignments, including real-time data on statistics ',
-      },
-      {
-        imgLink: require('./img/landing/landing-admin_rubric.png'),
-        text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
-      },
-      {
-        imgLink: require('./img/landing/landing-admin_roster.png'),
-        text: 'Manage the course roster of students, graders, administrators, and sections.',
-      },
-    ];
+
     const dummy = () => {
       return;
     };
@@ -97,29 +105,28 @@ class Landing extends React.Component<{}, IState> {
       <ModalCarousel
         closeModal={dummy}
         isVisible={true}
-        content={carouselContent}
+        content={adminCarouselContent}
         defaultIndex={0}
         isModal={false}
         className="landing-carousel"
         onlyImage={true}
       />
     );
+
     let viewPanelContent;
     let viewPanelTitle;
     switch (viewPanelIndex) {
       case 0:
         viewPanelContent = (
-          <img className="PanelViews__content__image" src={require('./img/landing/landing-student.png')} />
+          <img className="PanelViews__content__image" src={require('./img/landing/landing-grade.png')} />
         );
-        viewPanelTitle =
-          'Access clear and comprehensive feedback to continue improving. \
-          Easily reference throughout the course and before interviews.';
+        viewPanelTitle = graderPanelText;
         break;
       case 1:
         viewPanelContent = (
-          <img className="PanelViews__content__image" src={require('./img/landing/landing-grade.png')} />
+          <img className="PanelViews__content__image" src={require('./img/landing/landing-student.png')} />
         );
-        viewPanelTitle = 'Grade better, more consistently, and more quickly';
+        viewPanelTitle = studentPanelText;
         break;
       case 2:
         viewPanelTitle = '     ';
@@ -164,7 +171,7 @@ class Landing extends React.Component<{}, IState> {
                   className={`PanelViews__tabBox__title${viewPanelIndex === 0 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 0)}
                 >
-                  Student
+                  Grader
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 0 ? '--active' : ''}`}
@@ -176,7 +183,7 @@ class Landing extends React.Component<{}, IState> {
                   className={`PanelViews__tabBox__title${viewPanelIndex === 1 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 1)}
                 >
-                  Grader
+                  Student
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 1 ? '--active' : ''}`}

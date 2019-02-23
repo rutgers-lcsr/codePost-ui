@@ -224,10 +224,19 @@ $md-toolbar-height: 100px;
       padding-bottom: 100px;
     }
 
+    // We want to set a min-height because if carousel render is happening don't want the div to collapse
+    @media only screen and (max-width: 500px) {
+      min-height: 400px;
+    }
+
+    @media only screen and (min-width: 750px) {
+      min-height: 715px;
+    }
+
     &__title {
       font-size: $font-size-xlarge;
       font-weight: 350;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
       height: 35px;
       max-width: 700px;
       text-align: center;
