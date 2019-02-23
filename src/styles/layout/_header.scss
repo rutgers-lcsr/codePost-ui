@@ -72,25 +72,19 @@
   border-color: $brand-color;
   border-style: solid;
   border-width: 0px 0px 3px 0px;
-
-  @media only screen and (max-width: 768px) {
-    flex-direction: column;
-    height: 2 * $topbar-height;
-  }
+  box-shadow: none !important;
+  padding-right: 60px;
+  padding-left: 60px;
 
   // remove the top 'codepost' from title bar if screen size is too small.
   .md-title {
-    @media only screen and (max-width: 367px) {
+    @media only screen and (max-width: 420px) {
       display: none;
     }
   }
 
   &__spacing {
     min-height: $topbar-height;
-
-    @media only screen and (max-width: 768px) {
-      min-height: 2 * $topbar-height;
-    }
   }
   .LandingBtn {
     margin-left: 2px;
