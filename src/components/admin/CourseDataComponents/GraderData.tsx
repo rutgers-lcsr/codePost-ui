@@ -199,6 +199,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
             id="search-graderData"
             label="Search"
             lineDirection="center"
+            defaultValue={searchTerm}
             className="md-cell md-cell--bottom"
             onChange={this.changeSearch}
           />
