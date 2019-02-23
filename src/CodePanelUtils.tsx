@@ -133,8 +133,10 @@ export default class CodePanelUtils {
     const components = elements.join('').split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
-        let className = html.match(/class=".*?"/g)![0].split('=')[1];
-        className = className.substring(1, className.length - 1);
+        let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
+        if (className !== '') {
+          className = className.split('=')[1].substring(1, className.length - 1);
+        }
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
           <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
