@@ -574,16 +574,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
 
     const subs = submissions[assignment.id];
-    const grades = {};
+
+    const grades: string[] = ['Assignment,Student,Grade'];
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
-        grades[student] = sub.grade;
+        grades.push(`${assignment.name},${student},${sub.grade}`);
       });
     });
 
+    const csv = grades.join('\n');
     const a = document.createElement('a');
-    a.href = `data:attachment/json, ${JSON.stringify(grades)}`;
-    a.download = `${currentCourse.name}-${currentCourse.period}-${assignment.name}-grades.json`;
+    a.href = `data:text/csv;charset=utf-8, ${csv}`;
+    a.download = `${currentCourse.name}-${currentCourse.period}-${assignment.name}-grades.csv`;
 
     document.body.appendChild(a);
     a.click();
