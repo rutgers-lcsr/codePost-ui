@@ -78,6 +78,16 @@ $text-font-size: 18px;
       font-size: $text-font-size;
       padding-top: 15px;
     }
+
+    &__code {
+      font-family: Monaco, Menlo, Courier, Courier New, Andale Mono, Bitstream Vera Sans Mono, Lucida Console, Consolas,
+        Droid Sans Mono;
+      font-size: inherit;
+      background: rgba(0, 0, 0, 0.1);
+      padding: 2px 4px;
+      border-radius: 2px;
+      display: inline;
+    }
   }
 
   &__callToAction-container {
@@ -542,16 +552,6 @@ $text-font-size: 18px;
       color: white;
     }
   }
-}
-
-.code {
-  font-family: Monaco, Menlo, Courier, Courier New, Andale Mono, Bitstream Vera Sans Mono, Lucida Console, Consolas,
-    Droid Sans Mono;
-  font-size: inherit;
-  background: rgba(0, 0, 0, 0.1);
-  padding: 2px 4px;
-  border-radius: 2px;
-  display: inline;
 }
 
 .LandingBtn-SignUp {

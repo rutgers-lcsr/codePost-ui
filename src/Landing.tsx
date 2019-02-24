@@ -175,7 +175,8 @@ class Landing extends React.Component<{}, IState> {
               code<b>Post</b>
             </div>
             <div className="Hero__Description__head">
-              The easy, free <small className="code">code review</small> platform for undergrad CS courses
+              The easy, free <small className="Hero__Description__code">code review</small> platform for undergrad CS
+              courses
             </div>
             <div className="Hero__Description__text">
               Save time and give better feedback on coding assignments, while providing insights into how your students
