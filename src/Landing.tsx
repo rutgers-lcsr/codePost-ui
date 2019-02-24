@@ -18,7 +18,7 @@ const apiCodeExamples = [
     code:
       'import requests as r\nimport csv\n\n\
 # Get all submissions for a given assignment\n\
-submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
+submissions = r.get("https://api.codepost.io/assignments/%s/submissions/" % str(assignmentID), \
 headers={"Authorization": "api_key"}).json()\n\n\
 # Identify graded submissions \n\
 grades = [(sub["students"][0], sub["grade"]) for sub in submissions if sub["grade"]]\n\n\
@@ -35,7 +35,7 @@ with open("grades.csv", "w") as writeFile:\n\
 \n\
 # Let graderMap map student emails to the grader who should review their work\n\n\
 # Get all submissions for an assignment\n\
-submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
+submissions = r.get("https://api.codepost.io/assignments/%s/submissions/" % str(assignmentID), \
 headers={"Authorization": "api_key"})\n\n\
 for sub in submissions.json():\n\
   # Who should grade should grade this assignment?\n\
@@ -43,7 +43,7 @@ for sub in submissions.json():\n\
   \n\
   # Assign the submisison to the grader\n\
   payload = {grader: graderEmail}\n\
-  r.post("http://api.codepost.io/submissions/"% str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
+  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
   },
   {
     title: 'Identify common student errors',
@@ -57,7 +57,7 @@ _list = [(i["text"], i["comments"].length) for i in rubricComments]\n\n\
 # Sort list by frequency\n\
 _list.sort((key=lambda tup: tup[1]))\n\
 \n\
-print("Rubric comments sorted by  highest frequency: %s" str(_list))',
+print("Rubric comments sorted by  highest frequency: %s" % str(_list))',
   },
 ];
 
