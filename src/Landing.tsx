@@ -19,43 +19,43 @@ const apiCodeExamples = [
 # Get all submissions for a given assignment\n\
 submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
 headers={"Authorization": "api_key"}).json()\n\n\
-# Create a data structure for all graded assignments, i.e. sub["grade"] != null\n\
-# Because this assignment has no partners, \
-sub["students"] has only one element\n\
+# Identify graded submissions \n\
 grades = [(sub["students"][0], sub["grade"]) for sub in submissions if sub["grade"]]\n\n\
-# Export list of students and grades to a csv; Alternatively, can use an LMS API to post \
-the grades directly to an LMS\n\
+# Export list of students and grades to a csv (alternatively, use your LMS\'s API to post \
+grades directly) \n\
 with open("grades.csv", "w") as writeFile:\n\
     writer = csv.writer(writeFile) \n\
     writer.writerows(grades)',
   },
   {
-    title: 'Assign submission to graders',
+    title: 'Assign submissions for review',
     code:
       'import requests as r\n\
-# We have already defined a mapping "studentToGrader" of {studentEmail: graderEmail}\n\n\
-# Get all submissions for a given assignment\n\
+\n\
+# Let graderMap map student emails to the grader who should review their work\n\n\
+# Get all submissions for an assignment\n\
 submissions = r.get("https://api.codepost.io/assignments/%s/submissions/"% str(assignmentID), \
 headers={"Authorization": "api_key"})\n\n\
 for sub in submissions.json():\n\
-  # What grader should grade this assignment?\n\
-  graderEmail = studentToGrader[sub.students[0]]\n\
+  # Who should grade should grade this assignment?\n\
+  graderEmail = graderMap[sub.students[0]]\n\
+  \n\
   # Assign the submisison to the grader\n\
   payload = {grader: graderEmail}\n\
   r.post("http://api.codepost.io/submissions/"% str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
   },
   {
-    title: 'Calculate the most comment rubric mistakes',
+    title: 'Identify common student errors',
     code:
       'import requests as r\n\n\
-# Get list of rubricComments for an assignment\n\
+# Get an assignment\'s rubric\n\
 rubric = r.get("https://api.codepost.io/assignments/%s/rubric/" % str(assignmentID), headers=headers)\n\
 rubricComments = rubric.json()["rubricComments"]\n\n\
 # Create a list of (text, usage frequency) for every rubric comment\n\
 _list = [(i["text"], i["comments"].length) for i in rubricComments]\n\n\
 # Sort list by frequency\n\
 _list.sort((key=lambda tup: tup[1]))\n\
-# Print out result\n\
+\n\
 print("Rubric comments sorted by  highest frequency: %s" str(_list))',
   },
 ];
@@ -63,23 +63,24 @@ print("Rubric comments sorted by  highest frequency: %s" str(_list))',
 const adminCarouselContent = [
   {
     imgLink: require('./img/landing/landing-admin_assignments.png'),
-    text: 'Keep track of all assignments, including real-time data on statistics..',
+    text: 'Keep track of your assignments to make sure every submission gets reviewed.',
   },
   {
     imgLink: require('./img/landing/landing-admin_rubric.png'),
-    text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
+    text: 'Create standard assignment rubrics. ',
   },
   {
     imgLink: require('./img/landing/landing-admin_roster.png'),
-    text: 'Manage the course roster of students, graders, administrators, and sections.',
+    text: 'Manage your course roster from within codePost.',
   },
 ];
 
 const studentPanelText =
-  'Access clear and comprehensive feedback to continue improving. \
-Easily reference throughout the course and before interviews.';
+  'Students use a simple UI to view their reviewed code and grades, \
+  accessible and referencible during and after a course.';
 
-const graderPanelText = 'Grade better, more consistently, and more quickly.';
+const graderPanelText =
+  'Effortlessly annotate student code, with both custom feedback and standard assignment rubrics.';
 
 class Landing extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
@@ -152,7 +153,9 @@ class Landing extends React.Component<{}, IState> {
             <div className="logo">
               code<b>Post</b>
             </div>
-            <div className="Description-head">The easy, free Code Review platform for University CS Courses</div>
+            <div className="Description-head">
+              The easy, free <small className="code">code review</small> platform for undergrad CS courses
+            </div>
             <div className="Description-text">
               Save time and give better feedback on coding assignments, while providing insights into how your students
               are doing.
@@ -161,7 +164,7 @@ class Landing extends React.Component<{}, IState> {
         </div>
         <div className="Gradient">
           <div className="PanelViews">
-            <div className="PanelViews__title">How it works</div>
+            <div className="PanelViews__title">How codePost works</div>
             <div className="PanelViews__separatorBox">
               <div className="PanelViews__separator" />
             </div>
@@ -171,7 +174,7 @@ class Landing extends React.Component<{}, IState> {
                   className={`PanelViews__tabBox__title${viewPanelIndex === 0 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 0)}
                 >
-                  Grader
+                  Review code
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 0 ? '--active' : ''}`}
@@ -183,7 +186,7 @@ class Landing extends React.Component<{}, IState> {
                   className={`PanelViews__tabBox__title${viewPanelIndex === 1 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 1)}
                 >
-                  Student
+                  What students see
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 1 ? '--active' : ''}`}
@@ -195,7 +198,7 @@ class Landing extends React.Component<{}, IState> {
                   className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 2)}
                 >
-                  Admin
+                  Manage courses
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 2 ? '--active' : ''}`}
@@ -217,10 +220,11 @@ class Landing extends React.Component<{}, IState> {
             <div className="API__textBox__title">codePost API</div>
             <div className="API__textBox__itemList">
               <div className="API__textBox__item">
-                We know that each CS course has its own unique needs, tools, and processes. In that spirit, we've built
-                the codePost API. It's very powerful and flexible, allowing you to manage your course programmatically,
-                integrate with any existing LMS or homegrown solutions, and develop custom analytics. It's easy to use -
-                you can start building powerful scripts in minutes!
+                Managing a CS course is complex. Skyrocketing enrollment is making it even tougher. We believe the best
+                run courses are managed with code, to simplify and automate processes as well as connect together
+                systems. The codePost API allows you to program codePost, using simple, composable abstractions that can
+                be used to build powerful and flexible integrations and scripts. You can get started in less than 10
+                minutes.
               </div>
             </div>
           </div>
