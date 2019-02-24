@@ -125,6 +125,8 @@ $text-font-size: 18px;
       color: white;
       text-transform: none !important;
       transition: 0.3s;
+      border: 3px solid white;
+      font-weight: 700;
 
       @include attention {
         background-color: white;
@@ -144,6 +146,8 @@ $text-font-size: 18px;
       padding: 10px;
       margin-left: 15px;
       cursor: pointer;
+      border: 3px solid white;
+      font-weight: 700;
 
       @include attention {
         background-color: white;
