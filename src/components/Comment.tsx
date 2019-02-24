@@ -295,7 +295,7 @@ class Comment extends React.Component<IProps, IState> {
                 forceIconSize={20}
                 tooltipLabel="Save comment [SHIFT + ENTER]"
                 tooltipDelay={1}
-                tooltipPosition="right"
+                tooltipPosition="left"
                 onClick={this.toggleActive}
               >
                 save
@@ -307,7 +307,7 @@ class Comment extends React.Component<IProps, IState> {
                 forceIconSize={20}
                 tooltipLabel="Delete comment"
                 tooltipDelay={50}
-                tooltipPosition="right"
+                tooltipPosition="left"
                 onClick={deleteComment.bind(this, comment, file)}
               >
                 delete
