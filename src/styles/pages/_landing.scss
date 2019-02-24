@@ -2,41 +2,9 @@
 // Theme
 ///////////////
 
-$Stats-text-color: #787575;
-
 $big-header-font-size: 30px;
 $header-font-size: 24px;
 $text-font-size: 18px;
-
-$Stats-font-size: 24px;
-
-$path-box-height: 50px;
-$buffer-height: 150px;
-
-$md-toolbar-height: 100px;
-
-#calendly-button {
-  position: absolute;
-  border: 1px solid white;
-  font-size: 20px;
-  border-radius: 10px;
-  height: 80px;
-  width: 170px;
-  right: 200px;
-  top: 300px;
-  color: white;
-  text-align: center;
-  vertical-align: middle;
-  padding: 10px;
-  cursor: pointer;
-}
-
-%landing-headline {
-  font-size: $big-header-font-size;
-  font-weight: bold;
-  text-align: center;
-  color: $brand-color;
-}
 
 .Landing {
   display: flex;
@@ -59,6 +27,9 @@ $md-toolbar-height: 100px;
   @media only screen and (max-width: 768px) {
     height: 500px;
   }
+  @media only screen and (max-width: 550px) {
+    height: 650px;
+  }
 }
 
 .Hero {
@@ -67,7 +38,8 @@ $md-toolbar-height: 100px;
   padding-left: 60px;
   padding-top: 100px;
   color: white;
-
+  display: flex;
+  justify-content: space-between;
   @media only screen and (max-width: 768px) {
     padding-left: 15px;
     padding-top: 50px;
@@ -75,7 +47,11 @@ $md-toolbar-height: 100px;
     height: fit-content;
   }
 
-  .logo {
+  @media only screen and (max-width: 550px) {
+    flex-direction: column;
+  }
+
+  &__logo {
     font-size: 70px;
 
     @media only screen and (max-width: 768px) {
@@ -83,7 +59,7 @@ $md-toolbar-height: 100px;
     }
   }
 
-  .Description {
+  &__Description {
     max-width: 500px;
     width: auto;
 
@@ -91,55 +67,81 @@ $md-toolbar-height: 100px;
       min-width: 200px;
       width: auto;
     }
-  }
-  .Description-head {
-    font-size: $big-header-font-size;
-    font-weight: bold;
-    padding-top: 30px;
-  }
 
-  .Description-text {
-    font-size: $text-font-size;
-    padding-top: 15px;
-  }
-}
+    &__head {
+      font-size: $big-header-font-size;
+      font-weight: bold;
+      padding-top: 30px;
+    }
 
-.pathBox {
-  background-color: $light-grey;
-  height: $path-box-height;
-}
-
-.Numbers {
-  z-index: 1;
-  flex-grow: 1;
-  background-color: $brand-color;
-  padding: 50px 60px 50px 60px;
-
-  color: white;
-  font-size: $header-font-size;
-
-  .stats {
-    font-weight: 500;
-    font-size: 50px;
+    &__text {
+      font-size: $text-font-size;
+      padding-top: 15px;
+    }
   }
 
-  .subtext {
-    font-size: 20px;
-    font-weight: normal;
-    font-weight: 400;
-  }
+  &__callToAction-container {
+    justify-content: center;
+    z-index: 2;
+    padding-bottom: 100px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 20px;
 
-  .footnote {
-    font-size: $text-font-size;
-    padding-top: 30px;
-    font-style: oblique;
-    font-weight: normal;
-    padding: 0px;
-  }
-}
+    @media only screen and (max-width: 950px) {
+      flex-direction: column;
+    }
 
-.buffer {
-  height: $buffer-height;
+    @media only screen and (max-width: 768px) {
+      padding-bottom: 0px;
+      padding-top: 50px;
+    }
+
+    @media only screen and (max-width: 550px) {
+      flex-direction: row;
+    }
+
+    &__signUp {
+      margin-left: 15px;
+      border: 1px solid white;
+      font-size: 20px;
+      height: 80px;
+      width: 170px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: transparent;
+      color: white;
+      text-transform: none !important;
+      transition: 0.3s;
+
+      @include attention {
+        background-color: white;
+        color: $brand-color;
+        transition: 0.3s;
+      }
+    }
+    &__calendly {
+      border: 1px solid white;
+      font-size: 20px;
+      border-radius: 10px;
+      height: 80px;
+      width: 170px;
+      color: white;
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px;
+      margin-left: 15px;
+      cursor: pointer;
+
+      @include attention {
+        background-color: white;
+        color: $brand-color;
+        transition: 0.3s;
+      }
+    }
+  }
 }
 
 .Gradient {
@@ -165,7 +167,7 @@ $md-toolbar-height: 100px;
   }
   &__separator {
     position: absolute;
-    top: 80px;
+    top: 88px;
     height: 5px;
     width: 100%;
     background-color: lighten($mid-grey, 10%);
@@ -190,9 +192,26 @@ $md-toolbar-height: 100px;
   }
 
   &__tabBox {
-    display: Flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
+
+    &__titleBox {
+      height: 45px;
+      width: calc((100vw - 420px) / 3);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      @media only screen and (max-width: 750px) {
+        width: calc((100vw - 220px) / 3);
+      }
+
+      @media only screen and (max-width: 450px) {
+        width: calc((100vw - 120px) / 3);
+      }
+    }
+
     &__title {
       font-size: $font-size-large;
       font-weight: 450;
@@ -200,6 +219,7 @@ $md-toolbar-height: 100px;
       margin-bottom: 15px;
       transition: 0.3s;
       cursor: pointer;
+      text-align: center;
 
       &--active {
         font-size: $font-size-large;
@@ -208,6 +228,7 @@ $md-toolbar-height: 100px;
         margin-bottom: 15px;
         transition: 0.3s;
         cursor: pointer;
+        text-align: center;
       }
     }
 
@@ -256,6 +277,10 @@ $md-toolbar-height: 100px;
       height: 35px;
       max-width: 700px;
       text-align: center;
+
+      @media only screen and (max-width: 700px) {
+        font-size: $font-size-large;
+      }
     }
 
     &__image {
@@ -394,6 +419,35 @@ $md-toolbar-height: 100px;
   }
   @media only screen and (max-width: 450px) {
     width: 350px;
+  }
+}
+
+.Numbers {
+  z-index: 1;
+  flex-grow: 1;
+  background-color: $brand-color;
+  padding: 50px 60px 50px 60px;
+
+  color: white;
+  font-size: $header-font-size;
+
+  .stats {
+    font-weight: 500;
+    font-size: 50px;
+  }
+
+  .subtext {
+    font-size: 20px;
+    font-weight: normal;
+    font-weight: 400;
+  }
+
+  .footnote {
+    font-size: $text-font-size;
+    padding-top: 30px;
+    font-style: oblique;
+    font-weight: normal;
+    padding: 0px;
   }
 }
 

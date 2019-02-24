@@ -2,6 +2,7 @@ import 'codemirror/mode/python/python';
 import * as React from 'react';
 import * as CodeMirror from 'react-codemirror';
 import { Button } from 'react-md';
+import { animateScroll as scroll } from 'react-scroll';
 import LandingTopBar from './components/LandingTopBar';
 
 import { ModalCarousel } from './components/Utils/ModalCarousel';
@@ -45,7 +46,7 @@ for sub in submissions.json():\n\
   r.post("http://api.codepost.io/submissions/"% str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
   },
   {
-    title: 'Calculate the most comment rubric mistakes',
+    title: 'Calculate the most common rubric items',
     code:
       'import requests as r\n\n\
 # Get list of rubricComments for an assignment\n\
@@ -67,7 +68,7 @@ const adminCarouselContent = [
   },
   {
     imgLink: require('./img/landing/landing-admin_rubric.png'),
-    text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
+    text: 'Maintain standard rubrics, to be used as a scoring guideline by graders.',
   },
   {
     imgLink: require('./img/landing/landing-admin_roster.png'),
@@ -85,6 +86,10 @@ class Landing extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
     viewPanelIndex: 0,
     apiTabIndex: 0,
+  };
+
+  public scrollToBottom = () => {
+    scroll.scrollToBottom();
   };
 
   public componentDidMount() {
@@ -138,14 +143,14 @@ class Landing extends React.Component<{}, IState> {
         viewPanelTitle = graderPanelText;
         break;
       case 1:
+        viewPanelTitle = '     ';
+        viewPanelContent = adminCarousel;
+        break;
+      case 2:
         viewPanelContent = (
           <img className="PanelViews__content__image" src={require('./img/landing/landing-student.png')} />
         );
         viewPanelTitle = studentPanelText;
-        break;
-      case 2:
-        viewPanelTitle = '     ';
-        viewPanelContent = adminCarousel;
         break;
     }
 
@@ -164,19 +169,30 @@ class Landing extends React.Component<{}, IState> {
         <div className="topbar--Landing__spacing" />
         <div className="Hero-background" />
         <div className="Hero">
-          <div className="Description col-md-5">
-            <div className="logo">
+          <div className="Hero__Description col-md-5">
+            <div className="Hero__logo">
               code<b>Post</b>
             </div>
-            <div className="Description-head">The easy, free Code Review platform for University CS Courses</div>
-            <div className="Description-text">
+            <div className="Hero__Description__head">The easy, free Code Review platform for University CS Courses</div>
+            <div className="Hero__Description__text">
               Save time and give better feedback on coding assignments, while providing insights into how your students
               are doing.
             </div>
           </div>
+          <div className="Hero__callToAction-container">
+            <Button
+              key="SignUp"
+              className="Hero__callToAction-container__signUp"
+              onClick={this.scrollToBottom}
+              flat={true}
+            >
+              Sign Up
+            </Button>
+            <div className="Hero__callToAction-container__calendly" id="calendly-button">
+              Meet us at SIGSCE 2019!
+            </div>
+          </div>
         </div>
-        <div id="calendly-button">Meet us at SIGSCE 2019!</div>
-
         <div className="Gradient">
           <div className="PanelViews">
             <div className="PanelViews__title">How it works</div>
@@ -185,11 +201,13 @@ class Landing extends React.Component<{}, IState> {
             </div>
             <div className="PanelViews__tabContainer">
               <div className="PanelViews__tabBox">
-                <div
-                  className={`PanelViews__tabBox__title${viewPanelIndex === 0 ? '--active' : ''}`}
-                  onClick={this.changePanelIndex.bind(this, 0)}
-                >
-                  Grader
+                <div className="PanelViews__tabBox__titleBox">
+                  <div
+                    className={`PanelViews__tabBox__title${viewPanelIndex === 0 ? '--active' : ''}`}
+                    onClick={this.changePanelIndex.bind(this, 0)}
+                  >
+                    Review code
+                  </div>
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 0 ? '--active' : ''}`}
@@ -197,11 +215,13 @@ class Landing extends React.Component<{}, IState> {
                 />
               </div>
               <div className="PanelViews__tabBox">
-                <div
-                  className={`PanelViews__tabBox__title${viewPanelIndex === 1 ? '--active' : ''}`}
-                  onClick={this.changePanelIndex.bind(this, 1)}
-                >
-                  Student
+                <div className="PanelViews__tabBox__titleBox">
+                  <div
+                    className={`PanelViews__tabBox__title${viewPanelIndex === 1 ? '--active' : ''}`}
+                    onClick={this.changePanelIndex.bind(this, 1)}
+                  >
+                    Manage course
+                  </div>
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 1 ? '--active' : ''}`}
@@ -209,11 +229,13 @@ class Landing extends React.Component<{}, IState> {
                 />
               </div>
               <div className="PanelViews__tabBox">
-                <div
-                  className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
-                  onClick={this.changePanelIndex.bind(this, 2)}
-                >
-                  Admin
+                <div className="PanelViews__tabBox__titleBox">
+                  <div
+                    className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
+                    onClick={this.changePanelIndex.bind(this, 2)}
+                  >
+                    What a student sees
+                  </div>
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 2 ? '--active' : ''}`}
@@ -284,7 +306,7 @@ class Landing extends React.Component<{}, IState> {
           <div className="stats">
             <div className="stats col-md-4 text-center">
               30,000+
-              <div className="stats subtext text-center">assignments graded</div>
+              <div className="stats subtext text-center">submissions graded</div>
             </div>
             <div className="stats col-md-4 text-center">
               3,000+
