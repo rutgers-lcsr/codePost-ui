@@ -106,6 +106,9 @@ class Landing extends React.Component<{}, IState> {
 
     const calendlyDiv = document.getElementById('calendly-button');
     calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+
+    const calendlyFooter = document.getElementById('calendly-footer');
+    calendlyFooter!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
   }
 
   public changePanelIndex = (newIndex: number) => {
@@ -348,7 +351,28 @@ class Landing extends React.Component<{}, IState> {
             </div>
           </div>
         </div>
-        <div className="About" />
+        <div className="Footer">
+          <div className="Footer__copyright">© codePost 2019</div>
+          <div className="Footer__rightBox">
+            <div className="Footer__rightBox__item">
+              <a href="http://updates.codepost.io" target="_blank">
+                Updates
+              </a>
+            </div>
+            <div className="Footer__rightBox__item">
+              <a href="http://docs.codepost.io" target="_blank">
+                API Docs
+              </a>
+            </div>
+            <div className="Footer__rightBox__item">
+              <a href="mailto:team@codepost.io">Contact Us</a>
+            </div>
+            <div id="calendly-footer" className="Footer__rightBox__item">
+              <a> Schedule a demo </a>
+            </div>
+            <div className="Footer__rightBox__item">Privacy + Terms</div>
+          </div>
+        </div>
       </div>
     );
   }

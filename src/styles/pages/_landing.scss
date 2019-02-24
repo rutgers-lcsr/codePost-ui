@@ -330,7 +330,7 @@ $text-font-size: 18px;
   -webkit-transform-origin: 0;
   transform-origin: 0;
   background: $dark-grey;
-  height: 1200px;
+  height: 1250px;
 
   @media only screen and (max-width: 600px) {
     height: 1400px;
@@ -504,11 +504,6 @@ $text-font-size: 18px;
   }
 }
 
-.About {
-  height: 50px;
-  background-color: #f6f9fc;
-}
-
 .LandingAPIBtn {
   @include button($dark-grey, $mid-grey);
   margin: 2px 0px 2px 0px;
@@ -580,5 +575,52 @@ $text-font-size: 18px;
   }
 }
 
+.Footer {
+  background: #f4f4f4;
+  display: flex;
+  justify-content: space-between;
+  padding: 40px 80px 30px 80px;
+  align-items: center;
+  @media only screen and (max-width: 750px) {
+    flex-direction: column;
+  }
+  &__copyright {
+    color: #aab7c4;
+    font-size: $font-size-medium;
+    margin-bottom: 10px;
+  }
+  &__rightBox {
+    display: flex;
+
+    @media only screen and (max-width: 750px) {
+      flex-direction: column;
+    }
+    &__item {
+      margin-left: 40px;
+      margin-bottom: 10px;
+      @media only screen and (max-width: 750px) {
+        margin-left: 0px;
+      }
+      font-size: $font-size-larger;
+      color: #9b9b9b;
+      font-weight: 600;
+      a {
+        color: #9b9b9b;
+      }
+      a:hover {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:active {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:focus {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+    }
+  }
+}
 ///////////////
 ///////////////
