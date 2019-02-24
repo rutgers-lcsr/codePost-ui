@@ -15,6 +15,22 @@ $buffer-height: 150px;
 
 $md-toolbar-height: 100px;
 
+#calendly-button {
+  position: absolute;
+  border: 1px solid white;
+  font-size: 20px;
+  border-radius: 10px;
+  height: 80px;
+  width: 170px;
+  right: 200px;
+  top: 300px;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px;
+  cursor: pointer;
+}
+
 %landing-headline {
   font-size: $big-header-font-size;
   font-weight: bold;

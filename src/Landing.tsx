@@ -88,6 +88,21 @@ class Landing extends React.Component<{}, IState> {
     apiTabIndex: 0,
   };
 
+  public componentDidMount() {
+    // Calendly widget setup
+    const head = document.querySelector('head');
+    const script = document.createElement('script');
+    script.setAttribute('src', 'https://assets.calendly.com/assets/external/widget.js');
+    const link = document.createElement('link');
+    link.setAttribute('href', 'https://assets.calendly.com/assets/external/widget.css');
+    link.setAttribute('rel', 'stylesheet');
+    head!.appendChild(script);
+    head!.appendChild(link);
+
+    const calendlyDiv = document.getElementById('calendly-button');
+    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+  }
+
   public changePanelIndex = (newIndex: number) => {
     this.setState({ viewPanelIndex: newIndex });
   };
@@ -146,6 +161,7 @@ class Landing extends React.Component<{}, IState> {
     return (
       <div className="Landing">
         <LandingTopBar />
+
         <div className="topbar--Landing__spacing" />
         <div className="Hero-background" />
         <div className="Hero">
@@ -162,6 +178,8 @@ class Landing extends React.Component<{}, IState> {
             </div>
           </div>
         </div>
+        <div id="calendly-button">Meet us at SIGSCE 2019!</div>
+
         <div className="Gradient">
           <div className="PanelViews">
             <div className="PanelViews__title">How codePost works</div>
@@ -255,7 +273,7 @@ class Landing extends React.Component<{}, IState> {
               </Button>
               <div className="API__exampleBox__code-separator" />
               <Button
-                key="SignUp"
+                key="APIDocs"
                 href="http://docs.codepost.io"
                 target="_blank"
                 className="LandingAPIBtn--docs"
@@ -286,10 +304,22 @@ class Landing extends React.Component<{}, IState> {
           <div className="SignUpContainer">
             <div className="SignUpContainer__text">Get started with codePost by signing up</div>
             <div className="SignUpContainer__buttons">
-              <Button href="/signup/staff" key="SignUp" className="LandingBtn-SignUp" primary={true} flat={true}>
+              <Button
+                href="/signup/staff"
+                key="CourseStaffSignUp"
+                className="LandingBtn-SignUp"
+                primary={true}
+                flat={true}
+              >
                 Course Staff
               </Button>
-              <Button href="/signup/student" key="SignUp" className="LandingBtn-SignUp" primary={true} flat={true}>
+              <Button
+                href="/signup/student"
+                key="StudentSignUp"
+                className="LandingBtn-SignUp"
+                primary={true}
+                flat={true}
+              >
                 Students
               </Button>
             </div>
