@@ -414,15 +414,10 @@ $text-font-size: 18px;
     }
 
     &__code-separator {
-      width: calc(100% - 20px);
+      width: 100%;
       border: 1px solid $mid-grey;
       margin-top: 20px;
       margin-bottom: 10px;
-      margin-left: 10px;
-
-      @media only screen and (max-width: 1000px) {
-        width: calc(100vw - 80px);
-      }
     }
   }
 }
