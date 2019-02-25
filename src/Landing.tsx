@@ -333,7 +333,7 @@ class Landing extends React.Component<{}, IState> {
               <Button
                 href="/signup/staff"
                 key="CourseStaffSignUp"
-                className="LandingBtn-SignUp"
+                className="LandingBtn-SignUp--left"
                 primary={true}
                 flat={true}
               >
@@ -342,7 +342,7 @@ class Landing extends React.Component<{}, IState> {
               <Button
                 href="/signup/student"
                 key="StudentSignUp"
-                className="LandingBtn-SignUp"
+                className="LandingBtn-SignUp--right"
                 primary={true}
                 flat={true}
               >
