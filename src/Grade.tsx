@@ -576,6 +576,17 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
   // </div>
   return (
     <div className="grade__finalize">
+      <div className="grade__finalize--warning">
+        <Button
+          icon
+          tooltipLabel="Warning: This submission has both positive and negative point comments.
+        Please check to make sure that this is intentional."
+          tooltipPosition="left"
+          className={warningClassName}
+        >
+          warning
+        </Button>
+      </div>
       <Finalize
         submission={submission}
         comments={comments}
@@ -585,15 +596,6 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
         files={files}
         unsavedComments={props.unsavedComments}
       />
-      <Button
-        icon
-        tooltipLabel="Warning: This submission has both positive and negative point comments.
-        Please check to make sure that this is intentional."
-        tooltipPosition="left"
-        className={warningClassName}
-      >
-        warning
-      </Button>
     </div>
   );
 };

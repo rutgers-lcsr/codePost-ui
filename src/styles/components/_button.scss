@@ -79,14 +79,22 @@
 
   &--finalize {
     @include button($brand-color, white);
-    @extend %large-button;
-    right: 60px;
+    width: 80px;
+    height: 42.2px;
+    font-size: $font-size-medium;
+    border-radius: 6px;
+    font-weight: bold;
+    line-height: 42.2px;
   }
 
   &--takeback {
     @include button($mid-grey, white);
-    @extend %large-button;
-    right: 60px;
+    width: 80px;
+    height: 42.2px;
+    font-size: $font-size-medium;
+    border-radius: 6px;
+    font-weight: bold;
+    line-height: 42.2px;
   }
 
   &--comment {

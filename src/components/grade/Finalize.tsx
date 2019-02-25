@@ -165,7 +165,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     );
 
     return (
-      <div>
+      <div style={{ display: 'inline-block' }}>
         <FinalizeButton buttonState={buttonState} handleClick={this.tryToToggleFinalized} />
         <DialogContainer
           id="finalize-dialog"
