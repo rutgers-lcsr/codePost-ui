@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { TextField } from 'react-md';
+import { TopBarNoEmail } from './TopBar';
 const initialState = {
   email: '',
   status: '',
@@ -73,10 +74,13 @@ class ForgotPasswordForm extends React.Component<{}, State> {
     }
 
     return (
-      <div className="SignUpManager">
-        <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Reset your password</div>
-          {content}
+      <div>
+        <TopBarNoEmail />
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__title">Reset your password</div>
+            {content}
+          </div>
         </div>
       </div>
     );

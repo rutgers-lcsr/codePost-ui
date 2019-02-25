@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 import '../styles/index.scss';
+import { TopBarNoEmail } from './TopBar';
 
 enum SignUpType {
   newCourse,
@@ -30,24 +31,27 @@ class SignUpManager extends React.Component<{}, IState> {
     }
 
     return (
-      <div className="SignUpManager">
-        <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Join codePost</div>
-          <div className="SignUpManager__item">
-            <div className="SignUpManager__Staff">
-              <div
-                onClick={this.toggleRedirect.bind(this, SignUpType.existingCourse)}
-                className="SignUpManager__Staff--left"
-                key="SignUp"
-              >
-                Join an existing course
-              </div>
-              <div
-                onClick={this.toggleRedirect.bind(this, SignUpType.newCourse)}
-                className="SignUpManager__Staff--right"
-                key="SignUp"
-              >
-                Create a new course
+      <div>
+        <TopBarNoEmail />
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__title">Join codePost</div>
+            <div className="SignUpManager__item">
+              <div className="SignUpManager__Staff">
+                <div
+                  onClick={this.toggleRedirect.bind(this, SignUpType.existingCourse)}
+                  className="SignUpManager__Staff--left"
+                  key="SignUp"
+                >
+                  Join an existing course
+                </div>
+                <div
+                  onClick={this.toggleRedirect.bind(this, SignUpType.newCourse)}
+                  className="SignUpManager__Staff--right"
+                  key="SignUp"
+                >
+                  Create a new course
+                </div>
               </div>
             </div>
           </div>

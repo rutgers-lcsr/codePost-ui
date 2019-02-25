@@ -1,6 +1,7 @@
 .SignUpManager {
   @include formatAsWhiteBox();
   padding-top: 100px;
+  min-height: calc(100vh - 60px) !important;
 
   &__main-container {
     height: auto;
@@ -85,6 +86,7 @@
       margin-bottom: 35px;
     }
     &__ConfirmAuthority {
+      margin-top: 25px;
       display: flex;
       justify-content: space-around;
     }
