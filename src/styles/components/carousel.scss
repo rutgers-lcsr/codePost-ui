@@ -115,6 +115,22 @@ $container-border-radius: 8px;
       color: white;
       flex-grow: 1;
       border-radius: 0px 0px$container-border-radius $container-border-radius;
+
+      a {
+        color: $light-grey;
+      }
+      a:hover {
+        text-decoration: none;
+        color: $light-grey;
+      }
+      a:active {
+        text-decoration: none;
+        color: $light-grey;
+      }
+      a:focus {
+        text-decoration: none;
+        color: $light-grey;
+      }
     }
   }
 }

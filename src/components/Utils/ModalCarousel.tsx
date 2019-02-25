@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Button } from 'react-md';
+import { Link } from 'react-router-dom';
 
 interface ISlide {
   imgLink: string;
-  text: string;
+  text: string | any;
 }
 
 interface IProps {
@@ -121,43 +122,45 @@ class ModalCarousel extends React.Component<IProps, IState> {
 
 const adminCarouselContent = [
   {
-    imgLink: require('../../img/Admin-onboarding/Course-Selector.png'),
-    text: 'Get started by choosing a course to view.',
+    imgLink: require('../../img/Admin-onboarding/CreateCourse.png'),
+    text: 'Get started by creating a course. You can also copy assignments from an old one to save time.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Submissions-Student.png'),
-    text: 'View all submissions by student and grader.',
+    imgLink: require('../../img/Admin-onboarding/Roster-Student.png'),
+    text:
+      'Upload your roster to create students, graders, and admins. \
+      Add yourself as a grader if you’d like to grade submissions yourself.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Submissions-Student-DoubleClick.png'),
-    text: 'Double click on any student or grader to get more details about his/her submissions.',
+    imgLink: require('../../img/Admin-onboarding/Create-Assignment.png'),
+    text: 'Create your first assignment.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Assignments.png'),
+    imgLink: require('../../img/Admin-onboarding/Assignment-Rubric.png'),
+    text:
+      'Create a rubric. Graders will use the rubric to make comments on student work, as well as apply deductions. \
+      You can track the frequency with which rubric items are applied here, as well.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/Submissions-Overview.png'),
+    text: 'View submissions by student and grader.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/Assignments--Drawer.png'),
     text: 'Keep track of all assignments, including real-time data on statistics.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Assignments-Rubric.png'),
-    text: 'Maintain standard assignment rubrics, to be used as a scoring guideline by graders.',
-  },
-  {
-    imgLink: require('../../img/Admin-onboarding/Roster-Students.png'),
-    text: 'Manage the course roster of students, graders, administrators, and sections.',
-  },
-  {
-    imgLink: require('../../img/Admin-onboarding/Roster-Sections.png'),
-    text: 'Manage grader privileges, such as the ability to manage all students in a section.',
-  },
-  {
-    imgLink: require('../../img/Admin-onboarding/CreateCourse.png'),
-    text: 'Replicate new courses each semester from historical courses, copying all assignments and rubrics.',
-  },
-  {
     imgLink: require('../../img/Admin-onboarding/Api-Docs.png'),
-    text:
-      "Write scripts to interact with codePost's api for complete course control. \
-      See the documentation at https://docs.codepost.io. \
-      A unique API key is provided in user settings. ",
+    text: (
+      <div>
+        Check out the{' '}
+        <a href="http://docs.codepost.io" target="_blank">
+          codePost API{' '}
+        </a>
+        to start building powerful scripts and integrations. \ Your unique API key can be accessed from your{' '}
+        <Link to={'/settings'}>settings</Link> page
+      </div>
+    ),
   },
 ];
 export { ModalCarousel, adminCarouselContent };
