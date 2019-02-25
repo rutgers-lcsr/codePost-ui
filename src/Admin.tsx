@@ -164,7 +164,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     isLoading: false,
     loadingMessage: '',
     loadingTitle: '',
-    onboardingModalVisible: false,
+    onboardingModalVisible: this.props.initialCourses.length === 0,
   };
 
   public panels: { [key: string]: string } = {
@@ -1773,11 +1773,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     );
 
     const stillLoadingCourse =
-      !this.state.assignmentsLoadComplete ||
-      !this.state.assignmentRubricLoadComplete ||
-      !this.state.submissionsLoadComplete ||
-      !this.state.submissionsbyUserLoadComplete ||
-      !this.state.sectionsLoadComplete;
+      courses.length > 0 &&
+      (!this.state.assignmentsLoadComplete ||
+        !this.state.assignmentRubricLoadComplete ||
+        !this.state.submissionsLoadComplete ||
+        !this.state.submissionsbyUserLoadComplete ||
+        !this.state.sectionsLoadComplete);
 
     return (
       <div className="admin">
