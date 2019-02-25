@@ -25,6 +25,7 @@ import {
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CoursePatchType, CourseType, RosterType } from './infrastructure/course';
+import { File } from './infrastructure/file';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
@@ -83,6 +84,7 @@ interface IAdminState {
   toasts: IToast[];
   longToasts: IToast[];
   errorToasts: IToast[];
+  longErrorToasts: IToast[];
 
   // URL variables
   toLoadCourse: boolean;
@@ -109,6 +111,7 @@ interface IAdminProps {
   addToast: (text: string, action: string | undefined) => void;
   addLongToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
+  addLongErrorToast: (text: string, action: string | undefined) => void;
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
@@ -155,6 +158,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     toasts: [],
     longToasts: [],
     errorToasts: [],
+    longErrorToasts: [],
 
     initialTab: 0,
 
@@ -756,6 +760,65 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newSuperGraders.push(userEmail);
         return this.changeRoster(newSuperGraders, userType);
     }
+  };
+
+  // Upload a submission in cautious mode
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    if (partners.length === 0) {
+      this.props.addErrorToast('No students selected for the upload.', undefined);
+      return;
+    }
+
+    // Check for collisions for each student
+    const checkForCollisions = Promise.all(
+      partners.map((student) => {
+        return Assignment.readSubmissionsStudent(assignment.id, { student }).then((subs: SubmissionType[]) => {
+          return subs.length > 0;
+        });
+      }),
+    );
+
+    checkForCollisions.then((values: boolean[]) => {
+      // We found a collision
+      if (values.includes(true)) {
+        this.props.addLongErrorToast(
+          'Collisions exist for this student group, so this upload has been aborted. \
+          Please delete all associated submissions and try again.',
+          undefined,
+        );
+      } else {
+        // Create submission
+        const submissionPayload = {
+          id: -1,
+          isFinalized: false,
+          files: [],
+          assignment: assignment.id,
+          students: partners,
+        };
+
+        const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
+          // Create each file
+          const filePromises = files.map((file: any) => {
+            const split = file.name.split('.');
+            const ext = split[split.length - 1];
+            const filePayload = {
+              id: -1,
+              name: file.name,
+              extension: ext,
+              code: file.data,
+              submission: submission.id,
+              comments: [],
+            };
+            return File.create(filePayload);
+          });
+          return Promise.all(filePromises);
+        });
+
+        submissionPromise.then((v: any) => {
+          this.props.addLongToast(`New ${assignment.name} submission for ${partners.join(', ')} created`, undefined);
+        });
+      }
+    });
   };
 
   // ------------------- Manage sections API calls  -------------------
@@ -1692,6 +1755,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           clearLoadingDialog={this.clearLoadingDialog}
           submissionsByStudent={this.state.submissionsByStudent}
           submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+          students={this.state.students}
+          uploadSubmission={this.uploadSubmission}
         />
       );
     } else if (currentCourse && loadedPanel === 2) {

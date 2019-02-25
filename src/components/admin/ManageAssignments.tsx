@@ -31,11 +31,13 @@ import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
+import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
 
 import { openSubmission } from './AdminUtils';
 
 interface IProps {
   submissions: IAssignmentToSubmissionsMap;
+  students: string[];
   rubricCategories: IAssignmentToRubricCategories;
   rubricComments: IRubricCategoryToRubricCommentsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -96,6 +98,7 @@ interface IProps {
 
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
+  uploadSubmission: any;
 }
 
 interface IState {
@@ -112,6 +115,7 @@ interface IState {
   commentExplorer: { categoryID: number; commentIndex: number } | undefined;
   savedComments: { [id: number]: boolean };
   savedCategories: { [id: number]: boolean };
+  uploadingSubmissionAssignment?: AssignmentType;
   deletingAssignment?: AssignmentType;
   drawerVisible: boolean;
   drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
@@ -547,6 +551,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
     this.setState({ commentExplorer: undefined });
   };
 
+  // ------------------- Upload Submission functions -------------------
+  public toggleUploadSubmission = (assignment: AssignmentType | undefined) => {
+    this.setState({ uploadingSubmissionAssignment: assignment });
+  };
+
   // ------------------- Delete Assignment functions -------------------
   public toggleDeleteAssignment = (assignment: AssignmentType | undefined) => {
     this.setState({ deletingAssignment: assignment });
@@ -859,6 +868,11 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 vertical_align_bottom
               </Button>
             </TableColumn>
+            <TableColumn style={{ textAlign: 'center' }}>
+              <Button icon={true} onClick={this.toggleUploadSubmission.bind(this.props, assignment)}>
+                vertical_align_top
+              </Button>
+            </TableColumn>
             <TableColumn>
               <Button icon={true} onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>
                 cancel
@@ -894,6 +908,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <TableColumn key={'Grades'}>Grades</TableColumn>
+                  <TableColumn key={'UploadSubmission'}>Upload Submission</TableColumn>
                   <TableColumn key={'Delete'}>Delete</TableColumn>
                 </TableRow>
               </TableHeader>
@@ -907,6 +922,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
             onDelete={this.deleteAssignment}
+          />
+          <UploadSubmissionDialog
+            isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
+            assignment={this.state.uploadingSubmissionAssignment!}
+            students={this.props.students}
+            onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
+            uploadSubmission={this.props.uploadSubmission}
           />
           <div
             className={`drawer__background${!drawerVisible ? '--hidden' : ''}`}

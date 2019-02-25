@@ -69,6 +69,7 @@
   }
   @include setMinPageHeight($topbar-height);
   &__onboardingModal {
+    cursor: pointer;
     @include badgeFormat($mid-grey, white);
     margin-left: 25px;
   }
