@@ -188,7 +188,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.students.join(',')}
+                      {submission.students.join(', ')}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
