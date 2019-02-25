@@ -239,9 +239,8 @@ class Comment extends React.Component<IProps, IState> {
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
-              <div className="comment__footer__author">
-                line: {comment.startLine + 1} {author}
-              </div>
+              <div className="comment__footer__line">line: {comment.startLine + 1}&nbsp;</div>
+              <div className="comment__footer__author">{author}</div>
             </div>
           </div>
         </div>
