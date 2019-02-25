@@ -34,21 +34,21 @@ class SignUpManager extends React.Component<{}, IState> {
         <div className="SignUpManager__main-container">
           <div className="SignUpManager__title">Join codePost</div>
           <div className="SignUpManager__item">
-            <div
-              onClick={this.toggleRedirect.bind(this, SignUpType.existingCourse)}
-              className="SignUpManager__Btn"
-              key="SignUp"
-            >
-              Join an existing course
-            </div>
-          </div>
-          <div className="SignUpManager__item">
-            <div
-              onClick={this.toggleRedirect.bind(this, SignUpType.newCourse)}
-              className="SignUpManager__Btn"
-              key="SignUp"
-            >
-              Create a new course
+            <div className="SignUpManager__Staff">
+              <div
+                onClick={this.toggleRedirect.bind(this, SignUpType.existingCourse)}
+                className="SignUpManager__Staff--left"
+                key="SignUp"
+              >
+                Join an existing course
+              </div>
+              <div
+                onClick={this.toggleRedirect.bind(this, SignUpType.newCourse)}
+                className="SignUpManager__Staff--right"
+                key="SignUp"
+              >
+                Create a new course
+              </div>
             </div>
           </div>
         </div>

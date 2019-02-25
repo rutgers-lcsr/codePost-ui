@@ -555,46 +555,8 @@ $text-font-size: 18px;
   }
 }
 
-%LandingBtn-SignUp {
-  width: 170px;
-  height: auto;
-  text-transform: none;
-  font-size: $font-size-xlarge;
-  border: 1px solid $brand-color;
-  border-radius: 0px;
-  text-align: center;
-  transition: 0.4s;
-  @media only screen and (max-width: 500px) {
-    font-size: $font-size-larger;
-  }
-
-  @include attention {
-    background-color: $brand-color;
-    color: white;
-  }
-  &:hover {
-    text-decoration: none;
-    color: white;
-  }
-
-  &:active {
-    text-decoration: none;
-    color: white;
-  }
-  &:focus {
-    text-decoration: none;
-    color: white;
-  }
-}
-
 .LandingBtn-SignUp {
-  &--left {
-    @extend %LandingBtn-SignUp;
-    border-right: 0px;
-  }
-  &--right {
-    @extend %LandingBtn-SignUp;
-  }
+  @include pairedbuttons(170px);
 }
 
 .Footer {

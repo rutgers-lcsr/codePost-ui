@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FontIcon, TextField } from 'react-md';
+import { CircularProgress, FontIcon, TextField } from 'react-md';
 import { OrganizationType } from '../infrastructure/organization';
 
 interface IState {
@@ -20,6 +20,8 @@ interface IState {
   // Error states
   badEmailMatch: boolean;
   validationFailed: boolean;
+
+  isLoading: boolean;
 }
 
 class CreateSignup extends React.Component<{}, IState> {
@@ -34,6 +36,7 @@ class CreateSignup extends React.Component<{}, IState> {
     badEmailMatch: false,
     confirmAuthority: false,
     validationFailed: false,
+    isLoading: false,
   };
 
   private interval: any;
@@ -88,7 +91,10 @@ class CreateSignup extends React.Component<{}, IState> {
       organization: orgName,
     };
 
-    this.setState({ pendingValidation: true }, () => {
+    this.setState({ pendingValidation: true, isLoading: true }, () => {
+      setTimeout(() => {
+        this.setState({ isLoading: false });
+      }, 120000);
       fetch(`${process.env.REACT_APP_API_URL}/registration/validateNewAdminUser/`, {
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +259,7 @@ class CreateSignup extends React.Component<{}, IState> {
                 </div>
                 <div className="SignUpManager__form__ConfirmAuthority">
                   <div className="SignUpManager__form__helptext">
-                    I Confirm that I have the authority to create a class for <b>{organization.name}</b>.
+                    I Confirm that I have the authority to administer a course for <b>{organization.name}</b>.
                   </div>
                   <input type="checkbox" />
                 </div>
@@ -280,13 +286,26 @@ class CreateSignup extends React.Component<{}, IState> {
       }
 
       if (pendingValidation) {
-        return (
-          <div className="SignUpManager">
-            <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+        if (this.state.isLoading) {
+          return (
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+                <CircularProgress id="progress" className="progress-circle" style={{ marginBottom: '30px' }} />
+              </div>
             </div>
-          </div>
-        );
+          );
+        } else {
+          return (
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__center-text">
+                  We need more time to verify your information. Please check your email in a few hours.{' '}
+                </div>
+              </div>
+            </div>
+          );
+        }
       }
 
       return (
