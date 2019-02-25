@@ -191,7 +191,7 @@ class ManageStudents extends React.Component<IProps, {}> {
               <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
                 Admin name
               </TableColumn>
-              <TableColumn key={'Unenroll'}>UnEnroll user</TableColumn>
+              <TableColumn key={'Unenroll'}>Unenroll user</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>{tableBody}</TableBody>

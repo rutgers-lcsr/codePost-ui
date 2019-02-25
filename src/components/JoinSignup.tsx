@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { FontIcon, TextField } from 'react-md';
+import { TopBarNoEmail } from './TopBar';
 
 interface IState {
   email: string;
@@ -63,36 +64,44 @@ class JoinSignup extends React.Component<{}, IState> {
         ? 'Check your email to finish creating your account!'
         : 'Hang tight...sending your email';
       return (
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__center-text">{message}</div>
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">{message}</div>
+            </div>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="SignUpManager">
-        <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Join a course on codePost</div>
-          <div className="SignUpManager__form">
-            <div>
-              <TextField
-                id="email-input"
-                floating={true}
-                placeholder="jill@princeton.edu"
-                label="Email"
-                required={true}
-                value={this.state.email}
-                onChange={this.handleChange.bind(this, 'email')}
-              />
-              <div className="SignUpManager__form__helptext">Don't forget to use your organization's edu address!</div>
-            </div>
-            <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
-              Continue
-              <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
-                arrow_forward
-              </FontIcon>
+      <div>
+        <TopBarNoEmail />
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__title">Join a course on codePost</div>
+            <div className="SignUpManager__form">
+              <div>
+                <TextField
+                  id="email-input"
+                  floating={true}
+                  placeholder="jill@princeton.edu"
+                  label="Email"
+                  required={true}
+                  value={this.state.email}
+                  onChange={this.handleChange.bind(this, 'email')}
+                />
+                <div className="SignUpManager__form__helptext">
+                  Don't forget to use your organization's edu address!
+                </div>
+              </div>
+              <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+                Continue
+                <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                  arrow_forward
+                </FontIcon>
+              </div>
             </div>
           </div>
         </div>

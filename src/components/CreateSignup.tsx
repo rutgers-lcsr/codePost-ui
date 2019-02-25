@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { FontIcon, TextField } from 'react-md';
+import { CircularProgress, FontIcon, TextField } from 'react-md';
 import { OrganizationType } from '../infrastructure/organization';
+import { TopBarNoEmail } from './TopBar';
 
 interface IState {
   email: string;
@@ -20,6 +21,8 @@ interface IState {
   // Error states
   badEmailMatch: boolean;
   validationFailed: boolean;
+
+  isLoading: boolean;
 }
 
 class CreateSignup extends React.Component<{}, IState> {
@@ -34,6 +37,7 @@ class CreateSignup extends React.Component<{}, IState> {
     badEmailMatch: false,
     confirmAuthority: false,
     validationFailed: false,
+    isLoading: false,
   };
 
   private interval: any;
@@ -88,7 +92,10 @@ class CreateSignup extends React.Component<{}, IState> {
       organization: orgName,
     };
 
-    this.setState({ pendingValidation: true }, () => {
+    this.setState({ pendingValidation: true, isLoading: true }, () => {
+      setTimeout(() => {
+        this.setState({ isLoading: false });
+      }, 120000);
       fetch(`${process.env.REACT_APP_API_URL}/registration/validateNewAdminUser/`, {
         headers: {
           'Content-Type': 'application/json',
@@ -189,9 +196,12 @@ class CreateSignup extends React.Component<{}, IState> {
 
     if (badEmailMatch) {
       return (
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__center-text">Sorry, your email doesn't match this organization's</div>
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Sorry, your email doesn't match this organization's</div>
+            </div>
           </div>
         </div>
       );
@@ -199,9 +209,12 @@ class CreateSignup extends React.Component<{}, IState> {
 
     if (validationFailed) {
       return (
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__center-text">Sorry, your request was denied.</div>
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Sorry, your request was denied.</div>
+            </div>
           </div>
         </div>
       );
@@ -210,31 +223,34 @@ class CreateSignup extends React.Component<{}, IState> {
     if (hasSubmitted) {
       if (orgCheck) {
         return (
-          <div className="SignUpManager">
-            <div className="SignUpManager__main-container">
-              <div className="SignUpManager__title">Create a new course with codePost</div>
-              <div className="SignUpManager__form">
-                <form onSubmit={this.setTemporaryOrganization}>
-                  <div> What is the name of your organization? </div>
-                  <TextField
-                    id="org-input"
-                    floating={true}
-                    placeholder="Princeton University"
-                    label="Organization Name"
-                    required={true}
-                    value={tempOrgName}
-                    onChange={this.handleChange.bind(this, 'tempOrgName')}
-                  />
-                  <div className="SignUpManager__submitBtn" onClick={this.setTemporaryOrganization}>
-                    Continue
-                    <FontIcon
-                      style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
-                      inherit={true}
-                    >
-                      arrow_forward
-                    </FontIcon>
-                  </div>
-                </form>
+          <div>
+            <TopBarNoEmail />
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__title">Create a new course with codePost</div>
+                <div className="SignUpManager__form">
+                  <form onSubmit={this.setTemporaryOrganization}>
+                    <div> What is the name of your organization? </div>
+                    <TextField
+                      id="org-input"
+                      floating={true}
+                      placeholder="Princeton University"
+                      label="Organization Name"
+                      required={true}
+                      value={tempOrgName}
+                      onChange={this.handleChange.bind(this, 'tempOrgName')}
+                    />
+                    <div className="SignUpManager__submitBtn" onClick={this.setTemporaryOrganization}>
+                      Continue
+                      <FontIcon
+                        style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
+                        inherit={true}
+                      >
+                        arrow_forward
+                      </FontIcon>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -243,25 +259,31 @@ class CreateSignup extends React.Component<{}, IState> {
 
       if (confirmAuthority && organization) {
         return (
-          <div className="SignUpManager">
-            <div className="SignUpManager__main-container">
-              <div className="SignUpManager__title">Create a new course with codePost</div>
-              <div className="SignUpManager__form">
-                <div className="SignUpManager__subtitle">
-                  By clicking 'I Confirm', you confirm you have the authority to create a class for{' '}
-                  <b>{organization.name}</b>.
-                </div>
-                <div className="SignUpManager__form__ConfirmAuthority">
-                  <div className="SignUpManager__form__helptext">
-                    I Confirm that I have the authority to create a class for <b>{organization.name}</b>.
+          <div>
+            <TopBarNoEmail />
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__title">Create a new course with codePost</div>
+                <div className="SignUpManager__form">
+                  <div className="SignUpManager__subtitle">
+                    By clicking 'I Confirm', you confirm you have the authority to create a class for{' '}
+                    <b>{organization.name}</b>.
                   </div>
-                  <input type="checkbox" />
-                </div>
-                <div className="SignUpManager__submitBtn" onClick={this.validateCreatingUser}>
-                  Continue
-                  <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
-                    arrow_forward
-                  </FontIcon>
+                  <div className="SignUpManager__form__ConfirmAuthority">
+                    <div className="SignUpManager__form__helptext">
+                      I Confirm that I have the authority to administer a course for <b>{organization.name}</b>.
+                    </div>
+                    <input type="checkbox" />
+                  </div>
+                  <div className="SignUpManager__submitBtn" onClick={this.validateCreatingUser}>
+                    Continue
+                    <FontIcon
+                      style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
+                      inherit={true}
+                    >
+                      arrow_forward
+                    </FontIcon>
+                  </div>
                 </div>
               </div>
             </div>
@@ -280,45 +302,72 @@ class CreateSignup extends React.Component<{}, IState> {
       }
 
       if (pendingValidation) {
-        return (
-          <div className="SignUpManager">
-            <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+        if (this.state.isLoading) {
+          return (
+            <div>
+              <TopBarNoEmail />
+              <div className="SignUpManager">
+                <div className="SignUpManager__main-container">
+                  <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+                  <CircularProgress id="progress" className="progress-circle" style={{ marginBottom: '30px' }} />
+                </div>
+              </div>
             </div>
-          </div>
-        );
+          );
+        } else {
+          return (
+            <div>
+              <TopBarNoEmail />
+              <div className="SignUpManager">
+                <div className="SignUpManager__main-container">
+                  <div className="SignUpManager__center-text">
+                    We need more time to verify your information. Please check your email in a few hours.{' '}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
       }
 
       return (
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__center-text">Hang tight...</div>
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Hang tight...</div>
+            </div>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="SignUpManager">
-        <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Create a new course with codePost</div>
-          <div className="SignUpManager__form--lessPadding">
-            <div className="SignUpManager__form__email--abovePass">
-              <TextField
-                id="email-input"
-                floating={true}
-                label="Email"
-                required={true}
-                value={this.state.email}
-                onChange={this.handleChange.bind(this, 'email')}
-              />
-              <div className="SignUpManager__form__helptext">Don't forget to use your organization's edu address!</div>
-            </div>
-            <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
-              Continue
-              <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
-                arrow_forward
-              </FontIcon>
+      <div>
+        <TopBarNoEmail />
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__title">Create a new course with codePost</div>
+            <div className="SignUpManager__form--lessPadding">
+              <div className="SignUpManager__form__email--abovePass">
+                <TextField
+                  id="email-input"
+                  floating={true}
+                  label="Email"
+                  required={true}
+                  value={this.state.email}
+                  onChange={this.handleChange.bind(this, 'email')}
+                />
+                <div className="SignUpManager__form__helptext">
+                  Don't forget to use your organization's edu address!
+                </div>
+              </div>
+              <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+                Continue
+                <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                  arrow_forward
+                </FontIcon>
+              </div>
             </div>
           </div>
         </div>

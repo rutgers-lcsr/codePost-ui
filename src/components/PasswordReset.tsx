@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import PasswordResetForm from './PasswordResetForm';
+import { TopBarNoEmail } from './TopBar';
 
 /****************************************************************
 This component works as follows:
@@ -140,11 +141,14 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         }
 
         return (
-          <div className="passwordReset">
-            <div className="passwordReset__main-container">
-              <div className="passwordReset__title">{message}</div>
-              <PasswordResetForm handleSubmit={this.handleReset} />
-              <ul>{errorList}</ul>
+          <div>
+            <TopBarNoEmail />
+            <div className="passwordReset">
+              <div className="passwordReset__main-container">
+                <div className="passwordReset__title">{message}</div>
+                <PasswordResetForm handleSubmit={this.handleReset} />
+                <ul>{errorList}</ul>
+              </div>
             </div>
           </div>
         );
@@ -178,11 +182,14 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         }
 
         return (
-          <div className="passwordReset">
-            <div className="passwordReset__main-container">
-              <div className="passwordReset__title">
-                Whoops. there's something wrong with your link.
-                {newLinkDiv}
+          <div>
+            <TopBarNoEmail />
+            <div className="passwordReset">
+              <div className="passwordReset__main-container">
+                <div className="passwordReset__title">
+                  Whoops. there's something wrong with your link.
+                  {newLinkDiv}
+                </div>
               </div>
             </div>
           </div>
@@ -190,10 +197,13 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         break;
       case 'success':
         return (
-          <div className="passwordReset">
-            <div className="passwordReset__main-container">
-              <div>
-                Success! Try <Link to="/login">logging in</Link> now.
+          <div>
+            <TopBarNoEmail />
+            <div className="passwordReset">
+              <div className="passwordReset__main-container">
+                <div>
+                  Success! Try <Link to="/login">logging in</Link> now.
+                </div>
               </div>
             </div>
           </div>

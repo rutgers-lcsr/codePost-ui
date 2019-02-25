@@ -1,0 +1,610 @@
+///////////////
+// Theme
+///////////////
+
+$big-header-font-size: 30px;
+$header-font-size: 24px;
+$text-font-size: 18px;
+
+.Landing {
+  display: flex;
+  flex-direction: column;
+  min-height: 760px;
+  background-color: white;
+}
+
+.Hero-background {
+  position: absolute;
+  height: 700px;
+  width: 100%;
+  overflow: hidden;
+  -webkit-transform: skewY(-8deg);
+  transform: skewY(-8deg);
+  -webkit-transform-origin: 0;
+  transform-origin: 0;
+  background: linear-gradient(150deg, #008576 15%, #00a976 60%, #2ecd70 80%);
+
+  @media only screen and (max-width: 768px) {
+    height: 500px;
+  }
+  @media only screen and (max-width: 550px) {
+    height: 650px;
+  }
+}
+
+.Hero {
+  height: 600px;
+  overflow: hidden;
+  padding-left: 60px;
+  padding-top: 100px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  @media only screen and (max-width: 768px) {
+    padding-left: 15px;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    height: fit-content;
+  }
+
+  @media only screen and (max-width: 550px) {
+    flex-direction: column;
+  }
+
+  &__logo {
+    font-size: 70px;
+
+    @media only screen and (max-width: 768px) {
+      font-size: 40px;
+    }
+  }
+
+  &__Description {
+    max-width: 500px;
+    width: auto;
+
+    @media only screen and (max-width: 550px) {
+      min-width: 200px;
+      width: auto;
+    }
+
+    &__head {
+      font-size: $big-header-font-size;
+      font-weight: bold;
+      padding-top: 30px;
+    }
+
+    &__text {
+      font-size: $text-font-size;
+      padding-top: 15px;
+    }
+
+    &__code {
+      font-family: Monaco, Menlo, Courier, Courier New, Andale Mono, Bitstream Vera Sans Mono, Lucida Console, Consolas,
+        Droid Sans Mono;
+      font-size: inherit;
+      background: rgba(0, 0, 0, 0.1);
+      padding: 2px 4px;
+      border-radius: 2px;
+      display: inline;
+    }
+  }
+
+  &__callToAction-container {
+    justify-content: center;
+    z-index: 2;
+    padding-bottom: 100px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 20px;
+
+    @media only screen and (max-width: 950px) {
+      flex-direction: column;
+    }
+
+    @media only screen and (max-width: 768px) {
+      padding-bottom: 0px;
+      padding-top: 50px;
+    }
+
+    @media only screen and (max-width: 550px) {
+      flex-direction: row;
+    }
+
+    &__signUp {
+      margin-left: 15px;
+      border: 1px solid white;
+      font-size: 20px;
+      height: 80px;
+      width: 170px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: transparent;
+      color: white;
+      text-transform: none !important;
+      transition: 0.3s;
+      border: 3px solid white;
+      font-weight: 700;
+
+      @include attention {
+        background-color: white;
+        color: $brand-color;
+        transition: 0.3s;
+      }
+    }
+    &__calendly {
+      border: 1px solid white;
+      font-size: 20px;
+      border-radius: 10px;
+      height: 80px;
+      width: 170px;
+      color: white;
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px;
+      margin-left: 15px;
+      cursor: pointer;
+      border: 3px solid white;
+      font-weight: 700;
+
+      @include attention {
+        background-color: white;
+        color: $brand-color;
+        transition: 0.3s;
+      }
+    }
+  }
+}
+
+.Gradient {
+  background: linear-gradient(180deg, white 40%, $light-grey 80%);
+}
+
+.PanelViews {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 50px;
+  padding-top: 100px;
+
+  &__title {
+    font-size: $font-size-xxlarge;
+    font-weight: 350;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  &__separatorBox {
+    position: relative;
+    width: 100%;
+  }
+  &__separator {
+    position: absolute;
+    top: 88px;
+    height: 5px;
+    width: 100%;
+    background-color: lighten($mid-grey, 10%);
+    padding-left: 150px;
+    padding-right: 150px;
+  }
+
+  &__tabContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    padding: 25px 200px 25px 200px;
+    z-index: 1;
+
+    @media only screen and (max-width: 750px) {
+      padding: 25px 100px 25px 100px;
+    }
+
+    @media only screen and (max-width: 450px) {
+      padding: 25px 50px 25px 50px;
+    }
+  }
+
+  &__tabBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__titleBox {
+      height: 45px;
+      width: calc((100vw - 420px) / 3);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      @media only screen and (max-width: 750px) {
+        width: calc((100vw - 220px) / 3);
+      }
+
+      @media only screen and (max-width: 450px) {
+        width: calc((100vw - 120px) / 3);
+      }
+    }
+
+    &__title {
+      font-size: $font-size-large;
+      font-weight: 450;
+      color: $mid-grey;
+      margin-bottom: 15px;
+      transition: 0.3s;
+      cursor: pointer;
+      text-align: center;
+
+      &--active {
+        font-size: $font-size-large;
+        font-weight: 450;
+        color: $brand-color;
+        margin-bottom: 15px;
+        transition: 0.3s;
+        cursor: pointer;
+        text-align: center;
+      }
+    }
+
+    &__button {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background-color: $mid-grey;
+      transition: 0.3s;
+      cursor: pointer;
+      &--active {
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        background-color: $brand-color;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 140px;
+    min-height: 600px;
+
+    @media only screen and (max-width: 750px) {
+      padding-bottom: 100px;
+    }
+
+    // We want to set a min-height because if carousel render is happening don't want the div to collapse
+    @media only screen and (max-width: 650px) {
+      min-height: 400px;
+    }
+
+    @media only screen and (min-width: 750px) {
+      min-height: 715px;
+    }
+
+    &__title {
+      font-size: $font-size-xlarge;
+      font-weight: 350;
+      margin-bottom: 40px;
+      height: 35px;
+      max-width: 700px;
+      text-align: center;
+
+      @media only screen and (max-width: 700px) {
+        font-size: $font-size-large;
+      }
+    }
+
+    &__image {
+      width: auto;
+      height: auto;
+      max-width: 700px;
+      padding-bottom: 30px;
+
+      @media only screen and (max-width: 750px) {
+        width: 600px;
+      }
+
+      @media only screen and (max-width: 650px) {
+        width: 500px;
+      }
+      @media only screen and (max-width: 550px) {
+        width: 400px;
+      }
+      @media only screen and (max-width: 450px) {
+        width: 350px;
+      }
+    }
+  }
+}
+
+.API-backgroundWrapper {
+  position: relative;
+}
+
+.API-background {
+  margin-top: 100px;
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  -webkit-transform: skewY(-8deg) translateY(-100px);
+  transform: skewY(-8deg) translateY(-100px);
+  -webkit-transform-origin: 0;
+  transform-origin: 0;
+  background: $dark-grey;
+  height: 1200px;
+
+  @media only screen and (max-width: 600px) {
+    height: 1350px;
+  }
+}
+
+.API {
+  z-index: 1;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 0px 30px 70px 30px;
+  color: white;
+
+  @media only screen and (max-width: 750px) {
+    padding: 0px 40px 50px 40px;
+  }
+
+  &__textBox {
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+
+    &__title {
+      font-size: $font-size-xlarge;
+      font-weight: 450;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    &__itemList {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__item {
+      font-size: $font-size-large;
+      font-weight: 350;
+      padding: 10px;
+      text-align: center;
+    }
+  }
+  &__exampleBox {
+    display: flex;
+
+    @media only screen and (max-width: 1000px) {
+      flex-direction: column;
+    }
+
+    &__buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      padding-left: 30px;
+      padding-right: 30px;
+
+      &-title {
+        font-size: $font-size-large;
+        margin-bottom: 10px;
+        font-weight: 500;
+        text-align: center;
+      }
+    }
+
+    // Once we switch to flex-direction 100%, ad left and right padding
+    &__code {
+      @media only screen and (max-width: 1000px) {
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+    }
+
+    &__code-separator {
+      width: calc(100% - 20px);
+      border: 1px solid $mid-grey;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      margin-left: 10px;
+
+      @media only screen and (max-width: 1000px) {
+        width: calc(100vw - 80px);
+      }
+    }
+  }
+}
+
+.CodeMirror {
+  font-family: monaco, Consolas, Lucida Console, monospace;
+  font-weight: 500;
+  width: 700px;
+  box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+
+  &-gutters {
+    background-color: $very-light-green;
+  }
+
+  // once we switch to a flex-direction column, make width 100%
+  @media only screen and (max-width: 1000px) {
+    width: 100%;
+  }
+}
+
+.Numbers {
+  z-index: 1;
+  flex-grow: 1;
+  background-color: $brand-color;
+  padding: 50px 60px 50px 60px;
+
+  color: white;
+  font-size: $header-font-size;
+
+  .stats {
+    font-weight: 500;
+    font-size: 50px;
+  }
+
+  .subtext {
+    font-size: 20px;
+    font-weight: normal;
+    font-weight: 400;
+  }
+
+  .footnote {
+    font-size: $text-font-size;
+    padding-top: 30px;
+    font-style: oblique;
+    font-weight: normal;
+    padding: 0px;
+  }
+}
+
+.SignUp {
+  height: 400px;
+  z-index: 1;
+  background-color: #f6f9fc;
+
+  .SignUpContainer {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $mid-grey;
+    box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.4);
+    background-color: white;
+    height: 250px;
+    margin-bottom: 75px;
+    margin-top: 75px;
+    width: 500px;
+    padding: 60px 70px 30px 70px;
+
+    @media only screen and (max-width: 600px) {
+      width: 400px;
+      padding: 20px 10px 20px 10px;
+    }
+
+    @media only screen and (max-width: 450px) {
+      width: 350px;
+      padding: 20px 10px 20px 10px;
+    }
+
+    &__text {
+      font-size: $font-size-xlarge;
+      font-weight: 350;
+      margin-bottom: 20px;
+      text-align: center;
+      color: $dark-grey;
+    }
+    &__buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+}
+
+.LandingAPIBtn {
+  @include button($dark-grey, $mid-grey);
+  margin: 2px 0px 2px 0px;
+  height: auto;
+  text-transform: none !important;
+  transition: 0.3s;
+  font-size: $font-size-large;
+  padding-bottom: 10px;
+
+  &--active {
+    background-color: shade($dark-grey, 20);
+    color: white;
+    height: auto;
+    margin: 2px 0px 2px 0px;
+    text-transform: none !important;
+    transition: 0.3s;
+    font-size: $font-size-large;
+    padding-bottom: 10px;
+  }
+
+  &--docs {
+    @include button($dark-grey, white);
+    margin: 5px 0px 5px 0px;
+    height: auto;
+    text-transform: none !important;
+    transition: 0.3s;
+    font-size: $font-size-large;
+    padding-bottom: 10px;
+
+    &:hover {
+      text-decoration: none;
+      color: white;
+    }
+
+    &:active {
+      text-decoration: none;
+      color: white;
+    }
+    &:focus {
+      text-decoration: none;
+      color: white;
+    }
+  }
+}
+
+.LandingBtn-SignUp {
+  @include pairedbuttons(170px);
+}
+
+.Footer {
+  background: #f4f4f4;
+  display: flex;
+  justify-content: space-between;
+  padding: 40px 80px 30px 80px;
+  align-items: center;
+  @media only screen and (max-width: 750px) {
+    flex-direction: column;
+  }
+  &__copyright {
+    color: #aab7c4;
+    font-size: $font-size-medium;
+    margin-bottom: 10px;
+  }
+  &__rightBox {
+    display: flex;
+
+    @media only screen and (max-width: 750px) {
+      flex-direction: column;
+    }
+    &__item {
+      margin-left: 40px;
+      margin-bottom: 10px;
+      @media only screen and (max-width: 750px) {
+        margin-left: 0px;
+      }
+      font-size: $font-size-larger;
+      color: #9b9b9b;
+      font-weight: 600;
+      a {
+        color: #9b9b9b;
+      }
+      a:hover {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:active {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:focus {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+    }
+  }
+}
+///////////////
+///////////////

@@ -13,6 +13,7 @@
   }
   &__topbar {
     @include topbar(50px, $very-light-green);
+    z-index: 5 !important; // this allows modals to sit above it.
     display: flex;
     justify-content: space-between;
     font-size: $font-size-normal;
@@ -37,7 +38,7 @@
       border-left: 1px solid tint($brand-color, 50%);
       font-size: $font-size-medium;
 
-      @media screen and (max-width: 1200px) {
+      @media screen and (max-width: 1300px) {
         padding: 6px 20px 6px 20px;
       }
 
@@ -48,10 +49,14 @@
         padding: 6px 80px 6px 80px;
         border-radius: 2px;
 
-        @media screen and (max-width: 1200px) {
+        @media screen and (max-width: 1300px) {
           padding: 6px 20px 6px 20px;
         }
       }
+    }
+    &__rightBox {
+      display: flex;
+      align-items: center;
     }
 
     &__spacing {
@@ -63,6 +68,10 @@
     padding: 20px 50px 10px 50px;
   }
   @include setMinPageHeight($topbar-height);
+  &__onboardingModal {
+    @include badgeFormat($mid-grey, white);
+    margin-left: 25px;
+  }
 }
 
 .manageUsers {
@@ -74,7 +83,12 @@
 
 .RubricCommentExplorer {
   .md-dialog {
-    width: 50%;
-    min-width: 300px;
+    width: 70%;
+    min-width: 400px;
+    max-height: calc(100vh - 200px);
+    overflow-y: scroll;
+    /* height problem caused by dialog adding html to the page to move 'top'
+     Short fix now is to max the div height always be less than the view size minus topbar
+      This way the close button is always visible */
   }
 }

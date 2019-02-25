@@ -134,9 +134,8 @@
   }
   &__tab {
     padding-top: 10px;
-    max-width: 25%;
-    min-width: 10%;
-    width: min-content;
+    width: fit-content;
+    padding: 10px 8px 10px 8px;
     &:hover {
       background-color: shade(white, 10);
     }

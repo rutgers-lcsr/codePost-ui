@@ -1,0 +1,55 @@
+@mixin textListDrawer($min-width) {
+  min-width: $min-width;
+  padding: 30px 50px 50px 40px;
+  .drawer {
+    &__title {
+      font-size: $font-size-large;
+      font-weight: 350;
+      margin-bottom: 25px;
+    }
+    &__subtitle {
+      font-size: $font-size-medium;
+      font-weight: 550;
+      margin-bottom: 15px;
+    }
+    &__item {
+      font-size: $font-size-normal;
+      font-weight: 350;
+      padding: 15px 0px 15px 15px;
+      border-width: 1px 1px 0px 1px;
+      border-color: $light-grey;
+      border-style: solid;
+
+      &--allowHover {
+        @extend .drawer__item;
+        &:hover {
+          background-color: shade(white, 10);
+        }
+      }
+    }
+    &__content {
+      border-bottom: 1px solid $light-grey;
+    }
+    &__close {
+      @include icon-button(20px, 5px);
+      position: absolute;
+      right: 30px;
+      top: 25px;
+    }
+  }
+}
+
+.drawer--ManageAssignments {
+  @include textListDrawer(400px);
+  overflow-x: scroll;
+}
+
+.drawer__background {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  top: 0px;
+  left: 0px;
+  z-index: 16777270;
+}

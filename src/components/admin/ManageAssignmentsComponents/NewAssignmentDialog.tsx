@@ -93,7 +93,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         <DialogContainer
           id="newAssignment-dialog"
           visible={dialogVisible}
-          title="Add new assignmentt"
+          title="Add new assignment"
           onHide={this.toggleDialog}
           actions={dialogActions}
           modal
