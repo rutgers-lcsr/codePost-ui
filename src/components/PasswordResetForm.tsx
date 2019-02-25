@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { FontIcon, TextField } from 'react-md';
+import { TopBarNoEmail } from './TopBar';
 
 interface IPasswordResetFormProps {
   handleSubmit: (e: any, data: any) => void;
@@ -43,6 +44,7 @@ class ForgotPasswordForm extends React.Component<IPasswordResetFormProps, State>
 
     return (
       <div>
+        <TopBarNoEmail />
         <div className="passwordReset__password1">
           <TextField
             id="password-input"

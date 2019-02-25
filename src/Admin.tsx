@@ -8,6 +8,7 @@ import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
 import ManageAssignments from './components/admin/ManageAssignments';
 import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
+import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
 
 import {
   IAssignmentToRubricCategories,
@@ -94,6 +95,9 @@ interface IAdminState {
   isLoading: boolean;
   loadingMessage: string;
   loadingTitle: string;
+
+  // onboarding modal
+  onboardingModalVisible: boolean;
 }
 
 interface IAdminProps {
@@ -160,6 +164,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     isLoading: false,
     loadingMessage: '',
     loadingTitle: '',
+    onboardingModalVisible: false,
   };
 
   public panels: { [key: string]: string } = {
@@ -177,7 +182,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     width: '100%',
     fontWeight: 500,
     fontSize: 14,
-    backgroundColor: '#2ecd70',
+    backgroundColor: '#24b47e',
     maxWidth: '100%',
   };
 
@@ -332,6 +337,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         // Props for Enroll panels
         lockChanges: true,
+        onboardingModalVisible: false,
       },
       () => {
         this.loadAllCourseData();
@@ -1588,6 +1594,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   };
 
+  // ------------------- Modal functions -------------------
+  public openModal = () => {
+    this.setState({ onboardingModalVisible: true });
+  };
+
+  public closeModal = () => {
+    this.setState({ onboardingModalVisible: false });
+  };
+
   // ------------------- Render -------------------
   public render() {
     const { courses, currentCourse, loadedPanel, toLoadCourse, toLoadPanel } = this.state;
@@ -1791,19 +1806,33 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               Settings
             </div>
           </div>
-          <NewCourseDialog
-            courses={this.state.courses}
-            addErrorToast={this.props.addErrorToast}
-            createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
-            selectorItemsFormatter={this.selectorItemsFormatter}
-            selectorCurrentFormatter={this.selectorCurrentFormatter}
-          />
+          <div className="admin__topbar__rightBox">
+            <NewCourseDialog
+              courses={this.state.courses}
+              addErrorToast={this.props.addErrorToast}
+              createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
+              selectorItemsFormatter={this.selectorItemsFormatter}
+              selectorCurrentFormatter={this.selectorCurrentFormatter}
+            />
+            <div className="admin__onboardingModal" onClick={this.openModal}>
+              i
+            </div>
+          </div>
         </div>
         <div className="admin__topbar__spacing" />
         <div className="admin__main-panel">
           {courseManagementPanel}
           {isLoading}
         </div>
+        <ModalCarousel
+          closeModal={this.closeModal}
+          isVisible={this.state.onboardingModalVisible}
+          content={adminCarouselContent}
+          defaultIndex={0}
+          isModal={true}
+          className="onboarding-carousel-modal"
+          onlyImage={false}
+        />
       </div>
     );
   }

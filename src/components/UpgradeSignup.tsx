@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { FontIcon, TextField } from 'react-md';
+import { TopBarNoEmail } from './TopBar';
 
 interface IState {
   email: string;
@@ -63,42 +64,48 @@ class UpgradeSignup extends React.Component<{}, IState> {
         ? 'Check your email to finish upgrading your account!'
         : 'Hang tight...sending your email';
       return (
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__center-text">{message}</div>
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">{message}</div>
+            </div>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="SignUpManager">
-        <div className="SignUpManager__main-container">
-          <div className="SignUpManager__title">Upgrade your codePost Account</div>
-          <div className="SignUpManager__subtitle">
-            Upgrading your account will give you access to all of your old data. To do so, you will need to re-verify
-            your email address and set a new password.
-          </div>
-          <div className="SignUpManager__form">
-            <div>
-              <TextField
-                id="email-input"
-                floating={true}
-                placeholder="jill@princeton.edu"
-                label="Email"
-                required={true}
-                value={this.state.email}
-                onChange={this.handleChange.bind(this, 'email')}
-              />
-              <div className="SignUpManager__form__helptext">
-                Don't forget to use the same email address from your old account!
-              </div>
+      <div>
+        <TopBarNoEmail />
+        <div className="SignUpManager">
+          <div className="SignUpManager__main-container">
+            <div className="SignUpManager__title">Upgrade your codePost Account</div>
+            <div className="SignUpManager__subtitle">
+              Upgrading your account will give you access to all of your old data. To do so, you will need to re-verify
+              your email address and set a new password.
             </div>
-            <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
-              Continue
-              <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
-                arrow_forward
-              </FontIcon>
+            <div className="SignUpManager__form">
+              <div>
+                <TextField
+                  id="email-input"
+                  floating={true}
+                  placeholder="jill@princeton.edu"
+                  label="Email"
+                  required={true}
+                  value={this.state.email}
+                  onChange={this.handleChange.bind(this, 'email')}
+                />
+                <div className="SignUpManager__form__helptext">
+                  Don't forget to use the same email address from your old account!
+                </div>
+              </div>
+              <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+                Continue
+                <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                  arrow_forward
+                </FontIcon>
+              </div>
             </div>
           </div>
         </div>

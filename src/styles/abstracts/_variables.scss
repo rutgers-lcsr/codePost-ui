@@ -19,7 +19,7 @@ $text-color: rgb(34, 34, 34) !default;
 
 /// Main brand color
 /// @type Color
-$brand-color: rgb(46, 205, 112) !default; // #2ecd70
+$brand-color: #24b47e !default; // #24b47e
 
 /// Secondary brand color
 /// @type Color
@@ -40,6 +40,10 @@ $light-grey: rgb(230, 230, 230) !default;
 /// Medium grey
 /// @type Color
 $mid-grey: rgb(153, 153, 153) !default;
+
+/// Normal grey
+/// @type Color
+$normal-grey: rgb(100, 100, 100) !default;
 
 /// Dark grey
 /// @type Color

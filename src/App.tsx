@@ -320,7 +320,7 @@ class App extends React.Component<{}, IState> {
         width: '100%',
         fontWeight: 500,
         fontSize: 14,
-        backgroundColor: '#2ecd70',
+        backgroundColor: '#24b47e',
         maxWidth: '100%',
       };
 

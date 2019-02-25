@@ -1,8 +1,11 @@
 import * as React from 'react';
 
 import { Button, Toolbar } from 'react-md';
+import { animateScroll as scroll } from 'react-scroll';
 
-import '../styles/landing.scss';
+const scrollToBottom = () => {
+  scroll.scrollToBottom();
+};
 
 const LandingTopBar = () => (
   <Toolbar
@@ -13,11 +16,8 @@ const LandingTopBar = () => (
       <Button href="/login" key="Login" className="LandingBtn" flat={true}>
         Login
       </Button>,
-      <Button href="/signup/staff" key="SignUp" className="LandingBtn" primary={true} raised={true}>
-        Sign Up | Course Staff
-      </Button>,
-      <Button href="/signup/student" key="SignUp" className="LandingBtn" primary={true} raised={true}>
-        Sign Up | Students
+      <Button key="SignUp" className="LandingBtn" primary={true} raised={true} onClick={scrollToBottom}>
+        Sign Up
       </Button>,
     ]}
   />

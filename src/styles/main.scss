@@ -5,7 +5,7 @@
 @import 'abstracts/variables';
 
 // 2. Vendors
-@import 'vendors/react-md', 'vendors/react-tabs';
+@import 'vendors/react-md', 'vendors/codeMirror';
 
 // 3. Base stuff
 @import 'base/base', 'base/fonts', 'base/typography', 'base/helpers';
@@ -15,14 +15,14 @@
   'components/comment', 'components/button', 'components/saving-spinner', 'components/grade-rubric',
   'components/selector', 'components/dialog', 'components/multiselect', 'components/controlToggle',
   'components/rubricCommentExplorer', 'components/whiteBox', 'components/submission-info', 'components/progress',
-  'components/cardList', 'components/drawer';
+  'components/carousel', 'components/cardList', 'components/drawer';
 
 // 5. Layout-related sections
 @import 'layout/header';
 
 // 6. Page-specific styles
 @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
-  'pages/admin-roster', 'pages/settings', 'pages/signUp', 'pages/password-reset', 'pages/errorPage';
+  'pages/admin-roster', 'pages/settings', 'pages/signUp', 'pages/password-reset', 'pages/errorPage', 'pages/landing';
 
 // 7. Themes
 @import 'themes/default';

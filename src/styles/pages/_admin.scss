@@ -13,6 +13,7 @@
   }
   &__topbar {
     @include topbar(50px, $very-light-green);
+    z-index: 5 !important; // this allows modals to sit above it.
     display: flex;
     justify-content: space-between;
     font-size: $font-size-normal;
@@ -53,6 +54,10 @@
         }
       }
     }
+    &__rightBox {
+      display: flex;
+      align-items: center;
+    }
 
     &__spacing {
       height: 50px;
@@ -63,6 +68,10 @@
     padding: 20px 50px 10px 50px;
   }
   @include setMinPageHeight($topbar-height);
+  &__onboardingModal {
+    @include badgeFormat($mid-grey, white);
+    margin-left: 25px;
+  }
 }
 
 .manageUsers {
