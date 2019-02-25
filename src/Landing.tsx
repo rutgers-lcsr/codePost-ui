@@ -1,6 +1,8 @@
 import 'codemirror/mode/python/python';
 import * as React from 'react';
 import * as CodeMirror from 'react-codemirror';
+import { Link } from 'react-router-dom';
+
 import { Button } from 'react-md';
 import { animateScroll as scroll } from 'react-scroll';
 import LandingTopBar from './components/LandingTopBar';
@@ -370,7 +372,10 @@ class Landing extends React.Component<{}, IState> {
             <div id="calendly-footer" className="Footer__rightBox__item">
               <a> Schedule a demo </a>
             </div>
-            <div className="Footer__rightBox__item">Privacy + Terms</div>
+            <div className="Footer__rightBox__item">Privacy</div>
+            <Link to={'/terms'} className="Footer__rightBox__item">
+              Terms
+            </Link>
           </div>
         </div>
       </div>
