@@ -30,6 +30,13 @@ $text-font-size: 18px;
   @media only screen and (max-width: 550px) {
     height: 650px;
   }
+  @media only screen and (max-width: 350px) {
+    height: 700px;
+  }
+
+  @media only screen and (max-width: 320px) {
+    height: 750px;
+  }
 }
 
 .Hero {
@@ -117,7 +124,8 @@ $text-font-size: 18px;
       margin-left: 15px;
       border: 1px solid white;
       font-size: 20px;
-      height: 80px;
+      min-height: 80px;
+      height: auto;
       width: 170px;
       padding: 10px;
       border-radius: 10px;
@@ -138,7 +146,8 @@ $text-font-size: 18px;
       border: 1px solid white;
       font-size: 20px;
       border-radius: 10px;
-      height: 80px;
+      min-height: 80px;
+      height: auto;
       width: 170px;
       color: white;
       text-align: center;
