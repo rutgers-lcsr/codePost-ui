@@ -186,13 +186,13 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               } else if (submission) {
                 return (
                   <TableColumn className="cellType--unfinalized" key={assignment.name} plain={true}>
-                    Not finalized
+                    Unfinalized
                   </TableColumn>
                 );
               } else {
                 return (
                   <TableColumn className="cellType--unsubmitted" key={assignment.name} plain={true}>
-                    Not submitted
+                    ---
                   </TableColumn>
                 );
               }
@@ -207,6 +207,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <TextField
             id="search-studentData"
             label="Search"
+            defaultValue={searchTerm}
             lineDirection="center"
             className="md-cell md-cell--bottom"
             onChange={this.changeSearch}

@@ -6,8 +6,8 @@
   align-items: center;
   justify-content: space-between;
   position: fixed;
-  // Second highest possible z-index, given browser limitations, allows modals to go above
-  z-index: 16777269;
+  // Highest possible z-index, given browser limitations
+  z-index: 16777200;
 }
 
 .topbar {

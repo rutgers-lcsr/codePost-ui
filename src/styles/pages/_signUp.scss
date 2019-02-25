@@ -1,5 +1,7 @@
 .SignUpManager {
   @include formatAsWhiteBox();
+  min-height: 100vh;
+
   padding-top: 100px;
   min-height: calc(100vh - 60px) !important;
 

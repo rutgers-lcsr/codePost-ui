@@ -110,7 +110,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
         ) {
           return <div />;
         }
-        const grade = submission.isFinalized ? String(submission.grade) : 'Not graded';
+        const grade = submission.isFinalized ? String(submission.grade) : 'Unfinalized';
         const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>

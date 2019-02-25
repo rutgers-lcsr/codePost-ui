@@ -307,7 +307,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     if (currentAssignment) {
       // Need to test these callbacks to avoid first setState following completion
-      this.setState({ isLoadingSubmission: true }, () => {
+      this.setState({ isLoadingSubmission: true, currentSubmission: undefined }, () => {
         this.setState({ currentAssignment });
         this.loadRubricCategories(currentAssignment).then(() => {
           this.loadSubmission(currentAssignment).then(() => {

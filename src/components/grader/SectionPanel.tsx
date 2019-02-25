@@ -151,7 +151,7 @@ class SectionPanel extends React.Component<IProps, IState> {
               <TableColumn>{student}</TableColumn>
               <TableColumn>{sub.students.toString()}</TableColumn>
               <TableColumn className={sub.isFinalized ? 'cellType--graded' : 'cellType--unfinalized'}>
-                {sub.isFinalized ? String(sub.grade) : 'Not graded'}
+                {sub.isFinalized ? String(sub.grade) : 'Unfinalized'}
               </TableColumn>
               <TableColumn>{sub.grader}</TableColumn>
               <TableColumn>{sub.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
@@ -163,7 +163,7 @@ class SectionPanel extends React.Component<IProps, IState> {
             <TableRow key={student}>
               <TableColumn>{student}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
-              <TableColumn className="cellType--unsubmitted">{'No submission uploaded'}</TableColumn>
+              <TableColumn className="cellType--unsubmitted">{'--'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
