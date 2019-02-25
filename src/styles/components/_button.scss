@@ -63,7 +63,8 @@
 
     display: inline-block;
     padding: $button-get-another-height / 6;
-    height: $button-get-another-height + 6px;
+    height: $button-get-another-height;
+    min-width: $button-get-another-height;
     font-size: $button-get-another-height / 2;
     border-radius: $button-get-another-height / 4;
 

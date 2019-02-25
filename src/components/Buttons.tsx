@@ -13,42 +13,29 @@ export const GetAnotherSubmissionButton = (props: IButtonProps) => {
   const { handleClick, buttonState } = props;
 
   if (buttonState === BUTTON_STATE.Inactive) {
-    return <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>;
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
+      </div>
+    );
   }
 
   if (buttonState === BUTTON_STATE.Loading) {
-    return <div className="button--get-another button--get-another--disabled">Loading...</div>;
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">...</div>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="grader__get-another">
       <div className="button--get-another " onClick={handleClick}>
-        Grade another from ...
+        +
       </div>
       {props.children}
     </div>
   );
-};
-
-// Callback: drawUnassigned
-export const StartGradingButton = (props: IButtonProps) => {
-  const { handleClick, buttonState } = props;
-
-  switch (buttonState) {
-    case BUTTON_STATE.Inactive:
-      return <div className="button--start-grading button--get-another--disabled">Nothing left to grade!</div>;
-    case BUTTON_STATE.Loading:
-      return <div className="button--start-grading button--get-another--disabled">Loading...</div>;
-    default:
-      return (
-        <div>
-          <div className="button--start-grading" onClick={handleClick}>
-            Start grading from ...
-          </div>
-          {props.children}
-        </div>
-      );
-  }
 };
 
 // Callback: toggleFinalized

@@ -11,7 +11,7 @@ import {
   TableRow,
 } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
-import { GetAnotherSubmissionButton, StartGradingButton } from '../Buttons';
+import { GetAnotherSubmissionButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
@@ -143,7 +143,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
   };
 
   public render() {
-    const { assignment, sections, submissions, isLoadingSubmissions } = this.props;
+    const { assignment, sections, isLoadingSubmissions } = this.props;
     const { buttonState, sortedIndex } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
@@ -156,7 +156,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
       return <CircularProgress id="progress" className="progress-circle" />;
     }
 
-    if (assignment && submissions.length > 0) {
+    if (assignment) {
       return (
         <div>
           <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
@@ -231,19 +231,6 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
         </div>
       );
     }
-    if (assignment) {
-      return (
-        <div>
-          <StartGradingButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
-            <SelectSection
-              sections={sections}
-              currentSection={this.state.currentSection}
-              onChange={this.handleSectionChange}
-            />
-          </StartGradingButton>
-        </div>
-      );
-    }
     return <div>Select an assignment on the left</div>;
   }
 }
@@ -274,7 +261,7 @@ export const SelectSection = (props: ISelectSectionProps) => {
       isSearchable={false}
       onChange={onChange}
       placeholder={'All'}
-      className={'button--select'}
+      className={'button--select grader__get-another__select'}
     />
   );
 };
