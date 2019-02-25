@@ -230,7 +230,7 @@ class App extends React.Component<{}, IState> {
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
       const isGrader = user ? user.graderCourses.length > 0 : false;
-      const isAdmin = user ? user.courseadminCourses.length > 0 : false;
+      const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
 
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
