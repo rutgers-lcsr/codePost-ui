@@ -241,7 +241,7 @@ class Landing extends React.Component<{}, IState> {
                     className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
                     onClick={this.changePanelIndex.bind(this, 2)}
                   >
-                    What a student see
+                    What a student sees
                   </div>
                 </div>
                 <div
