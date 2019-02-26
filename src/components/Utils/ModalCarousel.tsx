@@ -178,7 +178,7 @@ const adminCarouselContent = [
     imgLink: require('../../img/Admin-onboarding/9-logo.png'),
     text: (
       <div>
-        Schedule a demo with us{' '}
+        Need help getting started? Schedule a setup walkthrough with us{' '}
         <a href="https://calendly.com/codepost/demo" target="_blank">
           here
         </a>
