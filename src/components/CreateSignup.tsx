@@ -383,6 +383,9 @@ class CreateSignup extends React.Component<{}, IState> {
                     arrow_forward
                   </FontIcon>
                 </div>
+                <div className="SignUpManager__footer">
+                  Having trouble? Contact us at <b>team@codepost.io</b>.
+                </div>
               </div>
             </div>
           </div>

@@ -5,6 +5,11 @@
   padding-top: 100px;
   min-height: calc(100vh - 60px) !important;
 
+  &__footer {
+    padding-top: 20px;
+    text-align: center;
+  }
+
   &__main-container {
     height: auto;
     display: flex;
