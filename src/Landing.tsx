@@ -269,11 +269,11 @@ class Landing extends React.Component<{}, IState> {
             <div className="API__textBox__title">codePost API</div>
             <div className="API__textBox__itemList">
               <div className="API__textBox__item">
-                Managing a CS course is complex. Skyrocketing enrollment is making it even tougher. We believe the best
-                run courses are managed with code, to simplify and automate processes as well as connect together
-                systems. The codePost API allows you to program codePost, using simple, composable abstractions that can
-                be used to build powerful and flexible integrations and scripts. You can get started in less than 10
-                minutes.
+                We know that each CS course has its own unique requirements, tools, and processes. We also think the
+                best run courses are managed with code. In that spirit, we've built the codePost API. It's expressive
+                and composable, and allows you to manage your course programmatically, integrate with other software
+                (like an LMS or homegrown solutions), and perform analytics on your course data. It's also easy to use -
+                you can start building powerful scripts in less than 10 minutes!
               </div>
             </div>
           </div>
