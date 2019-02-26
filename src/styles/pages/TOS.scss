@@ -1,7 +1,11 @@
 .TOS {
   display: flex;
   flex-direction: column;
-  padding: 50px 250px 100px 250px;
+  padding: 50px 200px 50px 200px;
+
+  @media only screen and (max-width: 1200px) {
+    padding: 50px 100px 50px 100px;
+  }
 
   &__title {
     text-align: center;
@@ -32,6 +36,30 @@
     font-size: $font-size-xlarge;
   }
   &__item-normaltext {
+    margin-bottom: 25px;
+    font-size: 17px;
+    font-weight: 300;
+  }
+}
+
+.Privacy {
+  display: flex;
+  flex-direction: column;
+  padding: 50px 200px 50px 200px;
+
+  @media only screen and (max-width: 1200px) {
+    padding: 50px 100px 50px 100px;
+  }
+
+  &__title {
+    text-align: center;
+    font-weight: 500;
+    font-size: $font-size-xxlarge;
+    color: darken($brand-color, 10);
+    margin-bottom: 40px;
+  }
+
+  &__item {
     margin-bottom: 25px;
     font-size: 17px;
     font-weight: 300;
