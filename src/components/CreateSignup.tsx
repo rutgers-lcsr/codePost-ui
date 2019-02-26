@@ -244,8 +244,15 @@ class CreateSignup extends React.Component<{}, IState> {
                   </div>
                   <div>
                     <div className="SignUpManager__form__helptext">
-                      I agree to the codePost&nbsp; <Link to="/terms">Terms of Service</Link> &nbsp;and&nbsp;{' '}
-                      <Link to="/privacy">Privacy Policy</Link>. &nbsp; &nbsp;
+                      I agree to the codePost&nbsp;{' '}
+                      <Link to="/terms" target="_blank">
+                        Terms of Service
+                      </Link>{' '}
+                      &nbsp;and&nbsp;{' '}
+                      <Link to="/privacy" target="_blank">
+                        Privacy Policy
+                      </Link>
+                      . &nbsp; &nbsp;
                       <SelectionControl
                         id="toggleTerms"
                         defaultChecked={this.state.check2}
