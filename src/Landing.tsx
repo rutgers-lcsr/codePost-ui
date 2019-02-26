@@ -1,13 +1,13 @@
 import 'codemirror/mode/python/python';
 import * as React from 'react';
 import * as CodeMirror from 'react-codemirror';
-import { Link } from 'react-router-dom';
 
 import { Button } from 'react-md';
 import { animateScroll as scroll } from 'react-scroll';
 import LandingTopBar from './components/LandingTopBar';
 
 import { ModalCarousel } from './components/Utils/ModalCarousel';
+import Footer from './Footer';
 
 interface IState {
   viewPanelIndex: number;
@@ -353,31 +353,7 @@ class Landing extends React.Component<{}, IState> {
             </div>
           </div>
         </div>
-        <div className="Footer">
-          <div className="Footer__copyright">© codePost 2019</div>
-          <div className="Footer__rightBox">
-            <div className="Footer__rightBox__item">
-              <a href="http://updates.codepost.io" target="_blank">
-                Updates
-              </a>
-            </div>
-            <div className="Footer__rightBox__item">
-              <a href="http://docs.codepost.io" target="_blank">
-                API Docs
-              </a>
-            </div>
-            <div className="Footer__rightBox__item">
-              <a href="mailto:team@codepost.io">Contact Us</a>
-            </div>
-            <div id="calendly-footer" className="Footer__rightBox__item">
-              <a> Schedule a demo </a>
-            </div>
-            <div className="Footer__rightBox__item">Privacy</div>
-            <Link to={'/terms'} className="Footer__rightBox__item">
-              Terms
-            </Link>
-          </div>
-        </div>
+        <Footer />
       </div>
     );
   }
