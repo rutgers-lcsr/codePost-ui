@@ -53,6 +53,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
     const navDots = Array(content.length)
       .fill(navDot)
       .map((elem, i) => {
+        console.log(i);
         if (i === index) {
           return <div className={`${className}__navDots__navDot--active`} />;
         }
@@ -121,50 +122,54 @@ class ModalCarousel extends React.Component<IProps, IState> {
 
 const adminCarouselContent = [
   {
-    imgLink: require('../../img/Admin-onboarding/CreateCourse.png'),
-    text: 'Get started by creating a course. You can also copy assignments from an old one to save time.',
+    imgLink: require('../../img/Admin-onboarding/0-CreateCourse.png'),
+    text: 'Get started by creating a course.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Roster-Student.png'),
+    imgLink: require('../../img/Admin-onboarding/1-UploadRoster.png'),
     text:
-      'Upload your roster to create students, graders, and admins. \
-      Add yourself as a grader if you’d like to grade submissions yourself.',
+      'Upload your roster to create student, grader, and admin profiles. \
+      Add yourself as a grader if you’d like to review submissions yourself.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Create-Assignment.png'),
+    imgLink: require('../../img/Admin-onboarding/2-AddAssignment.png'),
     text: 'Create your first assignment.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Assignment-Rubric.png'),
+    imgLink: require('../../img/Admin-onboarding/3-AddRubric.png'),
     text:
-      'Create a rubric. Graders will use the rubric to make comments on student work, as well as apply deductions. \
-      You can track the frequency with which rubric items are applied here, as well.',
+      'Write a rubric. Graders will use the rubric to make structured comments and deductions on student work. \
+      You can use this view to track rubric comment frequency, as well!',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Upload-Submissions.png'),
+    imgLink: require('../../img/Admin-onboarding/4-UploadSubmission.png'),
     text:
-      'You can upload submissions by (1) using the interface shown above \
+      'Upload submissions by (1) using the interface shown above \
       or (2) using the codePost API. Once uploaded, submissions become available for grading.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Submissions-Overview.png'),
-    text: 'View submissions by student and grader.',
+    imgLink: require('../../img/Admin-onboarding/5-Grade.png'),
+    text: 'Review submissions in the editor.',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Assignments--Drawer.png'),
+    imgLink: require('../../img/Admin-onboarding/6-ReviewSubmissions.png'),
+    text: 'Manage an overview of submissions by student and grader.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/7-MonitorAssignments.png'),
     text:
-      'Keep track of all assignments and monitor data in real-time \
-      (e.g., # of graded submissions, mean of grades to date).',
+      'Keep track of all assignments and monitor submission data in real-time \
+      (e.g., # of graded submissions, mean of grades).',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/Api-Docs.png'),
+    imgLink: require('../../img/Admin-onboarding/8-APIDocs.png'),
     text: (
       <div>
         Check out the{' '}
         <a href="http://docs.codepost.io" target="_blank">
           codePost API{' '}
         </a>
-        to start building powerful scripts and integrations. Your unique API key can be accessed from your{' '}
+        to start building powerful scripts and integrations. Your unique API key can be generated from your{' '}
         <Link to={'/settings'}>settings</Link> page
       </div>
     ),
