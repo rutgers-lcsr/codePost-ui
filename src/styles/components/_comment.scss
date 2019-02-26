@@ -14,7 +14,6 @@
   &__body {
     height: 100%;
     padding-top: 5px;
-    overflow: hidden;
   }
 
   &__rubric-comment {
@@ -23,7 +22,7 @@
     border-left: 2px solid $brand-color;
   }
   &__text {
-    margin: 5px 0px 5px 0px;
+    margin: 0px 0px 5px 0px;
     overflow-wrap: break-word;
     width: inherit;
 
@@ -90,21 +89,27 @@
 
   &__footer {
     display: flex;
-    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+
+    &__line {
+      font-style: italic;
+      color: $dark-grey;
+      align-self: flex-end;
+      margin-right: auto;
+    }
     &__author {
       font-style: italic;
       color: $dark-grey;
-      width: calc(100% - 60px);
-    }
-    &__buttons {
-      width: 20px;
-      position: absolute;
-      right: 11px;
-      bottom: 1px;
+      min-width: 40px;
+      word-wrap: break-word;
+      align-self: flex-end;
+      margin-right: auto;
     }
   }
 
   &__pointdelta-field {
+    min-width: 90px;
     width: 40%;
   }
 
@@ -144,6 +149,8 @@
   }
 
   &:hover {
-    border: 2px solid $dark-grey !important;
+    border-top: 2px solid $dark-grey !important;
+    border-bottom: 2px solid $dark-grey !important;
+    border-left: 2px solid $dark-grey !important;
   }
 }

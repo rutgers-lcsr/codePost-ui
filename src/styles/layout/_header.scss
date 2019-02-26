@@ -81,6 +81,20 @@
     @media only screen and (max-width: 420px) {
       display: none;
     }
+    font-weight: 400;
+    b {
+      font-weight: 500;
+    }
+  }
+
+  .md-toolbar--action-right {
+    @media only screen and (max-width: 420px) {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-left: 30px;
+      padding-right: 30px;
+    }
   }
 
   &__spacing {

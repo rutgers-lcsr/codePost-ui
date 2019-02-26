@@ -10,9 +10,14 @@
       }
     }
 
+    &--warning {
+      display: inline;
+    }
+
     position: absolute;
-    right: 30px;
+    right: 10px;
     z-index: 1000;
+    display: inline-block;
   }
 
   &__main-container {

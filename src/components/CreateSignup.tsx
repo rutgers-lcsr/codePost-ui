@@ -1,22 +1,29 @@
 import * as React from 'react';
-import { CircularProgress, FontIcon, TextField } from 'react-md';
-import { OrganizationType } from '../infrastructure/organization';
+import { CircularProgress, FontIcon, SelectionControl, TextField } from 'react-md';
 import { TopBarNoEmail } from './TopBar';
+
+import Select from 'react-select';
+
+import { IOption } from '../types/common';
+
+import { Link } from 'react-router-dom';
+
+import universities from './universities';
 
 interface IState {
   email: string;
+  selectedOrg: IOption;
+  check1: boolean;
+  check2: boolean;
+  newOrg: string;
 
-  // Join Flow states
+  // Sign up states
+  createNewOrg: boolean;
   hasSubmitted: boolean;
-  confirmEmailSent: boolean;
-
-  // Create Flow states
-  orgCheck: boolean;
   confirmAuthority: boolean;
-  organization?: OrganizationType;
-  tempOrgName: string;
   pendingValidation: boolean;
   validated: boolean;
+  confirmEmailSent: boolean;
 
   // Error states
   badEmailMatch: boolean;
@@ -28,14 +35,17 @@ interface IState {
 class CreateSignup extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
     email: '',
+    selectedOrg: { value: '', label: '' },
+    check1: false,
+    check2: false,
+    newOrg: '',
+    createNewOrg: false,
     hasSubmitted: false,
-    confirmEmailSent: false,
-    orgCheck: false,
+    confirmAuthority: false,
     pendingValidation: false,
     validated: false,
-    tempOrgName: '',
+    confirmEmailSent: false,
     badEmailMatch: false,
-    confirmAuthority: false,
     validationFailed: false,
     isLoading: false,
   };
@@ -51,48 +61,49 @@ class CreateSignup extends React.Component<{}, IState> {
     });
   };
 
-  public handleSignup = (e: any) => {
-    e.preventDefault();
-    this.setState({ hasSubmitted: true }, () => {
-      const payload = {
-        username: this.state.email,
-        email: this.state.email,
-      };
+  public handleOrgChange = (newVal: IOption) => {
+    this.setState({ selectedOrg: newVal });
+  };
 
-      fetch(`${process.env.REACT_APP_API_URL}/registration/getOrganizationFromEmail/`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        body: JSON.stringify(payload),
-      })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json();
-          } else {
-            return Promise.reject();
-          }
-        })
-        .then((json) => {
-          this.setState({ organization: json.organization, orgCheck: true });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  public toggleCheck = (label: string) => {
+    this.setState((prevstate) => {
+      const newState = { ...prevstate };
+      newState[label] = !this.state[label];
+      return newState;
     });
   };
 
-  public validateCreatingUser = (e: any) => {
-    const { organization } = this.state;
+  public handleSignup = (e: any) => {
     e.preventDefault();
-    const orgName = organization ? organization.name : '';
+    if (this.state.createNewOrg) {
+      this.setState(
+        {
+          selectedOrg: {
+            label: this.state.newOrg,
+            value: this.state.newOrg.replace(' ', '').toLowerCase(),
+          },
+        },
+        () => {
+          // avoid race condition
+          this.setState({ hasSubmitted: true, confirmAuthority: true });
+        },
+      );
+    } else {
+      this.setState({ hasSubmitted: true, confirmAuthority: true });
+    }
+  };
+
+  public validateNewUser = (e: any) => {
+    if (!this.state.check1 || !this.state.check2) {
+      return;
+    }
 
     const payload = {
       email: this.state.email,
-      organization: orgName,
+      organization: this.state.selectedOrg.value,
     };
 
-    this.setState({ pendingValidation: true, isLoading: true }, () => {
+    this.setState({ confirmAuthority: false }, () => {
       setTimeout(() => {
         this.setState({ isLoading: false });
       }, 120000);
@@ -114,7 +125,10 @@ class CreateSignup extends React.Component<{}, IState> {
           this.interval = setInterval(() => {
             this.checkUserValidation();
           }, 10000);
-          this.setState({ pendingValidation: true, confirmAuthority: false });
+          this.setState({ pendingValidation: true, isLoading: true });
+        })
+        .catch((err) => {
+          this.setState({ badEmailMatch: true });
         });
     });
   };
@@ -131,67 +145,33 @@ class CreateSignup extends React.Component<{}, IState> {
       .then((json) => {
         if (!json.pending) {
           clearInterval(this.interval);
+          console.log(json);
           if (json.status) {
             this.setState({ confirmEmailSent: true, pendingValidation: false });
           } else {
-            this.setState({ confirmEmailSent: true, pendingValidation: false, validationFailed: true });
+            this.setState({ confirmEmailSent: false, pendingValidation: false, validationFailed: true });
           }
         }
       });
   };
 
-  public setTemporaryOrganization = (e: any) => {
-    e.preventDefault();
-    const payload = {
-      email: this.state.email,
-      organizationName: this.state.tempOrgName,
-    };
-
-    fetch(`${process.env.REACT_APP_API_URL}/registration/getOrganizationFromName/`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          return Promise.reject();
-        }
-      })
-      .then((json) => {
-        if (json.exists && !json.validEmail) {
-          this.setState({ badEmailMatch: true, orgCheck: false });
-        } else {
-          if (json.exists) {
-            this.setState({ organization: json.organization, orgCheck: false, confirmAuthority: true });
-          } else {
-            const tempOrg = {
-              id: -1,
-              name: this.state.tempOrgName,
-              shortname: this.state.tempOrgName,
-              emailDomain: this.state.email,
-            };
-
-            this.setState({ organization: tempOrg, orgCheck: false, confirmAuthority: true });
-          }
-        }
-      });
-  };
-
+  /*
+   * Sign up flow:
+   * - Enter email and select organization
+   * - Confirm authority
+   * - Await validation
+   * - Respond to email
+   *
+   */
   public render() {
     const {
-      hasSubmitted,
-      confirmEmailSent,
-      orgCheck,
-      tempOrgName,
       pendingValidation,
       badEmailMatch,
-      confirmAuthority,
-      organization,
+      confirmEmailSent,
       validationFailed,
+      confirmAuthority,
+      hasSubmitted,
+      selectedOrg,
     } = this.state;
 
     if (badEmailMatch) {
@@ -200,7 +180,22 @@ class CreateSignup extends React.Component<{}, IState> {
           <TopBarNoEmail />
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Sorry, your email doesn't match this organization's</div>
+              <div className="SignUpManager__center-text">
+                Sorry, your email doesn't match the organization you selected.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (confirmEmailSent) {
+      return (
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Check your email to continue activating your account!</div>
             </div>
           </div>
         </div>
@@ -213,121 +208,133 @@ class CreateSignup extends React.Component<{}, IState> {
           <TopBarNoEmail />
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Sorry, your request was denied.</div>
+              <div className="SignUpManager__center-text">
+                We need more time to verify your information. We'll email you shortly.
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    if (hasSubmitted) {
-      if (orgCheck) {
-        return (
-          <div>
-            <TopBarNoEmail />
-            <div className="SignUpManager">
-              <div className="SignUpManager__main-container">
-                <div className="SignUpManager__title">Create a new course with codePost</div>
-                <div className="SignUpManager__form">
-                  <form onSubmit={this.setTemporaryOrganization}>
-                    <div> What is the name of your organization? </div>
-                    <TextField
-                      id="org-input"
-                      floating={true}
-                      placeholder="Princeton University"
-                      label="Organization Name"
-                      required={true}
-                      value={tempOrgName}
-                      onChange={this.handleChange.bind(this, 'tempOrgName')}
-                    />
-                    <div className="SignUpManager__submitBtn" onClick={this.setTemporaryOrganization}>
-                      Continue
-                      <FontIcon
-                        style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
-                        inherit={true}
-                      >
-                        arrow_forward
-                      </FontIcon>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      if (confirmAuthority && organization) {
-        return (
-          <div>
-            <TopBarNoEmail />
-            <div className="SignUpManager">
-              <div className="SignUpManager__main-container">
-                <div className="SignUpManager__title">Create a new course with codePost</div>
-                <div className="SignUpManager__form">
-                  <div className="SignUpManager__subtitle">
-                    By clicking 'I Confirm', you confirm you have the authority to create a class for{' '}
-                    <b>{organization.name}</b>.
-                  </div>
-                  <div className="SignUpManager__form__ConfirmAuthority">
-                    <div className="SignUpManager__form__helptext">
-                      I Confirm that I have the authority to administer a course for <b>{organization.name}</b>.
-                    </div>
-                    <input type="checkbox" />
-                  </div>
-                  <div className="SignUpManager__submitBtn" onClick={this.validateCreatingUser}>
-                    Continue
-                    <FontIcon
-                      style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }}
-                      inherit={true}
-                    >
-                      arrow_forward
-                    </FontIcon>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      if (confirmEmailSent) {
-        return (
+    if (confirmAuthority) {
+      return (
+        <div>
+          <TopBarNoEmail />
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Check your email to continue activating your account!</div>
+              <div className="SignUpManager__title">Create a new course with codePost</div>
+              <div className="SignUpManager__form">
+                <div className="SignUpManager__subtitle">
+                  You selected <b>{selectedOrg.label}</b>. Please review the following before proceeding.
+                </div>
+                <div className="SignUpManager__form__ConfirmAuthority">
+                  <div>
+                    <div className="SignUpManager__form__helptext">
+                      I confirm that I have the authority to create a course for&nbsp;<b>{selectedOrg.label}</b>. &nbsp;
+                      &nbsp;
+                      <SelectionControl
+                        id="toggleAuthority"
+                        defaultChecked={this.state.check1}
+                        name="toggleAuthority"
+                        type="checkbox"
+                        onChange={this.toggleCheck.bind(this.props, 'check1')}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="SignUpManager__form__helptext">
+                      I agree to the codePost&nbsp;{' '}
+                      <Link to="/terms" target="_blank">
+                        Terms of Service
+                      </Link>{' '}
+                      &nbsp;and&nbsp;{' '}
+                      <Link to="/privacy" target="_blank">
+                        Privacy Policy
+                      </Link>
+                      . &nbsp; &nbsp;
+                      <SelectionControl
+                        id="toggleTerms"
+                        defaultChecked={this.state.check2}
+                        name="toggleTerms"
+                        type="checkbox"
+                        onChange={this.toggleCheck.bind(this.props, 'check2')}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`SignUpManager__submitBtn${this.state.check1 && this.state.check2 ? '' : '--disabled'}`}
+                  onClick={this.validateNewUser}
+                >
+                  Continue
+                  <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                    arrow_forward
+                  </FontIcon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (pendingValidation) {
+      if (this.state.isLoading) {
+        return (
+          <div>
+            <TopBarNoEmail />
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
+                <CircularProgress id="progress" className="progress-circle" style={{ marginBottom: '30px' }} />
+              </div>
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <TopBarNoEmail />
+            <div className="SignUpManager">
+              <div className="SignUpManager__main-container">
+                <div className="SignUpManager__center-text">
+                  We need more time to verify your information. We'll email you shortly.{' '}
+                </div>
+              </div>
             </div>
           </div>
         );
       }
+    }
 
-      if (pendingValidation) {
-        if (this.state.isLoading) {
-          return (
-            <div>
-              <TopBarNoEmail />
-              <div className="SignUpManager">
-                <div className="SignUpManager__main-container">
-                  <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
-                  <CircularProgress id="progress" className="progress-circle" style={{ marginBottom: '30px' }} />
-                </div>
-              </div>
+    // Catch-all cases
+    if (hasSubmitted) {
+      return (
+        <div>
+          <TopBarNoEmail />
+          <div className="SignUpManager">
+            <div className="SignUpManager__main-container">
+              <div className="SignUpManager__center-text">Hang tight...</div>
+              <CircularProgress id="progress" className="progress-circle" style={{ marginTop: '60px' }} />
             </div>
-          );
-        } else {
-          return (
-            <div>
-              <TopBarNoEmail />
-              <div className="SignUpManager">
-                <div className="SignUpManager__main-container">
-                  <div className="SignUpManager__center-text">
-                    We need more time to verify your information. Please check your email in a few hours.{' '}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        }
+          </div>
+        </div>
+      );
+    } else {
+      let createNew = null;
+      if (this.state.createNewOrg) {
+        createNew = (
+          <div>
+            <TextField
+              id="new-organization-input"
+              floating={true}
+              label="Organization"
+              required={true}
+              onChange={this.handleChange.bind(this, 'newOrg')}
+            />
+          </div>
+        );
       }
 
       return (
@@ -335,44 +342,56 @@ class CreateSignup extends React.Component<{}, IState> {
           <TopBarNoEmail />
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
-              <div className="SignUpManager__center-text">Hang tight...</div>
+              <div className="SignUpManager__title">Create a new course with codePost</div>
+              <div className="SignUpManager__form--lessPadding">
+                <div className="SignUpManager__form__email--abovePass">
+                  <TextField
+                    id="email-input"
+                    floating={true}
+                    label="Email"
+                    required={true}
+                    value={this.state.email}
+                    onChange={this.handleChange.bind(this, 'email')}
+                  />
+                  <div className="SignUpManager__form__helptext">
+                    Don't forget to use your organization's edu address!
+                  </div>
+                </div>
+                <div className="SignUpManager__form__email--abovePass">
+                  <Select
+                    placeholder={'Select your organization'}
+                    options={universities}
+                    onChange={this.handleOrgChange}
+                    value={this.state.selectedOrg.label === '' ? null : this.state.selectedOrg}
+                    isDisabled={this.state.createNewOrg}
+                  />
+                </div>
+                <div className="SignUpManager__form__helptext">
+                  Can't find your organization? Create a new one.{' '}
+                  <SelectionControl
+                    id="toggleCreateCourse"
+                    defaultChecked={this.state.check2}
+                    name="toggleTerms"
+                    type="checkbox"
+                    onChange={this.toggleCheck.bind(this.props, 'createNewOrg')}
+                  />
+                </div>
+                {createNew}
+                <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
+                  Continue
+                  <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
+                    arrow_forward
+                  </FontIcon>
+                </div>
+                <div className="SignUpManager__footer">
+                  Having trouble? Contact us at <b>team@codepost.io</b>.
+                </div>
+              </div>
             </div>
           </div>
         </div>
       );
     }
-
-    return (
-      <div>
-        <TopBarNoEmail />
-        <div className="SignUpManager">
-          <div className="SignUpManager__main-container">
-            <div className="SignUpManager__title">Create a new course with codePost</div>
-            <div className="SignUpManager__form--lessPadding">
-              <div className="SignUpManager__form__email--abovePass">
-                <TextField
-                  id="email-input"
-                  floating={true}
-                  label="Email"
-                  required={true}
-                  value={this.state.email}
-                  onChange={this.handleChange.bind(this, 'email')}
-                />
-                <div className="SignUpManager__form__helptext">
-                  Don't forget to use your organization's edu address!
-                </div>
-              </div>
-              <div className="SignUpManager__submitBtn" onClick={this.handleSignup}>
-                Continue
-                <FontIcon style={{ color: 'white', transform: 'scale(1.5,1.5)', marginLeft: '20px' }} inherit={true}>
-                  arrow_forward
-                </FontIcon>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 }
 

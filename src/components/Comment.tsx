@@ -215,7 +215,7 @@ class Comment extends React.Component<IProps, IState> {
 
     const className =
       this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle' ? 'comment--unsaved' : 'comment';
-    const author = comment.author ? `| author: ${comment.author}` : '';
+    const author = comment.author ? `author: ${comment.author}` : '';
 
     // Ugly for type checking
     let rubricCommentText = '';
@@ -239,9 +239,8 @@ class Comment extends React.Component<IProps, IState> {
             {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
             <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
-              <div className="comment__footer__author">
-                line: {comment.startLine + 1} {author}
-              </div>
+              <div className="comment__footer__line">line: {comment.startLine + 1}&nbsp;</div>
+              <div className="comment__footer__author">{author}</div>
             </div>
           </div>
         </div>
@@ -295,7 +294,7 @@ class Comment extends React.Component<IProps, IState> {
                 forceIconSize={20}
                 tooltipLabel="Save comment [SHIFT + ENTER]"
                 tooltipDelay={1}
-                tooltipPosition="right"
+                tooltipPosition="left"
                 onClick={this.toggleActive}
               >
                 save
@@ -307,16 +306,15 @@ class Comment extends React.Component<IProps, IState> {
                 forceIconSize={20}
                 tooltipLabel="Delete comment"
                 tooltipDelay={50}
-                tooltipPosition="right"
+                tooltipPosition="left"
                 onClick={deleteComment.bind(this, comment, file)}
               >
                 delete
               </Button>
             </div>
             <div className="comment__footer">
-              <div className="comment__footer__author">
-                line: {comment.startLine + 1} {author}
-              </div>
+              <div className="comment__footer__line">line: {comment.startLine + 1}&nbsp;</div>
+              <div className="comment__footer__author">{author}</div>
             </div>
           </div>
         </div>
@@ -341,23 +339,19 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__text">
             <ReactMarkdown source={comment.text} />
           </div>
-
-          <div className="comment__footer__buttons">
-            <Button
-              className="button--comment"
-              icon={true}
-              forceIconFontSize={true}
-              forceIconSize={20}
-              tooltipLabel="Delete comment"
-              tooltipDelay={50}
-              onClick={deleteComment.bind(this, comment, file)}
-            >
-              delete
-            </Button>
-          </div>
           <div className="comment__footer">
-            <div className="comment__footer__author">
-              line: {comment.startLine + 1} {author}
+            <div className="comment__footer__line">line: {comment.startLine + 1}&nbsp;</div>
+            <div className="comment__footer__author">{author}</div>
+            <div className="comment__footer__buttons">
+              <Button
+                className="button--comment"
+                icon={true}
+                forceIconFontSize={true}
+                forceIconSize={20}
+                onClick={deleteComment.bind(this, comment, file)}
+              >
+                delete
+              </Button>
             </div>
           </div>
         </div>

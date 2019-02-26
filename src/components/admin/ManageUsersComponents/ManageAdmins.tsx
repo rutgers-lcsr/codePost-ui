@@ -132,7 +132,7 @@ class ManageStudents extends React.Component<IProps, {}> {
           actions={[
             {
               primary: true,
-              children: 'Leave as Admin',
+              children: 'Leave as Grader',
               onClick: this.resolveGraderUnenroll.bind(this.props, false),
             },
             {

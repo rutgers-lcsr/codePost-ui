@@ -109,12 +109,29 @@ $container-border-radius: 8px;
       width: calc(#{$carousel-width} - 2 * #{$container-padding});
       padding: 15px 40px 15px 40px;
       text-align: center;
-      font-size: $font-size-xlarge;
+      font-size: 23px;
       font-weight: 450;
       background-color: $brand-color;
       color: white;
       flex-grow: 1;
       border-radius: 0px 0px$container-border-radius $container-border-radius;
+
+      a {
+        color: $light-grey;
+        text-decoration: underline;
+      }
+      a:hover {
+        text-decoration: none;
+        color: $light-grey;
+      }
+      a:active {
+        text-decoration: none;
+        color: $light-grey;
+      }
+      a:focus {
+        text-decoration: none;
+        color: $light-grey;
+      }
     }
   }
 }
@@ -147,6 +164,9 @@ $container-border-radius: 8px;
   &__content--onlyimg {
     position: relative;
     overflow-y: visible;
+    @media only screen and (max-width: 400px) {
+      width: calc(100% - 50px);
+    }
     &__image {
       width: auto;
       height: auto;
@@ -154,19 +174,7 @@ $container-border-radius: 8px;
 
       @media only screen and (max-width: 750px) {
         width: 600px;
-      }
-
-      @media only screen and (max-width: 650px) {
-        width: 500px;
-      }
-      @media only screen and (max-width: 550px) {
-        width: 400px;
-      }
-      @media only screen and (max-width: 500px) {
-        width: 350px;
-      }
-      @media only screen and (max-width: 430px) {
-        width: 300px;
+        width: 100%;
       }
     }
     &__text {

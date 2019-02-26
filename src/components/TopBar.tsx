@@ -26,7 +26,7 @@ const TopBar = (props: IProps) => {
       <div className="topbar">
         <div key="topbar__logo" className="topbar__logo">
           <Link to={HOME}>
-            code<span className="topbar__codePost-P">P</span>ost
+            code<b>Post</b>
           </Link>
         </div>
         <div key="topbar__spacing" className="topbar__spacing" />
@@ -49,7 +49,7 @@ const TopBarNoEmail = () => {
       <div className="topbar">
         <div key="topbar__logo" className="topbar__logo">
           <Link to={HOME}>
-            code<span className="topbar__codePost-P">P</span>ost
+            code<b>Post</b>
           </Link>
         </div>
         <div key="topbar__spacing" className="topbar__spacing" />

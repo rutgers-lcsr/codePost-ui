@@ -1,11 +1,13 @@
 import 'codemirror/mode/python/python';
 import * as React from 'react';
 import * as CodeMirror from 'react-codemirror';
+
 import { Button } from 'react-md';
 import { animateScroll as scroll } from 'react-scroll';
 import LandingTopBar from './components/LandingTopBar';
 
 import { ModalCarousel } from './components/Utils/ModalCarousel';
+import Footer from './Footer';
 
 interface IState {
   viewPanelIndex: number;
@@ -43,7 +45,7 @@ for sub in submissions.json():\n\
   \n\
   # Assign the submisison to the grader\n\
   payload = {grader: graderEmail}\n\
-  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
+  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=payload)\n',
   },
   {
     title: 'Identify common student errors',
@@ -108,7 +110,10 @@ class Landing extends React.Component<{}, IState> {
     calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
 
     const calendlyFooter = document.getElementById('calendly-footer');
-    calendlyFooter!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    calendlyFooter!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
+    );
   }
 
   public changePanelIndex = (newIndex: number) => {
@@ -196,7 +201,7 @@ class Landing extends React.Component<{}, IState> {
               Sign Up
             </Button>
             <div className="Hero__callToAction-container__calendly" id="calendly-button">
-              Meet us at SIGSCE 2019!
+              Meet us at SIGCSE 2019!
             </div>
           </div>
         </div>
@@ -264,11 +269,11 @@ class Landing extends React.Component<{}, IState> {
             <div className="API__textBox__title">codePost API</div>
             <div className="API__textBox__itemList">
               <div className="API__textBox__item">
-                Managing a CS course is complex. Skyrocketing enrollment is making it even tougher. We believe the best
-                run courses are managed with code, to simplify and automate processes as well as connect together
-                systems. The codePost API allows you to program codePost, using simple, composable abstractions that can
-                be used to build powerful and flexible integrations and scripts. You can get started in less than 10
-                minutes.
+                We know that each CS course has its own unique requirements, tools, and processes. We also think the
+                best run courses are managed with code. In that spirit, we've built the codePost API. It's expressive
+                and composable, and allows you to manage your course programmatically, integrate with other software
+                (like an LMS or homegrown solutions), and perform analytics on your course data. It's also easy to use -
+                you can start building powerful scripts in less than 10 minutes!
               </div>
             </div>
           </div>
@@ -351,28 +356,7 @@ class Landing extends React.Component<{}, IState> {
             </div>
           </div>
         </div>
-        <div className="Footer">
-          <div className="Footer__copyright">© codePost 2019</div>
-          <div className="Footer__rightBox">
-            <div className="Footer__rightBox__item">
-              <a href="http://updates.codepost.io" target="_blank">
-                Updates
-              </a>
-            </div>
-            <div className="Footer__rightBox__item">
-              <a href="http://docs.codepost.io" target="_blank">
-                API Docs
-              </a>
-            </div>
-            <div className="Footer__rightBox__item">
-              <a href="mailto:team@codepost.io">Contact Us</a>
-            </div>
-            <div id="calendly-footer" className="Footer__rightBox__item">
-              <a> Schedule a demo </a>
-            </div>
-            <div className="Footer__rightBox__item">Privacy + Terms</div>
-          </div>
-        </div>
+        <Footer />
       </div>
     );
   }

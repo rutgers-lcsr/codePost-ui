@@ -15,14 +15,15 @@
   'components/comment', 'components/button', 'components/saving-spinner', 'components/grade-rubric',
   'components/selector', 'components/dialog', 'components/multiselect', 'components/controlToggle',
   'components/rubricCommentExplorer', 'components/whiteBox', 'components/submission-info', 'components/progress',
-  'components/carousel', 'components/cardList', 'components/drawer';
+  'components/carousel', 'components/cardList', 'components/drawer', 'components/file-upload';
 
 // 5. Layout-related sections
 @import 'layout/header';
 
 // 6. Page-specific styles
 @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
-  'pages/admin-roster', 'pages/settings', 'pages/signUp', 'pages/password-reset', 'pages/errorPage', 'pages/landing';
+  'pages/admin-roster', 'pages/settings', 'pages/signUp', 'pages/password-reset', 'pages/errorPage', 'pages/landing',
+  'pages/TOS', 'pages/footer';
 
 // 7. Themes
 @import 'themes/default';

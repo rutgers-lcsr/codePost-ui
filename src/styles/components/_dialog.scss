@@ -49,4 +49,20 @@
       color: white;
     }
   }
+
+  &--upload-submission {
+    .md-dialog {
+      width: 50%;
+      height: 60%;
+    }
+
+    &__assignment {
+      min-width: 100px;
+      width: 40%;
+    }
+
+    &__actions {
+      display: flex;
+    }
+  }
 }

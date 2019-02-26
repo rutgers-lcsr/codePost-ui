@@ -108,7 +108,8 @@
 
     display: inline-block;
     padding: $button-get-another-height / 6;
-    height: $button-get-another-height + 6px;
+    height: $button-get-another-height;
+    min-width: $button-get-another-height;
     font-size: $button-get-another-height / 2;
     border-radius: $button-get-another-height / 4;
 
@@ -124,14 +125,22 @@
 
   &--finalize {
     @include button($brand-color, white);
-    @extend %large-button;
-    right: 60px;
+    width: 80px;
+    height: 42.2px;
+    font-size: $font-size-medium;
+    border-radius: 6px;
+    font-weight: bold;
+    line-height: 42.2px;
   }
 
   &--takeback {
     @include button($mid-grey, white);
-    @extend %large-button;
-    right: 60px;
+    width: 80px;
+    height: 42.2px;
+    font-size: $font-size-medium;
+    border-radius: 6px;
+    font-weight: bold;
+    line-height: 42.2px;
   }
 
   &--comment {

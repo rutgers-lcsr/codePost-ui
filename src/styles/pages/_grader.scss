@@ -22,6 +22,17 @@
     }
   }
 
+  &__get-another {
+    width: 50%;
+    display: flex;
+    justify-content: flex-start;
+    margin-left: 10px;
+
+    &__select {
+      min-width: 220px;
+    }
+  }
+
   &__getStarted {
     display: flex;
     min-width: 500px;
