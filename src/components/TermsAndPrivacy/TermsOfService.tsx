@@ -2,6 +2,8 @@ import * as React from 'react';
 import { TopBarNoEmail } from '../TopBar';
 import Footer from './../../Footer';
 
+import { Link } from 'react-router-dom';
+
 interface IProps {
   isAuthenticated: boolean;
 }
@@ -174,7 +176,11 @@ class TermsOfService extends React.Component<IProps, {}> {
             <div className="TOS__items-container">
               <div className="TOS__item-normaltext">
                 Your privacy is important to codePost. With this in mind, we will protect your personal information in
-                accordance with our Privacy Policy.
+                accordance with our{' '}
+                <Link to="/privacy" target="_blank">
+                  Privacy Policy
+                </Link>
+                .
               </div>
             </div>
           </div>
