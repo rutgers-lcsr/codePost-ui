@@ -91,6 +91,10 @@ class ManageStudents extends React.Component<IProps, IState> {
       // sort by sortedIndex
       sortedUsers.sort(this.sortFunction.bind(this));
 
+      if (sortedUsers.length > 0) {
+        this.setState({ sectionEdited: sortedUsers[0] });
+      }
+
       // update pagination of students
       this.setState({ sortedUsers }, () => {
         if (!(typeof this.state.paginationStart === 'undefined') && !(typeof this.state.rowsPerPage === 'undefined')) {

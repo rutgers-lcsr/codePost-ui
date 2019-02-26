@@ -9,12 +9,18 @@
   }
 
   &__search-bar {
-    width: 100%;
-    padding: 10px 40px 10px 20px;
+    width: 90%;
+    display: block;
+    padding: 2px 20px 2px 20px;
     font-size: $font-size-large;
-    border: 0px solid $theme-grey;
-    border-radius: 2px;
+    border: 1px solid $theme-grey;
+    border-radius: 14px;
+    margin-left: 10px;
+    margin-bottom: 6px;
     // box-sizing: border-box;
+    &:focus {
+      outline: none;
+    }
   }
 
   &__scrollable-container {

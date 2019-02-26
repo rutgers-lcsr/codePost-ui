@@ -41,23 +41,29 @@ class CommentList extends React.Component<IProps, IState> {
   public componentDidMount() {
     this.setState({ isMounted: true });
     window.addEventListener('resize', this.rerender.bind(this));
+    window.addEventListener('click', this.waitToRerender.bind(this));
     document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
     document.addEventListener('scroll', this.rerender.bind(this));
 
     document
       .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .addEventListener('scroll', this.updateHighlighScroll.bind(this));
+      .addEventListener('scroll', this.updateHighlightScroll.bind(this));
   }
 
   public componentWillUnmount() {
     this.setState({ isMounted: false });
     window.removeEventListener('resize', this.rerender.bind(this));
+    window.removeEventListener('click', this.waitToRerender.bind(this));
     document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
     document.removeEventListener('scroll', this.rerender.bind(this));
     document
       .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .removeEventListener('scroll', this.updateHighlighScroll.bind(this));
+      .removeEventListener('scroll', this.updateHighlightScroll.bind(this));
   }
+
+  public waitToRerender = () => {
+    window.setTimeout(this.rerender.bind(this), 100);
+  };
 
   public rerender = () => {
     if (this.state.isMounted) {
@@ -66,7 +72,7 @@ class CommentList extends React.Component<IProps, IState> {
     CodePanelUtils.updateCommentPanelHeight();
   };
 
-  public updateHighlighScroll = () => {
+  public updateHighlightScroll = () => {
     const syntaxHighlighter = document
       .getElementById(`syntax-highlighter-${this.props.file.id}`)!
       .getElementsByTagName('pre')[0];

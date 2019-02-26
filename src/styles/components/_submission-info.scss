@@ -34,10 +34,9 @@
     grid-template-columns: 2fr 3fr;
     grid-gap: 2px;
     padding: 10px 0px 10px 10px;
-
-    div {
-      padding-bottom: 6px;
-    }
+  }
+  &__info > div {
+    padding-bottom: 6px;
   }
 
   &__grade {
