@@ -78,6 +78,7 @@
   &__onboardingModal {
     @include badgeFormat($mid-grey, white);
     margin-left: 25px;
+    cursor: pointer;
   }
 }
 

@@ -142,12 +142,20 @@ const adminCarouselContent = [
       You can track the frequency with which rubric items are applied here, as well.',
   },
   {
+    imgLink: require('../../img/Admin-onboarding/Upload-Submissions.png'),
+    text:
+      'You can upload submissions by (1) using the interface shown above \
+      or (2) using the codePost API. Once uploaded, submissions become available for grading.',
+  },
+  {
     imgLink: require('../../img/Admin-onboarding/Submissions-Overview.png'),
     text: 'View submissions by student and grader.',
   },
   {
     imgLink: require('../../img/Admin-onboarding/Assignments--Drawer.png'),
-    text: 'Keep track of all assignments, including real-time data on statistics.',
+    text:
+      'Keep track of all assignments and monitor data in real-time \
+      (e.g., # of graded submissions, mean of grades to date).',
   },
   {
     imgLink: require('../../img/Admin-onboarding/Api-Docs.png'),
@@ -157,7 +165,7 @@ const adminCarouselContent = [
         <a href="http://docs.codepost.io" target="_blank">
           codePost API{' '}
         </a>
-        to start building powerful scripts and integrations. \ Your unique API key can be accessed from your{' '}
+        to start building powerful scripts and integrations. Your unique API key can be accessed from your{' '}
         <Link to={'/settings'}>settings</Link> page
       </div>
     ),
