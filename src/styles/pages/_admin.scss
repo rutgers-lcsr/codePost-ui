@@ -21,6 +21,13 @@
     padding-right: 15px;
     border-bottom: 2px solid $light-grey;
 
+    &--createCourse {
+      width: 132px;
+      padding-left: 10px;
+      padding-right: 10px;
+      text-align: center;
+    }
+
     &__nav {
       height: 80%;
       display: flex;
@@ -38,7 +45,7 @@
       border-left: 1px solid tint($brand-color, 50%);
       font-size: $font-size-medium;
 
-      @media screen and (max-width: 1300px) {
+      @media screen and (max-width: 1330px) {
         padding: 6px 20px 6px 20px;
       }
 
@@ -49,7 +56,7 @@
         padding: 6px 80px 6px 80px;
         border-radius: 2px;
 
-        @media screen and (max-width: 1300px) {
+        @media screen and (max-width: 1330px) {
           padding: 6px 20px 6px 20px;
         }
       }

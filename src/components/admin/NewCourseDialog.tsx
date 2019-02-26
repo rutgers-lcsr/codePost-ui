@@ -104,7 +104,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
 
     return (
       <div>
-        <Button type="submit" raised onClick={this.toggleDialog}>
+        <Button type="submit" className="admin__topbar--createCourse" raised onClick={this.toggleDialog}>
           Create course
         </Button>
         <DialogContainer

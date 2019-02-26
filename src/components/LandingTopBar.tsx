@@ -11,7 +11,11 @@ const LandingTopBar = () => (
   <Toolbar
     fixed={true}
     className="topbar--Landing"
-    title="codePost"
+    title={
+      <div>
+        code<b>Post</b>
+      </div>
+    }
     actions={[
       <Button href="/login" key="Login" className="LandingBtn" flat={true}>
         Login

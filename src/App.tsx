@@ -7,6 +7,7 @@ import { Snackbar } from 'react-md';
 import Admin from './Admin';
 
 import IndexManager from './components/IndexManager';
+import TermsOfService from './components/TermsAndPrivacy/TermsOfService';
 import { TopBar } from './components/TopBar';
 
 import LogInAs from './LogInAs';
@@ -230,7 +231,7 @@ class App extends React.Component<{}, IState> {
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
       const isGrader = user ? user.graderCourses.length > 0 : false;
-      const isAdmin = user ? user.courseadminCourses.length > 0 : false;
+      const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
 
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
@@ -351,6 +352,11 @@ class App extends React.Component<{}, IState> {
                 exact={true}
                 path={'/settings'}
                 render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
+              />
+              <Route
+                exact={true}
+                path={'/terms'}
+                render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
               />
 
               {pageSelector}
