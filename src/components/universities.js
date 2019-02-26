@@ -1091,4 +1091,4 @@ const universities = [
   {label: "Youngstown State University (ysu.edu)",value: 'ysu'}
 ];
 
-export default { universities };
+export default universities;
