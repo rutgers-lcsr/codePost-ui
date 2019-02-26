@@ -26,6 +26,31 @@ class ModalCarousel extends React.Component<IProps, IState> {
     index: this.props.defaultIndex,
   };
 
+  public componentDidMount() {
+    window.addEventListener('keydown', this.keyDown.bind(this));
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown.bind(this));
+  }
+
+  public keyDown = (event: any) => {
+    switch (event.keyCode) {
+      // Left arrow
+      case 37:
+        this.slideLeft();
+        break;
+      // Right arrow
+      case 39:
+        this.slideRight();
+        break;
+      // Escape
+      case 27:
+        this.close();
+        break;
+    }
+  };
+
   public slideRight = () => {
     const oldIndex = this.state.index;
     const newIndex = oldIndex < this.props.content.length - 1 ? oldIndex + 1 : oldIndex;
@@ -53,7 +78,6 @@ class ModalCarousel extends React.Component<IProps, IState> {
     const navDots = Array(content.length)
       .fill(navDot)
       .map((elem, i) => {
-        console.log(i);
         if (i === index) {
           return <div className={`${className}__navDots__navDot--active`} />;
         }
