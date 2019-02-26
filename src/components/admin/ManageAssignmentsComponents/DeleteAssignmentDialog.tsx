@@ -43,6 +43,7 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
           primary={false}
           flat={true}
           disabled={this.state.typedName !== this.props.assignmentName}
+          style={{ marginLeft: '55px' }}
         >
           Delete
         </Button>

@@ -110,7 +110,10 @@ class Landing extends React.Component<{}, IState> {
     calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
 
     const calendlyFooter = document.getElementById('calendly-footer');
-    calendlyFooter!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    calendlyFooter!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
+    );
   }
 
   public changePanelIndex = (newIndex: number) => {
@@ -198,7 +201,7 @@ class Landing extends React.Component<{}, IState> {
               Sign Up
             </Button>
             <div className="Hero__callToAction-container__calendly" id="calendly-button">
-              Meet us at SIGSCE 2019!
+              Meet us at SIGCSE 2019!
             </div>
           </div>
         </div>
@@ -243,7 +246,7 @@ class Landing extends React.Component<{}, IState> {
                     className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
                     onClick={this.changePanelIndex.bind(this, 2)}
                   >
-                    What a student see
+                    What a student sees
                   </div>
                 </div>
                 <div

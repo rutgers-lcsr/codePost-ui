@@ -27,9 +27,10 @@ interface IProps {
   activeCommentId?: number;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
   showLastEdited: boolean;
+  unsavedComments: number[];
 }
 
 interface IState {
@@ -159,6 +160,7 @@ class CodePanel extends React.Component<IProps, IState> {
                 updateComment={updateComment}
                 updateSubmissionGrade={this.props.updateSubmissionGrade}
                 showLastEdited={this.props.showLastEdited}
+                unsavedComments={this.props.unsavedComments}
               />
             </TabPanel>
           );
@@ -182,9 +184,10 @@ interface ICodeProps {
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
   showLastEdited: boolean;
+  unsavedComments: number[];
 }
 
 const Code = (props: ICodeProps) => {
@@ -217,6 +220,14 @@ const Code = (props: ICodeProps) => {
     const extentParent: any = selection.extentNode.parentNode;
     let endLine = +extentParent.id.split('-')[1];
 
+    // Check to see if the comment was made backwards
+    if (startLine !== null && endLine != null && startLine > endLine) {
+      // swap endlines
+      const temp1 = startLine;
+      startLine = endLine;
+      endLine = temp1;
+    }
+
     let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
       document.querySelector(`div#line-${startLine}`),
       null,
@@ -228,18 +239,7 @@ const Code = (props: ICodeProps) => {
       POSITION.End,
     );
 
-    // Check to see if the comment was made backwards
-    if (startLine && endLine && startLine > endLine) {
-      // swap endlines
-      const temp1 = startLine;
-      startLine = endLine;
-      endLine = temp1;
-
-      // swap char indices
-      const temp2 = startChar;
-      startChar = endChar;
-      endChar = temp2;
-    } else if (startLine === endLine) {
+    if (startLine === endLine) {
       // Handle reverse highlight in a single line
       const temp1 = startChar;
       const temp2 = endChar;
@@ -358,6 +358,7 @@ const Code = (props: ICodeProps) => {
             deleteComment={deleteComment}
             updateComment={updateComment}
             updateSubmissionGrade={props.updateSubmissionGrade}
+            unsavedComments={props.unsavedComments}
           />
         </div>
       </div>
@@ -397,6 +398,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
           deleteComment={this.deleteComment}
           updateComment={this.updateComment}
           showLastEdited={false}
+          unsavedComments={[]}
         />
       );
     }

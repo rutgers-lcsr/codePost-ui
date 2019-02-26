@@ -14,7 +14,7 @@ const AssignmentV = t.intersection(
       isReleased: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
-      sortKey: t.union([t.number, t.null]),
+      sortKey: t.number,
     }),
     t.partial({
       mean: t.union([t.number, t.null]),
@@ -82,18 +82,10 @@ class Assignment {
 const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
-    if (a.sortKey !== null && b.sortKey != null) {
-      if (a.sortKey === b.sortKey) {
-        return a.id - b.id;
-      } else {
-        return a.sortKey - b.sortKey;
-      }
-    } else if (a.sortKey) {
-      return -1;
-    } else if (b.sortKey) {
-      return 1;
-    } else {
+    if (a.sortKey === b.sortKey) {
       return a.id - b.id;
+    } else {
+      return a.sortKey - b.sortKey;
     }
   };
 
