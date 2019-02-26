@@ -41,6 +41,7 @@
   &__subtitle {
     font-size: $font-size-large;
     padding: 0 30px;
+    padding-left: 0;
   }
 
   &__Staff {
@@ -80,6 +81,8 @@
     padding: 30px 60px 30px 60px;
     &__helptext {
       font-style: italic;
+      display: flex;
+      align-items: center;
     }
     &--lessPadding {
       padding: 10px 60px 30px 60px;
@@ -90,6 +93,7 @@
     &__ConfirmAuthority {
       margin-top: 25px;
       display: flex;
+      flex-direction: column;
       justify-content: space-around;
     }
   }
@@ -99,6 +103,17 @@
     border-radius: 6px;
     padding: 4px 60px 4px 60px;
     margin-top: 60px;
+
+    &--disabled {
+      @include button($mid-grey, white);
+      font-size: $font-size-xlarge;
+      border-radius: 6px;
+      padding: 4px 60px 4px 60px;
+      margin-top: 60px;
+      @include attention {
+        background-color: $mid-grey;
+      }
+    }
   }
 
   &__center-text {
