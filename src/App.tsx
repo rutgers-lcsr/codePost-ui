@@ -33,6 +33,7 @@ interface IState {
   toasts: IToast[];
   longToasts: IToast[];
   errorToasts: IToast[];
+  longErrorToasts: IToast[];
   triedLoading: boolean;
 }
 
@@ -46,6 +47,7 @@ class App extends React.Component<{}, IState> {
       toasts: [],
       longToasts: [],
       errorToasts: [],
+      longErrorToasts: [],
       triedLoading: false,
     };
   }
@@ -199,6 +201,12 @@ class App extends React.Component<{}, IState> {
     this.setState({ errorToasts });
   };
 
+  public addLongErrorToast = (text: string, action: string | undefined) => {
+    const longErrorToasts = this.state.longErrorToasts.slice();
+    longErrorToasts.push({ text, action });
+    this.setState({ longErrorToasts });
+  };
+
   public dismissToast = () => {
     const [, ...toasts] = this.state.toasts;
     this.setState({ toasts });
@@ -212,6 +220,11 @@ class App extends React.Component<{}, IState> {
   public dismissErrorToast = () => {
     const [, ...errorToasts] = this.state.errorToasts;
     this.setState({ errorToasts });
+  };
+
+  public dismissLongErrorToast = () => {
+    const [, ...longErrorToasts] = this.state.longErrorToasts;
+    this.setState({ longErrorToasts });
   };
 
   public render() {
@@ -279,6 +292,7 @@ class App extends React.Component<{}, IState> {
                 addToast={this.addToast}
                 addLongToast={this.addLongToast}
                 addErrorToast={this.addErrorToast}
+                addLongErrorToast={this.addLongErrorToast}
               />
             )}
           />
@@ -393,6 +407,16 @@ class App extends React.Component<{}, IState> {
               lastChild={true}
               autohideTimeout={2000}
               onDismiss={this.dismissErrorToast}
+              style={errorSnackBarStyle}
+            />
+            <Snackbar
+              id="long-error-snackbar"
+              className="long-error-snackbar"
+              toasts={this.state.longErrorToasts}
+              autohide={true}
+              lastChild={true}
+              autohideTimeout={4000}
+              onDismiss={this.dismissLongErrorToast}
               style={errorSnackBarStyle}
             />
           </div>

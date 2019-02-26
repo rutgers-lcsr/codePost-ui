@@ -53,7 +53,6 @@ class ModalCarousel extends React.Component<IProps, IState> {
     const navDots = Array(content.length)
       .fill(navDot)
       .map((elem, i) => {
-        console.log(i);
         if (i === index) {
           return <div className={`${className}__navDots__navDot--active`} />;
         }
