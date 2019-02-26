@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { TopBarNoEmail } from '../TopBar';
+import Footer from './../../Footer';
 
 interface IProps {
   isAuthenticated: boolean;
@@ -12,7 +13,7 @@ class TermsOfService extends React.Component<IProps, {}> {
         {!this.props.isAuthenticated ? <TopBarNoEmail /> : <div />}
         <div className="TOS">
           <div className="TOS__section">
-            <div className="TOS__title"> codePost Terms of Service</div>
+            <div className="TOS__title">Terms of Service</div>
             <div className="TOS__items-container">
               <div className="TOS__item-normaltext">
                 These Terms of Service govern your access to and use of codePost, including the products, features,
@@ -398,6 +399,7 @@ class TermsOfService extends React.Component<IProps, {}> {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
