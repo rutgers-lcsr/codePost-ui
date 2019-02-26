@@ -87,12 +87,11 @@ $text-font-size: 18px;
     }
 
     &__code {
-      font-family: Monaco, Menlo, Courier, Courier New, Andale Mono, Bitstream Vera Sans Mono, Lucida Console, Consolas,
-        Droid Sans Mono;
+      font-family: Courier New, Andale Mono, Bitstream Vera Sans Mono, Lucida Console, Consolas, Droid Sans Mono;
       font-size: inherit;
       background: rgba(0, 0, 0, 0.1);
-      padding: 2px 4px;
-      border-radius: 2px;
+      padding: 0px 4px;
+      border-radius: 6px;
       display: inline;
     }
   }

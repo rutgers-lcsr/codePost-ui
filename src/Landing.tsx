@@ -45,7 +45,7 @@ for sub in submissions.json():\n\
   \n\
   # Assign the submisison to the grader\n\
   payload = {grader: graderEmail}\n\
-  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=paylod )\n',
+  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=payload)\n',
   },
   {
     title: 'Identify common student errors',
