@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
+import * as moment from 'moment';
 import pluralize from 'pluralize';
 
 import { Divider } from 'react-md';
@@ -119,6 +120,8 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
               grader.value
             )}
           </div>
+          <div>LAST EDITED</div>
+          <div>{props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}</div>
         </div>
         <Divider />
         <div className="submission-info__info">

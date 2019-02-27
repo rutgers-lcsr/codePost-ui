@@ -15,8 +15,6 @@ import { CommentType } from '../infrastructure/comment';
 import { FileType } from '../infrastructure/file';
 import { SubmissionType } from '../infrastructure/submission';
 
-import * as moment from 'moment';
-
 interface IProps {
   submission: SubmissionType;
   files: FileType[];
@@ -29,7 +27,6 @@ interface IProps {
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
-  showLastEdited: boolean;
   unsavedComments: number[];
 }
 
@@ -159,7 +156,6 @@ class CodePanel extends React.Component<IProps, IState> {
                 deleteComment={deleteComment}
                 updateComment={updateComment}
                 updateSubmissionGrade={this.props.updateSubmissionGrade}
-                showLastEdited={this.props.showLastEdited}
                 unsavedComments={this.props.unsavedComments}
               />
             </TabPanel>
@@ -186,7 +182,6 @@ interface ICodeProps {
   deleteComment: (comment: CommentType, file: FileType) => void;
   updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
   updateSubmissionGrade: () => void;
-  showLastEdited: boolean;
   unsavedComments: number[];
 }
 
@@ -203,7 +198,6 @@ const Code = (props: ICodeProps) => {
     activeCommentId,
     deleteComment,
     updateComment,
-    showLastEdited,
   } = props;
 
   const onMouseUp = (event: any) => {
@@ -344,11 +338,6 @@ const Code = (props: ICodeProps) => {
           className="grade__main-container__tabContent__commentPanel"
           style={commentPanelStyle}
         >
-          {showLastEdited ? (
-            <div className={'grade__main-container__tabContent__commentPanel__lastEdited'}>
-              Last edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('llll') : '--'}
-            </div>
-          ) : null}
           <CommentList
             file={file}
             readOnly={readOnly}
@@ -371,7 +360,6 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
   return class WrappedComponent extends React.Component<any, any> {
     public readOnly = true;
     public activeCommentId = undefined;
-    public showLastEdited = false;
 
     public addComment = (comment: any, file: FileType) => {
       return;
@@ -398,7 +386,6 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
           changeActive={this.changeActive}
           deleteComment={this.deleteComment}
           updateComment={this.updateComment}
-          showLastEdited={false}
           unsavedComments={[]}
         />
       );
