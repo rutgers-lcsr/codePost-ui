@@ -5,14 +5,9 @@ import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
 import SubmissionInfo from './components/grade/SubmissionInfo';
 
-import { Button, CircularProgress, Snackbar } from 'react-md';
+import { Button, CircularProgress } from 'react-md';
 
-import {
-  ICommentToRubricCommentMap,
-  IFileToCommentsMap,
-  IRubricCategoryToRubricCommentsMap,
-  IToast,
-} from './types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './types/common';
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
@@ -38,8 +33,6 @@ interface IGradeState {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   positiveNegativeAlert: boolean;
-
-  errorToasts: IToast[];
 }
 
 interface IProps {
@@ -47,6 +40,7 @@ interface IProps {
   match: any;
   history: any;
   user: UserType;
+  addErrorToast: (text: string, action: string | undefined) => void;
 }
 
 class Grade extends React.Component<IProps, IGradeState> {
@@ -64,7 +58,6 @@ class Grade extends React.Component<IProps, IGradeState> {
     submission: undefined,
     unsavedComments: [],
     positiveNegativeAlert: false,
-    errorToasts: [],
   };
 
   //////////////////////////////////////
@@ -93,18 +86,6 @@ class Grade extends React.Component<IProps, IGradeState> {
         this.setState({ isLoading: false });
       });
   }
-
-  // ------------------- Toast functions -------------------
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
-  };
 
   ///////////////////////////////////////
   // Loading methods
@@ -415,7 +396,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
           errors[key].forEach((error: string) => {
-            this.addErrorToast(error, undefined);
+            this.props.addErrorToast(error, undefined);
           });
         });
       });
@@ -466,14 +447,6 @@ class Grade extends React.Component<IProps, IGradeState> {
     } = this.state;
 
     const isCourseAdmin = this.isCourseAdmin(assignment);
-
-    const errorSnackBarStyle = {
-      width: '100%',
-      fontWeight: 500,
-      fontSize: 14,
-      backgroundColor: 'red',
-      maxWidth: '100%',
-    };
 
     if (isLoading) {
       return <CircularProgress id="progress" className="progress-circle" />;
@@ -531,17 +504,6 @@ class Grade extends React.Component<IProps, IGradeState> {
               unsavedComments={this.state.unsavedComments}
             />
           </div>
-
-          <Snackbar
-            id="error-snackbar"
-            className="error-snackbar"
-            toasts={this.state.errorToasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={2000}
-            onDismiss={this.dismissErrorToast}
-            style={errorSnackBarStyle}
-          />
         </div>
       </div>
     );
@@ -570,10 +532,6 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
     files,
   } = props;
   const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
-  // <div className={warningClassName}>
-  //   Warning: This submission has both positive and negative point comments. Please check to make sure that this is
-  //   intentional.
-  // </div>
   return (
     <div className="grade__finalize">
       <div className="grade__finalize--warning">
