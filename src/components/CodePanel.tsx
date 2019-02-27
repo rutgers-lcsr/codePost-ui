@@ -302,18 +302,19 @@ const Code = (props: ICodeProps) => {
   const lineHeight = document.querySelector('div#line-0')
     ? document.querySelector('div#line-0')!.getBoundingClientRect().height
     : 18; // 18 as estimate
+  const boxPaddingAndBorder = 15;
 
-  const codeHeight = numberOfLines * lineHeight;
+  const codeHeight = numberOfLines * lineHeight + boxPaddingAndBorder;
 
   const lineNumberStyle = {
     height: `${codeHeight}px`,
   };
 
   const commentPanelStyle = {
-    height: `${codeHeight + 20}px`,
+    height: `${codeHeight}px`,
   };
 
-  CodePanelUtils.updateCommentPanelHeight(codeHeight + 20);
+  CodePanelUtils.updateCommentPanelHeight(codeHeight);
 
   const codeString = props.file.code;
   return (

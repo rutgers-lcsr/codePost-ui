@@ -207,7 +207,7 @@ export default class CodePanelUtils {
       const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
       const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
 
-      let newHeight = currentHeight + 20;
+      let newHeight = currentHeight;
       const commentElements = document.getElementsByClassName('comment');
       // tslint:disable-next-line
       for (let i = 0; i < commentElements.length; i++) {
