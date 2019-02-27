@@ -135,7 +135,8 @@ export default class CodePanelUtils {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
         if (className !== '') {
-          className = className.split('=')[1].substring(1, className.length - 1);
+          className = className.split('=')[1];
+          className = className.substring(1, className.length - 1);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
