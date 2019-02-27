@@ -52,12 +52,19 @@ class Comment extends React.Component<IProps, IState> {
         isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
       });
     }
+
     // Is the deduction field active?
     const activeDeductionField =
       this.deductionField && this.deductionField.context && this.deductionField.getField() === document.activeElement;
 
+    // Is the rubric search active?
+    let activeSearch = false;
+    if (document.activeElement && document.activeElement.className === 'grade-rubric__search-bar') {
+      activeSearch = true;
+    }
+
     // Hack to focus on a conditionally rendered component
-    if (!activeDeductionField && this.textarea && this.textarea.style) {
+    if (!activeDeductionField && !activeSearch && this.textarea && this.textarea.style) {
       this.textarea.focus();
     }
   };
