@@ -108,12 +108,6 @@ class Landing extends React.Component<{}, IState> {
 
     const calendlyDiv = document.getElementById('calendly-button');
     calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
-
-    const calendlyFooter = document.getElementById('calendly-footer');
-    calendlyFooter!.setAttribute(
-      'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
-    );
   }
 
   public changePanelIndex = (newIndex: number) => {
@@ -201,7 +195,7 @@ class Landing extends React.Component<{}, IState> {
               Sign Up
             </Button>
             <div className="Hero__callToAction-container__calendly" id="calendly-button">
-              Meet us at SIGCSE 2019!
+              Schedule a demo
             </div>
           </div>
         </div>
