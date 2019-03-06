@@ -2,6 +2,10 @@
   &__top-container {
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
+  }
+  &__back {
+    @include icon-button(20px, 8px);
   }
   &__assignment {
     display: flex;
@@ -46,6 +50,23 @@
       color: $dark-red;
     }
     margin-bottom: 25px;
+  }
+
+  &__title {
+    &-container {
+      display: flex;
+      align-items: flex-end;
+      padding-top: 10px;
+      padding-bottom: 25px;
+    }
+    &-text {
+      flex-grow: 1;
+      text-align: center;
+      font-size: $font-size-xlarge;
+      color: $dark-grey;
+      font-weight: 500;
+      padding-right: 90px;
+    }
   }
 
   &__commentRow {

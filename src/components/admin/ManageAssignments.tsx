@@ -1012,15 +1012,18 @@ class ManageAssignments extends React.Component<IProps, {}> {
           ) : (
             <div />
           )}
-          <Button
-            key="Back"
-            className="admin-rubric__back"
-            flat={true}
-            icon={true}
-            onClick={this.changeActiveAssignment.bind(this.props, undefined)}
-          >
-            arrow_back
-          </Button>
+          <div className="admin-rubric__title-container">
+            <Button
+              key="Back"
+              className="admin-rubric__back"
+              raised={true}
+              icon={true}
+              onClick={this.changeActiveAssignment.bind(this.props, undefined)}
+            >
+              arrow_back
+            </Button>
+            <div className="admin-rubric__title-text">Assignment Rubric</div>
+          </div>
           <div className="admin-rubric__top-container">
             <div className="admin-rubric__assignment">
               <TextField

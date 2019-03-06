@@ -1,0 +1,15 @@
+.admin-submissions {
+  &__activeUser {
+    &__title-container {
+      display: flex;
+      align-items: center;
+      padding: 20px 0px 20px 0px;
+    }
+    &__title {
+      font-size: $font-size-xlarge;
+      text-align: center;
+      width: 100%;
+      flex-grow: 1;
+    }
+  }
+}

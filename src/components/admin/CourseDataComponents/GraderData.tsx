@@ -244,19 +244,18 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
       });
       return (
         <div>
-          <hr />
-          <Button
-            key="Back"
-            className="Btn"
-            flat={true}
-            icon={true}
-            onClick={changeActiveGrader.bind(this.props, undefined)}
-          >
-            arrow_back
-          </Button>
-          <hr />
-          <div>{activeGrader}</div>
-          <hr />
+          <div className="admin-submissions__activeUser__title-container">
+            <Button
+              key="Back"
+              className="admin__backBtn"
+              raised={true}
+              icon={true}
+              onClick={changeActiveGrader.bind(this.props, undefined)}
+            >
+              arrow_back
+            </Button>
+            <div className="admin-submissions__activeUser__title">{`Submissions graded by ${activeGrader}`}</div>
+          </div>
           <DataTable className="DataTable--GraderData-Selected" plain={true}>
             <TableHeader>
               <TableRow>

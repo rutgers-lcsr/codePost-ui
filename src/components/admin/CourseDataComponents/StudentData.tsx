@@ -305,18 +305,18 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
 
       return (
         <div>
-          <hr />
-          <Button
-            key="Back"
-            className="Btn"
-            flat={true}
-            icon={true}
-            onClick={changeActiveStudent.bind(this.props, undefined)}
-          >
-            arrow_back
-          </Button>
-          <div>{activeStudent}</div>
-          <hr />
+          <div className="admin-submissions__activeUser__title-container">
+            <Button
+              key="Back"
+              className="admin__backBtn"
+              raised={true}
+              icon={true}
+              onClick={changeActiveStudent.bind(this.props, undefined)}
+            >
+              arrow_back
+            </Button>
+            <div className="admin-submissions__activeUser__title">{`${activeStudent}'s submissions`}</div>
+          </div>
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
