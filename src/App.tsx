@@ -333,12 +333,15 @@ class App extends React.Component<{}, IState> {
         maxWidth: '100%',
       };
 
+      const isChromeBrowser = window.hasOwnProperty('chrome');
+
       return (
         <div>
           <TopBar
             email={this.state.user.email}
             handleLogout={this.handleLogout}
             showSettings={this.state.user.canCreateCourses}
+            isChromeBrowser={isChromeBrowser}
           />
           <div className="AppHome">
             <Switch>
