@@ -808,6 +808,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             };
             return File.create(filePayload);
           });
+          const { submissionsByStudent } = this.state;
+          partners.forEach((student) => {
+            if (!submissionsByStudent[student]) {
+              submissionsByStudent[student] = {};
+            }
+            submissionsByStudent[student][assignment.id] = submission;
+          });
+          this.setState({ submissionsByStudent });
           return Promise.all(filePromises);
         });
 
