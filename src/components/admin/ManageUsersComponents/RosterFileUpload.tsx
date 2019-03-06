@@ -433,6 +433,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 onClick={this.downloadRoster}
                 primary={true}
                 raised={true}
+                disabled={this.props.users.length === 0}
               >
                 Download JSON roster
               </Button>
