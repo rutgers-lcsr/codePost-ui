@@ -814,7 +814,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               delay={250}
               position="top"
               setPosition={true}
-              style={{ height: '50px' }}
+              style={{ height: '50px', left: '5px' }}
             >
               <TableColumn key={`${assignmentID}-1`} onClick={onCellClick} style={{ cursor: 'pointer' }}>
                 {assignment.name}

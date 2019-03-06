@@ -6,6 +6,7 @@
   }
   &__back {
     @include icon-button(20px, 8px);
+    background-color: white;
   }
   &__assignment {
     display: flex;
