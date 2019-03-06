@@ -67,6 +67,13 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
   public render() {
     const { activeTabIndex } = this.state;
     const { lockChanges } = this.props;
+    const lockMessage = lockChanges ? (
+      <div className="admin__lockMessage-container">
+        <div className="admin__lockMessage-text">Edits are locked.</div>
+      </div>
+    ) : (
+      <div />
+    );
 
     return (
       <div>
@@ -80,6 +87,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
             <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
             <ManageStudents
               sections={this.props.sections}
               students={this.props.students}
@@ -101,6 +109,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
             <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
             <ManageGraders
               graders={this.props.graders}
               superGraders={this.props.superGraders}
@@ -119,6 +128,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
             <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
             <ManageAdmins
               admins={this.props.admins}
               graders={this.props.graders}
@@ -136,6 +146,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
             <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
             <ManageSections
               sections={this.props.sections}
               sectionsLoadComplete={this.props.sectionsLoadComplete}
@@ -152,7 +163,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
         </Tabs>
         <Button
           key="Lock"
-          className="Btn"
+          className="admin__lockBtn"
           floating={true}
           tooltipLabel={lockChanges ? 'Making edits is locked.' : 'Edits are allowed. Click to lock.'}
           tooltipDelay={1500}

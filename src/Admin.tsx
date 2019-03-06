@@ -1695,7 +1695,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (currentCourse && loadedPanel === 0) {
       courseManagementPanel = (
-        <div className="content-container">
+        <div className="admin__main-panel__content-container">
           <CourseData
             currentCourseID={currentCourse.id}
             assignments={this.state.assignments}
@@ -1720,45 +1720,47 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       );
     } else if (currentCourse && loadedPanel === 1) {
       courseManagementPanel = (
-        <ManageAssignments
-          key={currentCourse.id}
-          rubricCategories={this.state.rubricCategories}
-          rubricComments={this.state.rubricComments}
-          submissions={this.state.submissions}
-          submissionsLoadComplete={this.state.submissionsLoadComplete}
-          lockManageAssignment={this.state.lockChanges}
-          toggleLock={this.toggleLock}
-          currentCourse={this.state.currentCourse}
-          addToast={this.props.addToast}
-          addErrorToast={this.props.addErrorToast}
-          assignments={this.state.assignments}
-          assignmentsLoadComplete={this.state.assignmentsLoadComplete}
-          assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
-          createRubricCategory={this.createRubricCategory}
-          deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
-          createRubricComment={this.createRubricComment}
-          deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
-          updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
-          updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
-          updateAssignment={this.updateAssignment}
-          createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
-          deleteAssignment={this.wrapLoading.bind(
-            this,
-            'Deleting Assignment...',
-            'This action can impact a lot of data and may take a few minutes.',
-            this.deleteAssignment,
-          )}
-          setLoadingDialog={this.setLoadingDialog}
-          clearLoadingDialog={this.clearLoadingDialog}
-          submissionsByStudent={this.state.submissionsByStudent}
-          submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-          students={this.state.students}
-          uploadSubmission={this.uploadSubmission}
-        />
+        <div>
+          <ManageAssignments
+            key={currentCourse.id}
+            rubricCategories={this.state.rubricCategories}
+            rubricComments={this.state.rubricComments}
+            submissions={this.state.submissions}
+            submissionsLoadComplete={this.state.submissionsLoadComplete}
+            lockManageAssignment={this.state.lockChanges}
+            toggleLock={this.toggleLock}
+            currentCourse={this.state.currentCourse}
+            addToast={this.props.addToast}
+            addErrorToast={this.props.addErrorToast}
+            assignments={this.state.assignments}
+            assignmentsLoadComplete={this.state.assignmentsLoadComplete}
+            assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
+            createRubricCategory={this.createRubricCategory}
+            deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
+            createRubricComment={this.createRubricComment}
+            deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
+            updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
+            updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
+            updateAssignment={this.updateAssignment}
+            createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
+            deleteAssignment={this.wrapLoading.bind(
+              this,
+              'Deleting Assignment...',
+              'This action can impact a lot of data and may take a few minutes.',
+              this.deleteAssignment,
+            )}
+            setLoadingDialog={this.setLoadingDialog}
+            clearLoadingDialog={this.clearLoadingDialog}
+            submissionsByStudent={this.state.submissionsByStudent}
+            submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+            students={this.state.students}
+            uploadSubmission={this.uploadSubmission}
+          />
+        </div>
       );
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
-        <div className="content-container">
+        <div className={`admin__main-panel__content-container${this.state.lockChanges ? '--locked' : ''}`}>
           <ManageUsers
             key={currentCourse.id}
             currentCourse={this.state.currentCourse}

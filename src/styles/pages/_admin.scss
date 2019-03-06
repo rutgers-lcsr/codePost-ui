@@ -1,3 +1,5 @@
+$admin-topbar-height: 50px;
+
 .admin {
   &__getStarted {
     display: flex;
@@ -12,7 +14,7 @@
     }
   }
   &__topbar {
-    @include topbar(50px, $very-light-green);
+    @include topbar($admin-topbar-height, $very-light-green);
     z-index: 5 !important; // this allows modals to sit above it.
     display: flex;
     justify-content: space-between;
@@ -72,7 +74,20 @@
   }
 
   &__main-panel {
-    padding: 20px 50px 10px 50px;
+    &__content-container {
+      // min-height is the total window size minus height of topbar and admin topbars
+      min-height: calc(100vh - #{$topbar-height} - #{$admin-topbar-height});
+      padding: 20px 50px 10px 50px;
+      transition: 0.3s;
+
+      &--locked {
+        // min-height is the total window size minus height of topbar and admin topbars
+        min-height: calc(100vh - #{$topbar-height} - #{$admin-topbar-height});
+        padding: 20px 50px 10px 50px;
+        background-color: rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+      }
+    }
   }
   @include setMinPageHeight($topbar-height);
   &__onboardingModal {
@@ -80,6 +95,28 @@
     @include badgeFormat($mid-grey, white);
     margin-left: 25px;
     cursor: pointer;
+  }
+  &__lockMessage {
+    &-container {
+      position: absolute;
+      width: 100%;
+      left: 0px;
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+    &-text {
+      padding: 6px 20px 6px 20px;
+      color: white;
+      background-color: #616161;
+      width: fit-content;
+      font-weight: 500;
+      opacity: 0.9;
+      $font-size: $font-size-small;
+    }
+  }
+  &__lockBtn {
+    background-color: white;
   }
 }
 

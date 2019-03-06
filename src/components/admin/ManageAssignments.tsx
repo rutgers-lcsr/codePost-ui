@@ -887,7 +887,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     if (!activeAssignment) {
       return (
-        <div>
+        <div className="admin__main-panel__content-container">
           <div className="padding" />
           <NewAssignmentDialog
             assignments={this.props.assignments}
@@ -1004,10 +1004,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
       }
 
       return (
-        <div>
+        <div className={`admin__main-panel__content-container${this.props.lockManageAssignment ? '--locked' : ''}`}>
           {lockManageAssignment ? (
-            <div className="admin-rubric__lockMessage-container">
-              <div className="admin-rubric__lockMessage-text">Edits are locked.</div>
+            <div className="admin__lockMessage-container">
+              <div className="admin__lockMessage-text">Edits are locked.</div>
             </div>
           ) : (
             <div />
@@ -1170,7 +1170,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
             closeCommentExplorer={this.clearCommentExplorer}
             submissions={this.props.submissions[activeAssignment.id]}
           />
-          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+          <Button
+            key="Lock"
+            className="admin__lockBtn"
+            floating={true}
+            fixed={true}
+            icon={true}
+            onClick={this.props.toggleLock}
+          >
             {lockManageAssignment ? 'lock' : 'lock_open'}
           </Button>
         </div>
