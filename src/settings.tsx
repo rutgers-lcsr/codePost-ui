@@ -60,8 +60,9 @@ class Settings extends React.Component<IProps, IState> {
             <div className="UserSettings__settingItem__content">
               <div className="UserSettings__settingItem__name">API token</div>
               <div className="UserSettings__settingItem__description">
-                This token can be used to authenticate yourself with the codePost API. For more information on how to
-                use this token, please see our API documentation.
+                This token can be used to authenticate yourself with the{' '}
+                <a href="http://docs.codepost.io">codePost API</a>. For more information on how to use this token,
+                please see our API documentation.
               </div>
             </div>
             <div>{user.api_token}</div>
@@ -97,8 +98,8 @@ class Settings extends React.Component<IProps, IState> {
             <div className="UserSettings__settingItem__content">
               <div className="UserSettings__settingItem__name">API token</div>
               <div className="UserSettings__settingItem__description">
-                This token can be used to authenticate yourself with the codePost API. For more information on how to
-                use this token, please see our API documentation.
+                This token can be used to authenticate yourself with the <a href="docs.codepost.io">codePost API</a>.
+                For more information on how to use this token, please see our API documentation.
               </div>
             </div>
             <div>Create a token: </div>
