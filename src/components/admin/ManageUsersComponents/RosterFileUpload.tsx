@@ -139,23 +139,37 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public checkRoster = (users: string[]) => {
     const uploadErrors: string[] = [];
     if (users) {
-      if (users.length === 0) {
-        uploadErrors.push('User list is empty');
-      }
-      users.map((user, index) => {
-        if (user.length === 0) {
-          uploadErrors.push(`User at index ${index} is empty.`);
+      const isStringArray = (i: any) => {
+        return typeof i === 'string';
+      };
+      if (
+        // check to make sure inputted array is a string array
+        !(Array.isArray(users) && users.every(isStringArray))
+      ) {
+        if (this.props.userType === USER_APP.Student) {
+          uploadErrors.push('Uploaded emails are not strings.');
+        } else {
+          uploadErrors.push('Uploaded roster is not a string array.');
         }
-        let numDuplicates = 0;
-        users.forEach((user2) => {
-          if (user2 === user) {
-            numDuplicates += 1;
+      } else {
+        if (users.length === 0) {
+          uploadErrors.push('User list is empty.');
+        }
+        users.map((user, index) => {
+          if (user.length === 0) {
+            uploadErrors.push(`User at index ${index} is empty.`);
+          }
+          let numDuplicates = 0;
+          users.forEach((user2) => {
+            if (user2 === user) {
+              numDuplicates += 1;
+            }
+          });
+          if (numDuplicates > 1) {
+            uploadErrors.push(`Multiple users of the same name of ${user}.`);
           }
         });
-        if (numDuplicates > 1) {
-          uploadErrors.push(`Multiple users of the same name of ${user}`);
-        }
-      });
+      }
       return uploadErrors;
     }
     uploadErrors.push('Uploaded JSON object is empty.');
