@@ -84,7 +84,6 @@ interface IAdminState {
   toasts: IToast[];
   longToasts: IToast[];
   errorToasts: IToast[];
-  longErrorToasts: IToast[];
 
   // URL variables
   toLoadCourse: boolean;
@@ -111,7 +110,6 @@ interface IAdminProps {
   addToast: (text: string, action: string | undefined) => void;
   addLongToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
-  addLongErrorToast: (text: string, action: string | undefined) => void;
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
@@ -158,7 +156,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     toasts: [],
     longToasts: [],
     errorToasts: [],
-    longErrorToasts: [],
 
     initialTab: 0,
 
@@ -781,7 +778,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     checkForCollisions.then((values: boolean[]) => {
       // We found a collision
       if (values.includes(true)) {
-        this.props.addLongErrorToast(
+        this.props.addErrorToast(
           'Collisions exist for this student group, so this upload has been aborted. \
           Please delete all associated submissions and try again.',
           undefined,
