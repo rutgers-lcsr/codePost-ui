@@ -99,6 +99,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       return <UploadedFileCard key={file.id} file={file} onRemoveClick={this.removeFile} />;
     });
 
+    const disableUpload = !(this.state.selectedStudents.length > 0 && this.state.files.length > 0);
+
     const content = (
       <div>
         <div className="error-padding" />
@@ -144,7 +146,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           <Button raised onClick={this.cancel} primary={false} flat={true} style={{ marginLeft: 'auto' }}>
             Cancel
           </Button>
-          <Button raised onClick={this.upload} primary={true} flat={true} style={{ marginLeft: '10px' }}>
+          <Button
+            raised
+            onClick={this.upload}
+            disabled={disableUpload}
+            primary={true}
+            flat={true}
+            style={{ marginLeft: '10px' }}
+          >
             Upload
           </Button>
         </div>
