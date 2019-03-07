@@ -41,6 +41,8 @@
     &-text {
       display: flex;
       align-items: flex-end;
+      font-size: $font-size-medium;
+      font-weight: 350;
     }
     &-strong {
       font-size: $font-size-medium;
@@ -59,6 +61,8 @@
     &-text {
       display: flex;
       align-items: flex-end;
+      font-size: $font-size-medium;
+      font-weight: 350;
     }
     &-strong {
       font-size: $font-size-medium;
@@ -68,6 +72,9 @@
     }
     &-markdown {
       margin: 20px 0px 20px 0px;
+    }
+    &-explanationText {
+      margin-top: 10px;
     }
   }
   &__fileName {

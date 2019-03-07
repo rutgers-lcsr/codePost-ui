@@ -187,7 +187,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     data.forEach((i: IStudentUpload) => {
       if (i.section) {
         if (!getSectionIDFromName(i.section)) {
-          uploadErrors.push(`Section of name ${i.section} does not exist.`);
+          uploadErrors.push(
+            `Section of name ${i.section} does not exist. Please go to the section tab to add the section.`,
+          );
         }
       }
     });
@@ -491,6 +493,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 <div className="roster-upload__fileUpload-text">
                   <div className="roster-upload__fileUpload-strong">Upload </div>
                   {`file to replace ${USER_APP[userType]} roster`}
+                </div>
+                <div className="roster-upload__fileUpload-explanationText">
+                  {`Please make sure that the uploaded file is in the following format.${
+                    userType === USER_APP.Student
+                      ? ' The section field is optional and can be excluded or set to null if not applicable.'
+                      : ''
+                  }`}
                 </div>
                 <ReactMarkdown className="roster-upload__fileUpload-markdown" source={exampleText} />
                 <FileUpload
