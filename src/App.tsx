@@ -305,7 +305,9 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADE}/:submissionId`}
-            render={(props: any) => <Grade {...props} user={this.state.user} />}
+            render={(props: any) => (
+              <Grade {...props} user={this.state.user} addToast={this.addToast} addErrorToast={this.addErrorToast} />
+            )}
           />
         );
       }
