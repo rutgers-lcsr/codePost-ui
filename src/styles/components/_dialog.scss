@@ -31,6 +31,12 @@
   &--rosterUpload {
     .md-dialog {
       width: 500px;
+      max-height: calc(100% - 120px);
+      top: 52%;
+    }
+    .md-dialog-content {
+      padding: 0px 28px 0px 28px;
+      max-height: calc(100% - 270px);
     }
   }
   &--generalLoading-text {

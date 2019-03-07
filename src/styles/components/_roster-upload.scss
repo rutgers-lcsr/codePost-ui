@@ -21,7 +21,7 @@
   }
   &__changesHeader {
     &-container {
-      padding: 25px 0px 25px 0px;
+      padding: 15px 0px 15px 0px;
       display: flex;
       flex-direction: column;
     }
@@ -98,7 +98,17 @@
       color: $mid-grey;
     }
   }
+  &__emailUsers {
+    font-size: $font-size-normal;
+    padding: 10px 0px 10px 0px;
+    b {
+      font-weight: 450;
+      color: darken($brand-color, 5%);
+      font-size: $font-size-medium;
+    }
+  }
   &__cancelBtn {
     color: $dark-grey;
+    height: auto;
   }
 }

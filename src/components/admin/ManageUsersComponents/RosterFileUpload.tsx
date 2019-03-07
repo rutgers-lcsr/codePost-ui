@@ -17,6 +17,7 @@ interface IProps {
     | null;
   userType: USER_APP;
   isDisabled: boolean;
+  emailUsers: boolean;
 }
 
 interface IStudentUpload {
@@ -330,24 +331,23 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       disabled: this.state.updatingRoster,
     });
 
-    const errors = (
-      <div className="roster-upload__error">
-        {uploadErrors.length > 0 ? (
+    const errors =
+      uploadErrors.length > 0 ? (
+        <div className="roster-upload__error">
           <div className="roster-upload__error-title">
             The uploaded file has the following <b>errors:</b>
           </div>
-        ) : (
-          <div />
-        )}
-        {uploadErrors.map((error, index) => {
-          return (
-            <div className="roster-upload__error-text" key={index}>
-              {error}
-            </div>
-          );
-        })}
-      </div>
-    );
+          {uploadErrors.map((error, index) => {
+            return (
+              <div className="roster-upload__error-text" key={index}>
+                {error}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div />
+      );
 
     const changes = [];
     let updateMessage;
@@ -521,6 +521,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             ) : (
               ''
             )}
+            <div className="roster-upload__emailUsers">
+              New users added <b>will {this.props.emailUsers ? '' : 'not'} be emailed.</b>
+              To change this please see the Course Settings panel.
+            </div>
             {errors}
             {updateMessage}
             {changes}
