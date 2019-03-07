@@ -10,6 +10,7 @@ import { SectionType } from '../../infrastructure/section';
 
 import ManageAdmins from './ManageUsersComponents/ManageAdmins';
 import ManageGraders from './ManageUsersComponents/ManageGraders';
+import ManageInactives from './ManageUsersComponents/ManageInactives';
 import ManageSections from './ManageUsersComponents/ManageSections';
 import ManageStudents from './ManageUsersComponents/ManageStudents';
 
@@ -20,6 +21,8 @@ interface IPropsManageUsers {
   graders: string[];
   superGraders: string[];
   admins: string[];
+  inactiveStudents: string[];
+  inactiveGraders: string[];
   sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
   rosterLoadComplete: boolean;
   sectionsLoadComplete: boolean;
@@ -83,6 +86,8 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
             <Tab className="tabList--ManageUsers__tab">Graders</Tab>
             <Tab className="tabList--ManageUsers__tab">Admins</Tab>
             <Tab className="tabList--ManageUsers__tab">Sections</Tab>
+            <Tab className="tabList--ManageUsers__tab">Inactive Students</Tab>
+            <Tab className="tabList--ManageUsers__tab">Inactive Graders</Tab>
           </TabList>
           <TabPanel>
             {/* padding under the tab required because tab is position:fixed*/}
@@ -158,6 +163,32 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               graders={this.props.graders}
               changeLeaders={this.props.changeLeaders}
               deleteSection={this.props.deleteSection}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
+            <ManageInactives
+              users={this.props.inactiveStudents}
+              rosterLoadComplete={this.props.rosterLoadComplete}
+              lockedChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              enrollUser={this.props.enrollUser}
+              userType={USER_APP.Student}
+            />
+          </TabPanel>
+          <TabPanel>
+            {/* padding under the tab required because tab is position:fixed*/}
+            <div className="tabList--ManageUsers__panelPadding" />
+            {lockMessage}
+            <ManageInactives
+              users={this.props.inactiveGraders}
+              rosterLoadComplete={this.props.rosterLoadComplete}
+              lockedChange={this.props.lockChanges}
+              toggleLock={this.props.toggleLock}
+              enrollUser={this.props.enrollUser}
+              userType={USER_APP.Grader}
             />
           </TabPanel>
         </Tabs>

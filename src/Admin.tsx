@@ -661,7 +661,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               });
               break;
             case USER_APP.Grader:
-              this.setState({ graders: roster.graders }, () => {
+              this.setState({ graders: roster.graders, inactiveGraders: roster.inactive_graders }, () => {
                 this.props.addToast('Grader roster successfully updated.', undefined);
                 this.generateSubmissionsByStudent();
               });
@@ -1777,13 +1777,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             graders={this.state.graders}
             superGraders={this.state.superGraders}
             admins={this.state.admins}
+            inactiveStudents={this.state.inactiveStudents}
+            inactiveGraders={this.state.inactiveGraders}
             sectionsByStudent={this.state.sectionsByStudent}
             rosterLoadComplete={this.state.rosterLoadComplete}
             sectionsLoadComplete={this.state.sectionsLoadComplete}
             lockChanges={this.state.lockChanges}
             toggleLock={this.toggleLock}
-            enrollUser={this.wrapLoading.bind(this, '', '', this.enrollUser)}
-            unEnrollUsers={this.wrapLoading.bind(this, '', '', this.unEnrollUsers)}
+            enrollUser={this.enrollUser}
+            unEnrollUsers={this.unEnrollUsers}
             changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
             changeStudentSection={this.changeStudentSection}
             changeSectionStudents={this.changeSectionStudents}
