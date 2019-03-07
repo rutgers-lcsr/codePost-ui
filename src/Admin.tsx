@@ -1642,9 +1642,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     ...props: any[]
   ): Promise<void> => {
     this.setLoadingDialog(title, message);
-    console.log('hello');
     const promise = func(...props);
-    console.log(promise);
     if (promise) {
       return promise
         .then(() => {
@@ -1652,7 +1650,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         })
         .catch(() => {
           this.clearLoadingDialog();
-          console.log('here');
         });
     } else {
       // This clause is purely a catch in case we haven't been strict on making sure the promises
@@ -1723,6 +1720,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
             deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
             changeSubmissionGrader={this.changeSubmissionGrader}
+            uploadSubmission={this.uploadSubmission}
           />
         </div>
       );

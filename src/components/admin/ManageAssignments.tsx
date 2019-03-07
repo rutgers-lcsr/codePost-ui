@@ -98,7 +98,7 @@ interface IProps {
 
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
-  uploadSubmission: any;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
 interface IState {
@@ -925,8 +925,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
           />
           <UploadSubmissionDialog
             isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
-            assignment={this.state.uploadingSubmissionAssignment!}
+            assignments={this.props.assignments}
+            selectedAssignment={this.state.uploadingSubmissionAssignment!}
             students={this.props.students}
+            selectedStudents={null}
             onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
             uploadSubmission={this.props.uploadSubmission}
           />

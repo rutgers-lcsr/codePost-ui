@@ -9,7 +9,12 @@
       font-size: $font-size-xlarge;
       text-align: center;
       width: 100%;
+      margin-left: 20px;
       flex-grow: 1;
+    }
+    &__uploadBtn {
+      height: auto;
+      text-transform: none;
     }
   }
 }

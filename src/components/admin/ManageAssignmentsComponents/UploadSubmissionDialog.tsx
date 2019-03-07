@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DialogContainer, FileUpload, TextField } from 'react-md';
+import { Button, DialogContainer, FileUpload } from 'react-md';
 
 import UploadedFileCard from './UploadedFileCard';
 
@@ -10,13 +10,16 @@ import Select from 'react-select';
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  assignment: AssignmentType;
+  assignments: AssignmentType[];
+  selectedAssignment: AssignmentType | null;
   students: string[];
+  selectedStudents: string[] | null;
   uploadSubmission: any;
 }
 
 interface IState {
   selectedStudents: string[];
+  selectedAssignment: AssignmentType | null;
   file?: any;
   files: any[];
 }
@@ -25,13 +28,20 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public fileUpload: any = React.createRef();
 
   public state: Readonly<IState> = {
-    selectedStudents: [],
+    selectedStudents: this.props.selectedStudents ? this.props.selectedStudents : [],
+    selectedAssignment: this.props.selectedAssignment,
     file: undefined,
     files: [],
   };
-  public onChange = (v: string) => {
-    return;
-  };
+
+  public componentDidUpdate(prevProps: IProps) {
+    if (!prevProps.selectedAssignment && this.props.selectedAssignment) {
+      this.setState({ selectedAssignment: this.props.selectedAssignment });
+    }
+    if (!prevProps.selectedStudents && this.props.selectedStudents) {
+      this.setState({ selectedStudents: this.props.selectedStudents });
+    }
+  }
 
   public changeStudents = (options: any) => {
     const selectedStudents = options.map((option: any) => {
@@ -40,15 +50,38 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.setState({ selectedStudents });
   };
 
+  public changeAssignment = (option: any) => {
+    const selectedAssignment = this.props.assignments.find((assn) => {
+      return assn.id === option.value;
+    });
+    if (selectedAssignment) {
+      this.setState({ selectedAssignment });
+    }
+  };
+
   public cancel = () => {
     this.props.onCancel();
-    this.setState({ files: [], selectedStudents: [] });
+    // If the students or assignment was passed in, we want to keep it in state
+    if (!this.props.selectedStudents) {
+      this.setState({ files: [], selectedStudents: [] });
+    } else if (!this.props.selectedAssignment) {
+      this.setState({ files: [], selectedAssignment: null });
+    } else {
+      this.setState({ files: [] });
+    }
   };
 
   public upload = () => {
-    this.props.uploadSubmission(this.props.assignment, this.state.selectedStudents, this.state.files);
+    this.props.uploadSubmission(this.state.selectedAssignment, this.state.selectedStudents, this.state.files);
     this.props.onCancel();
-    this.setState({ files: [], selectedStudents: [] });
+    // If the students or assignment was passed in, we want to keep it in state
+    if (!this.props.selectedStudents) {
+      this.setState({ files: [], selectedStudents: [] });
+    } else if (!this.props.selectedAssignment) {
+      this.setState({ files: [], selectedAssignment: null });
+    } else {
+      this.setState({ files: [] });
+    }
   };
 
   // ----- File upload -----
@@ -91,34 +124,51 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       return <div />;
     }
 
-    const items = this.props.students.map((student) => {
-      return { value: student, label: student };
-    });
-
     const uploadedFileCards = this.state.files.map((file) => {
       return <UploadedFileCard key={file.id} file={file} onRemoveClick={this.removeFile} />;
     });
 
-    const disableUpload = !(this.state.selectedStudents.length > 0 && this.state.files.length > 0);
+    const disableUpload = !(
+      this.state.selectedStudents.length > 0 &&
+      this.state.files.length > 0 &&
+      this.state.selectedAssignment
+    );
+
+    const studentOptions = this.props.students.map((student) => {
+      return { value: student, label: student };
+    });
+
+    const assignmentOptions = this.props.assignments.map((assn) => {
+      return { value: assn.id, label: assn.name };
+    });
+
+    const selectedAssignment = this.state.selectedAssignment;
+
+    const selectedStudents = this.state.selectedStudents;
 
     const content = (
       <div>
         <div className="error-padding" />
-        <TextField
-          className="dialog--upload-submission__assignment"
-          label="Assignment"
-          value={this.props.assignment.name}
-          onChange={this.onChange}
+        <Select
+          classNamePrefix="select--ManageSections"
+          closeMenuOnSelect={true}
+          options={assignmentOptions}
+          isDisabled={this.props.selectedAssignment}
+          onChange={this.changeAssignment}
+          placeholder="Select Assignments..."
+          value={selectedAssignment ? { value: selectedAssignment.id, label: selectedAssignment.name } : undefined}
+          menuPlacement="auto"
         />
         <div className="error-padding" />
         <Select
           classNamePrefix="multiselect--ManageSections"
           closeMenuOnSelect={true}
           isMulti={true}
-          options={items}
+          isDisabled={this.props.selectedStudents}
+          options={studentOptions}
           onChange={this.changeStudents}
           placeholder="Select students..."
-          value={this.state.selectedStudents.map((student) => {
+          value={selectedStudents.map((student) => {
             return { value: student, label: student };
           })}
           menuPlacement="auto"
