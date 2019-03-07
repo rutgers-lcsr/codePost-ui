@@ -522,8 +522,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               ''
             )}
             <div className="roster-upload__emailUsers">
-              New users added <b>will {this.props.emailUsers ? '' : 'not'} be emailed.</b>
-              To change this please see the Course Settings panel.
+              New users added <b>will {this.props.emailUsers ? '' : 'not'} be emailed.</b> To change this please see the
+              Course Settings panel.
             </div>
             {errors}
             {updateMessage}
