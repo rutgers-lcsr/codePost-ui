@@ -99,7 +99,14 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 </div>
                 <div className="CourseSettings__settingItem__description">
                   Selecting will move released assignments to the back of the course queue, preventing situations in
-                  which a grader reclaims a submission that was just released.
+                  which a grader reclaims a submission that was just released. For more information see our{' '}
+                  <a
+                    href="https://help.codepost.io/docs/quickstart-onboard-a-grader\
+#section-claiming-from-the-submission-queue-"
+                  >
+                    help guides
+                  </a>
+                  .
                 </div>
               </div>
               <SelectionControl
