@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CircularProgress, FontIcon, SelectionControl, TextField } from 'react-md';
+import { FontIcon, LinearProgress, SelectionControl, TextField } from 'react-md';
 import { TopBarNoEmail } from './TopBar';
 
 import Select from 'react-select';
@@ -30,7 +30,12 @@ interface IState {
   validationFailed: boolean;
 
   isLoading: boolean;
+  progress: number | null;
 }
+
+const PROGRESS_INCREMENT_TIME = 10;
+const PROGRESS_MAX_TIME = 45000;
+const USER_VALIDATION_INTERVAL = 5000;
 
 class CreateSignup extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
@@ -48,9 +53,11 @@ class CreateSignup extends React.Component<{}, IState> {
     badEmailMatch: false,
     validationFailed: false,
     isLoading: false,
+    progress: null,
   };
 
   private interval: any;
+  private progressInterval: any;
 
   public handleChange = (label: string, value: string) => {
     const name = label;
@@ -105,8 +112,9 @@ class CreateSignup extends React.Component<{}, IState> {
 
     this.setState({ confirmAuthority: false }, () => {
       setTimeout(() => {
-        this.setState({ isLoading: false });
-      }, 120000);
+        this.setState({ isLoading: false, progress: null });
+        clearInterval(this.progressInterval);
+      }, PROGRESS_MAX_TIME);
       fetch(`${process.env.REACT_APP_API_URL}/registration/validateNewAdminUser/`, {
         headers: {
           'Content-Type': 'application/json',
@@ -124,8 +132,18 @@ class CreateSignup extends React.Component<{}, IState> {
         .then((json) => {
           this.interval = setInterval(() => {
             this.checkUserValidation();
-          }, 10000);
-          this.setState({ pendingValidation: true, isLoading: true });
+          }, USER_VALIDATION_INTERVAL);
+          this.setState({ progress: 1, pendingValidation: true, isLoading: true }, () => {
+            this.progressInterval = setInterval(() => {
+              const currentProgress = this.state.progress;
+              if (currentProgress !== null) {
+                const newProgress = currentProgress + (PROGRESS_INCREMENT_TIME * 100) / PROGRESS_MAX_TIME;
+                this.setState({ progress: newProgress });
+              } else {
+                this.setState({ progress: 1 });
+              }
+            }, PROGRESS_INCREMENT_TIME);
+          });
         })
         .catch((err) => {
           this.setState({ badEmailMatch: true });
@@ -145,6 +163,7 @@ class CreateSignup extends React.Component<{}, IState> {
       .then((json) => {
         if (!json.pending) {
           clearInterval(this.interval);
+          clearInterval(this.progressInterval);
           console.log(json);
           if (json.status) {
             this.setState({ confirmEmailSent: true, pendingValidation: false });
@@ -280,14 +299,33 @@ class CreateSignup extends React.Component<{}, IState> {
     }
 
     if (pendingValidation) {
+      console.log(this.state.progress);
       if (this.state.isLoading) {
+        const { progress } = this.state;
+        let loadingText;
+        if (progress === null || progress < 25) {
+          loadingText = "Hang tight... we're setting up your account";
+        } else if (progress < 50) {
+          loadingText = "We're validating your email...";
+        } else if (progress < 80) {
+          loadingText =
+            'Email validation may take some time - we want to make sure that only course leaders can set up courses.';
+        } else {
+          loadingText =
+            'Sometimes we may need more time to validate emails. If this happens, we will email you within 24 hours';
+        }
         return (
           <div>
             <TopBarNoEmail />
             <div className="SignUpManager">
               <div className="SignUpManager__main-container">
-                <div className="SignUpManager__center-text">Hang tight...we're validating your email</div>
-                <CircularProgress id="progress" className="progress-circle" style={{ marginBottom: '30px' }} />
+                <LinearProgress
+                  id="progress"
+                  className="linear-progress--validation"
+                  value={this.state.progress ? this.state.progress : 0}
+                  style={{ marginBottom: '30px' }}
+                />
+                <div className="SignUpManager__center-text">{loadingText}</div>
               </div>
             </div>
           </div>
@@ -316,7 +354,7 @@ class CreateSignup extends React.Component<{}, IState> {
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
               <div className="SignUpManager__center-text">Hang tight...</div>
-              <CircularProgress id="progress" className="progress-circle" style={{ marginTop: '60px' }} />
+              <LinearProgress id="progress" style={{ marginTop: '60px' }} />
             </div>
           </div>
         </div>

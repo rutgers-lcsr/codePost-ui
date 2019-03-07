@@ -7,6 +7,7 @@ interface IProps {
   email: string;
   handleLogout: (event: any) => void;
   showSettings: boolean;
+  isChromeBrowser: boolean;
 }
 
 const TopBar = (props: IProps) => {
@@ -21,6 +22,15 @@ const TopBar = (props: IProps) => {
     );
   }
 
+  let browserWarning = <div />;
+  console.log(props.isChromeBrowser);
+  if (!props.isChromeBrowser) {
+    browserWarning = (
+      <div className="topbar__browser-warning">
+        codePost was built for use in chrome. Some features may not be fully functional in your current browser.
+      </div>
+    );
+  }
   return (
     <div>
       <div className="topbar">
@@ -30,6 +40,7 @@ const TopBar = (props: IProps) => {
           </Link>
         </div>
         <div key="topbar__spacing" className="topbar__spacing" />
+        {browserWarning}
         <div key="topbar__welcome" className="topbar__welcome">
           <div className="topbar__welcome__text"> Hello, {props.email} </div>
           {settingsButton}

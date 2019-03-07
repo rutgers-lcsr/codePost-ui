@@ -361,6 +361,7 @@ class ManageStudents extends React.Component<IProps, IState> {
             userType={USER_APP.Student}
             isDisabled={lockedStudentChange}
             changeSectionStudents={this.props.changeSectionStudents}
+            emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           />
         </div>
         <TextField

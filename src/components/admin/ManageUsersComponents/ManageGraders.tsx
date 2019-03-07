@@ -317,6 +317,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             getSectionIDFromName={null}
             sectionsByStudent={null}
             changeSectionStudents={null}
+            emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           />
         </div>
         <TextField

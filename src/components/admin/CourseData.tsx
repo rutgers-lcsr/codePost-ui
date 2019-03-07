@@ -33,6 +33,7 @@ interface IPropsCourseData {
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
 interface IState {
@@ -157,6 +158,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
             deleteSubmission={this.props.deleteSubmission}
             graders={this.props.graders}
             changeSubmissionGrader={this.props.changeSubmissionGrader}
+            uploadSubmission={this.props.uploadSubmission}
           />
         </TabPanel>
         <TabPanel>
@@ -188,6 +190,7 @@ class CourseData extends React.Component<IPropsCourseData, {}> {
             deleteSubmission={this.props.deleteSubmission}
             graders={this.props.graders}
             changeSubmissionGrader={this.props.changeSubmissionGrader}
+            uploadSubmission={this.props.uploadSubmission}
           />
         </TabPanel>
         <TabPanel>
