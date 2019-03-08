@@ -10,6 +10,8 @@ import { CommentIO, CommentType } from '../infrastructure/comment';
 import { FileType } from '../infrastructure/file';
 import { RubricCommentType } from '../infrastructure/rubricComment';
 
+import CodePanelUtils from '../CodePanelUtils';
+
 interface IProps {
   key: number;
   comment: CommentType;
@@ -47,6 +49,8 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
 
   public componentDidUpdate = (prevProps: any) => {
+    CodePanelUtils.updateCommentPanelHeight();
+
     if (this.props.unsavedComments !== prevProps.unsavedComments) {
       this.setState({
         isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
@@ -221,7 +225,9 @@ class Comment extends React.Component<IProps, IState> {
     const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'comment__pointdelta--small' : '';
 
     const className =
-      this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle' ? 'comment--unsaved' : 'comment';
+      this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle'
+        ? 'comment--unsaved comment'
+        : 'comment';
     const author = comment.author ? `author: ${comment.author}` : '';
 
     // Ugly for type checking

@@ -23,7 +23,6 @@ const TopBar = (props: IProps) => {
   }
 
   let browserWarning = <div />;
-  console.log(props.isChromeBrowser);
   if (!props.isChromeBrowser) {
     browserWarning = (
       <div className="topbar__browser-warning">

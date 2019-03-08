@@ -199,6 +199,8 @@ export default class CodePanelUtils {
     return offset + CodePanelUtils.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
   };
 
+  // The Code Console needs to update its dimensions when the relevant DOM components update
+  // This can either be new comments that would otherwise overflow or newly rendered code snippets
   public static updateCommentPanelHeight = (height?: number) => {
     const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
     if (selectedTabElement) {
@@ -210,10 +212,26 @@ export default class CodePanelUtils {
 
       let newHeight = currentHeight;
       const commentElements = document.getElementsByClassName('comment');
+
       // tslint:disable-next-line
       for (let i = 0; i < commentElements.length; i++) {
         const elem = document.getElementById(commentElements[i].id)!;
-        newHeight = Math.max(currentHeight, +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30);
+
+        // The TextArea has a transition on it
+        // So when this code reads the DOM, it sees the TextArea as smaller than it is
+        // Here we hard-code the expected final height of a transitioning TextArea
+        let buffer = 0;
+        if (elem.getElementsByTagName('textarea').length > 0) {
+          const textAreaHeight = elem.getElementsByTagName('textarea')[0].getBoundingClientRect().height;
+          if (textAreaHeight < 42) {
+            buffer = 42;
+          }
+        }
+
+        newHeight = Math.max(
+          currentHeight,
+          +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30 + buffer,
+        );
       }
       document.getElementById(commentPanel.id)!.style.setProperty('height', `${newHeight}px`);
     }

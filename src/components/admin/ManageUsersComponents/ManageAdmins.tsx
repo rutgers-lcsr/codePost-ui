@@ -29,6 +29,7 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => Promise<void>;
   unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  isStudent: (user: string) => boolean;
 }
 
 interface IState {
@@ -39,6 +40,7 @@ interface IState {
   // the user if they would like to unenroll the user from being an admin also, or will
   // be null if no such choice is required
   emailToGraderUnenroll: string | undefined;
+  warningAddingStudent: string | undefined;
 }
 
 class ManageStudents extends React.Component<IProps, {}> {
@@ -47,6 +49,7 @@ class ManageStudents extends React.Component<IProps, {}> {
     sortAscending: true,
     searchTerm: '',
     emailToGraderUnenroll: undefined,
+    warningAddingStudent: undefined,
   };
 
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
@@ -68,7 +71,11 @@ class ManageStudents extends React.Component<IProps, {}> {
 
   public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     this.props.enrollUser(newUserEmail, userType);
-    this.setState({ newAdminField: '' });
+    this.setState({ newAdminField: '', warningAddingStudent: undefined });
+  };
+
+  public toggleWarningModal = (user: string) => {
+    this.setState({ warningAddingStudent: user });
   };
 
   public newAdminFieldOnChange = (value: string) => {
@@ -145,6 +152,26 @@ class ManageStudents extends React.Component<IProps, {}> {
         >
           {`Would you like to also unenroll ${emailToGraderUnenroll} from grader?`}
         </DialogContainer>
+        <DialogContainer
+          id="rubricFile-dialog"
+          visible={this.state.warningAddingStudent !== undefined}
+          title="Warning: This user is enrolled as a student"
+          actions={[
+            {
+              primary: true,
+              children: 'Cancel',
+              onClick: this.toggleWarningModal.bind(this.props, undefined),
+            },
+            {
+              children: 'Continue',
+              onClick: this.triggerEnrollUser.bind(this.props, this.state.warningAddingStudent, USER_APP.CourseAdmin),
+            },
+          ]}
+          modal
+          portal={true}
+        >
+          {`Are you sure you want to add ${this.state.warningAddingStudent} as an admin?`}
+        </DialogContainer>
         <div className="roster-admin__top-container">
           <div className="roster-admin__top-container__newUser">
             <TextField
@@ -161,7 +188,11 @@ class ManageStudents extends React.Component<IProps, {}> {
               iconChildren="done"
               className="roster-admin__addUser__Btn"
               disabled={!showSaveNewAdminButton || lockedAdminChange}
-              onClick={this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)}
+              onClick={
+                this.props.isStudent(newAdminField ? newAdminField : '')
+                  ? this.toggleWarningModal.bind(this.props, newAdminField!)
+                  : this.triggerEnrollUser.bind(this.props, newAdminField, USER_APP.CourseAdmin)
+              }
             >
               Save new admin
             </Button>

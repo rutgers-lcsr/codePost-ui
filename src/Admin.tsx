@@ -627,6 +627,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   // ------------------- Manage users API calls  -------------------
 
+  public isStudent = (user: string) => {
+    return this.state.students.includes(user);
+  };
+
   public changeRoster = (newRoster: string[], userType: USER_APP) => {
     const { currentCourse } = this.state;
 
@@ -1795,6 +1799,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             setLoadingDialog={this.setLoadingDialog}
             clearLoadingDialog={this.clearLoadingDialog}
             deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
+            isStudent={this.isStudent}
           />
         </div>
       );

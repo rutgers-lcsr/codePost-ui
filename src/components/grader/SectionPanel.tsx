@@ -142,7 +142,7 @@ class SectionPanel extends React.Component<IProps, IState> {
       // Sections haven't been loaded yet
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else if (sections.length === 1 || activeSection) {
-      title = `Submissions for ${sections[0].name}`;
+      title = `Submissions for ${activeSection ? activeSection.name : ''}`;
 
       tableBody = sortedSubmissions.map(([student, sub]) => {
         if (sub) {
