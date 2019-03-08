@@ -84,6 +84,10 @@
 .UserSettings {
   @include settings(800px, 250px);
 
+  a {
+    text-decoration: underline;
+  }
+
   &__settingItem {
     // smaller content width to allow for width of api token
     &__content {
