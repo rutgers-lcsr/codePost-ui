@@ -108,14 +108,16 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             }
           }
         });
-        console.log(result);
-        return JSON.parse(JSON.stringify(result));
+        return result;
       } else {
         const users = csv.split('\n');
-        return JSON.parse(JSON.stringify(users));
+        return users.filter((user) => {
+          return user.length > 0;
+        });
       }
     } catch (err) {
       this.setState({ uploadErrors: ['Uploaded Roster is not a valid CSV file'] });
+      return;
     }
   };
 
@@ -592,7 +594,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 <ReactMarkdown className="roster-upload__fileUpload-markdown" source={exampleText} />
                 <FileUpload
                   id="rosterUpload-FileInput"
-                  accept={this.state.fileType === FILE_UPLOAD_TYPE.json ? 'application/json' : 'csv'}
+                  accept={this.state.fileType === FILE_UPLOAD_TYPE.json ? 'application/json' : 'text/csv'}
                   className="roster-upload__fileUpload-button"
                   multiple={false}
                   onLoad={this.onRosterUpload}
