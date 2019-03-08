@@ -303,16 +303,12 @@ class CreateSignup extends React.Component<{}, IState> {
       if (this.state.isLoading) {
         const { progress } = this.state;
         let loadingText;
-        if (progress === null || progress < 25) {
-          loadingText = "Hang tight... we're setting up your account";
-        } else if (progress < 50) {
-          loadingText = "We're validating your email...";
-        } else if (progress < 80) {
-          loadingText =
-            'Email validation may take some time - we want to make sure that only course leaders can set up courses.';
+        if (progress === null || progress < 33) {
+          loadingText = 'Creating your account...';
+        } else if (progress < 70) {
+          loadingText = 'Validating your information...';
         } else {
-          loadingText =
-            'Sometimes we may need more time to validate emails. If this happens, we will email you within 24 hours';
+          loadingText = 'Setting up your API profile...';
         }
         return (
           <div>
