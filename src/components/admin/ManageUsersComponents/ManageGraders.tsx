@@ -32,6 +32,7 @@ interface IProps {
   enrollUser: (email: string, type: USER_APP) => Promise<void>;
   unEnrollUsers: (emails: string[], type: USER_APP) => Promise<void>;
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  isStudent: (user: string) => boolean;
 }
 
 interface IState {
@@ -47,6 +48,7 @@ interface IState {
   paginationStart: number | undefined;
   rowsPerPage: number | undefined;
   sortedIndex: Array<boolean | undefined>;
+  warningAddingStudent: string | undefined;
 }
 
 class ManageGraders extends React.Component<IProps, IState> {
@@ -64,6 +66,7 @@ class ManageGraders extends React.Component<IProps, IState> {
       paginationStart: undefined,
       rowsPerPage: undefined,
       sortedIndex,
+      warningAddingStudent: undefined,
     };
   }
 
@@ -108,6 +111,10 @@ class ManageGraders extends React.Component<IProps, IState> {
     return 0;
   }
 
+  public toggleWarningModal = (user: string) => {
+    this.setState({ warningAddingStudent: user });
+  };
+
   public triggerUnEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     const { unEnrollUsers, admins } = this.props;
     unEnrollUsers([newUserEmail], userType);
@@ -127,7 +134,7 @@ class ManageGraders extends React.Component<IProps, IState> {
 
   public triggerEnrollUser = (newUserEmail: string, userType: USER_APP) => {
     this.props.enrollUser(newUserEmail, userType);
-    this.setState({ newField: '' });
+    this.setState({ newField: '', warningAddingStudent: undefined });
   };
 
   public newFieldOnChange = (value: string) => {
@@ -286,6 +293,26 @@ class ManageGraders extends React.Component<IProps, IState> {
         >
           {`Would you like to also unenroll ${emailToAdminUnenroll} from admin?`}
         </DialogContainer>
+        <DialogContainer
+          id="rubricFile-dialog"
+          visible={this.state.warningAddingStudent !== undefined}
+          title="Warning: This user is enrolled as a student"
+          actions={[
+            {
+              primary: true,
+              children: 'Cancel',
+              onClick: this.toggleWarningModal.bind(this.props, undefined),
+            },
+            {
+              children: 'Continue',
+              onClick: this.triggerEnrollUser.bind(this.props, this.state.warningAddingStudent, graderType),
+            },
+          ]}
+          modal
+          portal={true}
+        >
+          {`Are you sure you want to add ${this.state.warningAddingStudent} as a grader?`}
+        </DialogContainer>
         <div className="roster-grader__top-container">
           <div className="roster-admin__top-container__newUser">
             <TextField
@@ -302,7 +329,11 @@ class ManageGraders extends React.Component<IProps, IState> {
               iconChildren="done"
               className="roster-grader__addUser__Btn"
               disabled={!showSaveNewButton || lockedGraderChange}
-              onClick={this.triggerEnrollUser.bind(this.props, newField, graderType)}
+              onClick={
+                this.props.isStudent(newField ? newField : '')
+                  ? this.toggleWarningModal.bind(this.props, newField!)
+                  : this.triggerEnrollUser.bind(this.props, newField, graderType)
+              }
             >
               Save new grader
             </Button>

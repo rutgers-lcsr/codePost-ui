@@ -49,6 +49,8 @@ interface IPropsManageUsers {
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
   deleteSection: (sectionID: number) => Promise<void>;
+
+  isStudent: (user: string) => boolean;
 }
 
 interface IState {
@@ -128,6 +130,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               enrollUser={this.props.enrollUser}
               unEnrollUsers={this.props.unEnrollUsers}
               changeRoster={this.props.changeRoster}
+              isStudent={this.props.isStudent}
             />
           </TabPanel>
           <TabPanel>
@@ -146,6 +149,7 @@ class ManageUsers extends React.Component<IPropsManageUsers, {}> {
               enrollUser={this.props.enrollUser}
               unEnrollUsers={this.props.unEnrollUsers}
               changeRoster={this.props.changeRoster}
+              isStudent={this.props.isStudent}
             />
           </TabPanel>
           <TabPanel>
