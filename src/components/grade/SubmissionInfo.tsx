@@ -51,9 +51,13 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
     menuItems = menuItems.concat([{ value: 'Unassign', label: 'Unassign' }]);
   }
   menuItems = menuItems.concat(
-    graders.map((g) => {
-      return { value: g, label: g };
-    }),
+    graders
+      .map((g) => {
+        return { value: g, label: g };
+      })
+      .sort((a: any, b: any) => {
+        return a.value > b.value ? 1 : -1;
+      }),
   );
 
   const grader = submission.grader
