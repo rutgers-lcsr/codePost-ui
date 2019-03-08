@@ -98,7 +98,7 @@ interface IProps {
 
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
-  uploadSubmission: any;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
 interface IState {
@@ -584,10 +584,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     const subs = submissions[assignment.id];
 
-    const grades: string[] = ['Assignment,Student,Grade'];
+    const grades: string[] = ['Student,Grade'];
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
-        grades.push(`${assignment.name},${student},${sub.grade}`);
+        grades.push(`${student},${sub.grade}`);
       });
     });
 
@@ -814,7 +814,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
               delay={250}
               position="top"
               setPosition={true}
-              style={{ height: '50px' }}
+              style={{ height: '50px', left: '5px' }}
             >
               <TableColumn key={`${assignmentID}-1`} onClick={onCellClick} style={{ cursor: 'pointer' }}>
                 {assignment.name}
@@ -887,7 +887,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     if (!activeAssignment) {
       return (
-        <div>
+        <div className="admin__main-panel__content-container">
           <div className="padding" />
           <NewAssignmentDialog
             assignments={this.props.assignments}
@@ -925,8 +925,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
           />
           <UploadSubmissionDialog
             isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
-            assignment={this.state.uploadingSubmissionAssignment!}
+            assignments={this.props.assignments}
+            selectedAssignment={this.state.uploadingSubmissionAssignment!}
             students={this.props.students}
+            selectedStudents={null}
             onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
             uploadSubmission={this.props.uploadSubmission}
           />
@@ -1004,23 +1006,26 @@ class ManageAssignments extends React.Component<IProps, {}> {
       }
 
       return (
-        <div>
+        <div className={`admin__main-panel__content-container${this.props.lockManageAssignment ? '--locked' : ''}`}>
           {lockManageAssignment ? (
-            <div className="admin-rubric__lockMessage-container">
-              <div className="admin-rubric__lockMessage-text">Edits are locked.</div>
+            <div className="admin__lockMessage-container">
+              <div className="admin__lockMessage-text">Edits are locked.</div>
             </div>
           ) : (
             <div />
           )}
-          <Button
-            key="Back"
-            className="admin-rubric__back"
-            flat={true}
-            icon={true}
-            onClick={this.changeActiveAssignment.bind(this.props, undefined)}
-          >
-            arrow_back
-          </Button>
+          <div className="admin-rubric__title-container">
+            <Button
+              key="Back"
+              className="admin-rubric__back"
+              raised={true}
+              icon={true}
+              onClick={this.changeActiveAssignment.bind(this.props, undefined)}
+            >
+              arrow_back
+            </Button>
+            <div className="admin-rubric__title-text">Assignment Rubric</div>
+          </div>
           <div className="admin-rubric__top-container">
             <div className="admin-rubric__assignment">
               <TextField
@@ -1170,7 +1175,14 @@ class ManageAssignments extends React.Component<IProps, {}> {
             closeCommentExplorer={this.clearCommentExplorer}
             submissions={this.props.submissions[activeAssignment.id]}
           />
-          <Button key="Lock" className="Btn" floating={true} fixed={true} icon={true} onClick={this.props.toggleLock}>
+          <Button
+            key="Lock"
+            className="admin__lockBtn"
+            floating={true}
+            fixed={true}
+            icon={true}
+            onClick={this.props.toggleLock}
+          >
             {lockManageAssignment ? 'lock' : 'lock_open'}
           </Button>
         </div>

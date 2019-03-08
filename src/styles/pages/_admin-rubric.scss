@@ -1,25 +1,12 @@
 .admin-rubric {
-  &__lockMessage {
-    &-container {
-      position: absolute;
-      width: 100%;
-      left: 0px;
-      display: flex;
-      justify-content: space-around;
-    }
-    &-text {
-      padding: 6px 20px 6px 20px;
-      color: white;
-      background-color: #616161;
-      width: fit-content;
-      font-weight: 500;
-      opacity: 0.9;
-      $font-size: $font-size-small;
-    }
-  }
   &__top-container {
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
+  }
+  &__back {
+    @include icon-button(20px, 8px);
+    background-color: white;
   }
   &__assignment {
     display: flex;
@@ -64,6 +51,23 @@
       color: $dark-red;
     }
     margin-bottom: 25px;
+  }
+
+  &__title {
+    &-container {
+      display: flex;
+      align-items: flex-end;
+      padding-top: 10px;
+      padding-bottom: 25px;
+    }
+    &-text {
+      flex-grow: 1;
+      text-align: center;
+      font-size: $font-size-xlarge;
+      color: $dark-grey;
+      font-weight: 500;
+      padding-right: 90px;
+    }
   }
 
   &__commentRow {

@@ -84,7 +84,6 @@ interface IAdminState {
   toasts: IToast[];
   longToasts: IToast[];
   errorToasts: IToast[];
-  longErrorToasts: IToast[];
 
   // URL variables
   toLoadCourse: boolean;
@@ -111,7 +110,6 @@ interface IAdminProps {
   addToast: (text: string, action: string | undefined) => void;
   addLongToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
-  addLongErrorToast: (text: string, action: string | undefined) => void;
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
@@ -158,7 +156,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     toasts: [],
     longToasts: [],
     errorToasts: [],
-    longErrorToasts: [],
 
     initialTab: 0,
 
@@ -664,7 +661,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               });
               break;
             case USER_APP.Grader:
-              this.setState({ graders: roster.graders }, () => {
+              this.setState({ graders: roster.graders, inactiveGraders: roster.inactive_graders }, () => {
                 this.props.addToast('Grader roster successfully updated.', undefined);
                 this.generateSubmissionsByStudent();
               });
@@ -781,7 +778,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     checkForCollisions.then((values: boolean[]) => {
       // We found a collision
       if (values.includes(true)) {
-        this.props.addLongErrorToast(
+        this.props.addErrorToast(
           'Collisions exist for this student group, so this upload has been aborted. \
           Please delete all associated submissions and try again.',
           undefined,
@@ -811,6 +808,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             };
             return File.create(filePayload);
           });
+          const { submissionsByStudent } = this.state;
+          partners.forEach((student) => {
+            if (!submissionsByStudent[student]) {
+              submissionsByStudent[student] = {};
+            }
+            submissionsByStudent[student][assignment.id] = submission;
+          });
+          this.setState({ submissionsByStudent });
           return Promise.all(filePromises);
         });
 
@@ -1637,9 +1642,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     ...props: any[]
   ): Promise<void> => {
     this.setLoadingDialog(title, message);
-    console.log('hello');
     const promise = func(...props);
-    console.log(promise);
     if (promise) {
       return promise
         .then(() => {
@@ -1647,7 +1650,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         })
         .catch(() => {
           this.clearLoadingDialog();
-          console.log('here');
         });
     } else {
       // This clause is purely a catch in case we haven't been strict on making sure the promises
@@ -1698,7 +1700,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (currentCourse && loadedPanel === 0) {
       courseManagementPanel = (
-        <div className="content-container">
+        <div className="admin__main-panel__content-container">
           <CourseData
             currentCourseID={currentCourse.id}
             assignments={this.state.assignments}
@@ -1718,50 +1720,53 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
             deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
             changeSubmissionGrader={this.changeSubmissionGrader}
+            uploadSubmission={this.uploadSubmission}
           />
         </div>
       );
     } else if (currentCourse && loadedPanel === 1) {
       courseManagementPanel = (
-        <ManageAssignments
-          key={currentCourse.id}
-          rubricCategories={this.state.rubricCategories}
-          rubricComments={this.state.rubricComments}
-          submissions={this.state.submissions}
-          submissionsLoadComplete={this.state.submissionsLoadComplete}
-          lockManageAssignment={this.state.lockChanges}
-          toggleLock={this.toggleLock}
-          currentCourse={this.state.currentCourse}
-          addToast={this.props.addToast}
-          addErrorToast={this.props.addErrorToast}
-          assignments={this.state.assignments}
-          assignmentsLoadComplete={this.state.assignmentsLoadComplete}
-          assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
-          createRubricCategory={this.createRubricCategory}
-          deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
-          createRubricComment={this.createRubricComment}
-          deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
-          updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
-          updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
-          updateAssignment={this.updateAssignment}
-          createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
-          deleteAssignment={this.wrapLoading.bind(
-            this,
-            'Deleting Assignment...',
-            'This action can impact a lot of data and may take a few minutes.',
-            this.deleteAssignment,
-          )}
-          setLoadingDialog={this.setLoadingDialog}
-          clearLoadingDialog={this.clearLoadingDialog}
-          submissionsByStudent={this.state.submissionsByStudent}
-          submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-          students={this.state.students}
-          uploadSubmission={this.uploadSubmission}
-        />
+        <div>
+          <ManageAssignments
+            key={currentCourse.id}
+            rubricCategories={this.state.rubricCategories}
+            rubricComments={this.state.rubricComments}
+            submissions={this.state.submissions}
+            submissionsLoadComplete={this.state.submissionsLoadComplete}
+            lockManageAssignment={this.state.lockChanges}
+            toggleLock={this.toggleLock}
+            currentCourse={this.state.currentCourse}
+            addToast={this.props.addToast}
+            addErrorToast={this.props.addErrorToast}
+            assignments={this.state.assignments}
+            assignmentsLoadComplete={this.state.assignmentsLoadComplete}
+            assignmentRubricLoadComplete={this.state.assignmentRubricLoadComplete}
+            createRubricCategory={this.createRubricCategory}
+            deleteRubricCategory={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricCategory)}
+            createRubricComment={this.createRubricComment}
+            deleteRubricComment={this.wrapLoading.bind(this, 'Deleting...', '', this.deleteRubricComment)}
+            updateRubricComment={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricComment)}
+            updateRubricCategory={this.wrapLoading.bind(this, 'Updating...', '', this.updateRubricCategory)}
+            updateAssignment={this.updateAssignment}
+            createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
+            deleteAssignment={this.wrapLoading.bind(
+              this,
+              'Deleting Assignment...',
+              'This action can impact a lot of data and may take a few minutes.',
+              this.deleteAssignment,
+            )}
+            setLoadingDialog={this.setLoadingDialog}
+            clearLoadingDialog={this.clearLoadingDialog}
+            submissionsByStudent={this.state.submissionsByStudent}
+            submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+            students={this.state.students}
+            uploadSubmission={this.uploadSubmission}
+          />
+        </div>
       );
     } else if (currentCourse && loadedPanel === 2) {
       courseManagementPanel = (
-        <div className="content-container">
+        <div className={`admin__main-panel__content-container${this.state.lockChanges ? '--locked' : ''}`}>
           <ManageUsers
             key={currentCourse.id}
             currentCourse={this.state.currentCourse}
@@ -1770,13 +1775,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             graders={this.state.graders}
             superGraders={this.state.superGraders}
             admins={this.state.admins}
+            inactiveStudents={this.state.inactiveStudents}
+            inactiveGraders={this.state.inactiveGraders}
             sectionsByStudent={this.state.sectionsByStudent}
             rosterLoadComplete={this.state.rosterLoadComplete}
             sectionsLoadComplete={this.state.sectionsLoadComplete}
             lockChanges={this.state.lockChanges}
             toggleLock={this.toggleLock}
-            enrollUser={this.wrapLoading.bind(this, '', '', this.enrollUser)}
-            unEnrollUsers={this.wrapLoading.bind(this, '', '', this.unEnrollUsers)}
+            enrollUser={this.enrollUser}
+            unEnrollUsers={this.unEnrollUsers}
             changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
             changeStudentSection={this.changeStudentSection}
             changeSectionStudents={this.changeSectionStudents}

@@ -1,0 +1,115 @@
+.roster-upload {
+  &__changes {
+    &-container {
+      padding: 10px 0px 10px 0px;
+    }
+    &-title {
+      font-size: $font-size-medium;
+      font-weight: 450;
+      margin-bottom: 10px;
+
+      b {
+        font-weight: 450;
+        color: darken($brand-color, 5%);
+      }
+    }
+    &-text {
+      font-size: $font-size-normal;
+      font-weight: 350;
+      margin: 3px 0px 3px 20px;
+    }
+  }
+  &__changesHeader {
+    &-container {
+      padding: 15px 0px 15px 0px;
+      display: flex;
+      flex-direction: column;
+    }
+    &-title {
+      font-size: $font-size-large;
+      font-weight: 600;
+      padding-bottom: 10px;
+    }
+  }
+  &__fileDownload {
+    &-container {
+      padding: 15px 0px 25px 0px;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid $light-grey;
+    }
+    &-text {
+      display: flex;
+      align-items: flex-end;
+      font-size: $font-size-medium;
+      font-weight: 350;
+    }
+    &-strong {
+      font-size: $font-size-medium;
+      color: darken($brand-color, 5%);
+      font-weight: 450;
+      padding-right: 5px;
+    }
+    &-button {
+      margin-top: 20px;
+    }
+  }
+  &__fileUpload {
+    &-container {
+      padding: 25px 0px 15px 0px;
+    }
+    &-text {
+      display: flex;
+      align-items: flex-end;
+      font-size: $font-size-medium;
+      font-weight: 350;
+    }
+    &-strong {
+      font-size: $font-size-medium;
+      color: darken($brand-color, 5%);
+      font-weight: 450;
+      padding-right: 5px;
+    }
+    &-markdown {
+      margin: 20px 0px 20px 0px;
+    }
+    &-explanationText {
+      margin-top: 10px;
+    }
+  }
+  &__fileName {
+    font-size: $font-size-large;
+    font-weight: 450px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid $light-grey;
+  }
+  &__error {
+    padding: 25px 0px 25px 0px;
+    &-title {
+      font-size: $font-size-large;
+      b {
+        font-weight: 450;
+        color: $dark-red;
+      }
+    }
+    &-text {
+      font-size: $font-size-normal;
+      margin: 5px 0px 5px 20px;
+      color: $mid-grey;
+    }
+  }
+  &__emailUsers {
+    font-size: $font-size-normal;
+    color: $dark-grey;
+    padding: 10px 0px 10px 0px;
+    b {
+      font-weight: 450;
+      color: darken($brand-color, 5%);
+      font-size: $font-size-medium;
+    }
+  }
+  &__cancelBtn {
+    color: $dark-grey;
+    height: auto;
+  }
+}

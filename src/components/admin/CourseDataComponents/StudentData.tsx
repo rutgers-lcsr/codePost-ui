@@ -19,6 +19,8 @@ import { IOption, IStudentSubmissionsDataTable } from '../../../types/common';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
+import UploadSubmissionDialog from '../ManageAssignmentsComponents/UploadSubmissionDialog';
+
 interface IPropsStudentOverview {
   assignments: AssignmentType[];
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -30,12 +32,14 @@ interface IPropsStudentOverview {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
 interface IState {
   sortedIndex: { [index: string]: boolean | undefined };
   searchTerm: string;
   deleteSub: SubmissionType | null;
+  showSubmissionUpload: boolean;
 }
 
 class StudentData extends React.Component<IPropsStudentOverview, IState> {
@@ -49,7 +53,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
     });
     sortedIndex[this.studentHeader] = true;
 
-    this.state = { sortedIndex, searchTerm: '', deleteSub: null };
+    this.state = { sortedIndex, searchTerm: '', deleteSub: null, showSubmissionUpload: false };
   }
 
   public componentDidUpdate(prevProps: any, prevState: any) {
@@ -62,6 +66,14 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
       this.setState({ sortedIndex });
     }
   }
+
+  public toggleUploadSubmission = () => {
+    this.setState((prevState) => {
+      return {
+        showSubmissionUpload: !prevState.showSubmissionUpload,
+      };
+    });
+  };
 
   public toggleSort = (assignmentName: string) => {
     const { sortedIndex } = this.state;
@@ -303,20 +315,29 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         );
       });
 
+      console.log(activeStudent);
+
       return (
         <div>
-          <hr />
-          <Button
-            key="Back"
-            className="Btn"
-            flat={true}
-            icon={true}
-            onClick={changeActiveStudent.bind(this.props, undefined)}
-          >
-            arrow_back
-          </Button>
-          <div>{activeStudent}</div>
-          <hr />
+          <div className="admin-submissions__activeUser__title-container">
+            <Button
+              key="Back"
+              className="admin__backBtn"
+              raised={true}
+              icon={true}
+              onClick={changeActiveStudent.bind(this.props, undefined)}
+            >
+              arrow_back
+            </Button>
+            <div className="admin-submissions__activeUser__title">{`${activeStudent}'s submissions`}</div>
+            <Button
+              raised={true}
+              className="admin-submissions__activeUser__uploadBtn"
+              onClick={this.toggleUploadSubmission.bind(this.props, activeStudent)}
+            >
+              Upload Submission
+            </Button>
+          </div>
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
@@ -346,6 +367,15 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               Delete
             </Button>
           </DialogContainer>
+          <UploadSubmissionDialog
+            isVisible={this.state.showSubmissionUpload}
+            assignments={this.props.assignments}
+            selectedAssignment={null}
+            students={[activeStudent]}
+            selectedStudents={[activeStudent]}
+            onCancel={this.toggleUploadSubmission}
+            uploadSubmission={this.props.uploadSubmission}
+          />
         </div>
       );
     }

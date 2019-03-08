@@ -5,6 +5,13 @@ import { Button, DialogContainer, FileUpload, LinearProgress } from 'react-md';
 import { SectionType } from '../../../infrastructure/section';
 import { ISectionNoStudents, USER_APP } from '../../../types/common';
 
+import Select from 'react-select';
+
+export enum FILE_UPLOAD_TYPE {
+  csv,
+  json,
+}
+
 interface IProps {
   users: string[];
   getSectionIDFromName: ((sectionName: string) => number | undefined) | null;
@@ -17,6 +24,7 @@ interface IProps {
     | null;
   userType: USER_APP;
   isDisabled: boolean;
+  emailUsers: boolean;
 }
 
 interface IStudentUpload {
@@ -28,11 +36,12 @@ interface IState {
   dialogVisible: boolean;
   uploadErrors: string[];
   updatingRoster: boolean;
-  updates: { [index: string]: string[] } | undefined;
+  updates: { newUsers: string[]; deletedUsers: string[]; changedSections: IStudentUpload[] } | undefined;
   userList: string[];
-  // JsonUpload is for use in student upload because we need a richer data structure than just string array of emailsS
-  jsonUpload: IStudentUpload[];
+  // for use in student upload because we need a richer data structure than just string array of emailsS
+  studentSectionUpload: IStudentUpload[];
   uploadFileName: string | undefined;
+  fileType: FILE_UPLOAD_TYPE;
 }
 
 class RosterFileUpload extends React.Component<IProps, {}> {
@@ -42,8 +51,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     updatingRoster: false,
     updates: undefined,
     userList: [],
-    jsonUpload: [],
+    studentSectionUpload: [],
     uploadFileName: undefined,
+    fileType: FILE_UPLOAD_TYPE.json,
   };
 
   public toggleDialog = () => {
@@ -78,6 +88,39 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     this.props.addToast('Roster downloaded.', undefined);
   };
 
+  public changeFileType = (option: any) => {
+    const newFileType = FILE_UPLOAD_TYPE[option.value];
+    this.setState({ fileType: newFileType });
+  };
+
+  public convertCSVtoJSON = (csv: string) => {
+    try {
+      if (this.props.userType === USER_APP.Student) {
+        const lines = csv.split('\n');
+        const result: any[] = [];
+        lines.forEach((line) => {
+          if (line.length > 0) {
+            const lineData = line.split(',');
+            if (!lineData[1] || lineData[1].toLowerCase() === 'null') {
+              result.push({ email: lineData[0], section: null });
+            } else {
+              result.push({ email: lineData[0], section: lineData[1] });
+            }
+          }
+        });
+        return result;
+      } else {
+        const users = csv.split('\n');
+        return users.filter((user) => {
+          return user.length > 0;
+        });
+      }
+    } catch (err) {
+      this.setState({ uploadErrors: ['Uploaded Roster is not a valid CSV file'] });
+      return;
+    }
+  };
+
   // Function called upon upload of a file; check to make sure it's a valid json Object
   // Then check for any roster errors
   // If any errors in the checking, append errors and display in dialog
@@ -86,7 +129,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     this.setState({ uploadErrors: [], uploadFileName: file.name });
     let roster;
     try {
-      roster = JSON.parse(result);
+      if (this.state.fileType === FILE_UPLOAD_TYPE.json) {
+        roster = JSON.parse(result);
+      } else {
+        roster = this.convertCSVtoJSON(result);
+      }
     } catch (error) {
       this.setState({
         uploadErrors: ['Uploaded Roster is not a valid JSON object'],
@@ -119,15 +166,23 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       this.setState({ updatingRoster: true, userList, updates: undefined });
       // If Student, update both roster and sections
       if (userType === USER_APP.Student) {
-        this.setState({ jsonUpload: roster });
-        Promise.all([this.updateRoster(userList, false), this.updateSections(roster, false)]).then(() => {
-          this.setState({ updatingRoster: false });
-        });
+        this.setState({ studentSectionUpload: roster });
+        Promise.all([this.updateRoster(userList, false), this.updateSections(roster, false)])
+          .then(() => {
+            this.setState({ updatingRoster: false });
+          })
+          .catch(() => {
+            this.setState({ updatingRoster: false });
+          });
       } else {
         // If not student, only update roster
-        this.updateRoster(userList, false).then(() => {
-          this.setState({ updatingRoster: false });
-        });
+        this.updateRoster(userList, false)
+          .then(() => {
+            this.setState({ updatingRoster: false });
+          })
+          .catch(() => {
+            this.setState({ updatingRoster: false });
+          });
       }
     } else {
       // there are upload errors, notify the user and don't do anything
@@ -139,23 +194,37 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public checkRoster = (users: string[]) => {
     const uploadErrors: string[] = [];
     if (users) {
-      if (users.length === 0) {
-        uploadErrors.push('User list is empty');
-      }
-      users.map((user, index) => {
-        if (user.length === 0) {
-          uploadErrors.push(`User at index ${index} is empty.`);
+      const isStringArray = (i: any) => {
+        return typeof i === 'string';
+      };
+      if (
+        // check to make sure inputted array is a string array
+        !(Array.isArray(users) && users.every(isStringArray))
+      ) {
+        if (this.props.userType === USER_APP.Student) {
+          uploadErrors.push('Uploaded emails are not strings.');
+        } else {
+          uploadErrors.push('Uploaded roster is not a string array.');
         }
-        let numDuplicates = 0;
-        users.forEach((user2) => {
-          if (user2 === user) {
-            numDuplicates += 1;
+      } else {
+        if (users.length === 0) {
+          uploadErrors.push('User list is empty.');
+        }
+        users.map((user, index) => {
+          if (user.length === 0) {
+            uploadErrors.push(`User at index ${index} is empty.`);
+          }
+          let numDuplicates = 0;
+          users.forEach((user2) => {
+            if (user2 === user) {
+              numDuplicates += 1;
+            }
+          });
+          if (numDuplicates > 1) {
+            uploadErrors.push(`Multiple users of the same name of ${user}.`);
           }
         });
-        if (numDuplicates > 1) {
-          uploadErrors.push(`Multiple users of the same name of ${user}`);
-        }
-      });
+      }
       return uploadErrors;
     }
     uploadErrors.push('Uploaded JSON object is empty.');
@@ -173,7 +242,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     data.forEach((i: IStudentUpload) => {
       if (i.section) {
         if (!getSectionIDFromName(i.section)) {
-          uploadErrors.push(`Section of name ${i.section} does not exist.`);
+          uploadErrors.push(
+            `Section of name ${i.section} does not exist. Please go to the section tab to add the section.`,
+          );
         }
       }
     });
@@ -215,13 +286,16 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       return Promise.reject();
     }
 
-    const updatedSections: string[] = [];
+    // updatedSections is used to track changes to show to the user before continuing
+    // newSections is the new student list for each section to pass to the API endpoint
+    const updatedSections: IStudentUpload[] = [];
     const newSections: { [sectionID: number]: string[] } = {};
     newUsers.forEach((i: IStudentUpload) => {
+      // We add section students via API with ID, so need to get the ID of the section
       const sectionID = getSectionIDFromName(i.section);
       const currentSection = sectionsByStudent[i.email];
       if ((currentSection && i.section !== currentSection.name) || (i.section && !currentSection)) {
-        updatedSections.push(i.email);
+        updatedSections.push({ email: i.email, section: i.section });
       }
       if (sectionID) {
         if (newSections[sectionID]) {
@@ -231,6 +305,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         }
       }
     });
+    // If user has agreed to chnages, make the changes
     if (makeDBUpdate) {
       return Promise.all(
         Object.keys(newSections).map((sectionID: string) => {
@@ -243,6 +318,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         return Promise.resolve();
       });
     } else {
+      // If user has not agreed to the changes, show them to the user
       const { updates } = this.state;
       if (updates) {
         const newKey = 'changedSections';
@@ -267,22 +343,37 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     this.setState({ updatingRoster: true, updates: undefined }, () => {
       if (newUsers || deletedUsers) {
         // If Student, update the roster, then update the sections
-        this.updateRoster(this.state.userList, true).then(() => {
-          if (changedSections) {
-            this.updateSections(this.state.jsonUpload, true).then(() => {
+        this.updateRoster(this.state.userList, true)
+          .then(() => {
+            if (changedSections) {
+              this.updateSections(this.state.studentSectionUpload, true)
+                .then(() => {
+                  this.setState({ updatingRoster: false });
+                  this.toggleDialog();
+                })
+                .catch(() => {
+                  this.setState({ updatingRoster: false });
+                  this.toggleDialog();
+                });
+            } else {
               this.setState({ updatingRoster: false });
               this.toggleDialog();
-            });
-          } else {
+            }
+          })
+          .catch(() => {
             this.setState({ updatingRoster: false });
             this.toggleDialog();
-          }
-        });
+          });
       } else if (changedSections) {
-        this.updateSections(this.state.jsonUpload, true).then(() => {
-          this.setState({ updatingRoster: false });
-          this.toggleDialog();
-        });
+        this.updateSections(this.state.studentSectionUpload, true)
+          .then(() => {
+            this.setState({ updatingRoster: false });
+            this.toggleDialog();
+          })
+          .catch(() => {
+            this.setState({ updatingRoster: false });
+            this.toggleDialog();
+          });
       }
     });
   };
@@ -298,105 +389,136 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   //   On Download: Trigger download of json file
 
   public render() {
-    const { dialogVisible, updates } = this.state;
+    const { dialogVisible, updates, uploadErrors, fileType } = this.state;
     const { userType } = this.props;
     const dialogActions = [];
     dialogActions.push({
       secondary: true,
       children: 'Cancel',
       onClick: this.toggleDialog,
+      className: 'roster-upload__cancelBtn',
       disabled: this.state.updatingRoster,
     });
 
-    const errors = this.state.uploadErrors.map((error, index) => {
-      return (
-        <div key={index}>
-          <div className="uploadErrorText">{error}</div>
-          <div className="error-padding" />
+    const errors =
+      uploadErrors.length > 0 ? (
+        <div className="roster-upload__error">
+          <div className="roster-upload__error-title">
+            The uploaded file has the following <b>errors:</b>
+          </div>
+          {uploadErrors.map((error, index) => {
+            return (
+              <div className="roster-upload__error-text" key={index}>
+                {error}
+              </div>
+            );
+          })}
         </div>
+      ) : (
+        <div />
       );
-    });
 
+    const changes = [];
     let updateMessage;
-    let newUsers;
-    let deletedUsers;
-    let changedSections;
-    let shouldUpdate = false;
-
     if (updates) {
       if (updates.newUsers && updates.newUsers.length > 0) {
-        shouldUpdate = true;
-        newUsers = (
-          <div>
-            <b>{`The following ${USER_APP[userType]}(s) will be added to the course:`}</b>
-            {updates.newUsers.map((elem, index) => {
+        changes.push(
+          <div className="roster-upload__changes-container">
+            <div className="roster-upload__changes-title">
+              {`${USER_APP[userType]}(s) to be `}
+              <b>added</b> to the <b>course</b>
+            </div>
+            {updates.newUsers.map((elem: string, index: number) => {
               return (
-                <div className="uploadChangesText" key={index}>
+                <div className="roster-upload__changes-text" key={index}>
                   {elem}
                 </div>
               );
             })}
-            <div className="error-padding" />
-          </div>
+          </div>,
         );
       }
 
       if (updates.deletedUsers && updates.deletedUsers.length > 0) {
-        shouldUpdate = true;
-        deletedUsers = (
-          <div>
-            <b>{`The following ${USER_APP[userType]}(s) will be removed from the course:`}</b>
+        changes.push(
+          <div className="roster-upload__changes-container">
+            <div className="roster-upload__changes-title">
+              {`${USER_APP[userType]}(s) to be `}
+              <b>removed</b> from the <b>course</b>
+            </div>
             {updates.deletedUsers.map((elem, index) => {
               return (
-                <div className="uploadChangesText" key={index}>
+                <div className="roster-upload__changes-text" key={index}>
                   {elem}
                 </div>
               );
             })}
-            <div className="error-padding" />
-          </div>
+          </div>,
         );
       }
 
       if (updates.changedSections && updates.changedSections.length > 0) {
-        shouldUpdate = true;
-        changedSections = (
-          <div>
-            <b>{`The following ${USER_APP[userType]}(s) will be be switched sections:`}</b>
+        changes.push(
+          <div className="roster-upload__changes-container">
+            <div className="roster-upload__changes-title">
+              {`${USER_APP[userType]}(s) to be `}
+              <b>added</b> to a <b>new section</b>
+            </div>
             {updates.changedSections.map((elem, index) => {
               return (
-                <div className="uploadChangesText" key={index}>
-                  {elem}
+                <div className="roster-upload__changes-text" key={index}>
+                  {`${elem.email}: ${elem.section}`}
                 </div>
               );
             })}
-            <div className="error-padding" />
-          </div>
+          </div>,
         );
       }
 
-      if (shouldUpdate) {
+      if (changes.length > 0) {
         updateMessage = (
-          <div>
-            <div className="error-padding" />
-            The following changes will be made to the roster. Do you want to continue?
-            <div className="error-padding" />
-            <Button raised onClick={this.triggerUpdate} primary={true} flat={true}>
+          <div className="roster-upload__changesHeader-container">
+            <div className="roster-upload__changesHeader-title">
+              The changes below will be made to the roster. Do you want to continue?
+            </div>
+            <Button
+              className="roster-upload__changesHeader-button"
+              raised
+              onClick={this.triggerUpdate}
+              primary={true}
+              flat={true}
+            >
               Continue with changes
             </Button>
-            <div className="error-padding" />
+          </div>
+        );
+      } else {
+        updateMessage = (
+          <div className="roster-upload__changesHeader-container">
+            <div className="roster-upload__changesHeader-title">
+              The uploaded roster has no changes to the current roster.
+            </div>
           </div>
         );
       }
     }
     let exampleText;
-    if (userType === USER_APP.Student) {
-      exampleText =
-        '    [\n    {"email": "user1@emaildomain.edu", "section": "P01"},\n\
+    if (fileType === FILE_UPLOAD_TYPE.json) {
+      if (userType === USER_APP.Student) {
+        exampleText =
+          '    [\n    {"email": "user1@emaildomain.edu", "section": "P01"},\n\
     {"email": "user1@emaildomain.edu", "section": null},\n    ...\n    ]';
+      } else {
+        exampleText = '    [\n    "user1@emaildomain.edu", \n    "user2@emaildomain.edu",\n    ...\n    ]';
+      }
     } else {
-      exampleText = '    [\n    "user1@emaildomain.edu", \n    "user2@emaildomain.edu",\n    ...\n    ]';
+      if (userType === USER_APP.Student) {
+        exampleText = '    user1@emaildomain.edu,P01\n    user2@emaildomain.edu,P02\n    user3@emaildomain.edu,null\n';
+      } else {
+        exampleText = '    user1@emaildomain.edu\n    user2@emaildomain.edu\n    user3@emaildomain.edu\n';
+      }
     }
+
     return (
       <div>
         <Button
@@ -422,17 +544,20 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           portal={true}
         >
           {!this.state.uploadFileName ? (
-            <div>
-              {`Download ${USER_APP[userType]} roster as a json format:`}
-              <div className="error-padding" />
+            <div className="roster-upload__fileDownload-container">
+              <div className="roster-upload__fileUpload-text">
+                <div className="roster-upload__fileDownload-strong">Download </div>
+                {`${USER_APP[userType]} roster as a json format`}
+              </div>
               <Button
                 key="download-roster"
-                className="Btn"
+                className="roster-upload__fileDownload-button"
                 iconBefore={false}
                 iconChildren={'save'}
                 onClick={this.downloadRoster}
                 primary={true}
                 raised={true}
+                disabled={this.props.users.length === 0}
               >
                 Download JSON roster
               </Button>
@@ -440,16 +565,37 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           ) : (
             <div />
           )}
-          <div className="error-padding" />
           <div>
             {!this.state.uploadFileName ? (
-              <div>
-                {`Upload file to replace ${USER_APP[userType]} roster:`}
-                <ReactMarkdown source={exampleText} />
-                <div className="error-padding" />
+              <div className="roster-upload__fileUpload-container">
+                <div className="roster-upload__fileUpload-text">
+                  <div className="roster-upload__fileUpload-strong">Upload </div>
+                  {`file to replace ${USER_APP[userType]} roster`}
+                </div>
+                <div className="roster-upload__fileUpload-explanationText">
+                  {`Please make sure that the uploaded file is in the following format.${
+                    userType === USER_APP.Student
+                      ? ' The section field is optional and can be excluded or set to null if not applicable.'
+                      : ''
+                  }`}
+                </div>
+                <Select
+                  classNamePrefix="select--ManageSections"
+                  closeMenuOnSelect={true}
+                  options={[
+                    { value: FILE_UPLOAD_TYPE[FILE_UPLOAD_TYPE.json], label: FILE_UPLOAD_TYPE[FILE_UPLOAD_TYPE.json] },
+                    { value: FILE_UPLOAD_TYPE[FILE_UPLOAD_TYPE.csv], label: FILE_UPLOAD_TYPE[FILE_UPLOAD_TYPE.csv] },
+                  ]}
+                  onChange={this.changeFileType}
+                  placeholder="Select File type..."
+                  value={{ value: FILE_UPLOAD_TYPE[fileType], label: FILE_UPLOAD_TYPE[fileType] }}
+                  menuPlacement="auto"
+                />
+                <ReactMarkdown className="roster-upload__fileUpload-markdown" source={exampleText} />
                 <FileUpload
                   id="rosterUpload-FileInput"
-                  accept="application/json"
+                  accept={this.state.fileType === FILE_UPLOAD_TYPE.json ? 'application/json' : 'text/csv'}
+                  className="roster-upload__fileUpload-button"
                   multiple={false}
                   onLoad={this.onRosterUpload}
                   onChange={this.dummyUpload}
@@ -460,14 +606,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               <div />
             )}
             {this.state.updatingRoster ? <LinearProgress id="circle" className="progressCircle" /> : ''}
-            <div className="error-padding" />
-            {this.state.uploadFileName ? <div>{this.state.uploadFileName}</div> : ''}
-            <div className="error-padding" />
+            {this.state.uploadFileName ? (
+              <div className="roster-upload__fileName">{`Uploaded file: ${this.state.uploadFileName}`}</div>
+            ) : (
+              ''
+            )}
+            <div className="roster-upload__emailUsers">
+              New users added <b>will {this.props.emailUsers ? '' : 'not'} be emailed.</b> To change this please see the
+              Course Settings panel.
+            </div>
             {errors}
             {updateMessage}
-            {newUsers}
-            {deletedUsers}
-            {changedSections}
+            {changes}
           </div>
         </DialogContainer>
       </div>

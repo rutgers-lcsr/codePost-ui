@@ -186,7 +186,13 @@ const adminCarouselContent = [
       (e.g., # of graded submissions, mean of grades).',
   },
   {
-    imgLink: require('../../img/Admin-onboarding/8-APIDocs.png'),
+    imgLink: require('../../img/Admin-onboarding/8-LinkedComments.png'),
+    text:
+      'View rubric comments usage in the Assignment rubric panel. Make rubric \
+      edits after grading and propagate changes to all submisisons.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/9-APIDocs.png'),
     text: (
       <div>
         Check out the{' '}
@@ -199,7 +205,7 @@ const adminCarouselContent = [
     ),
   },
   {
-    imgLink: require('../../img/Admin-onboarding/9-logo.png'),
+    imgLink: require('../../img/Admin-onboarding/10-logo.png'),
     text: (
       <div>
         Need help getting started? Schedule a setup walkthrough with us{' '}
