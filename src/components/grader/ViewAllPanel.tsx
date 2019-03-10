@@ -43,14 +43,14 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     this.loadRoster();
   }
   public loadSubmissions = () => {
-    Assignment.readSubmissions(this.props.currentAssignment.id, {}).then((submissions: SubmissionType[]) => {
+    Assignment.readSubmissions(this.props.currentAssignment.id).then((submissions: SubmissionType[]) => {
       submissions.sort(this.sort.bind(this));
       this.setState({ submissions, loadSubmissionsComplete: true });
     });
   };
 
   public loadRoster = () => {
-    Course.readRoster(this.props.currentCourse.id, {}).then((roster: RosterType) => {
+    Course.readRoster(this.props.currentCourse.id).then((roster: RosterType) => {
       this.setState({ graders: roster.graders, loadGradersComplete: true });
     });
   };

@@ -491,7 +491,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public loadAssignmentRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID, {})
+    return Assignment.readRubric(assignmentID)
       .then((json) => {
         const { rubricCategories, rubricComments } = this.state;
         rubricCategories[assignmentID] = json.rubricCategories;
@@ -536,7 +536,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     Promise.all(
       currentCourse.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID, {}).then((subs: SubmissionType[]) => {
+        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
           const submissions = this.state.submissions;
           submissions[assignmentID] = subs;
           this.setState({ submissions }, () => {
@@ -564,7 +564,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
     // courses/id/roster . students
-    Course.readRoster(currentCourse.id, {}).then((roster: RosterType) => {
+    Course.readRoster(currentCourse.id).then((roster: RosterType) => {
       this.setState(
         {
           students: roster.students,
@@ -655,7 +655,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     return (
-      Course.updateRoster(payload, {})
+      Course.updateRoster(payload)
         .then((roster: RosterType) => {
           switch (userType) {
             case USER_APP.Student:
@@ -1535,7 +1535,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           const sortedAssignments: AssignmentType[] = sortAssignments(assignments);
           return Promise.all(
             sortedAssignments.map((assignment) => {
-              return Assignment.readRubric(assignment.id, {});
+              return Assignment.readRubric(assignment.id);
             }),
           ).then((rubrics: any) => {
             return [sortedAssignments, rubrics];

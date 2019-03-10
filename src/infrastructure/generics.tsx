@@ -119,7 +119,7 @@ function readObjectDetail<T, O, I>(
   arg: t.Type<T, O, I>,
   url: string,
   detail: string,
-): ((arg0: number, urlArgs: { [arg: string]: string }) => Promise<T>) {
+): ((arg0: number, urlArgs?: { [arg: string]: string }) => Promise<T>) {
   const foo = async (id: number, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
     if (urlArgs) {
@@ -156,7 +156,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
   input: t.Type<Q, O, I>,
   url: string,
   detail: string,
-): ((object: Q, urlArgs: { [arg: string]: string }) => Promise<T>) {
+): ((object: Q, urlArgs?: { [arg: string]: string }) => Promise<T>) {
   const foo = async (object: Q, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
     if (urlArgs) {

@@ -106,7 +106,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public loadGraders = (courseID: number) => {
-    return Course.readRoster(courseID, {}).then((roster: RosterType) => {
+    return Course.readRoster(courseID).then((roster: RosterType) => {
       const rosterGraders = 'graders';
       this.setState({ graders: roster[rosterGraders] });
       return roster;
@@ -172,7 +172,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public loadRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID, {}).then((rubric) => {
+    return Assignment.readRubric(assignmentID).then((rubric) => {
       this.setState({ rubricCategories: rubric.rubricCategories });
       return Promise.all(
         rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
