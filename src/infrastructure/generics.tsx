@@ -120,15 +120,17 @@ function readObjectDetail<T, O, I>(
   url: string,
   detail: string,
 ): ((arg0: number, urlArgs: { [arg: string]: string }) => Promise<T>) {
-  const foo = async (id: number, urlArgs: { [arg: string]: string }) => {
+  const foo = async (id: number, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
-    Object.keys(urlArgs).forEach((key, i) => {
-      if (i === 0) {
-        urlString = `?${key}=${urlArgs[key]}`;
-      } else {
-        urlString = `${urlString}&${key}=${urlArgs[key]}`;
-      }
-    });
+    if (urlArgs) {
+      Object.keys(urlArgs).forEach((key, i) => {
+        if (i === 0) {
+          urlString = `?${key}=${urlArgs[key]}`;
+        } else {
+          urlString = `${urlString}&${key}=${urlArgs[key]}`;
+        }
+      });
+    }
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
@@ -155,15 +157,17 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
   url: string,
   detail: string,
 ): ((object: Q, urlArgs: { [arg: string]: string }) => Promise<T>) {
-  const foo = async (object: Q, urlArgs: { [arg: string]: string }) => {
+  const foo = async (object: Q, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
-    Object.keys(urlArgs).forEach((key, i) => {
-      if (i === 0) {
-        urlString = `?${key}=${urlArgs[key]}`;
-      } else {
-        urlString = `${urlString}&${key}=${urlArgs[key]}`;
-      }
-    });
+    if (urlArgs) {
+      Object.keys(urlArgs).forEach((key, i) => {
+        if (i === 0) {
+          urlString = `?${key}=${urlArgs[key]}`;
+        } else {
+          urlString = `${urlString}&${key}=${urlArgs[key]}`;
+        }
+      });
+    }
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {

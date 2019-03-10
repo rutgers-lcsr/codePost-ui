@@ -77,14 +77,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public componentDidMount() {
-    this.loadAllAssignments().then(() => {
-      const sortedAssignmentMap = {};
-      Object.keys(this.state.assignments).forEach((courseID) => {
-        const sortedAssignments: AssignmentType[] = sortAssignments(this.state.assignments[courseID]);
-        sortedAssignmentMap[courseID] = sortedAssignments;
-      });
-      this.setState({ assignments: sortedAssignmentMap });
-    });
+    const assignments = this.loadAllAssignments(this.state.courses);
+    this.setState({ assignments });
   }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
@@ -164,13 +158,33 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAllAssignments = () => {
-    const courses = this.state.courses;
-    return Promise.all(
-      courses.map((course: CourseType) => {
-        return this.loadAssignments(course);
-      }),
-    );
+  public loadAllAssignments = (courses: CourseType[]): ICourseToAssignmentMap => {
+    const assignments = {};
+
+    courses.forEach(async (course: CourseType) => {
+      assignments[course.id] = sortAssignments(await this.load(course.assignments, Assignment));
+    });
+
+    return assignments;
+  };
+
+  public load = async (ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) => {
+    const ignoreRejects = (p: Promise<any>) => {
+      return p.catch((e: any) => {
+        return undefined;
+      });
+    };
+
+    const promises = ids.map(async (id: number) => {
+      return await klass[method](id, urlArgs);
+    });
+
+    const data = await Promise.all(promises.map(ignoreRejects));
+    const filteredData = data.filter((a: any) => {
+      return a !== undefined;
+    });
+
+    return filteredData;
   };
 
   public loadAssignments = (course: CourseType) => {
