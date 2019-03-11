@@ -15,7 +15,7 @@ import { GetAnotherSubmissionButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
-import { SUBMISSION_SORT_TYPE, submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, SUBMISSION_SORT_TYPE, SubmissionType } from '../../infrastructure/submission';
 import { getSortIndex } from '../Utils/SortUtils';
 
 import Select from 'react-select';
@@ -87,7 +87,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
       2: SUBMISSION_SORT_TYPE.isFinalized,
       3: SUBMISSION_SORT_TYPE.dateEdited,
     };
-    return submissionSort(sortAttributeMap[sortAttribute], ascending, a, b);
+    return sortSubmissions(sortAttributeMap[sortAttribute], ascending, a, b);
   };
 
   public openGradePage = (submission: SubmissionType) => {

@@ -189,4 +189,32 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
   return foo;
 }
 
-export { createObject, readObject, updateObject, deleteObject, GenericObject, readObjectDetail, updateObjectDetail };
+async function loadIDList(ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) {
+  const ignoreRejects = (p: Promise<any>) => {
+    return p.catch((e: any) => {
+      return undefined;
+    });
+  };
+
+  const promises = ids.map(async (id: number) => {
+    return await klass[method](id, urlArgs);
+  });
+
+  const data = await Promise.all(promises.map(ignoreRejects));
+  const filteredData = data.filter((a: any) => {
+    return a !== undefined;
+  });
+
+  return filteredData;
+}
+
+export {
+  createObject,
+  readObject,
+  updateObject,
+  deleteObject,
+  GenericObject,
+  readObjectDetail,
+  updateObjectDetail,
+  loadIDList,
+};

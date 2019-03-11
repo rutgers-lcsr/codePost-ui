@@ -7,7 +7,7 @@ import { openSubmission } from '../admin/AdminUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
-import { submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
@@ -131,7 +131,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     if (!b[1]) return ascending ? -1 : 1;
     if (!a[1]) return ascending ? 1 : -1;
     // if submission exists, sort by submission. Pass in sortAttribute as SUBMISSION_SORT_TYPE enum index
-    return submissionSort(sortAttribute, ascending, a[1], b[1]);
+    return sortSubmissions(sortAttribute, ascending, a[1], b[1]);
   }
 
   public render() {

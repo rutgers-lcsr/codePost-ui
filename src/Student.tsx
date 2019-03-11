@@ -10,12 +10,11 @@ import { CircularProgress } from 'react-md';
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
-import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
-import { File, FileType } from './infrastructure/file';
+import { FileType } from './infrastructure/file';
+import { loadIDList } from './infrastructure/generics';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment } from './infrastructure/rubricComment';
-import { SubmissionStatusType } from './infrastructure/submission';
+import { Submission, SubmissionStatusType } from './infrastructure/submission';
 
 interface IStudentState {
   courses: CourseType[];
@@ -107,7 +106,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           const currentSubmission = await this.loadSubmission(currentAssignment);
 
           if (currentSubmission) {
-            const [files, comments, commentRubricComments] = await this.loadSubmissionData(currentSubmission);
+            const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
             // @ts-ignore
             this.setState({ files, comments, commentRubricComments });
           }
@@ -134,31 +133,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     await Promise.all(
       courses.map(async (course: CourseType) => {
-        assignments[course.id] = sortAssignments(await this.load(course.assignments, Assignment));
+        assignments[course.id] = sortAssignments(await loadIDList(course.assignments, Assignment));
         return;
       }),
     );
 
     return assignments;
-  };
-
-  public load = async (ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) => {
-    const ignoreRejects = (p: Promise<any>) => {
-      return p.catch((e: any) => {
-        return undefined;
-      });
-    };
-
-    const promises = ids.map(async (id: number) => {
-      return await klass[method](id, urlArgs);
-    });
-
-    const data = await Promise.all(promises.map(ignoreRejects));
-    const filteredData = data.filter((a: any) => {
-      return a !== undefined;
-    });
-
-    return filteredData;
   };
 
   public loadSubmission = async (assignment: AssignmentType) => {
@@ -170,36 +150,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public loadRubricCategories = async (assignment: AssignmentType) => {
-    return await this.load(assignment.rubricCategories, RubricCategory);
-  };
-
-  public loadSubmissionData = async (submission: SubmissionStatusType) => {
-    if (!submission.files) {
-      return [submission, [], {}, {}];
-    }
-
-    const files = await this.load(submission.files, File);
-    const comments: IFileToCommentsMap = {};
-    await Promise.all(
-      files.map(async (file: FileType) => {
-        comments[file.id] = await this.load(file.comments, CommentIO);
-        return;
-      }),
-    );
-
-    const commentRubricComments = {};
-    await Promise.all(
-      Object.values(comments)
-        .flat()
-        .map(async (comment: CommentType) => {
-          if (comment.rubricComment) {
-            commentRubricComments[comment.id] = await RubricComment.read(comment.rubricComment);
-          }
-          return;
-        }),
-    );
-
-    return [files, comments, commentRubricComments];
+    return await loadIDList(assignment.rubricCategories, RubricCategory);
   };
 
   ///////////////////////////////////////
@@ -224,7 +175,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const currentSubmission = await this.loadSubmission(currentAssignment);
 
         if (currentSubmission) {
-          const [files, comments, commentRubricComments] = await this.loadSubmissionData(currentSubmission);
+          const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
           // @ts-ignore
           this.setState({
             files,

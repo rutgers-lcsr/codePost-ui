@@ -1,6 +1,11 @@
 import * as t from 'io-ts';
 import { compare } from '../components/Utils/SortUtils';
-import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
+import { createObject, deleteObject, GenericObject, loadIDList, readObject, updateObject } from './generics';
+
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
+import { CommentIO, CommentType } from './comment';
+import { File, FileType } from './file';
+import { RubricComment } from './rubricComment';
 
 const SubmissionV = t.intersection(
   [
@@ -76,6 +81,35 @@ class Submission {
   public static read = readObject(SubmissionV, 'submissions');
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
+
+  public static loadData = async (submission: SubmissionType | SubmissionStatusType) => {
+    if (!submission.files) {
+      return [submission, [], {}, {}];
+    }
+
+    const files = await loadIDList(submission.files, File);
+    const comments: IFileToCommentsMap = {};
+    await Promise.all(
+      files.map(async (file: FileType) => {
+        comments[file.id] = await loadIDList(file.comments, CommentIO);
+        return;
+      }),
+    );
+
+    const commentRubricComments: ICommentToRubricCommentMap = {};
+    await Promise.all(
+      Object.values(comments)
+        .flat()
+        .map(async (comment: CommentType) => {
+          if (comment.rubricComment) {
+            commentRubricComments[comment.id] = await RubricComment.read(comment.rubricComment);
+          }
+          return;
+        }),
+    );
+
+    return [files, comments, commentRubricComments];
+  };
 }
 
 export enum SUBMISSION_SORT_TYPE {
@@ -86,7 +120,7 @@ export enum SUBMISSION_SORT_TYPE {
   dateEdited,
 }
 
-function submissionSort(sortType: SUBMISSION_SORT_TYPE, ascending: boolean, a: SubmissionType, b: SubmissionType) {
+function sortSubmissions(sortType: SUBMISSION_SORT_TYPE, ascending: boolean, a: SubmissionType, b: SubmissionType) {
   // Sort by email
   if (sortType === SUBMISSION_SORT_TYPE.students) {
     const aStudent = a.students.length > 0 ? a.students[0] : null;
@@ -117,4 +151,4 @@ function submissionSort(sortType: SUBMISSION_SORT_TYPE, ascending: boolean, a: S
   return 0;
 }
 
-export { SubmissionType, Submission, SubmissionV, SubmissionStatusV, SubmissionStatusType, submissionSort };
+export { SubmissionType, Submission, SubmissionV, SubmissionStatusV, SubmissionStatusType, sortSubmissions };

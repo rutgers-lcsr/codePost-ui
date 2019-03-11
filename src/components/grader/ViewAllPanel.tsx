@@ -6,7 +6,7 @@ import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { Course, CourseType, RosterType } from '../../infrastructure/course';
-import { submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { getSortIndex } from '../Utils/SortUtils';
@@ -86,7 +86,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     }
 
     const ascending = sortedIndex[sortAttribute] ? true : false;
-    return submissionSort(sortAttribute, ascending, a, b);
+    return sortSubmissions(sortAttribute, ascending, a, b);
   }
 
   public render() {
