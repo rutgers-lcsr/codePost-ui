@@ -65,6 +65,15 @@ describe('Student', () => {
         course: 3,
         sortKey: 0,
       },
+      {
+        id: 2,
+        name: 'Sierpinski',
+        points: 20,
+        isReleased: true,
+        rubricCategories: [],
+        course: 3,
+        sortKey: 0,
+      },
     ];
 
     const courses = [
@@ -86,5 +95,23 @@ describe('Student', () => {
 
     const { wrapper } = setup();
     expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
+  });
+
+  it('considers rubric category caps correctly', () => {
+    const rubricCategories = [
+      {
+        id: 1,
+        rubricComments: [1, 2],
+        assignment: 1,
+        pointLimit: 2,
+      },
+    ];
+
+    const pointsPerCategory = {
+      1: 3,
+    };
+
+    const { wrapper } = setup();
+    expect(wrapper.instance().writeCategoryCapMessages(pointsPerCategory, rubricCategories).length).toEqual(1);
   });
 });
