@@ -5,15 +5,9 @@ import { CodePanel, makeReadOnly } from './components/CodePanel';
 
 import VerticalPane from './components/VerticalPane';
 
-import { CircularProgress, Snackbar } from 'react-md';
+import { CircularProgress } from 'react-md';
 
-import {
-  ICommentToRubricCommentMap,
-  ICourseToAssignmentMap,
-  IFileToCommentsMap,
-  IOption,
-  IToast,
-} from './types/common';
+import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
@@ -45,8 +39,6 @@ interface IStudentState {
   // URL variables
   toLoadCourse: boolean;
   toLoadAssignment: boolean;
-
-  errorToasts: IToast[];
 }
 
 interface IStudentProps {
@@ -73,7 +65,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     commentRubricComments: {},
     toLoadCourse: false,
     toLoadAssignment: false,
-    errorToasts: [],
   };
 
   public async componentDidMount() {
@@ -89,18 +80,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });
     }
   }
-
-  // ------------------- Toast functions -------------------
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
-  };
 
   ///////////////////////////////////////
   // URL handler methods
@@ -324,14 +303,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       rubricCategories,
     } = this.state;
 
-    const errorSnackBarStyle = {
-      width: '100%',
-      fontWeight: 500,
-      fontSize: 14,
-      backgroundColor: 'red',
-      maxWidth: '100%',
-    };
-
     if (toLoadCourse || toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
@@ -444,16 +415,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
         </div>
         <div className="student__right-panel">{contentArea}</div>
-        <Snackbar
-          id="error-snackbar"
-          className="error-snackbar"
-          toasts={this.state.errorToasts}
-          autohide={true}
-          lastChild={true}
-          autohideTimeout={2000}
-          onDismiss={this.dismissErrorToast}
-          style={errorSnackBarStyle}
-        />
       </div>
     );
   }
