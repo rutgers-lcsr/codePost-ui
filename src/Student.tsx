@@ -242,6 +242,42 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
   };
 
+  public getPointsPerCategory = (commentRubricComments: ICommentToRubricCommentMap) => {
+    const pointsPerCategory = {};
+
+    for (const commentID in commentRubricComments) {
+      // Don't count unsaved comments
+      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
+        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
+          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
+        } else {
+          pointsPerCategory[commentRubricComments[commentID].category] =
+            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
+        }
+      }
+    }
+
+    return pointsPerCategory;
+  };
+
+  public writeCategoryCapMessages = (
+    pointsPerCategory: { [categoryID: number]: number },
+    rubricCategories: RubricCategory[],
+  ) => {
+    const messages: string[] = [];
+
+    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+      if (pointsPerCategory[rubricCategory.id]) {
+        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
+          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
+          messages.push(`${rubricCategory.name} (${diff})`);
+        }
+      }
+    });
+
+    return messages;
+  };
+
   public handleCourseChange = (option: IOption) => {
     const currentCourse = this.state.courses.filter((course: CourseType) => {
       return course.id === option.value;
@@ -290,24 +326,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
 
   public render() {
-    const {
-      courses,
-      currentAssignment,
-      currentCourse,
-      currentSubmission,
-      files,
-      comments,
-      commentRubricComments,
-      toLoadCourse,
-      toLoadAssignment,
-      rubricCategories,
-    } = this.state;
+    const { courses, currentAssignment, currentCourse, currentSubmission, files, comments } = this.state;
 
-    if (toLoadCourse || toLoadAssignment) {
+    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
-        if (toLoadAssignment && currentAssignment) {
+        if (this.state.toLoadAssignment && currentAssignment) {
           const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
           return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
         } else {
@@ -320,28 +345,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
-    const pointsPerCategory = {};
-    for (const commentID in commentRubricComments) {
-      // Don't count unsaved comments
-      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
-        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
-          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
-        } else {
-          pointsPerCategory[commentRubricComments[commentID].category] =
-            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
-        }
-      }
-    }
-
-    const messages: string[] = [];
-    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      if (pointsPerCategory[rubricCategory.id]) {
-        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
-          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
-          messages.push(`${rubricCategory.name} (${diff})`);
-        }
-      }
-    });
+    const pointsPerCategory = this.getPointsPerCategory(this.state.commentRubricComments);
+    const messages = this.writeCategoryCapMessages(pointsPerCategory, this.state.rubricCategories);
 
     const stats = [];
     if (currentAssignment && currentAssignment.mean && currentAssignment.median) {
@@ -372,7 +377,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             submission={currentSubmission!}
             files={files}
             comments={comments}
-            rubricComments={commentRubricComments}
+            rubricComments={this.state.commentRubricComments}
           />
         </div>
       );
