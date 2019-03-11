@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import 'typeface-roboto';
 
 import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import unregister from './registerServiceWorker';
 import './styles/main.scss';
 
 ReactDOM.render(
@@ -13,4 +13,4 @@ ReactDOM.render(
   </BrowserRouter>,
   document.getElementById('root') as HTMLElement,
 );
-registerServiceWorker();
+unregister(); // remove any existing service workers
