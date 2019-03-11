@@ -40,7 +40,7 @@ interface IStudentState {
   toLoadAssignment: boolean;
 }
 
-interface IStudentProps {
+export interface IStudentProps {
   initialCourses: CourseType[];
   email: string;
   match: any;
