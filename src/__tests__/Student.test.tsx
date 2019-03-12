@@ -4,6 +4,7 @@ import { shallow } from 'enzyme';
 
 import Student, { IStudentProps } from '../Student';
 
+// @ts-ignore
 import { loadIDList } from '../infrastructure/generics';
 
 describe('Student', () => {
