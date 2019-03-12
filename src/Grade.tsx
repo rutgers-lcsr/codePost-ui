@@ -416,7 +416,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public isCourseAdmin = (assignment: AssignmentType | undefined) => {
-    if (!assignment) {
+    if (!assignment || !assignment.course) {
       return false;
     }
 
@@ -424,7 +424,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       .map((course) => {
         return course.id;
       })
-      .includes(assignment.course!);
+      .includes(assignment.course);
   };
 
   //////////////////////////////////////
