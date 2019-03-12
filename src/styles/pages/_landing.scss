@@ -477,13 +477,12 @@ $text-font-size: 18px;
     display: flex;
     flex-direction: column;
     border: 1px solid $mid-grey;
-    box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.4);
     background-color: white;
-    height: 250px;
+    height: 200px;
     margin-bottom: 75px;
     margin-top: 75px;
     width: 500px;
-    padding: 60px 70px 30px 70px;
+    padding: 30px;
 
     @media only screen and (max-width: 600px) {
       width: 400px;
@@ -495,13 +494,22 @@ $text-font-size: 18px;
       padding: 20px 10px 20px 10px;
     }
 
+    &__title {
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-align: center;
+      color: $dark-grey;
+      font-size: 20px;
+    }
+
     &__text {
-      font-size: $font-size-xlarge;
       font-weight: 350;
       margin-bottom: 20px;
       text-align: center;
       color: $dark-grey;
+      font-size: 17px;
     }
+
     &__buttons {
       display: flex;
       flex-direction: row;
