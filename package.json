@@ -25,6 +25,7 @@
     "io-ts": "^1.5.1",
     "io-ts-reporters": "0.0.21",
     "jest": "20.0.4",
+    "lang-map": "^0.4.0",
     "material-icons": "^0.2.3",
     "moment": "^2.24.0",
     "node-sass": "^4.11.0",

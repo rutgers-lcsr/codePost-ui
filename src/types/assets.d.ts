@@ -10,3 +10,4 @@ declare module 'pluralize';
 declare module 'react-syntax-highlighter';
 declare module 'react-syntax-highlighter/dist/styles/hljs';
 declare module 'react-textarea-autosize';
+declare module 'lang-map';
