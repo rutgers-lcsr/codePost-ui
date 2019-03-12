@@ -11,10 +11,10 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course, RosterType } from './infrastructure/course';
-import { File, FileType } from './infrastructure/file';
+import { Course } from './infrastructure/course';
+import { FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
+import { RubricCommentType } from './infrastructure/rubricComment';
 import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 
@@ -64,129 +64,64 @@ class Grade extends React.Component<IProps, IGradeState> {
   // Lifecycle Methods
   //////////////////////////////////////
 
-  public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    // Should use props to pass graderID here from top-level app...
-    // ...annoying that typescript doesn't allow usage of lambdas
-    // in render prop of Route object (which is designed to handle
-    // lambdas efficiently)
-    this.loadSubmission()
-      .then((submission) => {
-        return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
-          () => {
-            const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-            if (!submission.isFinalized) {
-              submission.grade = this.calculateGradeFromComments();
-            }
-            this.setState({ isLoading: false, positiveNegativeAlert, submission });
-          },
-        );
-      })
-      .catch((errors) => {
-        this.setState({ isLoading: false });
+  public async componentDidMount() {
+    this.setState({ isLoading: true });
+    const submissionID: number = +this.props.match.params.submissionId.valueOf();
+    const submission = await Submission.read(submissionID);
+    if (submission) {
+      const [
+        assignment,
+        [files, comments, commentRubricComments],
+        [rubricCategories, rubricComments],
+      ] = await Promise.all([
+        Assignment.read(submission.assignment),
+        Submission.loadData(submission),
+        this.loadRubric(submission.assignment),
+      ]);
+      // add catch
+      //     .catch((errors) => {
+      //       this.setState({ isLoading: false });
+      //     });
+
+      const graders = (await Course.readRoster(assignment.course))['graders'];
+
+      if (!submission.isFinalized) {
+        submission.grade = this.calculateGradeFromComments();
+      }
+
+      // @ts-ignore
+      this.setState({
+        assignment,
+        submission,
+        files,
+        comments,
+        commentRubricComments,
+        rubricCategories,
+        rubricComments,
+        graders,
+        positiveNegativeAlert: this.hasPositiveAndNegativeComments(),
+        isLoading: false,
       });
+    }
   }
 
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAssignment = (assignmentId: number) => {
-    return Assignment.read(assignmentId)
-      .then((assignment: AssignmentType) => {
-        this.setState({ assignment });
-        return assignment;
-      })
-      .then((assignment) => {
-        if (this.isCourseAdmin(assignment)) {
-          this.loadGraders(assignment.course!);
-        }
-        return assignment;
-      });
-  };
+  public loadRubric = async (assignmentID: number) => {
+    const rubric = await Assignment.readRubric(assignmentID);
 
-  public loadGraders = (courseID: number) => {
-    return Course.readRoster(courseID).then((roster: RosterType) => {
-      const rosterGraders = 'graders';
-      this.setState({ graders: roster[rosterGraders] });
-      return roster;
-    });
-  };
+    const rubricCategories = rubric.rubricCategories;
+    const rubricComments = {};
 
-  public loadSubmission = () => {
-    const submissionId: number = +this.props.match.params.submissionId.valueOf();
-    return Submission.read(submissionId).then((submission: SubmissionType) => {
-      return this.loadFiles(submission).then(() => {
-        this.setState({ submission });
-        return submission;
+    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+      rubricComments[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
+        return rubricComment.category === rubricCategory.id;
       });
     });
-  };
 
-  public loadFiles = (submission: SubmissionType) => {
-    const newFiles: FileType[] = [];
-    return Promise.all(
-      submission.files.map((fileId: number) => {
-        return File.read(fileId).then((file: FileType) => {
-          newFiles.push(file);
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: [],
-            },
-          });
-          return this.loadComments(file);
-        });
-      }),
-    ).then(() => {
-      this.setState({ files: newFiles });
-      return Promise.all([Promise.resolve()]);
-    });
-  };
-
-  public loadComments = (file: FileType) => {
-    return Promise.all(
-      file.comments.map((commentId: number) => {
-        return CommentIO.read(commentId).then((comment: CommentType) => {
-          const comments = [...this.state.comments[file.id], comment];
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: comments,
-            },
-          });
-          if (comment.rubricComment) {
-            return RubricComment.read(comment.rubricComment).then((rubricComment) => {
-              this.setState({
-                commentRubricComments: {
-                  ...this.state.commentRubricComments,
-                  [comment.id]: rubricComment,
-                },
-              });
-            });
-          }
-          return;
-        });
-      }),
-    );
-  };
-
-  public loadRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID).then((rubric) => {
-      this.setState({ rubricCategories: rubric.rubricCategories });
-      return Promise.all(
-        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          return this.setState({
-            rubricComments: {
-              ...this.state.rubricComments,
-              [rubricCategory.id]: rubric.rubricComments.filter((rubricComment) => {
-                return rubricComment.category === rubricCategory.id;
-              }),
-            },
-          });
-        }),
-      );
-    });
+    return [rubricCategories, rubricComments];
   };
 
   ///////////////////////////////////////
