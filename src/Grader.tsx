@@ -263,6 +263,15 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return releasedSubmission;
   };
 
+  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse?: CourseType): boolean => {
+    return currentCourse &&
+      superGraderCourses.find((course: CourseType) => {
+        return course.id === currentCourse.id;
+      }) !== undefined
+      ? true
+      : false;
+  };
+
   ///////////////////////////////////////
   // Main
   ///////////////////////////////////////
@@ -293,13 +302,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     // If grader is a superGrader, return tabbed content, with viewAll data
-    const isSuperGrader =
-      currentCourse &&
-      typeof this.props.superGraderCourses.find((course) => {
-        return course.id === currentCourse.id;
-      }) !== 'undefined'
-        ? true
-        : false;
+    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, currentCourse);
 
     let graderPanelContent;
 

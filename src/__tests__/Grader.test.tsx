@@ -77,4 +77,39 @@ describe('Grader', () => {
     const { wrapper } = setup();
     expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
   });
+
+  it('isSuperGrader()', () => {
+    const superGraderCourses = [
+      {
+        id: 3,
+        name: 'COS126',
+        period: 'S19',
+        assignments: [1, 2],
+        sections: [],
+        sendReleasedSubmissionsToBack: false,
+        showStudentsStatistics: false,
+        emailNewUsers: false,
+        timezone: 'PST',
+      },
+    ];
+
+    let currentCourse = undefined;
+
+    const { wrapper } = setup();
+    expect(wrapper.instance().isSuperGrader(superGraderCourses, currentCourse)).toBe(false);
+
+    currentCourse = {
+      id: 3,
+      name: 'COS126',
+      period: 'S19',
+      assignments: [1, 2],
+      sections: [],
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
+      emailNewUsers: false,
+      timezone: 'PST',
+    };
+
+    expect(wrapper.instance().isSuperGrader(superGraderCourses, currentCourse)).toBe(true);
+  });
 });
