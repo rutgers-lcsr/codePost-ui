@@ -201,6 +201,7 @@ describe('Grade', () => {
         {
           id: 1,
           text: 'good job',
+          // @ts-ignore
           pointDelta: undefined,
           startChar: 0,
           endChar: 1,
@@ -237,86 +238,3 @@ describe('Grade', () => {
     expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(true);
   });
 });
-
-// it('calculates points per category correctly', () => {
-//   const commentRubricComments = {
-//     1: {
-//       id: 1,
-//       text: 'good job',
-//       pointDelta: 2,
-//       category: 2,
-//       comments: [1],
-//     },
-//     2: {
-//       id: 2,
-//       text: 'good job',
-//       pointDelta: 1,
-//       category: 2,
-//       comments: [2],
-//     },
-//   };
-
-//   const { wrapper } = setup();
-//   expect(wrapper.instance().getPointsPerCategory(commentRubricComments)).toEqual({ 2: 3 });
-// });
-
-// it('loads assignments correctly', async () => {
-//   const assignments = [
-//     {
-//       id: 1,
-//       name: 'Hello, World',
-//       points: 20,
-//       isReleased: true,
-//       rubricCategories: [],
-//       course: 3,
-//       sortKey: 0,
-//     },
-//     {
-//       id: 2,
-//       name: 'Sierpinski',
-//       points: 20,
-//       isReleased: true,
-//       rubricCategories: [],
-//       course: 3,
-//       sortKey: 0,
-//     },
-//   ];
-
-//   const courses = [
-//     {
-//       id: 3,
-//       name: 'COS126',
-//       period: 'S19',
-//       assignments: [1, 2],
-//       sections: [],
-//       sendReleasedSubmissionsToBack: false,
-//       showStudentsStatistics: false,
-//       emailNewUsers: false,
-//       timezone: 'PST',
-//     },
-//   ];
-
-//   // @ts-ignore
-//   loadIDList = jest.fn().mockReturnValue(assignments);
-
-//   const { wrapper } = setup();
-//   expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
-// });
-
-// it('considers rubric category caps correctly', () => {
-//   const rubricCategories = [
-//     {
-//       id: 1,
-//       rubricComments: [1, 2],
-//       assignment: 1,
-//       pointLimit: 2,
-//     },
-//   ];
-
-//   const pointsPerCategory = {
-//     1: 3,
-//   };
-
-//   const { wrapper } = setup();
-//   expect(wrapper.instance().writeCategoryCapMessages(pointsPerCategory, rubricCategories).length).toEqual(1);
-// });
