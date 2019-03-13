@@ -73,7 +73,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     await this.setStateFromURL();
   }
 
-  // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps: IStudentProps, prevState: IStudentState) {
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });

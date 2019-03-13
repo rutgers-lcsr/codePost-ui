@@ -36,7 +36,7 @@ interface IGraderState {
   toLoadAssignment: boolean;
 }
 
-interface IGraderProps {
+export interface IGraderProps {
   initialCourses: CourseType[];
   email: string;
   match: any;
@@ -62,41 +62,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public async componentDidMount() {
-    const assignments = await this.loadAssignment(this.state.courses);
+    const assignments = await this.loadAssignments(this.state.courses);
     this.setState({ assignments });
 
     await this.setStateFromURL();
   }
 
-  // public componentDidMount() {
-  //   this.loadAllAssignments().then(() => {
-  //     const sortedAssignmentMap = {};
-  //     Object.keys(this.state.assignments).forEach((courseID) => {
-  //       const sortedAssignments = sortAssignments(this.state.assignments[courseID]);
-  //       sortedAssignmentMap[courseID] = sortedAssignments;
-  //     });
-  //     this.setState({ assignments: sortedAssignmentMap });
-  //   });
-  // }
-
-  // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps: IGraderProps, prevState: IGraderState) {
-    // const { isLoadingAssignments, assignments, courses } = this.state;
-
-    // // Determine if assignments are done loading
-    // if (courses && assignments && prevState.assignments !== assignments) {
-    //   const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
-    //   const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
-    //   if (targetEntries === currEntries) {
-    //     this.setState({ isLoadingAssignments: false });
-    //   }
-    // }
-
-    // // After loading necessary resources, set state from URL
-    // if (prevState.isLoadingAssignments && !isLoadingAssignments) {
-    //   this.setStateFromURL();
-    // }
-
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });
     }
@@ -146,46 +118,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
   };
 
-  // public setStateFromURL = () => {
-  //   const { courseName, period, assignmentName } = this.props.match.params;
-  //   const { courses, assignments } = this.state;
-
-  //   // Test whether (courseName, period) corresponds to loaded course
-  //   let currentCourse: any;
-  //   let currentAssignment: any;
-  //   if (courseName && period) {
-  //     const formattedCourseName = courseName.replace(/_/g, ' ');
-  //     const formattedPeriod = period.replace(/_/g, ' ');
-  //     currentCourse = courses.find((obj: CourseType) => {
-  //       return obj.name === formattedCourseName && obj.period === formattedPeriod;
-  //     });
-
-  //     if (currentCourse) {
-  //       this.loadSections(currentCourse);
-  //     }
-
-  //     // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
-  //     if (currentCourse && assignmentName) {
-  //       const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-  //       currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
-  //         return obj.name === formattedAssignmentName;
-  //       });
-
-  //       this.setState({ isLoadingSubmissions: true });
-  //       this.loadSubmissions(currentAssignment).then(() => {
-  //         this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
-  //       });
-  //     }
-  //   }
-
-  //   this.setState({ currentCourse, currentAssignment });
-  // };
-
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAssignment = async (courses: CourseType[]) => {
+  public loadAssignments = async (courses: CourseType[]) => {
     const assignments = {};
 
     await Promise.all(
@@ -197,56 +134,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     return assignments;
   };
-
-  // public loadAllAssignments = () => {
-  //   const courses = this.state.courses;
-  //   return Promise.all(
-  //     courses.map((course: CourseType) => {
-  //       return this.loadAssignments(course);
-  //     }),
-  //   );
-  // };
-
-  // public loadAssignments = (course: CourseType) => {
-  //   return Promise.all(
-  //     course.assignments.map((assignmentId: number) => {
-  //       return Assignment.read(assignmentId).then((assignment) => {
-  //         let assignments = [assignment];
-  //         if (this.state.assignments[course.id]) {
-  //           assignments = [...this.state.assignments[course.id], assignment];
-  //         }
-  //         this.setState({
-  //           assignments: {
-  //             ...this.state.assignments,
-  //             [course.id]: assignments,
-  //           },
-  //         });
-  //       });
-  //     }),
-  //   );
-  // };
-
-  // public loadSubmissions = async (assignment: AssignmentType) => {
-  //   return await Assignment.readSubmissions(assignment.id, { grader: this.props.email });
-  // };
-
-  // public loadSubmissions = (assignment: AssignmentType) => {
-  //   return Assignment.readSubmissions(assignment.id, { grader: this.props.email }).then(
-  //     (currentSubmissions: SubmissionType[]) => {
-  //       this.setState({ currentSubmissions });
-  //     },
-  //   );
-  // };
-
-  // public loadSections = (course: CourseType) => {
-  //   return Promise.all(
-  //     course.sections.map((sectionID: number) => {
-  //       return Section.read(sectionID);
-  //     }),
-  //   ).then((currentSections) => {
-  //     this.setState({ currentSections });
-  //   });
-  // };
 
   ///////////////////////////////////////
   // Handlers
@@ -273,12 +160,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         isLoadingSubmissions: false,
         toLoadAssignment: true,
       });
-
-      // this.setState({ isLoadingSubmissions: true }, () => {
-      //   this.loadSubmissions(currentAssignment).then(() => {
-      //     this.setState({ currentAssignment, isLoadingSubmissions: false, toLoadAssignment: true });
-      //   });
-      // });
     }
   };
 
