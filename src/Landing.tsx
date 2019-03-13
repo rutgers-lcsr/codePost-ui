@@ -327,7 +327,10 @@ class Landing extends React.Component<{}, IState> {
         </div>
         <div className="SignUp" id="SignUp">
           <div className="SignUpContainer">
-            <div className="SignUpContainer__text">Get started with codePost by signing up</div>
+            <div className="SignUpContainer__title">
+              Get started with code<b>Post</b>
+            </div>
+            <div className="SignUpContainer__text">Sign up as...</div>
             <div className="SignUpContainer__buttons">
               <Button
                 href="/signup/staff"

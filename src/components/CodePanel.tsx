@@ -5,6 +5,8 @@ import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
+import LangMap from 'lang-map';
+
 import CommentList from './CommentList';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, POSITION } from '../types/common';
@@ -311,6 +313,11 @@ const Code = (props: ICodeProps) => {
   CodePanelUtils.updateCommentPanelHeight(codeHeight);
 
   const codeString = props.file.code;
+
+  const extensionMatch = /^(?:\.?)(.*)/;
+  const extension = extensionMatch.exec(props.file.extension)![1];
+  const language = LangMap.languages(extension)[0];
+
   return (
     <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
       <div className="grade__main-container__tabContent">
@@ -318,7 +325,7 @@ const Code = (props: ICodeProps) => {
           <div className="grade__main-container__tabContent__codePanel-container">
             <div className="code__highlighted-area">
               <div id={`syntax-highlighter-${props.file.id}`} className="code__syntax-highlighter">
-                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
+                <SyntaxHighlighter language={language} style={googlecode} showLineNumbers={true} wrapLines={false}>
                   {codeString}
                 </SyntaxHighlighter>
               </div>
