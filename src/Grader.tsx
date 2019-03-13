@@ -12,6 +12,7 @@ import { ICourseToAssignmentMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
+import { loadIDList } from './infrastructure/generics';
 import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
 
@@ -60,34 +61,41 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     toLoadAssignment: false,
   };
 
-  public componentDidMount() {
-    this.loadAllAssignments().then(() => {
-      const sortedAssignmentMap = {};
-      Object.keys(this.state.assignments).forEach((courseID) => {
-        const sortedAssignments = sortAssignments(this.state.assignments[courseID]);
-        sortedAssignmentMap[courseID] = sortedAssignments;
-      });
-      this.setState({ assignments: sortedAssignmentMap });
-    });
+  public async componentDidMount() {
+    const assignments = await this.loadAssignment(this.state.courses);
+    this.setState({ assignments });
+
+    await this.setStateFromURL();
   }
+
+  // public componentDidMount() {
+  //   this.loadAllAssignments().then(() => {
+  //     const sortedAssignmentMap = {};
+  //     Object.keys(this.state.assignments).forEach((courseID) => {
+  //       const sortedAssignments = sortAssignments(this.state.assignments[courseID]);
+  //       sortedAssignmentMap[courseID] = sortedAssignments;
+  //     });
+  //     this.setState({ assignments: sortedAssignmentMap });
+  //   });
+  // }
 
   // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps: IGraderProps, prevState: IGraderState) {
-    const { isLoadingAssignments, assignments, courses } = this.state;
+    // const { isLoadingAssignments, assignments, courses } = this.state;
 
-    // Determine if assignments are done loading
-    if (courses && assignments && prevState.assignments !== assignments) {
-      const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
-      const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
-      if (targetEntries === currEntries) {
-        this.setState({ isLoadingAssignments: false });
-      }
-    }
+    // // Determine if assignments are done loading
+    // if (courses && assignments && prevState.assignments !== assignments) {
+    //   const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
+    //   const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
+    //   if (targetEntries === currEntries) {
+    //     this.setState({ isLoadingAssignments: false });
+    //   }
+    // }
 
-    // After loading necessary resources, set state from URL
-    if (prevState.isLoadingAssignments && !isLoadingAssignments) {
-      this.setStateFromURL();
-    }
+    // // After loading necessary resources, set state from URL
+    // if (prevState.isLoadingAssignments && !isLoadingAssignments) {
+    //   this.setStateFromURL();
+    // }
 
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });
@@ -98,96 +106,153 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   // URL handler methods
   ///////////////////////////////////////
 
-  public setStateFromURL = () => {
+  public setStateFromURL = async () => {
     const { courseName, period, assignmentName } = this.props.match.params;
-    const { courses, assignments } = this.state;
 
-    // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse: any;
-    let currentAssignment: any;
+    let currentCourse: CourseType | undefined;
+    let currentAssignment: AssignmentType | undefined;
+
     if (courseName && period) {
-      const formattedCourseName = courseName.replace(/_/g, ' ');
-      const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: CourseType) => {
-        return obj.name === formattedCourseName && obj.period === formattedPeriod;
+      currentCourse = this.state.courses.find((course: CourseType) => {
+        return course.name === courseName.replace(/_/g, ' ') && course.period === period.replace(/_/g, ' ');
       });
 
       if (currentCourse) {
-        this.loadSections(currentCourse);
+        const currentSections = await loadIDList(currentCourse.sections, Section);
+        this.setState({ currentSections });
       }
 
-      // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
       if (currentCourse && assignmentName) {
-        const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-        currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
-          return obj.name === formattedAssignmentName;
+        currentAssignment = this.state.assignments[currentCourse.id].find((assignment: AssignmentType) => {
+          return assignment.name === assignmentName.replace(/_/g, ' ');
         });
 
-        this.setState({ isLoadingSubmissions: true });
-        this.loadSubmissions(currentAssignment).then(() => {
-          this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
-        });
+        if (currentAssignment) {
+          this.setState({ isLoadingSubmissions: true });
+          const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, {
+            grader: this.props.email,
+          });
+
+          this.setState({
+            currentCourse,
+            currentAssignment,
+            currentSubmissions,
+            isLoadingSubmissions: false,
+          });
+        }
+      } else {
+        this.setState({ currentCourse });
       }
     }
-
-    this.setState({ currentCourse, currentAssignment });
   };
+
+  // public setStateFromURL = () => {
+  //   const { courseName, period, assignmentName } = this.props.match.params;
+  //   const { courses, assignments } = this.state;
+
+  //   // Test whether (courseName, period) corresponds to loaded course
+  //   let currentCourse: any;
+  //   let currentAssignment: any;
+  //   if (courseName && period) {
+  //     const formattedCourseName = courseName.replace(/_/g, ' ');
+  //     const formattedPeriod = period.replace(/_/g, ' ');
+  //     currentCourse = courses.find((obj: CourseType) => {
+  //       return obj.name === formattedCourseName && obj.period === formattedPeriod;
+  //     });
+
+  //     if (currentCourse) {
+  //       this.loadSections(currentCourse);
+  //     }
+
+  //     // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
+  //     if (currentCourse && assignmentName) {
+  //       const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
+  //       currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
+  //         return obj.name === formattedAssignmentName;
+  //       });
+
+  //       this.setState({ isLoadingSubmissions: true });
+  //       this.loadSubmissions(currentAssignment).then(() => {
+  //         this.setState({ currentCourse, currentAssignment, isLoadingSubmissions: false });
+  //       });
+  //     }
+  //   }
+
+  //   this.setState({ currentCourse, currentAssignment });
+  // };
 
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAllAssignments = () => {
-    const courses = this.state.courses;
-    return Promise.all(
-      courses.map((course: CourseType) => {
-        return this.loadAssignments(course);
+  public loadAssignment = async (courses: CourseType[]) => {
+    const assignments = {};
+
+    await Promise.all(
+      courses.map(async (course: CourseType) => {
+        assignments[course.id] = sortAssignments(await loadIDList(course.assignments, Assignment));
+        return;
       }),
     );
+
+    return assignments;
   };
 
-  public loadAssignments = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentId: number) => {
-        return Assignment.read(assignmentId).then((assignment) => {
-          let assignments = [assignment];
-          if (this.state.assignments[course.id]) {
-            assignments = [...this.state.assignments[course.id], assignment];
-          }
-          this.setState({
-            assignments: {
-              ...this.state.assignments,
-              [course.id]: assignments,
-            },
-          });
-        });
-      }),
-    );
-  };
+  // public loadAllAssignments = () => {
+  //   const courses = this.state.courses;
+  //   return Promise.all(
+  //     courses.map((course: CourseType) => {
+  //       return this.loadAssignments(course);
+  //     }),
+  //   );
+  // };
 
-  public loadSubmissions = (assignment: AssignmentType) => {
-    return Assignment.readSubmissions(assignment.id, { grader: this.props.email }).then(
-      (currentSubmissions: SubmissionType[]) => {
-        this.setState({ currentSubmissions });
-      },
-    );
-  };
+  // public loadAssignments = (course: CourseType) => {
+  //   return Promise.all(
+  //     course.assignments.map((assignmentId: number) => {
+  //       return Assignment.read(assignmentId).then((assignment) => {
+  //         let assignments = [assignment];
+  //         if (this.state.assignments[course.id]) {
+  //           assignments = [...this.state.assignments[course.id], assignment];
+  //         }
+  //         this.setState({
+  //           assignments: {
+  //             ...this.state.assignments,
+  //             [course.id]: assignments,
+  //           },
+  //         });
+  //       });
+  //     }),
+  //   );
+  // };
 
-  public loadSections = (course: CourseType) => {
-    return Promise.all(
-      course.sections.map((sectionID: number) => {
-        return Section.read(sectionID);
-      }),
-    ).then((currentSections) => {
-      this.setState({ currentSections });
-    });
-  };
+  // public loadSubmissions = async (assignment: AssignmentType) => {
+  //   return await Assignment.readSubmissions(assignment.id, { grader: this.props.email });
+  // };
+
+  // public loadSubmissions = (assignment: AssignmentType) => {
+  //   return Assignment.readSubmissions(assignment.id, { grader: this.props.email }).then(
+  //     (currentSubmissions: SubmissionType[]) => {
+  //       this.setState({ currentSubmissions });
+  //     },
+  //   );
+  // };
+
+  // public loadSections = (course: CourseType) => {
+  //   return Promise.all(
+  //     course.sections.map((sectionID: number) => {
+  //       return Section.read(sectionID);
+  //     }),
+  //   ).then((currentSections) => {
+  //     this.setState({ currentSections });
+  //   });
+  // };
 
   ///////////////////////////////////////
   // Handlers
   ///////////////////////////////////////
 
-  public handleAssignmentChange = (option: IOption, event: any) => {
+  public handleAssignmentChange = async (option: IOption, event: any) => {
     const { assignments, currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -199,26 +264,37 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     })[0];
 
     if (currentAssignment) {
-      this.setState({ isLoadingSubmissions: true }, () => {
-        this.loadSubmissions(currentAssignment).then(() => {
-          this.setState({ currentAssignment, isLoadingSubmissions: false, toLoadAssignment: true });
-        });
+      this.setState({ isLoadingSubmissions: true });
+      const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, { grader: this.props.email });
+
+      this.setState({
+        currentAssignment,
+        currentSubmissions,
+        isLoadingSubmissions: false,
+        toLoadAssignment: true,
       });
+
+      // this.setState({ isLoadingSubmissions: true }, () => {
+      //   this.loadSubmissions(currentAssignment).then(() => {
+      //     this.setState({ currentAssignment, isLoadingSubmissions: false, toLoadAssignment: true });
+      //   });
+      // });
     }
   };
 
-  public handleCourseChange = (option: IOption) => {
+  public handleCourseChange = async (option: IOption) => {
     const currentCourse = this.state.courses.filter((obj: CourseType) => {
       return obj.id === option.value;
     })[0];
 
-    this.loadSections(currentCourse).then(() => {
-      this.setState({
-        currentAssignment: undefined,
-        currentCourse,
-        currentSubmissions: [],
-        toLoadCourse: true,
-      });
+    const currentSections = await loadIDList(currentCourse.sections, Section);
+
+    this.setState({
+      currentSections,
+      currentAssignment: undefined,
+      currentCourse,
+      currentSubmissions: [],
+      toLoadCourse: true,
     });
   };
 
@@ -304,14 +380,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       currentSections,
       currentSubmissions,
       isLoadingSubmissions,
-      toLoadCourse,
-      toLoadAssignment,
     } = this.state;
-    if (toLoadCourse || toLoadAssignment) {
+
+    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
-        if (toLoadAssignment && currentAssignment) {
+        if (this.state.toLoadAssignment && currentAssignment) {
           const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
           return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
         } else {
