@@ -85,8 +85,9 @@ class Grade extends React.Component<IProps, IGradeState> {
 
       const graders = (await Course.readRoster(assignment.course))['graders'];
 
-      if (!submission.isFinalized) {
-        submission.grade = this.calculateGradeFromComments();
+      if (assignment && !submission.isFinalized) {
+        // @ts-ignore
+        submission.grade = this.calculateGrade(assignment, comments, commentRubricComments, rubricCategories);
       }
 
       // @ts-ignore
@@ -99,7 +100,7 @@ class Grade extends React.Component<IProps, IGradeState> {
         rubricCategories,
         rubricComments,
         graders,
-        positiveNegativeAlert: this.hasPositiveAndNegativeComments(),
+        positiveNegativeAlert: this.hasPositiveAndNegativeComments(comments, commentRubricComments),
         isLoading: false,
       });
     }
@@ -149,6 +150,91 @@ class Grade extends React.Component<IProps, IGradeState> {
 
   public changeActiveComment = (id: number | undefined): void => {
     this.setState({ activeCommentId: id });
+  };
+
+  public calculateGradeFromState = (): number | undefined => {
+    if (!this.state.submission || !this.state.assignment) {
+      return undefined;
+    }
+
+    return this.calculateGrade(
+      this.state.assignment,
+      this.state.comments,
+      this.state.commentRubricComments,
+      this.state.rubricCategories,
+    );
+  };
+
+  public calculateGrade = (
+    assignment: AssignmentType,
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+    rubricCategories: RubricCategoryType[],
+  ): number => {
+    // non-rubricComment deductions
+    const commentPoints = this.commentPoints(comments);
+    const pointsPerCategory = this.pointsPerCategory(commentRubricComments);
+    const poinstPerCategoryWithCaps = this.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
+
+    const categoryPoints = Object.values(poinstPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+      return accumulator + current;
+    }, 0);
+
+    return assignment.points - commentPoints - categoryPoints;
+  };
+
+  // Points from non-RubricComment Comments
+  public commentPoints = (comments: IFileToCommentsMap): number => {
+    return Object.keys(comments)
+      .map((fileID) => {
+        return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+          // Don't count unsaved comments
+          if (comment.id > 0 && comment.pointDelta) {
+            return accumulator + comment.pointDelta;
+          } else {
+            return accumulator;
+          }
+        }, 0);
+      })
+      .reduce((accumulator: number, fileGrade: number) => {
+        return accumulator + fileGrade;
+      }, 0);
+  };
+
+  // Points from RubricComments, ignoring category caps
+  public pointsPerCategory = (commentRubricComments: ICommentToRubricCommentMap): { [categoryID: number]: number } => {
+    const pointsPerCategory = {};
+    for (const commentID in commentRubricComments) {
+      // Don't count unsaved comments
+      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
+        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
+          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
+        } else {
+          pointsPerCategory[commentRubricComments[commentID].category] =
+            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
+        }
+      }
+    }
+
+    return pointsPerCategory;
+  };
+
+  // Incorporate category caps
+  public pointsPerCategoryWithCaps = (
+    pointsPerCategory: { [categoryID: number]: number },
+    rubricCategories: RubricCategoryType[],
+  ): { [categoryID: number]: number } => {
+    const pointsPerCategoryWithCaps = {};
+    for (const category in pointsPerCategory) {
+      if (pointsPerCategory.hasOwnProperty(category)) {
+        const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
+          return rubricCategory.id === +category;
+        });
+        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 1000) : 1000;
+        pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+      }
+    }
+    return pointsPerCategoryWithCaps;
   };
 
   public calculateGradeFromComments = () => {
@@ -204,9 +290,10 @@ class Grade extends React.Component<IProps, IGradeState> {
     return grade - categoryPoints;
   };
 
-  public hasPositiveAndNegativeComments = () => {
-    const { comments, commentRubricComments } = this.state;
-
+  public hasPositiveAndNegativeComments = (
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+  ): boolean => {
     let hasPositiveDeduction = false;
     let hasNegativeDeduction = false;
     Object.keys(comments).forEach((fileID) => {
@@ -228,12 +315,18 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public updateSubmissionGrade = () => {
-    const { submission } = this.state;
-    if (submission) {
-      const grade = this.calculateGradeFromComments();
-      const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-      submission.grade = grade;
-      this.setState({ submission, positiveNegativeAlert });
+    if (this.state.submission) {
+      const grade = this.calculateGradeFromState();
+      if (grade) {
+        const submission = { ...this.state.submission, grade };
+        this.setState({
+          submission,
+          positiveNegativeAlert: this.hasPositiveAndNegativeComments(
+            this.state.comments,
+            this.state.commentRubricComments,
+          ),
+        });
+      }
     }
   };
 
@@ -404,7 +497,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               isCourseAdmin={isCourseAdmin}
               commentRubricComments={commentRubricComments}
               rubricCategories={rubricCategories}
-              calculateGradeFromComments={this.calculateGradeFromComments}
+              calculateGradeFromComments={this.calculateGradeFromState}
             />
             <Rubric
               rubricCategories={rubricCategories}

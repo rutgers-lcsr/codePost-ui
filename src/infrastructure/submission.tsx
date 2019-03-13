@@ -82,9 +82,11 @@ class Submission {
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
 
-  public static loadData = async (submission: SubmissionType | SubmissionStatusType) => {
+  public static loadData = async (
+    submission: SubmissionType | SubmissionStatusType,
+  ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
     if (!submission.files) {
-      return [submission, [], {}, {}];
+      return [[], {}, {}];
     }
 
     const files = await loadIDList(submission.files, File);
