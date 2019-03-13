@@ -245,21 +245,22 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       });
   };
 
-  public releaseSubmission = (submission: SubmissionType): Promise<SubmissionType> => {
+  public releaseSubmission = async (submission: SubmissionType): Promise<SubmissionType> => {
     const payload = {
       id: submission.id,
       grader: '',
       isFinalized: false,
     };
 
-    return Submission.update(payload).then((json: any) => {
-      this.setState({
-        currentSubmissions: this.state.currentSubmissions.filter((sub) => {
-          return sub.id !== submission.id;
-        }),
-      });
-      return json;
+    const releasedSubmission = await Submission.update(payload);
+
+    this.setState({
+      currentSubmissions: this.state.currentSubmissions.filter((sub) => {
+        return sub.id !== releasedSubmission.id;
+      }),
     });
+
+    return releasedSubmission;
   };
 
   ///////////////////////////////////////
