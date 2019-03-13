@@ -209,9 +209,27 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
-  public claimSubmission = (assignment: AssignmentType, section: SectionType | undefined): any => {
+  public claimSubmission = async (
+    assignment: AssignmentType,
+    section?: SectionType,
+  ): Promise<SubmissionType | undefined> => {
+    const submission = await this.fetchSubmission(assignment, section);
+
+    if (submission) {
+      this.setState({
+        currentSubmissions: [...this.state.currentSubmissions, submission],
+      });
+    }
+
+    return submission;
+  };
+
+  public fetchSubmission = async (
+    assignment: AssignmentType,
+    section?: SectionType,
+  ): Promise<SubmissionType | undefined> => {
     const params = section ? `?section=${section.name}` : '';
-    return fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
+    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
       headers: {
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
@@ -223,11 +241,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         return res.json();
       })
       .then((json) => {
-        if (json) {
-          this.setState({
-            currentSubmissions: [...this.state.currentSubmissions, json],
-          });
-        }
         return json;
       });
   };

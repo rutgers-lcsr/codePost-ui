@@ -27,7 +27,7 @@ interface IProps {
   sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType, section: SectionType | undefined) => Promise<SubmissionType>;
+  claimSubmission: (assignment: AssignmentType, section?: SectionType) => Promise<SubmissionType | undefined>;
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
@@ -97,21 +97,20 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     // height=' + screen.availHeight * 0.9).resizeTo(screen.availWidth, screen.availHeight);
   };
 
-  public getAnotherSubmission = () => {
+  public getAnotherSubmission = async () => {
     const { assignment } = this.props;
     if (!assignment) {
       return;
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment, this.state.currentSection).then((claimedSubmission: SubmissionType) => {
-      // undefined if no more submissions
-      if (!claimedSubmission) {
-        this.setState({ buttonState: BUTTON_STATE.Inactive });
-      } else {
-        this.setState({ buttonState: BUTTON_STATE.Active });
-      }
-    });
+
+    const claimedSubmission = await this.props.claimSubmission(assignment, this.state.currentSection);
+    if (!claimedSubmission) {
+      this.setState({ buttonState: BUTTON_STATE.Inactive });
+    } else {
+      this.setState({ buttonState: BUTTON_STATE.Active });
+    }
   };
 
   public toggleReleaseDialog = (submission: SubmissionType | undefined) => {
