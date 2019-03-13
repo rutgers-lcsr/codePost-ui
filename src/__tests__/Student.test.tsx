@@ -33,7 +33,7 @@ describe('Student', () => {
     };
   };
 
-  it('calculates points per category correctly', () => {
+  it('getPointsPerCategory()', () => {
     const commentRubricComments = {
       1: {
         id: 1,
@@ -55,7 +55,7 @@ describe('Student', () => {
     expect(wrapper.instance().getPointsPerCategory(commentRubricComments)).toEqual({ 2: 3 });
   });
 
-  it('loads assignments correctly', async () => {
+  it('loadAssignments()', async () => {
     const assignments = [
       {
         id: 1,
@@ -98,7 +98,7 @@ describe('Student', () => {
     expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
   });
 
-  it('considers rubric category caps correctly', () => {
+  it('writeCategoryCapMessages()', () => {
     const rubricCategories = [
       {
         id: 1,
@@ -113,6 +113,6 @@ describe('Student', () => {
     };
 
     const { wrapper } = setup();
-    expect(wrapper.instance().writeCategoryCapMessages(pointsPerCategory, rubricCategories).length).toEqual(1);
+    expect(wrapper.instance().writeCategoryCapMessages(pointsPerCategory, rubricCategories).length).toBe(1);
   });
 });

@@ -35,15 +35,14 @@ interface IGradeState {
   positiveNegativeAlert: boolean;
 }
 
-interface IProps {
-  submissionID: number;
+export interface IGradeProps {
   match: any;
   history: any;
   user: UserType;
   addErrorToast: (text: string, action: string | undefined) => void;
 }
 
-class Grade extends React.Component<IProps, IGradeState> {
+class Grade extends React.Component<IGradeProps, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
