@@ -115,7 +115,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
             <TableColumn>{submission.students.toString()}</TableColumn>
-            <TableColumn className={`cellType${cellType}`}>{grade}</TableColumn>
+            <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
             <TableColumn>{moment(submission.dateEdited).format('llll')}</TableColumn>
@@ -129,7 +129,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     });
 
     return (
-      <div className="grader__viewAll">
+      <div className="grader__view-all">
         <Select
           classNamePrefix="multiselect--ViewAll"
           closeMenuOnSelect={false}

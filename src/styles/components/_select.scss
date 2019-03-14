@@ -101,7 +101,7 @@
   }
 }
 
-.select--Grader-section {
+.select--grader-section {
   @include react-select-format();
   &__control {
     max-width: 200px;

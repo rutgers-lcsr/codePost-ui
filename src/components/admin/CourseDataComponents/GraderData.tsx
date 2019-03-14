@@ -119,7 +119,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn key={`${submission.id}-assignment`} className={`cellType${cellType}`}>
+        <TableColumn key={`${submission.id}-assignment`} className={`table-cell${cellType}`}>
           {assignmentName}
         </TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
@@ -172,7 +172,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
               const assignmentName = assignment.name;
               if (submissions) {
                 return (
-                  <TableColumn key={`${graderEmail}-${assignmentName}`} className="cellType--graded">
+                  <TableColumn key={`${graderEmail}-${assignmentName}`} className="table-cell--graded">
                     {submissions.length}
                   </TableColumn>
                 );
@@ -180,7 +180,7 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
                 return (
                   <TableColumn
                     key={`${graderEmail}-${assignmentName}`}
-                    className="cellType--unsubmitted
+                    className="table-cell--unsubmitted
                 "
                   >
                     --

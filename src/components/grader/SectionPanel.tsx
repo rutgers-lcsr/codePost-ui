@@ -143,7 +143,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
             <TableRow key={student} onClick={openSubmission.bind(this.props, sub.id)}>
               <TableColumn>{student}</TableColumn>
               <TableColumn>{sub.students.toString()}</TableColumn>
-              <TableColumn className={sub.isFinalized ? 'cellType--graded' : 'cellType--unfinalized'}>
+              <TableColumn className={sub.isFinalized ? 'table-cell--graded' : 'table-cell--unfinalized'}>
                 {sub.isFinalized ? String(sub.grade) : 'Unfinalized'}
               </TableColumn>
               <TableColumn>{sub.grader}</TableColumn>
@@ -156,7 +156,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
             <TableRow key={student}>
               <TableColumn>{student}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
-              <TableColumn className="cellType--unsubmitted">{'--'}</TableColumn>
+              <TableColumn className="table-cell--unsubmitted">{'--'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
@@ -176,7 +176,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
       });
       selectContent = (
         <Select
-          classNamePrefix="select--Grader-section"
+          classNamePrefix="select--grader-section"
           closeMenuOnSelect={true}
           options={menuItems}
           onChange={this.handleSelect}
@@ -185,10 +185,10 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
       );
     }
     return (
-      <div className="grader__Section">
+      <div className="grader__section-panel">
         {selectContent}
-        <div className="grader__Section__title">{title}</div>
-        <DataTable className="DataTable--Section" plain={true}>
+        <div className="grader__section-panel__title">{title}</div>
+        <DataTable className="table--section" plain={true}>
           <TableHeader>
             <TableRow>
               <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
