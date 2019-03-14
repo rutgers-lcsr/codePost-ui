@@ -587,7 +587,9 @@ class ManageAssignments extends React.Component<IProps, {}> {
     const grades: string[] = ['Student,Grade'];
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
-        grades.push(`${student},${sub.grade}`);
+        if (this.props.students.includes(student)) {
+          grades.push(`${student},${sub.grade}`);
+        }
       });
     });
 
