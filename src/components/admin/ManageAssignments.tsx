@@ -581,6 +581,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     if (!currentCourse) {
       return;
     }
+    console.log('Downloading!');
 
     const subs = submissions[assignment.id];
 
