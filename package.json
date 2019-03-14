@@ -5,6 +5,7 @@
   "dependencies": {
     "@types/codemirror": "0.0.72",
     "@types/react-codemirror": "^1.0.2",
+    "@types/react-loadable": "^5.5.0",
     "@types/react-scroll": "^1.5.4",
     "autoprefixer": "7.1.6",
     "babel-jest": "20.0.3",
@@ -38,6 +39,7 @@
     "react": "^16.7.0",
     "react-codemirror": "^1.0.0",
     "react-dom": "^16.7.0",
+    "react-loadable": "^5.5.0",
     "react-markdown": "^4.0.6",
     "react-md": "^1.9.2",
     "react-router-dom": "^4.3.1",
