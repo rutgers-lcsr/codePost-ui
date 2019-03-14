@@ -114,7 +114,7 @@
   @include wrapHeaders(200px);
 }
 
-.DataTable--ViewAll {
+.data-table--view-all {
   @include fixedTableHeader(calc(100vh - 260px), 400px);
   @include wrapHeaders(200px);
 }

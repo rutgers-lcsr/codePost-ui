@@ -17,7 +17,7 @@
     background-color: $very-light-green !important;
   }
 }
-.multiselect--ViewAll {
+.multiselect--view-all {
   @include react-select-format();
 
   &__option--is-focused {
