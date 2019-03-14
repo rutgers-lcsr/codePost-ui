@@ -93,12 +93,7 @@ describe('Grader', () => {
       },
     ];
 
-    let currentCourse = undefined;
-
-    const { wrapper } = setup();
-    expect(wrapper.instance().isSuperGrader(superGraderCourses, currentCourse)).toBe(false);
-
-    currentCourse = {
+    let currentCourse = {
       id: 3,
       name: 'COS126',
       period: 'S19',
@@ -110,6 +105,21 @@ describe('Grader', () => {
       timezone: 'PST',
     };
 
+    const { wrapper } = setup();
     expect(wrapper.instance().isSuperGrader(superGraderCourses, currentCourse)).toBe(true);
+
+    currentCourse = {
+      id: 4,
+      name: 'COS432',
+      period: 'S19',
+      assignments: [3],
+      sections: [],
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
+      emailNewUsers: false,
+      timezone: 'PST',
+    };
+
+    expect(wrapper.instance().isSuperGrader(superGraderCourses, currentCourse)).toBe(false);
   });
 });

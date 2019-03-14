@@ -33,7 +33,7 @@
     }
   }
 
-  &__getStarted {
+  &__get-started {
     display: flex;
     min-width: 500px;
     &__arrow {
@@ -45,11 +45,11 @@
       margin-top: auto;
       font-weight: 325;
     }
-  }
 
-  &__getStarted--assignment {
-    margin-top: 50px;
-    display: flex;
-    min-width: 500px;
+    &--assignment {
+      margin-top: 50px;
+      display: flex;
+      min-width: 500px;
+    }
   }
 }

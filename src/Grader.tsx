@@ -263,13 +263,64 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return releasedSubmission;
   };
 
-  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse?: CourseType): boolean => {
-    return currentCourse &&
-      superGraderCourses.find((course: CourseType) => {
-        return course.id === currentCourse.id;
-      }) !== undefined
+  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse: CourseType): boolean => {
+    return superGraderCourses.find((course: CourseType) => {
+      return course.id === currentCourse.id;
+    })
       ? true
       : false;
+  };
+
+  public getViewAllComponent = () => {
+    if (!this.state.currentCourse || !this.state.currentAssignment) {
+      return ['', ''];
+    }
+
+    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, this.state.currentCourse);
+
+    if (!isSuperGrader) {
+      return ['', ''];
+    }
+
+    const viewAllTab = <Tab className="tabs--grader__tab">View All</Tab>;
+    const viewAllPanel = (
+      <TabPanel>
+        <div className="tabs--grader__panel-padding" />
+        <ViewAllPanel currentCourse={this.state.currentCourse} currentAssignment={this.state.currentAssignment} />
+      </TabPanel>
+    );
+
+    return [viewAllTab, viewAllPanel];
+  };
+
+  public getSectionsComponent = () => {
+    if (!this.state.currentCourse || !this.state.currentAssignment) {
+      return ['', ''];
+    }
+
+    const sections = this.props.sectionsLed.slice();
+    const sectionsInThisCourse = sections.filter((section) => {
+      return this.state.currentCourse!.sections.indexOf(section.id) !== -1;
+    });
+    const hasSections = sectionsInThisCourse.length > 0;
+
+    if (!hasSections) {
+      return ['', ''];
+    }
+
+    const sectionsTab = <Tab className="tabs--grader__tab">Sections</Tab>;
+    const sectionsPanel = (
+      <TabPanel>
+        <div className="tabs--grader__panel-padding" />
+        <SectionPanel
+          sectionsLed={sectionsInThisCourse}
+          currentCourse={this.state.currentCourse}
+          currentAssignment={this.state.currentAssignment}
+        />
+      </TabPanel>
+    );
+
+    return [sectionsTab, sectionsPanel];
   };
 
   ///////////////////////////////////////
@@ -301,75 +352,36 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       }
     }
 
-    // If grader is a superGrader, return tabbed content, with viewAll data
-    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, currentCourse);
-
     let graderPanelContent;
 
     // if not loaded yet, render a get started div
     if (!currentCourse) {
       graderPanelContent = (
-        <div className="grader__getStarted">
-          <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
-          <div className="grader__getStarted__text">Select a course to get started.</div>
+        <div className="grader__get-started">
+          <img className="grader__get-started__arrow" src={require('./img/get-started-arrow-left.png')} />
+          <div className="grader__get-started__text">Select a course to get started.</div>
         </div>
       );
     } else if (!currentAssignment) {
       graderPanelContent = (
-        <div className="grader__getStarted--assignment">
-          <img className="grader__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
-          <div className="grader__getStarted__text">Select an assignment.</div>
+        <div className="grader__get-started--assignment">
+          <img className="grader__get-started__arrow" src={require('./img/get-started-arrow-left-2.png')} />
+          <div className="grader__get-started__text">Select an assignment.</div>
         </div>
       );
     } else {
-      // if superGrader show a course
-      const sections = this.props.sectionsLed.slice();
-      const sectionsInThisCourse = sections.filter((section) => {
-        return currentCourse.sections.indexOf(section.id) !== -1;
-      });
-
-      // Pass the IDs to sectionPanel. SectionPanel will do another read to get the
-      // most up to date section roster and leaders
-      const sectionsIDsInThisCourse = sectionsInThisCourse.map((section) => {
-        return section.id;
-      });
-      const hasSections = sectionsInThisCourse.length > 0;
-
-      const viewAllPanel = isSuperGrader ? (
-        <TabPanel>
-          {/* padding under the tab required because tab is position:fixed*/}
-          <div className="tabList--Grader__panelPadding" />
-          <ViewAllPanel currentCourse={currentCourse} currentAssignment={currentAssignment} />
-        </TabPanel>
-      ) : (
-        ''
-      );
-      const viewAllTab = isSuperGrader ? <Tab className="tabList--Grader__tab">View All</Tab> : '';
-      const sectionPanel = hasSections ? (
-        <TabPanel>
-          {/* padding under the tab required because tab is position:fixed*/}
-          <div className="tabList--Grader__panelPadding" />
-          <SectionPanel
-            sectionsLed={sectionsIDsInThisCourse}
-            currentCourse={currentCourse}
-            currentAssignment={currentAssignment}
-          />
-        </TabPanel>
-      ) : (
-        ''
-      );
-      const sectionTab = hasSections ? <Tab className="tabList--Grader__tab">Sections</Tab> : '';
+      const [viewAllTab, viewAllPanel] = this.getViewAllComponent();
+      const [sectionsTab, sectionsPanel] = this.getSectionsComponent();
 
       graderPanelContent = (
         <Tabs defaultIndex={0}>
-          <TabList className="tabList--Grader">
-            <Tab className="tabList--Grader__tab">My Submissions</Tab>
+          <TabList className="tabs--grader">
+            <Tab className="tabs--grader__tab">My Claimed Submissions</Tab>
             {viewAllTab}
-            {sectionTab}
+            {sectionsTab}
           </TabList>
           <TabPanel>
-            {/* padding under the tab required because tab is position:fixed*/}
-            <div className="tabList--Grader__panelPadding" />
+            <div className="tabs--grader__panel-padding" />
             <GraderAssignmentPanel
               claimSubmission={this.claimSubmission}
               releaseSubmission={this.releaseSubmission}
@@ -380,7 +392,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
             />
           </TabPanel>
           {viewAllPanel}
-          {sectionPanel}
+          {sectionsPanel}
         </Tabs>
       );
     }

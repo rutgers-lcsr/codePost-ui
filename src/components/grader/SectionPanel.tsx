@@ -6,22 +6,21 @@ import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { Section, SectionType } from '../../infrastructure/section';
-import { sortSubmissions, SubmissionType } from '../../infrastructure/submission';
+import { SectionType } from '../../infrastructure/section';
+import { sortSubmissions, SubmissionStatusType, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
 
 import * as moment from 'moment';
 
-interface IProps {
+interface ISectionPanelProps {
   currentCourse: CourseType;
   currentAssignment: AssignmentType;
-  sectionsLed: number[];
+  sectionsLed: SectionType[];
 }
-interface IState {
+interface ISectionPanelState {
   submissionsBySection: { [sectionID: number]: { [student: string]: SubmissionType | undefined } };
-  sections: SectionType[];
   activeSection: SectionType | undefined;
   sortedIndex: Array<boolean | undefined>;
   // Beacuse we want to include students without submissions in our list, we need a student, submission|undefined array
@@ -29,69 +28,63 @@ interface IState {
   sortedSubmissions: Array<[string, SubmissionType | undefined]>;
 }
 
-class SectionPanel extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
+class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelState> {
+  public state: Readonly<ISectionPanelState> = {
     submissionsBySection: {},
-    sections: [],
     activeSection: undefined,
     // SortedIndex index corresponds to columns: index 0 is email. Ignoring the 'students' column
     sortedIndex: [true, undefined, undefined, undefined, undefined],
     sortedSubmissions: [],
   };
 
-  public constructor(props: any) {
-    super(props);
-    this.loadSubmissionsForSection();
+  public async componentDidMount() {
+    const submissionsBySection = await this.loadSubmissionsForSection();
+    this.setState({ submissionsBySection });
+
+    if (this.props.sectionsLed.length === 1) {
+      this.handleSelect({ value: this.props.sectionsLed[0].id, label: this.props.sectionsLed[0].name });
+    }
   }
 
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
-  public loadSubmissionsForSection = () => {
-    Promise.all(
-      this.props.sectionsLed.map((sectionID) => {
-        return Section.read(sectionID).then((section: SectionType) => {
-          const students = section.students;
-          return Promise.all(
-            students.map((student) => {
-              return Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
-                (subs: SubmissionType[]) => {
-                  if (subs.length === 0) {
-                    return { student, submission: null };
-                  } else {
-                    return { student, submission: subs[0] };
-                  }
-                },
-              );
-            }),
-          ).then((studentToSubMap: any) => {
-            const subsBySection = {};
-            studentToSubMap.forEach((sub: { student: string; submission: SubmissionType | null }) => {
-              subsBySection[sub.student] = sub.submission;
-            });
-            const { submissionsBySection } = this.state;
-            submissionsBySection[sectionID] = subsBySection;
-            this.setState({ submissionsBySection });
-            return section;
+  public loadSubmissionsForSection = async () => {
+    const submissionsBySection = {};
+    await Promise.all(
+      this.props.sectionsLed.map((section: SectionType) => {
+        return Promise.all(
+          section.students.map((student) => {
+            return Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
+              (subs: SubmissionStatusType[]) => {
+                if (subs.length === 0) {
+                  return { student, submission: null };
+                } else {
+                  return { student, submission: subs[0] };
+                }
+              },
+            );
+          }),
+        ).then((studentToSubMap: any) => {
+          const subsBySection = {};
+          studentToSubMap.forEach((sub: { student: string; submission: SubmissionType | null }) => {
+            subsBySection[sub.student] = sub.submission;
           });
+          submissionsBySection[section.id] = subsBySection;
+          return section;
         });
       }),
-    ).then((sections: SectionType[]) => {
-      this.setState({ sections }, () => {
-        // if single section, trigger select for that section (which will sort the submissions)
-        if (sections.length === 1) {
-          this.handleSelect({ value: sections[0].id, label: sections[0].name });
-        }
-      });
-    });
+    );
+
+    return submissionsBySection;
   };
 
   public handleSelect = (input: IOptionNumber) => {
-    const activeSection = this.state.sections.find((section) => {
+    const activeSection = this.props.sectionsLed.find((section) => {
       return section.id === input.value;
     });
 
     const thisSectionSubmissions = this.state.submissionsBySection[input.value];
-    console.log(thisSectionSubmissions);
+
     // return a new array for (1) sorting purposes (2) create new data so sort doesn't affect state;
     const newSubmissions = Object.keys(thisSectionSubmissions).map((student) => {
       const x: [string, SubmissionType | undefined] = [student, thisSectionSubmissions[student]];
@@ -135,13 +128,13 @@ class SectionPanel extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const { activeSection, sortedSubmissions, sections, sortedIndex } = this.state;
+    const { activeSection, sortedSubmissions, sortedIndex } = this.state;
     let tableBody;
     let title;
-    if (sections.length === 0) {
+    if (this.props.sectionsLed.length === 0) {
       // Sections haven't been loaded yet
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
-    } else if (sections.length === 1 || activeSection) {
+    } else if (this.props.sectionsLed.length === 1 || activeSection) {
       title = `Submissions for ${activeSection ? activeSection.name : ''}`;
 
       tableBody = sortedSubmissions.map(([student, sub]) => {
@@ -177,8 +170,8 @@ class SectionPanel extends React.Component<IProps, IState> {
     }
 
     let selectContent;
-    if (sections.length > 1) {
-      const menuItems = sections.map((section) => {
+    if (this.props.sectionsLed.length > 1) {
+      const menuItems = this.props.sectionsLed.map((section) => {
         return { value: section.id, label: section.name };
       });
       selectContent = (
