@@ -22,7 +22,7 @@ import Select from 'react-select';
 
 import * as moment from 'moment';
 
-interface IProps {
+interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;
   sections: SectionType[];
   submissions: SubmissionType[];
@@ -31,7 +31,7 @@ interface IProps {
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
-interface IState {
+interface IGraderAssignmentPanelState {
   buttonState: BUTTON_STATE;
   currentSection?: SectionType;
 
@@ -42,21 +42,18 @@ interface IState {
   sortedIndex: Array<boolean | undefined>;
 }
 
-class GraderAssignmentPanel extends React.Component<IProps, IState> {
-  public constructor(props: any) {
-    super(props);
-    this.state = {
-      buttonState: BUTTON_STATE.Active,
-      currentSection: undefined,
+class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
+  public state: Readonly<IGraderAssignmentPanelState> = {
+    buttonState: BUTTON_STATE.Active,
+    currentSection: undefined,
 
-      ascending: undefined,
-      sortedSubmissions: this.props.submissions,
-      releasedSubmission: undefined,
-      sortedIndex: [undefined, undefined, undefined, undefined],
-    };
-  }
+    ascending: undefined,
+    sortedSubmissions: this.props.submissions,
+    releasedSubmission: undefined,
+    sortedIndex: [undefined, undefined, undefined, undefined],
+  };
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IGraderAssignmentPanelProps, prevState: IGraderAssignmentPanelState) {
     // if submissions change, re-sort
     if (this.props.submissions !== prevProps.submissions) {
       // make a copy
@@ -72,7 +69,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     const { sortedIndex } = this.state;
 
     const sortAttribute = sortedIndex.findIndex((elem) => {
-      return typeof elem !== 'undefined';
+      return elem !== undefined;
     });
 
     if (sortAttribute === -1) {
@@ -92,9 +89,6 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
 
   public openGradePage = (submission: SubmissionType) => {
     window.open(`/grade/${submission.id}`);
-    // window.open("/grade/" + subid, 'test',
-    // 'width=' + screen.availWidth * 0.9 + ',
-    // height=' + screen.availHeight * 0.9).resizeTo(screen.availWidth, screen.availHeight);
   };
 
   public getAnotherSubmission = async () => {
@@ -165,7 +159,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
               onChange={this.handleSectionChange}
             />
           </GetAnotherSubmissionButton>
-          <DataTable className="DataTable--Grader" plain={true}>
+          <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
               <TableRow>
                 {headers.map((header, index) => {
