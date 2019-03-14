@@ -4,7 +4,7 @@
   flex-direction: column;
 
   &__finalize {
-    .positiveNegativeAlert {
+    &__positive-negative-alert {
       &--none {
         visibility: hidden;
       }

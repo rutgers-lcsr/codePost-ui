@@ -236,59 +236,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     return pointsPerCategoryWithCaps;
   };
 
-  public calculateGradeFromComments = () => {
-    const { comments, submission, assignment, commentRubricComments, rubricCategories } = this.state;
-
-    let assignmentPoints = 0;
-    if (!submission || !assignment) {
-      return null;
-    } else {
-      assignmentPoints = assignment.points;
-    }
-
-    const grade =
-      assignmentPoints -
-      Object.keys(comments)
-        .map((fileID) => {
-          return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
-            if (comment.id > 0 && comment.pointDelta) {
-              return accumulator + comment.pointDelta;
-            } else {
-              return accumulator;
-            }
-          }, 0);
-        })
-        .reduce((accumulator: number, fileGrade: number) => {
-          return accumulator + fileGrade;
-        }, 0);
-
-    const pointsPerCategory = {};
-    for (const commentID in commentRubricComments) {
-      // Don't count unsaved comments
-      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
-        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
-          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
-        } else {
-          pointsPerCategory[commentRubricComments[commentID].category] =
-            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
-        }
-      }
-    }
-
-    let categoryPoints = 0;
-    for (const category in pointsPerCategory) {
-      if (pointsPerCategory.hasOwnProperty(category)) {
-        const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
-          return rubricCategory.id === +category;
-        });
-        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 1000) : 1000;
-        categoryPoints = categoryPoints + Math.min(pointsPerCategory[category], pointLimit);
-      }
-    }
-
-    return grade - categoryPoints;
-  };
-
   public hasPositiveAndNegativeComments = (
     comments: IFileToCommentsMap,
     commentRubricComments: ICommentToRubricCommentMap,
@@ -557,7 +504,9 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
     updateComment,
     files,
   } = props;
-  const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
+  const warningClassName = positiveNegativeAlert
+    ? 'grade__finalize__positive-negative-alert'
+    : 'grade__finalize__positive-negative-alert--none';
   return (
     <div className="grade__finalize">
       <div className="grade__finalize--warning">
