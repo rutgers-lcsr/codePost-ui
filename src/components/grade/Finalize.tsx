@@ -7,7 +7,6 @@ import { Button, DialogContainer } from 'react-md';
 import { CommentIO, CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 import { SubmissionType } from '../../infrastructure/submission';
-import { FinalizeButton } from '../Buttons';
 
 interface IFinalizeProps {
   submission: SubmissionType;
@@ -148,6 +147,25 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
     }
   };
 
+  public finalizeButton = (buttonState: BUTTON_STATE, handleClick: any) => {
+    switch (buttonState) {
+      case BUTTON_STATE.Active:
+        return (
+          <div className="button--takeback" onClick={handleClick}>
+            Take Back
+          </div>
+        );
+      case BUTTON_STATE.Loading:
+        return <div className="button--finalize">Loading...</div>;
+      default:
+        return (
+          <div className="button--finalize" onClick={handleClick}>
+            Finalize
+          </div>
+        );
+    }
+  };
+
   public render() {
     const { buttonState } = this.state;
 
@@ -164,9 +182,11 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
       </Button>,
     );
 
+    const finalizeButton = this.finalizeButton(buttonState, this.tryToToggleFinalized);
+
     return (
       <div style={{ display: 'inline-block' }}>
-        <FinalizeButton buttonState={buttonState} handleClick={this.tryToToggleFinalized} />
+        {finalizeButton}
         <DialogContainer
           id="finalize-dialog"
           className="dialog--finalize-submission"

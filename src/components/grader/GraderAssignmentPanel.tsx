@@ -11,7 +11,6 @@ import {
   TableRow,
 } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
-import { GetAnotherSubmissionButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
@@ -227,6 +226,41 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     return <div>Select an assignment on the left</div>;
   }
 }
+
+interface IButtonProps {
+  handleClick: any;
+  buttonState: BUTTON_STATE;
+  children?: any;
+}
+
+export const GetAnotherSubmissionButton = (props: IButtonProps) => {
+  const { handleClick, buttonState } = props;
+
+  if (buttonState === BUTTON_STATE.Inactive) {
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
+      </div>
+    );
+  }
+
+  if (buttonState === BUTTON_STATE.Loading) {
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grader__get-another">
+      <div className="button--get-another " onClick={handleClick}>
+        +
+      </div>
+      {props.children}
+    </div>
+  );
+};
 
 interface ISelectSectionProps {
   sections: SectionType[];
