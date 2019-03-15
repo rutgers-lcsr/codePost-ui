@@ -134,15 +134,51 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     });
   };
 
+  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
+    if (buttonState === BUTTON_STATE.Inactive) {
+      return (
+        <div className="grader__get-another">
+          <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
+        </div>
+      );
+    }
+
+    if (buttonState === BUTTON_STATE.Loading) {
+      return (
+        <div className="grader__get-another">
+          <div className="button--get-another button--get-another--disabled">...</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another " onClick={handleClick}>
+          +
+        </div>
+        <SelectSection
+          sections={this.props.sections}
+          currentSection={this.state.currentSection}
+          onChange={this.handleSectionChange}
+        />
+      </div>
+    );
+  };
+
   public render() {
-    const { assignment, sections, isLoadingSubmissions } = this.props;
-    const { buttonState, sortedIndex } = this.state;
+    const { assignment, isLoadingSubmissions } = this.props;
+    const { sortedIndex } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
 
     const style = {
       cursor: 'pointer',
     };
+
+    const getAnotherSubmissionButton = this.getAnotherSubmissionButton(
+      this.state.buttonState,
+      this.getAnotherSubmission,
+    );
 
     if (isLoadingSubmissions) {
       return <CircularProgress id="progress" className="progress-circle" />;
@@ -151,13 +187,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     if (assignment) {
       return (
         <div>
-          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
-            <SelectSection
-              sections={sections}
-              currentSection={this.state.currentSection}
-              onChange={this.handleSectionChange}
-            />
-          </GetAnotherSubmissionButton>
+          {getAnotherSubmissionButton}
           <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
               <TableRow>
