@@ -172,7 +172,7 @@ class Landing extends React.Component<{}, IState> {
         <div className="topbar--Landing__spacing" />
         <div className="Hero-background" />
         <div className="Hero">
-          <div className="Hero__Description col-md-5">
+          <div className="Hero__Description">
             <div className="Hero__logo">
               code<b>Post</b>
             </div>
@@ -311,17 +311,17 @@ class Landing extends React.Component<{}, IState> {
         </div>
         <div className="Numbers">
           <div className="stats">
-            <div className="stats col-md-4 text-center">
+            <div className="stats__text">
               30,000+
-              <div className="stats subtext text-center">submissions graded</div>
+              <div className="stats__subtext">submissions graded</div>
             </div>
-            <div className="stats col-md-4 text-center">
+            <div className="stats__text">
               3,000+
-              <div className="stats subtext text-center">students</div>
+              <div className="stats__subtext">students</div>
             </div>
-            <div className="stats col-md-4 text-center">
+            <div className="stats__text">
               20+
-              <div className="stats subtext text-center">courses managed</div>
+              <div className="stats__subtext">courses managed</div>
             </div>
           </div>
         </div>
