@@ -28,7 +28,7 @@ export interface ICodePanelProps {
 }
 
 interface ICodePanelState {
-  commentCounter: number;
+  commentCounter: number; // negative decrementer for new, unsaved comments
   tabIndex: number;
   requireScroll: boolean;
 }
@@ -39,14 +39,6 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
     tabIndex: 0,
     requireScroll: window.innerWidth < 1300,
   };
-
-  //////////////////////////////////////
-  // Lifecycle Methods
-  //////////////////////////////////////
-
-  //////////////////////////////////////
-  // Prop Methods
-  //////////////////////////////////////
 
   public addComment = (comment: CommentType, file: FileType) => {
     const { addComment } = this.props;
@@ -64,10 +56,6 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
   public updateCommentCounter = (): void => {
     this.setState({ commentCounter: this.state.commentCounter - 1 });
   };
-
-  //////////////////////////////////////
-  // Helpers
-  //////////////////////////////////////
 
   public getPointDeltaInFile = (
     file: FileType,
@@ -122,7 +110,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
   //////////////////////////////////////
 
   public render() {
-    const { activeCommentId, deleteComment, readOnly, files, comments, rubricComments, updateComment } = this.props;
+    const { activeCommentId, deleteComment, readOnly, files, rubricComments, updateComment } = this.props;
 
     const { commentCounter } = this.state;
 
@@ -130,7 +118,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
       <Tabs selectedIndex={this.state.tabIndex} onSelect={this.onTabSelect}>
         <TabList className="tabs--grade">
           {files.map((file: FileType, i: number) => {
-            const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
+            const tabTitle = this.getTabTitle(file, this.props.comments[file.id], rubricComments);
             return (
               <Tab key={file.id} className="tabs--grade__tab">
                 {tabTitle}
@@ -139,15 +127,17 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
           })}
         </TabList>
         {files.map((file: FileType, i: number) => {
+          const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
+
           return (
             <TabPanel key={`${file.id}-code`}>
               {this.state.requireScroll ? (
-                <div className={'grade__main-container__scrollIndicator'}>scroll>>></div>
+                <div className={'grade__main-container__scroll-indicator'}>scroll>>></div>
               ) : null}
               <Code
                 submission={this.props.submission}
                 file={file}
-                comments={comments[file.id]}
+                comments={sortedComments}
                 rubricComments={rubricComments}
                 readOnly={readOnly}
                 addComment={this.addComment}

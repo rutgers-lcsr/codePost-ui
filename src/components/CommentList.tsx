@@ -149,9 +149,7 @@ class CommentList extends React.Component<IProps, IState> {
   };
 
   public render() {
-    // Sort comments by startLine to help with stacking
-    const comments = CodePanelUtils.sortComments(this.props.comments);
-    const commentNodes = this.getCommentNodes(comments);
+    const commentNodes = this.getCommentNodes(this.props.comments);
 
     return <div className="code__comments">{commentNodes}</div>;
   }

@@ -43,27 +43,27 @@
       }
     }
 
-    &__tabContent {
+    &__tab-content {
       @media screen and (min-width: 1330px) {
-        $commentPanel-width: calc(100vw - 1330px + 130px);
-        @include dual-pane-fixed-right-scrollable-left($commentPanel-width, 'codePanel', 'commentPanel');
+        $comment-panel-width: calc(100vw - 1330px + 130px);
+        @include dual-pane-fixed-right-scrollable-left($comment-panel-width, 'code-panel', 'comment-panel');
         padding-right: 0px;
 
-        &__codePanel {
+        &__code-panel {
           overflow-y: hidden;
         }
       }
       @media screen and (max-width: 1330px) {
-        @include dual-pane-fixed-right-scrollable-left(130px, 'codePanel', 'commentPanel');
+        @include dual-pane-fixed-right-scrollable-left(130px, 'code-panel', 'comment-panel');
         padding-right: 0px;
-        &__codePanel {
+        &__code-panel {
           overflow-y: hidden;
         }
       } // min-height: calc(100vh - 130px);
       // this is to make sure that the parent isn't scrollable, which is fine because code panel overwrites overflow parameter
       // overflow-y: scroll;
 
-      &__commentPanel {
+      &__comment-panel {
         padding-top: 20px;
         padding-left: 10px;
         border-left: 1px solid rgba(0, 0, 0, 0.2);
@@ -72,19 +72,10 @@
         border-radius: 4px;
         background-color: $very-light-green;
         z-index: 1;
-
-        &__lastEdited {
-          font-style: italic;
-          color: $mid-grey;
-          font-size: $font-size-normal;
-          float: left;
-          margin-top: -34px;
-          z-index: 1000;
-        }
       }
     }
 
-    &__scrollIndicator {
+    &__scroll-indicator {
       width: 30px;
       margin-bottom: -10px;
       font-style: italic;

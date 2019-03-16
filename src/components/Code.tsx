@@ -34,7 +34,6 @@ interface ICodeProps {
 
 class Code extends React.Component<ICodeProps, {}> {
   public onMouseUp = (event: any) => {
-    const { commentCounter, updateCommentCounter, addComment } = this.props;
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
@@ -76,7 +75,7 @@ class Code extends React.Component<ICodeProps, {}> {
     }
 
     const newComment = {
-      id: commentCounter,
+      id: this.props.commentCounter,
       endChar,
       endLine,
       file: this.props.file.id,
@@ -85,8 +84,47 @@ class Code extends React.Component<ICodeProps, {}> {
       startLine,
       text: '',
     };
-    updateCommentCounter();
-    addComment(newComment, this.props.file);
+
+    this.props.updateCommentCounter();
+    this.props.addComment(newComment, this.props.file);
+  };
+
+  public linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
+    const splitCode = code.split('\n');
+
+    if (readOnly) {
+      return splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
+        if (item === '') {
+          return (
+            <div key={i} id={`line-${i}`}>
+              &nbsp;
+            </div>
+          );
+        }
+        return (
+          <div key={i} id={`line-${i}`}>
+            {CodePanelUtils.highlight(comments, item, i)}
+          </div>
+        );
+      });
+    } else {
+      return splitCode.map((item: string, i: number) => {
+        // Don't skip rendering lines with no text
+        if (item === '') {
+          return (
+            <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
+              &nbsp;
+            </div>
+          );
+        }
+        return (
+          <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
+            {CodePanelUtils.highlight(comments, item, i)}
+          </div>
+        );
+      });
+    }
   };
 
   public render() {
@@ -101,42 +139,7 @@ class Code extends React.Component<ICodeProps, {}> {
       updateComment,
     } = this.props;
 
-    const sortedComments = CodePanelUtils.sortComments(comments);
-    const splitCode = this.props.file.code.split('\n');
-
-    /* tslint:disable */
-    const linesOfCode = readOnly
-      ? splitCode.map((item: string, i: number) => {
-          // Don't skip rendering lines with no text
-          if (item == '') {
-            return (
-              <div key={i} id={`line-${i}`}>
-                &nbsp;
-              </div>
-            );
-          }
-          return (
-            <div key={i} id={`line-${i}`}>
-              {CodePanelUtils.highlight(sortedComments, item, i)}
-            </div>
-          );
-        })
-      : splitCode.map((item: string, i: number) => {
-          // Don't skip rendering lines with no text
-          if (item == '') {
-            return (
-              <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
-                &nbsp;
-              </div>
-            );
-          }
-          return (
-            <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
-              {CodePanelUtils.highlight(sortedComments, item, i)}
-            </div>
-          );
-        });
-    /* tslint:enable */
+    const linesOfCode = this.linesOfCode(this.props.readOnly, this.props.file.code, this.props.comments);
 
     const numberOfLines = linesOfCode.length;
     const lineHeight = document.querySelector('div#line-0')
@@ -159,9 +162,9 @@ class Code extends React.Component<ICodeProps, {}> {
     const codeString = this.props.file.code;
     return (
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
-        <div className="grade__main-container__tabContent">
-          <div className="grade__main-container__tabContent__codePanel">
-            <div className="grade__main-container__tabContent__codePanel-container">
+        <div className="grade__main-container__tab-content">
+          <div className="grade__main-container__tab-content__code-panel">
+            <div className="grade__main-container__tab-content__code-panel-container">
               <div className="code__highlighted-area">
                 <div id={`syntax-highlighter-${this.props.file.id}`} className="code__syntax-highlighter">
                   <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
@@ -181,7 +184,7 @@ class Code extends React.Component<ICodeProps, {}> {
           </div>
           <div
             id={`comment-panel-${this.props.file.id}`}
-            className="grade__main-container__tabContent__commentPanel"
+            className="grade__main-container__tab-content__comment-panel"
             style={commentPanelStyle}
           >
             <CommentList

@@ -223,7 +223,7 @@ export default class CodePanelUtils {
     const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
     if (selectedTabElement) {
       const commentPanel = selectedTabElement.getElementsByClassName(
-        'grade__main-container__tabContent__commentPanel',
+        'grade__main-container__tab-content__comment-panel',
       )[0];
       const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
       const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
