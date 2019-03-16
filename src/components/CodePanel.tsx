@@ -256,7 +256,7 @@ const Code = (props: ICodeProps) => {
     addComment(newComment, file);
   };
 
-  const sortedHighlights = CodePanelUtils.sortComments(comments);
+  const sortedComments = CodePanelUtils.sortComments(comments);
   const splitCode = props.file.code.split('\n');
 
   /* tslint:disable */
@@ -272,7 +272,7 @@ const Code = (props: ICodeProps) => {
         }
         return (
           <div key={i} id={`line-${i}`}>
-            {CodePanelUtils.highlight(sortedHighlights, item, i)}
+            {CodePanelUtils.highlight(sortedComments, item, i)}
           </div>
         );
       })
@@ -287,7 +287,7 @@ const Code = (props: ICodeProps) => {
         }
         return (
           <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
-            {CodePanelUtils.highlight(sortedHighlights, item, i)}
+            {CodePanelUtils.highlight(sortedComments, item, i)}
           </div>
         );
       });
