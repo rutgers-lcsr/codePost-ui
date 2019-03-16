@@ -276,24 +276,36 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
   };
 
+  public addCommentHelper = (
+    comment: CommentType,
+    file: FileType,
+    comments: IFileToCommentsMap,
+  ): IFileToCommentsMap => {
+    comments[file.id] = [...comments[file.id], comment];
+    return comments;
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType): boolean => {
-    const { submission, comments } = this.state;
-    if (!submission) {
+    if (!this.state.submission) {
       return false;
     }
 
-    comments[file.id] = [...comments[file.id], comment];
+    const comments = this.addCommentHelper(comment, file, this.state.comments);
+
     this.setState({ comments }, () => this.updateSubmissionGrade());
     return true;
   };
 
-  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): boolean => {
-    const { commentRubricComments, submission, comments } = this.state;
-    if (!submission) {
-      return false;
-    }
-
+  public updateCommentHelper = (
+    commentID: number,
+    newComment: CommentType,
+    file: FileType,
+    isSaved: boolean,
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+    unsavedComments: number[],
+  ): [IFileToCommentsMap, ICommentToRubricCommentMap, number[]] => {
     // Don't force the client side to always have to input a 0 for deduction
     if (newComment.pointDelta === null) {
       newComment.pointDelta = 0;
@@ -302,27 +314,40 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
 
-    let unsavedComments = this.state.unsavedComments;
     if (isSaved) {
-      unsavedComments = this.state.unsavedComments.filter((i: number) => {
+      unsavedComments = unsavedComments.filter((i: number) => {
         return i !== commentID;
       });
-    } else if (!this.state.unsavedComments.includes(commentID)) {
-      unsavedComments = this.state.unsavedComments.concat(commentID);
+    } else if (!unsavedComments.includes(commentID)) {
+      unsavedComments = unsavedComments.concat(commentID);
     }
 
-    this.setState({ unsavedComments });
-
-    if (newComment.rubricComment) {
-      console.log('upadte');
-      // should be
-      // commentRubricComments[commentID] = rubricComments[newComment.rubricComment]
+    // If the id of the comment was updated, then make sure to update the
+    // corresponding record in the RubricComment map
+    if (newComment.rubricComment && newComment.id !== commentID) {
       commentRubricComments[newComment.id] = commentRubricComments[commentID];
+      delete commentRubricComments[commentID];
     }
 
-    console.log('commrub', commentRubricComments);
+    return [comments, commentRubricComments, unsavedComments];
+  };
 
-    this.setState({ comments, commentRubricComments });
+  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): boolean => {
+    if (!this.state.submission) {
+      return false;
+    }
+
+    const [comments, commentRubricComments, unsavedComments] = this.updateCommentHelper(
+      commentID,
+      newComment,
+      file,
+      isSaved,
+      this.state.comments,
+      this.state.commentRubricComments,
+      this.state.unsavedComments,
+    );
+
+    this.setState({ comments, commentRubricComments, unsavedComments });
     return true;
   };
 
