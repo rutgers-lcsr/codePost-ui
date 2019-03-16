@@ -277,20 +277,21 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   // Usually adds a blank comment to the submission state
-  public addComment = (comment: CommentType, file: FileType): void => {
+  public addComment = (comment: CommentType, file: FileType): boolean => {
     const { submission, comments } = this.state;
     if (!submission) {
-      return;
+      return false;
     }
 
     comments[file.id] = [...comments[file.id], comment];
     this.setState({ comments }, () => this.updateSubmissionGrade());
+    return true;
   };
 
-  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): void => {
-    const { assignment, commentRubricComments, submission, comments } = this.state;
-    if (!submission || !assignment) {
-      return;
+  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): boolean => {
+    const { commentRubricComments, submission, comments } = this.state;
+    if (!submission) {
+      return false;
     }
 
     // Don't force the client side to always have to input a 0 for deduction
@@ -311,11 +312,18 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
 
     this.setState({ unsavedComments });
+
     if (newComment.rubricComment) {
+      console.log('upadte');
+      // should be
+      // commentRubricComments[commentID] = rubricComments[newComment.rubricComment]
       commentRubricComments[newComment.id] = commentRubricComments[commentID];
     }
 
+    console.log('commrub', commentRubricComments);
+
     this.setState({ comments, commentRubricComments });
+    return true;
   };
 
   // Delete the comment json from the submission state

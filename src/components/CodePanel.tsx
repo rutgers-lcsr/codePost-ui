@@ -21,11 +21,11 @@ interface IProps {
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
-  addComment: (comment: any, file: FileType) => void;
+  addComment: (comment: any, file: FileType) => boolean;
   activeCommentId?: number;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
 }
@@ -52,8 +52,9 @@ class CodePanel extends React.Component<IProps, IState> {
   public addComment = (comment: CommentType, file: FileType) => {
     const { addComment } = this.props;
     this.props.changeActive(comment.id);
-    addComment(comment, file);
+    const didCommentAdd = addComment(comment, file);
     CodePanelUtils.updateCommentPanelHeight();
+    return didCommentAdd;
   };
 
   public changeActive = (id: number) => {
@@ -173,14 +174,14 @@ interface ICodeProps {
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
-  addComment: (comment: any, file: FileType) => void;
+  addComment: (comment: any, file: FileType) => boolean;
   commentCounter: number;
   updateCommentCounter: () => void;
 
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
 }
@@ -361,8 +362,8 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
     public readOnly = true;
     public activeCommentId = undefined;
 
-    public addComment = (comment: any, file: FileType) => {
-      return;
+    public addComment = (comment: any, file: FileType): boolean => {
+      return false;
     };
 
     public changeActive = (id: number) => {
@@ -374,7 +375,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
     };
 
     public updateComment = (commentID: number, newComment: CommentType, file: FileType) => {
-      return;
+      return false;
     };
 
     public render() {

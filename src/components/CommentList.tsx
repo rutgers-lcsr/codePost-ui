@@ -17,7 +17,7 @@ interface IProps {
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
 }
