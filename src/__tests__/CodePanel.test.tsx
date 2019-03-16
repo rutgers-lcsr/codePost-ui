@@ -31,7 +31,7 @@ describe('CodePanel', () => {
           },
         ],
         comments: {
-          '1': [],
+          1: [],
         },
         rubricComments: {},
         readOnly: false,

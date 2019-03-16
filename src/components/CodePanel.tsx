@@ -2,18 +2,15 @@ import * as React from 'react';
 import { Tooltipped } from 'react-md';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
-
-import CommentList from './CommentList';
-
-import { ICommentToRubricCommentMap, IFileToCommentsMap, POSITION } from '../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
 
 import CodePanelUtils from '../CodePanelUtils';
 
 import { CommentType } from '../infrastructure/comment';
 import { FileType } from '../infrastructure/file';
 import { SubmissionType } from '../infrastructure/submission';
+
+import Code from './Code';
 
 export interface ICodePanelProps {
   submission: SubmissionType;
@@ -174,196 +171,6 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
     );
   }
 }
-
-interface ICodeProps {
-  submission: SubmissionType;
-  file: FileType;
-  comments: CommentType[];
-  rubricComments: ICommentToRubricCommentMap;
-  readOnly: boolean;
-  // giving a partial comment breaks the IComment type constraint, could make some fields optional?
-  addComment: (comment: any, file: FileType) => boolean;
-  commentCounter: number;
-  updateCommentCounter: () => void;
-
-  activeCommentId?: number;
-  changeActive: (id: number | number) => void;
-  deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
-  updateSubmissionGrade: () => void;
-  unsavedComments: number[];
-}
-
-const Code = (props: ICodeProps) => {
-  const {
-    file,
-    readOnly,
-    commentCounter,
-    updateCommentCounter,
-    addComment,
-    comments,
-    changeActive,
-    rubricComments,
-    activeCommentId,
-    deleteComment,
-    updateComment,
-  } = props;
-
-  const onMouseUp = (event: any) => {
-    const selection = window.getSelection();
-
-    if (selection.toString() === '') {
-      return;
-    }
-
-    // Hack to avoid messing with Node type checking
-    const anchorParent: any = selection.anchorNode.parentNode;
-    let startLine = +anchorParent.id.split('-')[1];
-
-    const extentParent: any = selection.extentNode.parentNode;
-    let endLine = +extentParent.id.split('-')[1];
-
-    // Check to see if the comment was made backwards
-    if (startLine !== null && endLine != null && startLine > endLine) {
-      // swap endlines
-      const temp1 = startLine;
-      startLine = endLine;
-      endLine = temp1;
-    }
-
-    let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div#line-${startLine}`),
-      null,
-      POSITION.Start,
-    );
-    let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div#line-${endLine}`),
-      null,
-      POSITION.End,
-    );
-
-    if (startLine === endLine) {
-      // Handle reverse highlight in a single line
-      const temp1 = startChar;
-      const temp2 = endChar;
-      startChar = temp1 < temp2 ? temp1 : temp2;
-      endChar = temp1 < temp2 ? temp2 : temp1;
-    }
-
-    const newComment = {
-      id: commentCounter,
-      endChar,
-      endLine,
-      file: file.id,
-      pointDelta: 0.0,
-      startChar,
-      startLine,
-      text: '',
-    };
-    updateCommentCounter();
-    addComment(newComment, file);
-  };
-
-  const sortedComments = CodePanelUtils.sortComments(comments);
-  const splitCode = props.file.code.split('\n');
-
-  /* tslint:disable */
-  const linesOfCode = readOnly
-    ? splitCode.map((item: string, i: number) => {
-        // Don't skip rendering lines with no text
-        if (item == '') {
-          return (
-            <div key={i} id={`line-${i}`}>
-              &nbsp;
-            </div>
-          );
-        }
-        return (
-          <div key={i} id={`line-${i}`}>
-            {CodePanelUtils.highlight(sortedComments, item, i)}
-          </div>
-        );
-      })
-    : splitCode.map((item: string, i: number) => {
-        // Don't skip rendering lines with no text
-        if (item == '') {
-          return (
-            <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
-              &nbsp;
-            </div>
-          );
-        }
-        return (
-          <div key={i} id={`line-${i}`} onMouseUp={onMouseUp}>
-            {CodePanelUtils.highlight(sortedComments, item, i)}
-          </div>
-        );
-      });
-  /* tslint:enable */
-
-  const numberOfLines = linesOfCode.length;
-  const lineHeight = document.querySelector('div#line-0')
-    ? document.querySelector('div#line-0')!.getBoundingClientRect().height
-    : 18; // 18 as estimate
-  const boxPaddingAndBorder = 15;
-
-  const codeHeight = numberOfLines * lineHeight + boxPaddingAndBorder;
-
-  const lineNumberStyle = {
-    height: `${codeHeight}px`,
-  };
-
-  const commentPanelStyle = {
-    height: `${codeHeight}px`,
-  };
-
-  CodePanelUtils.updateCommentPanelHeight(codeHeight);
-
-  const codeString = props.file.code;
-  return (
-    <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
-      <div className="grade__main-container__tabContent">
-        <div className="grade__main-container__tabContent__codePanel">
-          <div className="grade__main-container__tabContent__codePanel-container">
-            <div className="code__highlighted-area">
-              <div id={`syntax-highlighter-${props.file.id}`} className="code__syntax-highlighter">
-                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
-                  {codeString}
-                </SyntaxHighlighter>
-              </div>
-              <div className="code__underlay">
-                <div id={`code-underlay-pre-${props.file.id}`} className="code__underlay__pre">
-                  <div className="code__underlay--line-numbers" style={lineNumberStyle}>
-                    {numberOfLines}
-                  </div>
-                  <div className="code__underlay--code">{linesOfCode}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          id={`comment-panel-${props.file.id}`}
-          className="grade__main-container__tabContent__commentPanel"
-          style={commentPanelStyle}
-        >
-          <CommentList
-            file={file}
-            readOnly={readOnly}
-            comments={comments}
-            rubricComments={rubricComments}
-            activeCommentId={activeCommentId}
-            changeActive={changeActive}
-            deleteComment={deleteComment}
-            updateComment={updateComment}
-            updateSubmissionGrade={props.updateSubmissionGrade}
-            unsavedComments={props.unsavedComments}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const makeReadOnly = (Component: React.ComponentType<any>) => {
   return class WrappedComponent extends React.Component<any, any> {
