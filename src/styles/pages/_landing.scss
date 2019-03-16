@@ -68,6 +68,7 @@ $text-font-size: 18px;
 
   &__Description {
     max-width: 500px;
+    z-index: 2;
     width: auto;
 
     @media only screen and (max-width: 550px) {
@@ -448,14 +449,33 @@ $text-font-size: 18px;
   font-size: $header-font-size;
 
   .stats {
-    font-weight: 500;
-    font-size: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media only screen and (max-width: 800px) {
+      flex-direction: column;
+      width: auto;
+    }
+
+    &__text {
+      font-weight: 500;
+      font-size: 50px;
+      text-align: center;
+    }
+
+    &__subtext {
+      font-size: 20px;
+      font-weight: normal;
+      font-weight: 400;
+      text-align: center;
+    }
   }
 
   .subtext {
-    font-size: 20px;
-    font-weight: normal;
-    font-weight: 400;
   }
 
   .footnote {
