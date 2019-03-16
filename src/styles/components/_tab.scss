@@ -46,7 +46,7 @@
       display: flex;
     }
 
-    &__pointDelta {
+    &__pointdelta {
       &--null {
         display: none;
       }
@@ -65,7 +65,7 @@
       }
     }
 
-    &__fileName {
+    &__file-name {
       height: 16px;
     }
     &__comment-count {
@@ -125,13 +125,11 @@
   }
 }
 
-.tabList--Grade {
+.tabs--grade {
   @include StyleReact-Tabs-FixedTop(25%);
   width: calc(100% - 180px);
   position: relative !important;
-  &__panelPadding {
-    padding-top: 40px;
-  }
+
   &__tab {
     padding-top: 10px;
     width: fit-content;

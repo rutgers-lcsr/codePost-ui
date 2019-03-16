@@ -306,6 +306,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     commentRubricComments: ICommentToRubricCommentMap,
     unsavedComments: number[],
   ): [IFileToCommentsMap, ICommentToRubricCommentMap, number[]] => {
+    let newUnsavedComments: number[] = [];
     // Don't force the client side to always have to input a 0 for deduction
     if (newComment.pointDelta === null && !newComment.rubricComment) {
       newComment.pointDelta = 0;
@@ -315,11 +316,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     comments[file.id][index] = newComment;
 
     if (isSaved) {
-      unsavedComments = unsavedComments.filter((i: number) => {
+      newUnsavedComments = unsavedComments.filter((i: number) => {
         return i !== commentID;
       });
     } else if (!unsavedComments.includes(commentID)) {
-      unsavedComments = unsavedComments.concat(commentID);
+      newUnsavedComments = unsavedComments.concat(commentID);
     }
 
     // If the id of the comment was updated, then make sure to update the
@@ -329,7 +330,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       delete commentRubricComments[commentID];
     }
 
-    return [comments, commentRubricComments, unsavedComments];
+    return [comments, commentRubricComments, newUnsavedComments];
   };
 
   public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): boolean => {

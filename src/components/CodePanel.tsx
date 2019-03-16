@@ -15,7 +15,7 @@ import { CommentType } from '../infrastructure/comment';
 import { FileType } from '../infrastructure/file';
 import { SubmissionType } from '../infrastructure/submission';
 
-interface IProps {
+export interface ICodePanelProps {
   submission: SubmissionType;
   files: FileType[];
   comments: IFileToCommentsMap;
@@ -30,13 +30,13 @@ interface IProps {
   unsavedComments: number[];
 }
 
-interface IState {
+interface ICodePanelState {
   commentCounter: number;
   tabIndex: number;
 }
 
-class CodePanel extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
+class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
+  public state: Readonly<ICodePanelState> = {
     commentCounter: -1,
     tabIndex: 0,
   };
@@ -70,8 +70,12 @@ class CodePanel extends React.Component<IProps, IState> {
   // Helpers
   //////////////////////////////////////
 
-  public getTabTitle = (file: FileType, comments: CommentType[], rubricComments: ICommentToRubricCommentMap) => {
-    const pointDelta = comments.reduce((accumulator: number, comment: CommentType) => {
+  public getPointDeltaInFile = (
+    file: FileType,
+    comments: CommentType[],
+    rubricComments: ICommentToRubricCommentMap,
+  ): number => {
+    return comments.reduce((accumulator: number, comment: CommentType) => {
       if (comment.pointDelta && comment.id > 0) {
         return accumulator + comment.pointDelta;
       } else if (rubricComments[comment.id] && comment.id > 0) {
@@ -80,24 +84,28 @@ class CodePanel extends React.Component<IProps, IState> {
         return accumulator;
       }
     }, 0);
+  };
+
+  public getTabTitle = (file: FileType, comments: CommentType[], rubricComments: ICommentToRubricCommentMap) => {
+    const pointDelta = this.getPointDeltaInFile(file, comments, rubricComments);
     const pointDeltaLabel = pointDelta > 0 ? `-${pointDelta}` : pointDelta < 0 ? `+${pointDelta * -1}` : '';
     const pointDeltaModifier =
       pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
 
-    const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'tab__title__pointDelta--small' : '';
+    const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'tab__title__pointdelta--small' : '';
 
     const numComments = comments.length;
     const commentFlag = numComments > 0 ? <div className="tab__title__comment-count">{numComments}</div> : <div />;
 
     return (
       <div className="tab__title">
-        <div className="tab__title__fileName">{file.name}</div>
+        <div className="tab__title__file-name">{file.name}</div>
         <div className="tab__title__badges">
           <Tooltipped label="Number of comments" delay={750} setPosition={true} position="left">
             {commentFlag}
           </Tooltipped>
           <Tooltipped label="Amount deducted" delay={750} setPosition={true} position="left">
-            <div className={`${pointDeltaSize} tab__title__pointDelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
+            <div className={`${pointDeltaSize} tab__title__pointdelta${pointDeltaModifier}`}> {pointDeltaLabel}</div>
           </Tooltipped>
         </div>
       </div>
@@ -121,11 +129,11 @@ class CodePanel extends React.Component<IProps, IState> {
 
     return (
       <Tabs selectedIndex={this.state.tabIndex} onSelect={this.onTabSelect}>
-        <TabList className="tabList--Grade">
+        <TabList className="tabs--grade">
           {files.map((file: FileType, i: number) => {
             const tabTitle = this.getTabTitle(file, comments[file.id], rubricComments);
             return (
-              <Tab key={file.id} className="tabList--Grade__tab">
+              <Tab key={file.id} className="tabs--grade__tab">
                 {tabTitle}
               </Tab>
             );
