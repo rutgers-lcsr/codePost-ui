@@ -307,7 +307,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     unsavedComments: number[],
   ): [IFileToCommentsMap, ICommentToRubricCommentMap, number[]] => {
     // Don't force the client side to always have to input a 0 for deduction
-    if (newComment.pointDelta === null) {
+    if (newComment.pointDelta === null && !newComment.rubricComment) {
       newComment.pointDelta = 0;
     }
 
