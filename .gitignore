@@ -17,7 +17,7 @@ tests/report/
 *~
 core/migrations/*
 cp-venv/
-venv/
+venv*/
 subl
 .prettierrc.json
 *~HEAD
