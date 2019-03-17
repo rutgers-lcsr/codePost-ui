@@ -40,14 +40,15 @@ class CommentList extends React.Component<IProps, IState> {
 
   public componentDidMount() {
     this.setState({ isMounted: true });
-    window.addEventListener('resize', this.rerender.bind(this));
-    window.addEventListener('click', this.waitToRerender.bind(this));
+    window.addEventListener('resize', this.rerender.bind(this)); // When window is resized
+    window.addEventListener('click', this.waitToRerender.bind(this)); // When window is clicked
+    // When code is scrolled
     document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
-    document.addEventListener('scroll', this.rerender.bind(this));
+    document.addEventListener('scroll', this.rerender.bind(this)); // When document is scrolled
 
     document
       .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .addEventListener('scroll', this.updateHighlightScroll.bind(this));
+      .addEventListener('scroll', this.updateHighlightScroll.bind(this)); // When underlying code is scrolled
   }
 
   public componentWillUnmount() {
@@ -120,6 +121,8 @@ class CommentList extends React.Component<IProps, IState> {
       blocks.sort((a: IBlock, b: IBlock) => {
         return a.startAt - b.startAt;
       });
+
+      console.log('comment', comment.id, startAt);
 
       const zindex = 100000 - startAt;
       const style: ICSSStyleObject = {
