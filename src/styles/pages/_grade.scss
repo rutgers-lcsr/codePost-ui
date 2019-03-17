@@ -32,6 +32,7 @@
 
     &__right-panel {
       padding-top: 10px;
+      padding-left: 0px;
       min-width: 0;
       &__tabs {
         width: inherit;
@@ -45,7 +46,7 @@
 
     &__tab-content {
       @media screen and (min-width: 1330px) {
-        $comment-panel-width: calc(100vw - 1330px + 130px);
+        $comment-panel-width: calc(100vw - 1330px + 140px);
         @include dual-pane-fixed-right-scrollable-left($comment-panel-width, 'code-panel', 'comment-panel');
         padding-right: 0px;
 
@@ -54,7 +55,7 @@
         }
       }
       @media screen and (max-width: 1330px) {
-        @include dual-pane-fixed-right-scrollable-left(130px, 'code-panel', 'comment-panel');
+        @include dual-pane-fixed-right-scrollable-left(140px, 'code-panel', 'comment-panel');
         padding-right: 0px;
         &__code-panel {
           overflow-y: hidden;
@@ -84,10 +85,10 @@
       visibility: visible;
       position: relative;
       @media screen and (min-width: 1330px) {
-        left: 760px;
+        left: 740px;
       }
       @media screen and (max-width: 1330px) {
-        left: calc(100vw - 570px);
+        left: calc(100vw - 590px);
       }
     }
   }

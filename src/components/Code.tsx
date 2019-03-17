@@ -164,20 +164,18 @@ class Code extends React.Component<ICodeProps, {}> {
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
         <div className="grade__main-container__tab-content">
           <div className="grade__main-container__tab-content__code-panel">
-            <div className="grade__main-container__tab-content__code-panel-container">
-              <div className="code__highlighted-area">
-                <div id={`syntax-highlighter-${this.props.file.id}`} className="code__syntax-highlighter">
-                  <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
-                    {codeString}
-                  </SyntaxHighlighter>
-                </div>
-                <div className="code__underlay">
-                  <div id={`code-underlay-pre-${this.props.file.id}`} className="code__underlay__pre">
-                    <div className="code__underlay--line-numbers" style={lineNumberStyle}>
-                      {numberOfLines}
-                    </div>
-                    <div className="code__underlay--code">{linesOfCode}</div>
+            <div className="code__highlighted-area">
+              <div id={`syntax-highlighter-${this.props.file.id}`} className="code__syntax-highlighter">
+                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
+                  {codeString}
+                </SyntaxHighlighter>
+              </div>
+              <div className="code__underlay">
+                <div id={`code-underlay-pre-${this.props.file.id}`} className="code__underlay__pre">
+                  <div className="code__underlay--line-numbers" style={lineNumberStyle}>
+                    {numberOfLines}
                   </div>
+                  <div className="code__underlay--code">{linesOfCode}</div>
                 </div>
               </div>
             </div>

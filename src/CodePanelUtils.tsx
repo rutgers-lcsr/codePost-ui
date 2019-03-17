@@ -226,6 +226,9 @@ export default class CodePanelUtils {
         'grade__main-container__tab-content__comment-panel',
       )[0];
       const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
+      if (!syntaxHighlighter) {
+        return;
+      }
       const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
 
       let newHeight = currentHeight;

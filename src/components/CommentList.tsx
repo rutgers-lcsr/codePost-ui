@@ -69,8 +69,8 @@ class CommentList extends React.Component<IProps, IState> {
   public rerender = () => {
     if (this.state.isMounted) {
       this.setState({ placeholder: 0 });
+      CodePanelUtils.updateCommentPanelHeight();
     }
-    CodePanelUtils.updateCommentPanelHeight();
   };
 
   public updateHighlightScroll = () => {
