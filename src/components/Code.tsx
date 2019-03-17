@@ -147,7 +147,6 @@ class Code extends React.Component<ICodeProps, {}> {
       : 18; // 18 as estimate
     const boxPaddingAndBorder = 15;
 
-    console.log('number of lines', numberOfLines);
     const codeHeight = numberOfLines * lineHeight + boxPaddingAndBorder;
 
     const lineNumberStyle = {

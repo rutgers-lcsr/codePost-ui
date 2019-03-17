@@ -38,7 +38,7 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
   } = props;
 
   const studentTitle = pluralize('Student', submission.students.length).toUpperCase();
-  const studentString = `${submission.students.join(',')}`;
+  const studentString = `${submission.students.join(', ')}`;
 
   const gradeString = submission.isFinalized
     ? `${submission.grade} / ${assignment.points}`
