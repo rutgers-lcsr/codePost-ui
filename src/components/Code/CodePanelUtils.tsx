@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { CommentType } from './infrastructure/comment';
-import { POSITION } from './types/common';
+import { CommentType } from '../../infrastructure/comment';
+import { POSITION } from '../../types/common';
 
 interface IStyles {
   [highlightID: string]: number;

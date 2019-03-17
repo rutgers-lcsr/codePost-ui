@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { shallow } from 'enzyme';
 
-import { CodePanel, ICodePanelProps } from '../components/CodePanel';
+import { CodePanel, ICodePanelProps } from '../components/Code/CodePanel';
 
 describe('CodePanel', () => {
   const setup = (propOverrides?: Partial<ICodePanelProps>) => {

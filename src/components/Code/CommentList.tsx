@@ -2,12 +2,12 @@ import * as React from 'react';
 
 import Comment from './Comment';
 
-import { CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject } from '../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject } from '../../types/common';
 
 interface IProps {
   file: FileType;

@@ -1,4 +1,4 @@
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from '../components/Code/CodePanelUtils';
 import { CommentType } from '../infrastructure/comment';
 
 describe('CodePanelUtils', () => {

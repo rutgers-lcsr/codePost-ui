@@ -4,13 +4,13 @@ import { Button, TextField } from 'react-md';
 import ReactMarkdown from 'react-markdown';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { ICSSStyleObject } from '../types/common';
+import { ICSSStyleObject } from '../../types/common';
 
-import { CommentIO, CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
-import { RubricCommentType } from '../infrastructure/rubricComment';
+import { CommentIO, CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
 interface IProps {
   key: number;

@@ -5,13 +5,13 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 import CommentList from './CommentList';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
-import { ICommentToRubricCommentMap, POSITION } from '../types/common';
+import { ICommentToRubricCommentMap, POSITION } from '../../types/common';
 
-import { CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
-import { SubmissionType } from '../infrastructure/submission';
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { SubmissionType } from '../../infrastructure/submission';
 
 interface ICodeProps {
   submission: SubmissionType;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { CodePanel } from './components/CodePanel';
+import { CodePanel } from './components/Code/CodePanel';
 import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
 import SubmissionInfo from './components/grade/SubmissionInfo';

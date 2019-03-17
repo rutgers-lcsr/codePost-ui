@@ -2,13 +2,13 @@ import * as React from 'react';
 import { Tooltipped } from 'react-md';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
-import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
-import { CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
-import { SubmissionType } from '../infrastructure/submission';
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { SubmissionType } from '../../infrastructure/submission';
 
 import Code from './Code';
 

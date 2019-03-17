@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { CodePanel, makeReadOnly } from './components/CodePanel';
+import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
 import VerticalPane from './components/VerticalPane';
 
