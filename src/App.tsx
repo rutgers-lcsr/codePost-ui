@@ -259,6 +259,15 @@ class App extends React.Component<{}, IState> {
       const isGrader = user ? user.graderCourses.length > 0 : false;
       const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
 
+      if (isAdmin || isGrader) {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          email: user.email,
+          user_id: user.email,
+          custom_launcher_selector: '#IntercomDefaultWidget',
+        });
+      }
+
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
@@ -442,6 +451,10 @@ class App extends React.Component<{}, IState> {
         </div>
       );
     } else {
+      (window as any).Intercom('boot', {
+        app_id: 'kg4u5rp1',
+        custom_launcher_selector: '#IntercomDefaultWidget',
+      });
       return <div />;
     }
   }
