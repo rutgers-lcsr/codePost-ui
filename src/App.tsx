@@ -265,7 +265,11 @@ class App extends React.Component<{}, IState> {
           email: user.email,
           user_id: user.email,
           custom_launcher_selector: '#IntercomDefaultWidget',
+          isAdmin: String(isAdmin),
+          isGrader: String(isGrader),
         });
+      } else {
+        (window as any).Intercom('shutdown');
       }
 
       /* tslint:disable:jsx-no-lambda */
