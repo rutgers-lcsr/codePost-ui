@@ -122,8 +122,6 @@ class CommentList extends React.Component<IProps, IState> {
         return a.startAt - b.startAt;
       });
 
-      console.log('comment', comment.id, startAt);
-
       const zindex = 100000 - startAt;
       const style: ICSSStyleObject = {
         top: `${startAt}px`,

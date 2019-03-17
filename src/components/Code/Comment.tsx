@@ -29,7 +29,6 @@ interface IProps {
 }
 
 interface IState {
-  saveWarning: boolean;
   savingClass: string;
   isUnsaved: boolean;
 }
@@ -39,7 +38,6 @@ class Comment extends React.Component<IProps, IState> {
   public deductionField: any = React.createRef();
 
   public state: Readonly<IState> = {
-    saveWarning: false,
     savingClass: 'saving-spinner--idle',
     isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
   };
@@ -108,10 +106,6 @@ class Comment extends React.Component<IProps, IState> {
   public save = () => {
     const { comment, file, updateComment } = this.props;
 
-    if (!this.validateSave()) {
-      return Promise.resolve(false);
-    }
-
     this.setState({ savingClass: 'saving-spinner--saving' });
 
     // If this is a new comment being edited, then it doesn't have an id yet
@@ -174,20 +168,6 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
   // Helper Methods
   //////////////////////////////////////
-
-  public validateSave = () => {
-    // const { comment, file, updateComment } = this.props;
-
-    // updateComment(comment.id, comment, file);
-
-    // if (isNaN(comment.pointDelta)) {
-    //   this.setState({ saveWarning: true });
-    //   return false;
-    // }
-    // this.setState({ saveWarning: false });
-    return true;
-  };
-
   public handleShiftEnter = (event: any) => {
     const { active } = this.props;
     if (event.key === 'Enter' && event.shiftKey && active) {
