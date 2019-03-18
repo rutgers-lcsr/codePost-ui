@@ -115,6 +115,14 @@ $admin-topbar-height: 50px;
   }
   &__lockBtn {
     background-color: white;
+    margin-right: 5px;
+    margin-bottom: 80px;
+
+    .md-icon {
+      @media screen and (min-width: 1025px) {
+        font-size: 24px;
+      }
+    }
   }
   &__backBtn {
     @include icon-button(20px, 8px);
@@ -125,6 +133,16 @@ $admin-topbar-height: 50px;
   &__rosterUpload {
     text-transform: none;
     margin-top: 30px;
+  }
+}
+
+.md-btn--floating {
+  @media screen and (min-width: 1025px) {
+    height: 56px !important;
+    padding: 16px !important;
+    width: 56px !important;
+    bottom: 16px !important;
+    right: 16px !important;
   }
 }
 
