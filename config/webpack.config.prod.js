@@ -268,7 +268,6 @@ module.exports = {
       filename: '[path].gz[query]',
       algorithm: 'gzip',
       test: /\.js(\?.*)?$/i,
-      deleteOriginalAssets: true,
     }),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
