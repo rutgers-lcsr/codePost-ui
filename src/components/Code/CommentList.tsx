@@ -9,7 +9,7 @@ import CodePanelUtils from './CodePanelUtils';
 
 import { ICommentToRubricCommentMap, ICSSStyleObject } from '../../types/common';
 
-interface IProps {
+export interface ICommentListProps {
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
@@ -22,7 +22,7 @@ interface IProps {
   unsavedComments: number[];
 }
 
-interface IState {
+interface ICommentListState {
   placeholder: number;
   isMounted: boolean;
 }
@@ -32,8 +32,8 @@ interface IBlock {
   endAt: number;
 }
 
-class CommentList extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
+class CommentList extends React.Component<ICommentListProps, ICommentListState> {
+  public state: Readonly<ICommentListState> = {
     placeholder: 0,
     isMounted: false,
   };
@@ -42,13 +42,19 @@ class CommentList extends React.Component<IProps, IState> {
     this.setState({ isMounted: true });
     window.addEventListener('resize', this.rerender.bind(this)); // When window is resized
     window.addEventListener('click', this.waitToRerender.bind(this)); // When window is clicked
+
     // When code is scrolled
-    document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
+    if (document.getElementById('scroll-container')) {
+      document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
+    }
+
     document.addEventListener('scroll', this.rerender.bind(this)); // When document is scrolled
 
-    document
-      .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .addEventListener('scroll', this.updateHighlightScroll.bind(this)); // When underlying code is scrolled
+    if (document.getElementById(`code-underlay-pre-${this.props.file.id}`)) {
+      document
+        .getElementById(`code-underlay-pre-${this.props.file.id}`)!
+        .addEventListener('scroll', this.updateHighlightScroll.bind(this)); // When underlying code is scrolled
+    }
   }
 
   public componentWillUnmount() {
