@@ -13,6 +13,8 @@ import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 import { SubmissionType } from '../../infrastructure/submission';
 
+import LangMap from 'lang-map';
+
 interface ICodeProps {
   submission: SubmissionType;
   file: FileType;
@@ -160,13 +162,18 @@ class Code extends React.Component<ICodeProps, {}> {
     CodePanelUtils.updateCommentPanelHeight(codeHeight);
 
     const codeString = this.props.file.code;
+
+    const extensionMatch = /^(?:\.?)(.*)/;
+    const extension = extensionMatch.exec(this.props.file.extension)![1];
+    const language = LangMap.languages(extension)[0];
+
     return (
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
         <div className="grade__main-container__tab-content">
           <div className="grade__main-container__tab-content__code-panel">
             <div className="code__highlighted-area">
               <div id={`syntax-highlighter-${this.props.file.id}`} className="code__syntax-highlighter">
-                <SyntaxHighlighter language="java" style={googlecode} showLineNumbers={true} wrapLines={false}>
+                <SyntaxHighlighter language={language} style={googlecode} showLineNumbers={true} wrapLines={false}>
                   {codeString}
                 </SyntaxHighlighter>
               </div>
