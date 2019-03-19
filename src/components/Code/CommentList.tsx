@@ -111,9 +111,19 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
         }
       }
 
+      const isActive = activeCommentId === comment.id;
       let heightOfComment = 80; // estimate until the elements are rendered
-      if (document.getElementById(`comment-${comment.id}`)) {
-        heightOfComment = document.getElementById(`comment-${comment.id}`)!.getBoundingClientRect().height;
+
+      const commentElement = document.getElementById(`comment-${comment.id}`);
+
+      if (commentElement) {
+        heightOfComment = commentElement.getBoundingClientRect().height;
+        const textArea = commentElement.getElementsByTagName('textarea')[0];
+
+        if (textArea && textArea.getBoundingClientRect().height < 42) {
+          console.log('live adjustment');
+          heightOfComment += 33;
+        }
       }
 
       heightOfComment = heightOfComment + 10; // padding
@@ -134,8 +144,6 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
         zIndex: zindex.toString(),
       };
 
-      const isActive = activeCommentId === comment.id;
-
       return (
         <Comment
           key={comment.id}
@@ -150,6 +158,7 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
           updateComment={updateComment}
           updateSubmissionGrade={this.props.updateSubmissionGrade}
           unsavedComments={this.props.unsavedComments}
+          rerender={this.rerender}
         />
       );
     });

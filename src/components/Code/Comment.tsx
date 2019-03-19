@@ -26,6 +26,7 @@ export interface ICommentProps {
   updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
+  rerender: any;
 }
 
 interface ICommentState {
@@ -137,6 +138,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             // setting the state of an unmounted component
             // (which has an out-dated, negative comment.id)
             updateComment(comment.id, json, file, true);
+            this.props.rerender();
             return true;
           }, 1000);
           return true;
@@ -155,6 +157,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
           updateComment(comment.id, json, file, true);
+          this.props.rerender();
           return true;
         }, 1000);
         return true;

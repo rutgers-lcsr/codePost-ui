@@ -48,6 +48,7 @@ describe('Comment', () => {
         deleteComment: jest.fn(),
         updateComment: jest.fn(),
         updateSubmissionGrade: jest.fn(),
+        rerender: jest.fn(),
       },
       propOverrides,
     );
