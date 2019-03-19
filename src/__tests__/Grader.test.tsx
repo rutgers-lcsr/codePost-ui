@@ -4,6 +4,7 @@ import { shallow } from 'enzyme';
 
 import Grader, { IGraderProps } from '../Grader';
 
+// @ts-ignore
 import { loadIDList } from '../infrastructure/generics';
 
 describe('Grader', () => {
