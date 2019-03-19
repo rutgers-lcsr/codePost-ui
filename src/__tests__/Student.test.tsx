@@ -55,48 +55,48 @@ describe('Student', () => {
     expect(wrapper.instance().getPointsPerCategory(commentRubricComments)).toEqual({ 2: 3 });
   });
 
-  it('loadAssignments()', async () => {
-    const assignments = [
-      {
-        id: 1,
-        name: 'Hello, World',
-        points: 20,
-        isReleased: true,
-        rubricCategories: [],
-        course: 3,
-        sortKey: 0,
-      },
-      {
-        id: 2,
-        name: 'Sierpinski',
-        points: 20,
-        isReleased: true,
-        rubricCategories: [],
-        course: 3,
-        sortKey: 0,
-      },
-    ];
+  // it('loadAssignments()', async () => {
+  //   const assignments = [
+  //     {
+  //       id: 1,
+  //       name: 'Hello, World',
+  //       points: 20,
+  //       isReleased: true,
+  //       rubricCategories: [],
+  //       course: 3,
+  //       sortKey: 0,
+  //     },
+  //     {
+  //       id: 2,
+  //       name: 'Sierpinski',
+  //       points: 20,
+  //       isReleased: true,
+  //       rubricCategories: [],
+  //       course: 3,
+  //       sortKey: 0,
+  //     },
+  //   ];
 
-    const courses = [
-      {
-        id: 3,
-        name: 'COS126',
-        period: 'S19',
-        assignments: [1, 2],
-        sections: [],
-        sendReleasedSubmissionsToBack: false,
-        showStudentsStatistics: false,
-        emailNewUsers: false,
-        timezone: 'PST',
-      },
-    ];
+  //   const courses = [
+  //     {
+  //       id: 3,
+  //       name: 'COS126',
+  //       period: 'S19',
+  //       assignments: [1, 2],
+  //       sections: [],
+  //       sendReleasedSubmissionsToBack: false,
+  //       showStudentsStatistics: false,
+  //       emailNewUsers: false,
+  //       timezone: 'PST',
+  //     },
+  //   ];
 
-    // @ts-ignore
-    loadIDList = jest.fn().mockReturnValue(assignments);
+  //   // @ts-ignore
+  //   loadIDList = jest.fn().mockReturnValue(assignments);
 
-    const { wrapper } = setup();
-    expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
-  });
+  //   const { wrapper } = setup();
+  //   expect(await wrapper.instance().loadAssignments(courses)).toEqual({ 3: assignments });
+  // });
 
   it('writeCategoryCapMessages()', () => {
     const rubricCategories = [

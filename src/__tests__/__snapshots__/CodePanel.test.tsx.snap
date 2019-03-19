@@ -62,6 +62,11 @@ exports[`CodePanel renders correctly 1`] = `
     key="1-code"
     selectedClassName="react-tabs__tab-panel--selected"
   >
+    <div
+      className="grade__main-container__scroll-indicator"
+    >
+      scroll&gt;&gt;&gt;
+    </div>
     <Code
       addComment={[Function]}
       changeActive={[Function]}

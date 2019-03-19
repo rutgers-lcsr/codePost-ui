@@ -144,8 +144,16 @@ exports[`Comment inactive, editable comment renders 1`] = `
     <div
       className="comment__text"
     >
-      <Component
+      <ReactMarkdown
+        astPlugins={Array []}
+        escapeHtml={true}
+        plugins={Array []}
+        rawSourcePos={false}
+        renderers={Object {}}
+        skipHtml={false}
         source="Extra text"
+        sourcePos={false}
+        transformLinkUri={[Function]}
       />
     </div>
     <div
@@ -214,8 +222,16 @@ exports[`Comment readOnly comment renders 1`] = `
     >
       Missing a semicolon
     </div>
-    <Component
+    <ReactMarkdown
+      astPlugins={Array []}
+      escapeHtml={true}
+      plugins={Array []}
+      rawSourcePos={false}
+      renderers={Object {}}
+      skipHtml={false}
       source="Extra text"
+      sourcePos={false}
+      transformLinkUri={[Function]}
     />
     <div
       className="comment__footer"
