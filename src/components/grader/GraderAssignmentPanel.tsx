@@ -11,27 +11,26 @@ import {
   TableRow,
 } from 'react-md';
 import { BUTTON_STATE } from '../../types/common';
-import { GetAnotherSubmissionButton } from '../Buttons';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
-import { SUBMISSION_SORT_TYPE, submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, SUBMISSION_SORT_TYPE, SubmissionType } from '../../infrastructure/submission';
 import { getSortIndex } from '../Utils/SortUtils';
 
 import Select from 'react-select';
 
 import * as moment from 'moment';
 
-interface IProps {
+interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;
   sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType, section: SectionType | undefined) => Promise<SubmissionType>;
+  claimSubmission: (assignment: AssignmentType, section?: SectionType) => Promise<SubmissionType | undefined>;
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
-interface IState {
+interface IGraderAssignmentPanelState {
   buttonState: BUTTON_STATE;
   currentSection?: SectionType;
 
@@ -42,21 +41,18 @@ interface IState {
   sortedIndex: Array<boolean | undefined>;
 }
 
-class GraderAssignmentPanel extends React.Component<IProps, IState> {
-  public constructor(props: any) {
-    super(props);
-    this.state = {
-      buttonState: BUTTON_STATE.Active,
-      currentSection: undefined,
+class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
+  public state: Readonly<IGraderAssignmentPanelState> = {
+    buttonState: BUTTON_STATE.Active,
+    currentSection: undefined,
 
-      ascending: undefined,
-      sortedSubmissions: this.props.submissions,
-      releasedSubmission: undefined,
-      sortedIndex: [undefined, undefined, undefined, undefined],
-    };
-  }
+    ascending: undefined,
+    sortedSubmissions: this.props.submissions,
+    releasedSubmission: undefined,
+    sortedIndex: [undefined, undefined, undefined, undefined],
+  };
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IGraderAssignmentPanelProps, prevState: IGraderAssignmentPanelState) {
     // if submissions change, re-sort
     if (this.props.submissions !== prevProps.submissions) {
       // make a copy
@@ -72,7 +68,7 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     const { sortedIndex } = this.state;
 
     const sortAttribute = sortedIndex.findIndex((elem) => {
-      return typeof elem !== 'undefined';
+      return elem !== undefined;
     });
 
     if (sortAttribute === -1) {
@@ -87,31 +83,27 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
       2: SUBMISSION_SORT_TYPE.isFinalized,
       3: SUBMISSION_SORT_TYPE.dateEdited,
     };
-    return submissionSort(sortAttributeMap[sortAttribute], ascending, a, b);
+    return sortSubmissions(sortAttributeMap[sortAttribute], ascending, a, b);
   };
 
   public openGradePage = (submission: SubmissionType) => {
     window.open(`/grade/${submission.id}`);
-    // window.open("/grade/" + subid, 'test',
-    // 'width=' + screen.availWidth * 0.9 + ',
-    // height=' + screen.availHeight * 0.9).resizeTo(screen.availWidth, screen.availHeight);
   };
 
-  public getAnotherSubmission = () => {
+  public getAnotherSubmission = async () => {
     const { assignment } = this.props;
     if (!assignment) {
       return;
     }
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    this.props.claimSubmission(assignment, this.state.currentSection).then((claimedSubmission: SubmissionType) => {
-      // undefined if no more submissions
-      if (!claimedSubmission) {
-        this.setState({ buttonState: BUTTON_STATE.Inactive });
-      } else {
-        this.setState({ buttonState: BUTTON_STATE.Active });
-      }
-    });
+
+    const claimedSubmission = await this.props.claimSubmission(assignment, this.state.currentSection);
+    if (!claimedSubmission) {
+      this.setState({ buttonState: BUTTON_STATE.Inactive });
+    } else {
+      this.setState({ buttonState: BUTTON_STATE.Active });
+    }
   };
 
   public toggleReleaseDialog = (submission: SubmissionType | undefined) => {
@@ -142,15 +134,51 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     });
   };
 
+  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
+    if (buttonState === BUTTON_STATE.Inactive) {
+      return (
+        <div className="grader__get-another">
+          <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
+        </div>
+      );
+    }
+
+    if (buttonState === BUTTON_STATE.Loading) {
+      return (
+        <div className="grader__get-another">
+          <div className="button--get-another button--get-another--disabled">...</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another " onClick={handleClick}>
+          +
+        </div>
+        <SelectSection
+          sections={this.props.sections}
+          currentSection={this.state.currentSection}
+          onChange={this.handleSectionChange}
+        />
+      </div>
+    );
+  };
+
   public render() {
-    const { assignment, sections, isLoadingSubmissions } = this.props;
-    const { buttonState, sortedIndex } = this.state;
+    const { assignment, isLoadingSubmissions } = this.props;
+    const { sortedIndex } = this.state;
 
     const headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
 
     const style = {
       cursor: 'pointer',
     };
+
+    const getAnotherSubmissionButton = this.getAnotherSubmissionButton(
+      this.state.buttonState,
+      this.getAnotherSubmission,
+    );
 
     if (isLoadingSubmissions) {
       return <CircularProgress id="progress" className="progress-circle" />;
@@ -159,14 +187,8 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     if (assignment) {
       return (
         <div>
-          <GetAnotherSubmissionButton handleClick={this.getAnotherSubmission} buttonState={buttonState}>
-            <SelectSection
-              sections={sections}
-              currentSection={this.state.currentSection}
-              onChange={this.handleSectionChange}
-            />
-          </GetAnotherSubmissionButton>
-          <DataTable className="DataTable--Grader" plain={true}>
+          {getAnotherSubmissionButton}
+          <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
               <TableRow>
                 {headers.map((header, index) => {
@@ -234,6 +256,41 @@ class GraderAssignmentPanel extends React.Component<IProps, IState> {
     return <div>Select an assignment on the left</div>;
   }
 }
+
+interface IButtonProps {
+  handleClick: any;
+  buttonState: BUTTON_STATE;
+  children?: any;
+}
+
+export const GetAnotherSubmissionButton = (props: IButtonProps) => {
+  const { handleClick, buttonState } = props;
+
+  if (buttonState === BUTTON_STATE.Inactive) {
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
+      </div>
+    );
+  }
+
+  if (buttonState === BUTTON_STATE.Loading) {
+    return (
+      <div className="grader__get-another">
+        <div className="button--get-another button--get-another--disabled">...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grader__get-another">
+      <div className="button--get-another " onClick={handleClick}>
+        +
+      </div>
+      {props.children}
+    </div>
+  );
+};
 
 interface ISelectSectionProps {
   sections: SectionType[];

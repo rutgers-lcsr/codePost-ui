@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { CodePanel } from './components/CodePanel';
+import { CodePanel } from './components/Code/CodePanel';
 import Finalize from './components/grade/Finalize';
 import Rubric from './components/grade/Rubric';
 import SubmissionInfo from './components/grade/SubmissionInfo';
@@ -11,10 +11,10 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course, RosterType } from './infrastructure/course';
-import { File, FileType } from './infrastructure/file';
+import { Course } from './infrastructure/course';
+import { FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
+import { RubricCommentType } from './infrastructure/rubricComment';
 import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 
@@ -35,15 +35,14 @@ interface IGradeState {
   positiveNegativeAlert: boolean;
 }
 
-interface IProps {
-  submissionID: number;
+export interface IGradeProps {
   match: any;
   history: any;
   user: UserType;
   addErrorToast: (text: string, action: string | undefined) => void;
 }
 
-class Grade extends React.Component<IProps, IGradeState> {
+class Grade extends React.Component<IGradeProps, IGradeState> {
   public state: Readonly<IGradeState> = {
     activeCommentId: undefined,
     assignment: undefined,
@@ -64,129 +63,65 @@ class Grade extends React.Component<IProps, IGradeState> {
   // Lifecycle Methods
   //////////////////////////////////////
 
-  public componentDidMount() {
-    // Should kick user back to login screne if they are not logged in
-    // Should use props to pass graderID here from top-level app...
-    // ...annoying that typescript doesn't allow usage of lambdas
-    // in render prop of Route object (which is designed to handle
-    // lambdas efficiently)
-    this.loadSubmission()
-      .then((submission) => {
-        return Promise.all([this.loadAssignment(submission.assignment), this.loadRubric(submission.assignment)]).then(
-          () => {
-            const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-            if (!submission.isFinalized) {
-              submission.grade = this.calculateGradeFromComments();
-            }
-            this.setState({ isLoading: false, positiveNegativeAlert, submission });
-          },
-        );
-      })
-      .catch((errors) => {
-        this.setState({ isLoading: false });
+  public async componentDidMount() {
+    this.setState({ isLoading: true });
+    const submissionID: number = +this.props.match.params.submissionId.valueOf();
+    const submission = await Submission.read(submissionID);
+    if (submission) {
+      const [
+        assignment,
+        [files, comments, commentRubricComments],
+        [rubricCategories, rubricComments],
+      ] = await Promise.all([
+        Assignment.read(submission.assignment),
+        Submission.loadData(submission),
+        this.loadRubric(submission.assignment),
+      ]);
+      // add catch
+      //     .catch((errors) => {
+      //       this.setState({ isLoading: false });
+      //     });
+
+      const graders = (await Course.readRoster(assignment.course))['graders'];
+
+      if (assignment && !submission.isFinalized) {
+        // @ts-ignore
+        submission.grade = this.calculateGrade(assignment, comments, commentRubricComments, rubricCategories);
+      }
+
+      // @ts-ignore
+      this.setState({
+        assignment,
+        submission,
+        files,
+        comments,
+        commentRubricComments,
+        rubricCategories,
+        rubricComments,
+        graders,
+        positiveNegativeAlert: this.hasPositiveAndNegativeComments(comments, commentRubricComments),
+        isLoading: false,
       });
+    }
   }
 
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAssignment = (assignmentId: number) => {
-    return Assignment.read(assignmentId)
-      .then((assignment: AssignmentType) => {
-        this.setState({ assignment });
-        return assignment;
-      })
-      .then((assignment) => {
-        if (this.isCourseAdmin(assignment)) {
-          this.loadGraders(assignment.course!);
-        }
-        return assignment;
-      });
-  };
+  public loadRubric = async (assignmentID: number) => {
+    const rubric = await Assignment.readRubric(assignmentID);
 
-  public loadGraders = (courseID: number) => {
-    return Course.readRoster(courseID, {}).then((roster: RosterType) => {
-      const rosterGraders = 'graders';
-      this.setState({ graders: roster[rosterGraders] });
-      return roster;
-    });
-  };
+    const rubricCategories = rubric.rubricCategories;
+    const rubricComments = {};
 
-  public loadSubmission = () => {
-    const submissionId: number = +this.props.match.params.submissionId.valueOf();
-    return Submission.read(submissionId).then((submission: SubmissionType) => {
-      return this.loadFiles(submission).then(() => {
-        this.setState({ submission });
-        return submission;
+    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+      rubricComments[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
+        return rubricComment.category === rubricCategory.id;
       });
     });
-  };
 
-  public loadFiles = (submission: SubmissionType) => {
-    const newFiles: FileType[] = [];
-    return Promise.all(
-      submission.files.map((fileId: number) => {
-        return File.read(fileId).then((file: FileType) => {
-          newFiles.push(file);
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: [],
-            },
-          });
-          return this.loadComments(file);
-        });
-      }),
-    ).then(() => {
-      this.setState({ files: newFiles });
-      return Promise.all([Promise.resolve()]);
-    });
-  };
-
-  public loadComments = (file: FileType) => {
-    return Promise.all(
-      file.comments.map((commentId: number) => {
-        return CommentIO.read(commentId).then((comment: CommentType) => {
-          const comments = [...this.state.comments[file.id], comment];
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: comments,
-            },
-          });
-          if (comment.rubricComment) {
-            return RubricComment.read(comment.rubricComment).then((rubricComment) => {
-              this.setState({
-                commentRubricComments: {
-                  ...this.state.commentRubricComments,
-                  [comment.id]: rubricComment,
-                },
-              });
-            });
-          }
-          return;
-        });
-      }),
-    );
-  };
-
-  public loadRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID, {}).then((rubric) => {
-      this.setState({ rubricCategories: rubric.rubricCategories });
-      return Promise.all(
-        rubric.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-          return this.setState({
-            rubricComments: {
-              ...this.state.rubricComments,
-              [rubricCategory.id]: rubric.rubricComments.filter((rubricComment) => {
-                return rubricComment.category === rubricCategory.id;
-              }),
-            },
-          });
-        }),
-      );
-    });
+    return [rubricCategories, rubricComments];
   };
 
   ///////////////////////////////////////
@@ -216,32 +151,57 @@ class Grade extends React.Component<IProps, IGradeState> {
     this.setState({ activeCommentId: id });
   };
 
-  public calculateGradeFromComments = () => {
-    const { comments, submission, assignment, commentRubricComments, rubricCategories } = this.state;
-
-    let assignmentPoints = 0;
-    if (!submission || !assignment) {
-      return null;
-    } else {
-      assignmentPoints = assignment.points;
+  public calculateGradeFromState = (): number | undefined => {
+    if (!this.state.submission || !this.state.assignment) {
+      return undefined;
     }
 
-    const grade =
-      assignmentPoints -
-      Object.keys(comments)
-        .map((fileID) => {
-          return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
-            if (comment.id > 0 && comment.pointDelta) {
-              return accumulator + comment.pointDelta;
-            } else {
-              return accumulator;
-            }
-          }, 0);
-        })
-        .reduce((accumulator: number, fileGrade: number) => {
-          return accumulator + fileGrade;
-        }, 0);
+    return this.calculateGrade(
+      this.state.assignment,
+      this.state.comments,
+      this.state.commentRubricComments,
+      this.state.rubricCategories,
+    );
+  };
 
+  public calculateGrade = (
+    assignment: AssignmentType,
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+    rubricCategories: RubricCategoryType[],
+  ): number => {
+    // non-rubricComment deductions
+    const commentPoints = this.commentPoints(comments);
+    const pointsPerCategory = this.pointsPerCategory(commentRubricComments);
+    const poinstPerCategoryWithCaps = this.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
+
+    const categoryPoints = Object.values(poinstPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+      return accumulator + current;
+    }, 0);
+
+    return assignment.points - commentPoints - categoryPoints;
+  };
+
+  // Points from non-RubricComment Comments
+  public commentPoints = (comments: IFileToCommentsMap): number => {
+    return Object.keys(comments)
+      .map((fileID) => {
+        return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+          // Don't count unsaved comments
+          if (comment.id > 0 && comment.pointDelta) {
+            return accumulator + comment.pointDelta;
+          } else {
+            return accumulator;
+          }
+        }, 0);
+      })
+      .reduce((accumulator: number, fileGrade: number) => {
+        return accumulator + fileGrade;
+      }, 0);
+  };
+
+  // Points from RubricComments, ignoring category caps
+  public pointsPerCategory = (commentRubricComments: ICommentToRubricCommentMap): { [categoryID: number]: number } => {
     const pointsPerCategory = {};
     for (const commentID in commentRubricComments) {
       // Don't count unsaved comments
@@ -255,23 +215,31 @@ class Grade extends React.Component<IProps, IGradeState> {
       }
     }
 
-    let categoryPoints = 0;
+    return pointsPerCategory;
+  };
+
+  // Incorporate category caps
+  public pointsPerCategoryWithCaps = (
+    pointsPerCategory: { [categoryID: number]: number },
+    rubricCategories: RubricCategoryType[],
+  ): { [categoryID: number]: number } => {
+    const pointsPerCategoryWithCaps = {};
     for (const category in pointsPerCategory) {
       if (pointsPerCategory.hasOwnProperty(category)) {
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
           return rubricCategory.id === +category;
         });
         const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 1000) : 1000;
-        categoryPoints = categoryPoints + Math.min(pointsPerCategory[category], pointLimit);
+        pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
       }
     }
-
-    return grade - categoryPoints;
+    return pointsPerCategoryWithCaps;
   };
 
-  public hasPositiveAndNegativeComments = () => {
-    const { comments, commentRubricComments } = this.state;
-
+  public hasPositiveAndNegativeComments = (
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+  ): boolean => {
     let hasPositiveDeduction = false;
     let hasNegativeDeduction = false;
     Object.keys(comments).forEach((fileID) => {
@@ -293,55 +261,95 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public updateSubmissionGrade = () => {
-    const { submission } = this.state;
-    if (submission) {
-      const grade = this.calculateGradeFromComments();
-      const positiveNegativeAlert = this.hasPositiveAndNegativeComments();
-      submission.grade = grade;
-      this.setState({ submission, positiveNegativeAlert });
+    if (this.state.submission) {
+      const grade = this.calculateGradeFromState();
+      if (grade) {
+        const submission = { ...this.state.submission, grade };
+        this.setState({
+          submission,
+          positiveNegativeAlert: this.hasPositiveAndNegativeComments(
+            this.state.comments,
+            this.state.commentRubricComments,
+          ),
+        });
+      }
     }
+  };
+
+  public addCommentHelper = (
+    comment: CommentType,
+    file: FileType,
+    comments: IFileToCommentsMap,
+  ): IFileToCommentsMap => {
+    comments[file.id] = [...comments[file.id], comment];
+    return comments;
   };
 
   // Usually adds a blank comment to the submission state
-  public addComment = (comment: CommentType, file: FileType): void => {
-    const { submission, comments } = this.state;
-    if (!submission) {
-      return;
+  public addComment = (comment: CommentType, file: FileType): boolean => {
+    if (!this.state.submission) {
+      return false;
     }
 
-    comments[file.id] = [...comments[file.id], comment];
+    const comments = this.addCommentHelper(comment, file, this.state.comments);
+
     this.setState({ comments }, () => this.updateSubmissionGrade());
+    return true;
   };
 
-  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): void => {
-    const { assignment, commentRubricComments, submission, comments } = this.state;
-    if (!submission || !assignment) {
-      return;
-    }
-
+  public updateCommentHelper = (
+    commentID: number,
+    newComment: CommentType,
+    file: FileType,
+    isSaved: boolean,
+    comments: IFileToCommentsMap,
+    commentRubricComments: ICommentToRubricCommentMap,
+    unsavedComments: number[],
+  ): [IFileToCommentsMap, ICommentToRubricCommentMap, number[]] => {
+    let newUnsavedComments: number[] = [];
     // Don't force the client side to always have to input a 0 for deduction
-    if (newComment.pointDelta === null) {
+    if (newComment.pointDelta === null && !newComment.rubricComment) {
       newComment.pointDelta = 0;
     }
 
     const index = comments[file.id].findIndex((comment: CommentType) => comment.id === commentID);
     comments[file.id][index] = newComment;
 
-    let unsavedComments = this.state.unsavedComments;
     if (isSaved) {
-      unsavedComments = this.state.unsavedComments.filter((i: number) => {
+      newUnsavedComments = unsavedComments.filter((i: number) => {
         return i !== commentID;
       });
-    } else if (!this.state.unsavedComments.includes(commentID)) {
-      unsavedComments = this.state.unsavedComments.concat(commentID);
+    } else if (!unsavedComments.includes(commentID)) {
+      newUnsavedComments = unsavedComments.concat(commentID);
     }
 
-    this.setState({ unsavedComments });
-    if (newComment.rubricComment) {
+    // If the id of the comment was updated, then make sure to update the
+    // corresponding record in the RubricComment map
+    if (newComment.rubricComment && newComment.id !== commentID) {
       commentRubricComments[newComment.id] = commentRubricComments[commentID];
+      delete commentRubricComments[commentID];
     }
 
-    this.setState({ comments, commentRubricComments });
+    return [comments, commentRubricComments, newUnsavedComments];
+  };
+
+  public updateComment = (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean): boolean => {
+    if (!this.state.submission) {
+      return false;
+    }
+
+    const [comments, commentRubricComments, unsavedComments] = this.updateCommentHelper(
+      commentID,
+      newComment,
+      file,
+      isSaved,
+      this.state.comments,
+      this.state.commentRubricComments,
+      this.state.unsavedComments,
+    );
+
+    this.setState({ comments, commentRubricComments, unsavedComments });
+    return true;
   };
 
   // Delete the comment json from the submission state
@@ -416,7 +424,7 @@ class Grade extends React.Component<IProps, IGradeState> {
   };
 
   public isCourseAdmin = (assignment: AssignmentType | undefined) => {
-    if (!assignment) {
+    if (!assignment || !assignment.course) {
       return false;
     }
 
@@ -424,7 +432,7 @@ class Grade extends React.Component<IProps, IGradeState> {
       .map((course) => {
         return course.id;
       })
-      .includes(assignment.course!);
+      .includes(assignment.course);
   };
 
   //////////////////////////////////////
@@ -469,7 +477,7 @@ class Grade extends React.Component<IProps, IGradeState> {
               isCourseAdmin={isCourseAdmin}
               commentRubricComments={commentRubricComments}
               rubricCategories={rubricCategories}
-              calculateGradeFromComments={this.calculateGradeFromComments}
+              calculateGradeFromComments={this.calculateGradeFromState}
             />
             <Rubric
               rubricCategories={rubricCategories}
@@ -530,7 +538,9 @@ const ToggleFinalize = (props: IToggleFinalizeProps) => {
     updateComment,
     files,
   } = props;
-  const warningClassName = positiveNegativeAlert ? 'positiveNegativeAlert' : 'positiveNegativeAlert--none';
+  const warningClassName = positiveNegativeAlert
+    ? 'grade__finalize__positive-negative-alert'
+    : 'grade__finalize__positive-negative-alert--none';
   return (
     <div className="grade__finalize">
       <div className="grade__finalize--warning">

@@ -9,6 +9,7 @@
     "max-classes-per-file": [true, 1, "exclude-class-expressions"],
     "no-console": false,
     "no-else-after-return": false,
+    "no-string-literal": false,
     "object-literal-sort-keys": false,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
     "variable-name": [

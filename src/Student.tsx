@@ -1,34 +1,27 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { CodePanel, makeReadOnly } from './components/CodePanel';
+import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
 import VerticalPane from './components/VerticalPane';
 
-import { CircularProgress, Snackbar } from 'react-md';
+import { CircularProgress } from 'react-md';
 
-import {
-  ICommentToRubricCommentMap,
-  ICourseToAssignmentMap,
-  IFileToCommentsMap,
-  IOption,
-  IToast,
-} from './types/common';
+import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
-import { CommentIO, CommentType } from './infrastructure/comment';
 import { CourseType } from './infrastructure/course';
-import { File, FileType } from './infrastructure/file';
+import { FileType } from './infrastructure/file';
+import { loadIDList } from './infrastructure/generics';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment } from './infrastructure/rubricComment';
-import { SubmissionStatusType } from './infrastructure/submission';
+import { Submission, SubmissionStatusType } from './infrastructure/submission';
 
 interface IStudentState {
   courses: CourseType[];
   assignments: ICourseToAssignmentMap;
   files: FileType[];
   comments: IFileToCommentsMap;
-  rubricComments: ICommentToRubricCommentMap;
+  commentRubricComments: ICommentToRubricCommentMap;
   rubricCategories: RubricCategoryType[];
 
   currentCourse?: CourseType;
@@ -45,11 +38,9 @@ interface IStudentState {
   // URL variables
   toLoadCourse: boolean;
   toLoadAssignment: boolean;
-
-  errorToasts: IToast[];
 }
 
-interface IStudentProps {
+export interface IStudentProps {
   initialCourses: CourseType[];
   email: string;
   match: any;
@@ -70,224 +61,95 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     isLoggedIn: localStorage.getItem('token') ? true : false,
     redirect: false,
     rubricCategories: [],
-    rubricComments: {},
+    commentRubricComments: {},
     toLoadCourse: false,
     toLoadAssignment: false,
-    errorToasts: [],
   };
 
-  public componentDidMount() {
-    this.loadAllAssignments().then(() => {
-      const sortedAssignmentMap = {};
-      Object.keys(this.state.assignments).forEach((courseID) => {
-        const sortedAssignments: AssignmentType[] = sortAssignments(this.state.assignments[courseID]);
-        sortedAssignmentMap[courseID] = sortedAssignments;
-      });
-      this.setState({ assignments: sortedAssignmentMap });
-    });
+  public async componentDidMount() {
+    const assignments = await this.loadAssignments(this.state.courses);
+    this.setState({ assignments });
+
+    await this.setStateFromURL();
   }
 
-  // Used to fire this.setStateFromURL, which can only be done when courses and assignments are done loading
   public componentDidUpdate(prevProps: IStudentProps, prevState: IStudentState) {
-    const { isLoadingAssignments, assignments, courses } = this.state;
-
-    // Determine if assignments are done loading
-    if (courses && assignments && prevState.assignments !== assignments) {
-      const targetEntries = courses.reduce((acc, course) => acc + course.assignments.length, 0);
-      const currEntries = Object.keys(assignments).reduce((acc, key) => acc + assignments[key].length, 0);
-      if (targetEntries === currEntries) {
-        this.setState({ isLoadingAssignments: false });
-      }
-    }
-
-    // After loading necessary resources, set state from URL
-    if (prevState.isLoadingAssignments && !isLoadingAssignments) {
-      this.setStateFromURL();
-    }
-
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       this.setState({ toLoadCourse: false, toLoadAssignment: false });
     }
   }
 
-  // ------------------- Toast functions -------------------
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
-  };
-
   ///////////////////////////////////////
   // URL handler methods
   ///////////////////////////////////////
 
-  public setStateFromURL = () => {
+  public setStateFromURL = async () => {
     const { courseName, period, assignmentName } = this.props.match.params;
-    const { courses, assignments } = this.state;
 
-    // Test whether (courseName, period) corresponds to loaded course
-    let currentCourse: any;
-    let currentAssignment: any;
+    let currentCourse: CourseType | undefined;
+    let currentAssignment: AssignmentType | undefined;
+
     if (courseName && period) {
-      const formattedCourseName = courseName.replace(/_/g, ' ');
-      const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: CourseType) => {
-        return obj.name === formattedCourseName && obj.period === formattedPeriod;
+      currentCourse = this.state.courses.find((course: CourseType) => {
+        return course.name === courseName.replace(/_/g, ' ') && course.period === period.replace(/_/g, ' ');
       });
 
-      // Given (courseName, period), test whether assignmentName corresponds to loaded assignment
       if (currentCourse && assignmentName) {
-        const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-        currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
-          return obj.name === formattedAssignmentName;
+        currentAssignment = this.state.assignments[currentCourse.id].find((assignment: AssignmentType) => {
+          return assignment.name === assignmentName.replace(/_/g, ' ');
         });
 
-        this.setState({ isLoadingSubmission: true });
+        if (currentAssignment) {
+          this.setState({ isLoadingSubmission: true });
+          const rubricCategories = await this.loadRubricCategories(currentAssignment);
+          const currentSubmission = await this.loadSubmission(currentAssignment);
 
-        this.loadRubricCategories(currentAssignment).then(() => {
-          this.loadSubmission(currentAssignment).then(() => {
-            this.setState({ currentCourse, currentAssignment, isLoadingSubmission: false });
+          if (currentSubmission) {
+            const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
+            // @ts-ignore
+            this.setState({ files, comments, commentRubricComments });
+          }
+          this.setState({
+            currentCourse,
+            currentAssignment,
+            currentSubmission,
+            rubricCategories,
+            isLoadingSubmission: false,
           });
-        });
+        }
+      } else {
+        this.setState({ currentCourse });
       }
     }
-
-    this.setState({ currentCourse, currentAssignment });
   };
 
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
 
-  public loadAllAssignments = () => {
-    const courses = this.state.courses;
-    return Promise.all(
-      courses.map((course: CourseType) => {
-        return this.loadAssignments(course);
+  public loadAssignments = async (courses: CourseType[]) => {
+    const assignments = {};
+
+    await Promise.all(
+      courses.map(async (course: CourseType) => {
+        assignments[course.id] = sortAssignments(await loadIDList(course.assignments, Assignment));
+        return;
       }),
     );
+
+    return assignments;
   };
 
-  public loadAssignments = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentId: number) => {
-        return Assignment.read(assignmentId)
-          .then((assignment) => {
-            let assignments = [assignment];
-            if (this.state.assignments[course.id]) {
-              assignments = [...this.state.assignments[course.id], assignment];
-            }
-            this.setState({
-              assignments: {
-                ...this.state.assignments,
-                [course.id]: assignments,
-              },
-            });
-          })
-          .catch((errors) => {
-            return;
-          });
-      }),
-    );
-  };
-
-  public loadSubmission = (assignment: AssignmentType) => {
+  public loadSubmission = async (assignment: AssignmentType) => {
     if (!assignment.isReleased) {
-      this.setState({ currentSubmission: undefined });
-      return Promise.resolve(); // empty Promise
+      return undefined;
     }
 
-    this.setState({ files: [] });
-
-    return Assignment.readSubmissionsStudent(assignment.id, { student: this.props.email })
-      .then((subs) => {
-        if (subs.length === 0) {
-          this.setState({ currentSubmission: undefined });
-          this.addErrorToast('No submission found.', undefined);
-          return Promise.resolve(); // empty Promise
-        } else {
-          const currentSubmission = subs[0];
-          return this.loadFiles(currentSubmission).then(() => {
-            this.setState({ currentSubmission });
-          });
-        }
-      })
-      .catch((errors) => {
-        this.setState({ currentSubmission: undefined });
-        this.addErrorToast(errors, undefined);
-      });
+    return (await Assignment.readSubmissionsStudent(assignment.id, { student: this.props.email }))[0];
   };
 
-  public loadRubricCategories = (assignment: AssignmentType) => {
-    const loadedRubricCategories: RubricCategoryType[] = [];
-    return Promise.all(
-      assignment.rubricCategories.map((rubricCategoryID: number) => {
-        return RubricCategory.read(rubricCategoryID).then((rubricCategory: RubricCategoryType) => {
-          loadedRubricCategories.push(rubricCategory);
-          return;
-        });
-      }),
-    ).then(() => {
-      this.setState({ rubricCategories: loadedRubricCategories });
-      return;
-    });
-  };
-
-  public loadFiles = (submission: SubmissionStatusType) => {
-    if (submission.files) {
-      const newFiles: FileType[] = [];
-      return Promise.all(
-        submission.files.map((fileId: number) => {
-          return File.read(fileId).then((file: FileType) => {
-            newFiles.push(file);
-            this.setState({
-              comments: {
-                ...this.state.comments,
-                [file.id]: [],
-              },
-            });
-            return this.loadComments(file);
-          });
-        }),
-      ).then(() => {
-        this.setState({ files: newFiles });
-        return Promise.all([Promise.resolve()]);
-      });
-    } else {
-      return Promise.all([Promise.resolve()]);
-    }
-  };
-
-  public loadComments = (file: FileType) => {
-    return Promise.all(
-      file.comments.map((commentId: number) => {
-        return CommentIO.read(commentId).then((comment: CommentType) => {
-          const comments = [...this.state.comments[file.id], comment];
-          this.setState({
-            comments: {
-              ...this.state.comments,
-              [file.id]: comments,
-            },
-          });
-          if (comment.rubricComment) {
-            return RubricComment.read(comment.rubricComment).then((rubricComment) => {
-              this.setState({
-                rubricComments: {
-                  ...this.state.rubricComments,
-                  [comment.id]: rubricComment,
-                },
-              });
-            });
-          }
-          return;
-        });
-      }),
-    );
+  public loadRubricCategories = async (assignment: AssignmentType) => {
+    return await loadIDList(assignment.rubricCategories, RubricCategory);
   };
 
   ///////////////////////////////////////
@@ -301,26 +163,74 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       return;
     }
 
-    const currentAssignment = assignments[currentCourse.id].filter((obj: AssignmentType) => {
-      return obj.id === option.value;
+    const currentAssignment = assignments[currentCourse.id].filter((assignment: AssignmentType) => {
+      return assignment.id === option.value;
     })[0];
 
     if (currentAssignment) {
-      // Need to test these callbacks to avoid first setState following completion
-      this.setState({ isLoadingSubmission: true, currentSubmission: undefined }, () => {
-        this.setState({ currentAssignment });
-        this.loadRubricCategories(currentAssignment).then(() => {
-          this.loadSubmission(currentAssignment).then(() => {
-            this.setState({ toLoadAssignment: true, isLoadingSubmission: false });
+      this.setState({ currentAssignment });
+      this.setState({ isLoadingSubmission: true, currentSubmission: undefined }, async () => {
+        const rubricCategories = await this.loadRubricCategories(currentAssignment);
+        const currentSubmission = await this.loadSubmission(currentAssignment);
+
+        if (currentSubmission) {
+          const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
+          // @ts-ignore
+          this.setState({
+            files,
+            comments,
+            commentRubricComments,
+            currentSubmission,
+            rubricCategories,
+            isLoadingSubmission: false,
+            toLoadAssignment: true,
           });
-        });
+        } else {
+          this.setState({ currentSubmission, isLoadingSubmission: false, toLoadAssignment: true });
+        }
       });
     }
   };
 
+  public getPointsPerCategory = (commentRubricComments: ICommentToRubricCommentMap) => {
+    const pointsPerCategory = {};
+
+    for (const commentID in commentRubricComments) {
+      // Don't count unsaved comments
+      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
+        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
+          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
+        } else {
+          pointsPerCategory[commentRubricComments[commentID].category] =
+            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
+        }
+      }
+    }
+
+    return pointsPerCategory;
+  };
+
+  public writeCategoryCapMessages = (
+    pointsPerCategory: { [categoryID: number]: number },
+    rubricCategories: RubricCategory[],
+  ) => {
+    const messages: string[] = [];
+
+    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+      if (pointsPerCategory[rubricCategory.id]) {
+        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
+          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
+          messages.push(`${rubricCategory.name} (${diff})`);
+        }
+      }
+    });
+
+    return messages;
+  };
+
   public handleCourseChange = (option: IOption) => {
-    const currentCourse = this.state.courses.filter((obj: CourseType) => {
-      return obj.id === option.value;
+    const currentCourse = this.state.courses.filter((course: CourseType) => {
+      return course.id === option.value;
     })[0];
 
     this.setState({
@@ -366,32 +276,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
 
   public render() {
-    const {
-      courses,
-      currentAssignment,
-      currentCourse,
-      currentSubmission,
-      files,
-      comments,
-      rubricComments,
-      toLoadCourse,
-      toLoadAssignment,
-      rubricCategories,
-    } = this.state;
+    const { courses, currentAssignment, currentCourse, currentSubmission, files, comments } = this.state;
 
-    const errorSnackBarStyle = {
-      width: '100%',
-      fontWeight: 500,
-      fontSize: 14,
-      backgroundColor: 'red',
-      maxWidth: '100%',
-    };
-
-    if (toLoadCourse || toLoadAssignment) {
+    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       if (currentCourse) {
         const formattedCourseName = currentCourse.name.replace(/ /g, '_');
         const formattedPeriod = currentCourse.period.replace(/ /g, '_');
-        if (toLoadAssignment && currentAssignment) {
+        if (this.state.toLoadAssignment && currentAssignment) {
           const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
           return <Redirect to={`/student/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
         } else {
@@ -404,28 +295,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
-    const pointsPerCategory = {};
-    for (const commentID in rubricComments) {
-      // Don't count unsaved comments
-      if (+commentID > 0 && rubricComments.hasOwnProperty(commentID)) {
-        if (!pointsPerCategory[rubricComments[commentID].category]) {
-          pointsPerCategory[rubricComments[commentID].category] = rubricComments[commentID].pointDelta;
-        } else {
-          pointsPerCategory[rubricComments[commentID].category] =
-            pointsPerCategory[rubricComments[commentID].category] + rubricComments[commentID].pointDelta;
-        }
-      }
-    }
-
-    const messages: string[] = [];
-    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      if (pointsPerCategory[rubricCategory.id]) {
-        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
-          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
-          messages.push(`${rubricCategory.name} (${diff})`);
-        }
-      }
-    });
+    const pointsPerCategory = this.getPointsPerCategory(this.state.commentRubricComments);
+    const messages = this.writeCategoryCapMessages(pointsPerCategory, this.state.rubricCategories);
 
     const stats = [];
     if (currentAssignment && currentAssignment.mean && currentAssignment.median) {
@@ -456,7 +327,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             submission={currentSubmission!}
             files={files}
             comments={comments}
-            rubricComments={rubricComments}
+            rubricComments={this.state.commentRubricComments}
           />
         </div>
       );
@@ -499,16 +370,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
         </div>
         <div className="student__right-panel">{contentArea}</div>
-        <Snackbar
-          id="error-snackbar"
-          className="error-snackbar"
-          toasts={this.state.errorToasts}
-          autohide={true}
-          lastChild={true}
-          autohideTimeout={2000}
-          onDismiss={this.dismissErrorToast}
-          style={errorSnackBarStyle}
-        />
       </div>
     );
   }

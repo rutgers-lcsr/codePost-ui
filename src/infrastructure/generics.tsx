@@ -119,16 +119,18 @@ function readObjectDetail<T, O, I>(
   arg: t.Type<T, O, I>,
   url: string,
   detail: string,
-): ((arg0: number, urlArgs: { [arg: string]: string }) => Promise<T>) {
-  const foo = async (id: number, urlArgs: { [arg: string]: string }) => {
+): ((arg0: number, urlArgs?: { [arg: string]: string }) => Promise<T>) {
+  const foo = async (id: number, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
-    Object.keys(urlArgs).forEach((key, i) => {
-      if (i === 0) {
-        urlString = `?${key}=${urlArgs[key]}`;
-      } else {
-        urlString = `${urlString}&${key}=${urlArgs[key]}`;
-      }
-    });
+    if (urlArgs) {
+      Object.keys(urlArgs).forEach((key, i) => {
+        if (i === 0) {
+          urlString = `?${key}=${urlArgs[key]}`;
+        } else {
+          urlString = `${urlString}&${key}=${urlArgs[key]}`;
+        }
+      });
+    }
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
@@ -154,16 +156,18 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
   input: t.Type<Q, O, I>,
   url: string,
   detail: string,
-): ((object: Q, urlArgs: { [arg: string]: string }) => Promise<T>) {
-  const foo = async (object: Q, urlArgs: { [arg: string]: string }) => {
+): ((object: Q, urlArgs?: { [arg: string]: string }) => Promise<T>) {
+  const foo = async (object: Q, urlArgs?: { [arg: string]: string }) => {
     let urlString = '';
-    Object.keys(urlArgs).forEach((key, i) => {
-      if (i === 0) {
-        urlString = `?${key}=${urlArgs[key]}`;
-      } else {
-        urlString = `${urlString}&${key}=${urlArgs[key]}`;
-      }
-    });
+    if (urlArgs) {
+      Object.keys(urlArgs).forEach((key, i) => {
+        if (i === 0) {
+          urlString = `?${key}=${urlArgs[key]}`;
+        } else {
+          urlString = `${urlString}&${key}=${urlArgs[key]}`;
+        }
+      });
+    }
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
@@ -185,4 +189,32 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
   return foo;
 }
 
-export { createObject, readObject, updateObject, deleteObject, GenericObject, readObjectDetail, updateObjectDetail };
+async function loadIDList(ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) {
+  const ignoreRejects = (p: Promise<any>) => {
+    return p.catch((e: any) => {
+      return undefined;
+    });
+  };
+
+  const promises = ids.map(async (id: number) => {
+    return await klass[method](id, urlArgs);
+  });
+
+  const data = await Promise.all(promises.map(ignoreRejects));
+  const filteredData = data.filter((a: any) => {
+    return a !== undefined;
+  });
+
+  return filteredData;
+}
+
+export {
+  createObject,
+  readObject,
+  updateObject,
+  deleteObject,
+  GenericObject,
+  readObjectDetail,
+  updateObjectDetail,
+  loadIDList,
+};

@@ -39,7 +39,7 @@
     }
   }
   // Used to color cell based on the type of data
-  .cellType {
+  .table-cell {
     &--unsubmitted {
       color: $mid-grey;
       font-weight: 300;
@@ -109,17 +109,17 @@
   @include fixedTableHeader(calc(100vh - 420px), 400px);
 }
 
-.DataTable--Grader {
+.data-table--grader {
   @include fixedTableHeader(calc(100vh - 250px), 400px);
   @include wrapHeaders(200px);
 }
 
-.DataTable--ViewAll {
+.data-table--view-all {
   @include fixedTableHeader(calc(100vh - 260px), 400px);
   @include wrapHeaders(200px);
 }
 
-.DataTable--Section {
+.table--section {
   @include fixedTableHeader(calc(100vh - 280px), 400px);
   @include wrapHeaders(200px);
 }

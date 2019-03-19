@@ -91,6 +91,7 @@
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
+    min-height: 26px;
 
     &__line {
       font-style: italic;

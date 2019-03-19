@@ -4,15 +4,15 @@ import { Button, TextField } from 'react-md';
 import ReactMarkdown from 'react-markdown';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { ICSSStyleObject } from '../types/common';
+import { ICSSStyleObject } from '../../types/common';
 
-import { CommentIO, CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
-import { RubricCommentType } from '../infrastructure/rubricComment';
+import { CommentIO, CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
-interface IProps {
+export interface ICommentProps {
   key: number;
   comment: CommentType;
   rubricComment: RubricCommentType | undefined;
@@ -23,23 +23,21 @@ interface IProps {
   active: boolean;
   changeActive: (id: number | undefined) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
 }
 
-interface IState {
-  saveWarning: boolean;
+interface ICommentState {
   savingClass: string;
   isUnsaved: boolean;
 }
 
-class Comment extends React.Component<IProps, IState> {
+class Comment extends React.Component<ICommentProps, ICommentState> {
   public textarea: any = React.createRef();
   public deductionField: any = React.createRef();
 
-  public state: Readonly<IState> = {
-    saveWarning: false,
+  public state: Readonly<ICommentState> = {
     savingClass: 'saving-spinner--idle',
     isUnsaved: this.props.comment.id < 0 || this.props.unsavedComments.includes(this.props.comment.id),
   };
@@ -48,7 +46,7 @@ class Comment extends React.Component<IProps, IState> {
   // Lifecycle Methods
   //////////////////////////////////////
 
-  public componentDidUpdate = (prevProps: any) => {
+  public componentDidUpdate = (prevProps: ICommentProps) => {
     CodePanelUtils.updateCommentPanelHeight();
 
     if (this.props.unsavedComments !== prevProps.unsavedComments) {
@@ -98,19 +96,12 @@ class Comment extends React.Component<IProps, IState> {
         changeActive(undefined);
       });
     } else {
-      // this.textarea.focus();
       changeActive(comment.id);
-
-      // this.textarea.focus();
     }
   };
 
   public save = () => {
     const { comment, file, updateComment } = this.props;
-
-    if (!this.validateSave()) {
-      return Promise.resolve(false);
-    }
 
     this.setState({ savingClass: 'saving-spinner--saving' });
 
@@ -174,20 +165,6 @@ class Comment extends React.Component<IProps, IState> {
   //////////////////////////////////////
   // Helper Methods
   //////////////////////////////////////
-
-  public validateSave = () => {
-    // const { comment, file, updateComment } = this.props;
-
-    // updateComment(comment.id, comment, file);
-
-    // if (isNaN(comment.pointDelta)) {
-    //   this.setState({ saveWarning: true });
-    //   return false;
-    // }
-    // this.setState({ saveWarning: false });
-    return true;
-  };
-
   public handleShiftEnter = (event: any) => {
     const { active } = this.props;
     if (event.key === 'Enter' && event.shiftKey && active) {
@@ -209,6 +186,30 @@ class Comment extends React.Component<IProps, IState> {
     });
   };
 
+  public getPointDelta = (rubricComment: RubricCommentType | undefined, comment: CommentType) => {
+    return rubricComment ? rubricComment.pointDelta : comment.pointDelta;
+  };
+
+  public getPointDeltaLabel = (pointDelta: number | null) => {
+    return pointDelta ? (pointDelta > 0 ? `-${pointDelta}` : `+${pointDelta * -1}`) : null;
+  };
+
+  public getPointDeltaModifier = (pointDelta: number | null) => {
+    return pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
+  };
+
+  public getPointDeltaSize = (pointDeltaLabel: string | null) => {
+    return pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'comment__pointdelta--small' : '';
+  };
+
+  public getCommentClassName = (isUnsaved: boolean, savingClass: string) => {
+    return isUnsaved && savingClass === 'saving-spinner--idle' ? 'comment--unsaved comment' : 'comment';
+  };
+
+  public getAuthorSring = (comment: CommentType) => {
+    return comment.author ? `author: ${comment.author}` : '';
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -217,24 +218,13 @@ class Comment extends React.Component<IProps, IState> {
     const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
-    const pointDelta = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
-    const pointDeltaLabel = pointDelta ? (pointDelta > 0 ? `-${pointDelta}` : `+${pointDelta * -1}`) : null;
-    const pointDeltaModifier =
-      pointDelta === null ? '--null' : pointDelta > 0 ? '--negative' : pointDelta < 0 ? '--positive' : '--zero';
+    const pointDelta = this.getPointDelta(rubricComment, comment);
+    const pointDeltaLabel = this.getPointDeltaLabel(pointDelta);
+    const pointDeltaModifier = this.getPointDeltaModifier(pointDelta);
+    const pointDeltaSize = this.getPointDeltaSize(pointDeltaLabel);
 
-    const pointDeltaSize = pointDeltaLabel && pointDeltaLabel.length >= 4 ? 'comment__pointdelta--small' : '';
-
-    const className =
-      this.state.isUnsaved && this.state.savingClass === 'saving-spinner--idle'
-        ? 'comment--unsaved comment'
-        : 'comment';
-    const author = comment.author ? `author: ${comment.author}` : '';
-
-    // Ugly for type checking
-    let rubricCommentText = '';
-    if (rubricComment) {
-      rubricCommentText = rubricComment.text;
-    }
+    const className = this.getCommentClassName(this.state.isUnsaved, this.state.savingClass);
+    const author = this.getAuthorSring(comment);
 
     // Non-editable comment
     if (readOnly) {
@@ -249,7 +239,7 @@ class Comment extends React.Component<IProps, IState> {
           <div className="comment__body">
             <div className={savingClass} />
             <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
-            {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
+            {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
             <ReactMarkdown source={comment.text} />
             <div className="comment__footer">
               <div className="comment__footer__line">line: {comment.startLine + 1}&nbsp;</div>
@@ -286,7 +276,7 @@ class Comment extends React.Component<IProps, IState> {
               disabled={rubricComment ? true : false}
               onChange={this.updateDeduction}
             />
-            {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
+            {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
 
             <TextareaAutosize
               minRows={2}
@@ -348,7 +338,7 @@ class Comment extends React.Component<IProps, IState> {
         <div className={`${pointDeltaSize} comment__pointdelta${pointDeltaModifier}`}>{pointDeltaLabel} </div>
         <div className="comment__body">
           <div className={savingClass} />
-          {rubricComment ? <div className="comment__rubric-comment">{rubricCommentText}</div> : null}
+          {rubricComment ? <div className="comment__rubric-comment">{rubricComment.text}</div> : null}
           <div className="comment__text">
             <ReactMarkdown source={comment.text} />
           </div>
