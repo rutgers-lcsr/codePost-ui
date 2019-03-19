@@ -17,7 +17,8 @@
     "importHelpers": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true // Added due to https://github.com/DefinitelyTyped/DefinitelyTyped/issues/19337
   },
   "rules": {
     "prefer-array-literal": [

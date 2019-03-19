@@ -4,26 +4,52 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import { Snackbar } from 'react-md';
 
-import Admin from './Admin';
-
 import IndexManager from './components/IndexManager';
 import TermsOfService from './components/TermsAndPrivacy/TermsOfService';
 import { TopBar } from './components/TopBar';
 
 import LogInAs from './LogInAs';
 
-import Grade from './Grade';
-import Grader from './Grader';
 import Home from './Home';
+
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
-import Student from './Student';
 import { IToast } from './types/common';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
 import Settings from './settings';
+
+import RouterLoading from './RouterLoading';
+
+import Loadable from 'react-loadable';
+
+/******************************************************************************
+ * Asynchronous components to dynamically load app code via code splitting
+ ******************************************************************************/
+
+const AsyncStudent = Loadable({
+  loader: () => import('./Student'),
+  loading: RouterLoading,
+});
+
+const AsyncGrader = Loadable({
+  loader: () => import('./Grader'),
+  loading: RouterLoading,
+});
+
+const AsyncGrade = Loadable({
+  loader: () => import('./Grade'),
+  loading: RouterLoading,
+});
+
+const AsyncAdmin = Loadable({
+  loader: () => import('./Admin'),
+  loading: RouterLoading,
+});
+
+/*****************************************************************************/
 
 interface IState {
   error: string;
@@ -233,6 +259,19 @@ class App extends React.Component<{}, IState> {
       const isGrader = user ? user.graderCourses.length > 0 : false;
       const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
 
+      if (isAdmin) {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          email: user.email,
+          user_id: user.email,
+          custom_launcher_selector: '#IntercomDefaultWidget',
+          isAdmin: String(isAdmin),
+          isGrader: String(isGrader),
+        });
+      } else {
+        (window as any).Intercom('shutdown');
+      }
+
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
@@ -240,7 +279,7 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => <Student {...props} email={email} initialCourses={studentCourses} />}
+            render={(props: any) => <AsyncStudent {...props} email={email} initialCourses={studentCourses} />}
           />
         );
       }
@@ -252,7 +291,7 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
             render={(props: any) => (
-              <Grader
+              <AsyncGrader
                 {...props}
                 email={email}
                 superGraderCourses={superGraderCourses}
@@ -271,7 +310,7 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
             render={(props: any) => (
-              <Admin
+              <AsyncAdmin
                 {...props}
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
@@ -292,7 +331,12 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${GRADE}/:submissionId`}
             render={(props: any) => (
-              <Grade {...props} user={this.state.user} addToast={this.addToast} addErrorToast={this.addErrorToast} />
+              <AsyncGrade
+                {...props}
+                user={this.state.user}
+                addToast={this.addToast}
+                addErrorToast={this.addErrorToast}
+              />
             )}
           />
         );
@@ -411,6 +455,10 @@ class App extends React.Component<{}, IState> {
         </div>
       );
     } else {
+      (window as any).Intercom('boot', {
+        app_id: 'kg4u5rp1',
+        custom_launcher_selector: '#IntercomDefaultWidget',
+      });
       return <div />;
     }
   }
