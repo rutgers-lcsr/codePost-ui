@@ -423,6 +423,90 @@ $text-font-size: 18px;
   }
 }
 
+.WhyBox {
+  z-index: 1;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 0px 30px 70px 30px;
+  color: black;
+
+  @media only screen and (max-width: 750px) {
+    padding: 0px 40px 50px 40px;
+  }
+
+  &__textBox {
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+
+    &__title {
+      font-size: $font-size-xxlarge;
+      font-weight: 450;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    &__itemList {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__item {
+      font-size: $font-size-large;
+      font-weight: 350;
+      padding: 10px;
+      text-align: left;
+    }
+  }
+  &__exampleBox {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+
+    @media only screen and (max-width: 1000px) {
+      flex-direction: column;
+    }
+
+    &__buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      padding-left: 30px;
+      padding-right: 30px;
+
+      &-title {
+        font-size: $font-size-large;
+        margin-bottom: 10px;
+        font-weight: 500;
+        text-align: center;
+      }
+    }
+
+    // Once we switch to flex-direction 100%, ad left and right padding
+    &__code {
+      @media only screen and (max-width: 1000px) {
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+
+      @media only screen and (max-width: 400px) {
+        padding-left: 0px;
+        padding-right: 0px;
+      }
+    }
+
+    &__code-separator {
+      width: 100%;
+      border: 1px solid $mid-grey;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
 .CodeMirror {
   font-family: monaco, Consolas, Lucida Console, monospace;
   font-weight: 500;

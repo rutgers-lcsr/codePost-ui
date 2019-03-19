@@ -1,4 +1,7 @@
+import 'codemirror/mode/clike/clike';
+import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/python/python';
+
 import * as React from 'react';
 import * as CodeMirror from 'react-codemirror';
 
@@ -157,6 +160,29 @@ class Landing extends React.Component<{}, IState> {
         break;
     }
 
+    const badCodeMirror = (
+      <CodeMirror
+        key={'bad code'}
+        value={
+          '// Test whether array contains an element \n\
+public boolean contains(int[] x, int y) {\n\n\
+  boolean foundItem = false;\n\
+  for (int i = 0; i < x.length; i++) {\n\
+    if (x[i] == y) {\n\
+     foundItem = true;\n\
+  }\n\n\
+  // Return finding \n\
+  if (foundItem) {\n\
+    return true;\n\
+  } else {\n\
+    return false;\n\
+  }\n\
+}\n'
+        }
+        options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'javascript' }}
+      />
+    );
+
     const codeMirror = (
       <CodeMirror
         key={`codeMirror${apiTabIndex}`}
@@ -200,6 +226,29 @@ class Landing extends React.Component<{}, IState> {
           </div>
         </div>
         <div className="Gradient">
+          <div className="WhyBox">
+            <div className="WhyBox__textBox">
+              <div className="WhyBox__textBox__title">Why you should read your students' code</div>
+              <div className="WhyBox__textBox__itemList">
+                <div className="WhyBox__textBox__item">
+                  Automated evaluation can tell your students whether their code is correct. But{' '}
+                  <b>good code doesn't just produce correct output </b> on a subset of inputs:
+                  <ul>
+                    <li> Good code is self-documenting </li>
+                    <li> Good code is appropriately commented </li>
+                    <li> Good code is modular </li>
+                    <li> Good code is idiomatic </li>
+                  </ul>
+                  In industry, your students will need to write good code that is human-readable. So teach your students
+                  to write <b>good code</b> by manually reviewing their code and giving them feedback. Future codebases
+                  will thank you.
+                </div>
+              </div>
+            </div>
+            <div className="WhyBox__exampleBox">
+              <div className="WhyBox__exampleBox__code">{badCodeMirror}</div>
+            </div>
+          </div>
           <div className="PanelViews">
             <div className="PanelViews__title">How codePost works</div>
             <div className="PanelViews__separatorBox">
