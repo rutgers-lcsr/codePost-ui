@@ -82,7 +82,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       //       this.setState({ isLoading: false });
       //     });
 
-      const graders = (await Course.readRoster(assignment.course))['graders'];
+      const graders = this.isCourseAdmin(assignment) ? (await Course.readRoster(assignment.course))['graders'] : [];
 
       if (assignment && !submission.isFinalized) {
         // @ts-ignore
