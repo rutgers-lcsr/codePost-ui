@@ -10,6 +10,7 @@ import PasswordReset from './PasswordReset';
 
 import CreateSignup from './CreateSignup';
 import JoinSignup from './JoinSignup';
+import Pricing from './Pricing';
 import SignUpManager from './SignUpManager';
 import PrivacyPolicy from './TermsAndPrivacy/PrivacyPolicy';
 import TermsOfService from './TermsAndPrivacy/TermsOfService';
@@ -45,6 +46,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/terms'}
               render={(props: any) => <TermsOfService {...props} isAuthenticated={false} />}
+            />
+            <Route
+              exact={true}
+              path={'/pricing'}
+              render={(props: any) => <Pricing {...props} isAuthenticated={false} />}
             />
             <Route
               exact={true}
