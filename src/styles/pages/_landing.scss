@@ -169,13 +169,17 @@ $text-font-size: 18px;
 
 .Gradient {
   background: linear-gradient(180deg, white 40%, $light-grey 80%);
+
+  @media only screen and (max-width: 768px) {
+    padding-top: 100px;
+  }
 }
 
 .PanelViews {
   display: flex;
   flex-direction: column;
   padding-bottom: 50px;
-  padding-top: 100px;
+  padding-top: 50px;
 
   &__title {
     font-size: $font-size-xxlarge;
@@ -363,6 +367,14 @@ $text-font-size: 18px;
       font-weight: 450;
       margin-bottom: 30px;
       text-align: center;
+      color: gray;
+
+      p {
+        font-size: $font-size-xlarge;
+        display: inline;
+        color: white;
+        font-weight: 450;
+      }
     }
 
     &__itemList {
@@ -423,19 +435,236 @@ $text-font-size: 18px;
   }
 }
 
-.CodeMirror {
-  font-family: monaco, Consolas, Lucida Console, monospace;
-  font-weight: 500;
-  width: 700px;
-  box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+.WhyBox {
+  z-index: 1;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  color: $dark-grey;
+  padding: 0px 30px 70px 30px;
 
-  &-gutters {
-    background-color: $very-light-green;
+  @media only screen and (max-width: 750px) {
+    padding: 0px 40px 50px 40px;
   }
 
-  // once we switch to a flex-direction column, make width 100%
-  @media only screen and (max-width: 1000px) {
+  &__buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
+  }
+
+  &__button {
+    border: 1px solid green;
+
+    &-title {
+      font-size: $font-size-large;
+      margin-bottom: 10px;
+      font-weight: 500;
+      text-align: center;
+    }
+  }
+
+  &__textBox {
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 10px;
+
+    &__title {
+      font-size: $font-size-xxlarge;
+      font-weight: 450;
+      margin-bottom: 30px;
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    &__itemList {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__verticalDots {
+      text-align: center;
+      content: '\2807';
+      font-size: 100px;
+      padding: 0;
+      margin: 0;
+    }
+
+    &__item {
+      font-size: 18px;
+      font-weight: 350;
+      padding: 10px;
+      text-align: left;
+    }
+  }
+  &__exampleBox {
+    display: flex;
+    max-width: 800px;
     width: 100%;
+    justify-content: center;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
+
+    &__highlights {
+      position: relative;
+      &--hidden {
+        visibility: hidden;
+      }
+    }
+
+    &__highlight1 {
+      background-color: $brand-color;
+      opacity: 0.5;
+      top: 22px;
+      position: absolute;
+      height: 15px;
+      width: 60px;
+      left: 200px;
+      z-index: 1;
+    }
+
+    &__highlight2 {
+      background-color: $brand-color;
+      opacity: 0.5;
+      top: 108px;
+      position: absolute;
+      height: 15px;
+      width: 180px;
+      left: 65px;
+      z-index: 1;
+    }
+
+    &__highlight3 {
+      background-color: $brand-color;
+      opacity: 0.5;
+      top: 192px;
+      position: absolute;
+      height: 15px;
+      width: 115px;
+      left: 50px;
+      z-index: 1;
+    }
+
+    &__code {
+      width: 400px;
+      transition: 0.1s;
+      min-width: 340px;
+      &--expand {
+        width: 100%;
+        transition: 0.1s;
+      }
+      @media only screen and (max-width: 450px) {
+        width: 100%;
+      }
+    }
+
+    &__comments {
+      margin-left: 30px;
+      max-width: 300px;
+      &--hidden {
+        display: none;
+        // margin-left: 30px;
+        // max-width: 300px;
+      }
+    }
+
+    &__comment1 {
+      margin-top: 18px;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
+      color: black;
+    }
+
+    &__comment2 {
+      margin-top: 50px;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
+      color: black;
+    }
+
+    &__comment3 {
+      margin-top: 35px;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
+      color: black;
+    }
+
+    // Once we switch to flex-direction 100%, ad left and right padding
+    // &__code {
+    //   @media only screen and (max-width: 1000px) {
+    //     padding-left: 30px;
+    //     padding-right: 30px;
+    //   }
+
+    //   @media only screen and (max-width: 400px) {
+    //     padding-left: 0px;
+    //     padding-right: 0px;
+    //   }
+    // }
+
+    &__code-separator {
+      width: 100%;
+      border: 1px solid $mid-grey;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.bad-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, monospace;
+    font-weight: 500;
+    box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+    border: 1px solid $very-light-grey;
+    height: auto;
+
+    &-gutters {
+      background-color: $very-light-green;
+    }
+  }
+}
+
+.api-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, monospace;
+    font-weight: 500;
+    width: 700px;
+    box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+
+    &-gutters {
+      background-color: $very-light-green;
+    }
+
+    // once we switch to a flex-direction column, make width 100%
+    @media only screen and (max-width: 1000px) {
+      width: 100%;
+    }
   }
 }
 
