@@ -175,7 +175,7 @@ $text-font-size: 18px;
   display: flex;
   flex-direction: column;
   padding-bottom: 50px;
-  padding-top: 100px;
+  padding-top: 50px;
 
   &__title {
     font-size: $font-size-xxlarge;
@@ -363,6 +363,14 @@ $text-font-size: 18px;
       font-weight: 450;
       margin-bottom: 30px;
       text-align: center;
+      color: gray;
+
+      p {
+        font-size: $font-size-xlarge;
+        display: inline;
+        color: white;
+        font-weight: 450;
+      }
     }
 
     &__itemList {
@@ -428,24 +436,43 @@ $text-font-size: 18px;
   align-items: center;
   display: flex;
   flex-direction: column;
+  color: $dark-grey;
   padding: 0px 30px 70px 30px;
-  color: black;
 
   @media only screen and (max-width: 750px) {
     padding: 0px 40px 50px 40px;
+  }
+
+  &__buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+  }
+
+  &__button {
+    border: 1px solid green;
+
+    &-title {
+      font-size: $font-size-large;
+      margin-bottom: 10px;
+      font-weight: 500;
+      text-align: center;
+    }
   }
 
   &__textBox {
     max-width: 700px;
     display: flex;
     flex-direction: column;
-    padding-bottom: 40px;
+    padding-bottom: 10px;
 
     &__title {
       font-size: $font-size-xxlarge;
       font-weight: 450;
       margin-bottom: 30px;
-      margin-top: 30px;
+      margin-top: 50px;
       text-align: center;
     }
 
@@ -454,8 +481,16 @@ $text-font-size: 18px;
       flex-direction: column;
     }
 
+    &__verticalDots {
+      text-align: center;
+      content: '\2807';
+      font-size: 100px;
+      padding: 0;
+      margin: 0;
+    }
+
     &__item {
-      font-size: $font-size-large;
+      font-size: 18px;
       font-weight: 350;
       padding: 10px;
       text-align: left;
@@ -463,40 +498,100 @@ $text-font-size: 18px;
   }
   &__exampleBox {
     display: flex;
+    max-width: 700px;
     width: 100%;
     justify-content: center;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
 
-    @media only screen and (max-width: 1000px) {
-      flex-direction: column;
+    // @media only screen and (max-width: 1000px) {
+    //   flex-direction: column;
+    // }
+
+    &__highlights {
+      position: relative;
     }
 
-    &__buttons {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      padding-left: 30px;
-      padding-right: 30px;
+    &__highlight1 {
+      background-color: #ffff005e;
+      top: 22px;
+      position: absolute;
+      height: 15px;
+      width: 60px;
+      left: 200px;
+      z-index: 1;
+    }
 
-      &-title {
-        font-size: $font-size-large;
-        margin-bottom: 10px;
-        font-weight: 500;
-        text-align: center;
-      }
+    &__highlight2 {
+      background-color: #ffff005e;
+      top: 108px;
+      position: absolute;
+      height: 15px;
+      width: 180px;
+      left: 65px;
+      z-index: 1;
+    }
+
+    &__highlight3 {
+      background-color: #ffff005e;
+      top: 192px;
+      position: absolute;
+      height: 15px;
+      width: 115px;
+      left: 50px;
+      z-index: 1;
+    }
+
+    &__code {
+      width: 350px;
+    }
+
+    &__comments {
+      margin-left: 30px;
+      max-width: 300px;
+    }
+
+    &__comment1 {
+      margin-top: 18px;
+      background-color: $very-light-green;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    &__comment2 {
+      margin-top: 50px;
+      background-color: $very-light-green;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    &__comment3 {
+      margin-top: 35px;
+      background-color: $very-light-green;
+      padding: 5px;
+      border: 1px solid green;
+      border-radius: 5px;
+      font-size: 13px;
     }
 
     // Once we switch to flex-direction 100%, ad left and right padding
-    &__code {
-      @media only screen and (max-width: 1000px) {
-        padding-left: 30px;
-        padding-right: 30px;
-      }
+    // &__code {
+    //   @media only screen and (max-width: 1000px) {
+    //     padding-left: 30px;
+    //     padding-right: 30px;
+    //   }
 
-      @media only screen and (max-width: 400px) {
-        padding-left: 0px;
-        padding-right: 0px;
-      }
-    }
+    //   @media only screen and (max-width: 400px) {
+    //     padding-left: 0px;
+    //     padding-right: 0px;
+    //   }
+    // }
 
     &__code-separator {
       width: 100%;
@@ -507,19 +602,34 @@ $text-font-size: 18px;
   }
 }
 
-.CodeMirror {
-  font-family: monaco, Consolas, Lucida Console, monospace;
-  font-weight: 500;
-  width: 700px;
-  box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+.bad-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, monospace;
+    font-weight: 500;
+    box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+    height: auto;
 
-  &-gutters {
-    background-color: $very-light-green;
+    &-gutters {
+      background-color: $very-light-green;
+    }
   }
+}
 
-  // once we switch to a flex-direction column, make width 100%
-  @media only screen and (max-width: 1000px) {
-    width: 100%;
+.api-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, monospace;
+    font-weight: 500;
+    width: 700px;
+    box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+
+    &-gutters {
+      background-color: $very-light-green;
+    }
+
+    // once we switch to a flex-direction column, make width 100%
+    @media only screen and (max-width: 1000px) {
+      width: 100%;
+    }
   }
 }
 

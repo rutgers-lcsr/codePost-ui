@@ -163,13 +163,15 @@ class Landing extends React.Component<{}, IState> {
     const badCodeMirror = (
       <CodeMirror
         key={'bad code'}
+        className="bad-codemirror"
         value={
           '// Test whether array contains an element \n\
 public boolean contains(int[] x, int y) {\n\n\
-  boolean foundItem = false;\n\
+  boolean foundItem = False;\n\
   for (int i = 0; i < x.length; i++) {\n\
-    if (x[i] == y) {\n\
-     foundItem = true;\n\
+   if (x[i] == y) {\n\
+     foundItem = !foundItem;\n\
+   }\n\
   }\n\n\
   // Return finding \n\
   if (foundItem) {\n\
@@ -177,7 +179,13 @@ public boolean contains(int[] x, int y) {\n\n\
   } else {\n\
     return false;\n\
   }\n\
-}\n'
+}\n\n\
+/***************************************/\n\
+// Passed 1/2 Tests.\n\
+// Test 1: array = [1, 2, 3], target = 2\n\
+// PASSED\n\
+// Test 2: array = [1, 2, 2], target = 2\n\
+// FAILED\n'
         }
         options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'javascript' }}
       />
@@ -186,6 +194,7 @@ public boolean contains(int[] x, int y) {\n\n\
     const codeMirror = (
       <CodeMirror
         key={`codeMirror${apiTabIndex}`}
+        className="api-codemirror"
         value={apiCodeExamples[apiTabIndex].code}
         options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'python' }}
       />
@@ -231,22 +240,47 @@ public boolean contains(int[] x, int y) {\n\n\
               <div className="WhyBox__textBox__title">Why you should read your students' code</div>
               <div className="WhyBox__textBox__itemList">
                 <div className="WhyBox__textBox__item">
-                  Automated evaluation can tell your students whether their code is correct. But{' '}
-                  <b>good code doesn't just produce correct output </b> on a subset of inputs:
+                  Autograding can tell your students whether their code is correct, but
                   <ul>
-                    <li> Good code is self-documenting </li>
-                    <li> Good code is appropriately commented </li>
-                    <li> Good code is modular </li>
-                    <li> Good code is idiomatic </li>
+                    <li> Autograder output without context is confusing</li>
+                    <li> Bad code can still pass correctness tests</li>
                   </ul>
-                  In industry, your students will need to write good code that is human-readable. So teach your students
-                  to write <b>good code</b> by manually reviewing their code and giving them feedback. Future codebases
-                  will thank you.
+                  Reading and annotating student code can be tedious, especially if you teach a huge course. codePost
+                  integrates with your existing tools (autograder, LMS) to make it easy, so you can give students better
+                  feedback without the hassle.
                 </div>
               </div>
             </div>
+            <div className="WhyBox__buttons">
+              <Button className="WhyBox__button" primary={true} flat={true}>
+                With code review
+              </Button>
+              <Button className="WhyBox__button" primary={true} flat={true}>
+                No code review
+              </Button>
+            </div>
             <div className="WhyBox__exampleBox">
+              <div className="WhyBox__exampleBox__highlights">
+                <div className="WhyBox__exampleBox__highlight1">&nbsp;</div>
+                <div className="WhyBox__exampleBox__highlight2">&nbsp;</div>
+                <div className="WhyBox__exampleBox__highlight3">&nbsp;</div>
+              </div>
               <div className="WhyBox__exampleBox__code">{badCodeMirror}</div>
+              <div className="WhyBox__exampleBox__comments">
+                <div className="WhyBox__exampleBox__comment1">What about arr and el instead of x and y?</div>
+                <div className="WhyBox__exampleBox__comment2">
+                  This is why you're failing test 2. You can stop looking through the array once you've found the
+                  target!
+                </div>
+                <div className="WhyBox__exampleBox__comment3">
+                  You can just return foundItem (in fact, you can return it from within the for loop).
+                </div>
+              </div>
+            </div>
+            <div className="WhyBox__textBox">
+              <div className="WhyBox__textBox__itemList">
+                <div className="WhyBox__textBox__verticalDots">. . .</div>
+              </div>
             </div>
           </div>
           <div className="PanelViews">
@@ -309,14 +343,16 @@ public boolean contains(int[] x, int y) {\n\n\
         </div>
         <div className="API">
           <div className="API__textBox">
-            <div className="API__textBox__title">codePost API</div>
+            <div className="API__textBox__title">
+              Run your course with code<p>Post API</p>
+            </div>
             <div className="API__textBox__itemList">
               <div className="API__textBox__item">
                 We know that each CS course has its own unique requirements, tools, and processes. We also think the
-                best run courses are managed with code. In that spirit, we've built the codePost API. It's expressive
-                and composable, and allows you to manage your course programmatically, integrate with other software
-                (like an LMS or homegrown solutions), and perform analytics on your course data. It's also easy to use -
-                you can start building powerful scripts in less than 10 minutes!
+                best run courses are managed with code. In that spirit, we've built the <b>codePost API</b>. It's
+                expressive and composable, and allows you to manage your course programmatically, integrate with other
+                software (like an LMS or homegrown solutions), and perform analytics on your course data. It's also easy
+                to use - you can start building powerful scripts in less than 10 minutes!
               </div>
             </div>
           </div>
