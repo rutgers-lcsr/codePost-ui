@@ -15,6 +15,7 @@ import Footer from './Footer';
 interface IState {
   viewPanelIndex: number;
   apiTabIndex: number;
+  whyBoxTabIndex: number;
 }
 
 const apiCodeExamples = [
@@ -92,6 +93,7 @@ class Landing extends React.Component<{}, IState> {
   public state: Readonly<IState> = {
     viewPanelIndex: 0,
     apiTabIndex: 0,
+    whyBoxTabIndex: 0,
   };
 
   public scrollToBottom = () => {
@@ -119,6 +121,10 @@ class Landing extends React.Component<{}, IState> {
 
   public changeAPITabIndex = (newIndex: number) => {
     this.setState({ apiTabIndex: newIndex });
+  };
+
+  public changeWhyBoxTabIndex = (newIndex: number) => {
+    this.setState({ whyBoxTabIndex: newIndex });
   };
 
   public render() {
@@ -252,21 +258,35 @@ public boolean contains(int[] x, int y) {\n\n\
               </div>
             </div>
             <div className="WhyBox__buttons">
-              <Button className="WhyBox__button" primary={true} flat={true}>
+              <Button
+                className={`"WhyBox__button${this.state.whyBoxTabIndex === 1 ? '--active' : ''}`}
+                primary={true}
+                flat={this.state.whyBoxTabIndex ? true : false}
+                raised={this.state.whyBoxTabIndex ? false : true}
+                onClick={this.changeWhyBoxTabIndex.bind(this, 0)}
+              >
                 With code review
               </Button>
-              <Button className="WhyBox__button" primary={true} flat={true}>
+              <Button
+                className={`"WhyBox__button${this.state.whyBoxTabIndex === 1 ? '--active' : ''}`}
+                primary={true}
+                flat={this.state.whyBoxTabIndex ? false : true}
+                raised={this.state.whyBoxTabIndex ? true : false}
+                onClick={this.changeWhyBoxTabIndex.bind(this, 1)}
+              >
                 No code review
               </Button>
             </div>
             <div className="WhyBox__exampleBox">
-              <div className="WhyBox__exampleBox__highlights">
+              <div className={`WhyBox__exampleBox__highlights${this.state.whyBoxTabIndex ? '--hidden' : ''}`}>
                 <div className="WhyBox__exampleBox__highlight1">&nbsp;</div>
                 <div className="WhyBox__exampleBox__highlight2">&nbsp;</div>
                 <div className="WhyBox__exampleBox__highlight3">&nbsp;</div>
               </div>
-              <div className="WhyBox__exampleBox__code">{badCodeMirror}</div>
-              <div className="WhyBox__exampleBox__comments">
+              <div className={`WhyBox__exampleBox__code${this.state.whyBoxTabIndex ? '--expand' : ''}`}>
+                {badCodeMirror}
+              </div>
+              <div className={`WhyBox__exampleBox__comments${this.state.whyBoxTabIndex ? '--hidden' : ''}`}>
                 <div className="WhyBox__exampleBox__comment1">What about arr and el instead of x and y?</div>
                 <div className="WhyBox__exampleBox__comment2">
                   This is why you're failing test 2. You can stop looking through the array once you've found the
@@ -275,11 +295,6 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div className="WhyBox__exampleBox__comment3">
                   You can just return foundItem (in fact, you can return it from within the for loop).
                 </div>
-              </div>
-            </div>
-            <div className="WhyBox__textBox">
-              <div className="WhyBox__textBox__itemList">
-                <div className="WhyBox__textBox__verticalDots">. . .</div>
               </div>
             </div>
           </div>

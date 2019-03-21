@@ -169,6 +169,10 @@ $text-font-size: 18px;
 
 .Gradient {
   background: linear-gradient(180deg, white 40%, $light-grey 80%);
+
+  @media only screen and (max-width: 768px) {
+    padding-top: 100px;
+  }
 }
 
 .PanelViews {
@@ -449,6 +453,10 @@ $text-font-size: 18px;
     justify-content: center;
     margin-top: 10px;
     margin-bottom: 30px;
+
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
   }
 
   &__button {
@@ -498,7 +506,7 @@ $text-font-size: 18px;
   }
   &__exampleBox {
     display: flex;
-    max-width: 700px;
+    max-width: 800px;
     width: 100%;
     justify-content: center;
     margin-bottom: 20px;
@@ -506,16 +514,20 @@ $text-font-size: 18px;
     flex-direction: row;
     justify-content: flex-start;
 
-    // @media only screen and (max-width: 1000px) {
-    //   flex-direction: column;
-    // }
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
 
     &__highlights {
       position: relative;
+      &--hidden {
+        visibility: hidden;
+      }
     }
 
     &__highlight1 {
-      background-color: #ffff005e;
+      background-color: $brand-color;
+      opacity: 0.5;
       top: 22px;
       position: absolute;
       height: 15px;
@@ -525,7 +537,8 @@ $text-font-size: 18px;
     }
 
     &__highlight2 {
-      background-color: #ffff005e;
+      background-color: $brand-color;
+      opacity: 0.5;
       top: 108px;
       position: absolute;
       height: 15px;
@@ -535,7 +548,8 @@ $text-font-size: 18px;
     }
 
     &__highlight3 {
-      background-color: #ffff005e;
+      background-color: $brand-color;
+      opacity: 0.5;
       top: 192px;
       position: absolute;
       height: 15px;
@@ -545,39 +559,59 @@ $text-font-size: 18px;
     }
 
     &__code {
-      width: 350px;
+      width: 400px;
+      transition: 0.1s;
+      min-width: 340px;
+      &--expand {
+        width: 100%;
+        transition: 0.1s;
+      }
+      @media only screen and (max-width: 450px) {
+        width: 100%;
+      }
     }
 
     &__comments {
       margin-left: 30px;
       max-width: 300px;
+      &--hidden {
+        display: none;
+        // margin-left: 30px;
+        // max-width: 300px;
+      }
     }
 
     &__comment1 {
       margin-top: 18px;
-      background-color: $very-light-green;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
       padding: 5px;
       border: 1px solid green;
       border-radius: 5px;
       font-size: 13px;
+      color: black;
     }
 
     &__comment2 {
       margin-top: 50px;
-      background-color: $very-light-green;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
       padding: 5px;
       border: 1px solid green;
       border-radius: 5px;
       font-size: 13px;
+      color: black;
     }
 
     &__comment3 {
       margin-top: 35px;
-      background-color: $very-light-green;
+      background-color: mix($brand-color, white, 70%);
+      opacity: 0.8;
       padding: 5px;
       border: 1px solid green;
       border-radius: 5px;
       font-size: 13px;
+      color: black;
     }
 
     // Once we switch to flex-direction 100%, ad left and right padding
@@ -607,6 +641,7 @@ $text-font-size: 18px;
     font-family: monaco, Consolas, Lucida Console, monospace;
     font-weight: 500;
     box-shadow: 0 5px 4px 0 rgba(0, 0, 0, 0.4);
+    border: 1px solid $very-light-grey;
     height: auto;
 
     &-gutters {
