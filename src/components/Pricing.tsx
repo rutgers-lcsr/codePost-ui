@@ -27,19 +27,19 @@ class Pricing extends React.Component<IProps, {}> {
               <div className="Pricing__free__item">
                 <img className="Pricing__free__item__check" src={require('../img/green-check.png')} />
                 <div className="Pricing__free__item__text">
-                  <b>Unlimited</b> Students
+                  <b>Unlimited</b> students
                 </div>
               </div>
               <div className="Pricing__free__item">
                 <img className="Pricing__free__item__check" src={require('../img/green-check.png')} />
                 <div className="Pricing__free__item__text">
-                  <b>Unlimited</b> Course Staff
+                  <b>Unlimited</b> course staff
                 </div>
               </div>
               <div className="Pricing__free__item">
                 <img className="Pricing__free__item__check" src={require('../img/green-check.png')} />
                 <div className="Pricing__free__item__text">
-                  <b>Unlimited</b> Submissions
+                  <b>Unlimited</b> submissions
                 </div>
               </div>
               <div className="Pricing__free__item">
