@@ -202,7 +202,7 @@ $text-font-size: 18px;
     display: flex;
     justify-content: space-between;
     flex-direction: row;
-    padding: 25px 200px 25px 200px;
+    padding: 25px 180px 25px 180px;
     z-index: 1;
 
     @media only screen and (max-width: 750px) {
@@ -221,17 +221,17 @@ $text-font-size: 18px;
 
     &__titleBox {
       height: 45px;
-      width: calc((100vw - 420px) / 3);
+      width: calc((100vw - 420px) / 4);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
 
       @media only screen and (max-width: 750px) {
-        width: calc((100vw - 220px) / 3);
+        width: calc((100vw - 220px) / 4);
       }
 
       @media only screen and (max-width: 450px) {
-        width: calc((100vw - 120px) / 3);
+        width: calc((100vw - 120px) / 4);
       }
     }
 

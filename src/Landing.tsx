@@ -82,6 +82,8 @@ const studentPanelText =
   'Students use a simple UI to view their reviewed code and grades, \
   accessible and referencible during and after a course.';
 
+const gradersPanelText = 'Manage and audit a team of graders.';
+
 const graderPanelText =
   'Effortlessly annotate student code, with both custom feedback and standard assignment rubrics.';
 
@@ -150,6 +152,12 @@ class Landing extends React.Component<{}, IState> {
         viewPanelContent = adminCarousel;
         break;
       case 2:
+        viewPanelContent = (
+          <img className="PanelViews__content__image" src={require('./img/landing/landing-graders.png')} />
+        );
+        viewPanelTitle = gradersPanelText;
+        break;
+      case 3:
         viewPanelContent = (
           <img className="PanelViews__content__image" src={require('./img/landing/landing-student.png')} />
         );
@@ -240,12 +248,26 @@ class Landing extends React.Component<{}, IState> {
                     className={`PanelViews__tabBox__title${viewPanelIndex === 2 ? '--active' : ''}`}
                     onClick={this.changePanelIndex.bind(this, 2)}
                   >
-                    What a student sees
+                    Manage graders
                   </div>
                 </div>
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 2 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 2)}
+                />
+              </div>
+              <div className="PanelViews__tabBox">
+                <div className="PanelViews__tabBox__titleBox">
+                  <div
+                    className={`PanelViews__tabBox__title${viewPanelIndex === 3 ? '--active' : ''}`}
+                    onClick={this.changePanelIndex.bind(this, 3)}
+                  >
+                    What a student sees
+                  </div>
+                </div>
+                <div
+                  className={`PanelViews__tabBox__button${viewPanelIndex === 3 ? '--active' : ''}`}
+                  onClick={this.changePanelIndex.bind(this, 3)}
                 />
               </div>
             </div>
