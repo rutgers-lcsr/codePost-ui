@@ -259,7 +259,7 @@ class App extends React.Component<{}, IState> {
       const isGrader = user ? user.graderCourses.length > 0 : false;
       const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
 
-      if (isAdmin) {
+      if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
           app_id: 'kg4u5rp1',
           email: user.email,

@@ -5,55 +5,47 @@ import Select from 'react-select';
 import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { Course, CourseType, RosterType } from '../../infrastructure/course';
-import { submissionSort, SubmissionType } from '../../infrastructure/submission';
+import { Course, CourseType } from '../../infrastructure/course';
+import { sortSubmissions, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { getSortIndex } from '../Utils/SortUtils';
 
 import * as moment from 'moment';
 
-interface IProps {
+interface IViewAllProps {
   currentCourse: CourseType;
   currentAssignment: AssignmentType;
 }
-interface IState {
+interface IViewAllState {
   graders: string[];
   submissions: SubmissionType[];
   selectedGraders: string[];
-  loadSubmissionsComplete: boolean;
-  loadGradersComplete: boolean;
+  isLoading: boolean;
   sortedIndex: Array<boolean | undefined>;
 }
 
-class ViewAllPanel extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
+class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
+  public state: Readonly<IViewAllState> = {
     graders: [],
     submissions: [],
     selectedGraders: [],
-    loadSubmissionsComplete: false,
-    loadGradersComplete: false,
+    isLoading: true,
+
     // SortedIndex index corresponds to columns: index 0 is email
     sortedIndex: [true, undefined, undefined, undefined, undefined],
   };
 
-  public constructor(props: any) {
-    super(props);
-    this.loadSubmissions();
-    this.loadRoster();
-  }
-  public loadSubmissions = () => {
-    Assignment.readSubmissions(this.props.currentAssignment.id, {}).then((submissions: SubmissionType[]) => {
-      submissions.sort(this.sort.bind(this));
-      this.setState({ submissions, loadSubmissionsComplete: true });
-    });
-  };
+  public async componentDidMount() {
+    const [submissions, roster] = await Promise.all([
+      await Assignment.readSubmissions(this.props.currentAssignment.id),
+      await Course.readRoster(this.props.currentCourse.id),
+    ]);
 
-  public loadRoster = () => {
-    Course.readRoster(this.props.currentCourse.id, {}).then((roster: RosterType) => {
-      this.setState({ graders: roster.graders, loadGradersComplete: true });
-    });
-  };
+    submissions.sort(this.sort.bind(this));
+
+    this.setState({ graders: roster.graders, submissions, isLoading: false });
+  }
 
   public handleSelect = (input: IOptionNumber[]) => {
     const selectedGraders = input.map((i: IOptionNumber) => {
@@ -75,31 +67,22 @@ class ViewAllPanel extends React.Component<IProps, IState> {
   };
 
   public sort(a: SubmissionType, b: SubmissionType) {
-    const { sortedIndex } = this.state;
-
-    const sortAttribute = sortedIndex.findIndex((elem) => {
-      return typeof elem !== 'undefined';
+    const sortAttribute = this.state.sortedIndex.findIndex((elem) => {
+      return elem !== undefined;
     });
 
     if (sortAttribute === -1) {
       return 0;
     }
 
-    const ascending = sortedIndex[sortAttribute] ? true : false;
-    return submissionSort(sortAttribute, ascending, a, b);
+    const ascending = this.state.sortedIndex[sortAttribute] ? true : false;
+    return sortSubmissions(sortAttribute, ascending, a, b);
   }
 
   public render() {
-    const {
-      graders,
-      submissions,
-      selectedGraders,
-      loadSubmissionsComplete,
-      loadGradersComplete,
-      sortedIndex,
-    } = this.state;
+    const { graders, submissions, selectedGraders, sortedIndex } = this.state;
     let tableBody;
-    if (!loadSubmissionsComplete || !loadGradersComplete) {
+    if (this.state.isLoading) {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
       tableBody = submissions.map((submission) => {
@@ -115,7 +98,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
             <TableColumn>{submission.students.toString()}</TableColumn>
-            <TableColumn className={`cellType${cellType}`}>{grade}</TableColumn>
+            <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
             <TableColumn>{moment(submission.dateEdited).format('llll')}</TableColumn>
@@ -129,16 +112,16 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     });
 
     return (
-      <div className="grader__viewAll">
+      <div className="grader__view-all">
         <Select
-          classNamePrefix="multiselect--ViewAll"
+          classNamePrefix="multiselect--view-all"
           closeMenuOnSelect={false}
           isMulti={true}
           options={menuItems}
           onChange={this.handleSelect}
           placeholder="Select Graders..."
         />
-        <DataTable className="DataTable--ViewAll" plain={true}>
+        <DataTable className="data-table--view-all" plain={true}>
           <TableHeader>
             <TableRow>
               <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>

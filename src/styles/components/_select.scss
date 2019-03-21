@@ -17,7 +17,7 @@
     background-color: $very-light-green !important;
   }
 }
-.multiselect--ViewAll {
+.multiselect--view-all {
   @include react-select-format();
 
   &__option--is-focused {
@@ -101,7 +101,7 @@
   }
 }
 
-.select--Grader-section {
+.select--grader-section {
   @include react-select-format();
   &__control {
     max-width: 200px;

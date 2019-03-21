@@ -191,19 +191,19 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               const submission = submissionsByStudent[studentEmail][assignment.id];
               if (submission && submission.isFinalized) {
                 return (
-                  <TableColumn className="cellType--graded" key={assignment.name} plain={true}>
+                  <TableColumn className="table-cell--graded" key={assignment.name} plain={true}>
                     {submission.grade}
                   </TableColumn>
                 );
               } else if (submission) {
                 return (
-                  <TableColumn className="cellType--unfinalized" key={assignment.name} plain={true}>
+                  <TableColumn className="table-cell--unfinalized" key={assignment.name} plain={true}>
                     Unfinalized
                   </TableColumn>
                 );
               } else {
                 return (
-                  <TableColumn className="cellType--unsubmitted" key={assignment.name} plain={true}>
+                  <TableColumn className="table-cell--unsubmitted" key={assignment.name} plain={true}>
                     ---
                   </TableColumn>
                 );
@@ -283,7 +283,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             </TableColumn>
             <TableColumn
               onClick={cellClick}
-              className={`cellType${colorClass}`}
+              className={`table-cell${colorClass}`}
               tooltipLabel="Click to open submission."
               tooltipDelay={1500}
             >

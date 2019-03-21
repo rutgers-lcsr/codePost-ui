@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { CommentType } from './infrastructure/comment';
-import { POSITION } from './types/common';
+import { CommentType } from '../../infrastructure/comment';
+import { POSITION } from '../../types/common';
 
 interface IStyles {
   [highlightID: string]: number;
@@ -22,8 +22,7 @@ export default class CodePanelUtils {
     });
   };
 
-  // O(NM) where N is the number of highlights and M is the length of the line
-  public static highlight = (sortedHighlights: CommentType[], thetext: string, line: number) => {
+  public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
     // Note that these are different from highlight.startChar and highlight.endChar
@@ -33,7 +32,7 @@ export default class CodePanelUtils {
     // <strong className=1> first highlight </strong><strong className=1 2>middle
     //          </strong><strong className=2>second highlight</strong>
     const highlights: any[] = [];
-    for (const highlight of sortedHighlights) {
+    for (const highlight of sortedComments) {
       if (highlight.startLine < line && highlight.endLine > line) {
         // this line sits between a multi-line highlight
         highlights.push([0, thetext.length, highlight.id]);
@@ -51,6 +50,10 @@ export default class CodePanelUtils {
       // otherwise, the highlight ends before our line starts
     }
 
+    return highlights;
+  };
+
+  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, IStyles] => {
     const elements: any[] = [];
     let prevIDs: number[] = [];
     let styles: IStyles = {};
@@ -120,17 +123,11 @@ export default class CodePanelUtils {
       elements.push(element);
     }
 
-    // This code doesn't quite work yet
-    // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
-    // highlights. It catches the first nesting, but none deeper.
-    for (const [highlight, level] of Object.entries(styles)) {
-      const tint = 0.5 + 0.2 * level;
-      (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: rgba(255, 202, 147, ${tint}) !important;}`,
-      );
-    }
+    return [elements.join(''), styles];
+  };
 
-    const components = elements.join('').split(/(<strong .*?>.*?<\/strong>)/g);
+  public static convertStringToJSX = (htmlString: string, line: number) => {
+    const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
@@ -148,6 +145,27 @@ export default class CodePanelUtils {
         return html;
       }
     });
+
+    return returnElements;
+  };
+
+  // O(NM) where N is the number of highlights and M is the length of the line
+  public static highlight = (sortedComments: CommentType[], thetext: string, line: number) => {
+    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, line);
+
+    const [htmlString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+
+    // This code doesn't quite work yet
+    // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
+    // highlights. It catches the first nesting, but none deeper.
+    for (const [highlight, level] of Object.entries(styles)) {
+      const tint = 0.5 + 0.2 * level;
+      (document.styleSheets[0] as CSSStyleSheet).insertRule(
+        `.highlight-${highlight} {background-color: rgba(255, 202, 147, ${tint}) !important;}`,
+      );
+    }
+
+    const returnElements = CodePanelUtils.convertStringToJSX(htmlString, line);
 
     return returnElements;
   };
@@ -205,9 +223,12 @@ export default class CodePanelUtils {
     const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
     if (selectedTabElement) {
       const commentPanel = selectedTabElement.getElementsByClassName(
-        'grade__main-container__tabContent__commentPanel',
+        'grade__main-container__tab-content__comment-panel',
       )[0];
       const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
+      if (!syntaxHighlighter) {
+        return;
+      }
       const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
 
       let newHeight = currentHeight;

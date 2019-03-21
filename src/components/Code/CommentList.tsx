@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import Comment from './Comment';
 
-import { CommentType } from '../infrastructure/comment';
-import { FileType } from '../infrastructure/file';
+import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
 
-import CodePanelUtils from '../CodePanelUtils';
+import CodePanelUtils from './CodePanelUtils';
 
-import { ICommentToRubricCommentMap, ICSSStyleObject } from '../types/common';
+import { ICommentToRubricCommentMap, ICSSStyleObject } from '../../types/common';
 
-interface IProps {
+export interface ICommentListProps {
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
@@ -17,12 +17,12 @@ interface IProps {
   activeCommentId?: number;
   changeActive: (id: number | number) => void;
   deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
 }
 
-interface IState {
+interface ICommentListState {
   placeholder: number;
   isMounted: boolean;
 }
@@ -32,22 +32,29 @@ interface IBlock {
   endAt: number;
 }
 
-class CommentList extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
+class CommentList extends React.Component<ICommentListProps, ICommentListState> {
+  public state: Readonly<ICommentListState> = {
     placeholder: 0,
     isMounted: false,
   };
 
   public componentDidMount() {
     this.setState({ isMounted: true });
-    window.addEventListener('resize', this.rerender.bind(this));
-    window.addEventListener('click', this.waitToRerender.bind(this));
-    document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
-    document.addEventListener('scroll', this.rerender.bind(this));
+    window.addEventListener('resize', this.rerender.bind(this)); // When window is resized
+    window.addEventListener('click', this.waitToRerender.bind(this)); // When window is clicked
 
-    document
-      .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .addEventListener('scroll', this.updateHighlightScroll.bind(this));
+    // When code is scrolled
+    if (document.getElementById('scroll-container')) {
+      document.getElementById('scroll-container')!.addEventListener('scroll', this.rerender.bind(this));
+    }
+
+    document.addEventListener('scroll', this.rerender.bind(this)); // When document is scrolled
+
+    if (document.getElementById(`code-underlay-pre-${this.props.file.id}`)) {
+      document
+        .getElementById(`code-underlay-pre-${this.props.file.id}`)!
+        .addEventListener('scroll', this.updateHighlightScroll.bind(this)); // When underlying code is scrolled
+    }
   }
 
   public componentWillUnmount() {
@@ -68,8 +75,8 @@ class CommentList extends React.Component<IProps, IState> {
   public rerender = () => {
     if (this.state.isMounted) {
       this.setState({ placeholder: 0 });
+      CodePanelUtils.updateCommentPanelHeight();
     }
-    CodePanelUtils.updateCommentPanelHeight();
   };
 
   public updateHighlightScroll = () => {
@@ -104,9 +111,19 @@ class CommentList extends React.Component<IProps, IState> {
         }
       }
 
+      const isActive = activeCommentId === comment.id;
       let heightOfComment = 80; // estimate until the elements are rendered
-      if (document.getElementById(`comment-${comment.id}`)) {
-        heightOfComment = document.getElementById(`comment-${comment.id}`)!.getBoundingClientRect().height;
+
+      const commentElement = document.getElementById(`comment-${comment.id}`);
+
+      if (commentElement) {
+        heightOfComment = commentElement.getBoundingClientRect().height;
+        const textArea = commentElement.getElementsByTagName('textarea')[0];
+
+        if (textArea && textArea.getBoundingClientRect().height < 42) {
+          console.log('live adjustment');
+          heightOfComment += 33;
+        }
       }
 
       heightOfComment = heightOfComment + 10; // padding
@@ -127,8 +144,6 @@ class CommentList extends React.Component<IProps, IState> {
         zIndex: zindex.toString(),
       };
 
-      const isActive = activeCommentId === comment.id;
-
       return (
         <Comment
           key={comment.id}
@@ -143,15 +158,14 @@ class CommentList extends React.Component<IProps, IState> {
           updateComment={updateComment}
           updateSubmissionGrade={this.props.updateSubmissionGrade}
           unsavedComments={this.props.unsavedComments}
+          rerender={this.rerender}
         />
       );
     });
   };
 
   public render() {
-    // Sort comments by startLine to help with stacking
-    const comments = CodePanelUtils.sortComments(this.props.comments);
-    const commentNodes = this.getCommentNodes(comments);
+    const commentNodes = this.getCommentNodes(this.props.comments);
 
     return <div className="code__comments">{commentNodes}</div>;
   }
