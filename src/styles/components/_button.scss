@@ -13,15 +13,18 @@
     background-color: $light-grey !important;
   }
 }
-@mixin pairedbuttons($min-button-width) {
+@mixin pairedbuttons($min-button-width, $min-button-height) {
   &--left {
     @extend %Large-Fixed-Button;
     width: $min-button-width;
     border-right: 0px;
+    min-height: $min-button-height;
   }
   &--right {
     @extend %Large-Fixed-Button;
+    height: auto;
     width: $min-button-width;
+    min-height: $min-button-height;
   }
 }
 

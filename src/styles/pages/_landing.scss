@@ -337,7 +337,7 @@ $text-font-size: 18px;
   -webkit-transform-origin: 0;
   transform-origin: 0;
   background: $dark-grey;
-  height: 1200px;
+  height: 1100px;
 
   @media only screen and (max-width: 600px) {
     height: 1350px;
@@ -813,7 +813,7 @@ $text-font-size: 18px;
 }
 
 .LandingBtn-SignUp {
-  @include pairedbuttons(170px);
+  @include pairedbuttons(170px, 45px);
 }
 
 ///////////////

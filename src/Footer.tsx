@@ -22,6 +22,11 @@ class Footer extends React.Component<{}, {}> {
         <div className="Footer__copyright">© codePost 2019</div>
         <div className="Footer__rightBox">
           <div className="Footer__rightBox__item">
+            <a href="http://help.codepost.io" target="_blank">
+              Help Docs
+            </a>
+          </div>
+          <div className="Footer__rightBox__item">
             <a href="http://updates.codepost.io" target="_blank">
               Updates
             </a>

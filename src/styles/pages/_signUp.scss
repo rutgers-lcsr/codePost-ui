@@ -50,13 +50,13 @@
   }
 
   &__Staff {
-    @include pairedbuttons(210px);
+    @include pairedbuttons(220px, 30px);
     color: $brand-color;
     display: flex;
     font-weight: 500 !important;
 
     @media only screen and (max-width: 600px) {
-      @include pairedbuttons(150px);
+      @include pairedbuttons(150px, 45px);
     }
   }
 
