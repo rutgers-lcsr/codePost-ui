@@ -20,7 +20,8 @@
     height: $topbar-height;
   }
 
-  &__logo {
+  &__logo,
+  &__logo--small {
     color: $dark-grey;
     font-size: 20px;
     margin-left: 20px;
@@ -85,19 +86,35 @@
   padding-right: 60px;
   padding-left: 60px;
 
+  @media only screen and (max-width: 520px) {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
   // remove the top 'codepost' from title bar if screen size is too small.
   .md-title {
-    @media only screen and (max-width: 420px) {
-      display: none;
-    }
-    font-weight: 400;
-    b {
-      font-weight: 500;
+    .topbar__logo {
+      @media only screen and (max-width: 520px) {
+        display: none;
+      }
+      font-weight: 400;
+      b {
+        font-weight: 500;
+      }
+      &--small {
+        @media only screen and (min-width: 520px) {
+          display: none;
+        }
+        font-weight: 400;
+        b {
+          font-weight: 500;
+        }
+      }
     }
   }
 
   .md-toolbar--action-right {
-    @media only screen and (max-width: 420px) {
+    @media only screen and (max-width: 520px) {
       width: 100%;
       display: flex;
       justify-content: center;
