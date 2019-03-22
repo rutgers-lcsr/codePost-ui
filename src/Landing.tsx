@@ -181,7 +181,7 @@ class Landing extends React.Component<{}, IState> {
         value={
           '// Test whether array contains an element \n\
 public boolean contains(int[] x, int y) {\n\n\
-  boolean foundItem = False;\n\
+  boolean foundItem = false;\n\
   for (int i = 0; i < x.length; i++) {\n\
    if (x[i] == y) {\n\
      foundItem = !foundItem;\n\
