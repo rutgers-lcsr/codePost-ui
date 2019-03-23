@@ -42,9 +42,8 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
   };
 
   public addComment = (comment: CommentType, file: FileType) => {
-    const { addComment } = this.props;
     this.props.changeActive(comment.id);
-    const didCommentAdd = addComment(comment, file);
+    const didCommentAdd = this.props.addComment(comment, file);
     CodePanelUtils.updateCommentPanelHeight();
     return didCommentAdd;
   };
@@ -228,6 +227,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
       return (
         <Component
           {...this.props}
+          addComment={this.addComment}
           readOnly={this.readOnly}
           activeCommentId={this.activeCommentId}
           changeActive={this.changeActive}

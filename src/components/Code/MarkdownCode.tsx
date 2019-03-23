@@ -55,8 +55,10 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       };
 
       this.props.updateCommentCounter();
-      this.props.addComment(newComment, this.props.file);
-      e.currentTarget.className = 'markdown-code__block--commented';
+      const didAddComment = this.props.addComment(newComment, this.props.file);
+      if (didAddComment) {
+        e.currentTarget.className = 'markdown-code__block--commented';
+      }
     }
   };
 
