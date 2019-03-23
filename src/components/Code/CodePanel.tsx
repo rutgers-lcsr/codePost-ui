@@ -11,6 +11,7 @@ import { FileType } from '../../infrastructure/file';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import Code from './Code';
+import MarkdownCode from './MarkdownCode';
 
 export interface ICodePanelProps {
   submission: SubmissionType;
@@ -128,28 +129,48 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         </TabList>
         {files.map((file: FileType, i: number) => {
           const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
-
+          const isMarkdown = file.extension === 'md';
           return (
             <TabPanel key={`${file.id}-code`}>
               {this.state.requireScroll ? (
                 <div className={'grade__main-container__scroll-indicator'}>scroll>>></div>
               ) : null}
-              <Code
-                submission={this.props.submission}
-                file={file}
-                comments={sortedComments}
-                rubricComments={rubricComments}
-                readOnly={readOnly}
-                addComment={this.addComment}
-                commentCounter={commentCounter}
-                updateCommentCounter={this.updateCommentCounter}
-                activeCommentId={activeCommentId}
-                changeActive={this.changeActive}
-                deleteComment={deleteComment}
-                updateComment={updateComment}
-                updateSubmissionGrade={this.props.updateSubmissionGrade}
-                unsavedComments={this.props.unsavedComments}
-              />
+
+              {isMarkdown ? (
+                <MarkdownCode
+                  submission={this.props.submission}
+                  file={file}
+                  comments={sortedComments}
+                  rubricComments={rubricComments}
+                  readOnly={readOnly}
+                  addComment={this.addComment}
+                  commentCounter={commentCounter}
+                  updateCommentCounter={this.updateCommentCounter}
+                  activeCommentId={activeCommentId}
+                  changeActive={this.changeActive}
+                  deleteComment={deleteComment}
+                  updateComment={updateComment}
+                  updateSubmissionGrade={this.props.updateSubmissionGrade}
+                  unsavedComments={this.props.unsavedComments}
+                />
+              ) : (
+                <Code
+                  submission={this.props.submission}
+                  file={file}
+                  comments={sortedComments}
+                  rubricComments={rubricComments}
+                  readOnly={readOnly}
+                  addComment={this.addComment}
+                  commentCounter={commentCounter}
+                  updateCommentCounter={this.updateCommentCounter}
+                  activeCommentId={activeCommentId}
+                  changeActive={this.changeActive}
+                  deleteComment={deleteComment}
+                  updateComment={updateComment}
+                  updateSubmissionGrade={this.props.updateSubmissionGrade}
+                  unsavedComments={this.props.unsavedComments}
+                />
+              )}
             </TabPanel>
           );
         })}
