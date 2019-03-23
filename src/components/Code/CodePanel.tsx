@@ -106,6 +106,27 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
     });
   };
 
+  public getMarkdownFromJupyter = (code: string) => {
+    let markdown = '';
+    const jupyterJson = JSON.parse(code);
+
+    jupyterJson.cells.forEach((cell: any) => {
+      if (cell.cell_type === 'markdown') {
+        markdown += cell.source.join('');
+      }
+
+      if (cell.cell_type === 'code') {
+        markdown += '```\n';
+        markdown += cell.source.join('');
+        markdown += '\n```';
+      }
+
+      markdown += '\n\n';
+    });
+
+    return markdown;
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -129,14 +150,16 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         </TabList>
         {files.map((file: FileType, i: number) => {
           const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
-          const isMarkdown = file.extension === 'md';
+          const isJupyter = file.extension === ('ipynb' || '.ipynb');
+          const markdown = isJupyter ? this.getMarkdownFromJupyter(file.code) : file.code;
+
           return (
             <TabPanel key={`${file.id}-code`}>
               {this.state.requireScroll ? (
                 <div className={'grade__main-container__scroll-indicator'}>scroll>>></div>
               ) : null}
 
-              {isMarkdown ? (
+              {isJupyter ? (
                 <MarkdownCode
                   submission={this.props.submission}
                   file={file}
@@ -152,6 +175,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
                   updateComment={updateComment}
                   updateSubmissionGrade={this.props.updateSubmissionGrade}
                   unsavedComments={this.props.unsavedComments}
+                  markdown={markdown}
                 />
               ) : (
                 <Code

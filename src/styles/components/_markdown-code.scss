@@ -18,6 +18,10 @@
         padding-left: $root-padding + 40 + 0px;
       }
 
+      @at-root ol#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
       @at-root pre#{&} {
         margin-bottom: 10px;
       }
@@ -31,6 +35,10 @@
       border-top-left-radius: $sidebar-radius;
 
       @at-root ul#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root ol#{&} {
         padding-left: $root-padding + 40 + 0px;
       }
 
@@ -50,6 +58,10 @@
       border-top-left-radius: $sidebar-radius;
 
       @at-root ul#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root ol#{&} {
         padding-left: $root-padding + 40 + 0px;
       }
 

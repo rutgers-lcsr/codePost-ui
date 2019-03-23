@@ -206,8 +206,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public deleteComment = (comment: CommentType, file: FileType) => {
-    console.log('del');
-    // this.onMouseLeave(comment);
     this.props.deleteComment(comment, file);
   };
 

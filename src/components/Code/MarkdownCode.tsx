@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import MarkdownCommentList from './MarkdownCommentList';
+import CommentList from './CommentList';
 
 import CodePanelUtils from './CodePanelUtils';
 
@@ -29,114 +29,16 @@ interface IMarkdownCodeProps {
   updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
   updateSubmissionGrade: () => void;
   unsavedComments: number[];
+  markdown: string;
 }
 
 class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
   public componentDidUpdate(prevProps: IMarkdownCodeProps, prevState: any) {
+    // Make sure to rerender the markdown block highlighting whenever comments are deleted
     if (prevProps.comments.length > this.props.comments.length) {
       this.forceUpdate();
     }
   }
-
-  public onMouseUp = (event: any) => {
-    const selection = window.getSelection();
-
-    if (selection.toString() === '') {
-      return;
-    }
-
-    console.log('onMouseUps');
-
-    // // Hack to avoid messing with Node type checking
-    // const anchorParent: any = selection.anchorNode.parentNode;
-    // let startLine = +anchorParent.id.split("-")[1];
-
-    // const extentParent: any = selection.extentNode.parentNode;
-    // let endLine = +extentParent.id.split("-")[1];
-
-    // // Check to see if the comment was made backwards
-    // if (startLine !== null && endLine != null && startLine > endLine) {
-    //   // swap endlines
-    //   const temp1 = startLine;
-    //   startLine = endLine;
-    //   endLine = temp1;
-    // }
-
-    // let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-    //   document.querySelector(`div#line-${startLine}`),
-    //   null,
-    //   POSITION.Start
-    // );
-    // let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
-    //   document.querySelector(`div#line-${endLine}`),
-    //   null,
-    //   POSITION.End
-    // );
-
-    // if (startLine === endLine) {
-    //   // Handle reverse highlight in a single line
-    //   const temp1 = startChar;
-    //   const temp2 = endChar;
-    //   startChar = temp1 < temp2 ? temp1 : temp2;
-    //   endChar = temp1 < temp2 ? temp2 : temp1;
-    // }
-
-    // const newComment = {
-    //   id: this.props.commentCounter,
-    //   endChar,
-    //   endLine,
-    //   file: this.props.file.id,
-    //   pointDelta: 0.0,
-    //   startChar,
-    //   startLine,
-    //   text: ""
-    // };
-
-    // this.props.updateCommentCounter();
-    // this.props.addComment(newComment, this.props.file);
-  };
-
-  // public linesOfCode = (
-  //   readOnly: boolean,
-  //   code: string,
-  //   comments: CommentType[]
-  // ) => {
-  //   const splitCode = code.split("\n");
-
-  //   if (readOnly) {
-  //     return splitCode.map((item: string, i: number) => {
-  //       // Don't skip rendering lines with no text
-  //       if (item === "") {
-  //         return (
-  //           <div key={i} id={`line-${i}`}>
-  //             &nbsp;
-  //           </div>
-  //         );
-  //       }
-  //       return (
-  //         <div key={i} id={`line-${i}`}>
-  //           {CodePanelUtils.highlight(comments, item, i)}
-  //         </div>
-  //       );
-  //     });
-  //   } else {
-  //     return splitCode.map((item: string, i: number) => {
-  //       // Don't skip rendering lines with no text
-  //       if (item === "") {
-  //         return (
-  //           <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
-  //             &nbsp;
-  //           </div>
-  //         );
-  //       }
-  //       return (
-  //         <div key={i} id={`line-${i}`} onMouseUp={this.onMouseUp}>
-  //           {CodePanelUtils.highlight(comments, item, i)}
-  //         </div>
-  //       );
-  //     });
-  //   }
-  // };
 
   public onBlockElementClick = (e: any) => {
     const index = e.currentTarget.getAttribute('index-number');
@@ -188,6 +90,9 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
   };
 
   public paragraphRenderer = (props: any) => {
+    if (props.index === 0) {
+      return <p>{props.children}</p>;
+    }
     return (
       <p
         className={this.rendererClassName(this.props.comments, props.index)}
@@ -250,6 +155,10 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
     );
   };
 
+  public tableRenderer = (props: any) => {
+    return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
+  };
+
   public render() {
     const {
       file,
@@ -269,39 +178,18 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       code: this.codeRenderer,
       thematicBreak: this.thematicBreakRenderer,
       blockquote: this.blockQuoteRenderer,
+      table: this.tableRenderer,
     };
 
-    // const linesOfCode = this.linesOfCode(
-    //   this.props.readOnly,
-    //   this.props.file.code,
-    //   this.props.comments
-    // );
-
-    // const numberOfLines = linesOfCode.length;
-    // const lineHeight = document.querySelector("div#line-0")
-    //   ? document.querySelector("div#line-0")!.getBoundingClientRect().height
-    //   : 18; // 18 as estimate
-    // const boxPaddingAndBorder = 15;
-
-    // const codeHeight = numberOfLines * lineHeight + boxPaddingAndBorder;
-
-    // const lineNumberStyle = {
-    //   height: `${codeHeight - boxPaddingAndBorder}px`
-    // };
+    const boxHeight = document.getElementById(`syntax-highlighter-${file.id}`)
+      ? document.getElementById(`syntax-highlighter-${file.id}`)!.getBoundingClientRect().height
+      : this.props.markdown.split('\n').length * 24;
 
     const commentPanelStyle = {
-      height: '400px',
+      height: `${boxHeight}px`,
     };
 
-    CodePanelUtils.updateCommentPanelHeight(400);
-
-    // const codeString = this.props.file.code;
-
-    // const extensionMatch = /^(?:\.?)(.*)/;
-    // const extension = extensionMatch.exec(this.props.file.extension)![1];
-    // const language = LangMap.languages(extension)[0];
-
-    const markdown = this.props.file.code;
+    CodePanelUtils.updateCommentPanelHeight(boxHeight);
 
     return (
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
@@ -314,15 +202,9 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
                 style={{ cursor: 'pointer' }}
               >
                 <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers}>
-                  {markdown}
+                  {this.props.markdown}
                 </ReactMarkdown>
               </div>
-              {/* <div className="code__underlay">
-                <div id={`code-underlay-pre-${this.props.file.id}`} className="code__underlay__pre">
-                  <div className="code__underlay--line-numbers">1</div>
-                  <div className="code__underlay--code">{markdown}</div>
-                </div>
-              </div> */}
             </div>
           </div>
           <div
@@ -330,7 +212,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
             className="grade__main-container__tab-content__comment-panel"
             style={commentPanelStyle}
           >
-            <MarkdownCommentList
+            <CommentList
               file={file}
               readOnly={readOnly}
               comments={comments}
