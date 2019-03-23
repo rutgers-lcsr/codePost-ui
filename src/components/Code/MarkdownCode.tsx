@@ -201,7 +201,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
               <div
                 id={`syntax-highlighter-${this.props.file.id}`}
                 className="code__syntax-highlighter"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', 'min-width': '400px' }}
               >
                 <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers}>
                   {this.props.markdown}
