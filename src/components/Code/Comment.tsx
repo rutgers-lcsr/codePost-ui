@@ -138,6 +138,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             // setting the state of an unmounted component
             // (which has an out-dated, negative comment.id)
             updateComment(comment.id, json, file, true);
+            this.onMouseLeave(comment);
             this.props.rerender();
             return true;
           }, 1000);
@@ -157,6 +158,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         setTimeout(() => {
           this.setState({ savingClass: 'saving-spinner--idle', isUnsaved: false });
           updateComment(comment.id, json, file, true);
+          this.onMouseLeave(comment);
           this.props.rerender();
           return true;
         }, 1000);
@@ -175,18 +177,38 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
-  public onMouseEnter = (i: string, event: any) => {
-    const elems = document.getElementsByClassName(i);
+  public onMouseEnter = (comment: CommentType, event?: any) => {
+    const className = `highlight-${comment.id}`;
+    const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
       elem.style.setProperty('background-color', 'rgba(250,255,145, 0.5)', 'important');
     });
+
+    // For handling markdown
+    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+    if (blockElement) {
+      blockElement.className = 'markdown-code__block--focused';
+      // blockElement.style.setProperty('border-left', '5px solid #f9ff91');
+    }
   };
 
-  public onMouseLeave = (i: string, eevent: any) => {
-    const elems = document.getElementsByClassName(i);
+  public onMouseLeave = (comment: CommentType, event?: any) => {
+    const className = `highlight-${comment.id}`;
+    const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
       elem.style.backgroundColor = 'rgba(255, 202, 147, 0.5)';
     });
+
+    // For handling markdown
+    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+    if (blockElement) {
+      blockElement.className = 'markdown-code__block--commented';
+      // blockElement.style.setProperty('border-left', '5px solid #24b47e');
+    }
+  };
+
+  public deleteComment = (comment: CommentType, file: FileType) => {
+    this.props.deleteComment(comment, file);
   };
 
   public getPointDelta = (rubricComment: RubricCommentType | undefined, comment: CommentType) => {
@@ -218,7 +240,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   //////////////////////////////////////
 
   public render() {
-    const { active, comment, file, deleteComment, readOnly, style, rubricComment } = this.props;
+    const { active, comment, file, readOnly, style, rubricComment } = this.props;
     const { savingClass } = this.state;
 
     const pointDelta = this.getPointDelta(rubricComment, comment);
@@ -235,8 +257,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
-          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+          onMouseEnter={this.onMouseEnter.bind(this.props, comment)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, comment)}
           id={`comment-${comment.id}`}
         >
           <div className="comment__body">
@@ -259,8 +281,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <div
           className={className}
           style={style}
-          onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
-          onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+          onMouseEnter={this.onMouseEnter.bind(this.props, comment)}
+          onMouseLeave={this.onMouseLeave.bind(this.props, comment)}
           id={`comment-${comment.id}`}
         >
           <div className="comment__body">
@@ -313,7 +335,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 tooltipLabel="Delete comment"
                 tooltipDelay={50}
                 tooltipPosition="left"
-                onClick={deleteComment.bind(this, comment, file)}
+                onClick={this.deleteComment.bind(this, comment, file)}
               >
                 delete
               </Button>
@@ -333,8 +355,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       <div
         className={className}
         style={styleWithCursor}
-        onMouseEnter={this.onMouseEnter.bind(this.props, `highlight-${comment.id}`)}
-        onMouseLeave={this.onMouseLeave.bind(this.props, `highlight-${comment.id}`)}
+        onMouseEnter={this.onMouseEnter.bind(this.props, comment)}
+        onMouseLeave={this.onMouseLeave.bind(this.props, comment)}
         id={`comment-${comment.id}`}
         onClick={this.toggleActive}
       >
@@ -354,7 +376,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 icon={true}
                 forceIconFontSize={true}
                 forceIconSize={20}
-                onClick={deleteComment.bind(this, comment, file)}
+                onClick={this.deleteComment.bind(this, comment, file)}
               >
                 delete
               </Button>

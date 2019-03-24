@@ -11,6 +11,7 @@ import { FileType } from '../../infrastructure/file';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import Code from './Code';
+import MarkdownCode from './MarkdownCode';
 
 export interface ICodePanelProps {
   submission: SubmissionType;
@@ -41,9 +42,8 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
   };
 
   public addComment = (comment: CommentType, file: FileType) => {
-    const { addComment } = this.props;
     this.props.changeActive(comment.id);
-    const didCommentAdd = addComment(comment, file);
+    const didCommentAdd = this.props.addComment(comment, file);
     CodePanelUtils.updateCommentPanelHeight();
     return didCommentAdd;
   };
@@ -105,6 +105,32 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
     });
   };
 
+  public getMarkdownFromJupyter = (code: string) => {
+    let markdown = '';
+    const jupyterJson = JSON.parse(code);
+
+    jupyterJson.cells.forEach((cell: any) => {
+      if (cell.cell_type === 'markdown') {
+        markdown += cell.source.join('');
+      }
+
+      if (cell.cell_type === 'code') {
+        markdown += '```\n';
+        markdown += cell.source.join('');
+        markdown += '\n```';
+
+        // Used if we want to print out test output
+        // if (cell.outputs.length > 0) {
+        //   markdown += cell.outputs[0].text.join('');
+        // }
+      }
+
+      markdown += '\n\n';
+    });
+
+    return markdown;
+  };
+
   //////////////////////////////////////
   // Main
   //////////////////////////////////////
@@ -128,28 +154,51 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         </TabList>
         {files.map((file: FileType, i: number) => {
           const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
+          const isJupyter = file.extension === ('ipynb' || '.ipynb');
+          const markdown = isJupyter ? this.getMarkdownFromJupyter(file.code) : file.code;
 
           return (
             <TabPanel key={`${file.id}-code`}>
               {this.state.requireScroll ? (
                 <div className={'grade__main-container__scroll-indicator'}>scroll>>></div>
               ) : null}
-              <Code
-                submission={this.props.submission}
-                file={file}
-                comments={sortedComments}
-                rubricComments={rubricComments}
-                readOnly={readOnly}
-                addComment={this.addComment}
-                commentCounter={commentCounter}
-                updateCommentCounter={this.updateCommentCounter}
-                activeCommentId={activeCommentId}
-                changeActive={this.changeActive}
-                deleteComment={deleteComment}
-                updateComment={updateComment}
-                updateSubmissionGrade={this.props.updateSubmissionGrade}
-                unsavedComments={this.props.unsavedComments}
-              />
+
+              {isJupyter ? (
+                <MarkdownCode
+                  submission={this.props.submission}
+                  file={file}
+                  comments={sortedComments}
+                  rubricComments={rubricComments}
+                  readOnly={readOnly}
+                  addComment={this.addComment}
+                  commentCounter={commentCounter}
+                  updateCommentCounter={this.updateCommentCounter}
+                  activeCommentId={activeCommentId}
+                  changeActive={this.changeActive}
+                  deleteComment={deleteComment}
+                  updateComment={updateComment}
+                  updateSubmissionGrade={this.props.updateSubmissionGrade}
+                  unsavedComments={this.props.unsavedComments}
+                  markdown={markdown}
+                />
+              ) : (
+                <Code
+                  submission={this.props.submission}
+                  file={file}
+                  comments={sortedComments}
+                  rubricComments={rubricComments}
+                  readOnly={readOnly}
+                  addComment={this.addComment}
+                  commentCounter={commentCounter}
+                  updateCommentCounter={this.updateCommentCounter}
+                  activeCommentId={activeCommentId}
+                  changeActive={this.changeActive}
+                  deleteComment={deleteComment}
+                  updateComment={updateComment}
+                  updateSubmissionGrade={this.props.updateSubmissionGrade}
+                  unsavedComments={this.props.unsavedComments}
+                />
+              )}
             </TabPanel>
           );
         })}
@@ -183,6 +232,7 @@ const makeReadOnly = (Component: React.ComponentType<any>) => {
       return (
         <Component
           {...this.props}
+          addComment={this.addComment}
           readOnly={this.readOnly}
           activeCommentId={this.activeCommentId}
           changeActive={this.changeActive}

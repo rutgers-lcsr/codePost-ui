@@ -44,6 +44,10 @@
       white-space: pre;
     }
 
+    a {
+      text-decoration: underline;
+    }
+
     @media screen and (min-width: 1330px) {
       width: 800px;
     }

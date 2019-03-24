@@ -61,11 +61,18 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
     this.setState({ isMounted: false });
     window.removeEventListener('resize', this.rerender.bind(this));
     window.removeEventListener('click', this.waitToRerender.bind(this));
-    document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
+
+    if (document.getElementById('scroll-container')) {
+      document.getElementById('scroll-container')!.removeEventListener('scroll', this.rerender.bind(this));
+    }
+
     document.removeEventListener('scroll', this.rerender.bind(this));
-    document
-      .getElementById(`code-underlay-pre-${this.props.file.id}`)!
-      .removeEventListener('scroll', this.updateHighlightScroll.bind(this));
+
+    if (document.getElementById(`code-underlay-pre-${this.props.file.id}`)) {
+      document
+        .getElementById(`code-underlay-pre-${this.props.file.id}`)!
+        .removeEventListener('scroll', this.updateHighlightScroll.bind(this));
+    }
   }
 
   public waitToRerender = () => {
@@ -103,6 +110,12 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
       }
       let startAt = comment.startLine * pixelsPerLine;
 
+      // Find position of markdown block elements
+      const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+      if (blockElement) {
+        startAt = blockElement.offsetTop;
+      }
+
       // If a comment starts in the range of another block, then push it down until it fits
       // Don't need to check for trailing comments because already sorting by startLine
       for (const block of blocks) {
@@ -121,7 +134,6 @@ class CommentList extends React.Component<ICommentListProps, ICommentListState> 
         const textArea = commentElement.getElementsByTagName('textarea')[0];
 
         if (textArea && textArea.getBoundingClientRect().height < 42) {
-          console.log('live adjustment');
           heightOfComment += 33;
         }
       }
