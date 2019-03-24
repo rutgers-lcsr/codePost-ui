@@ -118,6 +118,11 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         markdown += '```\n';
         markdown += cell.source.join('');
         markdown += '\n```';
+
+        // Used if we want to print out test output
+        // if (cell.outputs.length > 0) {
+        //   markdown += cell.outputs[0].text.join('');
+        // }
       }
 
       markdown += '\n\n';
