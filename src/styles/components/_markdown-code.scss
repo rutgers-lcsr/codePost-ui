@@ -1,0 +1,108 @@
+.markdown-code {
+  h1 {
+    font-weight: bold;
+    color: black;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  h2 {
+    font-weight: bold;
+    color: black;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  h3 {
+    font-weight: bold;
+    color: black;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  ol,
+  ul,
+  pre {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  table {
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  font-family: $text-font-stack;
+
+  &__block {
+    $root-padding: 6;
+    $sidebar-width: 12px;
+    $sidebar-radius: 4px;
+
+    &--empty {
+      padding-left: $root-padding + 0px;
+      border-left: $sidebar-width solid white;
+      border-bottom-left-radius: $sidebar-radius;
+      border-top-left-radius: $sidebar-radius;
+
+      &:hover {
+        border-left: $sidebar-width solid $light-grey;
+      }
+
+      @at-root ul#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root ol#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root pre#{&} {
+        margin-bottom: 10px;
+      }
+    }
+
+    &--commented {
+      padding-left: $root-padding + 0px;
+      border-left: $sidebar-width solid rgba(36, 180, 126, 0.7);
+
+      border-bottom-left-radius: $sidebar-radius;
+      border-top-left-radius: $sidebar-radius;
+
+      @at-root ul#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root ol#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root pre#{&} {
+        margin-bottom: 10px;
+      }
+
+      &:hover {
+        border-left: $sidebar-width solid rgba(36, 180, 126, 1);
+      }
+    }
+    &--focused {
+      padding-left: $root-padding + 0px;
+      border-left: $sidebar-width solid #f9ff91;
+
+      border-bottom-left-radius: $sidebar-radius;
+      border-top-left-radius: $sidebar-radius;
+
+      @at-root ul#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root ol#{&} {
+        padding-left: $root-padding + 40 + 0px;
+      }
+
+      @at-root pre#{&} {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}

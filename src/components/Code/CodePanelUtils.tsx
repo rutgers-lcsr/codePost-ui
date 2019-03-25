@@ -13,7 +13,15 @@ export default class CodePanelUtils {
         if (a.startChar > b.startChar) {
           return 1;
         }
-        return -1;
+        if (a.id < 0 && b.id < 0) {
+          return a.id + b.id;
+        } else if (a.id > 0 && b.id > 0) {
+          return a.id - b.id;
+        } else if (b.id < 0) {
+          return -1;
+        } else {
+          return 1;
+        }
       }
       if (a.startLine > b.startLine) {
         return 1;
