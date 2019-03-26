@@ -2,16 +2,16 @@ const submission = (domain: string) => {
   const studentEmail = `student0@${domain}`;
   const graderEmail = `grader0@${domain}`;
   const sectionName = 'Section 1';
-  const partnerSection = 'N/A';
-  const partnerEmail = 'none';
+  const partnerEmail = 'student7@${domain}';
+  const partnerSection = 'Section 3';
 
   return {
-    students: [studentEmail],
+    students: [studentEmail, partnerEmail],
     isFinalized: true,
     grader: graderEmail,
     files: [
       {
-        name: 'hello.java',
+        name: 'recursion.java',
         ext: 'java',
         /* tslint:disable */
         code: `/******************************************************************************\n *  Student: ${studentEmail}\n *  Section: ${sectionName}\n *\n *  Partner: ${partnerEmail}\n *  Partner section: ${partnerSection}\n *\n *  Description:  Prints \'Hello, World\' to the terminal.\n *                By tradition, this is everyone\'s first program.\n *                Brian Kernighan initiated this tradition in 1974.\n *\n ******************************************************************************/\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        // Prints \'Hello, World\'\n        System.out.println("Hello, World");\n    }\n}`,

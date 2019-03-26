@@ -11,7 +11,7 @@ const submission = (domain: string) => {
     grader: graderEmail,
     files: [
       {
-        name: 'hello.java',
+        name: 'loops.java',
         ext: 'java',
         /* tslint:disable */
         code: `/******************************************************************************\n *  Student: ${studentEmail}\n *  Section: ${sectionName}\n *\n *  Partner: ${partnerEmail}\n *  Partner section: ${partnerSection}\n *\n *  Description:  Prints \'Hello, World\' to the terminal.\n *                By tradition, this is everyone\'s first program.\n *                Brian Kernighan initiated this tradition in 1974.\n *\n ******************************************************************************/\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        // Prints \'Hello, World\'\n        System.out.println("Hello, World");\n    }\n}`,
