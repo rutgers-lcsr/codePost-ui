@@ -1910,6 +1910,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           isModal={true}
           className="onboarding-carousel-modal"
           onlyImage={false}
+          userEmail={this.props.user.email}
         />
       </div>
     );

@@ -16,6 +16,7 @@ interface IProps {
   isModal: boolean;
   className: string;
   onlyImage: boolean;
+  userEmail?: string;
 }
 
 interface IState {
@@ -105,6 +106,26 @@ class ModalCarousel extends React.Component<IProps, IState> {
         </div>
       );
     }
+
+    let demoCourse = null;
+    if (typeof this.props.userEmail !== 'undefined') {
+      demoCourse = (
+        <div style={{ color: 'red' }}>
+          Want to start playing around with codePost? Set up a demo course to see what a course looks like in codePost
+          by clicking{' '}
+          <button
+            onClick={createDemoCourse.bind(
+              this,
+              this.props.userEmail.split('@')[0],
+              this.props.userEmail.split('@')[1],
+            )}
+          >
+            here
+          </button>
+        </div>
+      );
+    }
+
     if (this.props.isVisible) {
       return (
         <div className={className}>
@@ -122,6 +143,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
               keyboard_arrow_left
             </Button>
             {slideContent}
+            {demoCourse}
             <Button
               raised
               onClick={this.slideRight}
@@ -214,15 +236,6 @@ const adminCarouselContent = [
           here
         </a>
         .
-      </div>
-    ),
-  },
-  {
-    imgLink: require('../../img/Admin-onboarding/10-logo.png'),
-    text: (
-      <div>
-        Want to start playing around with codePost? Set up a demo course to see what a course looks like in codePost by
-        clicking <button onClick={createDemoCourse.bind(null, 'james', 'codepost.io')}>here</button>.
       </div>
     ),
   },
