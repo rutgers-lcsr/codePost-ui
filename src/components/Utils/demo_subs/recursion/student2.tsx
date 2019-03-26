@@ -24,6 +24,7 @@ const submission = (domain: string) => {
             startLine: 0,
             endLine: 0,
             pointDelta: 1,
+            author: graderEmail,
           },
         ],
       },
