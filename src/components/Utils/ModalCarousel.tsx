@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from 'react-md';
 import { Link } from 'react-router-dom';
+import { createDemoCourse } from './DemoCourse';
 
 interface ISlide {
   imgLink: string;
@@ -213,6 +214,15 @@ const adminCarouselContent = [
           here
         </a>
         .
+      </div>
+    ),
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/10-logo.png'),
+    text: (
+      <div>
+        Want to start playing around with codePost? Set up a demo course to see what a course looks like in codePost by
+        clicking <button onClick={createDemoCourse.bind(null, 'james', 'codepost.io')}>here</button>.
       </div>
     ),
   },
