@@ -131,7 +131,7 @@ const createSubmissions = (assignment: AssignmentType) => {
               text: commentT.text,
               file: fileObj.id,
               rubricComment: null,
-              author: 'grader0@codepost.io',
+              author: commentT.author,
             };
 
             return CommentIO.create(commentPayload);
