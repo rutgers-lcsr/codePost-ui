@@ -35,7 +35,7 @@ import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissi
 
 import { openSubmission } from './AdminUtils';
 
-interface IProps {
+export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[];
   rubricCategories: IAssignmentToRubricCategories;
@@ -101,7 +101,7 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
-interface IState {
+interface IManageAssignmentsState {
   activeAssignment: AssignmentType | undefined;
   activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
@@ -130,8 +130,8 @@ export enum DRAWER_TYPE {
   Missing,
 }
 
-class ManageAssignments extends React.Component<IProps, {}> {
-  public state: Readonly<IState> = {
+class ManageAssignments extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
+  public state: Readonly<IManageAssignmentsState> = {
     activeAssignment: undefined,
     activeRubricCategories: undefined,
     activeRubricComments: undefined,
@@ -149,7 +149,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
   public assignmentNameField: any;
   public assignmentPointsField: any;
 
-  constructor(props: IProps) {
+  constructor(props: IManageAssignmentsProps) {
     super(props);
     this.assignmentNameField = React.createRef();
     this.assignmentPointsField = React.createRef();
@@ -628,7 +628,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
       csv.push(row);
     });
 
-    return csv.join('\n');
+    return csv;
   };
 
   public downloadAllGrades = () => {
@@ -637,7 +637,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     }
 
     this.setState({ isDownloading: true });
-    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students);
+    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students).join('\n');
     const a = document.createElement('a');
     a.href = `data:text/csv;charset=utf-8, ${csv}`;
     a.download = `${this.props.currentCourse.name}-${this.props.currentCourse.period}-grades.csv`;
