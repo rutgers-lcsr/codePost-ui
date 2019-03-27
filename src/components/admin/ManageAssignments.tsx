@@ -581,11 +581,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
     if (!currentCourse) {
       return;
     }
-    console.log('Downloading!');
 
     const subs = submissions[assignment.id];
 
-    const grades: string[] = ['Student,Grade'];
+    const grades: string[] = [`Student,${assignment.name} Grade`];
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
         if (this.props.students.includes(student)) {
