@@ -102,14 +102,18 @@ $admin-topbar-height: 50px;
       display: flex;
       justify-content: space-around;
       margin-top: 10px;
+
+      @media only screen and (max-width: 1016px) {
+        margin-top: 29px;
+      }
     }
     &-text {
       padding: 6px 20px 6px 20px;
       color: white;
-      background-color: #616161;
+      background-color: $dark-grey;
       width: fit-content;
       font-weight: 500;
-      opacity: 0.9;
+      opacity: 1;
       $font-size: $font-size-small;
     }
   }
