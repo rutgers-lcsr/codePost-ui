@@ -119,6 +119,7 @@ interface IState {
   deletingAssignment?: AssignmentType;
   drawerVisible: boolean;
   drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  isDownloading: boolean;
 }
 
 export enum DRAWER_TYPE {
@@ -142,6 +143,7 @@ class ManageAssignments extends React.Component<IProps, {}> {
     savedCategories: {},
     drawerVisible: false,
     drawerContent: { title: '', subtitle: '', content: [] },
+    isDownloading: false,
   };
 
   public assignmentNameField: any;
@@ -602,6 +604,50 @@ class ManageAssignments extends React.Component<IProps, {}> {
     a.click();
   };
 
+  public getAllGrades = (
+    assignments: AssignmentType[],
+    submissions: IAssignmentToSubmissionsMap,
+    students: string[],
+  ) => {
+    const columns: string[] = ['Active Student'].concat(
+      assignments.map((assignment: AssignmentType) => {
+        return assignment.name;
+      }),
+    );
+
+    const csv = [columns];
+    students.forEach((student: string) => {
+      const row: string[] = [student];
+      assignments.forEach((assignment: AssignmentType) => {
+        const sub = submissions[assignment.id].find((submission: SubmissionType) => {
+          return submission.students.includes(student);
+        });
+        const grade = sub && sub.grade ? sub.grade.toString() : '';
+        row.push(grade);
+      });
+      csv.push(row);
+    });
+
+    return csv.join('\n');
+  };
+
+  public downloadAllGrades = () => {
+    if (!this.props.currentCourse) {
+      return;
+    }
+
+    this.setState({ isDownloading: true });
+    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students);
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8, ${csv}`;
+    a.download = `${this.props.currentCourse.name}-${this.props.currentCourse.period}-grades.csv`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    this.setState({ isDownloading: false });
+  };
+
   // This function is called when a an assignment drawer is opened
   // Depending on the type of data (DRAWER_TYPE), different sets of data will
   // be stored in state. We need to store the data in state of on render because
@@ -896,6 +942,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
             addErrorToast={this.props.addErrorToast}
             createAssignment={this.props.createAssignment}
           />
+          {this.state.isDownloading ? (
+            <Button raised className="button--download-assignments">
+              Downloading...
+            </Button>
+          ) : (
+            <Button raised className="button--download-assignments" onClick={this.downloadAllGrades}>
+              Download All Grades
+            </Button>
+          )}
+
           <div className="padding" />
           {submissionsLoadComplete && assignmentRubricLoadComplete ? (
             <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
