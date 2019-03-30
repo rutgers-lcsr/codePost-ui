@@ -1911,6 +1911,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           className="onboarding-carousel-modal"
           onlyImage={false}
           userEmail={this.props.user.email}
+          demoCreated={
+            typeof this.state.courses.find((el) => {
+              return el.period === 'test';
+            }) !== 'undefined'
+          }
         />
       </div>
     );

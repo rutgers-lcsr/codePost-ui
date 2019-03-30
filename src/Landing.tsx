@@ -144,6 +144,7 @@ class Landing extends React.Component<{}, IState> {
         isModal={false}
         className="landing-carousel"
         onlyImage={true}
+        demoCreated={false}
       />
     );
 
