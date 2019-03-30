@@ -110,18 +110,18 @@ class ModalCarousel extends React.Component<IProps, IState> {
     let demoCourse = null;
     if (typeof this.props.userEmail !== 'undefined') {
       demoCourse = (
-        <div style={{ color: 'red' }}>
-          Want to start playing around with codePost? Set up a demo course to see what a course looks like in codePost
-          by clicking{' '}
-          <button
+        <div className={`${className}__demo`}>
+          <Button
+            className={`${className}__demo__button`}
+            raised
             onClick={createDemoCourse.bind(
               this,
               this.props.userEmail.split('@')[0],
               this.props.userEmail.split('@')[1],
             )}
           >
-            here
-          </button>
+            Click here to set up a demo course
+          </Button>
         </div>
       );
     }
@@ -143,7 +143,6 @@ class ModalCarousel extends React.Component<IProps, IState> {
               keyboard_arrow_left
             </Button>
             {slideContent}
-            {demoCourse}
             <Button
               raised
               onClick={this.slideRight}
@@ -159,6 +158,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
             </Button>
           </div>
           <div className={`${className}__navDots`}>{navDots}</div>
+          {demoCourse}
         </div>
       );
     } else {
