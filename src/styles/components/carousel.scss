@@ -49,11 +49,11 @@ $container-border-radius: 8px;
   &__demo {
     margin: 0 auto;
     margin-top: 30px;
-    padding: 5px;
+    padding: 8px;
 
     &__button {
-      background-color: $brand-color;
-      color: white;
+      background-color: $light-grey;
+      color: $dark-grey;
     }
   }
 
