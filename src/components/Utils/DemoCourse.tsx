@@ -89,62 +89,76 @@ const createAssignment = (course: CourseType, assignment: any) => {
 };
 
 // Need to figure out how to handle the following:
-// (a) making comments look like they were made by graders (not the demo-ing user)
 // (b) lining comments to rubric comments
 
 const createSubmissions = (assignment: AssignmentType) => {
   const subTemplates = demoSubmissions(assignment.name);
-  const makeSubs = subTemplates.map((subT) => {
-    const payload = {
-      id: -1, // codePost convention
-      assignment: assignment.id,
-      students: subT.students,
-      isFinalized: subT.isFinalized,
-      files: [], // ignored by API
-      dateEdited: '', // ignored by API
-      grade: 0, // ignored by API
-      grader: subT.grader,
-    };
+  return Assignment.readRubric(assignment.id, {}).then((rubric) => {
+    const rubricComments = rubric.rubricComments;
+    console.log(rubricComments);
+    const makeSubs = subTemplates.map((subT) => {
+      const payload = {
+        id: -1, // codePost convention
+        assignment: assignment.id,
+        students: subT.students,
+        isFinalized: subT.isFinalized,
+        files: [], // ignored by API
+        dateEdited: '', // ignored by API
+        grade: 0, // ignored by API
+        grader: subT.grader,
+      };
 
-    return Submission.create(payload).then((submission) => {
-      // Make files
-      const makeFiles = subT.files.map((fileT) => {
-        const filePayload = {
-          id: -1, // codePost convention
-          code: fileT.code,
-          comments: [], // ignored by API
-          extension: fileT.ext,
-          name: fileT.name,
-          submission: submission.id,
-        };
+      return Submission.create(payload).then((submission) => {
+        // Make files
+        const makeFiles = subT.files.map((fileT) => {
+          const filePayload = {
+            id: -1, // codePost convention
+            code: fileT.code,
+            comments: [], // ignored by API
+            extension: fileT.ext,
+            name: fileT.name,
+            submission: submission.id,
+          };
 
-        return File.create(filePayload).then((fileObj) => {
-          // Make comments
-          const makeComments = fileT.comments.map((commentT) => {
-            const commentPayload = {
-              id: -1, // codePost convention
-              startChar: commentT.startChar,
-              endChar: commentT.endChar,
-              startLine: commentT.startLine,
-              endLine: commentT.endLine,
-              pointDelta: commentT.pointDelta,
-              text: commentT.text,
-              file: fileObj.id,
-              rubricComment: null,
-              author: commentT.author,
-            };
+          return File.create(filePayload).then((fileObj) => {
+            // Make comments
+            const makeComments = fileT.comments.map((commentT) => {
+              let rubricID = null;
+              if (commentT.rubric !== null) {
+                const rubricMatch = rubricComments.find((el) => {
+                  return el.text === commentT.rubric;
+                });
+                if (typeof rubricMatch !== 'undefined') {
+                  rubricID = rubricMatch.id;
+                  console.log(rubricID);
+                }
+              }
 
-            return CommentIO.create(commentPayload);
+              const commentPayload = {
+                id: -1, // codePost convention
+                startChar: commentT.startChar,
+                endChar: commentT.endChar,
+                startLine: commentT.startLine,
+                endLine: commentT.endLine,
+                pointDelta: commentT.pointDelta,
+                text: commentT.text,
+                file: fileObj.id,
+                rubricComment: rubricID,
+                author: commentT.author,
+              };
+
+              return CommentIO.create(commentPayload);
+            });
+
+            return Promise.all(makeComments);
           });
-
-          return Promise.all(makeComments);
         });
-      });
 
-      return Promise.all(makeFiles);
+        return Promise.all(makeFiles);
+      });
     });
+    return Promise.all(makeSubs);
   });
-  return Promise.all(makeSubs);
 };
 
 export { createDemoCourse };

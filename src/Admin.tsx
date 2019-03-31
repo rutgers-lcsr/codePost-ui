@@ -1913,7 +1913,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           userEmail={this.props.user.email}
           demoCreated={
             typeof this.state.courses.find((el) => {
-              return el.period === 'test';
+              return el.period === 'demo';
             }) !== 'undefined'
           }
         />

@@ -17,6 +17,7 @@ interface IProps {
   className: string;
   onlyImage: boolean;
   userEmail?: string;
+  demoCreated: boolean;
 }
 
 interface IState {
@@ -108,7 +109,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
     }
 
     let demoCourse = null;
-    if (typeof this.props.userEmail !== 'undefined') {
+    if (typeof this.props.userEmail !== 'undefined' && !this.props.demoCreated) {
       demoCourse = (
         <div className={`${className}__demo`}>
           <Button
