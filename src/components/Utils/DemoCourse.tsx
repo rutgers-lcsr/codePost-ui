@@ -89,7 +89,6 @@ const createAssignment = (course: CourseType, assignment: any) => {
 };
 
 // Need to figure out how to handle the following:
-// (b) lining comments to rubric comments
 
 const createSubmissions = (assignment: AssignmentType) => {
   const subTemplates = demoSubmissions(assignment.name);

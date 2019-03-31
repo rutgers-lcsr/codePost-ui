@@ -144,6 +144,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
               keyboard_arrow_left
             </Button>
             {slideContent}
+            {demoCourse}
             <Button
               raised
               onClick={this.slideRight}
