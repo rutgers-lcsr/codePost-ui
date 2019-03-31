@@ -117,7 +117,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
             raised
             onClick={createDemoCourse.bind(
               this,
-              this.props.userEmail.split('@')[0],
+              `${this.props.userEmail.split('@')[0]}'s course`,
               this.props.userEmail.split('@')[1],
             )}
           >
