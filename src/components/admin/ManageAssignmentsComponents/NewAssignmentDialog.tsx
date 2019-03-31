@@ -61,8 +61,8 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
       this.props.addErrorToast('Assignment name must be distinct from other assignments in course.', undefined);
       return;
     }
-    if (newAssignmentPoints < 1) {
-      this.props.addErrorToast('Assignment total points must be greater than 0', undefined);
+    if (newAssignmentPoints < 0) {
+      this.props.addErrorToast('Assignment total points cannot be negative.', undefined);
       return;
     }
     this.props.createAssignment(newAssignmentName, newAssignmentPoints).then(() => {
