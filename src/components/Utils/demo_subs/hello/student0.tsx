@@ -11,25 +11,38 @@ const submission = (domain: string) => {
     grader: graderEmail,
     files: [
       {
-        name: 'hello.java',
+        name: 'HelloWorld.java',
         ext: 'java',
         /* tslint:disable */
         code: `/******************************************************************************\n *  Student: ${studentEmail}\n *  Section: ${sectionName}\n *\n *  Partner: ${partnerEmail}\n *  Partner section: ${partnerSection}\n *\n *  Description:  Prints \'Hello, World\' to the terminal.\n *                By tradition, this is everyone\'s first program.\n *                Brian Kernighan initiated this tradition in 1974.\n *\n ******************************************************************************/\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        // Prints \'Hello, World\'\n        System.out.println("Hello, World");\n    }\n}`,
-        /* tslint:ensable */
         comments: [
           {
-            text: 'nice!',
-            startChar: 1,
-            endChar: 4,
-            startLine: 0,
-            endLine: 0,
-            pointDelta: 1,
+            text: 'Nice job! Keep up the good work on the next assignment!',
+            startChar: 4,
+            endChar: 28,
+            startLine: 1,
+            endLine: 1,
+            pointDelta: 0,
             author: graderEmail,
+            rubric: null,
+          },
+          {
+            text:
+              "Comments that describe simple lines of code aren't usually necessary. It's good that you have the intuition to comment your code. It will become more important when your programs become more complex.",
+            startChar: 8,
+            endChar: 32,
+            startLine: 15,
+            endLine: 15,
+            pointDelta: 0,
+            author: graderEmail,
+            rubric: null,
           },
         ],
       },
     ],
   };
 };
+
+/* tslint:ensable */
 
 export default submission;
