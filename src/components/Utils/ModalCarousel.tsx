@@ -22,11 +22,13 @@ interface IProps {
 
 interface IState {
   index: number;
+  creatingDemoCourse: boolean;
 }
 
 class ModalCarousel extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     index: this.props.defaultIndex,
+    creatingDemoCourse: false,
   };
 
   public componentDidMount() {
@@ -72,6 +74,14 @@ class ModalCarousel extends React.Component<IProps, IState> {
     this.props.closeModal();
   };
 
+  public demoCourseHanlder = (name: string, org: string) => {
+    this.setState({ creatingDemoCourse: true }, () => {
+      createDemoCourse(name, org).then((course) => {
+        window.location.reload();
+      });
+    });
+  };
+
   public render() {
     const { content, className, onlyImage } = this.props;
     const { index } = this.state;
@@ -110,21 +120,31 @@ class ModalCarousel extends React.Component<IProps, IState> {
 
     let demoCourse = null;
     if (typeof this.props.userEmail !== 'undefined' && !this.props.demoCreated) {
-      demoCourse = (
-        <div className={`${className}__demo`}>
-          <Button
-            className={`${className}__demo__button`}
-            raised
-            onClick={createDemoCourse.bind(
-              this,
-              `${this.props.userEmail.split('@')[0]}'s course`,
-              this.props.userEmail.split('@')[1],
-            )}
-          >
-            Click here to set up a demo course
-          </Button>
-        </div>
-      );
+      if (this.state.creatingDemoCourse) {
+        demoCourse = (
+          <div className={`${className}__demo`}>
+            <Button className={`${className}__demo__button`} disabled raised>
+              Creating your demo course...
+            </Button>
+          </div>
+        );
+      } else {
+        demoCourse = (
+          <div className={`${className}__demo`}>
+            <Button
+              className={`${className}__demo__button`}
+              raised
+              onClick={this.demoCourseHanlder.bind(
+                this,
+                `${this.props.userEmail.split('@')[0]}'s course`,
+                this.props.userEmail.split('@')[1],
+              )}
+            >
+              Click here to set up a demo course
+            </Button>
+          </div>
+        );
+      }
     }
 
     if (this.props.isVisible) {
@@ -144,7 +164,6 @@ class ModalCarousel extends React.Component<IProps, IState> {
               keyboard_arrow_left
             </Button>
             {slideContent}
-            {demoCourse}
             <Button
               raised
               onClick={this.slideRight}

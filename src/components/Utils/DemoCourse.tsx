@@ -15,30 +15,30 @@ import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions 
 
 const createDemoCourse = (username: string, org: string) => {
   const payload = demoCourse(username);
-  Course.create(payload).then((course) => {
+  return Course.create(payload).then((course) => {
     // Create assignments
     const preAssignments = demoAssignments(course.id);
     const makeAssignmnets = preAssignments.map((assignment) => {
       return createAssignment(course, assignment);
     });
 
-    Promise.all(makeAssignmnets).then((assignments: AssignmentType[]) => {
+    return Promise.all(makeAssignmnets).then((assignments: AssignmentType[]) => {
       // Set roster
       const roster = demoRoster(org, course.id);
-      Course.updateRoster(roster, {}).then((rosterObj) => {
-        // Make submissions
-        const makeSubmissions = assignments.map((assignment) => {
-          return createSubmissions(assignment);
-        });
-
-        Promise.all(makeSubmissions);
-
+      return Course.updateRoster(roster, {}).then((rosterObj) => {
         // Make sections
         const sections = demoSections(org, roster.id);
         const makeSections = sections.map((section) => {
           return Section.create(section);
         });
-        Promise.all(makeSections);
+        return Promise.all(makeSections).then(() => {
+          // Make submissions
+          const makeSubmissions = assignments.map((assignment) => {
+            return createSubmissions(assignment);
+          });
+
+          return Promise.all(makeSubmissions);
+        });
       });
     });
   });
