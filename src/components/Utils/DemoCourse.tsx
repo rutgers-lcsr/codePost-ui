@@ -52,6 +52,7 @@ const createAssignment = (course: CourseType, assignment: any) => {
     course: course.id,
     isReleased: false,
     rubricCategories: [], // ignored by API
+    sortKey: assignment.sortKey,
   };
 
   return Assignment.create(assnPayload).then((assnObj: AssignmentType) => {

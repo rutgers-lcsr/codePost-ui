@@ -16,20 +16,13 @@ import loops_student1 from './demo_subs/loops/student1';
 import loops_student2 from './demo_subs/loops/student2';
 import loops_student3 from './demo_subs/loops/student3';
 import loops_student4 from './demo_subs/loops/student4';
-import loops_student5 from './demo_subs/loops/student5';
-import loops_student6 from './demo_subs/loops/student6';
-import loops_student7 from './demo_subs/loops/student7';
-import loops_student8 from './demo_subs/loops/student8';
-import loops_student9 from './demo_subs/loops/student9';
 
-/* Recursion submissions */
+// /* Recursion submissions */
 import recursion_student0 from './demo_subs/recursion/student0';
 import recursion_student1 from './demo_subs/recursion/student1';
 import recursion_student2 from './demo_subs/recursion/student2';
 import recursion_student3 from './demo_subs/recursion/student3';
 import recursion_student4 from './demo_subs/recursion/student4';
-import recursion_student5 from './demo_subs/recursion/student5';
-import recursion_student6 from './demo_subs/recursion/student6';
 
 const helloSubs = (domain: string) => {
   return [
@@ -53,11 +46,6 @@ const loopSubs = (domain: string) => {
     loops_student2(domain),
     loops_student3(domain),
     loops_student4(domain),
-    loops_student5(domain),
-    loops_student6(domain),
-    loops_student7(domain),
-    loops_student8(domain),
-    loops_student9(domain),
   ];
 };
 
@@ -68,8 +56,6 @@ const recursionSubs = (domain: string) => {
     recursion_student2(domain),
     recursion_student3(domain),
     recursion_student4(domain),
-    recursion_student5(domain),
-    recursion_student6(domain),
   ];
 };
 
@@ -88,7 +74,7 @@ const demoSubmissions = (assnignmentName: string) => {
 const demoCourse = (testName: string) => {
   return {
     name: testName,
-    period: 'test',
+    period: 'demo',
     id: -1, // codePost convention
     assignments: [], // ignored by API
     sections: [], // ignored by API
@@ -158,27 +144,10 @@ const demoAssignments = (courseID: number) => {
   return [
     {
       name: 'Hello World',
+      sortKey: 0,
       points: 20,
       course: courseID,
       rubric: [
-        {
-          category: 'Style',
-          cap: 5,
-          comments: [
-            {
-              text: 'Too few comments.',
-              points: 1,
-            },
-            {
-              text: 'Unclear variable name. Try to give your variables names that reflect their contents',
-              points: 1,
-            },
-            {
-              text: 'Inconsistent indentation. Pick a scheme and stick to it.',
-              points: 1,
-            },
-          ],
-        },
         {
           category: 'Correctness',
           cap: 5,
@@ -192,7 +161,7 @@ const demoAssignments = (courseID: number) => {
               points: 1,
             },
             {
-              text: 'You didn\t print anything out!',
+              text: "You didn't print anything out!",
               points: 2,
             },
           ],
@@ -201,42 +170,53 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Loops',
+      sortKey: 1,
       points: 20,
       course: courseID,
       rubric: [
         {
-          category: 'Style',
+          category: 'Max',
           cap: 5,
           comments: [
             {
-              text: 'Too few comments.',
+              text: 'Incorrectly initializes maximum element.',
               points: 1,
             },
             {
-              text: 'Unclear variable name. Try to give your variables names that reflect their contents',
-              points: 1,
+              text: "Doesn't correctly store max value.",
+              points: 2,
             },
             {
-              text: 'Inconsistent indentation. Pick a scheme and stick to it.',
-              points: 1,
+              text: "Doesn't correctly loop through array.",
+              points: 3,
             },
           ],
         },
         {
-          category: 'Correctness',
+          category: 'Reverse',
           cap: 5,
           comments: [
             {
-              text: 'You printed out the wrong string!',
-              points: 1,
+              text: 'Correct in-place merge: nice job!',
+              points: -1,
             },
             {
-              text: 'You forgot to print a newline at the end of your string!',
-              points: 1,
-            },
-            {
-              text: 'You didn\t print anything out!',
+              text: 'Incorrectly swaps elements on some inputs.',
               points: 2,
+            },
+            {
+              text: "Doesn't correctly loop through array.",
+              points: 3,
+            },
+          ],
+        },
+        {
+          category: 'Contains',
+          cap: 5,
+          comments: [
+            {
+              text: 'Incorrectly splits array while searching.',
+              points: -1,
             },
           ],
         },
@@ -244,42 +224,39 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Recursion',
+      sortKey: 3,
       points: 20,
       course: courseID,
       rubric: [
         {
-          category: 'Style',
+          category: 'sum',
           cap: 5,
           comments: [
             {
-              text: 'Too few comments.',
+              text: 'No base case',
               points: 1,
             },
             {
-              text: 'Unclear variable name. Try to give your variables names that reflect their contents',
+              text: 'Uses extra arrays',
               points: 1,
             },
             {
-              text: 'Inconsistent indentation. Pick a scheme and stick to it.',
+              text: "Doesn't gracefully handle length-0 arrays.",
               points: 1,
             },
           ],
         },
         {
-          category: 'Correctness',
+          category: 'contains',
           cap: 5,
           comments: [
             {
-              text: 'You printed out the wrong string!',
+              text: 'No base case',
               points: 1,
             },
             {
-              text: 'You forgot to print a newline at the end of your string!',
+              text: 'Uses extra arrays',
               points: 1,
-            },
-            {
-              text: 'You didn\t print anything out!',
-              points: 2,
             },
           ],
         },
