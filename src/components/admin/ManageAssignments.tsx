@@ -1114,22 +1114,32 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 onBlur={this.updateAssignmentPoints}
                 customSize="font-size-xxlarge"
               />
-              <SelectionControl
-                id="assignment-release-checkbox"
-                name="assignment-release-checkbox"
-                className="admin-rubric__assignment__isReleased"
-                type="switch"
-                label="Released"
-                defaultChecked={activeAssignment.isReleased}
-                disabled={lockManageAssignment}
-                onChange={this.props.updateAssignment.bind(
-                  this.props,
-                  activeAssignment.id,
-                  undefined,
-                  undefined,
-                  !activeAssignment.isReleased,
-                )}
-              />
+              <Tooltipped
+                key="assignment-release"
+                label="If published, students with finalized submissions can view their submissions."
+                delay={250}
+                position="top"
+                setPosition={true}
+                style={{ height: '50px' }}
+              >
+                <div className="admin-rubric__assignment__isReleased">
+                  <SelectionControl
+                    id="assignment-release-checkbox"
+                    name="assignment-release-checkbox"
+                    type="switch"
+                    label="Published to students"
+                    defaultChecked={activeAssignment.isReleased}
+                    disabled={lockManageAssignment}
+                    onChange={this.props.updateAssignment.bind(
+                      this.props,
+                      activeAssignment.id,
+                      undefined,
+                      undefined,
+                      !activeAssignment.isReleased,
+                    )}
+                  />
+                </div>
+              </Tooltipped>
             </div>
             <RubricFileDialog
               activeAssignment={this.state.activeAssignment}
