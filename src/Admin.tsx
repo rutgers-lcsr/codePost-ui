@@ -1297,15 +1297,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Manage assignments API calls  ------------------
   // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
   // returned assignment should never by the child, only used to change state, and it renders faster on testing
+
   public updateAssignment = (
     assignmentID: number,
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
+    hideGrades: boolean | undefined,
   ): Promise<void> => {
     const { assignments } = this.state;
 
-    if (!name && !points && typeof isReleased === 'undefined') {
+    if (!name && !points && isReleased === undefined && hideGrades === undefined) {
       return Promise.reject();
     }
 
@@ -1313,6 +1315,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'name', name);
     addToPayload(payload, 'points', points);
     addToPayload(payload, 'isReleased', isReleased);
+    addToPayload(payload, 'hideGrades', hideGrades);
 
     return Assignment.update(payload)
       .then((assignment) => {
@@ -1321,6 +1324,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assn.name = assignment.name;
             assn.points = assignment.points;
             assn.isReleased = assignment.isReleased;
+            assn.hideGrades = assignment.hideGrades;
           }
         });
         this.setState({ assignments }, () => this.props.addToast('Assignment has been updated', undefined));
@@ -1348,6 +1352,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       name: aName,
       points: aPoints,
       isReleased: false,
+      hideGrades: false,
       rubricCategories: [],
     };
 
