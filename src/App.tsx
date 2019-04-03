@@ -198,6 +198,7 @@ class App extends React.Component<{}, IState> {
           user: json.user,
           toRedirect: true,
         });
+        (window as any).gtag('set', { user_id: json.user.id });
       })
       .catch((error) => {
         localStorage.removeItem('token');
