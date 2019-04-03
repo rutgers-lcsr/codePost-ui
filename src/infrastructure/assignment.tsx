@@ -12,6 +12,7 @@ const AssignmentV = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
@@ -31,6 +32,7 @@ const AssignmentVPost = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
     }),
     t.partial({
@@ -47,6 +49,7 @@ const AssignmentVPatch = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
     }),
