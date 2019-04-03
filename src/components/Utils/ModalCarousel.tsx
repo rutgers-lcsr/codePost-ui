@@ -3,6 +3,8 @@ import { Button } from 'react-md';
 import { Link } from 'react-router-dom';
 import { createDemoCourse } from './DemoCourse';
 
+import { CourseType } from '../../infrastructure/course';
+
 interface ISlide {
   imgLink: string;
   text: string | any;
@@ -18,6 +20,7 @@ interface IProps {
   onlyImage: boolean;
   userEmail?: string;
   demoCreated: boolean;
+  onDemoCreate?: (course: CourseType) => void;
 }
 
 interface IState {
@@ -74,10 +77,14 @@ class ModalCarousel extends React.Component<IProps, IState> {
     this.props.closeModal();
   };
 
-  public demoCourseHanlder = (name: string, org: string) => {
+  public demoCourseHandler = (name: string, org: string) => {
     this.setState({ creatingDemoCourse: true }, () => {
       createDemoCourse(name, org).then((course) => {
-        window.location.reload();
+        if (typeof this.props.onDemoCreate !== 'undefined') {
+          this.props.onDemoCreate(course);
+        } else {
+          window.location.reload();
+        }
       });
     });
   };
@@ -134,7 +141,7 @@ class ModalCarousel extends React.Component<IProps, IState> {
             <Button
               className={`${className}__demo__button`}
               raised
-              onClick={this.demoCourseHanlder.bind(
+              onClick={this.demoCourseHandler.bind(
                 this,
                 `${this.props.userEmail.split('@')[0]}'s course`,
                 this.props.userEmail.split('@')[1],

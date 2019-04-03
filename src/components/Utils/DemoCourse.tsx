@@ -37,7 +37,9 @@ const createDemoCourse = (username: string, org: string) => {
             return createSubmissions(assignment);
           });
 
-          return Promise.all(makeSubmissions);
+          return Promise.all(makeSubmissions).then(() => {
+            return course;
+          });
         });
       });
     });
@@ -56,6 +58,11 @@ const createAssignment = (course: CourseType, assignment: any) => {
   };
 
   return Assignment.create(assnPayload).then((assnObj: AssignmentType) => {
+    // Update course object with assignment ids. This step is necessary to allow
+    // the Admin component to load these assignments when the active course is switched
+    // to the newly created demo course in changeLoadedCourse.
+    course.assignments.push(assnObj.id);
+
     // Create rubric
     const makeCategories = assignment.rubric.map((category: any) => {
       const catPayload = {
@@ -95,7 +102,6 @@ const createSubmissions = (assignment: AssignmentType) => {
   const subTemplates = demoSubmissions(assignment.name);
   return Assignment.readRubric(assignment.id, {}).then((rubric) => {
     const rubricComments = rubric.rubricComments;
-    console.log(rubricComments);
     const makeSubs = subTemplates.map((subT) => {
       const payload = {
         id: -1, // codePost convention
@@ -130,7 +136,6 @@ const createSubmissions = (assignment: AssignmentType) => {
                 });
                 if (typeof rubricMatch !== 'undefined') {
                   rubricID = rubricMatch.id;
-                  console.log(rubricID);
                 }
               }
 

@@ -1627,6 +1627,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
     });
   };
+
+  public handleDemoCourse = (course: CourseType) => {
+    const newCourses = this.state.courses;
+    newCourses.push(course);
+    this.setState({ courses: newCourses, toLoadCourse: true }, () => {
+      this.props.addCourse(course);
+      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+      this.props.addLongToast('Demo course successfully created.', undefined);
+    });
+    return;
+  };
+
   // ------------------- Set loading dialogs -------------------
   public setLoadingDialog = (title: string, message: string) => {
     this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
@@ -1911,6 +1923,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           className="onboarding-carousel-modal"
           onlyImage={false}
           userEmail={this.props.user.email}
+          onDemoCreate={this.handleDemoCourse}
           demoCreated={
             typeof this.state.courses.find((el) => {
               return el.period === 'demo';
