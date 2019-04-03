@@ -1,4 +1,8 @@
 .dialog {
+  &--new-assignment {
+    display: inline-block;
+  }
+
   &--section {
     border: 1px solid $brand-color;
     padding: 10px;

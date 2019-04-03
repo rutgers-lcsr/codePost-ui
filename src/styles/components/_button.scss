@@ -167,6 +167,12 @@
       background-color: inherit;
     }
   }
+
+  &--download-assignments {
+    float: right;
+    background-color: $normal-grey;
+    color: white;
+  }
 }
 
 .react-select__option {

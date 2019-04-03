@@ -196,7 +196,7 @@ class ManageStudents extends React.Component<IProps, IState> {
 
   public getSectionIDFromName = (sectionName: string) => {
     const thisSection = this.props.sections.find((section) => {
-      return section.name === sectionName;
+      return section.name.trim() === sectionName.trim();
     });
     return thisSection ? thisSection.id : undefined;
   };

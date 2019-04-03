@@ -86,7 +86,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
     );
 
     return (
-      <div>
+      <div className="dialog--new-assignment">
         <Button raised onClick={this.toggleDialog}>
           Add a new assignment
         </Button>

@@ -35,7 +35,7 @@ import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissi
 
 import { openSubmission } from './AdminUtils';
 
-interface IProps {
+export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[];
   rubricCategories: IAssignmentToRubricCategories;
@@ -101,7 +101,7 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
 }
 
-interface IState {
+interface IManageAssignmentsState {
   activeAssignment: AssignmentType | undefined;
   activeRubricCategories: RubricCategoryType[] | undefined;
   activeRubricComments: IRubricCategoryToRubricCommentsMap | undefined;
@@ -119,6 +119,7 @@ interface IState {
   deletingAssignment?: AssignmentType;
   drawerVisible: boolean;
   drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  isDownloading: boolean;
 }
 
 export enum DRAWER_TYPE {
@@ -129,8 +130,8 @@ export enum DRAWER_TYPE {
   Missing,
 }
 
-class ManageAssignments extends React.Component<IProps, {}> {
-  public state: Readonly<IState> = {
+class ManageAssignments extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
+  public state: Readonly<IManageAssignmentsState> = {
     activeAssignment: undefined,
     activeRubricCategories: undefined,
     activeRubricComments: undefined,
@@ -142,12 +143,13 @@ class ManageAssignments extends React.Component<IProps, {}> {
     savedCategories: {},
     drawerVisible: false,
     drawerContent: { title: '', subtitle: '', content: [] },
+    isDownloading: false,
   };
 
   public assignmentNameField: any;
   public assignmentPointsField: any;
 
-  constructor(props: IProps) {
+  constructor(props: IManageAssignmentsProps) {
     super(props);
     this.assignmentNameField = React.createRef();
     this.assignmentPointsField = React.createRef();
@@ -581,11 +583,10 @@ class ManageAssignments extends React.Component<IProps, {}> {
     if (!currentCourse) {
       return;
     }
-    console.log('Downloading!');
 
     const subs = submissions[assignment.id];
 
-    const grades: string[] = ['Student,Grade'];
+    const grades: string[] = [`Student,${assignment.name} Grade`];
     subs.forEach((sub) => {
       sub.students.forEach((student) => {
         if (this.props.students.includes(student)) {
@@ -601,6 +602,50 @@ class ManageAssignments extends React.Component<IProps, {}> {
 
     document.body.appendChild(a);
     a.click();
+  };
+
+  public getAllGrades = (
+    assignments: AssignmentType[],
+    submissions: IAssignmentToSubmissionsMap,
+    students: string[],
+  ) => {
+    const columns: string[] = ['Active Student'].concat(
+      assignments.map((assignment: AssignmentType) => {
+        return assignment.name;
+      }),
+    );
+
+    const csv = [columns];
+    students.forEach((student: string) => {
+      const row: string[] = [student];
+      assignments.forEach((assignment: AssignmentType) => {
+        const sub = submissions[assignment.id].find((submission: SubmissionType) => {
+          return submission.students.includes(student);
+        });
+        const grade = sub && sub.grade ? sub.grade.toString() : '';
+        row.push(grade);
+      });
+      csv.push(row);
+    });
+
+    return csv;
+  };
+
+  public downloadAllGrades = () => {
+    if (!this.props.currentCourse) {
+      return;
+    }
+
+    this.setState({ isDownloading: true });
+    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8, ${csv}`;
+    a.download = `${this.props.currentCourse.name}-${this.props.currentCourse.period}-grades.csv`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    this.setState({ isDownloading: false });
   };
 
   // This function is called when a an assignment drawer is opened
@@ -897,6 +942,16 @@ class ManageAssignments extends React.Component<IProps, {}> {
             addErrorToast={this.props.addErrorToast}
             createAssignment={this.props.createAssignment}
           />
+          {this.state.isDownloading ? (
+            <Button raised className="button--download-assignments">
+              Downloading...
+            </Button>
+          ) : (
+            <Button raised className="button--download-assignments" onClick={this.downloadAllGrades}>
+              Download All Grades
+            </Button>
+          )}
+
           <div className="padding" />
           {submissionsLoadComplete && assignmentRubricLoadComplete ? (
             <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
@@ -1059,22 +1114,32 @@ class ManageAssignments extends React.Component<IProps, {}> {
                 onBlur={this.updateAssignmentPoints}
                 customSize="font-size-xxlarge"
               />
-              <SelectionControl
-                id="assignment-release-checkbox"
-                name="assignment-release-checkbox"
-                className="admin-rubric__assignment__isReleased"
-                type="switch"
-                label="Released"
-                defaultChecked={activeAssignment.isReleased}
-                disabled={lockManageAssignment}
-                onChange={this.props.updateAssignment.bind(
-                  this.props,
-                  activeAssignment.id,
-                  undefined,
-                  undefined,
-                  !activeAssignment.isReleased,
-                )}
-              />
+              <Tooltipped
+                key="assignment-release"
+                label="If published, students with finalized submissions can view their submissions."
+                delay={250}
+                position="top"
+                setPosition={true}
+                style={{ height: '50px' }}
+              >
+                <div className="admin-rubric__assignment__isReleased">
+                  <SelectionControl
+                    id="assignment-release-checkbox"
+                    name="assignment-release-checkbox"
+                    type="switch"
+                    label="Published to students"
+                    defaultChecked={activeAssignment.isReleased}
+                    disabled={lockManageAssignment}
+                    onChange={this.props.updateAssignment.bind(
+                      this.props,
+                      activeAssignment.id,
+                      undefined,
+                      undefined,
+                      !activeAssignment.isReleased,
+                    )}
+                  />
+                </div>
+              </Tooltipped>
             </div>
             <RubricFileDialog
               activeAssignment={this.state.activeAssignment}
