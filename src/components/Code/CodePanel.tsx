@@ -154,7 +154,9 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         </TabList>
         {files.map((file: FileType, i: number) => {
           const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
+
           const isJupyter = file.extension === ('ipynb' || '.ipynb');
+          const isMarkdown = isJupyter || file.extension === ('md' || '.md');
           const markdown = isJupyter ? this.getMarkdownFromJupyter(file.code) : file.code;
 
           return (
@@ -163,7 +165,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
                 <div className={'grade__main-container__scroll-indicator'}>scroll>>></div>
               ) : null}
 
-              {isJupyter ? (
+              {isMarkdown ? (
                 <MarkdownCode
                   submission={this.props.submission}
                   file={file}

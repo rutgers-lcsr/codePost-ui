@@ -93,6 +93,7 @@ export interface IManageAssignmentsProps {
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
+    hideGrades: boolean | undefined,
   ) => Promise<void>;
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
 
@@ -434,7 +435,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   public updateAssignmentName = () => {
     const { activeAssignment } = this.state;
     if (activeAssignment && activeAssignment.name !== this.assignmentNameField.getField().value) {
-      this.props.updateAssignment(activeAssignment.id, this.assignmentNameField.getField().value, undefined, undefined);
+      this.props.updateAssignment(
+        activeAssignment.id,
+        this.assignmentNameField.getField().value,
+        undefined,
+        undefined,
+        undefined,
+      );
     }
   };
 
@@ -445,6 +452,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         activeAssignment.id,
         undefined,
         this.assignmentPointsField.getField().value,
+        undefined,
         undefined,
       );
     }
@@ -1114,32 +1122,51 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 onBlur={this.updateAssignmentPoints}
                 customSize="font-size-xxlarge"
               />
-              <Tooltipped
-                key="assignment-release"
-                label="If published, students with finalized submissions can view their submissions."
-                delay={250}
-                position="top"
-                setPosition={true}
-                style={{ height: '50px' }}
-              >
-                <div className="admin-rubric__assignment__isReleased">
-                  <SelectionControl
-                    id="assignment-release-checkbox"
-                    name="assignment-release-checkbox"
-                    type="switch"
-                    label="Published to students"
-                    defaultChecked={activeAssignment.isReleased}
-                    disabled={lockManageAssignment}
-                    onChange={this.props.updateAssignment.bind(
-                      this.props,
-                      activeAssignment.id,
-                      undefined,
-                      undefined,
-                      !activeAssignment.isReleased,
-                    )}
-                  />
-                </div>
-              </Tooltipped>
+
+              <div className="admin-rubric__assignment__isReleased">
+                <Tooltipped
+                  key="assignment-release"
+                  label="If published, students with finalized submissions can view their submissions."
+                  delay={250}
+                  position="top"
+                  setPosition={true}
+                  style={{ height: '50px' }}
+                >
+                  <div>
+                    <SelectionControl
+                      id="assignment-release-checkbox"
+                      name="assignment-release-checkbox"
+                      type="switch"
+                      label="Published to students"
+                      defaultChecked={activeAssignment.isReleased}
+                      disabled={lockManageAssignment}
+                      onChange={this.props.updateAssignment.bind(
+                        this.props,
+                        activeAssignment.id,
+                        undefined,
+                        undefined,
+                        !activeAssignment.isReleased,
+                      )}
+                    />
+                  </div>
+                </Tooltipped>
+                <SelectionControl
+                  id="assignment-hide-grades-checkbox"
+                  name="assignment-hide-grades-checkbox"
+                  type="switch"
+                  label="Hide grades"
+                  defaultChecked={activeAssignment.hideGrades}
+                  disabled={lockManageAssignment}
+                  onChange={this.props.updateAssignment.bind(
+                    this.props,
+                    activeAssignment.id,
+                    undefined,
+                    undefined,
+                    undefined,
+                    !activeAssignment.hideGrades,
+                  )}
+                />
+              </div>
             </div>
             <RubricFileDialog
               activeAssignment={this.state.activeAssignment}
