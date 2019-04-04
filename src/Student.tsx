@@ -14,7 +14,7 @@ import { CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 import { loadIDList } from './infrastructure/generics';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { Submission, SubmissionStatusType } from './infrastructure/submission';
+import { StudentSubmissionType, Submission } from './infrastructure/submission';
 
 interface IStudentState {
   courses: CourseType[];
@@ -26,7 +26,7 @@ interface IStudentState {
 
   currentCourse?: CourseType;
   currentAssignment?: AssignmentType;
-  currentSubmission?: SubmissionStatusType;
+  currentSubmission?: StudentSubmissionType;
 
   isLoggedIn: boolean;
   redirect: boolean;
