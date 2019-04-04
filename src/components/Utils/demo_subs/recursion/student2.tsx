@@ -1,0 +1,57 @@
+const submission = (domain: string) => {
+  const studentEmail = `student2@${domain}`;
+  const graderEmail = `grader4@${domain}`;
+  const sectionName = 'Section 1';
+  const partnerEmail = `student7@${domain}`;
+  const partnerSection = 'Section 3';
+
+  return {
+    students: [studentEmail, partnerEmail],
+    isFinalized: true,
+    grader: graderEmail,
+    files: [
+      {
+        name: 'RecursionUtils.java',
+        ext: 'java',
+        /* tslint:disable */
+        code: `/******************************************************************************\n *  Student: ${studentEmail}\n *  Section: ${sectionName}\n *\n *  Partner: ${partnerEmail}\n *  Partner section: ${partnerSection}\n *\n *  Description:  Includes a few utility functions for working with int arrays.\n *  Implemented using recursion.\n *\n ******************************************************************************/\n\nimport java.util.Arrays;\n\npublic class RecursionUtils {\n\n  // Return sum of values contained within int array\n  public static int sum(int[] arr) {\n    if (arr.length == 0) {\n      return 0;\n    }\n\n    return sumHelper(arr, 0);\n  }\n\n  private static int sumHelper(int[] arr, int index) {\n    if (index == arr.length - 1) {\n      // If we have reached the end of the array, return value only\n      return arr[index];\n    } else {\n      // Peel off value and increment index\n      return arr[index] + sumHelper(arr, ++index);\n    }\n  }\n\n  // Find an element in a (sorted) int array using binary search\n  public static boolean contains(int[] arr, int el) {\n    int lower = 0;\n    int upper = arr.length - 1;\n    return containsHelper(arr, el, 0, arr.length);\n  }\n\n  private static boolean containsHelper(int[] arr, int el, int lower, int upper) {\n    int midpoint = (lower + upper) / 2;\n\n    // Have we searched the entire array?\n    if (lower > upper) {\n      return false;\n    } else {\n      // Search the top half of the array\n      if (arr[midpoint] < el) {\n        return containsHelper(arr, el, midpoint+1, upper);\n      }\n\n      // Srearch the bottom half of the array\n      if (arr[midpoint] > el) {\n        return containsHelper(arr, el, 0, midpoint-1);\n      }\n\n      // we found the element\n      return true;\n    }\n  }\n\n}`,
+        /* tslint:ensable */
+        comments: [
+          {
+            text: 'nice!',
+            startChar: 4,
+            endChar: 26,
+            startLine: 18,
+            endLine: 18,
+            pointDelta: 0,
+            author: graderEmail,
+            rubric: null,
+          },
+          {
+            text:
+              'While this function will work for well-formatted inputs, you should perform a check to make sure `index < arr.length` before accessing `arr[index]`.',
+            startChar: 2,
+            endChar: 52,
+            startLine: 25,
+            endLine: 25,
+            pointDelta: 0,
+            author: graderEmail,
+            rubric: null,
+          },
+          {
+            text: 'Really great job on this assignment! You rocked recursion.',
+            startChar: 13,
+            endChar: 27,
+            startLine: 14,
+            endLine: 14,
+            pointDelta: 0,
+            author: graderEmail,
+            rubric: null,
+          },
+        ],
+      },
+    ],
+  };
+};
+
+export default submission;
