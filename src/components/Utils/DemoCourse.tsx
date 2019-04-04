@@ -55,6 +55,7 @@ const createAssignment = (course: CourseType, assignment: any) => {
     isReleased: false,
     rubricCategories: [], // ignored by API
     sortKey: assignment.sortKey,
+    hideGrades: false,
   };
 
   return Assignment.create(assnPayload).then((assnObj: AssignmentType) => {
