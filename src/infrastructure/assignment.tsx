@@ -3,7 +3,7 @@ import { createObject, deleteObject, GenericObject, readObject, readObjectDetail
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { SubmissionStatusV, SubmissionV } from './submission';
+import { StudentSubmissionV, SubmissionV } from './submission';
 
 const AssignmentV = t.intersection(
   [
@@ -12,6 +12,7 @@ const AssignmentV = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
@@ -31,6 +32,7 @@ const AssignmentVPost = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
     }),
     t.partial({
@@ -47,6 +49,7 @@ const AssignmentVPatch = t.intersection(
       name: t.string,
       points: t.number,
       isReleased: t.boolean,
+      hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
     }),
@@ -76,7 +79,7 @@ class Assignment {
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
-  public static readSubmissionsStudent = readObjectDetail(t.array(SubmissionStatusV), 'assignments', 'submissions');
+  public static readSubmissionsStudent = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
 }
 
 const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {

@@ -14,7 +14,7 @@ import { CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 import { loadIDList } from './infrastructure/generics';
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { Submission, SubmissionStatusType } from './infrastructure/submission';
+import { StudentSubmissionType, Submission } from './infrastructure/submission';
 
 interface IStudentState {
   courses: CourseType[];
@@ -26,7 +26,7 @@ interface IStudentState {
 
   currentCourse?: CourseType;
   currentAssignment?: AssignmentType;
-  currentSubmission?: SubmissionStatusType;
+  currentSubmission?: StudentSubmissionType;
 
   isLoggedIn: boolean;
   redirect: boolean;
@@ -306,23 +306,26 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     let contentArea;
     if (currentSubmission && currentAssignment && currentSubmission.isFinalized) {
+      const gradeBox = currentAssignment.hideGrades ? null : (
+        <div className="student__grade-container">
+          <div className="student__grade-container__top">
+            <div>
+              Grade: {currentSubmission!.grade} / {currentAssignment!.points}
+            </div>
+            {stats}
+          </div>
+          {messages.length > 0 ? (
+            <div className="student__grade-container__bottom">
+              <div>Category points exceeded: {messages.join(', ')}</div>
+            </div>
+          ) : (
+            <div />
+          )}
+        </div>
+      );
       contentArea = (
         <div className="student__submission-view">
-          <div className="student__grade-container">
-            <div className="student__grade-container__top">
-              <div>
-                Grade: {currentSubmission!.grade} / {currentAssignment!.points}
-              </div>
-              {stats}
-            </div>
-            {messages.length > 0 ? (
-              <div className="student__grade-container__bottom">
-                <div>Category points exceeded: {messages.join(', ')}</div>
-              </div>
-            ) : (
-              <div />
-            )}
-          </div>
+          {gradeBox}
           <ReadOnlyCodePanel
             submission={currentSubmission!}
             files={files}

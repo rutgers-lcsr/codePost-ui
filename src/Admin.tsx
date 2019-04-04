@@ -1297,15 +1297,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Manage assignments API calls  ------------------
   // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
   // returned assignment should never by the child, only used to change state, and it renders faster on testing
+
   public updateAssignment = (
     assignmentID: number,
     name: string | undefined,
     points: number | undefined,
     isReleased: boolean | undefined,
+    hideGrades: boolean | undefined,
   ): Promise<void> => {
     const { assignments } = this.state;
 
-    if (!name && !points && typeof isReleased === 'undefined') {
+    if (!name && !points && isReleased === undefined && hideGrades === undefined) {
       return Promise.reject();
     }
 
@@ -1313,6 +1315,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     addToPayload(payload, 'name', name);
     addToPayload(payload, 'points', points);
     addToPayload(payload, 'isReleased', isReleased);
+    addToPayload(payload, 'hideGrades', hideGrades);
 
     return Assignment.update(payload)
       .then((assignment) => {
@@ -1321,6 +1324,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             assn.name = assignment.name;
             assn.points = assignment.points;
             assn.isReleased = assignment.isReleased;
+            assn.hideGrades = assignment.hideGrades;
           }
         });
         this.setState({ assignments }, () => this.props.addToast('Assignment has been updated', undefined));
@@ -1348,6 +1352,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       name: aName,
       points: aPoints,
       isReleased: false,
+      hideGrades: false,
       rubricCategories: [],
     };
 
@@ -1627,6 +1632,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
     });
   };
+
+  public handleDemoCourse = (course: CourseType) => {
+    const newCourses = this.state.courses;
+    newCourses.push(course);
+    this.setState({ courses: newCourses, toLoadCourse: true }, () => {
+      this.props.addCourse(course);
+      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+      this.props.addLongToast('Demo course successfully created.', undefined);
+    });
+    return;
+  };
+
   // ------------------- Set loading dialogs -------------------
   public setLoadingDialog = (title: string, message: string) => {
     this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
@@ -1910,6 +1927,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           isModal={true}
           className="onboarding-carousel-modal"
           onlyImage={false}
+          userEmail={this.props.user.email}
+          onDemoCreate={this.handleDemoCourse}
+          demoCreated={
+            typeof this.state.courses.find((el) => {
+              return el.period === 'demo';
+            }) !== 'undefined'
+          }
         />
       </div>
     );

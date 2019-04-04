@@ -7,7 +7,7 @@ import { openSubmission } from '../admin/AdminUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { sortSubmissions, SubmissionStatusType, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, StudentSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
@@ -55,7 +55,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         return Promise.all(
           section.students.map((student) => {
             return Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
-              (subs: SubmissionStatusType[]) => {
+              (subs: StudentSubmissionType[]) => {
                 if (subs.length === 0) {
                   return { student, submission: null };
                 } else {
