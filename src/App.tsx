@@ -169,6 +169,7 @@ class App extends React.Component<{}, IState> {
       .then((json) => {
         localStorage.setItem('token', json.token);
         setInterval(this.refreshToken, REFRESH_INT);
+        (window as any).gtag('set', { user_id: json.user.id });
       })
       .catch((error) => {
         this.handleLogout();
