@@ -25,7 +25,7 @@ const SubmissionV = t.intersection(
   'Submission',
 );
 
-const SubmissionStatusV = t.intersection(
+const StudentSubmissionV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -35,9 +35,7 @@ const SubmissionStatusV = t.intersection(
     }),
     t.partial({
       files: t.array(t.number),
-      dateEdited: t.string,
       grade: t.union([t.number, t.null]),
-      grader: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
@@ -74,7 +72,7 @@ const SubmissionVPatch = t.intersection(
 );
 
 type SubmissionType = t.TypeOf<typeof SubmissionV>;
-type SubmissionStatusType = t.TypeOf<typeof SubmissionStatusV>;
+type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
 
 class Submission {
   public static create = createObject(SubmissionV, SubmissionVPost, 'submissions');
@@ -83,7 +81,7 @@ class Submission {
   public static delete = deleteObject(SubmissionV, 'submissions');
 
   public static loadData = async (
-    submission: SubmissionType | SubmissionStatusType,
+    submission: SubmissionType | StudentSubmissionType,
   ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
     if (!submission.files) {
       return [[], {}, {}];
@@ -153,4 +151,4 @@ function sortSubmissions(sortType: SUBMISSION_SORT_TYPE, ascending: boolean, a: 
   return 0;
 }
 
-export { SubmissionType, Submission, SubmissionV, SubmissionStatusV, SubmissionStatusType, sortSubmissions };
+export { SubmissionType, Submission, SubmissionV, StudentSubmissionV, StudentSubmissionType, sortSubmissions };
