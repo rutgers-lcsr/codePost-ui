@@ -866,6 +866,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
         const menuItems = [
           {
+            leftIcon: <FontIcon>toc</FontIcon>,
+            primaryText: 'Edit Rubric',
+            onClick: onCellClick,
+          },
+          {
             leftIcon: <FontIcon>vertical_align_bottom</FontIcon>,
             primaryText: 'Download Grades',
             onClick: downloadGrades,
@@ -884,18 +889,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
         return (
           <TableRow key={assignmentID}>
-            <Tooltipped
-              key={assignmentID}
-              label="Click to open Assignment rubric"
-              delay={250}
-              position="top"
-              setPosition={true}
-              style={{ height: '50px', left: '5px' }}
-            >
-              <TableColumn key={`${assignmentID}-1`} onClick={onCellClick} style={{ cursor: 'pointer' }}>
-                {assignment.name}
-              </TableColumn>
-            </Tooltipped>
+            <TableColumn key={`${assignmentID}-1`}>{assignment.name}</TableColumn>
             <TableColumn
               key={`${assignmentID}-2`}
               onClick={
@@ -939,6 +933,21 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             </TableColumn>
             <TableColumn key={`${assignmentID}-7`}>{mean}</TableColumn>
             <TableColumn key={`${assignmentID}-8`}>{median}</TableColumn>
+            <TableColumn key={`${assignmentID}-9`}>
+              <SelectionControl
+                id={`${assignmentID}-release-checkbox`}
+                name="assignment-release-checkbox"
+                type="switch"
+                defaultChecked={assignment.isReleased}
+                onChange={this.props.updateAssignment.bind(
+                  this,
+                  assignment.id,
+                  undefined,
+                  undefined,
+                  !assignment.isReleased,
+                )}
+              />
+            </TableColumn>
             <MenuButtonColumn icon menuItems={menuItems}>
               more_vert
             </MenuButtonColumn>
@@ -981,6 +990,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <TableColumn key={'NumMissing'}># missing</TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
+                  <Tooltipped
+                    key="assignment-release"
+                    label="If published, students with finalized submissions can view their submissions."
+                    delay={250}
+                    position="top"
+                    setPosition={true}
+                    style={{ height: '50px' }}
+                  >
+                    <TableColumn key={'Publish'}>Published</TableColumn>
+                  </Tooltipped>
                   <TableColumn key={'Menu'} />
                 </TableRow>
               </TableHeader>
@@ -1130,32 +1149,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
 
               <div className="admin-rubric__assignment__isReleased">
-                <Tooltipped
-                  key="assignment-release"
-                  label="If published, students with finalized submissions can view their submissions."
-                  delay={250}
-                  position="top"
-                  setPosition={true}
-                  style={{ height: '50px' }}
-                >
-                  <div>
-                    <SelectionControl
-                      id="assignment-release-checkbox"
-                      name="assignment-release-checkbox"
-                      type="switch"
-                      label="Published to students"
-                      defaultChecked={activeAssignment.isReleased}
-                      disabled={lockManageAssignment}
-                      onChange={this.props.updateAssignment.bind(
-                        this.props,
-                        activeAssignment.id,
-                        undefined,
-                        undefined,
-                        !activeAssignment.isReleased,
-                      )}
-                    />
-                  </div>
-                </Tooltipped>
                 <SelectionControl
                   id="assignment-hide-grades-checkbox"
                   name="assignment-hide-grades-checkbox"
