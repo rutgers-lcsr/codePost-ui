@@ -4,6 +4,8 @@ import {
   CircularProgress,
   DataTable,
   Drawer,
+  FontIcon,
+  MenuButtonColumn,
   SelectionControl,
   TableBody,
   TableColumn,
@@ -862,6 +864,24 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         const onCellClick = this.changeActiveAssignment.bind(this.props, assignment);
         const downloadGrades = this.downloadGrades.bind(this.props, assignment);
 
+        const menuItems = [
+          {
+            leftIcon: <FontIcon>vertical_align_bottom</FontIcon>,
+            primaryText: 'Download Grades',
+            onClick: downloadGrades,
+          },
+          {
+            leftIcon: <FontIcon>vertical_align_top</FontIcon>,
+            primaryText: 'Upload Submission',
+            onClick: this.toggleUploadSubmission.bind(this.props, assignment),
+          },
+          {
+            leftIcon: <FontIcon>cancel</FontIcon>,
+            primaryText: 'Delete Assignment',
+            onClick: this.toggleDeleteAssignment.bind(this.props, assignment),
+          },
+        ];
+
         return (
           <TableRow key={assignmentID}>
             <Tooltipped
@@ -919,21 +939,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             </TableColumn>
             <TableColumn key={`${assignmentID}-7`}>{mean}</TableColumn>
             <TableColumn key={`${assignmentID}-8`}>{median}</TableColumn>
-            <TableColumn>
-              <Button icon={true} onClick={downloadGrades}>
-                vertical_align_bottom
-              </Button>
-            </TableColumn>
-            <TableColumn style={{ textAlign: 'center' }}>
-              <Button icon={true} onClick={this.toggleUploadSubmission.bind(this.props, assignment)}>
-                vertical_align_top
-              </Button>
-            </TableColumn>
-            <TableColumn>
-              <Button icon={true} onClick={this.toggleDeleteAssignment.bind(this.props, assignment)}>
-                cancel
-              </Button>
-            </TableColumn>
+            <MenuButtonColumn icon menuItems={menuItems}>
+              more_vert
+            </MenuButtonColumn>
           </TableRow>
         );
       });
@@ -973,9 +981,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <TableColumn key={'NumMissing'}># missing</TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
-                  <TableColumn key={'Grades'}>Grades</TableColumn>
-                  <TableColumn key={'UploadSubmission'}>Upload Submission</TableColumn>
-                  <TableColumn key={'Delete'}>Delete</TableColumn>
+                  <TableColumn key={'Menu'} />
                 </TableRow>
               </TableHeader>
               <TableBody>{tableBody}</TableBody>
