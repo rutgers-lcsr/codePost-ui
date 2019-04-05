@@ -10,6 +10,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <meta name="msvalidate.01" content="F2C975872A525A89C09930B1404D1231" />
     <!--
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
@@ -44,18 +45,25 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-135074498-1"></script>
 
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-WG9K2MR');</script>
+    <script>
+      (function(w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-WG9K2MR');
+    </script>
     <!-- End Google Tag Manager -->
 
     <!-- Import react-md fonts to speed things along... -->
-    <link rel="preload" href="static/media/roboto-latin-300.55536c8e.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="static/media/roboto-latin-400.5d4aeb4e.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="static/media/roboto-latin-500.28546717.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="static/media/roboto-latin-700.037d8304.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="static/media/roboto-latin-300.55536c8e.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="static/media/roboto-latin-400.5d4aeb4e.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="static/media/roboto-latin-500.28546717.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="static/media/roboto-latin-700.037d8304.woff2" as="font" type="font/woff2" crossorigin />
 
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -102,8 +110,14 @@
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WG9K2MR"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-WG9K2MR"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+      ></iframe
+    ></noscript>
     <!-- End Google Tag Manager (noscript) -->
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root"></div>
