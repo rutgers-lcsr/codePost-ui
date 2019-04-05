@@ -890,6 +890,21 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         return (
           <TableRow key={assignmentID}>
             <TableColumn key={`${assignmentID}-1`}>{assignment.name}</TableColumn>
+            <TableColumn key={`${assignmentID}-9`}>
+              <SelectionControl
+                id={`${assignmentID}-release-checkbox`}
+                name="assignment-release-checkbox"
+                type="switch"
+                defaultChecked={assignment.isReleased}
+                onChange={this.props.updateAssignment.bind(
+                  this,
+                  assignment.id,
+                  undefined,
+                  undefined,
+                  !assignment.isReleased,
+                )}
+              />
+            </TableColumn>
             <TableColumn
               key={`${assignmentID}-2`}
               onClick={
@@ -933,21 +948,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             </TableColumn>
             <TableColumn key={`${assignmentID}-7`}>{mean}</TableColumn>
             <TableColumn key={`${assignmentID}-8`}>{median}</TableColumn>
-            <TableColumn key={`${assignmentID}-9`}>
-              <SelectionControl
-                id={`${assignmentID}-release-checkbox`}
-                name="assignment-release-checkbox"
-                type="switch"
-                defaultChecked={assignment.isReleased}
-                onChange={this.props.updateAssignment.bind(
-                  this,
-                  assignment.id,
-                  undefined,
-                  undefined,
-                  !assignment.isReleased,
-                )}
-              />
-            </TableColumn>
             <MenuButtonColumn icon menuItems={menuItems}>
               more_vert
             </MenuButtonColumn>
@@ -983,13 +983,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               <TableHeader>
                 <TableRow>
                   <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
-                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
-                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
-                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
-                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
-                  <TableColumn key={'NumMissing'}># missing</TableColumn>
-                  <TableColumn key={'Mean'}>Mean Grade</TableColumn>
-                  <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <Tooltipped
                     key="assignment-release"
                     label="If published, students with finalized submissions can view their submissions."
@@ -1000,6 +993,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   >
                     <TableColumn key={'Publish'}>Published</TableColumn>
                   </Tooltipped>
+                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
+                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
+                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
+                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
+                  <TableColumn key={'NumMissing'}># missing</TableColumn>
+                  <TableColumn key={'Mean'}>Mean Grade</TableColumn>
+                  <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <TableColumn key={'Menu'} />
                 </TableRow>
               </TableHeader>
