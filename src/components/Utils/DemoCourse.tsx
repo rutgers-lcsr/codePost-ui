@@ -34,7 +34,7 @@ const createDemoCourse = (username: string, org: string) => {
         return Promise.all(makeSections).then(() => {
           // Make submissions
           const makeSubmissions = assignments.map((assignment) => {
-            return createSubmissions(assignment);
+            return createSubmissions(assignment, org);
           });
 
           return Promise.all(makeSubmissions).then(() => {
@@ -99,8 +99,8 @@ const createAssignment = (course: CourseType, assignment: any) => {
 
 // Need to figure out how to handle the following:
 
-const createSubmissions = (assignment: AssignmentType) => {
-  const subTemplates = demoSubmissions(assignment.name);
+const createSubmissions = (assignment: AssignmentType, domain: string) => {
+  const subTemplates = demoSubmissions(assignment.name, domain);
   return Assignment.readRubric(assignment.id, {}).then((rubric) => {
     const rubricComments = rubric.rubricComments;
     const makeSubs = subTemplates.map((subT) => {
