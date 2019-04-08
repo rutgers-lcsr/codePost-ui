@@ -211,9 +211,19 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public claimSubmission = async (
     assignment: AssignmentType,
-    section?: SectionType,
+    sections: SectionType[],
   ): Promise<SubmissionType | undefined> => {
-    const submission = await this.fetchSubmission(assignment, section);
+    let submission;
+    if (sections.length === 0) {
+      submission = await this.fetchSubmission(assignment, undefined);
+    } else {
+      for (const section of sections) {
+        submission = await this.fetchSubmission(assignment, section);
+        if (submission) {
+          break;
+        }
+      }
+    }
 
     if (submission) {
       this.setState({
