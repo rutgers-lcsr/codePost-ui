@@ -26,7 +26,7 @@ import RubricFileDialog from './ManageAssignmentsComponents/RubricFileDialog';
 import { LinkedCommentsAlert, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
 
 import { CourseType } from '../../infrastructure/course';
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCategoryType, sortRubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionType } from '../../infrastructure/submission';
 
@@ -56,6 +56,7 @@ export interface IManageAssignmentsProps {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | null,
+    sortKey: number,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -81,6 +82,7 @@ export interface IManageAssignmentsProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
+    sortKey: number,
   ) => Promise<void>;
   updateRubricComment: (
     categoryID: number,
@@ -158,10 +160,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
   public changeActiveAssignment = (assignment: AssignmentType | undefined) => {
     const { rubricCategories, rubricComments } = this.props;
+
     if (assignment) {
       this.setState({
         activeAssignment: assignment,
-        activeRubricCategories: JSON.parse(JSON.stringify(rubricCategories[assignment.id])),
+        activeRubricCategories: sortRubricCategory(JSON.parse(JSON.stringify(rubricCategories[assignment.id]))),
         activeRubricComments: JSON.parse(JSON.stringify(rubricComments)),
       });
     } else {
@@ -322,32 +325,34 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           return;
         }
         if (oldID < 0) {
-          this.props.createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, []).then((data) => {
-            if (data) {
-              const newRubricCategories = activeRubricCategories.map((i, index) => {
-                if (index === categoryIndex) {
-                  i.id = data.id;
-                  i.name = data.name;
-                  i.pointLimit = data.pointLimit;
-                  i.rubricComments = data.rubricComments;
-                }
-                return i;
-              });
-              activeRubricComments[data.id] = activeRubricComments[oldID];
-              delete activeRubricComments[oldID];
+          this.props
+            .createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, cat.sortKey, [])
+            .then((data) => {
+              if (data) {
+                const newRubricCategories = activeRubricCategories.map((i, index) => {
+                  if (index === categoryIndex) {
+                    i.id = data.id;
+                    i.name = data.name;
+                    i.pointLimit = data.pointLimit;
+                    i.rubricComments = data.rubricComments;
+                  }
+                  return i;
+                });
+                activeRubricComments[data.id] = activeRubricComments[oldID];
+                delete activeRubricComments[oldID];
 
-              // update savedCategories to reflect that the new category has been saved in the database
-              savedCategories[data.id] = true;
-              delete savedCategories[-1];
-              this.setState({
-                activeRubricCategories: newRubricCategories,
-                activeRubricComments,
-                savedCategories,
-                changeCategoryDialogID: undefined,
-              });
-              setTimeout(this.clearSaveCategory.bind(this.props, data.id), 2000);
-            }
-          });
+                // update savedCategories to reflect that the new category has been saved in the database
+                savedCategories[data.id] = true;
+                delete savedCategories[-1];
+                this.setState({
+                  activeRubricCategories: newRubricCategories,
+                  activeRubricComments,
+                  savedCategories,
+                  changeCategoryDialogID: undefined,
+                });
+                setTimeout(this.clearSaveCategory.bind(this.props, data.id), 2000);
+              }
+            });
         } else {
           const oldCat = this.props.rubricCategories[activeAssignment.id].find((i) => {
             return i.id === cat.id;
@@ -356,11 +361,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           if (oldCat && oldCat.name === cat.name && oldCat.pointLimit === cat.pointLimit) {
             return;
           }
-          this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit).then(() => {
-            savedCategories[cat.id] = true;
-            this.setState({ savedCategories, changeCategoryDialogID: undefined });
-            setTimeout(this.clearSaveCategory.bind(this.props, cat.id), 2000);
-          });
+          this.props
+            .updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit, cat.sortKey)
+            .then(() => {
+              savedCategories[cat.id] = true;
+              this.setState({ savedCategories, changeCategoryDialogID: undefined });
+              setTimeout(this.clearSaveCategory.bind(this.props, cat.id), 2000);
+            });
         }
       }
     }
@@ -753,6 +760,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
   };
 
+  // public onSortEnd = ({oldIndex, newIndex}: {oldIndex: number, newIndex: number}) => {
+  //     this.setState({
+  //       items: arrayMove(this.state.items, oldIndex, newIndex),
+  //     });
+  //   };
+
   // ------------------- Render -------------------
   public render() {
     const {
@@ -1041,7 +1054,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       const { activeRubricCategories, activeRubricComments } = this.state;
 
       let categoryTables;
-
+      // ~~~~~~~~
       if (activeRubricCategories && activeRubricComments) {
         categoryTables = activeRubricCategories.map((cat, catIndex) => {
           return (
