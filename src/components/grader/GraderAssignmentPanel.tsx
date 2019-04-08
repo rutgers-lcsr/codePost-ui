@@ -153,7 +153,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
 
     switch (buttonState) {
       case BUTTON_STATE.Inactive:
-        claimButton = <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>;
+        claimButton = <div className="button--get-another button--get-another--disabled">Queue empty</div>;
         break;
       case BUTTON_STATE.Loading:
         claimButton = <div className="button--get-another button--get-another--disabled">...</div>;
