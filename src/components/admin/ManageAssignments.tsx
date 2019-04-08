@@ -35,6 +35,8 @@ import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissi
 
 import { openSubmission } from './AdminUtils';
 
+import { arrayMove, SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+
 export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[];
@@ -760,11 +762,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
   };
 
-  // public onSortEnd = ({oldIndex, newIndex}: {oldIndex: number, newIndex: number}) => {
-  //     this.setState({
-  //       items: arrayMove(this.state.items, oldIndex, newIndex),
-  //     });
-  //   };
+  public onSortEnd = ({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
+    if (this.state.activeRubricCategories) {
+      this.setState({
+        activeRubricCategories: arrayMove(this.state.activeRubricCategories, oldIndex, newIndex),
+      });
+    }
+  };
 
   // ------------------- Render -------------------
   public render() {
@@ -1056,33 +1060,77 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       let categoryTables;
       // ~~~~~~~~
       if (activeRubricCategories && activeRubricComments) {
-        categoryTables = activeRubricCategories.map((cat, catIndex) => {
+        const DragHandle = SortableHandle(() => <span>||</span>);
+
+        const SortableItem = SortableElement(
+          ({ rubricCategory, index }: { rubricCategory: RubricCategoryType; index: number }) => (
+            <li>
+              <DragHandle />
+              <RubricCategoryTable
+                key={rubricCategory.id}
+                categoryID={rubricCategory.id}
+                categoryIndex={index}
+                comments={activeRubricComments[rubricCategory.id]}
+                categoryName={rubricCategory.name}
+                categoryPointLimit={rubricCategory.pointLimit}
+                // bind the trigger change with true for isDelete
+                deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
+                changeCategoryName={this.changeCategoryName}
+                changeCategoryCap={this.changeCategoryCap}
+                addEmptyComment={this.addEmptyComment}
+                changeCommentText={this.changeCommentText}
+                changeCommentDelta={this.changeCommentDelta}
+                deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
+                isDisabled={lockManageAssignment}
+                updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
+                updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
+                updateCategoryName={this.updateCategory}
+                savedComments={this.state.savedComments}
+                savedCategories={this.state.savedCategories}
+                triggerCommentExplorer={this.triggerCommentExplorer}
+              />
+            </li>
+          ),
+        );
+
+        const SortableList = SortableContainer(({ items }: { items: RubricCategoryType[] }) => {
           return (
-            <RubricCategoryTable
-              key={cat.id}
-              categoryID={cat.id}
-              categoryIndex={catIndex}
-              comments={activeRubricComments[cat.id]}
-              categoryName={cat.name}
-              categoryPointLimit={cat.pointLimit}
-              // bind the trigger change with true for isDelete
-              deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
-              changeCategoryName={this.changeCategoryName}
-              changeCategoryCap={this.changeCategoryCap}
-              addEmptyComment={this.addEmptyComment}
-              changeCommentText={this.changeCommentText}
-              changeCommentDelta={this.changeCommentDelta}
-              deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
-              isDisabled={lockManageAssignment}
-              updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
-              updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
-              updateCategoryName={this.updateCategory}
-              savedComments={this.state.savedComments}
-              savedCategories={this.state.savedCategories}
-              triggerCommentExplorer={this.triggerCommentExplorer}
-            />
+            <ul>
+              {items.map((rubricCategory, index) => (
+                <SortableItem key={`item-${index}`} index={index} rubricCategory={rubricCategory} />
+              ))}
+            </ul>
           );
         });
+
+        categoryTables = <SortableList items={activeRubricCategories} onSortEnd={this.onSortEnd} />;
+        // categoryTables = activeRubricCategories.map((cat, catIndex) => {
+        //   return (
+        //     <RubricCategoryTable
+        //       key={cat.id}
+        //       categoryID={cat.id}
+        //       categoryIndex={catIndex}
+        //       comments={activeRubricComments[cat.id]}
+        //       categoryName={cat.name}
+        //       categoryPointLimit={cat.pointLimit}
+        //       // bind the trigger change with true for isDelete
+        //       deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
+        //       changeCategoryName={this.changeCategoryName}
+        //       changeCategoryCap={this.changeCategoryCap}
+        //       addEmptyComment={this.addEmptyComment}
+        //       changeCommentText={this.changeCommentText}
+        //       changeCommentDelta={this.changeCommentDelta}
+        //       deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
+        //       isDisabled={lockManageAssignment}
+        //       updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
+        //       updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
+        //       updateCategoryName={this.updateCategory}
+        //       savedComments={this.state.savedComments}
+        //       savedCategories={this.state.savedCategories}
+        //       triggerCommentExplorer={this.triggerCommentExplorer}
+        //     />
+        //   );
+        // });
       }
 
       return (
