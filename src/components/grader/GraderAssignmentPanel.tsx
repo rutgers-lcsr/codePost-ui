@@ -283,17 +283,21 @@ export const SelectSection = (props: ISelectSectionProps) => {
     return items.map((section, i) => ({ value: section.id, label: `${section.name}` }));
   };
 
-  return (
-    <Select
-      options={selectorItemsFormatter(sections)}
-      value={selectorItemsFormatter(currentSections)}
-      isSearchable={false}
-      onChange={onChange}
-      placeholder={'Leave blank to claim from any section'}
-      className={'button--select grader__get-another__select'}
-      isMulti={true}
-    />
-  );
+  if (sections.length === 0) {
+    return null;
+  } else {
+    return (
+      <Select
+        options={selectorItemsFormatter(sections)}
+        value={selectorItemsFormatter(currentSections)}
+        isSearchable={false}
+        onChange={onChange}
+        placeholder={'Filter by section (leave blank for all)'}
+        className={'button--select grader__get-another__select'}
+        isMulti={true}
+      />
+    );
+  }
 };
 
 export default GraderAssignmentPanel;
