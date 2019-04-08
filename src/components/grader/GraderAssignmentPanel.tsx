@@ -151,7 +151,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
   public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
     let claimButton = (
       <div className="button--get-another " onClick={handleClick}>
-        +
+        Claim +
       </div>
     );
 
