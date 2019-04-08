@@ -149,18 +149,21 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
   };
 
   public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
-    let claimButton = (
-      <div className="button--get-another " onClick={handleClick}>
-        Claim +
-      </div>
-    );
+    let claimButton;
 
-    if (buttonState === BUTTON_STATE.Inactive) {
-      claimButton = <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>;
-    }
-
-    if (buttonState === BUTTON_STATE.Loading) {
-      claimButton = <div className="button--get-another button--get-another--disabled">...</div>;
+    switch (buttonState) {
+      case BUTTON_STATE.Inactive:
+        claimButton = <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>;
+        break;
+      case BUTTON_STATE.Loading:
+        claimButton = <div className="button--get-another button--get-another--disabled">...</div>;
+        break;
+      default:
+        claimButton = (
+          <div className="button--get-another " onClick={handleClick}>
+            Claim +
+          </div>
+        );
     }
 
     return (
@@ -266,41 +269,6 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     return <div>Select an assignment on the left</div>;
   }
 }
-
-interface IButtonProps {
-  handleClick: any;
-  buttonState: BUTTON_STATE;
-  children?: any;
-}
-
-export const GetAnotherSubmissionButton = (props: IButtonProps) => {
-  const { handleClick, buttonState } = props;
-
-  if (buttonState === BUTTON_STATE.Inactive) {
-    return (
-      <div className="grader__get-another">
-        <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
-      </div>
-    );
-  }
-
-  if (buttonState === BUTTON_STATE.Loading) {
-    return (
-      <div className="grader__get-another">
-        <div className="button--get-another button--get-another--disabled">...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grader__get-another">
-      <div className="button--get-another " onClick={handleClick}>
-        +
-      </div>
-      {props.children}
-    </div>
-  );
-};
 
 interface ISelectSectionProps {
   sections: SectionType[];
