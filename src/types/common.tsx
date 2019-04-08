@@ -26,6 +26,11 @@ export enum POSITION {
   End,
 }
 
+export enum DIRECTION {
+  Up,
+  Down,
+}
+
 export interface IProfile {
   id: number;
   user: string;

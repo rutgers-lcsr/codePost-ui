@@ -15,6 +15,7 @@ import {
 import { AssignmentType } from '../../infrastructure/assignment';
 
 import {
+  DIRECTION,
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
@@ -35,7 +36,7 @@ import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissi
 
 import { openSubmission } from './AdminUtils';
 
-import { arrayMove, SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import arrayMove from 'array-move';
 
 export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
@@ -762,12 +763,48 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
   };
 
-  public onSortEnd = ({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
-    if (this.state.activeRubricCategories) {
-      this.setState({
-        activeRubricCategories: arrayMove(this.state.activeRubricCategories, oldIndex, newIndex),
-      });
+  public moveCategory = (category: RubricCategoryType, direction: DIRECTION) => {
+    if (!this.state.activeRubricCategories) {
+      return;
     }
+
+    const categoryIndex = this.state.activeRubricCategories.findIndex((cat: RubricCategoryType) => {
+      return category.id === cat.id;
+    });
+
+    if (categoryIndex === -1) {
+      return;
+    }
+
+    let targetIndex = categoryIndex;
+
+    switch (direction) {
+      case DIRECTION.Up: {
+        targetIndex = categoryIndex === 0 ? 0 : categoryIndex - 1;
+        break;
+      }
+      case DIRECTION.Down: {
+        targetIndex =
+          categoryIndex === this.state.activeRubricCategories.length - 1 ? categoryIndex : categoryIndex + 1;
+        break;
+      }
+      default: {
+        targetIndex = categoryIndex;
+      }
+    }
+    const newCategoryList = arrayMove(this.state.activeRubricCategories, categoryIndex, targetIndex);
+    this.setState({ activeRubricCategories: newCategoryList });
+
+    // We allow the UI to define the category sortKeys in order that they appear on screen
+    // If a set of new categories had sortKeys initialized to zero, then the first
+    // UI arrow press will assign the rest of them with N patches.
+    newCategoryList.forEach((cat: RubricCategoryType, index: number) => {
+      if (cat.sortKey !== index) {
+        this.props.updateRubricCategory(this.state.activeAssignment!.id, cat.id, cat.name, cat.pointLimit, index);
+        newCategoryList[index].sortKey = index;
+        this.setState({ activeRubricCategories: newCategoryList });
+      }
+    });
   };
 
   // ------------------- Render -------------------
@@ -1060,19 +1097,28 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       let categoryTables;
       // ~~~~~~~~
       if (activeRubricCategories && activeRubricComments) {
-        const DragHandle = SortableHandle(() => <span>||</span>);
-
-        const SortableItem = SortableElement(
-          ({ rubricCategory, index }: { rubricCategory: RubricCategoryType; index: number }) => (
-            <li>
-              <DragHandle />
+        categoryTables = activeRubricCategories.map((cat, catIndex) => {
+          return (
+            <div key={cat.id} className="admin-rubric__category-container">
+              <div className="admin-rubric__category-container__arrows">
+                <div>
+                  <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
+                    keyboard_arrow_up
+                  </Button>
+                </div>
+                <div>
+                  <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
+                    keyboard_arrow_down
+                  </Button>
+                </div>
+              </div>
               <RubricCategoryTable
-                key={rubricCategory.id}
-                categoryID={rubricCategory.id}
-                categoryIndex={index}
-                comments={activeRubricComments[rubricCategory.id]}
-                categoryName={rubricCategory.name}
-                categoryPointLimit={rubricCategory.pointLimit}
+                key={cat.id}
+                categoryID={cat.id}
+                categoryIndex={catIndex}
+                comments={activeRubricComments[cat.id]}
+                categoryName={cat.name}
+                categoryPointLimit={cat.pointLimit}
                 // bind the trigger change with true for isDelete
                 deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
                 changeCategoryName={this.changeCategoryName}
@@ -1089,48 +1135,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 savedCategories={this.state.savedCategories}
                 triggerCommentExplorer={this.triggerCommentExplorer}
               />
-            </li>
-          ),
-        );
-
-        const SortableList = SortableContainer(({ items }: { items: RubricCategoryType[] }) => {
-          return (
-            <ul>
-              {items.map((rubricCategory, index) => (
-                <SortableItem key={`item-${index}`} index={index} rubricCategory={rubricCategory} />
-              ))}
-            </ul>
+            </div>
           );
         });
-
-        categoryTables = <SortableList items={activeRubricCategories} onSortEnd={this.onSortEnd} />;
-        // categoryTables = activeRubricCategories.map((cat, catIndex) => {
-        //   return (
-        //     <RubricCategoryTable
-        //       key={cat.id}
-        //       categoryID={cat.id}
-        //       categoryIndex={catIndex}
-        //       comments={activeRubricComments[cat.id]}
-        //       categoryName={cat.name}
-        //       categoryPointLimit={cat.pointLimit}
-        //       // bind the trigger change with true for isDelete
-        //       deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
-        //       changeCategoryName={this.changeCategoryName}
-        //       changeCategoryCap={this.changeCategoryCap}
-        //       addEmptyComment={this.addEmptyComment}
-        //       changeCommentText={this.changeCommentText}
-        //       changeCommentDelta={this.changeCommentDelta}
-        //       deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
-        //       isDisabled={lockManageAssignment}
-        //       updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
-        //       updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
-        //       updateCategoryName={this.updateCategory}
-        //       savedComments={this.state.savedComments}
-        //       savedCategories={this.state.savedCategories}
-        //       triggerCommentExplorer={this.triggerCommentExplorer}
-        //     />
-        //   );
-        // });
       }
 
       return (
