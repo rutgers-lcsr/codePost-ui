@@ -184,6 +184,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         pointLimit: null,
         assignment: activeAssignment.id,
         rubricComments: [],
+        sortKey: 0,
       });
       activeRubricComments[newCategoryCounter] = [];
       this.setState({

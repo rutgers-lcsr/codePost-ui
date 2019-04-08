@@ -9,6 +9,7 @@ const RubricCategoryV = t.intersection(
       rubricComments: t.array(t.number),
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
+      sortKey: t.number,
     }),
   ],
   'RubricCategory',
@@ -36,4 +37,17 @@ class RubricCategory {
   public static delete = deleteObject(RubricCategoryV, 'rubricCategories');
 }
 
-export { RubricCategoryType, RubricCategory, RubricCategoryV, RubricCategoryVPatch };
+const sortRubricCategory = (rubricCategories: RubricCategoryType[]): RubricCategoryType[] => {
+  // First sort by RubricCategory 'sortKey', then by ID
+  const compareRubricCategories = (a: RubricCategoryType, b: RubricCategoryType) => {
+    if (a.sortKey === b.sortKey) {
+      return a.id - b.id;
+    } else {
+      return a.sortKey - b.sortKey;
+    }
+  };
+
+  return rubricCategories.sort(compareRubricCategories);
+};
+
+export { RubricCategoryType, RubricCategory, RubricCategoryV, RubricCategoryVPatch, sortRubricCategory };

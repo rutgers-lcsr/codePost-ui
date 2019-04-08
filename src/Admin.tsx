@@ -1056,6 +1056,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       assignment: assignmentID,
       rubricComments: [],
       pointLimit,
+      sortKey: 0,
     };
 
     return RubricCategory.create(payload).then((rubricCategory: RubricCategoryType) => {
