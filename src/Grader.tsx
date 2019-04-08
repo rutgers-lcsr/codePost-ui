@@ -209,19 +209,23 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
+  public getSectionParameters = (sections: SectionType[]) => {
+    return sections.length === 0 ? [undefined] : sections;
+  };
+
   public claimSubmission = async (
     assignment: AssignmentType,
     sections: SectionType[],
   ): Promise<SubmissionType | undefined> => {
     let submission;
-    if (sections.length === 0) {
-      submission = await this.fetchSubmission(assignment, undefined);
-    } else {
-      for (const section of sections) {
-        submission = await this.fetchSubmission(assignment, section);
-        if (submission) {
-          break;
-        }
+    const sectionParameters = this.getSectionParameters(sections);
+
+    // Note that calling fetchSubmission with section=undefined performs
+    // the fetchSubmission operation without a section filter
+    for (const section of sectionParameters) {
+      submission = await this.fetchSubmission(assignment, section);
+      if (submission) {
+        break;
       }
     }
 
