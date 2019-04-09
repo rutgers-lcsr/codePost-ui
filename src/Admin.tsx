@@ -1528,6 +1528,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       showStudentsStatistics: false,
       timezone: 'US/Eastern',
       emailNewUsers: false,
+      anonymousGrading: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {

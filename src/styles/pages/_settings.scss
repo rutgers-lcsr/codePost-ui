@@ -28,8 +28,7 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid $light-grey;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding: 20px 30px;
 
     &-top {
       display: flex;
@@ -38,8 +37,7 @@
       border-top: 1px solid $light-grey;
       align-items: center;
       justify-content: space-between;
-      padding-left: 30px;
-      padding-right: 30px;
+      padding: 20px 30px;
     }
 
     &__content {
@@ -79,7 +77,7 @@
 }
 
 .CourseSettings {
-  @include settings(700px, 600px);
+  @include settings(700px, 800px);
 }
 .UserSettings {
   @include settings(800px, 250px);
