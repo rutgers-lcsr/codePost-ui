@@ -13,7 +13,7 @@ import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
-import { RubricCategoryType } from './infrastructure/rubricCategory';
+import { RubricCategoryType, sortRubricCategory } from './infrastructure/rubricCategory';
 import { RubricCommentType } from './infrastructure/rubricComment';
 import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
@@ -112,7 +112,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
 
-    const rubricCategories = rubric.rubricCategories;
+    const rubricCategories = sortRubricCategory(rubric.rubricCategories);
     const rubricComments = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {

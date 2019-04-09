@@ -26,13 +26,13 @@ interface IGraderAssignmentPanelProps {
   sections: SectionType[];
   submissions: SubmissionType[];
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType, section?: SectionType) => Promise<SubmissionType | undefined>;
+  claimSubmission: (assignment: AssignmentType, sections: SectionType[]) => Promise<SubmissionType | undefined>;
   releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
 }
 
 interface IGraderAssignmentPanelState {
   buttonState: BUTTON_STATE;
-  currentSection?: SectionType;
+  currentSections: SectionType[];
 
   ascending?: boolean;
   sortedSubmissions: SubmissionType[];
@@ -44,7 +44,7 @@ interface IGraderAssignmentPanelState {
 class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
   public state: Readonly<IGraderAssignmentPanelState> = {
     buttonState: BUTTON_STATE.Active,
-    currentSection: undefined,
+    currentSections: [],
 
     ascending: undefined,
     sortedSubmissions: this.props.submissions,
@@ -98,7 +98,8 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
 
-    const claimedSubmission = await this.props.claimSubmission(assignment, this.state.currentSection);
+    const claimedSubmission = await this.props.claimSubmission(assignment, this.state.currentSections);
+
     if (!claimedSubmission) {
       this.setState({ buttonState: BUTTON_STATE.Inactive });
     } else {
@@ -116,12 +117,25 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     });
   };
 
-  public handleSectionChange = (option: any) => {
-    const currentSection = this.props.sections.find((obj: SectionType) => {
-      return obj.id === option.value;
-    });
+  public handleSectionChange = (options: any[]) => {
+    const sectionObjects = [];
+    for (const option of options) {
+      const match = this.props.sections.find((obj: SectionType) => {
+        return obj.id === option.value;
+      });
+      if (match) {
+        sectionObjects.push(match);
+      }
+    }
 
-    this.setState({ currentSection });
+    // If selected sections change, we want to offer the grader another chance to claim
+    // One exception is if currentSections goes from [] --> [x1, ..., xn], since if no submissions
+    // are available without section filtering, none will be available with section filtering
+    if (this.state.currentSections.length === 0) {
+      this.setState({ currentSections: sectionObjects });
+    } else {
+      this.setState({ currentSections: sectionObjects, buttonState: BUTTON_STATE.Active });
+    }
   };
 
   public toggleSort = (columnIndex: number) => {
@@ -135,30 +149,29 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
   };
 
   public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
-    if (buttonState === BUTTON_STATE.Inactive) {
-      return (
-        <div className="grader__get-another">
-          <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
-        </div>
-      );
-    }
+    let claimButton;
 
-    if (buttonState === BUTTON_STATE.Loading) {
-      return (
-        <div className="grader__get-another">
-          <div className="button--get-another button--get-another--disabled">...</div>
-        </div>
-      );
+    switch (buttonState) {
+      case BUTTON_STATE.Inactive:
+        claimButton = <div className="button--get-another button--get-another--disabled">Queue empty</div>;
+        break;
+      case BUTTON_STATE.Loading:
+        claimButton = <div className="button--get-another button--get-another--disabled">...</div>;
+        break;
+      default:
+        claimButton = (
+          <div className="button--get-another " onClick={handleClick}>
+            Claim +
+          </div>
+        );
     }
 
     return (
       <div className="grader__get-another">
-        <div className="button--get-another " onClick={handleClick}>
-          +
-        </div>
+        {claimButton}
         <SelectSection
           sections={this.props.sections}
-          currentSection={this.state.currentSection}
+          currentSections={this.state.currentSections}
           onChange={this.handleSectionChange}
         />
       </div>
@@ -257,70 +270,34 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
   }
 }
 
-interface IButtonProps {
-  handleClick: any;
-  buttonState: BUTTON_STATE;
-  children?: any;
-}
-
-export const GetAnotherSubmissionButton = (props: IButtonProps) => {
-  const { handleClick, buttonState } = props;
-
-  if (buttonState === BUTTON_STATE.Inactive) {
-    return (
-      <div className="grader__get-another">
-        <div className="button--get-another button--get-another--disabled">Nothing left to grade</div>
-      </div>
-    );
-  }
-
-  if (buttonState === BUTTON_STATE.Loading) {
-    return (
-      <div className="grader__get-another">
-        <div className="button--get-another button--get-another--disabled">...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grader__get-another">
-      <div className="button--get-another " onClick={handleClick}>
-        +
-      </div>
-      {props.children}
-    </div>
-  );
-};
-
 interface ISelectSectionProps {
   sections: SectionType[];
-  currentSection?: SectionType;
+  currentSections: SectionType[];
   onChange: any;
 }
 
 export const SelectSection = (props: ISelectSectionProps) => {
-  const { sections, currentSection, onChange } = props;
+  const { sections, currentSections, onChange } = props;
 
   const selectorItemsFormatter = (items: SectionType[]) => {
     return items.map((section, i) => ({ value: section.id, label: `${section.name}` }));
   };
 
-  const selectorCurrentFormatter = (currentItem: SectionType | undefined) => {
-    if (!currentItem) {
-      return undefined;
-    }
-    return { value: currentItem.id, label: `${currentItem.name}` };
-  };
-  return (
-    <Select
-      options={selectorItemsFormatter(sections)}
-      value={selectorCurrentFormatter(currentSection)}
-      isSearchable={false}
-      onChange={onChange}
-      placeholder={'All'}
-      className={'button--select grader__get-another__select'}
-    />
-  );
+  if (sections.length === 0) {
+    return null;
+  } else {
+    return (
+      <Select
+        options={selectorItemsFormatter(sections)}
+        value={selectorItemsFormatter(currentSections)}
+        isSearchable={false}
+        onChange={onChange}
+        placeholder={'Filter by section (leave blank for all)'}
+        className={'button--select grader__get-another__select'}
+        isMulti={true}
+      />
+    );
+  }
 };
 
 export default GraderAssignmentPanel;

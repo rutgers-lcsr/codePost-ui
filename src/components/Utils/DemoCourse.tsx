@@ -72,6 +72,7 @@ const createAssignment = (course: CourseType, assignment: any) => {
         rubricComments: [], // ignored by API
         assignment: assnObj.id,
         pointLimit: category.cap,
+        sortKey: 0,
       };
 
       return RubricCategory.create(catPayload).then((catObj) => {
