@@ -1095,23 +1095,24 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       const { activeRubricCategories, activeRubricComments } = this.state;
 
       let categoryTables;
-      // ~~~~~~~~
       if (activeRubricCategories && activeRubricComments) {
         categoryTables = activeRubricCategories.map((cat, catIndex) => {
           return (
             <div key={cat.id} className="admin-rubric__category-container">
-              <div className="admin-rubric__category-container__arrows">
-                <div>
-                  <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
-                    keyboard_arrow_up
-                  </Button>
+              {lockManageAssignment ? null : (
+                <div className="admin-rubric__category-container__arrows">
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
+                      keyboard_arrow_up
+                    </Button>
+                  </div>
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
+                      keyboard_arrow_down
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
-                    keyboard_arrow_down
-                  </Button>
-                </div>
-              </div>
+              )}
               <RubricCategoryTable
                 key={cat.id}
                 categoryID={cat.id}
