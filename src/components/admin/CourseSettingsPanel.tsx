@@ -19,6 +19,7 @@ interface IState {
   showStudentsStatistics: boolean;
   timezone: string;
   emailNewUsers: boolean;
+  anonymousGrading: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
@@ -27,6 +28,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     showStudentsStatistics: this.props.currentCourse.showStudentsStatistics,
     timezone: this.props.currentCourse.timezone,
     emailNewUsers: this.props.currentCourse.emailNewUsers,
+    anonymousGrading: this.props.currentCourse.anonymousGrading,
   };
 
   public toggleValue = (label: string) => {
@@ -59,13 +61,20 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       emailNewUsers: this.state.emailNewUsers,
       assignments: [], // ignored by API
       sections: [], // ignored by API
+      anonymousGrading: this.state.anonymousGrading,
     };
 
     this.props.updateSettings(payload);
   };
 
   public render() {
-    const { sendReleasedSubmissionsToBack, showStudentsStatistics, timezone, emailNewUsers } = this.state;
+    const {
+      sendReleasedSubmissionsToBack,
+      showStudentsStatistics,
+      timezone,
+      emailNewUsers,
+      anonymousGrading,
+    } = this.state;
     const timezoneOptions = timezones.map((el) => {
       return { label: el, value: el };
     });
@@ -135,6 +144,25 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 defaultChecked={emailNewUsers}
                 onChange={this.toggleValue.bind(this.props, 'emailNewUsers')}
                 aria-label={'Email users when added to roster'}
+              />
+            </div>
+            <div className="CourseSettings__settingItem">
+              <div className="CourseSettings__settingItem__content">
+                <div className="CourseSettings__settingItem__name">Anonymous grading mode</div>
+                <div className="CourseSettings__settingItem__description">
+                  If selected, graders will not have access to student emails (linking students to submissions). Note
+                  that graders who are section leaders and/or are granted View All privilegess will still be able to
+                  view student information, as will Admins (and graders who are also admins).
+                </div>
+              </div>
+              <SelectionControl
+                id="toggleAnonymousSetting"
+                type="switch"
+                name="CourseSettings__Anonymous"
+                className="CourseSettings__settingItem__control"
+                defaultChecked={anonymousGrading}
+                onChange={this.toggleValue.bind(this.props, 'anonymousGrading')}
+                aria-label={'Hide student information from graders'}
               />
             </div>
             <div className="CourseSettings__settingItem">
