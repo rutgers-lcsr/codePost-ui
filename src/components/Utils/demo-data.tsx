@@ -59,13 +59,13 @@ const recursionSubs = (domain: string) => {
   ];
 };
 
-const demoSubmissions = (assnignmentName: string) => {
+const demoSubmissions = (assnignmentName: string, domain: string) => {
   if (assnignmentName === 'Hello World') {
-    return helloSubs('codepost.io');
+    return helloSubs(domain);
   } else if (assnignmentName === 'Loops') {
-    return loopSubs('codepost.io');
+    return loopSubs(domain);
   } else if (assnignmentName === 'Recursion') {
-    return recursionSubs('codepost.io');
+    return recursionSubs(domain);
   }
 
   return [];
