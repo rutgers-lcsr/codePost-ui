@@ -8,12 +8,12 @@ import { Divider } from 'react-md';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
 interface ISubmissionInfoProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   assignment: AssignmentType;
 
   graders: string[];
@@ -37,8 +37,18 @@ const SubmissionInfo = (props: ISubmissionInfoProps) => {
     rubricCategories,
   } = props;
 
-  const studentTitle = pluralize('Student', submission.students.length).toUpperCase();
-  const studentString = `${submission.students.join(', ')}`;
+  let studentTitle;
+  let studentString;
+  switch (typeof submission.students) {
+    case 'undefined':
+      studentTitle = 'Students';
+      studentString = '<Anonymized>';
+      break;
+    default:
+      studentTitle = pluralize('Student', submission.students.length).toUpperCase();
+      studentString = `${submission.students.join(', ')}`;
+      break;
+  }
 
   const gradeString = submission.isFinalized
     ? `${submission.grade} / ${assignment.points}`
