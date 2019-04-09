@@ -30,6 +30,7 @@ interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;
   sections: SectionType[];
   submissions: AnonymousSubmissionType[];
+  isAnonymous: boolean;
   isLoadingSubmissions: boolean;
   claimSubmission: (assignment: AssignmentType, section?: SectionType) => Promise<AnonymousSubmissionType | undefined>;
   releaseSubmission: (submission: SubmissionType) => Promise<AnonymousSubmissionType>;
@@ -184,11 +185,11 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
   };
 
   public render() {
-    const { assignment, isLoadingSubmissions } = this.props;
-    const { sortedIndex, sortedSubmissions } = this.state;
+    const { assignment, isLoadingSubmissions, isAnonymous } = this.props;
+    const { sortedIndex } = this.state;
 
     let headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
-    if (sortedSubmissions.length > 0 && typeof sortedSubmissions[0].students === 'undefined') {
+    if (isAnonymous) {
       headers = ['ID <anonymized>', 'Grade', 'Finalized', 'Date Edited', 'Release'];
     }
 
@@ -231,7 +232,9 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {typeof submission.students !== 'undefined' ? submission.students.join(', ') : submission.id}
+                      {typeof submission.students !== 'undefined' && !this.props.isAnonymous
+                        ? submission.students.join(', ')
+                        : submission.id}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
