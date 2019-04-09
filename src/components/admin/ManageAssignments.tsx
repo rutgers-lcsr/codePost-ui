@@ -982,7 +982,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
               <TableHeader>
                 <TableRow>
-                  <TableColumn key={'AssignmentName'}>Assignment name</TableColumn>
+                  <TableColumn key={'AssignmentName'}>Assignment</TableColumn>
                   <Tooltipped
                     key="assignment-release"
                     label="If published, students with finalized submissions can view their submissions."
@@ -993,11 +993,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   >
                     <TableColumn key={'Publish'}>Published</TableColumn>
                   </Tooltipped>
-                  <TableColumn key={'SubNumber'}># of submissions</TableColumn>
-                  <TableColumn key={'GradedNumber'}># graded</TableColumn>
-                  <TableColumn key={'UngradedNumber'}># ungraded</TableColumn>
+                  <TableColumn key={'SubNumber'}># submissions</TableColumn>
+                  <TableColumn key={'GradedNumber'}># finalized</TableColumn>
+                  <TableColumn key={'UngradedNumber'}># in progress</TableColumn>
                   <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
-                  <TableColumn key={'NumMissing'}># missing</TableColumn>
+                  <TableColumn key={'NumMissing'}>Students missing </TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <TableColumn key={'Menu'} />
