@@ -1041,6 +1041,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | null,
+    sortKey: number,
     newComments: RubricCommentType[],
   ): Promise<RubricCategoryType> => {
     const { assignments, rubricCategories, rubricComments } = this.state;
@@ -1056,6 +1057,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       assignment: assignmentID,
       rubricComments: [],
       pointLimit,
+      sortKey,
     };
 
     return RubricCategory.create(payload).then((rubricCategory: RubricCategoryType) => {
@@ -1128,6 +1130,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
+    sortKey: number,
   ): Promise<void> => {
     const { rubricCategories } = this.state;
     if (categoryName.length === 0) {
@@ -1140,6 +1143,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       name: categoryName,
       assignment: assignmentID,
       pointLimit: categoryPointLimit,
+      sortKey,
     };
 
     return RubricCategory.update(payload)
@@ -1153,6 +1157,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           // Reminder --- add checks for the data received
           rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
           rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
+          rubricCategories[assignmentID][catIndex].sortKey = rubricCategory.sortKey;
         }
         this.setState({ rubricCategories });
         return;

@@ -23,6 +23,17 @@
     }
   }
 
+  &__category-container {
+    position: relative;
+
+    &__arrows {
+      position: absolute;
+      top: 40%;
+      left: -45px;
+      // margin-left: -45px;
+    }
+  }
+
   &__category {
     margin-bottom: 15px;
     margin-top: 15px;

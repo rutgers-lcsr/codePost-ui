@@ -7,6 +7,7 @@
     "@types/react-codemirror": "^1.0.2",
     "@types/react-loadable": "^5.5.0",
     "@types/react-scroll": "^1.5.4",
+    "array-move": "^2.1.0",
     "autoprefixer": "7.1.6",
     "babel-jest": "20.0.3",
     "babel-loader": "7.1.2",

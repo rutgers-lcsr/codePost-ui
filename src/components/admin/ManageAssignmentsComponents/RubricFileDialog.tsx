@@ -19,6 +19,7 @@ interface IProps {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | null,
+    sortKey: number,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -44,6 +45,7 @@ interface IProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
+    sortKey: number,
   ) => Promise<void>;
   updateRubricComment: (
     categoryID: number,
@@ -59,6 +61,7 @@ interface IDownloadCategory {
   id: number;
   name: string;
   pointLimit: number | null;
+  sortKey: number;
   rubricComments: RubricCommentType[];
 }
 
@@ -105,6 +108,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           id: cat.id,
           name: cat.name,
           pointLimit: cat.pointLimit,
+          sortKey: cat.sortKey,
           rubricComments: [],
         };
         if (activeRubricComments[cat.id]) {
@@ -166,7 +170,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         if (!(typeof cat.name === 'string')) {
           uploadErrors.push(`Name field of ${cat.name} must be a string`);
         }
-        if (Object.keys(cat).length !== 4) {
+        if (Object.keys(cat).length !== 5) {
           uploadErrors.push(`Category of id ${cat.id} has some incorrect keys.
             Please check the spellings of id, name, pointLimit, and category fields`);
         }
@@ -246,6 +250,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
               activeAssignment.id,
               cat.name,
               cat.pointLimit,
+              cat.sortKey,
               cat.rubricComments,
             );
             promises.push(result);
@@ -304,7 +309,13 @@ class RubricFileDialog extends React.Component<IProps, {}> {
           if (oldCategories[catIndex].name !== cat.name || oldCategories[catIndex].pointLimit !== cat.pointLimit) {
             // Reminder -- need to decide as a team if we can allow pointLimit to be null
             if (makeDBUpdate) {
-              const result = this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit);
+              const result = this.props.updateRubricCategory(
+                activeAssignment.id,
+                cat.id,
+                cat.name,
+                cat.pointLimit,
+                cat.sortKey,
+              );
               promises.push(result);
             }
             updates.updatedCategories.push(cat.name);
@@ -396,16 +407,18 @@ class RubricFileDialog extends React.Component<IProps, {}> {
     };
     const exampleText =
       '    [\n\
-        {"id" : 2,\n\
-        "name" : "Hello",\n\
-        "pointLimit" : 2,\n\
-        "rubricComments" : [{ \n\
-          "id" : -1,\n\
-          "text" : "this is a new comment",\n\
-          "pointDelta" : 0,\n\
-          "category" : 2,\n\
-          "comments" : [2, 3]}, ... \n\
-        ]},\n\
+        {\n\
+          "id" : 2,\n\
+          "name" : "Hello",\n\
+          "pointLimit" : 2,\n\
+          "sortKey" : 2,\n\
+          "rubricComments" : [{ \n\
+            "id" : -1,\n\
+            "text" : "this is a new comment",\n\
+            "pointDelta" : 0,\n\
+            "category" : 2,\n\
+            "comments" : [2, 3]}, ... \n\
+          ]},\n\
         ...\n\
       ]';
 
@@ -434,9 +447,10 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         this.getUpdateMessages(updates.deletedCategories, 'The following categories will be deleted:'),
       );
       updateMessages.push(this.getUpdateMessages(updates.deletedComments, 'The following comments will be deleted:'));
+
       if (
         updateMessages.find((i) => {
-          return typeof i !== 'undefined';
+          return i !== undefined;
         })
       ) {
         content = (
@@ -449,6 +463,13 @@ class RubricFileDialog extends React.Component<IProps, {}> {
             </Button>
             <div className="error-padding" />
             {updateMessages}
+          </div>
+        );
+      } else {
+        content = (
+          <div>
+            <div className="error-padding" />
+            No updates to be made.
           </div>
         );
       }

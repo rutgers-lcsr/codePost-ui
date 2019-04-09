@@ -17,6 +17,7 @@ import {
 import { AssignmentType } from '../../infrastructure/assignment';
 
 import {
+  DIRECTION,
   IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
   IRubricCategoryToRubricCommentsMap,
@@ -28,7 +29,7 @@ import RubricFileDialog from './ManageAssignmentsComponents/RubricFileDialog';
 import { LinkedCommentsAlert, RubricCategoryTable } from './ManageAssignmentsComponents/RubricUtils';
 
 import { CourseType } from '../../infrastructure/course';
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCategoryType, sortRubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionType } from '../../infrastructure/submission';
 
@@ -36,6 +37,8 @@ import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignme
 import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
 
 import { openSubmission } from './AdminUtils';
+
+import arrayMove from 'array-move';
 
 export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
@@ -58,6 +61,7 @@ export interface IManageAssignmentsProps {
     assignmentID: number,
     categoryName: string,
     pointLimit: number | null,
+    sortKey: number,
     newComments: RubricCommentType[],
   ) => Promise<RubricCategoryType>;
   createRubricComment: (
@@ -83,6 +87,7 @@ export interface IManageAssignmentsProps {
     categoryID: number,
     categoryName: string,
     categoryPointLimit: number | null,
+    sortKey: number,
   ) => Promise<void>;
   updateRubricComment: (
     categoryID: number,
@@ -160,10 +165,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
   public changeActiveAssignment = (assignment: AssignmentType | undefined) => {
     const { rubricCategories, rubricComments } = this.props;
+
     if (assignment) {
       this.setState({
         activeAssignment: assignment,
-        activeRubricCategories: JSON.parse(JSON.stringify(rubricCategories[assignment.id])),
+        activeRubricCategories: sortRubricCategory(JSON.parse(JSON.stringify(rubricCategories[assignment.id]))),
         activeRubricComments: JSON.parse(JSON.stringify(rubricComments)),
       });
     } else {
@@ -186,6 +192,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         pointLimit: null,
         assignment: activeAssignment.id,
         rubricComments: [],
+        sortKey: 0,
       });
       activeRubricComments[newCategoryCounter] = [];
       this.setState({
@@ -323,32 +330,34 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           return;
         }
         if (oldID < 0) {
-          this.props.createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, []).then((data) => {
-            if (data) {
-              const newRubricCategories = activeRubricCategories.map((i, index) => {
-                if (index === categoryIndex) {
-                  i.id = data.id;
-                  i.name = data.name;
-                  i.pointLimit = data.pointLimit;
-                  i.rubricComments = data.rubricComments;
-                }
-                return i;
-              });
-              activeRubricComments[data.id] = activeRubricComments[oldID];
-              delete activeRubricComments[oldID];
+          this.props
+            .createRubricCategory(activeAssignment.id, cat.name, cat.pointLimit, cat.sortKey, [])
+            .then((data) => {
+              if (data) {
+                const newRubricCategories = activeRubricCategories.map((i, index) => {
+                  if (index === categoryIndex) {
+                    i.id = data.id;
+                    i.name = data.name;
+                    i.pointLimit = data.pointLimit;
+                    i.rubricComments = data.rubricComments;
+                  }
+                  return i;
+                });
+                activeRubricComments[data.id] = activeRubricComments[oldID];
+                delete activeRubricComments[oldID];
 
-              // update savedCategories to reflect that the new category has been saved in the database
-              savedCategories[data.id] = true;
-              delete savedCategories[-1];
-              this.setState({
-                activeRubricCategories: newRubricCategories,
-                activeRubricComments,
-                savedCategories,
-                changeCategoryDialogID: undefined,
-              });
-              setTimeout(this.clearSaveCategory.bind(this.props, data.id), 2000);
-            }
-          });
+                // update savedCategories to reflect that the new category has been saved in the database
+                savedCategories[data.id] = true;
+                delete savedCategories[-1];
+                this.setState({
+                  activeRubricCategories: newRubricCategories,
+                  activeRubricComments,
+                  savedCategories,
+                  changeCategoryDialogID: undefined,
+                });
+                setTimeout(this.clearSaveCategory.bind(this.props, data.id), 2000);
+              }
+            });
         } else {
           const oldCat = this.props.rubricCategories[activeAssignment.id].find((i) => {
             return i.id === cat.id;
@@ -357,11 +366,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           if (oldCat && oldCat.name === cat.name && oldCat.pointLimit === cat.pointLimit) {
             return;
           }
-          this.props.updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit).then(() => {
-            savedCategories[cat.id] = true;
-            this.setState({ savedCategories, changeCategoryDialogID: undefined });
-            setTimeout(this.clearSaveCategory.bind(this.props, cat.id), 2000);
-          });
+          this.props
+            .updateRubricCategory(activeAssignment.id, cat.id, cat.name, cat.pointLimit, cat.sortKey)
+            .then(() => {
+              savedCategories[cat.id] = true;
+              this.setState({ savedCategories, changeCategoryDialogID: undefined });
+              setTimeout(this.clearSaveCategory.bind(this.props, cat.id), 2000);
+            });
         }
       }
     }
@@ -754,6 +765,50 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
   };
 
+  public moveCategory = (category: RubricCategoryType, direction: DIRECTION) => {
+    if (!this.state.activeRubricCategories) {
+      return;
+    }
+
+    const categoryIndex = this.state.activeRubricCategories.findIndex((cat: RubricCategoryType) => {
+      return category.id === cat.id;
+    });
+
+    if (categoryIndex === -1) {
+      return;
+    }
+
+    let targetIndex = categoryIndex;
+
+    switch (direction) {
+      case DIRECTION.Up: {
+        targetIndex = categoryIndex === 0 ? 0 : categoryIndex - 1;
+        break;
+      }
+      case DIRECTION.Down: {
+        targetIndex =
+          categoryIndex === this.state.activeRubricCategories.length - 1 ? categoryIndex : categoryIndex + 1;
+        break;
+      }
+      default: {
+        targetIndex = categoryIndex;
+      }
+    }
+    const newCategoryList = arrayMove(this.state.activeRubricCategories, categoryIndex, targetIndex);
+    this.setState({ activeRubricCategories: newCategoryList });
+
+    // We allow the UI to define the category sortKeys in order that they appear on screen
+    // If a set of new categories had sortKeys initialized to zero, then the first
+    // UI arrow press will assign the rest of them with N patches.
+    newCategoryList.forEach((cat: RubricCategoryType, index: number) => {
+      if (cat.sortKey !== index) {
+        this.props.updateRubricCategory(this.state.activeAssignment!.id, cat.id, cat.name, cat.pointLimit, index);
+        newCategoryList[index].sortKey = index;
+        this.setState({ activeRubricCategories: newCategoryList });
+      }
+    });
+  };
+
   // ------------------- Render -------------------
   public render() {
     const {
@@ -1062,33 +1117,48 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       const { activeRubricCategories, activeRubricComments } = this.state;
 
       let categoryTables;
-
       if (activeRubricCategories && activeRubricComments) {
         categoryTables = activeRubricCategories.map((cat, catIndex) => {
           return (
-            <RubricCategoryTable
-              key={cat.id}
-              categoryID={cat.id}
-              categoryIndex={catIndex}
-              comments={activeRubricComments[cat.id]}
-              categoryName={cat.name}
-              categoryPointLimit={cat.pointLimit}
-              // bind the trigger change with true for isDelete
-              deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
-              changeCategoryName={this.changeCategoryName}
-              changeCategoryCap={this.changeCategoryCap}
-              addEmptyComment={this.addEmptyComment}
-              changeCommentText={this.changeCommentText}
-              changeCommentDelta={this.changeCommentDelta}
-              deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
-              isDisabled={lockManageAssignment}
-              updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
-              updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
-              updateCategoryName={this.updateCategory}
-              savedComments={this.state.savedComments}
-              savedCategories={this.state.savedCategories}
-              triggerCommentExplorer={this.triggerCommentExplorer}
-            />
+            <div key={cat.id} className="admin-rubric__category-container">
+              {lockManageAssignment ? null : (
+                <div className="admin-rubric__category-container__arrows">
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
+                      keyboard_arrow_up
+                    </Button>
+                  </div>
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
+                      keyboard_arrow_down
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <RubricCategoryTable
+                key={cat.id}
+                categoryID={cat.id}
+                categoryIndex={catIndex}
+                comments={activeRubricComments[cat.id]}
+                categoryName={cat.name}
+                categoryPointLimit={cat.pointLimit}
+                // bind the trigger change with true for isDelete
+                deleteCategory={this.triggerChangeCategoryDialog.bind(this.props, true)}
+                changeCategoryName={this.changeCategoryName}
+                changeCategoryCap={this.changeCategoryCap}
+                addEmptyComment={this.addEmptyComment}
+                changeCommentText={this.changeCommentText}
+                changeCommentDelta={this.changeCommentDelta}
+                deleteComment={this.triggerChangeCommentDialog.bind(this.props, true)}
+                isDisabled={lockManageAssignment}
+                updateComment={this.triggerChangeCommentDialog.bind(this.props, false)}
+                updateCategoryCaps={this.triggerChangeCategoryDialog.bind(this.props, false)}
+                updateCategoryName={this.updateCategory}
+                savedComments={this.state.savedComments}
+                savedCategories={this.state.savedCategories}
+                triggerCommentExplorer={this.triggerCommentExplorer}
+              />
+            </div>
           );
         });
       }
