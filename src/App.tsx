@@ -170,6 +170,7 @@ class App extends React.Component<{}, IState> {
         localStorage.setItem('token', json.token);
         setInterval(this.refreshToken, REFRESH_INT);
         (window as any).gtag('set', { user_id: json.user.id });
+        (window as any).gtag('set', 'organization', json.user.organization);
       })
       .catch((error) => {
         this.handleLogout();
@@ -200,6 +201,7 @@ class App extends React.Component<{}, IState> {
           toRedirect: true,
         });
         (window as any).gtag('set', { user_id: json.user.id });
+        (window as any).gtag('set', 'organization', json.user.organization);
       })
       .catch((error) => {
         localStorage.removeItem('token');
