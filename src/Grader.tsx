@@ -14,7 +14,7 @@ import { Assignment, AssignmentType, sortAssignments } from './infrastructure/as
 import { CourseType } from './infrastructure/course';
 import { loadIDList } from './infrastructure/generics';
 import { Section, SectionType } from './infrastructure/section';
-import { Submission, SubmissionType } from './infrastructure/submission';
+import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
 
 interface IGraderState {
   courses: CourseType[];
@@ -22,7 +22,7 @@ interface IGraderState {
   currentAssignment?: AssignmentType;
   currentCourse?: CourseType;
   currentSections: SectionType[];
-  currentSubmissions: SubmissionType[];
+  currentSubmissions: AnonymousSubmissionType[];
 
   isLoggedIn: boolean;
   redirect: boolean;
@@ -101,7 +101,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
         if (currentAssignment) {
           this.setState({ isLoadingSubmissions: true });
-          const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, {
+          const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
             grader: this.props.email,
           });
 
@@ -152,7 +152,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     if (currentAssignment) {
       this.setState({ isLoadingSubmissions: true });
-      const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, { grader: this.props.email });
+      const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
+        grader: this.props.email,
+      });
 
       this.setState({
         currentAssignment,
@@ -265,6 +267,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public isSuperGrader = (superGraderCourses: CourseType[], currentCourse: CourseType): boolean => {
     return superGraderCourses.find((course: CourseType) => {
+      return course.id === currentCourse.id;
+    })
+      ? true
+      : false;
+  };
+
+  public isCourseAdmin = (courseAdminCourses: CourseType[], currentCourse: CourseType): boolean => {
+    return courseAdminCourses.find((course: CourseType) => {
       return course.id === currentCourse.id;
     })
       ? true

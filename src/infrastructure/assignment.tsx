@@ -3,7 +3,7 @@ import { createObject, deleteObject, GenericObject, readObject, readObjectDetail
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { StudentSubmissionV, SubmissionV } from './submission';
+import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
 
 const AssignmentV = t.intersection(
   [
@@ -79,6 +79,11 @@ class Assignment {
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissionsAnonymous = readObjectDetail(
+    t.array(AnonymousSubmissionV),
+    'assignments',
+    'submissions',
+  );
   public static readSubmissionsStudent = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
 }
 
