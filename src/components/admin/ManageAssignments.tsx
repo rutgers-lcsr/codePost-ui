@@ -861,19 +861,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           ? calculatedMedian
           : '--';
 
-        const onCellClick = this.changeActiveAssignment.bind(this.props, assignment);
-        const downloadGrades = this.downloadGrades.bind(this.props, assignment);
-
         const menuItems = [
           {
             leftIcon: <FontIcon>toc</FontIcon>,
             primaryText: 'Edit Rubric',
-            onClick: onCellClick,
+            onClick: this.changeActiveAssignment.bind(this.props, assignment),
           },
           {
             leftIcon: <FontIcon>vertical_align_bottom</FontIcon>,
             primaryText: 'Download Grades',
-            onClick: downloadGrades,
+            onClick: this.downloadGrades.bind(this.props, assignment),
           },
           {
             leftIcon: <FontIcon>vertical_align_top</FontIcon>,
@@ -890,7 +887,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         return (
           <TableRow key={assignmentID}>
             <TableColumn key={`${assignmentID}-1`}>{assignment.name}</TableColumn>
-            <TableColumn key={`${assignmentID}-9`}>
+            <TableColumn key={`${assignmentID}-2`}>
               <SelectionControl
                 id={`${assignmentID}-release-checkbox`}
                 name="assignment-release-checkbox"
@@ -906,7 +903,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
             </TableColumn>
             <TableColumn
-              key={`${assignmentID}-2`}
+              key={`${assignmentID}-3`}
               onClick={
                 numSubmissions > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Submitted) : dummyFunction
               }
@@ -915,14 +912,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               {numSubmissions}
             </TableColumn>
             <TableColumn
-              key={`${assignmentID}-3`}
+              key={`${assignmentID}-4`}
               onClick={numGraded > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Graded) : dummyFunction}
               style={numGraded > 0 ? { cursor: 'pointer' } : {}}
             >
               {numGraded}
             </TableColumn>
             <TableColumn
-              key={`${assignmentID}-4`}
+              key={`${assignmentID}-5`}
               onClick={
                 numUngraded > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Ungraded) : dummyFunction
               }
@@ -931,7 +928,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               {numUngraded}
             </TableColumn>
             <TableColumn
-              key={`${assignmentID}-5`}
+              key={`${assignmentID}-6`}
               onClick={
                 numUnclaimed > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Unclaimed) : dummyFunction
               }
@@ -940,14 +937,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               {numUnclaimed}
             </TableColumn>
             <TableColumn
-              key={`${assignmentID}-6`}
+              key={`${assignmentID}-7`}
               onClick={numMissing > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Missing) : dummyFunction}
               style={numMissing > 0 ? { cursor: 'pointer' } : {}}
             >
               {numMissing}
             </TableColumn>
-            <TableColumn key={`${assignmentID}-7`}>{mean}</TableColumn>
-            <TableColumn key={`${assignmentID}-8`}>{median}</TableColumn>
+            <TableColumn key={`${assignmentID}-8`}>{mean}</TableColumn>
+            <TableColumn key={`${assignmentID}-9`}>{median}</TableColumn>
             <MenuButtonColumn icon menuItems={menuItems}>
               more_vert
             </MenuButtonColumn>
