@@ -200,7 +200,9 @@ class CreateSignup extends React.Component<{}, IState> {
           <div className="SignUpManager">
             <div className="SignUpManager__main-container">
               <div className="SignUpManager__center-text">
-                Sorry, your email doesn't match the organization you selected.
+                Please make sure your email correctly matches the email domain for the organization entered. If you
+                don’t have an .edu email or have other issues, please contact us at team@codepost.io and we can help you
+                get set up with a demo account.
               </div>
             </div>
           </div>
