@@ -11,7 +11,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course } from './infrastructure/course';
+import { Course, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricCommentType } from './infrastructure/rubricComment';
@@ -22,6 +22,7 @@ interface IGradeState {
   isLoading: boolean;
   redirect: boolean;
   assignment?: AssignmentType;
+  course?: CourseType;
   submission?: AnonymousSubmissionType;
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
@@ -82,6 +83,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       //       this.setState({ isLoading: false });
       //     });
 
+      const course = await Course.read(assignment.course);
       const graders = this.isCourseAdmin(assignment) ? (await Course.readRoster(assignment.course))['graders'] : [];
 
       if (assignment && !submission.isFinalized) {
@@ -92,6 +94,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       // @ts-ignore
       this.setState({
         assignment,
+        course,
         submission,
         files,
         comments,
@@ -474,6 +477,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               assignment={assignment}
               graders={graders}
               updateGrader={this.updateGrader}
+              isAnonymous={this.state.course ? this.state.course.anonymousGrading : false}
               isCourseAdmin={isCourseAdmin}
               commentRubricComments={commentRubricComments}
               rubricCategories={rubricCategories}
