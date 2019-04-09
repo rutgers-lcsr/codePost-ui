@@ -8,13 +8,13 @@ import CodePanelUtils from './CodePanelUtils';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 import Code from './Code';
 import MarkdownCode from './MarkdownCode';
 
 export interface ICodePanelProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;

@@ -10,10 +10,10 @@ import { ICommentToRubricCommentMap } from '../../types/common';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 interface IMarkdownCodeProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;

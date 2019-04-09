@@ -11,12 +11,12 @@ import { ICommentToRubricCommentMap, POSITION } from '../../types/common';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 import LangMap from 'lang-map';
 
 interface ICodeProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;

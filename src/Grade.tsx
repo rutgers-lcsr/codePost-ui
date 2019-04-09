@@ -15,14 +15,14 @@ import { Course } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 import { RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricCommentType } from './infrastructure/rubricComment';
-import { Submission, SubmissionType } from './infrastructure/submission';
+import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 
 interface IGradeState {
   isLoading: boolean;
   redirect: boolean;
   assignment?: AssignmentType;
-  submission?: SubmissionType;
+  submission?: AnonymousSubmissionType;
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   activeCommentId?: number;
@@ -66,7 +66,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   public async componentDidMount() {
     this.setState({ isLoading: true });
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    const submission = await Submission.read(submissionID);
+    const submission = await Submission.readAnonymous(submissionID);
     if (submission) {
       const [
         assignment,
@@ -518,7 +518,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 }
 
 interface IToggleFinalizeProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   comments: IFileToCommentsMap;
   toggleFinalized: any;
   positiveNegativeAlert: boolean;
