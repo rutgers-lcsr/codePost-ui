@@ -763,6 +763,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   };
 
+  public getFileExtension = (fileName: string): string => {
+    const split = fileName.split('.');
+    return split.length === 1 ? 'txt' : split[split.length - 1];
+  };
+
   // Upload a submission in cautious mode
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
@@ -800,8 +805,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
           // Create each file
           const filePromises = files.map((file: any) => {
-            const split = file.name.split('.');
-            const ext = split[split.length - 1];
+            const ext = this.getFileExtension(file.name);
             const filePayload = {
               id: -1,
               name: file.name,
