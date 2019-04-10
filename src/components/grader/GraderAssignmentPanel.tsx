@@ -248,10 +248,10 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
           >
             <div>
               Are you sure that you want to release this submission?
-              {this.state.releasedSubmission && this.state.releasedSubmission.students
+              {this.state.releasedSubmission && this.state.releasedSubmission.students && !this.props.isAnonymous
                 ? ` (${this.state.releasedSubmission.students.join('/')})`
                 : ''}
-              .
+              <br />.
             </div>
             <Button onClick={this.toggleReleaseDialog.bind(this.props, undefined)} primary={false} flat={true}>
               Cancel
