@@ -1,6 +1,8 @@
 import * as React from 'react';
 import SearchBar from '../SearchBar';
 
+import ReactMarkdown from 'react-markdown';
+
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -107,7 +109,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           <Button key={rubricCategory.id} className={arrowClassName} icon={true}>
             {buttonIcon}
           </Button>
-          {rubricCategory.name}
+          <ReactMarkdown source={rubricCategory.name} />
         </div>
       </div>
       {visible &&
