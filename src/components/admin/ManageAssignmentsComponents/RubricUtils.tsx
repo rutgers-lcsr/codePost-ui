@@ -101,6 +101,9 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       {...props.provided.draggableProps}
       {...props.provided.dragHandleProps}
     >
+      <TableColumn>
+        <div className="admin-rubric__commentRow__drag-handle" />
+      </TableColumn>
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
         <Tooltipped label="Click to explore." setPosition={true} position="right" delay={500}>
@@ -310,6 +313,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
       <DataTable key={props.categoryID} className="DataTable--RubricCategory" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow selectable={false}>
+            <TableColumn key={'dragHandle'} />
             <TableColumn key={'spacing1'} />
             <TableColumn key={'Linked comments'}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
