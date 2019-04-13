@@ -128,6 +128,7 @@ interface IManageAssignmentsState {
   drawerVisible: boolean;
   drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
   isDownloading: boolean;
+  items: number[];
 }
 
 export enum DRAWER_TYPE {
@@ -152,6 +153,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     drawerVisible: false,
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
+    items: [0, 1, 2, 3, 4, 5],
   };
 
   public assignmentNameField: any;
@@ -1017,6 +1019,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
 
     if (!activeAssignment) {
+      ///////////////////////////////
+      ///////////////////////////////
+
+      ///////////////////////////////
+      ///////////////////////////////
       return (
         <div className="admin__main-panel__content-container">
           <div className="padding" />
@@ -1034,7 +1041,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               Download All Grades
             </Button>
           )}
-
           <div className="padding" />
           {submissionsLoadComplete && assignmentRubricLoadComplete ? (
             <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
@@ -1125,6 +1131,20 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       let categoryTables;
       if (activeRubricCategories && activeRubricComments) {
         categoryTables = activeRubricCategories.map((cat, catIndex) => {
+          const onDragEnd = (result: any) => {
+            // dropped outside the list
+            if (!result.destination) {
+              return;
+            }
+
+            const reorderedComments = arrayMove(
+              activeRubricComments[cat.id],
+              result.source.index,
+              result.destination.index,
+            );
+            activeRubricComments[cat.id] = reorderedComments;
+            this.setState({ activeRubricComments });
+          };
           return (
             <div key={cat.id} className="admin-rubric__category-container">
               {lockManageAssignment ? null : (
@@ -1163,6 +1183,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 savedComments={this.state.savedComments}
                 savedCategories={this.state.savedCategories}
                 triggerCommentExplorer={this.triggerCommentExplorer}
+                onDragEnd={onDragEnd}
               />
             </div>
           );
