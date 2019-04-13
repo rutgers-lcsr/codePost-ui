@@ -238,6 +238,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         pointDelta: 0,
         category: categoryID,
         comments: [],
+        sortKey: activeRubricComments[categoryID] ? activeRubricComments[categoryID].length : 0,
       };
       if (activeRubricComments[categoryID]) {
         activeRubricComments[categoryID].push(newComment);
