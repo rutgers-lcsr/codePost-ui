@@ -4,7 +4,6 @@ import {
   DataTable,
   DialogContainer,
   FontIcon,
-  TableBody,
   TableColumn,
   TableHeader,
   TableRow,
@@ -33,6 +32,7 @@ interface IPropsRubricComment {
   savedComments: { [id: number]: boolean };
   linkedComments: number[];
   triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
+  provided: any;
 }
 
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -94,7 +94,13 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       : 'admin-rubric__commentRow__frequency--none';
 
   return (
-    <TableRow key={props.commentID}>
+    <tr
+      key={props.commentID}
+      className="md-table-row"
+      ref={props.provided.innerRef}
+      {...props.provided.draggableProps}
+      {...props.provided.dragHandleProps}
+    >
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
         <Tooltipped label="Click to explore." setPosition={true} position="right" delay={500}>
@@ -129,7 +135,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
         />
       </TableColumn>
       {deleteCommentColumn}
-    </TableRow>
+    </tr>
   );
 };
 
@@ -197,64 +203,39 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
         <DragDropContext onDragEnd={props.onDragEnd}>
           <Droppable droppableId="droppable">
             {(provided: any, snapshot: any) => (
-              <div ref={provided.innerRef}>
+              <tbody className="md-table-body" ref={provided.innerRef}>
                 {props.comments.map((comm, commIndex) => (
                   <Draggable key={comm.id} draggableId={`draggable-${comm.id}`} index={commIndex}>
                     {// tslint:disable-next-line:no-shadowed-variable
                     (provided: any, snapshot: any) => (
-                      <div>
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                          <RubricCommentRow
-                            key={commIndex}
-                            commentID={comm.id}
-                            categoryID={props.categoryID}
-                            commentIndex={commIndex}
-                            changeCommentText={props.changeCommentText}
-                            changeCommentDelta={props.changeCommentDelta}
-                            deleteComment={props.deleteComment}
-                            defaultText={comm.text}
-                            defaultDelta={comm.pointDelta}
-                            isDisabled={props.isDisabled}
-                            updateComment={props.updateComment}
-                            savedComments={props.savedComments}
-                            linkedComments={comm.comments}
-                            triggerCommentExplorer={props.triggerCommentExplorer}
-                          />
-                        </div>
-                        {provided.placeholder}
-                      </div>
+                      <RubricCommentRow
+                        key={commIndex}
+                        commentID={comm.id}
+                        categoryID={props.categoryID}
+                        commentIndex={commIndex}
+                        changeCommentText={props.changeCommentText}
+                        changeCommentDelta={props.changeCommentDelta}
+                        deleteComment={props.deleteComment}
+                        defaultText={comm.text}
+                        defaultDelta={comm.pointDelta}
+                        isDisabled={props.isDisabled}
+                        updateComment={props.updateComment}
+                        savedComments={props.savedComments}
+                        linkedComments={comm.comments}
+                        triggerCommentExplorer={props.triggerCommentExplorer}
+                        provided={provided}
+                      />
                     )}
                   </Draggable>
                 ))}
                 {provided.placeholder}
-              </div>
+              </tbody>
             )}
           </Droppable>
         </DragDropContext>
       );
     }
     return <div />;
-    // return props.comments.map((comm, commIndex) => {
-    //   return (
-
-    //     <RubricCommentRow
-    //       key={commIndex}
-    //       commentID={comm.id}
-    //       categoryID={props.categoryID}
-    //       commentIndex={commIndex}
-    //       changeCommentText={props.changeCommentText}
-    //       changeCommentDelta={props.changeCommentDelta}
-    //       deleteComment={props.deleteComment}
-    //       defaultText={comm.text}
-    //       defaultDelta={comm.pointDelta}
-    //       isDisabled={props.isDisabled}
-    //       updateComment={props.updateComment}
-    //       savedComments={props.savedComments}
-    //       linkedComments={comm.comments}
-    //       triggerCommentExplorer={props.triggerCommentExplorer}
-    //     />
-    //   );
-    // });
   };
 
   let deleteCategoryButton = null;
@@ -350,7 +331,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             {deleteCommentHeader}
           </TableRow>
         </TableHeader>
-        <TableBody>{renderCommentRows()}</TableBody>
+        {renderCommentRows()}
       </DataTable>
       <Button className="Btn" iconChildren={'playlist_add'} disabled={props.isDisabled} onClick={addEmptyCommentToThis}>
         Add New Comment
