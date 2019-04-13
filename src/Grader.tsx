@@ -397,7 +397,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
               releaseSubmission={this.releaseSubmission}
               assignment={currentAssignment}
               submissions={currentSubmissions}
-              isAnonymous={this.state.currentCourse ? this.state.currentCourse.anonymousGrading : false}
+              isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
               isLoadingSubmissions={isLoadingSubmissions}
               sections={currentSections}
             />

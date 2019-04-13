@@ -477,7 +477,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               assignment={assignment}
               graders={graders}
               updateGrader={this.updateGrader}
-              isAnonymous={this.state.course ? this.state.course.anonymousGrading : false}
+              isAnonymous={this.state.assignment ? this.state.assignment.anonymousGrading : false}
               isCourseAdmin={isCourseAdmin}
               commentRubricComments={commentRubricComments}
               rubricCategories={rubricCategories}

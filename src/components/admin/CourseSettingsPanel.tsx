@@ -19,7 +19,7 @@ interface IState {
   showStudentsStatistics: boolean;
   timezone: string;
   emailNewUsers: boolean;
-  anonymousGrading: boolean;
+  anonymousGradingDefault: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
@@ -28,7 +28,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     showStudentsStatistics: this.props.currentCourse.showStudentsStatistics,
     timezone: this.props.currentCourse.timezone,
     emailNewUsers: this.props.currentCourse.emailNewUsers,
-    anonymousGrading: this.props.currentCourse.anonymousGrading,
+    anonymousGradingDefault: this.props.currentCourse.anonymousGradingDefault,
   };
 
   public toggleValue = (label: string) => {
@@ -61,7 +61,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       emailNewUsers: this.state.emailNewUsers,
       assignments: [], // ignored by API
       sections: [], // ignored by API
-      anonymousGrading: this.state.anonymousGrading,
+      anonymousGradingDefault: this.state.anonymousGradingDefault,
     };
 
     this.props.updateSettings(payload);
@@ -73,7 +73,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       showStudentsStatistics,
       timezone,
       emailNewUsers,
-      anonymousGrading,
+      anonymousGradingDefault,
     } = this.state;
     const timezoneOptions = timezones.map((el) => {
       return { label: el, value: el };
@@ -160,8 +160,8 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 type="switch"
                 name="CourseSettings__Anonymous"
                 className="CourseSettings__settingItem__control"
-                defaultChecked={anonymousGrading}
-                onChange={this.toggleValue.bind(this.props, 'anonymousGrading')}
+                defaultChecked={anonymousGradingDefault}
+                onChange={this.toggleValue.bind(this.props, 'anonymousGradingDefault')}
                 aria-label={'Hide student information from graders'}
               />
             </div>

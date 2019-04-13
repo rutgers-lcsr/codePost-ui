@@ -82,7 +82,7 @@ const demoCourse = (testName: string) => {
     showStudentsStatistics: false,
     timezone: 'US/Eastern',
     emailNewUsers: false,
-    anonymousGrading: false,
+    anonymousGradingDefault: false,
   };
 };
 

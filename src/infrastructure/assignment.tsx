@@ -16,6 +16,7 @@ const AssignmentV = t.intersection(
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
+      anonymousGrading: t.boolean,
     }),
     t.partial({
       mean: t.union([t.number, t.null]),
@@ -36,6 +37,7 @@ const AssignmentVPost = t.intersection(
       rubricCategories: t.array(t.number),
     }),
     t.partial({
+      anonymousGrading: t.boolean,
       course: t.number,
     }),
   ],
@@ -52,6 +54,7 @@ const AssignmentVPatch = t.intersection(
       hideGrades: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
+      anonymousGrading: t.boolean,
     }),
   ],
   'AssignmentPatch',
