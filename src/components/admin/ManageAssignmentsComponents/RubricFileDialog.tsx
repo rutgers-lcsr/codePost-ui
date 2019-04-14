@@ -236,7 +236,22 @@ class RubricFileDialog extends React.Component<IProps, {}> {
       const oldCategories = activeRubricCategories;
       const oldComments = activeRubricComments;
 
-      newRubric.forEach((cat) => {
+      const sortRubric = (rubric: IDownloadCategory[]): IDownloadCategory[] => {
+        // First sort by RubricCategory 'sortKey', then by ID
+        const compareRubricCategories = (a: IDownloadCategory, b: IDownloadCategory) => {
+          if (a.sortKey === b.sortKey) {
+            return a.id - b.id;
+          } else {
+            return a.sortKey - b.sortKey;
+          }
+        };
+
+        return rubric.sort(compareRubricCategories);
+      };
+
+      const sortedRubric = sortRubric(newRubric);
+
+      sortedRubric.forEach((cat) => {
         // If new category, create category and comments
         const catIndex = oldCategories
           .map((i) => {
@@ -323,7 +338,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
         }
       });
       // Delete deleted categories
-      const newCatIDs = newRubric.map((cat) => {
+      const newCatIDs = sortedRubric.map((cat) => {
         return cat.id;
       });
       activeRubricCategories.forEach((cat) => {
