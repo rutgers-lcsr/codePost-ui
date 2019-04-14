@@ -30,7 +30,7 @@ import { LinkedCommentsAlert, RubricCategoryTable } from './ManageAssignmentsCom
 
 import { CourseType } from '../../infrastructure/course';
 import { RubricCategoryType, sortRubricCategory } from '../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { RubricCommentType, sortRubricComment } from '../../infrastructure/rubricComment';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
@@ -94,6 +94,7 @@ export interface IManageAssignmentsProps {
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
+    sortKey: number,
   ) => Promise<void>;
   updateAssignment: (
     assignnmentID: number,
@@ -169,10 +170,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const { rubricCategories, rubricComments } = this.props;
 
     if (assignment) {
+      const activeRubricComments = JSON.parse(JSON.stringify(rubricComments));
+      for (const categoryID in activeRubricComments) {
+        if (activeRubricComments.hasOwnProperty(categoryID)) {
+          activeRubricComments[categoryID] = sortRubricComment(activeRubricComments[categoryID]);
+        }
+      }
+
       this.setState({
         activeAssignment: assignment,
         activeRubricCategories: sortRubricCategory(JSON.parse(JSON.stringify(rubricCategories[assignment.id]))),
-        activeRubricComments: JSON.parse(JSON.stringify(rubricComments)),
+        activeRubricComments,
       });
     } else {
       this.setState({
@@ -301,7 +309,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         if (oldComm && oldComm.text === comm.text && oldComm.pointDelta === comm.pointDelta) {
           return;
         }
-        this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta).then(() => {
+        this.props.updateRubricComment(categoryID, comm.id, comm.text, comm.pointDelta, comm.sortKey).then(() => {
           savedComments[comm.id] = true;
           this.setState({ savedComments, changeCommentDialogID: undefined });
           setTimeout(this.clearSaveComment.bind(this.props, comm.id), 2000);
@@ -797,18 +805,25 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         targetIndex = categoryIndex;
       }
     }
-    const newCategoryList = arrayMove(this.state.activeRubricCategories, categoryIndex, targetIndex);
-    this.setState({ activeRubricCategories: newCategoryList });
+    const reorderedCategories = arrayMove(this.state.activeRubricCategories, categoryIndex, targetIndex);
 
-    // We allow the UI to define the category sortKeys in order that they appear on screen
-    // If a set of new categories had sortKeys initialized to zero, then the first
-    // UI arrow press will assign the rest of them with N patches.
-    newCategoryList.forEach((cat: RubricCategoryType, index: number) => {
+    const promises = reorderedCategories.map((cat: RubricCategoryType, index: number) => {
       if (cat.sortKey !== index) {
-        this.props.updateRubricCategory(this.state.activeAssignment!.id, cat.id, cat.name, cat.pointLimit, index);
-        newCategoryList[index].sortKey = index;
-        this.setState({ activeRubricCategories: newCategoryList });
+        reorderedCategories[index].sortKey = index;
+        return this.props.updateRubricCategory(
+          this.state.activeAssignment!.id,
+          cat.id,
+          cat.name,
+          cat.pointLimit,
+          index,
+        );
+      } else {
+        return Promise.resolve();
       }
+    });
+
+    Promise.all(promises).then(() => {
+      this.setState({ activeRubricCategories: reorderedCategories });
     });
   };
 
@@ -1143,8 +1158,20 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               result.source.index,
               result.destination.index,
             );
-            activeRubricComments[cat.id] = reorderedComments;
-            this.setState({ activeRubricComments });
+
+            const promises = reorderedComments.map((comment: RubricCommentType, index: number) => {
+              if (comment.sortKey !== index) {
+                reorderedComments[index].sortKey = index;
+                return this.props.updateRubricComment(cat.id, comment.id, comment.text, comment.pointDelta, index);
+              } else {
+                return Promise.resolve();
+              }
+            });
+
+            Promise.all(promises).then(() => {
+              activeRubricComments[cat.id] = reorderedComments;
+              this.setState({ activeRubricComments });
+            });
           };
           return (
             <div key={cat.id} className="admin-rubric__category-container">

@@ -52,6 +52,7 @@ interface IProps {
     commentID: number,
     text: string | undefined,
     pointDelta: number | undefined,
+    sortKey: number,
   ) => Promise<void>;
   parentUpdate: (assignment: AssignmentType | undefined) => void;
   isDisabled: boolean;
@@ -278,7 +279,7 @@ class RubricFileDialog extends React.Component<IProps, {}> {
                   oldComments[cat.id][comIndex].pointDelta !== com.pointDelta)
               ) {
                 if (makeDBUpdate) {
-                  const result = this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta);
+                  const result = this.props.updateRubricComment(cat.id, com.id, com.text, com.pointDelta, com.sortKey);
                   promises.push(result);
                 }
                 updates.updatedComments.push(com.text);

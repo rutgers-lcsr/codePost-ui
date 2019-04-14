@@ -1268,6 +1268,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     commentID: number,
     commentText: string | undefined,
     commentDelta: number | undefined,
+    commentSortKey: number,
   ): Promise<void> => {
     const payload = { id: commentID };
     if (commentText && commentText.length === 0) {
@@ -1277,6 +1278,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     addToPayload(payload, 'text', commentText);
     addToPayload(payload, 'pointDelta', commentDelta);
+    addToPayload(payload, 'sortKey', commentSortKey);
 
     return RubricComment.update(payload)
       .then((rubricComment) => {
