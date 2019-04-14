@@ -1159,6 +1159,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               result.destination.index,
             );
 
+            activeRubricComments[cat.id] = reorderedComments;
+            this.setState({ activeRubricComments });
+
             const promises = reorderedComments.map((comment: RubricCommentType, index: number) => {
               if (comment.sortKey !== index) {
                 reorderedComments[index].sortKey = index;
@@ -1168,10 +1171,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               }
             });
 
-            Promise.all(promises).then(() => {
-              activeRubricComments[cat.id] = reorderedComments;
-              this.setState({ activeRubricComments });
-            });
+            Promise.all(promises)
+              .then(() => {
+                activeRubricComments[cat.id] = reorderedComments;
+                this.setState({ activeRubricComments });
+              })
+              .catch(() => {
+                // If there was an error, then undo the reordering
+                const revertOrderComments = arrayMove(reorderedComments, result.destination.index, result.source.index);
+                activeRubricComments[cat.id] = revertOrderComments;
+                this.setState({ activeRubricComments });
+              });
           };
           return (
             <div key={cat.id} className="admin-rubric__category-container">
