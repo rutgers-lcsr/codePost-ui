@@ -32,7 +32,7 @@ interface IPropsRubricComment {
   savedComments: { [id: number]: boolean };
   linkedComments: number[];
   triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
-  provided: any;
+  draggableProvided: any;
 }
 
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -97,9 +97,9 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
     <tr
       key={props.commentID}
       className="md-table-row"
-      ref={props.provided.innerRef}
-      {...props.provided.draggableProps}
-      {...props.provided.dragHandleProps}
+      ref={props.draggableProvided.innerRef}
+      {...props.draggableProvided.draggableProps}
+      {...props.draggableProvided.dragHandleProps}
     >
       <TableColumn>
         <div className="admin-rubric__commentRow__drag-handle" />
@@ -226,7 +226,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
                         savedComments={props.savedComments}
                         linkedComments={comm.comments}
                         triggerCommentExplorer={props.triggerCommentExplorer}
-                        provided={provided}
+                        draggableProvided={provided}
                       />
                     )}
                   </Draggable>
