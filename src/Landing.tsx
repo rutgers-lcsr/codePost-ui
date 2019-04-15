@@ -432,6 +432,23 @@ public boolean contains(int[] x, int y) {\n\n\
             </div>
           </div>
         </div>
+        <div className="Testimonial">
+          <div className="Testimonial__main-container">
+            <div className="Testimonial__left-box">
+              <img className="Testimonial__left-box__image" src={require('./img/landing/bob_sedgewick.png')} />
+            </div>
+            <div className="Testimonial__right-box">
+              <div className="Testimonial__right-box__quote">
+                "codePost has been a <b>paradigm-shifting improvement</b> to how we teach computer science at
+                Princeton."
+              </div>
+              <div className="Testimonial__right-box__credibility">
+                <div className="Testimonial__right-box__credibility__name">Bob Sedgewick</div>
+                <div className="Testimonial__right-box__credibility__title">Professor, Princeton University</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="Numbers">
           <div className="stats">
             <div className="stats__text">
