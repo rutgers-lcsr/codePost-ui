@@ -119,10 +119,47 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         markdown += cell.source.join('');
         markdown += '\n```';
 
-        // Used if we want to print out test output
-        // if (cell.outputs.length > 0) {
-        //   markdown += cell.outputs[0].text.join('');
-        // }
+        cell.outputs.map((output: any) => {
+          if (output.data) {
+            if (output.data['text/plain']) {
+              markdown += '\n';
+              markdown += output.data['text/plain']
+                .map((line: string) => {
+                  return `${line.trim()}\n`;
+                })
+                .join('');
+              markdown += '\n';
+            }
+            if (output.data['text/html']) {
+              markdown += '\n';
+              // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+              markdown += output.data['text/html']
+                .map((line: string) => {
+                  return line.trim();
+                })
+                .join('');
+              markdown += '\n';
+            }
+            if (output.data['image/png']) {
+              markdown += '\n';
+              // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+              const img = output.data['image/png'].trim();
+              markdown += `<div>\n<img src=\"data:image/png;base64,${img}".>\n</div>`;
+              markdown += '\n';
+            }
+          }
+          if (output.name === 'stdout') {
+            if (output.text) {
+              markdown += '\n';
+              markdown += output.text
+                .map((line: string) => {
+                  return line.trim();
+                })
+                .join('');
+              markdown += '\n';
+            }
+          }
+        });
       }
 
       markdown += '\n\n';
