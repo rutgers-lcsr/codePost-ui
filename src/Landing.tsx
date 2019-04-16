@@ -447,7 +447,7 @@ public boolean contains(int[] x, int y) {\n\n\
             </div>
             <div className="Testimonial__bottom-box">
               <div className="Testimonial__bottom-box__credibility">
-                <div className="Testimonial__bottom-box__credibility__name">Bob Sedgewick</div>
+                <div className="Testimonial__bottom-box__credibility__name">Robert Sedgewick</div>
                 <div className="Testimonial__bottom-box__credibility__title">Professor, Princeton University</div>
               </div>
             </div>
