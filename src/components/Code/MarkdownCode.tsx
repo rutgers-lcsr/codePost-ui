@@ -111,7 +111,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
         index-number={props.index}
         onClick={this.onBlockElementClick}
         // @ts-ignore
-        style={{ 'padding-top': '6px', 'padding-bottom': '6px' }}
+        style={{ paddingTop: '6px', paddingBottom: '6px' }}
       >
         {props.children}
       </p>
@@ -236,7 +236,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
               <div
                 id={`syntax-highlighter-${this.props.file.id}`}
                 className="code__syntax-highlighter markdown-code"
-                style={{ cursor: 'pointer', 'min-width': '400px' }}
+                style={{ cursor: 'pointer', minWidths: '400px' }}
               >
                 <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={true}>
                   {this.props.markdown}
