@@ -13,6 +13,12 @@ import { SubmissionType } from '../../infrastructure/submission';
 import Code from './Code';
 import MarkdownCode from './MarkdownCode';
 
+import TurndownService from 'turndown';
+import * as turndownPluginGfm from 'turndown-plugin-gfm';
+
+const turndown = new TurndownService();
+turndown.use(turndownPluginGfm.tables);
+
 export interface ICodePanelProps {
   submission: SubmissionType;
   files: FileType[];
@@ -121,43 +127,36 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
 
         cell.outputs.map((output: any) => {
           if (output.data) {
-            if (output.data['text/plain']) {
-              // We don't want plaintext to be parsed as markdown so we put it in a codeBlock
-              markdown += '\n```output\n';
-              markdown += output.data['text/plain']
-                .map((line: string) => {
-                  return `${line.trim()}\n`;
-                })
-                .join('');
-              markdown += '\n```\n';
-            }
-            if (output.data['text/html']) {
-              markdown += '\n';
-              // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
-              markdown += output.data['text/html']
-                .map((line: string) => {
-                  return line.trim();
-                })
-                .join('');
-              markdown += '\n';
-            }
-            if (output.data['image/png']) {
-              markdown += '\n';
-              // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
-              const img = output.data['image/png'].trim();
-              markdown += `<div>\n<img src=\"data:image/png;base64,${img}".>\n</div>`;
-              markdown += '\n';
-            }
+            Object.keys(output.data).forEach((key) => {
+              console.log(key);
+              switch (key) {
+                case 'text/plain':
+                  markdown += '\n```output\n';
+                  markdown += output.data['text/plain'].join('');
+                  markdown += '\n```\n';
+                  break;
+                case 'text/html':
+                  markdown += '\n';
+                  // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+                  markdown += turndown.turndown(output.data['text/html'].join(''));
+                  markdown += '\n';
+                  break;
+                case 'image/png':
+                  // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+                  markdown += `\n![](data:image/png;base64,${output.data['image/png'].trim()})\n`;
+                  break;
+              }
+            });
           }
           if (output.name === 'stdout') {
             if (output.text) {
-              markdown += '\n';
+              markdown += '\n```output\n';
               markdown += output.text
                 .map((line: string) => {
-                  return line.trim();
+                  return line.replace(']', ']\n').trim();
                 })
                 .join('');
-              markdown += '\n';
+              markdown += '\n```\n';
             }
           }
         });

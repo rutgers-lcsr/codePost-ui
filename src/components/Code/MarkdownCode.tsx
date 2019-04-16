@@ -4,9 +4,10 @@ import CommentList from './CommentList';
 
 import CodePanelUtils from './CodePanelUtils';
 
-import HtmlToReact from 'html-to-react';
-
 import ReactMarkdown from 'react-markdown';
+import TurndownService from 'turndown';
+
+import * as turndownPluginGfm from 'turndown-plugin-gfm';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
@@ -37,9 +38,9 @@ interface IMarkdownCodeProps {
   markdown: string;
 }
 
-// Html to react parser to parse html nodes
-const HtmlToReactParser = HtmlToReact.Parser;
-const htmlToReactParser = new HtmlToReactParser();
+// package to convert html to markdown
+const turndown = new TurndownService();
+turndown.use(turndownPluginGfm.tables);
 
 class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
   public componentDidUpdate(prevProps: IMarkdownCodeProps, prevState: any) {
@@ -179,31 +180,17 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
     return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
   };
 
-  // Parse html if it isn't a script tag.
+  // Parse html encountered to markdown
+  // We convert all html in an input/html cell to markdown in CodePanel,
+  // but some html might be put in a 'markdown' cell type. This function converts that to markdown
   public parsedHtmlRenderer = (props: any) => {
-    const processNodeDefinitions = new HtmlToReact.ProcessNodeDefinitions(React);
-
-    // check to make sure the html node is not a script
-    const isValidNode = (node: any) => {
-      return node.type !== 'script';
-    };
-    // default node processing instructions
-    const processingInstructions = [
-      {
-        shouldProcessNode: (node: any) => {
-          return true;
-        },
-        processNode: processNodeDefinitions.processDefaultNode,
-      },
-    ];
-
     return (
       <div
+        onClick={this.onBlockElementClick}
         className={this.rendererClassName(this.props.comments, props.index)}
         index-number={props.index}
-        onClick={this.onBlockElementClick}
       >
-        {htmlToReactParser.parseWithInstructions(props.value, isValidNode, processingInstructions)}
+        <ReactMarkdown>{turndown.turndown(props.value)}</ReactMarkdown>
       </div>
     );
   };
@@ -251,7 +238,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
                 className="code__syntax-highlighter markdown-code"
                 style={{ cursor: 'pointer', 'min-width': '400px' }}
               >
-                <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={false}>
+                <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={true}>
                   {this.props.markdown}
                 </ReactMarkdown>
               </div>
