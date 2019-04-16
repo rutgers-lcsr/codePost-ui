@@ -13,6 +13,16 @@ $text-font-size: 18px;
   background-color: white;
 }
 
+// The Landing page has six sections:
+// 1) codePost header -- .Hero
+// 2) Why you should read your students' code - .WhyBox
+// 3) How CodePost Works - .PanelViews
+// 4) Api section - .API
+// 5) By the numbers - .Numbers
+// 6) Sign up - .SignUp
+
+// --------- BACKGROUNDS SECTION -----------------------------------------------
+
 .Hero-background {
   position: absolute;
   height: 700px;
@@ -39,6 +49,37 @@ $text-font-size: 18px;
   }
 }
 
+// Background for the "Why you should read your students' code and How codePost works sections"
+.Gradient {
+  background: linear-gradient(180deg, white 40%, $light-grey 80%);
+
+  @media only screen and (max-width: 768px) {
+    padding-top: 100px;
+  }
+}
+
+.API-backgroundWrapper {
+  position: relative;
+}
+
+.API-background {
+  margin-top: 100px;
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  -webkit-transform: skewY(-8deg) translateY(-100px);
+  transform: skewY(-8deg) translateY(-100px);
+  -webkit-transform-origin: 0;
+  transform-origin: 0;
+  background: $dark-grey;
+  height: 1100px;
+
+  @media only screen and (max-width: 600px) {
+    height: 1350px;
+  }
+}
+
+// Section 1 - codePost header
 .Hero {
   height: 600px;
   overflow: hidden;
@@ -167,274 +208,7 @@ $text-font-size: 18px;
   }
 }
 
-.Gradient {
-  background: linear-gradient(180deg, white 40%, $light-grey 80%);
-
-  @media only screen and (max-width: 768px) {
-    padding-top: 100px;
-  }
-}
-
-.PanelViews {
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 50px;
-  padding-top: 50px;
-
-  &__title {
-    font-size: $font-size-xxlarge;
-    font-weight: 350;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  &__separatorBox {
-    position: relative;
-    width: 100%;
-  }
-  &__separator {
-    position: absolute;
-    top: 88px;
-    height: 5px;
-    width: 100%;
-    background-color: lighten($mid-grey, 10%);
-    padding-left: 150px;
-    padding-right: 150px;
-  }
-
-  &__tabContainer {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    padding: 25px 180px 25px 180px;
-    z-index: 1;
-
-    @media only screen and (max-width: 750px) {
-      padding: 25px 100px 25px 100px;
-    }
-
-    @media only screen and (max-width: 450px) {
-      padding: 25px 50px 25px 50px;
-    }
-  }
-
-  &__tabBox {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    &__titleBox {
-      height: 45px;
-      width: calc((100vw - 420px) / 4);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-
-      @media only screen and (max-width: 750px) {
-        width: calc((100vw - 220px) / 4);
-      }
-
-      @media only screen and (max-width: 450px) {
-        width: calc((100vw - 120px) / 4);
-      }
-    }
-
-    &__title {
-      font-size: $font-size-large;
-      font-weight: 450;
-      color: $mid-grey;
-      margin-bottom: 15px;
-      transition: 0.3s;
-      cursor: pointer;
-      text-align: center;
-
-      &--active {
-        font-size: $font-size-large;
-        font-weight: 450;
-        color: $brand-color;
-        margin-bottom: 15px;
-        transition: 0.3s;
-        cursor: pointer;
-        text-align: center;
-      }
-    }
-
-    &__button {
-      width: 40px;
-      height: 40px;
-      border-radius: 20px;
-      background-color: $mid-grey;
-      transition: 0.3s;
-      cursor: pointer;
-      &--active {
-        width: 40px;
-        height: 40px;
-        border-radius: 20px;
-        background-color: $brand-color;
-        transition: 0.3s;
-        cursor: pointer;
-      }
-    }
-  }
-
-  &__content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 140px;
-    min-height: 600px;
-
-    @media only screen and (max-width: 750px) {
-      padding-bottom: 100px;
-    }
-
-    // We want to set a min-height because if carousel render is happening don't want the div to collapse
-    @media only screen and (max-width: 650px) {
-      min-height: 400px;
-    }
-
-    @media only screen and (min-width: 750px) {
-      min-height: 715px;
-    }
-
-    &__title {
-      font-size: $font-size-xlarge;
-      font-weight: 350;
-      margin-bottom: 40px;
-      height: 35px;
-      max-width: 700px;
-      text-align: center;
-
-      @media only screen and (max-width: 700px) {
-        font-size: $font-size-large;
-      }
-    }
-
-    &__image {
-      width: auto;
-      height: auto;
-      max-width: 700px;
-      padding-bottom: 30px;
-
-      @media only screen and (max-width: 750px) {
-        width: 90%;
-      }
-    }
-  }
-}
-
-.API-backgroundWrapper {
-  position: relative;
-}
-
-.API-background {
-  margin-top: 100px;
-  position: absolute;
-  width: 100%;
-  overflow: hidden;
-  -webkit-transform: skewY(-8deg) translateY(-100px);
-  transform: skewY(-8deg) translateY(-100px);
-  -webkit-transform-origin: 0;
-  transform-origin: 0;
-  background: $dark-grey;
-  height: 1100px;
-
-  @media only screen and (max-width: 600px) {
-    height: 1350px;
-  }
-}
-
-.API {
-  z-index: 1;
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  padding: 0px 30px 70px 30px;
-  color: white;
-
-  @media only screen and (max-width: 750px) {
-    padding: 0px 40px 50px 40px;
-  }
-
-  &__textBox {
-    max-width: 700px;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 40px;
-
-    &__title {
-      font-size: $font-size-xlarge;
-      font-weight: 450;
-      margin-bottom: 30px;
-      text-align: center;
-      color: gray;
-
-      p {
-        font-size: $font-size-xlarge;
-        display: inline;
-        color: white;
-        font-weight: 450;
-      }
-    }
-
-    &__itemList {
-      display: flex;
-      flex-direction: column;
-    }
-
-    &__item {
-      font-size: $font-size-large;
-      font-weight: 350;
-      padding: 10px;
-      text-align: center;
-    }
-  }
-  &__exampleBox {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-
-    @media only screen and (max-width: 1000px) {
-      flex-direction: column;
-    }
-
-    &__buttons {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      padding-left: 30px;
-      padding-right: 30px;
-
-      &-title {
-        font-size: $font-size-large;
-        margin-bottom: 10px;
-        font-weight: 500;
-        text-align: center;
-      }
-    }
-
-    // Once we switch to flex-direction 100%, ad left and right padding
-    &__code {
-      @media only screen and (max-width: 1000px) {
-        padding-left: 30px;
-        padding-right: 30px;
-      }
-
-      @media only screen and (max-width: 400px) {
-        padding-left: 0px;
-        padding-right: 0px;
-      }
-    }
-
-    &__code-separator {
-      width: 100%;
-      border: 1px solid $mid-grey;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-  }
-}
-
+// Section 2 - Why you should read your students' code
 .WhyBox {
   z-index: 1;
   align-items: center;
@@ -614,19 +388,6 @@ $text-font-size: 18px;
       color: black;
     }
 
-    // Once we switch to flex-direction 100%, ad left and right padding
-    // &__code {
-    //   @media only screen and (max-width: 1000px) {
-    //     padding-left: 30px;
-    //     padding-right: 30px;
-    //   }
-
-    //   @media only screen and (max-width: 400px) {
-    //     padding-left: 0px;
-    //     padding-right: 0px;
-    //   }
-    // }
-
     &__code-separator {
       width: 100%;
       border: 1px solid $mid-grey;
@@ -636,6 +397,7 @@ $text-font-size: 18px;
   }
 }
 
+// whyBox codeMirror
 .bad-codemirror {
   .CodeMirror {
     font-family: monaco, Consolas, Lucida Console, monospace;
@@ -646,6 +408,247 @@ $text-font-size: 18px;
 
     &-gutters {
       background-color: $very-light-green;
+    }
+  }
+}
+
+// Section 3 - How codePost works
+.PanelViews {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 50px;
+  padding-top: 50px;
+
+  &__title {
+    font-size: $font-size-xxlarge;
+    font-weight: 350;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  &__separatorBox {
+    position: relative;
+    width: 100%;
+  }
+  &__separator {
+    position: absolute;
+    top: 88px;
+    height: 5px;
+    width: 100%;
+    background-color: lighten($mid-grey, 10%);
+    padding-left: 150px;
+    padding-right: 150px;
+  }
+
+  &__tabContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    padding: 25px 180px 25px 180px;
+    z-index: 1;
+
+    @media only screen and (max-width: 750px) {
+      padding: 25px 100px 25px 100px;
+    }
+
+    @media only screen and (max-width: 450px) {
+      padding: 25px 50px 25px 50px;
+    }
+  }
+
+  &__tabBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__titleBox {
+      height: 45px;
+      width: calc((100vw - 420px) / 4);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      @media only screen and (max-width: 750px) {
+        width: calc((100vw - 220px) / 4);
+      }
+
+      @media only screen and (max-width: 450px) {
+        width: calc((100vw - 120px) / 4);
+      }
+    }
+
+    &__title {
+      font-size: $font-size-large;
+      font-weight: 450;
+      color: $mid-grey;
+      margin-bottom: 15px;
+      transition: 0.3s;
+      cursor: pointer;
+      text-align: center;
+
+      &--active {
+        font-size: $font-size-large;
+        font-weight: 450;
+        color: $brand-color;
+        margin-bottom: 15px;
+        transition: 0.3s;
+        cursor: pointer;
+        text-align: center;
+      }
+    }
+
+    &__button {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background-color: $mid-grey;
+      transition: 0.3s;
+      cursor: pointer;
+      &--active {
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        background-color: $brand-color;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 140px;
+    min-height: 600px;
+
+    @media only screen and (max-width: 750px) {
+      padding-bottom: 100px;
+    }
+
+    // We want to set a min-height because if carousel render is happening don't want the div to collapse
+    @media only screen and (max-width: 650px) {
+      min-height: 400px;
+    }
+
+    @media only screen and (min-width: 750px) {
+      min-height: 715px;
+    }
+
+    &__title {
+      font-size: $font-size-xlarge;
+      font-weight: 350;
+      margin-bottom: 40px;
+      height: 35px;
+      max-width: 700px;
+      text-align: center;
+
+      @media only screen and (max-width: 700px) {
+        font-size: $font-size-large;
+      }
+    }
+
+    &__image {
+      width: auto;
+      height: auto;
+      max-width: 700px;
+      padding-bottom: 30px;
+
+      @media only screen and (max-width: 750px) {
+        width: 90%;
+      }
+    }
+  }
+}
+
+// Section 4 - API
+.API {
+  z-index: 1;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 0px 30px 70px 30px;
+  color: white;
+
+  @media only screen and (max-width: 750px) {
+    padding: 0px 40px 50px 40px;
+  }
+
+  &__textBox {
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+
+    &__title {
+      font-size: $font-size-xlarge;
+      font-weight: 450;
+      margin-bottom: 30px;
+      text-align: center;
+      color: gray;
+
+      p {
+        font-size: $font-size-xlarge;
+        display: inline;
+        color: white;
+        font-weight: 450;
+      }
+    }
+
+    &__itemList {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__item {
+      font-size: $font-size-large;
+      font-weight: 350;
+      padding: 10px;
+      text-align: center;
+    }
+  }
+  &__exampleBox {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+
+    @media only screen and (max-width: 1000px) {
+      flex-direction: column;
+    }
+
+    &__buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      padding-left: 30px;
+      padding-right: 30px;
+
+      &-title {
+        font-size: $font-size-large;
+        margin-bottom: 10px;
+        font-weight: 500;
+        text-align: center;
+      }
+    }
+
+    // Once we switch to flex-direction 100%, ad left and right padding
+    &__code {
+      @media only screen and (max-width: 1000px) {
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+
+      @media only screen and (max-width: 400px) {
+        padding-left: 0px;
+        padding-right: 0px;
+      }
+    }
+
+    &__code-separator {
+      width: 100%;
+      border: 1px solid $mid-grey;
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
   }
 }
@@ -668,6 +671,101 @@ $text-font-size: 18px;
   }
 }
 
+.Testimonial {
+  z-index: 1;
+  background-color: $very-light-grey;
+  padding: 80px 50px 80px 50px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  &__main-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $mid-grey;
+    border-radius: 6px;
+    box-shadow: 0 2px 16px -8px rgba(31, 51, 51, 0.2), 0 4px 8px -4px rgba(31, 51, 51, 0.2);
+    padding: 40px;
+    @media only screen and (max-width: 500px) {
+      padding: 20px;
+    }
+  }
+  &__top-box {
+    display: flex;
+    flex-direction: row;
+    padding-bottom: 10px;
+    align-items: center;
+
+    @media only screen and (max-width: 500px) {
+      flex-direction: column;
+      width: auto;
+    }
+  }
+  &__left-box {
+    padding-right: 30px;
+
+    @media only screen and (max-width: 500px) {
+      padding-right: 0px;
+      padding-bottom: 20px;
+    }
+    &__image {
+      min-width: 100px;
+      max-width: 150px;
+      position: relative;
+    }
+  }
+  &__right-box {
+    max-width: 600px;
+    padding-left: 10px;
+    &__quote {
+      font-style: italic;
+      font-size: $font-size-xlarge + 4px;
+
+      @media only screen and (max-width: 500px) {
+        font-size: $font-size-larger;
+      }
+
+      b {
+        font-size: $font-size-xxlarge;
+        color: darken($brand-color, 2%);
+
+        @media only screen and (max-width: 500px) {
+          font-size: $font-size-larger + 2px;
+        }
+      }
+    }
+  }
+  &__bottom-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 10px;
+
+    @media only screen and (max-width: 500px) {
+      align-items: flex-start;
+    }
+
+    &__credibility {
+      font-size: $font-size-larger;
+      padding-top: 15px;
+      align-self: flex-end;
+      color: $normal-grey;
+
+      @media only screen and (max-width: 500px) {
+        font-size: $font-size-large;
+      }
+
+      &__name {
+        font-weight: 450;
+        color: $dark-grey;
+        padding-bottom: 4px;
+      }
+    }
+  }
+}
+
+// Section 5 - Statistics on Usability
 .Numbers {
   z-index: 1;
   flex-grow: 1;
@@ -716,6 +814,7 @@ $text-font-size: 18px;
   }
 }
 
+// Section 6 - Sign Up container
 .SignUp {
   height: 400px;
   z-index: 1;
@@ -767,6 +866,11 @@ $text-font-size: 18px;
   }
 }
 
+.LandingBtn-SignUp {
+  @include pairedbuttons(170px, 45px);
+}
+
+// Other styling
 .LandingAPIBtn {
   @include button($dark-grey, $mid-grey);
   margin: 2px 0px 2px 0px;
@@ -810,10 +914,6 @@ $text-font-size: 18px;
       color: white;
     }
   }
-}
-
-.LandingBtn-SignUp {
-  @include pairedbuttons(170px, 45px);
 }
 
 ///////////////
