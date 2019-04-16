@@ -137,12 +137,12 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
                   break;
                 case 'text/html':
                   markdown += '\n';
-                  // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+                  // Convert HTML to markdown
                   markdown += turndown.turndown(output.data['text/html'].join(''));
                   markdown += '\n';
                   break;
                 case 'image/png':
-                  // We need to trim the spaces on the end of the tags, or the html won't be recognized by the parser
+                  // We need to trim the spaces on the end of the tags, or the data won't be recognized
                   markdown += `\n![](data:image/png;base64,${output.data['image/png'].trim()})\n`;
                   break;
               }
