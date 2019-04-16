@@ -8,6 +8,9 @@ import HtmlToReact from 'html-to-react';
 
 import ReactMarkdown from 'react-markdown';
 
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+
 import { ICommentToRubricCommentMap } from '../../types/common';
 
 import { CommentType } from '../../infrastructure/comment';
@@ -128,11 +131,19 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
 
   public codeRenderer = (props: any) => {
     const className = props.language && `language-${props.language}`;
-    const code = React.createElement('code', className ? { className } : null, props.value);
+    let codeString = props.value;
+    if (props.language && props.language !== 'output') {
+      codeString = (
+        <SyntaxHighlighter language={props.language} style={googlecode} showLineNumbers={false} wrapLines={false}>
+          {props.value}
+        </SyntaxHighlighter>
+      );
+    }
+    const code = React.createElement('code', className ? { className } : null, codeString);
     return React.createElement(
       'pre',
       {
-        className: this.rendererClassName(this.props.comments, props.index),
+        className: `${this.rendererClassName(this.props.comments, props.index)} ipynb-code__${props.language}`,
         'index-number': props.index,
         onClick: this.onBlockElementClick,
       },
@@ -166,12 +177,6 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
 
   public tableRenderer = (props: any) => {
     return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
-  };
-
-  // Remove links from submissions. ReactMarkdown parses large blocks of text as links so we want to remove them.
-  // If links are present in html tags, they will still be rendered.
-  public linkRenderer = (props: any) => {
-    return <div>{props.children}</div>;
   };
 
   // Parse html if it isn't a script tag.
@@ -223,8 +228,6 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       thematicBreak: this.thematicBreakRenderer,
       blockquote: this.blockQuoteRenderer,
       table: this.tableRenderer,
-      link: this.linkRenderer,
-      linkReference: this.linkRenderer,
       html: this.parsedHtmlRenderer,
     };
 

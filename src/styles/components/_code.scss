@@ -106,3 +106,13 @@
     }
   }
 }
+
+.ipynb-code {
+  &__python {
+    border-color: #000080;
+  }
+  &__output {
+    background-color: white;
+    border-color: #8b0000;
+  }
+}

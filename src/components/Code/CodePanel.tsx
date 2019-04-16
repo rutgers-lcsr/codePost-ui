@@ -115,20 +115,21 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
       }
 
       if (cell.cell_type === 'code') {
-        markdown += '```\n';
+        markdown += '```python\n';
         markdown += cell.source.join('');
         markdown += '\n```';
 
         cell.outputs.map((output: any) => {
           if (output.data) {
             if (output.data['text/plain']) {
-              markdown += '\n';
+              // We don't want plaintext to be parsed as markdown so we put it in a codeBlock
+              markdown += '\n```output\n';
               markdown += output.data['text/plain']
                 .map((line: string) => {
                   return `${line.trim()}\n`;
                 })
                 .join('');
-              markdown += '\n';
+              markdown += '\n```\n';
             }
             if (output.data['text/html']) {
               markdown += '\n';
