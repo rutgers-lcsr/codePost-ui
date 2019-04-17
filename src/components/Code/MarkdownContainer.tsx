@@ -14,7 +14,7 @@ import { FileType } from '../../infrastructure/file';
 const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
 
-interface IMarkdownListProps {
+interface IMarkdownContainerProps {
   comments: CommentType[];
   addComment: (comment: any, file: FileType) => boolean;
   file: FileType;
@@ -22,7 +22,7 @@ interface IMarkdownListProps {
   commentCounter: number;
   updateCommentCounter: () => void;
 }
-class MarkdownList extends React.PureComponent<IMarkdownListProps, {}> {
+class MarkdownContainer extends React.PureComponent<IMarkdownContainerProps, {}> {
   public onBlockElementClick = (e: any) => {
     const index = e.currentTarget.getAttribute('index-number');
     if (index) {
@@ -202,4 +202,4 @@ class MarkdownList extends React.PureComponent<IMarkdownListProps, {}> {
   }
 }
 
-export default MarkdownList;
+export default MarkdownContainer;

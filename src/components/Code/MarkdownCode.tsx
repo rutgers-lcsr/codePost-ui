@@ -3,7 +3,7 @@ import * as React from 'react';
 import CommentList from './CommentList';
 
 import CodePanelUtils from './CodePanelUtils';
-import MarkdownList from './MarkdownList';
+import MarkdownContainer from './MarkdownContainer';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
@@ -58,7 +58,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
         <div className="grade__main-container__tab-content">
           <div className="grade__main-container__tab-content__code-panel">
-            <MarkdownList
+            <MarkdownContainer
               comments={this.props.comments}
               addComment={this.props.addComment}
               file={this.props.file}
