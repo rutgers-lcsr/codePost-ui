@@ -4,7 +4,6 @@ import {
   DataTable,
   DialogContainer,
   FontIcon,
-  TableBody,
   TableColumn,
   TableHeader,
   TableRow,
@@ -12,6 +11,8 @@ import {
   Tooltipped,
 } from 'react-md';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
+
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 // -- Rubric Comment Row  Object --
 // Creating a new class to render RubricCommentRows in the admin panel, in order
@@ -31,6 +32,7 @@ interface IPropsRubricComment {
   savedComments: { [id: number]: boolean };
   linkedComments: number[];
   triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
+  draggableProvided: any;
 }
 
 const RubricCommentRow = (props: IPropsRubricComment) => {
@@ -92,7 +94,16 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
       : 'admin-rubric__commentRow__frequency--none';
 
   return (
-    <TableRow key={props.commentID}>
+    <tr
+      key={props.commentID}
+      className="md-table-row"
+      ref={props.draggableProvided.innerRef}
+      {...props.draggableProvided.draggableProps}
+      {...props.draggableProvided.dragHandleProps}
+    >
+      <TableColumn>
+        <div className="admin-rubric__commentRow__drag-handle" />
+      </TableColumn>
       <TableColumn>{unSavedChanges}</TableColumn>
       <TableColumn>
         <Tooltipped label="Click to explore." setPosition={true} position="right" delay={500}>
@@ -127,7 +138,7 @@ const RubricCommentRow = (props: IPropsRubricComment) => {
         />
       </TableColumn>
       {deleteCommentColumn}
-    </TableRow>
+    </tr>
   );
 };
 
@@ -161,6 +172,7 @@ interface IPropsRubricCategory {
   savedCategories: { [id: number]: boolean };
 
   triggerCommentExplorer: (categoryID: number, commentIndex: number) => void;
+  onDragEnd: any;
 }
 
 const RubricCategoryTable = (props: IPropsRubricCategory) => {
@@ -190,26 +202,41 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
 
   const renderCommentRows = () => {
     if (props.comments) {
-      return props.comments.map((comm, commIndex) => {
-        return (
-          <RubricCommentRow
-            key={commIndex}
-            commentID={comm.id}
-            categoryID={props.categoryID}
-            commentIndex={commIndex}
-            changeCommentText={props.changeCommentText}
-            changeCommentDelta={props.changeCommentDelta}
-            deleteComment={props.deleteComment}
-            defaultText={comm.text}
-            defaultDelta={comm.pointDelta}
-            isDisabled={props.isDisabled}
-            updateComment={props.updateComment}
-            savedComments={props.savedComments}
-            linkedComments={comm.comments}
-            triggerCommentExplorer={props.triggerCommentExplorer}
-          />
-        );
-      });
+      return (
+        <DragDropContext onDragEnd={props.onDragEnd}>
+          <Droppable droppableId="droppable">
+            {(provided: any, snapshot: any) => (
+              <tbody className="md-table-body" ref={provided.innerRef}>
+                {props.comments.map((comm, commIndex) => (
+                  <Draggable key={comm.id} draggableId={`draggable-${comm.id}`} index={commIndex}>
+                    {// tslint:disable-next-line:no-shadowed-variable
+                    (provided: any, snapshot: any) => (
+                      <RubricCommentRow
+                        key={commIndex}
+                        commentID={comm.id}
+                        categoryID={props.categoryID}
+                        commentIndex={commIndex}
+                        changeCommentText={props.changeCommentText}
+                        changeCommentDelta={props.changeCommentDelta}
+                        deleteComment={props.deleteComment}
+                        defaultText={comm.text}
+                        defaultDelta={comm.pointDelta}
+                        isDisabled={props.isDisabled}
+                        updateComment={props.updateComment}
+                        savedComments={props.savedComments}
+                        linkedComments={comm.comments}
+                        triggerCommentExplorer={props.triggerCommentExplorer}
+                        draggableProvided={provided}
+                      />
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </tbody>
+            )}
+          </Droppable>
+        </DragDropContext>
+      );
     }
     return <div />;
   };
@@ -286,6 +313,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
       <DataTable key={props.categoryID} className="DataTable--RubricCategory" baseId="edit-rubric-table" plain={true}>
         <TableHeader>
           <TableRow selectable={false}>
+            <TableColumn key={'dragHandle'} />
             <TableColumn key={'spacing1'} />
             <TableColumn key={'Linked comments'}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -307,7 +335,7 @@ const RubricCategoryTable = (props: IPropsRubricCategory) => {
             {deleteCommentHeader}
           </TableRow>
         </TableHeader>
-        <TableBody>{renderCommentRows()}</TableBody>
+        {renderCommentRows()}
       </DataTable>
       <Button className="Btn" iconChildren={'playlist_add'} disabled={props.isDisabled} onClick={addEmptyCommentToThis}>
         Add New Comment

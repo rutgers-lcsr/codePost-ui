@@ -14,3 +14,4 @@ declare module 'enzyme';
 declare module 'lang-map';
 declare module 'turndown';
 declare module 'turndown-plugin-gfm';
+declare module 'react-beautiful-dnd';
