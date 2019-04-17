@@ -5,6 +5,12 @@ import CommentList from './CommentList';
 import CodePanelUtils from './CodePanelUtils';
 
 import ReactMarkdown from 'react-markdown';
+import TurndownService from 'turndown';
+
+import * as turndownPluginGfm from 'turndown-plugin-gfm';
+
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
@@ -31,6 +37,10 @@ interface IMarkdownCodeProps {
   unsavedComments: number[];
   markdown: string;
 }
+
+// package to convert html to markdown
+const turndown = new TurndownService();
+turndown.use(turndownPluginGfm.tables);
 
 class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
   public componentDidUpdate(prevProps: IMarkdownCodeProps, prevState: any) {
@@ -101,7 +111,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
         index-number={props.index}
         onClick={this.onBlockElementClick}
         // @ts-ignore
-        style={{ 'padding-top': '6px', 'padding-bottom': '6px' }}
+        style={{ paddingTop: '6px', paddingBottom: '6px' }}
       >
         {props.children}
       </p>
@@ -122,11 +132,25 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
 
   public codeRenderer = (props: any) => {
     const className = props.language && `language-${props.language}`;
-    const code = React.createElement('code', className ? { className } : null, props.value);
+    let codeString = props.value;
+    if (props.language && props.language !== 'output') {
+      codeString = (
+        <SyntaxHighlighter
+          language={props.language}
+          style={googlecode}
+          customStyle={{ backgroundColor: 'transparent', borderWidth: '0px' }}
+          showLineNumbers={false}
+          wrapLines={false}
+        >
+          {props.value}
+        </SyntaxHighlighter>
+      );
+    }
+    const code = React.createElement('code', className ? { className } : null, codeString);
     return React.createElement(
       'pre',
       {
-        className: this.rendererClassName(this.props.comments, props.index),
+        className: `${this.rendererClassName(this.props.comments, props.index)} ipynb-code__${props.language}`,
         'index-number': props.index,
         onClick: this.onBlockElementClick,
       },
@@ -162,6 +186,21 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
     return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
   };
 
+  // Parse html encountered to markdown
+  // We convert all html in an input/html cell to markdown in CodePanel,
+  // but some html might be put in a 'markdown' cell type. This function converts that to markdown
+  public parsedHtmlRenderer = (props: any) => {
+    return (
+      <div
+        onClick={this.onBlockElementClick}
+        className={this.rendererClassName(this.props.comments, props.index)}
+        index-number={props.index}
+      >
+        <ReactMarkdown>{turndown.turndown(props.value)}</ReactMarkdown>
+      </div>
+    );
+  };
+
   public render() {
     const {
       file,
@@ -182,6 +221,7 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       thematicBreak: this.thematicBreakRenderer,
       blockquote: this.blockQuoteRenderer,
       table: this.tableRenderer,
+      html: this.parsedHtmlRenderer,
     };
 
     const boxHeight = document.getElementById(`syntax-highlighter-${file.id}`)
@@ -202,9 +242,9 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
               <div
                 id={`syntax-highlighter-${this.props.file.id}`}
                 className="code__syntax-highlighter markdown-code"
-                style={{ cursor: 'pointer', 'min-width': '400px' }}
+                style={{ cursor: 'pointer', minWidths: '400px' }}
               >
-                <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers}>
+                <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={true}>
                   {this.props.markdown}
                 </ReactMarkdown>
               </div>
