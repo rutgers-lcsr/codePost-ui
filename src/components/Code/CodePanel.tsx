@@ -13,6 +13,12 @@ import { SubmissionType } from '../../infrastructure/submission';
 import Code from './Code';
 import MarkdownCode from './MarkdownCode';
 
+import TurndownService from 'turndown';
+import * as turndownPluginGfm from 'turndown-plugin-gfm';
+
+const turndown = new TurndownService();
+turndown.use(turndownPluginGfm.tables);
+
 export interface ICodePanelProps {
   submission: SubmissionType;
   files: FileType[];
@@ -115,14 +121,44 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
       }
 
       if (cell.cell_type === 'code') {
-        markdown += '```\n';
+        markdown += '```python\n';
         markdown += cell.source.join('');
         markdown += '\n```';
 
-        // Used if we want to print out test output
-        // if (cell.outputs.length > 0) {
-        //   markdown += cell.outputs[0].text.join('');
-        // }
+        cell.outputs.map((output: any) => {
+          if (output.data) {
+            Object.keys(output.data).forEach((key) => {
+              switch (key) {
+                case 'text/plain':
+                  markdown += '\n```output\n';
+                  markdown += output.data['text/plain'].join('');
+                  markdown += '\n```\n';
+                  break;
+                case 'text/html':
+                  markdown += '\n';
+                  // Convert HTML to markdown
+                  markdown += turndown.turndown(output.data['text/html'].join(''));
+                  markdown += '\n';
+                  break;
+                case 'image/png':
+                  // We need to trim the spaces on the end of the tags, or the data won't be recognized
+                  markdown += `\n![](data:image/png;base64,${output.data['image/png'].trim()})\n`;
+                  break;
+              }
+            });
+          }
+          if (output.name === 'stdout') {
+            if (output.text) {
+              markdown += '\n```output\n';
+              markdown += output.text
+                .map((line: string) => {
+                  return line.replace(']', ']\n').trim();
+                })
+                .join('');
+              markdown += '\n```\n';
+            }
+          }
+        });
       }
 
       markdown += '\n\n';

@@ -12,4 +12,6 @@ declare module 'react-syntax-highlighter/dist/styles/hljs';
 declare module 'react-textarea-autosize';
 declare module 'enzyme';
 declare module 'lang-map';
+declare module 'turndown';
+declare module 'turndown-plugin-gfm';
 declare module 'react-beautiful-dnd';
