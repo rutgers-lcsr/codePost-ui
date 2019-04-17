@@ -3,14 +3,7 @@ import * as React from 'react';
 import CommentList from './CommentList';
 
 import CodePanelUtils from './CodePanelUtils';
-
-import ReactMarkdown from 'react-markdown';
-import TurndownService from 'turndown';
-
-import * as turndownPluginGfm from 'turndown-plugin-gfm';
-
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+import MarkdownList from './MarkdownList';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
@@ -38,169 +31,7 @@ interface IMarkdownCodeProps {
   markdown: string;
 }
 
-// package to convert html to markdown
-const turndown = new TurndownService();
-turndown.use(turndownPluginGfm.tables);
-
 class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
-  public componentDidUpdate(prevProps: IMarkdownCodeProps, prevState: any) {
-    // Make sure to rerender the markdown block highlighting whenever comments are deleted
-    if (prevProps.comments.length > this.props.comments.length) {
-      this.forceUpdate();
-    }
-  }
-
-  public onBlockElementClick = (e: any) => {
-    const index = e.currentTarget.getAttribute('index-number');
-    if (index) {
-      const newComment = {
-        id: this.props.commentCounter,
-        endChar: 0,
-        endLine: +index,
-        file: this.props.file.id,
-        pointDelta: 0.0,
-        startChar: 0,
-        startLine: +index,
-        text: '',
-      };
-
-      this.props.updateCommentCounter();
-      const didAddComment = this.props.addComment(newComment, this.props.file);
-      if (didAddComment) {
-        e.currentTarget.className = 'markdown-code__block--commented';
-      }
-    }
-  };
-
-  public blockContainsComment = (comments: CommentType[], index: number): boolean => {
-    return (
-      comments.filter((comment: CommentType) => {
-        return comment.startLine === index;
-      }).length > 0
-    );
-  };
-
-  public rendererClassName = (comments: CommentType[], index: number): string => {
-    let className = 'markdown-code__block--empty';
-    if (this.blockContainsComment(comments, index)) {
-      className = 'markdown-code__block--commented';
-    }
-    return className;
-  };
-
-  public headingRenderer = (props: any) => {
-    return React.createElement(
-      `h${props.level}`,
-      {
-        className: this.rendererClassName(this.props.comments, props.index),
-        'index-number': props.index,
-        onClick: this.onBlockElementClick,
-        style: {},
-      },
-      props.children,
-    );
-  };
-
-  public paragraphRenderer = (props: any) => {
-    if (props.index === 0) {
-      return <p>{props.children}</p>;
-    }
-    return (
-      <p
-        className={this.rendererClassName(this.props.comments, props.index)}
-        index-number={props.index}
-        onClick={this.onBlockElementClick}
-        // @ts-ignore
-        style={{ paddingTop: '6px', paddingBottom: '6px' }}
-      >
-        {props.children}
-      </p>
-    );
-  };
-
-  public listRenderer = (props: any) => {
-    return React.createElement(
-      props.ordered ? 'ol' : 'ul',
-      {
-        className: this.rendererClassName(this.props.comments, props.index),
-        'index-number': props.index,
-        onClick: this.onBlockElementClick,
-      },
-      props.children,
-    );
-  };
-
-  public codeRenderer = (props: any) => {
-    const className = props.language && `language-${props.language}`;
-    let codeString = props.value;
-    if (props.language && props.language !== 'output') {
-      codeString = (
-        <SyntaxHighlighter
-          language={props.language}
-          style={googlecode}
-          customStyle={{ backgroundColor: 'transparent', borderWidth: '0px' }}
-          showLineNumbers={false}
-          wrapLines={false}
-        >
-          {props.value}
-        </SyntaxHighlighter>
-      );
-    }
-    const code = React.createElement('code', className ? { className } : null, codeString);
-    return React.createElement(
-      'pre',
-      {
-        className: `${this.rendererClassName(this.props.comments, props.index)} ipynb-code__${props.language}`,
-        'index-number': props.index,
-        onClick: this.onBlockElementClick,
-      },
-      code,
-    );
-  };
-
-  public thematicBreakRenderer = (props: any) => {
-    return (
-      <hr
-        className={this.rendererClassName(this.props.comments, props.index)}
-        index-number={props.index}
-        onClick={this.onBlockElementClick}
-      >
-        {props.children}
-      </hr>
-    );
-  };
-
-  public blockQuoteRenderer = (props: any) => {
-    return (
-      <blockquote
-        className={this.rendererClassName(this.props.comments, props.index)}
-        index-number={props.index}
-        onClick={this.onBlockElementClick}
-      >
-        {props.children}
-      </blockquote>
-    );
-  };
-
-  public tableRenderer = (props: any) => {
-    return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
-  };
-
-  // Parse html encountered to markdown
-  // We convert all html in an input/html cell to markdown in CodePanel,
-  // but some html might be put in a 'markdown' cell type. This function converts that to markdown
-  public parsedHtmlRenderer = (props: any) => {
-    return (
-      <div
-        onClick={this.onBlockElementClick}
-        className={this.rendererClassName(this.props.comments, props.index)}
-        index-number={props.index}
-      >
-        <ReactMarkdown>{turndown.turndown(props.value)}</ReactMarkdown>
-      </div>
-    );
-  };
-
   public render() {
     const {
       file,
@@ -212,17 +43,6 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       deleteComment,
       updateComment,
     } = this.props;
-
-    const renderers = {
-      paragraph: this.paragraphRenderer,
-      heading: this.headingRenderer,
-      list: this.listRenderer,
-      code: this.codeRenderer,
-      thematicBreak: this.thematicBreakRenderer,
-      blockquote: this.blockQuoteRenderer,
-      table: this.tableRenderer,
-      html: this.parsedHtmlRenderer,
-    };
 
     const boxHeight = document.getElementById(`syntax-highlighter-${file.id}`)
       ? document.getElementById(`syntax-highlighter-${file.id}`)!.getBoundingClientRect().height
@@ -238,17 +58,14 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
       <div id="scroll-container" className="grade__main-container__right-panel__scroll-container">
         <div className="grade__main-container__tab-content">
           <div className="grade__main-container__tab-content__code-panel">
-            <div className="code__highlighted-area">
-              <div
-                id={`syntax-highlighter-${this.props.file.id}`}
-                className="code__syntax-highlighter markdown-code"
-                style={{ cursor: 'pointer', minWidths: '400px' }}
-              >
-                <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={true}>
-                  {this.props.markdown}
-                </ReactMarkdown>
-              </div>
-            </div>
+            <MarkdownList
+              comments={this.props.comments}
+              addComment={this.props.addComment}
+              file={this.props.file}
+              markdown={this.props.markdown}
+              commentCounter={this.props.commentCounter}
+              updateCommentCounter={this.props.updateCommentCounter}
+            />
           </div>
           <div
             id={`comment-panel-${this.props.file.id}`}
