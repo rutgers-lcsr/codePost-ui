@@ -163,7 +163,6 @@ class MarkdownList extends React.PureComponent<IMarkdownListProps, {}> {
   // We convert all html in an input/html cell to markdown in CodePanel,
   // but some html might be put in a 'markdown' cell type. This function converts that to markdown
   public parsedHtmlRenderer = (props: any) => {
-    console.log('rendered');
     return (
       <div
         onClick={this.onBlockElementClick}
