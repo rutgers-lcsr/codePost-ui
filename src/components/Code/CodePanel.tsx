@@ -128,7 +128,6 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
         cell.outputs.map((output: any) => {
           if (output.data) {
             Object.keys(output.data).forEach((key) => {
-              console.log(key);
               switch (key) {
                 case 'text/plain':
                   markdown += '\n```output\n';

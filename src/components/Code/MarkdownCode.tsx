@@ -135,7 +135,13 @@ class MarkdownCode extends React.Component<IMarkdownCodeProps, {}> {
     let codeString = props.value;
     if (props.language && props.language !== 'output') {
       codeString = (
-        <SyntaxHighlighter language={props.language} style={googlecode} showLineNumbers={false} wrapLines={false}>
+        <SyntaxHighlighter
+          language={props.language}
+          style={googlecode}
+          customStyle={{ backgroundColor: 'transparent', borderWidth: '0px' }}
+          showLineNumbers={false}
+          wrapLines={false}
+        >
           {props.value}
         </SyntaxHighlighter>
       );
