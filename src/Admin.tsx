@@ -34,6 +34,8 @@ import { UserType } from './infrastructure/user';
 
 import { addToPayload } from './infrastructure/utils';
 
+import queryString from 'query-string';
+
 interface IAdminState {
   currentCourse?: CourseType; // Course for selector
   loadedPanel?: number; // Which active_panel to load, enum
@@ -107,6 +109,7 @@ interface IAdminProps {
   user: UserType;
   match: any;
   history: any;
+  location: any;
   addToast: (text: string, action: string | undefined) => void;
   addLongToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
@@ -165,7 +168,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     isLoading: false,
     loadingMessage: '',
     loadingTitle: '',
-    onboardingModalVisible: this.props.initialCourses.length === 0,
+    onboardingModalVisible:
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+      this.props.initialCourses.length === 0,
   };
 
   public panels: { [key: string]: string } = {
@@ -294,7 +299,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     window.clearTimeout(this.interval);
 
     const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
-
     this.setState(
       {
         currentCourse,
@@ -338,7 +342,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         // Props for Enroll panels
         lockChanges: true,
-        onboardingModalVisible: false,
       },
       () => {
         this.loadAllCourseData();
@@ -1698,6 +1701,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public closeModal = () => {
     this.setState({ onboardingModalVisible: false });
+    this.props.history.push(this.props.location.pathname);
   };
 
   // ------------------- Render -------------------
@@ -1716,7 +1720,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         }
         const panelName = this.stringFromPanel(panel);
 
-        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
+        return (
+          <Redirect
+            to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}${this.props.location.search}`}
+          />
+        );
       }
     }
 
