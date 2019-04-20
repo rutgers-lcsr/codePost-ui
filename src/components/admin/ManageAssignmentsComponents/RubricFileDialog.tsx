@@ -281,16 +281,11 @@ class RubricFileDialog extends React.Component<IProps, IState> {
         const exampleText =
           '    [\n\
         {\n\
-          "id" : 2,\n\
           "name" : "Hello",\n\
           "pointLimit" : 2,\n\
-          "sortKey" : 2,\n\
           "rubricComments" : [{ \n\
-            "id" : -1,\n\
             "text" : "this is a new comment",\n\
             "pointDelta" : 0,\n\
-            "category" : 2,\n\
-            "comments" : [2, 3]}, ... \n\
           ]},\n\
         ...\n\
       ]';
