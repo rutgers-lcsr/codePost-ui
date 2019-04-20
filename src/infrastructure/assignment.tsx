@@ -17,10 +17,8 @@ const AssignmentV = t.intersection(
       course: t.number,
       sortKey: t.number,
       anonymousGrading: t.boolean,
-    }),
-    t.partial({
-      mean: t.union([t.number, t.null]),
-      median: t.union([t.number, t.null]),
+      mean: t.union([t.number, t.null, t.undefined]),
+      median: t.union([t.number, t.null, t.undefined]),
     }),
   ],
   'Assignment',
@@ -61,6 +59,7 @@ const AssignmentVPatch = t.intersection(
 );
 
 type AssignmentType = t.TypeOf<typeof AssignmentV>;
+type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
 
 const RubricV = t.intersection(
   [
@@ -73,6 +72,8 @@ const RubricV = t.intersection(
   ],
   'Roster',
 );
+
+type RubricType = t.TypeOf<typeof RubricV>;
 
 class Assignment {
   public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
@@ -103,4 +104,4 @@ const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   return assignments.sort(compareAssignments);
 };
 
-export { AssignmentType, Assignment, sortAssignments };
+export { AssignmentType, AssignmentPatchType, Assignment, sortAssignments, RubricType };

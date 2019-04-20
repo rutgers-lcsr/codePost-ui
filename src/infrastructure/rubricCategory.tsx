@@ -29,6 +29,7 @@ const RubricCategoryVPatch = t.intersection(
 );
 
 type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
+type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
 
 class RubricCategory {
   public static create = createObject(RubricCategoryV, RubricCategoryV, 'rubricCategories');
@@ -50,4 +51,11 @@ const sortRubricCategory = (rubricCategories: RubricCategoryType[]): RubricCateg
   return rubricCategories.sort(compareRubricCategories);
 };
 
-export { RubricCategoryType, RubricCategory, RubricCategoryV, RubricCategoryVPatch, sortRubricCategory };
+export {
+  RubricCategoryType,
+  RubricCategoryPatchType,
+  RubricCategory,
+  RubricCategoryV,
+  RubricCategoryVPatch,
+  sortRubricCategory,
+};

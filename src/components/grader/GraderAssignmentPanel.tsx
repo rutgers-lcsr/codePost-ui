@@ -32,7 +32,10 @@ interface IGraderAssignmentPanelProps {
   submissions: AnonymousSubmissionType[];
   isAnonymous: boolean;
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType, section?: SectionType) => Promise<AnonymousSubmissionType | undefined>;
+  claimSubmission: (
+    assignment: AssignmentType,
+    sections: SectionType[],
+  ) => Promise<AnonymousSubmissionType | undefined>;
   releaseSubmission: (submission: SubmissionType) => Promise<AnonymousSubmissionType>;
 }
 

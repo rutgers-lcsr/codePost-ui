@@ -41,6 +41,7 @@ const RubricCommentVPatch = t.intersection(
 );
 
 type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
+type RubricCommentPatchType = t.TypeOf<typeof RubricCommentVPatch>;
 
 class RubricComment {
   public static create = createObject(RubricCommentV, RubricCommentVPost, 'rubricComments');
@@ -49,4 +50,4 @@ class RubricComment {
   public static delete = deleteObject(RubricCommentV, 'rubricComments');
 }
 
-export { RubricCommentType, RubricComment, RubricCommentV };
+export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV };

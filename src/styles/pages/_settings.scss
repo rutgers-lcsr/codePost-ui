@@ -74,11 +74,26 @@
     margin-right: auto;
     margin-top: 20px;
   }
+
+  &__cancel {
+    @include button(gray, white);
+    font-size: $font-size-large;
+    border-radius: 20px;
+    padding: 4px 30px 4px 30px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+  }
 }
 
 .CourseSettings {
   @include settings(700px, 800px);
 }
+
+.AssignmentSettings {
+  @include settings(700px, 500px);
+}
+
 .UserSettings {
   @include settings(800px, 250px);
 
