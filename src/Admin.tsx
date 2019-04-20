@@ -24,11 +24,9 @@ import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCar
 
 /* types */
 import {
-  IAssignmentToRubricCategories,
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
   IOptionNumber,
-  IRubricCategoryToRubricCommentsMap,
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
   IToast,
@@ -37,11 +35,10 @@ import {
 
 /* API library */
 import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from './infrastructure/assignment';
-import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CoursePatchType, CourseType, RosterType } from './infrastructure/course';
 import { File } from './infrastructure/file';
-import { RubricCategory, RubricCategoryPatchType, RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment, RubricCommentPatchType, RubricCommentType } from './infrastructure/rubricComment';
+import { RubricCategory } from './infrastructure/rubricCategory';
+import { RubricComment } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
@@ -78,11 +75,6 @@ interface IAdminState {
   // Assignments data
   assignments: AssignmentType[];
   assignmentsLoadComplete: boolean;
-
-  // Assignments rubric data
-  rubricCategories: IAssignmentToRubricCategories;
-  rubricComments: IRubricCategoryToRubricCommentsMap;
-  assignmentRubricLoadComplete: boolean;
 
   // Calculated mappings to render the CourseData tab quickly
   // submissionsByStudent is for the StudentData tab
@@ -155,10 +147,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     assignments: [],
     assignmentsLoadComplete: false,
-
-    rubricCategories: {},
-    rubricComments: {},
-    assignmentRubricLoadComplete: false,
 
     submissionsByStudent: {},
     submissionsByGrader: {},
@@ -334,10 +322,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         assignments: [],
         assignmentsLoadComplete: false,
 
-        rubricCategories: {},
-        rubricComments: {},
-        assignmentRubricLoadComplete: false,
-
         submissionsByStudent: {},
         submissionsByGrader: {},
         submissionsByInactiveStudent: {},
@@ -419,9 +403,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
       Promise.all(getData).then((newAssignments: AssignmentType[]) => {
         const sortedAssignments = sortAssignments(newAssignments);
-        this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true }, () => {
-          this.loadRubrics();
-        });
+        this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true });
       });
     }
   };
@@ -504,44 +486,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       await promise;
     }
   }
-
-  public loadAssignmentRubric = (assignmentID: number) => {
-    return Assignment.readRubric(assignmentID)
-      .then((json) => {
-        const { rubricCategories, rubricComments } = this.state;
-        rubricCategories[assignmentID] = json.rubricCategories;
-        json.rubricCategories.forEach((cat: RubricCategoryType) => {
-          rubricComments[cat.id] = json.rubricComments.filter((comm: RubricCommentType) => {
-            return comm.category === cat.id;
-          });
-        });
-        this.setState({ rubricCategories, rubricComments }, () => {
-          return;
-        });
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject(errors);
-      });
-  };
-
-  public loadRubrics = () => {
-    const { currentCourse, assignments } = this.state;
-    if (!currentCourse || !assignments) {
-      return;
-    }
-    Promise.all(
-      assignments.map((assignment: AssignmentType) => {
-        return this.loadAssignmentRubric(assignment.id);
-      }),
-    ).then(() => {
-      this.setState({ assignmentRubricLoadComplete: true });
-    });
-  };
 
   public loadSubmissions = () => {
     const { currentCourse } = this.state;
@@ -1050,202 +994,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  // ------------------- Manage rubric API calls  ------------------
-
-  public createRubricCategory = (postObj: RubricCategoryType): Promise<RubricCategoryType> => {
-    const { assignments, rubricCategories, rubricComments } = this.state;
-
-    return RubricCategory.create(postObj)
-      .then((rubricCategory: RubricCategoryType) => {
-        assignments.forEach((assn) => {
-          // Add an empty set of comments to the returned
-          // category, Api only returns category ids
-          if (assn.id === postObj.assignment) {
-            assn.rubricCategories.push(rubricCategory.id);
-          }
-        });
-        rubricCategories[postObj.assignment].push(rubricCategory);
-        rubricComments[rubricCategory.id] = [];
-        this.setState({ assignments, rubricCategories, rubricComments });
-        return Promise.resolve(rubricCategory);
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  public deleteRubricCategory = (deleteObj: RubricCategoryType, deleteLinkedComments: boolean) => {
-    const { assignments, rubricCategories, rubricComments } = this.state;
-    const linkedRubricComments = rubricComments[deleteObj.id];
-    return Promise.all(
-      linkedRubricComments.map((comm) => {
-        return this.deleteRubricComment(deleteObj.assignment, comm, deleteLinkedComments);
-      }),
-    ).then(() => {
-      return RubricCategory.delete(deleteObj.id)
-        .then(() => {
-          assignments.forEach((assn) => {
-            if (assn.id === deleteObj.assignment) {
-              assn.rubricCategories = assn.rubricCategories.filter((catID) => {
-                return catID !== deleteObj.id;
-              });
-            }
-            rubricCategories[deleteObj.assignment] = rubricCategories[deleteObj.assignment].filter((cat) => {
-              return cat.id !== deleteObj.id;
-            });
-            delete rubricComments[deleteObj.id];
-          });
-          return this.setState({ assignments, rubricCategories, rubricComments });
-        })
-        .catch((errors) => {
-          Object.keys(errors).forEach((key) => {
-            errors[key].forEach((error: string) => {
-              this.props.addErrorToast(error, undefined);
-            });
-          });
-          return Promise.reject();
-        });
-    });
-  };
-
-  // Updates return a  Promise<void> instead of Promise<ObjectType> because (a) the
-  // returned assignment should never by the child, only used to change state, and it renders faster on testing
-  public updateRubricCategory = (assignmentID: number, patchObj: RubricCategoryPatchType): Promise<void> => {
-    const { rubricCategories } = this.state;
-
-    return RubricCategory.update(patchObj)
-      .then((rubricCategory: RubricCategoryType) => {
-        const catIndex = rubricCategories[assignmentID]
-          .map((cat) => {
-            return cat.id;
-          })
-          .indexOf(patchObj.id);
-        if (catIndex !== -1) {
-          // Reminder --- add checks for the data received
-          rubricCategories[assignmentID][catIndex].name = rubricCategory.name;
-          rubricCategories[assignmentID][catIndex].pointLimit = rubricCategory.pointLimit;
-          rubricCategories[assignmentID][catIndex].sortKey = rubricCategory.sortKey;
-        }
-        this.setState({ rubricCategories });
-        return;
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  public createRubricComment = (assignmentID: number, postObj: RubricCommentType): Promise<RubricCommentType> => {
-    const { rubricCategories, rubricComments } = this.state;
-    return RubricComment.create(postObj)
-      .then((rubricComment: RubricCommentType) => {
-        rubricCategories[assignmentID].forEach((cat) => {
-          if (cat.id === postObj.category) {
-            cat.rubricComments.push(rubricComment.id);
-          }
-        });
-        rubricComments[postObj.category].push(rubricComment);
-        this.setState({ rubricCategories, rubricComments });
-        return rubricComment;
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  public deleteRubricComment = (assignmentID: number, deleteObj: RubricCommentType, deleteLinkedComments: boolean) => {
-    const { rubricCategories, rubricComments } = this.state;
-
-    // Get the latest comments that are linked to the RubricCommentType
-    return RubricComment.read(deleteObj.id)
-      .then((rubricComment) => {
-        const linkedComments = rubricComment.comments;
-        const commentPromises: any = linkedComments.map((id) => {
-          if (deleteLinkedComments) {
-            return CommentIO.delete(id);
-          } else {
-            return CommentIO.read(id).then((c: CommentType) => {
-              const newText = c.text ? `${deleteObj.text}. ${c.text}` : deleteObj.text;
-              const payload = {
-                id,
-                text: newText,
-                pointDelta: deleteObj.pointDelta,
-                rubricComment: null,
-              };
-              return CommentIO.update(payload);
-            });
-          }
-        });
-        return Promise.all(commentPromises).then(() => {
-          return RubricComment.delete(deleteObj.id).then(() => {
-            rubricComments[deleteObj.category] = rubricComments[deleteObj.category].filter((com) => {
-              return com.id !== deleteObj.id;
-            });
-            rubricCategories[deleteObj.category].forEach((cat) => {
-              if (cat.id === deleteObj.id) {
-                const newComments = cat.rubricComments.filter((i: number) => {
-                  return i !== deleteObj.id;
-                });
-                cat.rubricComments = newComments;
-              }
-            });
-            this.setState({ rubricCategories, rubricComments });
-            return;
-          });
-        });
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
-  // returned assignment should never by the child, only used to change state, and it renders faster on testing
-  public updateRubricComment = (categoryID: number, patchObj: RubricCommentPatchType): Promise<void> => {
-    return RubricComment.update(patchObj)
-      .then((rubricComment) => {
-        const { rubricComments } = this.state;
-        const comIndex = rubricComments[categoryID]
-          .map((com) => {
-            return com.id;
-          })
-          .indexOf(patchObj.id);
-        if (comIndex !== -1) {
-          rubricComments[categoryID][comIndex] = rubricComment;
-        }
-
-        this.setState({ rubricComments });
-        return;
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
   // ------------------- Manage assignments API calls  ------------------
   // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
   // returned assignment should never by the child, only used to change state, and it renders faster on testing
@@ -1295,12 +1043,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
-      const { submissions, rubricCategories, assignments } = this.state;
+      const { submissions, assignments } = this.state;
       currentCourse.assignments.push(assignment.id);
       submissions[assignment.id] = [];
-      rubricCategories[assignment.id] = [];
       const newAssignments = [...assignments, assignment];
-      this.setState({ currentCourse, submissions, rubricCategories, assignments: newAssignments }, () => {
+      this.setState({ currentCourse, submissions, assignments: newAssignments }, () => {
         this.props.addLongToast(`Assignment ${assignment.name} successfully created.`, undefined);
       });
       return assignment;
@@ -1317,8 +1064,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       const newAssignments = assignments.filter((el) => {
         return el.id !== toDelete.id;
       });
-      const { rubricCategories, submissions } = this.state;
-      delete rubricCategories[toDelete.id];
+      const { submissions } = this.state;
       delete submissions[toDelete.id];
 
       const newAssignmentIDs = newAssignments.map((i) => {
@@ -1332,7 +1078,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         {
           assignments: newAssignments,
           submissions,
-          rubricCategories,
           currentCourse: newCurrentCourse,
           submissionsbyUserLoadComplete: false,
         },
@@ -1685,23 +1430,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         </div>
       );
     } else if (currentCourse && loadedPanel === 1) {
-      const {
-        submissionsLoadComplete,
-        assignmentsLoadComplete,
-        assignmentRubricLoadComplete,
-        submissionsbyUserLoadComplete,
-      } = this.state;
+      const { submissionsLoadComplete, assignmentsLoadComplete, submissionsbyUserLoadComplete } = this.state;
 
       courseManagementPanel = (
         <div>
           <ManageAssignments
             key={currentCourse.id}
-            loadComplete={
-              submissionsLoadComplete &&
-              assignmentsLoadComplete &&
-              assignmentRubricLoadComplete &&
-              submissionsbyUserLoadComplete
-            }
+            loadComplete={submissionsLoadComplete && assignmentsLoadComplete && submissionsbyUserLoadComplete}
             submissions={this.state.submissions}
             currentCourse={this.state.currentCourse}
             addToast={this.props.addToast}
@@ -1809,7 +1544,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const stillLoadingCourse =
       courses.length > 0 &&
       (!this.state.assignmentsLoadComplete ||
-        !this.state.assignmentRubricLoadComplete ||
         !this.state.submissionsLoadComplete ||
         !this.state.submissionsbyUserLoadComplete ||
         !this.state.sectionsLoadComplete);
