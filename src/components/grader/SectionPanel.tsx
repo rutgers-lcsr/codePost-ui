@@ -1,4 +1,11 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import {
   CircularProgress,
   DataTable,
@@ -9,8 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from 'react-md';
-import Select from 'react-select';
 
+/* other library imports */
+import Select from 'react-select';
+import * as moment from 'moment';
+
+/* codePost imports */
 import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -21,7 +32,7 @@ import { sortSubmissions, StudentSubmissionType, SubmissionType } from '../../in
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
 
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface ISectionPanelProps {
   currentCourse: CourseType;
@@ -207,15 +218,18 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     let anonymousToggle;
     if (this.props.currentAssignment.anonymousGrading) {
       anonymousToggle = (
-        <SelectionControl
-          id="toggleShowStudents"
-          name="toggleShowStudents"
-          type="switch"
-          className="toggleShowStudents"
-          defaultChecked={showingEmails}
-          onChange={this.toggleShowStudentEmails}
-          aria-label={'Reveal student emails'}
-        />
+        <div>
+          Anonymous mode:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={showingEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+          />
+        </div>
       );
     }
 

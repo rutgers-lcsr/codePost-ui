@@ -1,7 +1,15 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* other library imports */
 import { Redirect } from 'react-router-dom';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
+/* codePost imports */
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import SectionPanel from './components/grader/SectionPanel';
 import ViewAllPanel from './components/grader/ViewAllPanel';
@@ -15,6 +23,8 @@ import { CourseType } from './infrastructure/course';
 import { loadIDList } from './infrastructure/generics';
 import { Section, SectionType } from './infrastructure/section';
 import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+
+/**********************************************************************************************************************/
 
 interface IGraderState {
   courses: CourseType[];

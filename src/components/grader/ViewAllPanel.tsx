@@ -1,4 +1,11 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import {
   CircularProgress,
   DataTable,
@@ -9,8 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from 'react-md';
-import Select from 'react-select';
 
+/* other library imports */
+import Select from 'react-select';
+import * as moment from 'moment';
+
+/* codePost imports */
 import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -20,7 +31,7 @@ import { sortSubmissions, SubmissionType } from '../../infrastructure/submission
 import { IOptionNumber } from '../../types/common';
 import { getSortIndex } from '../Utils/SortUtils';
 
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface IViewAllProps {
   currentCourse: CourseType;
@@ -134,15 +145,18 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     let anonymousToggle;
     if (this.props.currentAssignment.anonymousGrading) {
       anonymousToggle = (
-        <SelectionControl
-          id="toggleShowStudents"
-          name="toggleShowStudents"
-          type="switch"
-          className="toggleShowStudents"
-          defaultChecked={showingEmails}
-          onChange={this.toggleShowStudentEmails}
-          aria-label={'Reveal student emails'}
-        />
+        <div>
+          Anonymous mode:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={showingEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+          />
+        </div>
       );
     }
 

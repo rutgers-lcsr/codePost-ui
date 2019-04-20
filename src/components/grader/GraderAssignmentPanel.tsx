@@ -1,4 +1,11 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import {
   Button,
   CircularProgress,
@@ -10,6 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from 'react-md';
+
+/* other library imports */
+import Select from 'react-select';
+import * as moment from 'moment';
+
+/* codePost imports */
 import { BUTTON_STATE } from '../../types/common';
 
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -22,9 +35,7 @@ import {
 } from '../../infrastructure/submission';
 import { getSortIndex } from '../Utils/SortUtils';
 
-import Select from 'react-select';
-
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;

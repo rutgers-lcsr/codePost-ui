@@ -1,6 +1,17 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import { DialogContainer, SelectionControl, TextField } from 'react-md';
+
+/* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
+
+/**********************************************************************************************************************/
 
 interface IProps {
   isVisible: boolean;
