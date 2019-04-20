@@ -18,8 +18,8 @@ import {
 } from 'react-md';
 
 /* other library imports */
-import Select from 'react-select';
 import * as moment from 'moment';
+import Select from 'react-select';
 
 /* codePost imports */
 import { openSubmission } from '../admin/AdminUtils';
