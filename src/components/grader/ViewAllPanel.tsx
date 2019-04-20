@@ -1,5 +1,14 @@
 import * as React from 'react';
-import { CircularProgress, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+import {
+  CircularProgress,
+  DataTable,
+  FontIcon,
+  SelectionControl,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from 'react-md';
 import Select from 'react-select';
 
 import { openSubmission } from '../admin/AdminUtils';
@@ -23,6 +32,7 @@ interface IViewAllState {
   selectedGraders: string[];
   isLoading: boolean;
   sortedIndex: Array<boolean | undefined>;
+  showStudentEmails: boolean;
 }
 
 class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
@@ -31,6 +41,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     submissions: [],
     selectedGraders: [],
     isLoading: true,
+    showStudentEmails: false,
 
     // SortedIndex index corresponds to columns: index 0 is email
     sortedIndex: [true, undefined, undefined, undefined, undefined],
@@ -46,6 +57,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
 
     this.setState({ graders: roster.graders, submissions, isLoading: false });
   }
+
+  public toggleShowStudentEmails = () => {
+    this.setState({
+      showStudentEmails: !this.state.showStudentEmails,
+    });
+  };
 
   public handleSelect = (input: IOptionNumber[]) => {
     const selectedGraders = input.map((i: IOptionNumber) => {
@@ -82,6 +99,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   public render() {
     const { graders, submissions, selectedGraders, sortedIndex } = this.state;
     let tableBody;
+    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+
     if (this.state.isLoading) {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
@@ -97,7 +116,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-            <TableColumn>{submission.students.toString()}</TableColumn>
+            <TableColumn>{showingEmails ? submission.students.toString() : submission.id}</TableColumn>
             <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
@@ -111,8 +130,25 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       return { value: grader, label: grader };
     });
 
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (this.props.currentAssignment.anonymousGrading) {
+      anonymousToggle = (
+        <SelectionControl
+          id="toggleShowStudents"
+          name="toggleShowStudents"
+          type="switch"
+          className="toggleShowStudents"
+          defaultChecked={showingEmails}
+          onChange={this.toggleShowStudentEmails}
+          aria-label={'Reveal student emails'}
+        />
+      );
+    }
+
     return (
       <div className="grader__view-all">
+        {anonymousToggle}
         <Select
           classNamePrefix="multiselect--view-all"
           closeMenuOnSelect={false}
