@@ -105,8 +105,8 @@ class MarkdownContainer extends React.PureComponent<IMarkdownContainerProps, {}>
 
   public codeRenderer = (props: any) => {
     const className = props.language && `language-${props.language}`;
-    let codeString = props.value;
-    if (props.language && props.language !== 'output') {
+    let codeString = props.value ? props.value : ' ';
+    if (props.value && props.language && props.language !== 'output') {
       codeString = (
         <SyntaxHighlighter
           language={props.language}
