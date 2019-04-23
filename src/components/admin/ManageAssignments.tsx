@@ -615,10 +615,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         case DETAIL_TYPE.Upload:
           detailComponent = (
             <UploadManager
-              onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               assignment={activeAssignment}
-              submissions={this.props.submissions[activeAssignment.id]}
               students={this.props.students}
+              submissions={this.props.submissions[activeAssignment.id]}
+              onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               uploadSubmission={this.props.uploadSubmission}
             />
           );
