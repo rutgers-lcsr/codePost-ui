@@ -34,7 +34,7 @@ import { RubricCommentType, sortRubricComment } from '../../infrastructure/rubri
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
+import UploadSubmissionBulkDialog from './ManageAssignmentsComponents/UploadSubmissionBulkDialog';
 
 import { openSubmission } from './AdminUtils';
 
@@ -1094,7 +1094,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
             onDelete={this.deleteAssignment}
           />
-          <UploadSubmissionDialog
+          <UploadSubmissionBulkDialog
             isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
             assignments={this.props.assignments}
             selectedAssignment={this.state.uploadingSubmissionAssignment!}
