@@ -95,6 +95,8 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       You're about to save edits to rubric comments that have already been applied to submissions. Continuing will
       propagate these changes to the submissions to which they are applied (including any finalized submissions). Are
       you sure you want to continue?
+      <div className="error-padding" />
+      <div className="error-padding" />
       <Button raised onClick={props.onAccept} primary={true} flat={true}>
         Continue
       </Button>
