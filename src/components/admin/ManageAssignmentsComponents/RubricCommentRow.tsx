@@ -108,12 +108,18 @@ class RubricCommentRow extends React.Component<IProps, IState> {
 
   public saveComment = () => {
     const { rubricComment } = this.props;
-    const { text, pointDelta } = this.state;
+    const { text } = this.state;
+    let pointDelta = this.state.pointDelta;
+
+    if (isNaN(pointDelta) || pointDelta === null) {
+      this.setValue('pointDelta', 0);
+      pointDelta = 0;
+    }
 
     if (text !== rubricComment.text || pointDelta !== rubricComment.pointDelta) {
       const payload: RubricCommentType = Object.assign({}, this.props.rubricComment);
       payload.text = this.state.text;
-      payload.pointDelta = this.state.pointDelta;
+      payload.pointDelta = pointDelta;
       this.props.updateComment(payload);
     }
   };

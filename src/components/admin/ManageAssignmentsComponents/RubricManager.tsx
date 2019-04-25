@@ -333,6 +333,12 @@ class RubricManager extends React.Component<IProps, IState> {
         });
       })
       .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.props.addErrorToast(error, undefined);
+          });
+        });
+
         return {
           newCategories: categories,
           newComments: comments,
@@ -598,6 +604,7 @@ class RubricManager extends React.Component<IProps, IState> {
     if (index > -1) {
       const newComments = { ...rubricComments };
       newComments[rubricComment.category][index] = rubricComment;
+      this.setState({ rubricComments: newComments });
     }
   };
 
