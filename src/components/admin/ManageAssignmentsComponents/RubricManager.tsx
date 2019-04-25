@@ -155,6 +155,17 @@ class RubricManager extends React.Component<IProps, IState> {
   /* Editing functions
   /***********************************************************************/
 
+  public resetRubric = () => {
+    this.setState({
+      deletedCategories: [],
+      deletedComments: [],
+      unsavedCategories: [],
+      unsavedComments: [],
+      rubricCategories: _.cloneDeep(this.state.savedRubricCategories),
+      rubricComments: _.cloneDeep(this.state.savedRubricComments),
+    });
+  };
+
   public setNewRubric = (
     rubricCategories: RubricCategoryType[],
     rubricComments: IRubricCategoryToRubricCommentsMap,
@@ -809,6 +820,7 @@ class RubricManager extends React.Component<IProps, IState> {
             </div>
           );
         });
+
       return (
         <div className={`admin__main-panel__content-container${changeLock ? '--locked' : ''}`}>
           {changeLock ? (
@@ -823,11 +835,16 @@ class RubricManager extends React.Component<IProps, IState> {
               arrow_back
             </Button>
             <div className="admin-rubric__title-text">Rubric: {this.props.assignment.name}</div>
+            <Button key="Reset" onClick={this.resetRubric} raised={true} disabled={!changesMade || changeLock}>
+              Undo changes
+            </Button>
+            &nbsp; &nbsp;
             <Button
               key="Save"
               onClick={this.onSave.bind(this, undefined)}
               raised={true}
               disabled={!changesMade || changeLock}
+              primary={true}
             >
               Save
             </Button>
