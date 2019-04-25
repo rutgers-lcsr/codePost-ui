@@ -12,6 +12,7 @@ import {
   DataTable,
   DialogContainer,
   FontIcon,
+  SelectionControl,
   TableBody,
   TableColumn,
   TableHeader,
@@ -39,6 +40,7 @@ import { getSortIndex } from '../Utils/SortUtils';
 
 interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;
+  canViewSubmissionInfo: boolean;
   sections: SectionType[];
   submissions: AnonymousSubmissionType[];
   isAnonymous: boolean;
@@ -59,6 +61,8 @@ interface IGraderAssignmentPanelState {
 
   releasedSubmission?: AnonymousSubmissionType;
   sortedIndex: Array<boolean | undefined>;
+
+  showStudentEmails: boolean;
 }
 
 class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
@@ -70,6 +74,8 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     sortedSubmissions: this.props.submissions,
     releasedSubmission: undefined,
     sortedIndex: [undefined, undefined, undefined, undefined],
+
+    showStudentEmails: false,
   };
 
   public componentDidUpdate(prevProps: IGraderAssignmentPanelProps, prevState: IGraderAssignmentPanelState) {
@@ -198,6 +204,12 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     );
   };
 
+  public toggleShowStudentEmails = () => {
+    this.setState({
+      showStudentEmails: !this.state.showStudentEmails,
+    });
+  };
+
   public render() {
     const { assignment, isLoadingSubmissions, isAnonymous } = this.props;
     const { sortedIndex } = this.state;
@@ -220,9 +232,31 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
       return <CircularProgress id="progress" className="progress-circle" />;
     }
 
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (this.props.isAnonymous && this.props.canViewSubmissionInfo) {
+      anonymousToggle = (
+        <div>
+          Anonymous mode:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={this.state.showStudentEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+          />
+        </div>
+      );
+    }
+
+    const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
+
     if (assignment) {
       return (
         <div>
+          {anonymousToggle}
           {getAnotherSubmissionButton}
           <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
@@ -246,9 +280,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
-                      {typeof submission.students !== 'undefined' && !this.props.isAnonymous
-                        ? submission.students.join(', ')
-                        : submission.id}
+                      {showingEmails && submission.students ? submission.students.join(', ') : submission.id}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>

@@ -424,6 +424,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
               isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
               isLoadingSubmissions={isLoadingSubmissions}
               sections={currentSections}
+              canViewSubmissionInfo={
+                currentSubmissions.length > 0 ? typeof currentSubmissions[0].students !== 'undefined' : false
+              }
             />
           </TabPanel>
           {viewAllPanel}
