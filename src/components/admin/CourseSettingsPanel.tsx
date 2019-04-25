@@ -148,11 +148,10 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
-                <div className="CourseSettings__settingItem__name">Anonymous grading mode</div>
+                <div className="CourseSettings__settingItem__name">Default to Anonymous Grading Mode</div>
                 <div className="CourseSettings__settingItem__description">
-                  If selected, graders will not have access to student emails (linking students to submissions). Note
-                  that graders who are section leaders and/or are granted View All privilegess will still be able to
-                  view student information, as will Admins (and graders who are also admins).
+                  If selected, new Assignments will default to Anonymous Grading Mode. You can toggle this setting at
+                  the assignment level from Assignment settings.
                 </div>
               </div>
               <SelectionControl
