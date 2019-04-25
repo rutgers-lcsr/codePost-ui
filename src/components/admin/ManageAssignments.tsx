@@ -841,6 +841,19 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     } = this.props;
     const { activeAssignment, commentExplorer, drawerVisible, drawerContent } = this.state;
 
+    let uploadDialog;
+    if (typeof this.state.uploadingSubmissionAssignment !== 'undefined') {
+      uploadDialog = (
+        <UploadSubmissionBulkDialog
+          isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
+          assignment={this.state.uploadingSubmissionAssignment}
+          students={this.props.students}
+          onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
+          submissions={this.props.submissions[this.state.uploadingSubmissionAssignment.id]}
+        />
+      );
+    }
+
     let tableBody;
     const dummyFunction = () => {
       return;
@@ -1088,20 +1101,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           ) : (
             <CircularProgress id="progress" className="progress-circle" />
           )}
+          {uploadDialog}
           <DeleteAssignmentDialog
             isVisible={typeof this.state.deletingAssignment !== 'undefined'}
             assignmentName={this.state.deletingAssignment ? this.state.deletingAssignment.name : ''}
             onCancel={this.toggleDeleteAssignment.bind(this.props, undefined)}
             onDelete={this.deleteAssignment}
-          />
-          <UploadSubmissionBulkDialog
-            isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
-            assignments={this.props.assignments}
-            selectedAssignment={this.state.uploadingSubmissionAssignment!}
-            students={this.props.students}
-            selectedStudents={null}
-            onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
-            uploadSubmission={this.props.uploadSubmission}
           />
           <div
             className={`drawer__background${!drawerVisible ? '--hidden' : ''}`}
