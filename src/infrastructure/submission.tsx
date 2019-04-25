@@ -21,8 +21,6 @@ const SubmissionV = t.intersection(
       assignment: t.number,
       dateEdited: t.string,
       grade: t.union([t.number, t.null]),
-    }),
-    t.partial({
       grader: t.union([t.string, t.null]),
     }),
   ],
@@ -84,9 +82,9 @@ const AnonymousSubmissionV = t.intersection(
       assignment: t.number,
       dateEdited: t.string,
       grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
     }),
     t.partial({
-      grader: t.union([t.string, t.null]),
       students: t.array(t.string),
     }),
   ],
