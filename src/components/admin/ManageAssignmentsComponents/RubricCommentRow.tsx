@@ -97,7 +97,7 @@ class RubricCommentRow extends React.Component<IProps, IState> {
     this.setState(
       (prevstate) => {
         const newState = { ...prevstate };
-        newState[label] = label === 'pointDelta' ? parseInt(value, 10) : value;
+        newState[label] = label === 'pointDelta' ? parseFloat(value) : value;
         return newState;
       },
       () => {

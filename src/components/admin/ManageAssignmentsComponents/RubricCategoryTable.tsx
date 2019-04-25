@@ -123,7 +123,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
         let newVal = value;
         if (label === 'pointLimit') {
           if (value) {
-            newVal = parseInt(value, 10);
+            newVal = parseFloat(value);
           } else {
             newVal = null;
           }
@@ -254,7 +254,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
           </TableHeader>
           <TableBody>
             {rubricComments
-              .sort((a, b) => a.id - b.id)
+              .sort((a, b) => b.id - a.id)
               .map((comment) => {
                 const savedRubricComment = this.props.savedRubricComments
                   ? this.props.savedRubricComments.find((el) => {
