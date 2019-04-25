@@ -83,6 +83,7 @@ interface IPropsConfirm {
   onAccept: () => void;
   onCancel: () => void;
   isVisible: boolean;
+  unsavedComments: RubricCommentType[];
 }
 
 const LinkedCommentsConfirm = (props: IPropsConfirm) => {
@@ -95,6 +96,17 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       You're about to save edits to rubric comments that have already been applied to submissions. Continuing will
       propagate these changes to the submissions to which they are applied (including any finalized submissions). Are
       you sure you want to continue?
+      <div className="error-padding" />
+      <h3>Changed Comments</h3>
+      <ul>
+        {props.unsavedComments.map((el) => {
+          if (el.id > 0 && el.comments.length > 0) {
+            return <li>{el.text}</li>;
+          } else {
+            return undefined;
+          }
+        })}
+      </ul>
       <div className="error-padding" />
       <div className="error-padding" />
       <Button raised onClick={props.onAccept} primary={true} flat={true}>
