@@ -193,7 +193,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
       <div className="admin-rubric__category" key={rubricCategory.id}>
         <div className="admin-rubric__category--header">
           <TextField
-            defaultValue={name}
+            value={name}
             label={'Category Name'}
             onChange={this.setValue.bind(this, 'name')}
             disabled={isDisabled}
@@ -202,7 +202,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
             fullWidth={false}
           />
           <TextField
-            defaultValue={typeof pointLimit === 'number' ? pointLimit : undefined}
+            value={typeof pointLimit === 'number' ? pointLimit : undefined}
             label={'Category points cap'}
             step={0.5}
             pattern="^d+(\.|\,)\d{1}"

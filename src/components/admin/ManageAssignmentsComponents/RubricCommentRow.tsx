@@ -199,7 +199,7 @@ class RubricCommentRow extends React.Component<IProps, IState> {
         <TableColumn style={{ position: 'relative' }}>
           <TextField
             type="number"
-            defaultValue={pointDelta}
+            value={pointDelta}
             step={0.5}
             pattern="^d+(\.|\,)\d{1}"
             className="deduction-field"
