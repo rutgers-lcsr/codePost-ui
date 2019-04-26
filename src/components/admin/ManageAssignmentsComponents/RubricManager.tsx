@@ -789,14 +789,15 @@ class RubricManager extends React.Component<IProps, IState> {
       const toAdd: RubricCommentType[] = [];
       reorderedComments.forEach((comm, i) => {
         if (comm.sortKey !== i) {
-          const add = { ...reorderedComments[i], sortKey: i };
-          reorderedComments[i] = add;
-          if (
+          comm.sortKey = i;
+
+          const firstChange =
             this.state.unsavedComments.find((comment: RubricCommentType) => {
-              return comment.id === add.id;
-            }) === undefined
-          ) {
-            toAdd.push(add);
+              return comment.id === comm.id;
+            }) === undefined;
+
+          if (firstChange) {
+            toAdd.push(comm);
           }
         }
       });
