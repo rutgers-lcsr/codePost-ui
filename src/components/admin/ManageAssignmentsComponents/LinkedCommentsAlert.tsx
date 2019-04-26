@@ -108,6 +108,11 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
     return false;
   });
 
+  if (contentEditedComments.length === 0) {
+    props.onAccept();
+    return <div />;
+  }
+
   return (
     <DialogContainer id="rubricFile-dialog" visible={true} title="Warning" onHide={props.onCancel} modal>
       You're about to save edits to rubric comments that have already been applied to submissions. Continuing will
