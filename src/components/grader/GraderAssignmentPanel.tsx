@@ -193,7 +193,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     }
 
     return (
-      <div className="grader__get-another">
+      <div className="grader__get-another" style={{ display: 'inline-block' }}>
         {claimButton}
         <SelectSection
           sections={this.props.sections}
@@ -236,8 +236,8 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     let anonymousToggle;
     if (this.props.isAnonymous && this.props.canViewSubmissionInfo) {
       anonymousToggle = (
-        <div>
-          Anonymous mode:
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
           <SelectionControl
             id="toggleShowStudents"
             name="toggleShowStudents"
@@ -246,6 +246,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
             defaultChecked={this.state.showStudentEmails}
             onChange={this.toggleShowStudentEmails}
             aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
           />
         </div>
       );
@@ -256,8 +257,8 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     if (assignment) {
       return (
         <div>
-          {anonymousToggle}
           {getAnotherSubmissionButton}
+          {anonymousToggle}
           <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
               <TableRow>

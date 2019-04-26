@@ -204,13 +204,15 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         return { value: section.id, label: section.name };
       });
       selectContent = (
-        <Select
-          classNamePrefix="select--grader-section"
-          closeMenuOnSelect={true}
-          options={menuItems}
-          onChange={this.handleSelect}
-          placeholder="Select Section..."
-        />
+        <div style={{ display: 'inline-block', width: '20%' }}>
+          <Select
+            classNamePrefix="select--grader-section"
+            closeMenuOnSelect={true}
+            options={menuItems}
+            onChange={this.handleSelect}
+            placeholder="Select Section..."
+          />
+        </div>
       );
     }
 
@@ -218,8 +220,8 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     let anonymousToggle;
     if (this.props.currentAssignment.anonymousGrading) {
       anonymousToggle = (
-        <div>
-          Anonymous mode:
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
           <SelectionControl
             id="toggleShowStudents"
             name="toggleShowStudents"
@@ -228,6 +230,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
             defaultChecked={showingEmails}
             onChange={this.toggleShowStudentEmails}
             aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
           />
         </div>
       );
@@ -235,8 +238,8 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
 
     return (
       <div className="grader__section-panel">
-        {selectContent}
         {anonymousToggle}
+        {selectContent}
         <div className="grader__section-panel__title">{title}</div>
         <DataTable className="table--section" plain={true}>
           <TableHeader>

@@ -145,8 +145,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     let anonymousToggle;
     if (this.props.currentAssignment.anonymousGrading) {
       anonymousToggle = (
-        <div>
-          Anonymous mode:
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
           <SelectionControl
             id="toggleShowStudents"
             name="toggleShowStudents"
@@ -155,6 +155,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
             defaultChecked={showingEmails}
             onChange={this.toggleShowStudentEmails}
             aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
           />
         </div>
       );
