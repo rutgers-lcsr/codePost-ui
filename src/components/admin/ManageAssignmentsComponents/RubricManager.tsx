@@ -22,7 +22,7 @@ import RubricFileDialog from './RubricFileDialog';
 
 import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
 import { CommentIO } from '../../../infrastructure/comment';
-import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricCategory, RubricCategoryType, sortRubricCategory } from '../../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType, sortRubricComment } from '../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
@@ -128,7 +128,7 @@ class RubricManager extends React.Component<IProps, IState> {
         this.setState({
           rubricCategories: rubric.rubricCategories,
           rubricComments: commentMap,
-          savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
+          savedRubricCategories: sortRubricCategory(_.cloneDeep(rubric.rubricCategories)),
           savedRubricComments: _.cloneDeep(commentMap),
           loadComplete: true,
         });
@@ -328,7 +328,6 @@ class RubricManager extends React.Component<IProps, IState> {
     });
 
     const allPromises: Array<Promise<any>> = [...promises, ...deleteComments, ...deleteCategories];
-
     return Promise.all(allPromises)
       .then(() => {
         // retrieve rubric
@@ -771,6 +770,39 @@ class RubricManager extends React.Component<IProps, IState> {
     this.setState({ activeComment: undefined });
   };
 
+  public onCommentDragEnd = (result: any) => {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+
+    const categoryID = +result.destination.droppableId; // categoryID stored in Droppable
+    const reorderedComments: RubricCommentType[] = arrayMove(
+      this.state.rubricComments[categoryID],
+      result.source.index,
+      result.destination.index,
+    );
+
+    // Eagerly update order
+    const toAdd: RubricCommentType[] = [];
+    reorderedComments.forEach((comm, i) => {
+      if (comm.sortKey !== i) {
+        const add = { ...reorderedComments[i], sortKey: i };
+        reorderedComments[i] = add;
+        toAdd.push(add);
+      }
+    });
+
+    // don't signal an edit if no category is moved
+    if (toAdd.length > 0) {
+      this.setState({
+        rubricComments: { ...this.state.rubricComments, [categoryID]: reorderedComments },
+        unsavedComments: [...this.state.unsavedComments, ...toAdd],
+        hasMoved: true,
+      });
+    }
+  };
+
   /************************************************************************
   /* Render
   /***********************************************************************/
@@ -781,53 +813,53 @@ class RubricManager extends React.Component<IProps, IState> {
     if (loadComplete) {
       const changesMade = this.changesMade();
 
-      const categoryTables = rubricCategories
-        .sort((a, b) => a.sortKey - b.sortKey)
-        .map((cat: RubricCategoryType, catIndex: number) => {
-          const savedCategory = this.state.savedRubricCategories.find((el) => {
-            return el.id === cat.id;
-          });
-          return (
-            <div key={cat.id} className="admin-rubric__category-container">
-              {changeLock ? null : (
-                <div className="admin-rubric__category-container__arrows">
-                  {catIndex === 0 ? null : (
-                    <div>
-                      <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
-                        keyboard_arrow_up
-                      </Button>
-                    </div>
-                  )}
-                  {catIndex === rubricCategories.length - 1 ? null : (
-                    <div>
-                      <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
-                        keyboard_arrow_down
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <RubricCategoryTable
-                key={cat.id}
-                rubricCategory={cat}
-                savedRubricCategory={savedCategory}
-                rubricComments={cat.id in rubricComments ? rubricComments[cat.id] : []}
-                savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
-                updateCategory={this.updateRubricCategory}
-                deleteCategory={this.deleteRubricCategory}
-                addComment={this.addRubricComment}
-                updateComment={this.updateRubricComment}
-                deleteComment={this.deleteRubricComment}
-                isDisabled={changeLock}
-                onEdit={this.onCategoryEdit}
-                onUndo={this.onCategoryUndo}
-                onCommentEdit={this.onCommentEdit}
-                onCommentUndo={this.onCommentUndo}
-                activateCommentExplorer={this.activateCommentExplorer}
-              />
-            </div>
-          );
+      const categoryTables = rubricCategories.map((cat: RubricCategoryType, catIndex: number) => {
+        const savedCategory = this.state.savedRubricCategories.find((el) => {
+          return el.id === cat.id;
         });
+
+        return (
+          <div key={cat.id} className="admin-rubric__category-container">
+            {changeLock ? null : (
+              <div className="admin-rubric__category-container__arrows">
+                {catIndex === 0 ? null : (
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
+                      keyboard_arrow_up
+                    </Button>
+                  </div>
+                )}
+                {catIndex === rubricCategories.length - 1 ? null : (
+                  <div>
+                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
+                      keyboard_arrow_down
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+            <RubricCategoryTable
+              key={cat.id}
+              rubricCategory={cat}
+              savedRubricCategory={savedCategory}
+              rubricComments={cat.id in rubricComments ? rubricComments[cat.id] : []}
+              savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
+              updateCategory={this.updateRubricCategory}
+              deleteCategory={this.deleteRubricCategory}
+              addComment={this.addRubricComment}
+              updateComment={this.updateRubricComment}
+              deleteComment={this.deleteRubricComment}
+              isDisabled={changeLock}
+              onEdit={this.onCategoryEdit}
+              onUndo={this.onCategoryUndo}
+              onCommentEdit={this.onCommentEdit}
+              onCommentUndo={this.onCommentUndo}
+              activateCommentExplorer={this.activateCommentExplorer}
+              onCommentDragEnd={this.onCommentDragEnd}
+            />
+          </div>
+        );
+      });
 
       return (
         <div className={`admin__main-panel__content-container${changeLock ? '--locked' : ''}`}>
