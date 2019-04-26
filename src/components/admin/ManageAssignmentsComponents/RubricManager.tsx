@@ -22,8 +22,8 @@ import RubricFileDialog from './RubricFileDialog';
 
 import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
 import { CommentIO } from '../../../infrastructure/comment';
-import { RubricCategory, RubricCategoryType, sortRubricCategory } from '../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType, sortRubricComment } from '../../../infrastructure/rubricComment';
+import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -128,7 +128,7 @@ class RubricManager extends React.Component<IProps, IState> {
         this.setState({
           rubricCategories: rubric.rubricCategories,
           rubricComments: commentMap,
-          savedRubricCategories: sortRubricCategory(_.cloneDeep(rubric.rubricCategories)),
+          savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
           savedRubricComments: _.cloneDeep(commentMap),
           loadComplete: true,
         });
@@ -484,12 +484,6 @@ class RubricManager extends React.Component<IProps, IState> {
       commentMap[comment.category].push(comment);
     });
 
-    for (const categoryID in commentMap) {
-      if (commentMap.hasOwnProperty(categoryID)) {
-        commentMap[categoryID] = sortRubricComment(commentMap[categoryID]);
-      }
-    }
-
     return commentMap;
   };
 
@@ -813,53 +807,55 @@ class RubricManager extends React.Component<IProps, IState> {
     if (loadComplete) {
       const changesMade = this.changesMade();
 
-      const categoryTables = rubricCategories.map((cat: RubricCategoryType, catIndex: number) => {
-        const savedCategory = this.state.savedRubricCategories.find((el) => {
-          return el.id === cat.id;
-        });
+      const categoryTables = rubricCategories
+        .sort(RubricCategory.compare)
+        .map((cat: RubricCategoryType, catIndex: number) => {
+          const savedCategory = this.state.savedRubricCategories.find((el) => {
+            return el.id === cat.id;
+          });
 
-        return (
-          <div key={cat.id} className="admin-rubric__category-container">
-            {changeLock ? null : (
-              <div className="admin-rubric__category-container__arrows">
-                {catIndex === 0 ? null : (
-                  <div>
-                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
-                      keyboard_arrow_up
-                    </Button>
-                  </div>
-                )}
-                {catIndex === rubricCategories.length - 1 ? null : (
-                  <div>
-                    <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
-                      keyboard_arrow_down
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-            <RubricCategoryTable
-              key={cat.id}
-              rubricCategory={cat}
-              savedRubricCategory={savedCategory}
-              rubricComments={cat.id in rubricComments ? rubricComments[cat.id] : []}
-              savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
-              updateCategory={this.updateRubricCategory}
-              deleteCategory={this.deleteRubricCategory}
-              addComment={this.addRubricComment}
-              updateComment={this.updateRubricComment}
-              deleteComment={this.deleteRubricComment}
-              isDisabled={changeLock}
-              onEdit={this.onCategoryEdit}
-              onUndo={this.onCategoryUndo}
-              onCommentEdit={this.onCommentEdit}
-              onCommentUndo={this.onCommentUndo}
-              activateCommentExplorer={this.activateCommentExplorer}
-              onCommentDragEnd={this.onCommentDragEnd}
-            />
-          </div>
-        );
-      });
+          return (
+            <div key={cat.id} className="admin-rubric__category-container">
+              {changeLock ? null : (
+                <div className="admin-rubric__category-container__arrows">
+                  {catIndex === 0 ? null : (
+                    <div>
+                      <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Up)}>
+                        keyboard_arrow_up
+                      </Button>
+                    </div>
+                  )}
+                  {catIndex === rubricCategories.length - 1 ? null : (
+                    <div>
+                      <Button icon={true} onClick={this.moveCategory.bind(this, cat, DIRECTION.Down)}>
+                        keyboard_arrow_down
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+              <RubricCategoryTable
+                key={cat.id}
+                rubricCategory={cat}
+                savedRubricCategory={savedCategory}
+                rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+                savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
+                updateCategory={this.updateRubricCategory}
+                deleteCategory={this.deleteRubricCategory}
+                addComment={this.addRubricComment}
+                updateComment={this.updateRubricComment}
+                deleteComment={this.deleteRubricComment}
+                isDisabled={changeLock}
+                onEdit={this.onCategoryEdit}
+                onUndo={this.onCategoryUndo}
+                onCommentEdit={this.onCommentEdit}
+                onCommentUndo={this.onCommentUndo}
+                activateCommentExplorer={this.activateCommentExplorer}
+                onCommentDragEnd={this.onCommentDragEnd}
+              />
+            </div>
+          );
+        });
 
       return (
         <div className={`admin__main-panel__content-container${changeLock ? '--locked' : ''}`}>

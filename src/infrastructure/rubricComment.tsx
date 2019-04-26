@@ -49,19 +49,14 @@ class RubricComment {
   public static read = readObject(RubricCommentV, 'rubricComments');
   public static update = updateObject(RubricCommentV, RubricCommentVPatch, 'rubricComments');
   public static delete = deleteObject(RubricCommentV, 'rubricComments');
-}
 
-const sortRubricComment = (rubricComments: RubricCommentType[]): RubricCommentType[] => {
-  // First sort by RubricCategory 'sortKey', then by ID
-  const compareRubricComments = (a: RubricCommentType, b: RubricCommentType) => {
+  public static compare = (a: RubricCommentType, b: RubricCommentType) => {
     if (a.sortKey === b.sortKey) {
       return a.id - b.id;
     } else {
       return a.sortKey - b.sortKey;
     }
   };
+}
 
-  return rubricComments.sort(compareRubricComments);
-};
-
-export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV, sortRubricComment };
+export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV };

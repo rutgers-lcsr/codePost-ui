@@ -13,8 +13,8 @@ import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
-import { RubricCategoryType, sortRubricCategory } from './infrastructure/rubricCategory';
-import { RubricCommentType, sortRubricComment } from './infrastructure/rubricComment';
+import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 
@@ -115,15 +115,15 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
 
-    const rubricCategories = sortRubricCategory(rubric.rubricCategories);
+    const rubricCategories = rubric.rubricCategories.sort(RubricCategory.compare);
     const rubricComments = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      rubricComments[rubricCategory.id] = sortRubricComment(
-        rubric.rubricComments.filter((rubricComment) => {
+      rubricComments[rubricCategory.id] = rubric.rubricComments
+        .filter((rubricComment) => {
           return rubricComment.category === rubricCategory.id;
-        }),
-      );
+        })
+        .sort(RubricComment.compare);
     });
 
     return [rubricCategories, rubricComments];
