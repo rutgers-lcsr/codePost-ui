@@ -14,7 +14,7 @@ import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 import { RubricCategoryType, sortRubricCategory } from './infrastructure/rubricCategory';
-import { RubricCommentType } from './infrastructure/rubricComment';
+import { RubricCommentType, sortRubricComment } from './infrastructure/rubricComment';
 import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 
@@ -119,9 +119,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const rubricComments = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      rubricComments[rubricCategory.id] = rubric.rubricComments.filter((rubricComment) => {
-        return rubricComment.category === rubricCategory.id;
-      });
+      rubricComments[rubricCategory.id] = sortRubricComment(
+        rubric.rubricComments.filter((rubricComment) => {
+          return rubricComment.category === rubricCategory.id;
+        }),
+      );
     });
 
     return [rubricCategories, rubricComments];

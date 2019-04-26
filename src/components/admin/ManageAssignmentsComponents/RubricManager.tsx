@@ -23,7 +23,7 @@ import RubricFileDialog from './RubricFileDialog';
 import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
 import { CommentIO } from '../../../infrastructure/comment';
 import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType, sortRubricComment } from '../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -484,6 +484,13 @@ class RubricManager extends React.Component<IProps, IState> {
     rubricComments.forEach((comment: RubricCommentType) => {
       commentMap[comment.category].push(comment);
     });
+
+    for (const categoryID in commentMap) {
+      if (commentMap.hasOwnProperty(categoryID)) {
+        commentMap[categoryID] = sortRubricComment(commentMap[categoryID]);
+      }
+    }
+
     return commentMap;
   };
 
@@ -656,6 +663,7 @@ class RubricManager extends React.Component<IProps, IState> {
       pointDelta: 0,
       category: category.id,
       comments: [],
+      sortKey: rubricComments[category.id] ? rubricComments[category.id].length : 0,
     };
 
     newComments[category.id].push(payload);
