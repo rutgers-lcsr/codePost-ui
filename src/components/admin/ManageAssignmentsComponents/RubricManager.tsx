@@ -403,11 +403,26 @@ class RubricManager extends React.Component<IProps, IState> {
       }
     }
 
+    const savedComments: RubricCommentType[] = Object.values(this.state.rubricComments).flat();
+    // Ignore unsaved comments where the only change is in the order
+    const onlyOrderEditedComments =
+      edited.filter((unsavedComment: RubricCommentType) => {
+        const match = savedComments.find((savedComment: RubricCommentType) => {
+          return savedComment.id === unsavedComment.id;
+        });
+
+        if (match) {
+          return match.text !== unsavedComment.text || match.pointDelta !== unsavedComment.pointDelta;
+        }
+        return true;
+      }).length === 0;
+
     // FIXME: need to include categories here as well
 
     return {
       edited,
       deleted,
+      onlyOrderEditedComments,
     };
   };
 
@@ -432,7 +447,7 @@ class RubricManager extends React.Component<IProps, IState> {
     }
 
     // Do we need to confirm the user is ok propagating changes to previously used comments?
-    if (conflicts.edited.length > 0 && !confirmedPropagation) {
+    if (conflicts.edited.length > 0 && !conflicts.onlyOrderEditedComments && !confirmedPropagation) {
       this.setState({ showConfirmDialog: true });
       return;
     }
