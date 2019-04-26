@@ -922,6 +922,7 @@ class RubricManager extends React.Component<IProps, IState> {
             onCancel={this.onLinkedConfirmCancel}
             isVisible={this.state.showConfirmDialog}
             unsavedComments={this.state.unsavedComments}
+            savedRubricComments={this.state.rubricComments}
           />
           <Button
             key="Lock"

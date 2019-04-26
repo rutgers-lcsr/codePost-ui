@@ -3,6 +3,8 @@ import { Button, DialogContainer } from 'react-md';
 
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
+import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
+
 interface IPropsLinkedCommentsAlert {
   rubricComment: RubricCommentType;
   onDelete: () => void;
@@ -84,12 +86,27 @@ interface IPropsConfirm {
   onCancel: () => void;
   isVisible: boolean;
   unsavedComments: RubricCommentType[];
+  savedRubricComments: IRubricCategoryToRubricCommentsMap;
 }
 
 const LinkedCommentsConfirm = (props: IPropsConfirm) => {
   if (!props.isVisible) {
     return <div />;
   }
+
+  const savedComments: RubricCommentType[] = Object.values(props.savedRubricComments).flat();
+
+  // Ignore unsaved comments where the only change is in the order
+  const contentEditedComments = props.unsavedComments.filter((unsavedComment: RubricCommentType) => {
+    const match = savedComments.find((savedComment: RubricCommentType) => {
+      return savedComment.id === unsavedComment.id;
+    });
+
+    if (match) {
+      return match.text !== unsavedComment.text || match.pointDelta !== unsavedComment.pointDelta;
+    }
+    return false;
+  });
 
   return (
     <DialogContainer id="rubricFile-dialog" visible={true} title="Warning" onHide={props.onCancel} modal>
@@ -99,7 +116,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       <div className="error-padding" />
       <h3>Changed Comments</h3>
       <ul>
-        {props.unsavedComments.map((el) => {
+        {contentEditedComments.map((el) => {
           if (el.id > 0 && el.comments.length > 0) {
             return <li>{el.text}</li>;
           } else {
