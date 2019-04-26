@@ -217,7 +217,13 @@ class RubricManager extends React.Component<IProps, IState> {
   };
 
   public onCommentEdit = (comment: RubricCommentType) => {
-    this.setState({ unsavedComments: [...this.state.unsavedComments, comment] });
+    if (
+      this.state.unsavedComments.find((unsavedComment: RubricCommentType) => {
+        return comment.id === unsavedComment.id;
+      }) === undefined
+    ) {
+      this.setState({ unsavedComments: [...this.state.unsavedComments, comment] });
+    }
   };
 
   public onCategoryUndo = (category: RubricCategoryType) => {
@@ -798,7 +804,13 @@ class RubricManager extends React.Component<IProps, IState> {
       if (comm.sortKey !== i) {
         const add = { ...reorderedComments[i], sortKey: i };
         reorderedComments[i] = add;
-        toAdd.push(add);
+        if (
+          this.state.unsavedComments.find((comment: RubricCommentType) => {
+            return comment.id === add.id;
+          }) === undefined
+        ) {
+          toAdd.push(add);
+        }
       }
     });
 
