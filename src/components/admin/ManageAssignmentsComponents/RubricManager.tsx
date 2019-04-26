@@ -775,31 +775,30 @@ class RubricManager extends React.Component<IProps, IState> {
       return;
     }
 
-    const categoryID = +result.destination.droppableId; // categoryID stored in Droppable
-    const reorderedComments: RubricCommentType[] = arrayMove(
-      this.state.rubricComments[categoryID],
-      result.source.index,
-      result.destination.index,
-    );
+    if (result.source.index !== result.destination.index) {
+      const categoryID = +result.destination.droppableId; // categoryID stored in Droppable
+      const reorderedComments: RubricCommentType[] = arrayMove(
+        this.state.rubricComments[categoryID],
+        result.source.index,
+        result.destination.index,
+      );
 
-    // Eagerly update order
-    const toAdd: RubricCommentType[] = [];
-    reorderedComments.forEach((comm, i) => {
-      if (comm.sortKey !== i) {
-        const add = { ...reorderedComments[i], sortKey: i };
-        reorderedComments[i] = add;
-        if (
-          this.state.unsavedComments.find((comment: RubricCommentType) => {
-            return comment.id === add.id;
-          }) === undefined
-        ) {
-          toAdd.push(add);
+      // Eagerly update order
+      const toAdd: RubricCommentType[] = [];
+      reorderedComments.forEach((comm, i) => {
+        if (comm.sortKey !== i) {
+          const add = { ...reorderedComments[i], sortKey: i };
+          reorderedComments[i] = add;
+          if (
+            this.state.unsavedComments.find((comment: RubricCommentType) => {
+              return comment.id === add.id;
+            }) === undefined
+          ) {
+            toAdd.push(add);
+          }
         }
-      }
-    });
+      });
 
-    // don't signal an edit if no category is moved
-    if (toAdd.length > 0) {
       this.setState({
         rubricComments: { ...this.state.rubricComments, [categoryID]: reorderedComments },
         unsavedComments: [...this.state.unsavedComments, ...toAdd],
