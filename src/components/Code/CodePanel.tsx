@@ -158,6 +158,13 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
               markdown += '\n```\n';
             }
           }
+          if (output.output_type === 'error') {
+            if (output.traceback) {
+              markdown += '\n```output\nERRORS --->\n\n';
+              markdown += output.traceback.join('\n');
+              markdown += '\n```\n';
+            }
+          }
         });
       }
 
