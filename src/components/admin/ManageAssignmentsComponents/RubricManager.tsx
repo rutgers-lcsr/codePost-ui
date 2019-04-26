@@ -163,6 +163,8 @@ class RubricManager extends React.Component<IProps, IState> {
       unsavedComments: [],
       rubricCategories: _.cloneDeep(this.state.savedRubricCategories),
       rubricComments: _.cloneDeep(this.state.savedRubricComments),
+      hasMoved: false,
+      confirmedPropagation: false,
     });
   };
 
