@@ -109,6 +109,9 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
   });
 
   if (contentEditedComments.length === 0) {
+    // FIXME: This throws a console warning
+    // > Warning: Cannot update during an existing state transition (such as within `render`). R
+    // > Render methods should be a pure function of props and state.
     props.onAccept();
     return <div />;
   }
