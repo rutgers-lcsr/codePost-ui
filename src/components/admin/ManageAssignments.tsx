@@ -34,7 +34,7 @@ import { RubricCommentType, sortRubricComment } from '../../infrastructure/rubri
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import UploadSubmissionBulkDialog from './ManageAssignmentsComponents/UploadSubmissionBulkDialog';
+import UploadManager from './ManageAssignmentsComponents/UploadManager';
 
 import { openSubmission } from './AdminUtils';
 
@@ -107,7 +107,7 @@ export interface IManageAssignmentsProps {
 
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
 }
 
 interface IManageAssignmentsState {
@@ -844,12 +844,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     let uploadDialog;
     if (typeof this.state.uploadingSubmissionAssignment !== 'undefined') {
       uploadDialog = (
-        <UploadSubmissionBulkDialog
-          isVisible={typeof this.state.uploadingSubmissionAssignment !== 'undefined'}
+        <UploadManager
           assignment={this.state.uploadingSubmissionAssignment}
           students={this.props.students}
           onCancel={this.toggleUploadSubmission.bind(this.props, undefined)}
           submissions={this.props.submissions[this.state.uploadingSubmissionAssignment.id]}
+          uploadSubmission={this.props.uploadSubmission}
         />
       );
     }
