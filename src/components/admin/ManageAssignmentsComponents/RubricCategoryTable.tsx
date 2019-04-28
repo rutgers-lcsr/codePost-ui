@@ -6,17 +6,7 @@
 import * as React from 'react';
 
 /* react-md imports */
-import {
-  Button,
-  DataTable,
-  FontIcon,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  TextField,
-  Tooltipped,
-} from 'react-md';
+import { Button, DataTable, FontIcon, TableColumn, TableHeader, TableRow, TextField, Tooltipped } from 'react-md';
 
 /* codePost imports */
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
@@ -25,6 +15,8 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 import RubricCommentRow from './RubricCommentRow';
 
 import { STATUS, statusChange } from './RubricUtils';
+
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 /**********************************************************************************************************************/
 
@@ -53,6 +45,7 @@ interface IProps {
   onUndo: (obj: RubricCategoryType) => void;
   onCommentEdit: (obj: RubricCommentType) => void;
   onCommentUndo: (obj: RubricCommentType) => void;
+  onCommentDragEnd: any;
 }
 
 interface IState {
@@ -231,6 +224,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
         >
           <TableHeader>
             <TableRow selectable={false}>
+              <TableColumn key={'dragHandle'} />
               <TableColumn key={'spacing1'} />
               <TableColumn key={'Linked comments'}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -252,32 +246,43 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
               {deleteCommentHeader}
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {rubricComments
-              .sort((a, b) => b.id - a.id)
-              .map((comment) => {
-                const savedRubricComment = this.props.savedRubricComments
-                  ? this.props.savedRubricComments.find((el) => {
-                      // tslint:disable-next-line
-                      return el.id === comment.id;
-                      // tslint:disable-next-line
-                    })
-                  : undefined;
-                return (
-                  <RubricCommentRow
-                    key={comment.id}
-                    rubricComment={comment}
-                    savedRubricComment={savedRubricComment}
-                    isDisabled={isDisabled}
-                    deleteComment={this.props.deleteComment}
-                    updateComment={this.props.updateComment}
-                    onEdit={this.props.onCommentEdit}
-                    onUndo={this.props.onCommentUndo}
-                    activateCommentExplorer={this.props.activateCommentExplorer}
-                  />
-                );
-              })}
-          </TableBody>
+          <DragDropContext onDragEnd={this.props.onCommentDragEnd}>
+            <Droppable droppableId={rubricCategory.id}>
+              {(provided: any, snapshot: any) => (
+                <tbody className="md-table-body" ref={provided.innerRef}>
+                  {rubricComments.map((comment, commentIndex) => {
+                    const savedRubricComment = this.props.savedRubricComments
+                      ? this.props.savedRubricComments.find((el) => {
+                          // tslint:disable-next-line
+                          return el.id === comment.id;
+                          // tslint:disable-next-line
+                        })
+                      : undefined;
+                    return (
+                      <Draggable key={comment.id} draggableId={`draggable-${comment.id}`} index={commentIndex}>
+                        {// tslint:disable-next-line:no-shadowed-variable
+                        (provided: any, snapshot: any) => (
+                          <RubricCommentRow
+                            key={comment.id}
+                            rubricComment={comment}
+                            savedRubricComment={savedRubricComment}
+                            isDisabled={isDisabled}
+                            deleteComment={this.props.deleteComment}
+                            updateComment={this.props.updateComment}
+                            onEdit={this.props.onCommentEdit}
+                            onUndo={this.props.onCommentUndo}
+                            activateCommentExplorer={this.props.activateCommentExplorer}
+                            draggableProvided={provided}
+                          />
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </tbody>
+              )}
+            </Droppable>
+          </DragDropContext>
         </DataTable>
         <Button
           className="Btn"

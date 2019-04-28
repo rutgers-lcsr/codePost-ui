@@ -147,13 +147,14 @@ class RubricFileDialog extends React.Component<IProps, IState> {
         sortKey: index,
       };
 
-      newCategory.rubricComments.forEach((newComment: IDownloadComment) => {
+      newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {
         commentList.push({
           id: commentID,
           text: newComment.text,
           pointDelta: newComment.pointDelta,
           category: categoryPayload.id,
           comments: [],
+          sortKey: indexComment,
         });
         commentID = commentID - 1;
       });

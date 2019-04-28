@@ -9,6 +9,7 @@ const RubricCommentV = t.intersection(
       pointDelta: t.number,
       category: t.number,
       comments: t.array(t.number),
+      sortKey: t.number,
     }),
     t.partial({}),
   ],
@@ -48,6 +49,14 @@ class RubricComment {
   public static read = readObject(RubricCommentV, 'rubricComments');
   public static update = updateObject(RubricCommentV, RubricCommentVPatch, 'rubricComments');
   public static delete = deleteObject(RubricCommentV, 'rubricComments');
+
+  public static compare = (a: RubricCommentType, b: RubricCommentType) => {
+    if (a.sortKey === b.sortKey) {
+      return a.id - b.id;
+    } else {
+      return a.sortKey - b.sortKey;
+    }
+  };
 }
 
 export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV };

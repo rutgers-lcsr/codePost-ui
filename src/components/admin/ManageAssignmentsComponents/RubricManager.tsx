@@ -163,6 +163,8 @@ class RubricManager extends React.Component<IProps, IState> {
       unsavedComments: [],
       rubricCategories: _.cloneDeep(this.state.savedRubricCategories),
       rubricComments: _.cloneDeep(this.state.savedRubricComments),
+      hasMoved: false,
+      confirmedPropagation: false,
     });
   };
 
@@ -217,7 +219,13 @@ class RubricManager extends React.Component<IProps, IState> {
   };
 
   public onCommentEdit = (comment: RubricCommentType) => {
-    this.setState({ unsavedComments: [...this.state.unsavedComments, comment] });
+    if (
+      this.state.unsavedComments.find((unsavedComment: RubricCommentType) => {
+        return comment.id === unsavedComment.id;
+      }) === undefined
+    ) {
+      this.setState({ unsavedComments: [...this.state.unsavedComments, comment] });
+    }
   };
 
   public onCategoryUndo = (category: RubricCategoryType) => {
@@ -328,7 +336,6 @@ class RubricManager extends React.Component<IProps, IState> {
     });
 
     const allPromises: Array<Promise<any>> = [...promises, ...deleteComments, ...deleteCategories];
-
     return Promise.all(allPromises)
       .then(() => {
         // retrieve rubric
@@ -403,7 +410,6 @@ class RubricManager extends React.Component<IProps, IState> {
         }
       }
     }
-
     // FIXME: need to include categories here as well
 
     return {
@@ -484,6 +490,7 @@ class RubricManager extends React.Component<IProps, IState> {
     rubricComments.forEach((comment: RubricCommentType) => {
       commentMap[comment.category].push(comment);
     });
+
     return commentMap;
   };
 
@@ -656,6 +663,7 @@ class RubricManager extends React.Component<IProps, IState> {
       pointDelta: 0,
       category: category.id,
       comments: [],
+      sortKey: rubricComments[category.id] ? rubricComments[category.id].length : 0,
     };
 
     newComments[category.id].push(payload);
@@ -763,6 +771,45 @@ class RubricManager extends React.Component<IProps, IState> {
     this.setState({ activeComment: undefined });
   };
 
+  public onCommentDragEnd = (result: any) => {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+
+    if (result.source.index !== result.destination.index) {
+      const categoryID = +result.destination.droppableId; // categoryID stored in Droppable
+      const reorderedComments: RubricCommentType[] = arrayMove(
+        this.state.rubricComments[categoryID],
+        result.source.index,
+        result.destination.index,
+      );
+
+      // Eagerly update order
+      const toAdd: RubricCommentType[] = [];
+      reorderedComments.forEach((comm, i) => {
+        if (comm.sortKey !== i) {
+          comm.sortKey = i;
+
+          const firstChange =
+            this.state.unsavedComments.find((comment: RubricCommentType) => {
+              return comment.id === comm.id;
+            }) === undefined;
+
+          if (firstChange) {
+            toAdd.push(comm);
+          }
+        }
+      });
+
+      this.setState({
+        rubricComments: { ...this.state.rubricComments, [categoryID]: reorderedComments },
+        unsavedComments: [...this.state.unsavedComments, ...toAdd],
+        hasMoved: true,
+      });
+    }
+  };
+
   /************************************************************************
   /* Render
   /***********************************************************************/
@@ -774,11 +821,12 @@ class RubricManager extends React.Component<IProps, IState> {
       const changesMade = this.changesMade();
 
       const categoryTables = rubricCategories
-        .sort((a, b) => a.sortKey - b.sortKey)
+        .sort(RubricCategory.compare)
         .map((cat: RubricCategoryType, catIndex: number) => {
           const savedCategory = this.state.savedRubricCategories.find((el) => {
             return el.id === cat.id;
           });
+
           return (
             <div key={cat.id} className="admin-rubric__category-container">
               {changeLock ? null : (
@@ -803,7 +851,7 @@ class RubricManager extends React.Component<IProps, IState> {
                 key={cat.id}
                 rubricCategory={cat}
                 savedRubricCategory={savedCategory}
-                rubricComments={cat.id in rubricComments ? rubricComments[cat.id] : []}
+                rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
                 savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
                 updateCategory={this.updateRubricCategory}
                 deleteCategory={this.deleteRubricCategory}
@@ -816,6 +864,7 @@ class RubricManager extends React.Component<IProps, IState> {
                 onCommentEdit={this.onCommentEdit}
                 onCommentUndo={this.onCommentUndo}
                 activateCommentExplorer={this.activateCommentExplorer}
+                onCommentDragEnd={this.onCommentDragEnd}
               />
             </div>
           );
@@ -886,6 +935,7 @@ class RubricManager extends React.Component<IProps, IState> {
             onCancel={this.onLinkedConfirmCancel}
             isVisible={this.state.showConfirmDialog}
             unsavedComments={this.state.unsavedComments}
+            savedRubricComments={this.state.rubricComments}
           />
           <Button
             key="Lock"

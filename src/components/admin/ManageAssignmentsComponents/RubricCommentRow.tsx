@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* react-md imports */
-import { Button, FontIcon, TableColumn, TableRow, TextField, Tooltipped } from 'react-md';
+import { Button, FontIcon, TableColumn, TextField, Tooltipped } from 'react-md';
 
 /* codePost imports */
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
@@ -24,6 +24,7 @@ interface IProps {
   onEdit: (obj: RubricCommentType) => void;
   onUndo: (obj: RubricCommentType) => void;
   activateCommentExplorer: (rComment: RubricCommentType) => void;
+  draggableProvided: any;
 }
 
 interface IState {
@@ -181,7 +182,16 @@ class RubricCommentRow extends React.Component<IProps, IState> {
         : 'admin-rubric__commentRow__frequency--none';
 
     return (
-      <TableRow key={rubricComment.id}>
+      <tr
+        key={rubricComment.id}
+        className="md-table-row"
+        ref={this.props.draggableProvided.innerRef}
+        {...this.props.draggableProvided.draggableProps}
+        {...this.props.draggableProvided.dragHandleProps}
+      >
+        <TableColumn>
+          <div className="admin-rubric__commentRow__drag-handle" />
+        </TableColumn>
         <TableColumn>{unSavedChanges}</TableColumn>
         <TableColumn>
           <Tooltipped label="Click to explore." setPosition={true} position="right" delay={500}>
@@ -216,7 +226,7 @@ class RubricCommentRow extends React.Component<IProps, IState> {
           />
         </TableColumn>
         {deleteCommentColumn}
-      </TableRow>
+      </tr>
     );
   }
 }
