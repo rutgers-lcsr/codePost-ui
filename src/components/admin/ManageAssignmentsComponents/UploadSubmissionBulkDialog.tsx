@@ -1,4 +1,6 @@
-/****************************************************************************************************/
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
 
 /* react imports */
 import React from 'react';
@@ -14,7 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { Submission, SubmissionType } from '../../../infrastructure/submission';
 
-/****************************************************************************************************/
+/**********************************************************************************************************************/
 
 /************************************************
 Notes:
@@ -105,6 +107,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     overwriteMode: false,
   };
 
+  /***************************************************************************************/
+  /* Lifecycle methods
+  /***************************************************************************************/
+
   public componentDidMount() {
     // Cache map logging whether student already has a submission uploaded for this assignment
     const { submissions, students } = this.props;
@@ -118,6 +124,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       this.tryToUpload();
     }
   }
+
+  /***************************************************************************************/
+  /* Pure functions
+  /***************************************************************************************/
 
   public buildNewStudentMap = (students: string[], submissions: SubmissionType[]) => {
     const newMap = {};
@@ -135,6 +145,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return newMap;
   };
 
+  public isValidStudent = (student: string, students: string[]) => {
+    return students.some((el) => {
+      return el === student;
+    });
+  };
+
   public cancel = () => {
     this.props.onCancel();
   };
@@ -144,6 +160,24 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       this.readFiles();
     });
   };
+
+  public getFilesForStudent = (student: string, protoSubmissions: IProtoSubmission[]) => {
+    for (const sub of protoSubmissions) {
+      if (
+        sub.students.some((el) => {
+          return el === student;
+        })
+      ) {
+        return sub.files;
+      }
+    }
+
+    return [];
+  };
+
+  /***************************************************************************************/
+  /* Upload business logic
+  /***************************************************************************************/
 
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
@@ -219,12 +253,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           status: STATUS.NONE,
         });
       });
-    });
-  };
-
-  public isValidStudent = (student: string, students: string[]) => {
-    return students.some((el) => {
-      return el === student;
     });
   };
 
@@ -381,19 +409,9 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     this.setState({ overwriteMode: !this.state.overwriteMode });
   };
 
-  public getFilesForStudent = (student: string, protoSubmissions: IProtoSubmission[]) => {
-    for (const sub of protoSubmissions) {
-      if (
-        sub.students.some((el) => {
-          return el === student;
-        })
-      ) {
-        return sub.files;
-      }
-    }
-
-    return [];
-  };
+  /***************************************************************************************/
+  /* Render
+  /***************************************************************************************/
 
   public render() {
     if (!this.props.isVisible) {
