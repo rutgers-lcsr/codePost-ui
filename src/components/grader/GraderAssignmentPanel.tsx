@@ -210,6 +210,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
                       key={header}
                       sorted={sortedIndex[index]}
                       onClick={this.toggleSort.bind(this.props, index)}
+                      className={index === 0 ? 'left-aligned' : ''}
                     >
                       {header}
                     </TableColumn>
@@ -222,7 +223,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
                 return (
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
-                    <TableColumn onClick={this.openGradePage.bind(this, submission)}>
+                    <TableColumn className="left-aligned" onClick={this.openGradePage.bind(this, submission)}>
                       {submission.students.join(', ')}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>

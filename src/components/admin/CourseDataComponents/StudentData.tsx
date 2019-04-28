@@ -184,7 +184,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         }
         return (
           <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
-            <TableColumn key={studentEmail} plain={true}>
+            <TableColumn className="left-aligned" key={studentEmail} plain={true}>
               {studentEmail}
             </TableColumn>
             {sortedAssignments.map((assignment) => {
@@ -227,13 +227,14 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-All">
             <TableHeader>
               <TableRow key={'index'}>
-                {headers.map((header) => {
+                {headers.map((header, index) => {
                   return (
                     <TableColumn
                       sorted={sortedIndex[header]}
                       onClick={this.toggleSort.bind(this.props, header)}
                       key={header}
                       plain={true}
+                      className={index === 0 ? 'left-aligned' : ''}
                     >
                       {header}
                     </TableColumn>
@@ -274,7 +275,12 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         const cellClick = openSubmission.bind(this.props, submission.id);
         return (
           <TableRow key={submission.id.toString()}>
-            <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
+            <TableColumn
+              className="left-aligned"
+              onClick={cellClick}
+              tooltipLabel="Click to open submission."
+              tooltipDelay={1500}
+            >
               {
                 assignments.filter((assignment) => {
                   return assignment.id === assignmentID;
@@ -341,7 +347,9 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn key="Assignment">Assignment</TableColumn>
+                <TableColumn className="left-aligned" key="Assignment">
+                  Assignment
+                </TableColumn>
                 <TableColumn key="Grade">Grade</TableColumn>
                 <TableColumn key="Grader">Grader</TableColumn>
                 <TableColumn key="Finalized">Finalized</TableColumn>

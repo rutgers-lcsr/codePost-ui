@@ -97,7 +97,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-            <TableColumn>{submission.students.toString()}</TableColumn>
+            <TableColumn className="left-aligned">{submission.students.toString()}</TableColumn>
             <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
@@ -124,7 +124,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         <DataTable className="data-table--view-all" plain={true}>
           <TableHeader>
             <TableRow>
-              <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+              <TableColumn
+                key={'Student'}
+                className="left-aligned"
+                sorted={sortedIndex[0]}
+                onClick={this.toggleSort.bind(this.props, 0)}
+              >
                 Student Name
               </TableColumn>
               <TableColumn key={'Grade'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>

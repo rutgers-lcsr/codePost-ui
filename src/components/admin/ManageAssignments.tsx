@@ -1024,7 +1024,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             </TableColumn>
             <TableColumn key={`${assignmentID}-8`}>{mean}</TableColumn>
             <TableColumn key={`${assignmentID}-9`}>{median}</TableColumn>
-            <MenuButtonColumn icon menuItems={menuItems}>
+            <MenuButtonColumn className="left-aligned" icon menuItems={menuItems}>
               more_vert
             </MenuButtonColumn>
           </TableRow>
@@ -1059,10 +1059,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           )}
           <div className="padding" />
           {submissionsLoadComplete && assignmentRubricLoadComplete ? (
-            <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
+            <DataTable className="DataTable--ManageAssignments" baseId="DataTable--ManageAssignments" plain={true}>
               <TableHeader>
                 <TableRow>
-                  <TableColumn key={'AssignmentName'}>Assignment</TableColumn>
+                  <TableColumn className="left-aligned" key={'AssignmentName'}>
+                    Assignment
+                  </TableColumn>
                   <Tooltipped
                     key="assignment-release"
                     label="If published, students with finalized submissions can view their submissions."
@@ -1080,7 +1082,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <TableColumn key={'NumMissing'}>Students missing </TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
-                  <TableColumn key={'Menu'} />
+                  <TableColumn className="left-aligned" key={'Menu'} />
                 </TableRow>
               </TableHeader>
               <TableBody>{tableBody}</TableBody>

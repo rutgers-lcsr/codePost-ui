@@ -123,7 +123,7 @@ class ManageSections extends React.Component<IProps, {}> {
 
         return (
           <TableRow key={section.id}>
-            <TableColumn>{section.name}</TableColumn>
+            <TableColumn className="left-aligned">{section.name}</TableColumn>
             <Select
               classNamePrefix="multiselect--ManageSections"
               closeMenuOnSelect={true}
@@ -145,7 +145,6 @@ class ManageSections extends React.Component<IProps, {}> {
                 icon={true}
                 disabled={lockedSectionChange}
                 onClick={this.props.deleteSection.bind(this.props, section.id)}
-                style={{ marginLeft: '40px' }}
               >
                 cancel
               </Button>
@@ -183,7 +182,12 @@ class ManageSections extends React.Component<IProps, {}> {
         <DataTable className="DataTable--ManageSections" baseId="Manage-sections-table" plain={true}>
           <TableHeader>
             <TableRow>
-              <TableColumn key={'sectionName'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+              <TableColumn
+                key={'sectionName'}
+                className="left-aligned"
+                sorted={sortedIndex[0]}
+                onClick={this.toggleSort.bind(this.props, 0)}
+              >
                 Section Name
               </TableColumn>
               <TableColumn key={'sectionLeaders'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>

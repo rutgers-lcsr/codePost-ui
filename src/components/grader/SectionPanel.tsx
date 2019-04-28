@@ -141,7 +141,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         if (sub) {
           return (
             <TableRow key={student} onClick={openSubmission.bind(this.props, sub.id)}>
-              <TableColumn>{student}</TableColumn>
+              <TableColumn className="left-aligned">{student}</TableColumn>
               <TableColumn>{sub.students.toString()}</TableColumn>
               <TableColumn className={sub.isFinalized ? 'table-cell--graded' : 'table-cell--unfinalized'}>
                 {sub.isFinalized ? String(sub.grade) : 'Unfinalized'}
@@ -154,7 +154,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         } else {
           return (
             <TableRow key={student}>
-              <TableColumn>{student}</TableColumn>
+              <TableColumn className="left-aligned">{student}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn className="table-cell--unsubmitted">{'--'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
@@ -191,7 +191,12 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         <DataTable className="table--section" plain={true}>
           <TableHeader>
             <TableRow>
-              <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+              <TableColumn
+                key={'Student'}
+                className="left-aligned"
+                sorted={sortedIndex[0]}
+                onClick={this.toggleSort.bind(this.props, 0)}
+              >
                 Student Name
               </TableColumn>
               <TableColumn key={'Submission Students'}>Submission Students</TableColumn>

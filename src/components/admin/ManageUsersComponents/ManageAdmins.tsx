@@ -104,7 +104,7 @@ class ManageStudents extends React.Component<IProps, {}> {
         }
         return (
           <TableRow key={admin}>
-            <TableColumn>{admin}</TableColumn>
+            <TableColumn className="left-aligned">{admin}</TableColumn>
             <TableColumn key={'UnEnroll'}>
               {' '}
               <Button
@@ -220,7 +220,7 @@ class ManageStudents extends React.Component<IProps, {}> {
         <DataTable className="DataTable--ManageUsers" baseId="Manage-admins-table" plain={true}>
           <TableHeader>
             <TableRow selectable={false}>
-              <TableColumn key={'Admin'} sorted={sortAscending} onClick={this.toggleSort}>
+              <TableColumn key={'Admin'} className="left-aligned" sorted={sortAscending} onClick={this.toggleSort}>
                 Admin name
               </TableColumn>
               <TableColumn key={'Unenroll'}>Unenroll user</TableColumn>
