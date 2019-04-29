@@ -21,6 +21,7 @@ const CourseV = t.intersection(
       showStudentsStatistics: t.boolean,
       timezone: t.string,
       emailNewUsers: t.boolean,
+      allowGradersToEditRubric: t.boolean,
     }),
   ],
   'Course',
@@ -36,6 +37,7 @@ const CourseVPatch = t.intersection(
       showStudentsStatistics: t.boolean,
       timezone: t.string,
       emailNewUsers: t.boolean,
+      allowGradersToEditRubric: t.boolean,
     }),
   ],
   'CoursePatch',
@@ -76,6 +78,22 @@ const RosterVPatch = t.intersection(
 
 type RosterType = t.TypeOf<typeof RosterV>;
 
+const CourseSettingsV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      sendReleasedSubmissionsToBack: t.boolean,
+      showStudentsStatistics: t.boolean,
+      timezone: t.string,
+      emailNewUsers: t.boolean,
+      allowGradersToEditRubric: t.boolean,
+    }),
+  ],
+  'CourseSettings',
+);
+
+type CourseSettingsType = t.TypeOf<typeof CourseSettingsV>;
+
 class Course {
   public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
@@ -84,6 +102,8 @@ class Course {
 
   public static readRoster = readObjectDetail(RosterV, 'courses', 'roster');
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
+
+  public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
 }
 
-export { CourseType, Course, RosterType, CoursePatchType, CourseV };
+export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };

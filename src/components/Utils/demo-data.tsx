@@ -59,12 +59,12 @@ const recursionSubs = (domain: string) => {
   ];
 };
 
-const demoSubmissions = (assnignmentName: string, domain: string) => {
-  if (assnignmentName === 'Hello World') {
+const demoSubmissions = (assignmentName: string, domain: string) => {
+  if (assignmentName === 'Hello World') {
     return helloSubs(domain);
-  } else if (assnignmentName === 'Loops') {
+  } else if (assignmentName === 'Loops') {
     return loopSubs(domain);
-  } else if (assnignmentName === 'Recursion') {
+  } else if (assignmentName === 'Recursion') {
     return recursionSubs(domain);
   }
 
@@ -82,6 +82,7 @@ const demoCourse = (testName: string) => {
     showStudentsStatistics: false,
     timezone: 'US/Eastern',
     emailNewUsers: false,
+    allowGradersToEditRubric: false,
   };
 };
 

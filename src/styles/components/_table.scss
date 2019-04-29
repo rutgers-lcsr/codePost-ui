@@ -130,3 +130,18 @@
     margin-top: 3px;
   }
 }
+
+.table--grader-edit-rubric {
+  &__row--disabled {
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: white;
+      cursor: not-allowed;
+    }
+  }
+
+  &__row {
+    cursor: pointer;
+  }
+}
