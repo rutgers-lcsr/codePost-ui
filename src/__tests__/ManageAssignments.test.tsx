@@ -26,6 +26,7 @@ describe('ManageAssignments', () => {
           timezone: 'US/Eastern',
           emailNewUsers: false,
         },
+        viewsBySubmission: {},
         assignments: [],
         assignmentsLoadComplete: true,
         assignmentRubricLoadComplete: true,

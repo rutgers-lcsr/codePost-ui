@@ -108,6 +108,7 @@ export interface IManageAssignmentsProps {
   setLoadingDialog: (message: string, title: string) => void;
   clearLoadingDialog: () => void;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  viewsBySubmission: { [submissionID: number]: string[] };
 }
 
 interface IManageAssignmentsState {
@@ -138,6 +139,7 @@ export enum DRAWER_TYPE {
   Ungraded,
   Unclaimed,
   Missing,
+  Unviewed,
 }
 
 class ManageAssignments extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
@@ -734,6 +736,24 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             },
             [],
           );
+        case DRAWER_TYPE.Unviewed:
+          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+            // Append a student if: (a) his/her submission has a History object
+            //                      (b) student's email is not in viewsBySubmission
+            //                      (c) student's submission is finalized
+            if (sub && sub.id in this.props.viewsBySubmission) {
+              sub.students.forEach((student) => {
+                if (
+                  !this.props.viewsBySubmission[sub.id].includes(student) &&
+                  submissionsByStudent[student][assignment.id] &&
+                  submissionsByStudent[student][assignment.id].isFinalized
+                ) {
+                  students.push({ email: student, subID: sub.id });
+                }
+              });
+            }
+            return students;
+          }, []);
       }
     };
 
@@ -752,6 +772,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           return `Unclaimed Submissions (${newContent.length})`;
         case DRAWER_TYPE.Missing:
           return `Students with missing submission (${newContent.length})`;
+        case DRAWER_TYPE.Unviewed:
+          return `Students who haven't viewed their finalized submissions (${newContent.length})`;
       }
     };
 
@@ -868,10 +890,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         //  numUngraded: number of submissions not yet graded or claimed
         //  numUnclaimed: (subset of numUngraded) submissions not claimed
         //  numMissing: number of students who did not submit
+        //  numUnviewed: number of students who have not viewed their submission
         let numGraded = 0;
         let numUngraded = 0;
         let numUnclaimed = 0;
         let totalScore = 0;
+        let numUnviewed = 0;
 
         const assignment = assignments.filter((assn) => {
           return assn.id === Number(assignmentID);
@@ -891,6 +915,21 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             numUngraded += 1;
           } else {
             numUnclaimed += 1;
+          }
+          // Only calculate unviewed, and show a drawer if the assignment is released
+          // Student is 'unviewed' if: (a) his/her submission has a History object
+          //                           (b) student's email is not in viewsBySubmission
+          //                           (c) student's submission is finalized
+          if (assignment.isReleased && submission.id in this.props.viewsBySubmission) {
+            submission.students.forEach((student) => {
+              if (
+                !this.props.viewsBySubmission[submission.id].includes(student) &&
+                submissionsByStudent[student][assignment.id] &&
+                submissionsByStudent[student][assignment.id].isFinalized
+              ) {
+                numUnviewed += 1;
+              }
+            });
           }
         });
 
@@ -962,6 +1001,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             <TableColumn
               key={`${assignmentID}-1`}
               style={{ cursor: 'pointer' }}
+              className="left-aligned"
               onClick={this.changeActiveAssignment.bind(this.props, assignment)}
             >
               {assignment.name}
@@ -1022,6 +1062,15 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             >
               {numMissing}
             </TableColumn>
+            <TableColumn
+              key={`${assignmentID}-8`}
+              onClick={
+                numUnviewed > 0 ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Unviewed) : dummyFunction
+              }
+              style={numUnviewed > 0 ? { cursor: 'pointer' } : {}}
+            >
+              {numUnviewed > 0 ? numUnviewed : '--'}
+            </TableColumn>
             <TableColumn key={`${assignmentID}-8`}>{mean}</TableColumn>
             <TableColumn key={`${assignmentID}-9`}>{median}</TableColumn>
             <MenuButtonColumn className="left-aligned" icon menuItems={menuItems}>
@@ -1080,6 +1129,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <TableColumn key={'UngradedNumber'}># in progress</TableColumn>
                   <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
                   <TableColumn key={'NumMissing'}>Students missing </TableColumn>
+                  <TableColumn key={'numUnviewed'}># unviewed </TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
                   <TableColumn className="left-aligned" key={'Menu'} />

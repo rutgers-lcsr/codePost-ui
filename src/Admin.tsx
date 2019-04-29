@@ -30,6 +30,7 @@ import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCateg
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { Section, SectionType } from './infrastructure/section';
 import { Submission, SubmissionType } from './infrastructure/submission';
+import { SubmissionHistoryType } from './infrastructure/submissionHistory';
 import { UserType } from './infrastructure/user';
 
 import { addToPayload } from './infrastructure/utils';
@@ -79,6 +80,7 @@ interface IAdminState {
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   submissionsbyUserLoadComplete: boolean;
+  viewsBySubmission: { [submissionID: number]: string[] };
 
   // Props for Enroll panels
   lockChanges: boolean;
@@ -153,6 +155,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     submissionsByInactiveStudent: {},
     submissionsByInactiveGrader: {},
     submissionsbyUserLoadComplete: false,
+    viewsBySubmission: {},
 
     lockChanges: true,
 
@@ -395,6 +398,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Initial data load functions  -------------------
   public loadAllCourseData = () => {
     this.loadSubmissions();
+    this.loadViewsBySubmission();
     this.loadAssignments();
     this.loadRoster();
   };
@@ -559,6 +563,41 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
         return Promise.reject();
       });
+  };
+
+  public loadViewsBySubmission = () => {
+    const { currentCourse } = this.state;
+    if (!currentCourse || !currentCourse.assignments) {
+      return;
+    }
+
+    const viewsBySubmission = {};
+    Promise.all(
+      currentCourse.assignments.map((assignmentID) => {
+        return Assignment.readSubmissionHistories(assignmentID).then((histories: SubmissionHistoryType[]) => {
+          histories.forEach((history: SubmissionHistoryType) => {
+            // History object has format of {submission: int, student: string, hasViewed: boolean}
+            const { submission, student, hasViewed } = history;
+            if (!(submission in viewsBySubmission)) {
+              viewsBySubmission[submission] = [];
+            }
+            if (hasViewed) {
+              viewsBySubmission[submission] = [...viewsBySubmission[submission], student];
+            }
+          });
+          this.setState({ viewsBySubmission }, () => {
+            return;
+          });
+        });
+      }),
+    ).catch((errors) => {
+      Object.keys(errors).forEach((key) => {
+        errors[key].forEach((error: string) => {
+          this.props.addErrorToast(error, undefined);
+        });
+      });
+      return Promise.reject();
+    });
   };
 
   public loadRoster = () => {
@@ -1761,6 +1800,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
             changeSubmissionGrader={this.changeSubmissionGrader}
             uploadSubmission={this.uploadSubmission}
+            viewsBySubmission={this.state.viewsBySubmission}
           />
         </div>
       );
@@ -1801,6 +1841,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
             students={this.state.students}
             uploadSubmission={this.uploadSubmission}
+            viewsBySubmission={this.state.viewsBySubmission}
           />
         </div>
       );

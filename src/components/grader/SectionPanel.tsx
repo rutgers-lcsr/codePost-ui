@@ -7,7 +7,7 @@ import { openSubmission } from '../admin/AdminUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { sortSubmissions, StudentSubmissionType, SubmissionType } from '../../infrastructure/submission';
+import { sortSubmissions, StudentSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
 
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
@@ -26,6 +26,8 @@ interface ISectionPanelState {
   // Beacuse we want to include students without submissions in our list, we need a student, submission|undefined array
   // It makes sense to leave this in state because it's slow to make copies and sort on every render
   sortedSubmissions: Array<[string, SubmissionType | undefined]>;
+  // Map of submission id to an array of student emails who have viewed the submission
+  viewsBySubmission: { [submissionID: number]: string[] };
 }
 
 class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelState> {
@@ -33,23 +35,24 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     submissionsBySection: {},
     activeSection: undefined,
     // SortedIndex index corresponds to columns: index 0 is email. Ignoring the 'students' column
-    sortedIndex: [true, undefined, undefined, undefined, undefined],
+    sortedIndex: [true, undefined, undefined, undefined, undefined, undefined],
     sortedSubmissions: [],
+    viewsBySubmission: {},
   };
 
   public async componentDidMount() {
-    const submissionsBySection = await this.loadSubmissionsForSection();
-    this.setState({ submissionsBySection });
+    const [submissionsBySection, viewsBySubmission] = await this.loadSubmissionsForSection();
+    this.setState({ submissionsBySection, viewsBySubmission });
 
     if (this.props.sectionsLed.length === 1) {
       this.handleSelect({ value: this.props.sectionsLed[0].id, label: this.props.sectionsLed[0].name });
     }
   }
-
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
     const submissionsBySection = {};
+    const viewsBySubmission = {};
     await Promise.all(
       this.props.sectionsLed.map((section: SectionType) => {
         return Promise.all(
@@ -66,16 +69,36 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
           }),
         ).then((studentToSubMap: any) => {
           const subsBySection = {};
-          studentToSubMap.forEach((sub: { student: string; submission: SubmissionType | null }) => {
-            subsBySection[sub.student] = sub.submission;
+          return Promise.all(
+            studentToSubMap.map(async (sub: { student: string; submission: SubmissionType | null }) => {
+              subsBySection[sub.student] = sub.submission;
+              if (sub.submission) {
+                // Get the submission history object
+                return Submission.readHistory(sub.submission.id, { student: sub.student }).then((history: any) => {
+                  // If there is no history object, there will be an empty array returned.
+                  // If there is a history object it will be [{submission: int, student: string, hasViewed: boolean}]
+                  if (history && history[0]) {
+                    const { submission, student, hasViewed } = history[0];
+                    if (!(submission in viewsBySubmission)) {
+                      viewsBySubmission[submission] = [];
+                    }
+                    if (hasViewed) {
+                      // If there are partners, there will be multiple histories for the same submission
+                      viewsBySubmission[submission] = [...viewsBySubmission[submission], student];
+                    }
+                  }
+                });
+              }
+            }),
+          ).then(() => {
+            submissionsBySection[section.id] = subsBySection;
+            return section;
           });
-          submissionsBySection[section.id] = subsBySection;
-          return section;
         });
       }),
     );
 
-    return submissionsBySection;
+    return [submissionsBySection, viewsBySubmission];
   };
 
   public handleSelect = (input: IOptionNumber) => {
@@ -127,6 +150,19 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     return sortSubmissions(sortAttribute, ascending, a[1], b[1]);
   }
 
+  public getViewIcon = (submission: SubmissionType, student: string) => {
+    if (!(submission.id in this.state.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or un finalized
+      return '--';
+    } else if (this.state.viewsBySubmission[submission.id].includes(student)) {
+      // case: submission has been viewed
+      return <FontIcon>visibility</FontIcon>;
+    } else {
+      // case: submission has not been viewed
+      return <FontIcon secondary>visibility_off</FontIcon>;
+    }
+  };
+
   public render() {
     const { activeSection, sortedSubmissions, sortedIndex } = this.state;
     let tableBody;
@@ -149,6 +185,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
               <TableColumn>{sub.grader}</TableColumn>
               <TableColumn>{sub.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
               <TableColumn>{moment(sub.dateEdited).format('llll')}</TableColumn>
+              <TableColumn>{this.getViewIcon(sub, student)}</TableColumn>
             </TableRow>
           );
         } else {
@@ -157,6 +194,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
               <TableColumn className="left-aligned">{student}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn className="table-cell--unsubmitted">{'--'}</TableColumn>
+              <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
               <TableColumn>{'---'}</TableColumn>
@@ -211,6 +249,9 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
               </TableColumn>
               <TableColumn key={'Last Edited'} sorted={sortedIndex[4]} onClick={this.toggleSort.bind(this.props, 4)}>
                 Last Edited
+              </TableColumn>
+              <TableColumn key={'Viewed'} sorted={sortedIndex[5]} onClick={this.toggleSort.bind(this.props, 5)}>
+                Viewed By Student
               </TableColumn>
             </TableRow>
           </TableHeader>

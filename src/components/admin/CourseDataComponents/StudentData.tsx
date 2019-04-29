@@ -33,6 +33,7 @@ interface IPropsStudentOverview {
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  viewsBySubmission: { [submissionID: number]: string[] };
 }
 
 interface IState {
@@ -148,6 +149,19 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
       const subToBeDeleted = this.state.deleteSub;
       this.setState({ deleteSub: null });
       this.props.deleteSubmission(subToBeDeleted);
+    }
+  };
+
+  public getViewIcon = (submission: SubmissionType, student: string) => {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or unfinalized
+      return '--';
+    } else if (this.props.viewsBySubmission[submission.id].includes(student)) {
+      // case: submission has been viewed
+      return <FontIcon>visibility</FontIcon>;
+    } else {
+      // case: submission has not been viewed
+      return <FontIcon secondary>visibility_off</FontIcon>;
     }
   };
 
@@ -305,6 +319,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
               {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
             </TableColumn>
+            <TableColumn onClick={cellClick}>{this.getViewIcon(submission, activeStudent)}</TableColumn>
             <TableColumn>
               <Button
                 key={`button--deleteSubmission-${submission.id}`}
@@ -320,8 +335,6 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           </TableRow>
         );
       });
-
-      console.log(activeStudent);
 
       return (
         <div>
@@ -353,6 +366,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
                 <TableColumn key="Grade">Grade</TableColumn>
                 <TableColumn key="Grader">Grader</TableColumn>
                 <TableColumn key="Finalized">Finalized</TableColumn>
+                <TableColumn key="hasViewed">Viewed by Student</TableColumn>
                 <TableColumn key="Delete">Delete</TableColumn>
               </TableRow>
             </TableHeader>

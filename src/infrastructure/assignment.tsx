@@ -4,6 +4,7 @@ import { createObject, deleteObject, GenericObject, readObject, readObjectDetail
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import { StudentSubmissionV, SubmissionV } from './submission';
+import { SubmissionHistoryV } from './submissionHistory';
 
 const AssignmentV = t.intersection(
   [
@@ -80,6 +81,11 @@ class Assignment {
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
   public static readSubmissionsStudent = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static readSubmissionHistories = readObjectDetail(
+    t.array(SubmissionHistoryV),
+    'assignments',
+    'submissionHistories',
+  );
 }
 
 const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
