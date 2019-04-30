@@ -46,8 +46,6 @@ import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 import { addToPayload } from './infrastructure/utils';
 
-
-
 interface IAdminState {
   currentCourse?: CourseType; // Course for selector
   loadedPanel?: number; // Which active_panel to load, enum
