@@ -58,5 +58,5 @@ class RubricComment {
     }
   };
 }
-
+                                  
 export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV };

@@ -12,6 +12,8 @@ import { CircularProgress, DialogContainer } from 'react-md';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 
+import queryString from 'query-string';
+
 /* codePost imports */
 
 /* components */
@@ -44,7 +46,7 @@ import { Submission, SubmissionType } from './infrastructure/submission';
 import { UserType } from './infrastructure/user';
 import { addToPayload } from './infrastructure/utils';
 
-/**********************************************************************************************************************/
+
 
 interface IAdminState {
   currentCourse?: CourseType; // Course for selector
@@ -114,6 +116,7 @@ interface IAdminProps {
   user: UserType;
   match: any;
   history: any;
+  location: any;
   addToast: (text: string, action: string | undefined) => void;
   addLongToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
@@ -168,7 +171,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     isLoading: false,
     loadingMessage: '',
     loadingTitle: '',
-    onboardingModalVisible: this.props.initialCourses.length === 0,
+    onboardingModalVisible:
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+      this.props.initialCourses.length === 0,
   };
 
   public panels: { [key: string]: string } = {
@@ -261,11 +266,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     this.setStateFromURL();
-    // this.interval = setInterval(() => {
-    //   if (this.state.currentCourse) {
-    //     this.loadAllCourseData();
-    //   }
-    // }, 20000);
+    this.interval = setInterval(() => {
+      if (this.state.currentCourse) {
+        this.loadAllCourseData();
+      }
+    }, 20000);
   }
 
   public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
@@ -297,7 +302,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     window.clearTimeout(this.interval);
 
     const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
-
     this.setState(
       {
         currentCourse,
@@ -337,15 +341,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         // Props for Enroll panels
         lockChanges: true,
-        onboardingModalVisible: false,
       },
       () => {
         this.loadAllCourseData();
-        // this.interval = setInterval(() => {
-        //   if (this.state.currentCourse) {
-        //     this.loadAllCourseData();
-        //   }
-        // }, 25000);
+        this.interval = setInterval(() => {
+          if (this.state.currentCourse) {
+            this.loadAllCourseData();
+          }
+        }, 25000);
       },
     );
   };
@@ -722,6 +725,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   };
 
+  public getFileExtension = (fileName: string): string => {
+    const split = fileName.split('.');
+    return split.length === 1 ? 'txt' : split[split.length - 1];
+  };
+
   // Upload a submission in cautious mode
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
@@ -759,8 +767,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
           // Create each file
           const filePromises = files.map((file: any) => {
-            const split = file.name.split('.');
-            const ext = split[split.length - 1];
+            const ext = this.getFileExtension(file.name);
             const filePayload = {
               id: -1,
               name: file.name,
@@ -1371,6 +1378,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public closeModal = () => {
     this.setState({ onboardingModalVisible: false });
+    this.props.history.push(this.props.location.pathname);
   };
 
   // ------------------- Render -------------------
@@ -1389,7 +1397,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         }
         const panelName = this.stringFromPanel(panel);
 
-        return <Redirect to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}`} />;
+        return (
+          <Redirect
+            to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}${this.props.location.search}`}
+          />
+        );
       }
     }
 

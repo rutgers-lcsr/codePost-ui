@@ -83,7 +83,7 @@ class UploadedFileCard extends React.Component<IProps, IState> {
     const { name, size, lastModified, data, type } = this.props.file;
 
     const split = name.split('.');
-    const extension = split[split.length - 1];
+    const extension = split.length === 1 ? 'txt' : split[split.length - 1];
 
     let content;
     // if (image) {

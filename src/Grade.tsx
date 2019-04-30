@@ -13,9 +13,11 @@ import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
 import { Course, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
+
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
 import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+
 import { UserType } from './infrastructure/user';
 
 interface IGradeState {
