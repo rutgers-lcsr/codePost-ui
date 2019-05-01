@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { Button, CircularProgress, DialogContainer } from 'react-md';
+import { Button, CircularProgress, DialogContainer, FontIcon } from 'react-md';
 import Select from 'react-select';
 
-// import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
-
+import { AssignmentType } from '../../../infrastructure/assignment';
 import { CommentIO } from '../../../infrastructure/comment';
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
@@ -16,6 +15,9 @@ interface IMergeRubricCommentsDialogProps {
   isDisabled: boolean;
   addToast: (text: string, action: string | undefined) => void;
   addErrorToast: (text: string, action: string | undefined) => void;
+
+  assignment: AssignmentType;
+  reloadRubric: (assignment: AssignmentType) => Promise<void>;
 }
 
 interface IMergeRubricCommentsDialogState {
@@ -87,9 +89,11 @@ class MergeRubricCommentsDialog extends React.Component<
       .then(() => {
         RubricComment.delete(this.state.fromComment!.id).then(() => {
           this.props.addToast('Successfully merged rubric comments.', undefined);
-          // FIXME: refresh rubric
-          this.closeDialog();
-          this.setState({ isLoading: false });
+
+          this.props.reloadRubric(this.props.assignment).then(() => {
+            this.closeDialog();
+            this.setState({ isLoading: false });
+          });
         });
       })
       // Otherwise undo the changes
@@ -211,19 +215,27 @@ class MergeRubricCommentsDialog extends React.Component<
                 <br />
                 <br />
               </div>
-              <Select
-                id="fromSelect"
-                options={groupedOptions}
-                value={currentFromCommentOption}
-                onChange={this.onChangeFromComment}
-              />
-              -->
-              <Select
-                id="toSelect"
-                options={groupedOptions}
-                value={currentToCommentOption}
-                onChange={this.onChangeToComment}
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ flex: '2 2 auto' }}>
+                  <Select
+                    id="fromSelect"
+                    options={groupedOptions}
+                    value={currentFromCommentOption}
+                    onChange={this.onChangeFromComment}
+                  />
+                </div>
+                <div style={{ flex: ' 0 0 50px', textAlign: 'center' }}>
+                  <FontIcon>forward</FontIcon>
+                </div>
+                <div style={{ flex: '2 2 auto' }}>
+                  <Select
+                    id="toSelect"
+                    options={groupedOptions}
+                    value={currentToCommentOption}
+                    onChange={this.onChangeToComment}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </DialogContainer>

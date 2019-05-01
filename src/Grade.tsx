@@ -11,7 +11,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course, CourseType, CourseSettingsType } from './infrastructure/course';
+import { Course, CourseSettingsType, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';

@@ -32,7 +32,6 @@ import { CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import MergeRubricCommentsDialog from './ManageAssignmentsComponents/MergeRubricCommentsDialog';
 import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
 
 import { openSubmission } from './AdminUtils';
@@ -119,8 +118,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   };
 
   /******************************************************************************
-   * Assignment stat calculation
-   ******************************************************************************/
+   Assignment stat calculation
+  *****************************************************************************/
 
   public memoizedStats = memoizeOne(
     (
