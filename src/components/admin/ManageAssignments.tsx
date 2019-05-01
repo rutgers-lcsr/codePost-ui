@@ -92,6 +92,7 @@ export interface IAssignmentStats {
   numUngraded: number;
   numUnclaimed: number;
   numMissing: number;
+  numUnviewed: number;
   median: number;
   mean: number;
 }
@@ -222,6 +223,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           numUngraded,
           numUnclaimed,
           numMissing,
+          numUnviewed,
           mean,
           median,
         };
@@ -280,6 +282,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             [],
           );
         case DRAWER_TYPE.Unviewed:
+          console.log(subs);
           return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
             // Append a student if: (a) his/her submission has a History object
             //                      (b) student's email is not in viewsBySubmission
@@ -577,12 +580,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               key={`${assignmentID}-8`}
               onClick={
                 statsForRow.numUnviewed > 0
-                  ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Unviewed)
+                  ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unviewed)
                   : dummyFunction
               }
               style={statsForRow.numUnviewed > 0 ? { cursor: 'pointer' } : {}}
             >
-              {statsForRow.numUnviewed > 0 ? statsForRow.numUnviewed : '--'}
+              {assignment.isReleased ? statsForRow.numUnviewed : '--'}
             </TableColumn>
             <TableColumn key={`${assignmentID}-9`}>{statsForRow.numGraded > 0 ? statsForRow.mean : '--'}</TableColumn>
             <TableColumn key={`${assignmentID}-10`}>
