@@ -66,6 +66,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  viewsBySubmission: { [submissionID: number]: string[] };
 }
 
 export enum DETAIL_TYPE {
@@ -82,6 +83,7 @@ export enum DRAWER_TYPE {
   Ungraded,
   Unclaimed,
   Missing,
+  Unviewed,
 }
 
 export interface IAssignmentStats {
@@ -141,6 +143,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         let numUngraded = 0;
         let numUnclaimed = 0;
         let totalScore = 0;
+        let numUnviewed = 0;
 
         assignmentSubs.forEach((submission: SubmissionType) => {
           if (submission.isFinalized) {
@@ -152,6 +155,21 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             numUngraded += 1;
           } else {
             numUnclaimed += 1;
+          }
+          // Only calculate unviewed, and show a drawer if the assignment is released
+          // Student is 'unviewed' if: (a) his/her submission has a History object
+          //                           (b) student's email is not in viewsBySubmission
+          //                           (c) student's submission is finalized
+          if (assignment.isReleased && submission.id in this.props.viewsBySubmission) {
+            submission.students.forEach((student) => {
+              if (
+                !this.props.viewsBySubmission[submission.id].includes(student) &&
+                submissionsByStudent[student][assignment.id] &&
+                submissionsByStudent[student][assignment.id].isFinalized
+              ) {
+                numUnviewed += 1;
+              }
+            });
           }
         });
 
@@ -261,6 +279,24 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             },
             [],
           );
+        case DRAWER_TYPE.Unviewed:
+          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+            // Append a student if: (a) his/her submission has a History object
+            //                      (b) student's email is not in viewsBySubmission
+            //                      (c) student's submission is finalized
+            if (sub && sub.id in this.props.viewsBySubmission) {
+              sub.students.forEach((student) => {
+                if (
+                  !this.props.viewsBySubmission[sub.id].includes(student) &&
+                  submissionsByStudent[student][assignment.id] &&
+                  submissionsByStudent[student][assignment.id].isFinalized
+                ) {
+                  students.push({ email: student, subID: sub.id });
+                }
+              });
+            }
+            return students;
+          }, []);
       }
     };
 
@@ -279,6 +315,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           return `Unclaimed Submissions (${newContent.length})`;
         case DRAWER_TYPE.Missing:
           return `Students with missing submission (${newContent.length})`;
+        case DRAWER_TYPE.Unviewed:
+          return `Students who haven't viewed their finalized submissions (${newContent.length})`;
       }
     };
 
@@ -467,6 +505,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             <TableColumn
               key={`${assignmentID}-1`}
               style={{ cursor: 'pointer' }}
+              className="left-aligned"
               onClick={this.changeDetailType.bind(this.props, DETAIL_TYPE.Rubric, assignment)}
             >
               {assignment.name}
@@ -534,9 +573,22 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             >
               {statsForRow.numMissing}
             </TableColumn>
-            <TableColumn key={`${assignmentID}-8`}>{statsForRow.numGraded > 0 ? statsForRow.mean : '--'}</TableColumn>
-            <TableColumn key={`${assignmentID}-9`}>{statsForRow.numGraded > 0 ? statsForRow.median : '--'}</TableColumn>
-            <MenuButtonColumn icon menuItems={menuItems}>
+            <TableColumn
+              key={`${assignmentID}-8`}
+              onClick={
+                statsForRow.numUnviewed > 0
+                  ? this.openDrawer.bind(this, assignment.id, DRAWER_TYPE.Unviewed)
+                  : dummyFunction
+              }
+              style={statsForRow.numUnviewed > 0 ? { cursor: 'pointer' } : {}}
+            >
+              {statsForRow.numUnviewed > 0 ? statsForRow.numUnviewed : '--'}
+            </TableColumn>
+            <TableColumn key={`${assignmentID}-9`}>{statsForRow.numGraded > 0 ? statsForRow.mean : '--'}</TableColumn>
+            <TableColumn key={`${assignmentID}-10`}>
+              {statsForRow.numGraded > 0 ? statsForRow.median : '--'}
+            </TableColumn>
+            <MenuButtonColumn className="left-aligned" icon menuItems={menuItems}>
               more_vert
             </MenuButtonColumn>
           </TableRow>
@@ -606,19 +658,22 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         <div className="padding" />
         {loadComplete ? (
           <div>
-            <DataTable className="Manage-assignments-table" baseId="Manage-assignments-table" plain={true}>
+            <DataTable className="DataTable--ManageAssignments" baseId="DataTable--ManageAssignments" plain={true}>
               <TableHeader>
                 <TableRow>
-                  <TableColumn key={'AssignmentName'}>Assignment</TableColumn>
+                  <TableColumn className="left-aligned" key={'AssignmentName'}>
+                    Assignment
+                  </TableColumn>
                   <TableColumn key={'Publish'}>Published</TableColumn>
                   <TableColumn key={'SubNumber'}># submissions</TableColumn>
                   <TableColumn key={'GradedNumber'}># finalized</TableColumn>
                   <TableColumn key={'UngradedNumber'}># in progress</TableColumn>
                   <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
                   <TableColumn key={'NumMissing'}>Students missing </TableColumn>
+                  <TableColumn key={'numUnviewed'}># unviewed </TableColumn>
                   <TableColumn key={'Mean'}>Mean Grade</TableColumn>
                   <TableColumn key={'Median'}>Median Grade</TableColumn>
-                  <TableColumn key={'Menu'} />
+                  <TableColumn className="left-aligned" key={'Menu'} />
                 </TableRow>
               </TableHeader>
               <TableBody>{tableBody}</TableBody>

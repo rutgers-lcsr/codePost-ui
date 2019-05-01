@@ -155,6 +155,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
   // Handlers
   ///////////////////////////////////////
+  public markViewed = async (submission: StudentSubmissionType) => {
+    // Get the history
+    const history = await Submission.readHistory(submission.id, { student: this.props.email });
+    // If it has a history object, and has not been viewed, mark it as viewed
+    if (history && history[0] && !history[0].hasViewed) {
+      return await Submission.updateHistory({ id: submission.id, hasViewed: true }, { student: this.props.email });
+    }
+    // If empty, this submission does not have a history object. It was created before tracking was implemented
+    return;
+  };
 
   public handleAssignmentChange = (option: IOption, event: any) => {
     const { assignments, currentCourse } = this.state;
@@ -175,6 +185,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
         if (currentSubmission) {
           const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
+          // Mark submission as viewed
+          this.markViewed(currentSubmission);
           // @ts-ignore
           this.setState({
             files,

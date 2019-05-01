@@ -240,7 +240,7 @@ class ManageGraders extends React.Component<IProps, IState> {
 
         return (
           <TableRow key={grader}>
-            <TableColumn>{grader}</TableColumn>
+            <TableColumn className="left-aligned">{grader}</TableColumn>
             <TableColumn>
               <SelectionControl
                 id={`togglegrader-${grader}`}
@@ -371,7 +371,12 @@ class ManageGraders extends React.Component<IProps, IState> {
           )}
           <TableHeader>
             <TableRow>
-              <TableColumn key={'Grader'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+              <TableColumn
+                key={'Grader'}
+                className="left-aligned"
+                sorted={sortedIndex[0]}
+                onClick={this.toggleSort.bind(this.props, 0)}
+              >
                 Grader name
               </TableColumn>
               <TableColumn key={'isSuperGrader'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>

@@ -301,7 +301,7 @@ class ManageStudents extends React.Component<IProps, IState> {
 
         return (
           <TableRow key={student}>
-            <TableColumn>{student}</TableColumn>
+            <TableColumn className="left-aligned">{student}</TableColumn>
             {sectionSelect}
             <TableColumn key={'UnEnroll'}>
               <Button
@@ -385,7 +385,12 @@ class ManageStudents extends React.Component<IProps, IState> {
             )}
             <TableHeader>
               <TableRow selectable={false}>
-                <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+                <TableColumn
+                  key={'Student'}
+                  className="left-aligned"
+                  sorted={sortedIndex[0]}
+                  onClick={this.toggleSort.bind(this.props, 0)}
+                >
                   Student
                 </TableColumn>
                 <TableColumn key={'Section'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
