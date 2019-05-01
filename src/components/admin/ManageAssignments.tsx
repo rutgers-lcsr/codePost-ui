@@ -464,7 +464,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
         return (
           <TableRow key={assignmentID}>
-            <TableColumn key={`${assignmentID}-1`}>{assignment.name}</TableColumn>
+            <TableColumn
+              key={`${assignmentID}-1`}
+              style={{ cursor: 'pointer' }}
+              onClick={this.changeDetailType.bind(this.props, DETAIL_TYPE.Rubric, assignment)}
+            >
+              {assignment.name}
+            </TableColumn>
             <TableColumn key={`${assignmentID}-2`}>
               <SelectionControl
                 id={`${assignmentID}-release-checkbox`}
