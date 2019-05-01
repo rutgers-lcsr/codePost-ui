@@ -184,7 +184,8 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 className="CourseSettings__settingItem__control"
                 defaultChecked={allowGradersToEditRubric}
                 onChange={this.toggleValue.bind(this.props, 'allowGradersToEditRubric')}
-                aria-label={'Allow graders to edit rubric'}/>
+                aria-label={'Allow graders to edit rubric'}
+              />
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
