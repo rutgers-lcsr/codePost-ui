@@ -34,6 +34,7 @@ import { RubricCommentType, sortRubricComment } from '../../infrastructure/rubri
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
+import MergeRubricCommentsDialog from './ManageAssignmentsComponents/MergeRubricCommentsDialog';
 import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
 
 import { openSubmission } from './AdminUtils';
@@ -1299,6 +1300,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 />
               </div>
             </div>
+            <MergeRubricCommentsDialog
+              isDisabled={this.props.lockManageAssignment}
+              rubricCategories={this.state.activeRubricCategories ? this.state.activeRubricCategories : []}
+              rubricComments={this.state.activeRubricComments ? this.state.activeRubricComments : {}}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+            />
             <RubricFileDialog
               activeAssignment={this.state.activeAssignment}
               activeRubricComments={this.state.activeRubricComments}

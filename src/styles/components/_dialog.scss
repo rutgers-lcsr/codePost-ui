@@ -75,4 +75,10 @@
       display: flex;
     }
   }
+
+  &--merge-comments {
+    .md-dialog-content {
+      overflow: visible;
+    }
+  }
 }
