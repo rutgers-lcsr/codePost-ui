@@ -282,7 +282,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             [],
           );
         case DRAWER_TYPE.Unviewed:
-          console.log(subs);
           return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
             // Append a student if: (a) his/her submission has a History object
             //                      (b) student's email is not in viewsBySubmission
