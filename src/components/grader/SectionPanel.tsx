@@ -1,7 +1,27 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
-import { CircularProgress, DataTable, FontIcon, TableBody, TableColumn, TableHeader, TableRow } from 'react-md';
+
+/* react-md imports */
+import {
+  CircularProgress,
+  DataTable,
+  FontIcon,
+  SelectionControl,
+  TableBody,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from 'react-md';
+
+/* other library imports */
+import * as moment from 'moment';
 import Select from 'react-select';
 
+/* codePost imports */
 import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -12,7 +32,7 @@ import { sortSubmissions, StudentSubmissionType, Submission, SubmissionType } fr
 import { IOptionNumber } from '../../types/common';
 import { compare, getSortIndex } from '../Utils/SortUtils';
 
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface ISectionPanelProps {
   currentCourse: CourseType;
@@ -28,6 +48,7 @@ interface ISectionPanelState {
   sortedSubmissions: Array<[string, SubmissionType | undefined]>;
   // Map of submission id to an array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: string[] };
+  showStudentEmails: boolean;
 }
 
 class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelState> {
@@ -38,6 +59,7 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     sortedIndex: [true, undefined, undefined, undefined, undefined, undefined],
     sortedSubmissions: [],
     viewsBySubmission: {},
+    showStudentEmails: false,
   };
 
   public async componentDidMount() {
@@ -48,6 +70,13 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
       this.handleSelect({ value: this.props.sectionsLed[0].id, label: this.props.sectionsLed[0].name });
     }
   }
+
+  public toggleShowStudentEmails = () => {
+    this.setState({
+      showStudentEmails: !this.state.showStudentEmails,
+    });
+  };
+
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
@@ -167,18 +196,19 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     const { activeSection, sortedSubmissions, sortedIndex } = this.state;
     let tableBody;
     let title;
+    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+
     if (this.props.sectionsLed.length === 0) {
       // Sections haven't been loaded yet
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else if (this.props.sectionsLed.length === 1 || activeSection) {
       title = `Submissions for ${activeSection ? activeSection.name : ''}`;
-
       tableBody = sortedSubmissions.map(([student, sub]) => {
         if (sub) {
           return (
             <TableRow key={student} onClick={openSubmission.bind(this.props, sub.id)}>
-              <TableColumn className="left-aligned">{student}</TableColumn>
-              <TableColumn>{sub.students.toString()}</TableColumn>
+              <TableColumn className="left-aligned">{showingEmails ? student : '----'}</TableColumn>
+              <TableColumn>{showingEmails ? sub.students.toString() : sub.id}</TableColumn>
               <TableColumn className={sub.isFinalized ? 'table-cell--graded' : 'table-cell--unfinalized'}>
                 {sub.isFinalized ? String(sub.grade) : 'Unfinalized'}
               </TableColumn>
@@ -213,17 +243,41 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         return { value: section.id, label: section.name };
       });
       selectContent = (
-        <Select
-          classNamePrefix="select--grader-section"
-          closeMenuOnSelect={true}
-          options={menuItems}
-          onChange={this.handleSelect}
-          placeholder="Select Section..."
-        />
+        <div style={{ display: 'inline-block', width: '20%' }}>
+          <Select
+            classNamePrefix="select--grader-section"
+            closeMenuOnSelect={true}
+            options={menuItems}
+            onChange={this.handleSelect}
+            placeholder="Select Section..."
+          />
+        </div>
       );
     }
+
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (this.props.currentAssignment.anonymousGrading) {
+      anonymousToggle = (
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={showingEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="grader__section-panel">
+        {anonymousToggle}
         {selectContent}
         <div className="grader__section-panel__title">{title}</div>
         <DataTable className="table--section" plain={true}>

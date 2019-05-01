@@ -8,7 +8,7 @@ import CodePanelUtils from './CodePanelUtils';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 import Code from './Code';
 import MarkdownCode from './MarkdownCode';
@@ -20,7 +20,7 @@ const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
 
 export interface ICodePanelProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   files: FileType[];
   comments: IFileToCommentsMap;
   rubricComments: ICommentToRubricCommentMap;
@@ -155,6 +155,13 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
                   return line.replace(']', ']\n').trim();
                 })
                 .join('');
+              markdown += '\n```\n';
+            }
+          }
+          if (output.output_type === 'error') {
+            if (output.traceback) {
+              markdown += '\n```output\nERRORS --->\n\n';
+              markdown += output.traceback.join('\n');
               markdown += '\n```\n';
             }
           }

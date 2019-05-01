@@ -19,6 +19,7 @@ interface IState {
   showStudentsStatistics: boolean;
   timezone: string;
   emailNewUsers: boolean;
+  anonymousGradingDefault: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
@@ -27,6 +28,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     showStudentsStatistics: this.props.currentCourse.showStudentsStatistics,
     timezone: this.props.currentCourse.timezone,
     emailNewUsers: this.props.currentCourse.emailNewUsers,
+    anonymousGradingDefault: this.props.currentCourse.anonymousGradingDefault,
   };
 
   public toggleValue = (label: string) => {
@@ -59,13 +61,20 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       emailNewUsers: this.state.emailNewUsers,
       assignments: [], // ignored by API
       sections: [], // ignored by API
+      anonymousGradingDefault: this.state.anonymousGradingDefault,
     };
 
     this.props.updateSettings(payload);
   };
 
   public render() {
-    const { sendReleasedSubmissionsToBack, showStudentsStatistics, timezone, emailNewUsers } = this.state;
+    const {
+      sendReleasedSubmissionsToBack,
+      showStudentsStatistics,
+      timezone,
+      emailNewUsers,
+      anonymousGradingDefault,
+    } = this.state;
     const timezoneOptions = timezones.map((el) => {
       return { label: el, value: el };
     });
@@ -135,6 +144,24 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 defaultChecked={emailNewUsers}
                 onChange={this.toggleValue.bind(this.props, 'emailNewUsers')}
                 aria-label={'Email users when added to roster'}
+              />
+            </div>
+            <div className="CourseSettings__settingItem">
+              <div className="CourseSettings__settingItem__content">
+                <div className="CourseSettings__settingItem__name">Default to Anonymous Grading Mode</div>
+                <div className="CourseSettings__settingItem__description">
+                  If selected, new Assignments will default to Anonymous Grading Mode. You can toggle this setting at
+                  the assignment level from Assignment settings.
+                </div>
+              </div>
+              <SelectionControl
+                id="toggleAnonymousSetting"
+                type="switch"
+                name="CourseSettings__Anonymous"
+                className="CourseSettings__settingItem__control"
+                defaultChecked={anonymousGradingDefault}
+                onChange={this.toggleValue.bind(this.props, 'anonymousGradingDefault')}
+                aria-label={'Hide student information from graders'}
               />
             </div>
             <div className="CourseSettings__settingItem">

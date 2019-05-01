@@ -1,16 +1,28 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import {
   CircularProgress,
   DataTable,
   FontIcon,
+  SelectionControl,
   TableBody,
   TableColumn,
   TableHeader,
   TableRow,
   Tooltipped,
 } from 'react-md';
+
+/* other library imports */
+import * as moment from 'moment';
 import Select from 'react-select';
 
+/* codePost imports */
 import { openSubmission } from '../admin/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -21,7 +33,7 @@ import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { IOptionNumber } from '../../types/common';
 import { getSortIndex } from '../Utils/SortUtils';
 
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface IViewAllProps {
   currentCourse: CourseType;
@@ -34,6 +46,7 @@ interface IViewAllState {
   isLoading: boolean;
   viewsBySubmission: { [submissionID: number]: string[] };
   sortedIndex: Array<boolean | undefined>;
+  showStudentEmails: boolean;
 }
 
 class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
@@ -43,6 +56,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     selectedGraders: [],
     viewsBySubmission: {},
     isLoading: true,
+    showStudentEmails: false,
 
     // SortedIndex index corresponds to columns: index 0 is email. Length must equal number of columns
     sortedIndex: [true, undefined, undefined, undefined, undefined, undefined],
@@ -76,6 +90,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         return viewsBySubmission;
       },
     );
+  };
+
+  public toggleShowStudentEmails = () => {
+    this.setState({
+      showStudentEmails: !this.state.showStudentEmails,
+    });
   };
 
   public handleSelect = (input: IOptionNumber[]) => {
@@ -139,6 +159,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   public render() {
     const { graders, submissions, selectedGraders, sortedIndex } = this.state;
     let tableBody;
+    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+
     if (this.state.isLoading) {
       tableBody = <CircularProgress id="progress" className="progress-circle" />;
     } else {
@@ -154,7 +176,9 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-            <TableColumn className="left-aligned">{submission.students.toString()}</TableColumn>
+            <TableColumn className="left-aligned">
+              {showingEmails ? submission.students.toString() : submission.id}
+            </TableColumn>
             <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
@@ -169,8 +193,29 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       return { value: grader, label: grader };
     });
 
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (this.props.currentAssignment.anonymousGrading) {
+      anonymousToggle = (
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={showingEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="grader__view-all">
+        {anonymousToggle}
         <Select
           classNamePrefix="multiselect--view-all"
           closeMenuOnSelect={false}

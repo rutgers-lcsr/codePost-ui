@@ -1,33 +1,55 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* react-md imports */
 import {
   Button,
   CircularProgress,
   DataTable,
   DialogContainer,
   FontIcon,
+  SelectionControl,
   TableBody,
   TableColumn,
   TableHeader,
   TableRow,
 } from 'react-md';
+
+/* other library imports */
+import * as moment from 'moment';
+import Select from 'react-select';
+
+/* codePost imports */
 import { BUTTON_STATE } from '../../types/common';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';
-import { sortSubmissions, SUBMISSION_SORT_TYPE, SubmissionType } from '../../infrastructure/submission';
+import {
+  AnonymousSubmissionType,
+  sortSubmissions,
+  SUBMISSION_SORT_TYPE,
+  SubmissionType,
+} from '../../infrastructure/submission';
 import { getSortIndex } from '../Utils/SortUtils';
 
-import Select from 'react-select';
-
-import * as moment from 'moment';
+/**********************************************************************************************************************/
 
 interface IGraderAssignmentPanelProps {
   assignment?: AssignmentType;
+  canViewSubmissionInfo: boolean;
   sections: SectionType[];
-  submissions: SubmissionType[];
+  submissions: AnonymousSubmissionType[];
+  isAnonymous: boolean;
   isLoadingSubmissions: boolean;
-  claimSubmission: (assignment: AssignmentType, sections: SectionType[]) => Promise<SubmissionType | undefined>;
-  releaseSubmission: (submission: SubmissionType) => Promise<SubmissionType>;
+  claimSubmission: (
+    assignment: AssignmentType,
+    sections: SectionType[],
+  ) => Promise<AnonymousSubmissionType | undefined>;
+  releaseSubmission: (submission: SubmissionType) => Promise<AnonymousSubmissionType>;
 }
 
 interface IGraderAssignmentPanelState {
@@ -35,10 +57,12 @@ interface IGraderAssignmentPanelState {
   currentSections: SectionType[];
 
   ascending?: boolean;
-  sortedSubmissions: SubmissionType[];
+  sortedSubmissions: AnonymousSubmissionType[];
 
-  releasedSubmission?: SubmissionType;
+  releasedSubmission?: AnonymousSubmissionType;
   sortedIndex: Array<boolean | undefined>;
+
+  showStudentEmails: boolean;
 }
 
 class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
@@ -50,6 +74,8 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     sortedSubmissions: this.props.submissions,
     releasedSubmission: undefined,
     sortedIndex: [undefined, undefined, undefined, undefined],
+
+    showStudentEmails: false,
   };
 
   public componentDidUpdate(prevProps: IGraderAssignmentPanelProps, prevState: IGraderAssignmentPanelState) {
@@ -86,7 +112,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     return sortSubmissions(sortAttributeMap[sortAttribute], ascending, a, b);
   };
 
-  public openGradePage = (submission: SubmissionType) => {
+  public openGradePage = (submission: AnonymousSubmissionType) => {
     window.open(`/grade/${submission.id}`);
   };
 
@@ -167,7 +193,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     }
 
     return (
-      <div className="grader__get-another">
+      <div className="grader__get-another" style={{ display: 'inline-block' }}>
         {claimButton}
         <SelectSection
           sections={this.props.sections}
@@ -178,11 +204,20 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
     );
   };
 
+  public toggleShowStudentEmails = () => {
+    this.setState({
+      showStudentEmails: !this.state.showStudentEmails,
+    });
+  };
+
   public render() {
-    const { assignment, isLoadingSubmissions } = this.props;
+    const { assignment, isLoadingSubmissions, isAnonymous } = this.props;
     const { sortedIndex } = this.state;
 
-    const headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
+    let headers = ['Student(s)', 'Grade', 'Finalized', 'Date Edited', 'Release'];
+    if (isAnonymous) {
+      headers = ['ID <anonymized>', 'Grade', 'Finalized', 'Date Edited', 'Release'];
+    }
 
     const style = {
       cursor: 'pointer',
@@ -197,10 +232,33 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
       return <CircularProgress id="progress" className="progress-circle" />;
     }
 
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (this.props.isAnonymous && this.props.canViewSubmissionInfo) {
+      anonymousToggle = (
+        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+          Reveal students:
+          <SelectionControl
+            id="toggleShowStudents"
+            name="toggleShowStudents"
+            type="switch"
+            className="toggleShowStudents"
+            defaultChecked={this.state.showStudentEmails}
+            onChange={this.toggleShowStudentEmails}
+            aria-label={'Reveal student emails'}
+            style={{ display: 'inline-block' }}
+          />
+        </div>
+      );
+    }
+
+    const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
+
     if (assignment) {
       return (
         <div>
           {getAnotherSubmissionButton}
+          {anonymousToggle}
           <DataTable className="data-table--grader" plain={true}>
             <TableHeader>
               <TableRow>
@@ -224,7 +282,7 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
                   <TableRow key={submission.id} style={style}>
                     {/****** consider making each column its own component to prevent binds */}
                     <TableColumn className="left-aligned" onClick={this.openGradePage.bind(this, submission)}>
-                      {submission.students.join(', ')}
+                      {showingEmails && submission.students ? submission.students.join(', ') : submission.id}
                     </TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>{submission.grade}</TableColumn>
                     <TableColumn onClick={this.openGradePage.bind(this, submission)}>
@@ -251,7 +309,10 @@ class GraderAssignmentPanel extends React.Component<IGraderAssignmentPanelProps,
           >
             <div>
               Are you sure that you want to release this submission?
-              {this.state.releasedSubmission ? ` (${this.state.releasedSubmission.students.join('/')})` : ''}.
+              {this.state.releasedSubmission && this.state.releasedSubmission.students && !this.props.isAnonymous
+                ? ` (${this.state.releasedSubmission.students.join('/')})`
+                : ''}
+              <br />.
             </div>
             <Button onClick={this.toggleReleaseDialog.bind(this.props, undefined)} primary={false} flat={true}>
               Cancel
