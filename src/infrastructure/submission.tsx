@@ -7,6 +7,10 @@ import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 
+/*****************************************************************************/
+/* Type Definitions
+/*****************************************************************************/
+
 const SubmissionV = t.intersection(
   [
     GenericObject,
@@ -17,8 +21,6 @@ const SubmissionV = t.intersection(
       assignment: t.number,
       dateEdited: t.string,
       grade: t.union([t.number, t.null]),
-    }),
-    t.partial({
       grader: t.union([t.string, t.null]),
     }),
   ],
@@ -71,17 +73,39 @@ const SubmissionVPatch = t.intersection(
   'SubmissionPatch',
 );
 
+const AnonymousSubmissionV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      isFinalized: t.boolean,
+      files: t.array(t.number),
+      assignment: t.number,
+      dateEdited: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+    }),
+    t.partial({
+      students: t.array(t.string),
+    }),
+  ],
+  'Submission',
+);
+
 type SubmissionType = t.TypeOf<typeof SubmissionV>;
 type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
+type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
+
+/*****************************************************************************/
 
 class Submission {
   public static create = createObject(SubmissionV, SubmissionVPost, 'submissions');
   public static read = readObject(SubmissionV, 'submissions');
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
+  public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
 
   public static loadData = async (
-    submission: SubmissionType | StudentSubmissionType,
+    submission: SubmissionType | StudentSubmissionType | AnonymousSubmissionType,
   ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
     if (!submission.files) {
       return [[], {}, {}];
@@ -151,4 +175,13 @@ function sortSubmissions(sortType: SUBMISSION_SORT_TYPE, ascending: boolean, a: 
   return 0;
 }
 
-export { SubmissionType, Submission, SubmissionV, StudentSubmissionV, StudentSubmissionType, sortSubmissions };
+export {
+  SubmissionType,
+  Submission,
+  SubmissionV,
+  StudentSubmissionV,
+  StudentSubmissionType,
+  sortSubmissions,
+  AnonymousSubmissionType,
+  AnonymousSubmissionV,
+};

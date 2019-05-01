@@ -6,10 +6,10 @@ import { Button, DialogContainer } from 'react-md';
 
 import { CommentIO, CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 interface IFinalizeProps {
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   comments: IFileToCommentsMap;
   toggleFinalized: any;
   updateSubmissionGrade: any;
@@ -75,7 +75,7 @@ export class Finalize extends React.Component<IFinalizeProps, IFinalizeState> {
 
   public toggle = () => {
     const { toggleFinalized } = this.props;
-    toggleFinalized().then((submission: SubmissionType) => {
+    toggleFinalized().then((submission: AnonymousSubmissionType) => {
       if (!submission) {
         this.setState({ buttonState: BUTTON_STATE.Active });
       } else if (submission.isFinalized) {

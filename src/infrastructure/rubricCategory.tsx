@@ -29,25 +29,21 @@ const RubricCategoryVPatch = t.intersection(
 );
 
 type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
+type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
 
 class RubricCategory {
   public static create = createObject(RubricCategoryV, RubricCategoryV, 'rubricCategories');
   public static read = readObject(RubricCategoryV, 'rubricCategories');
   public static update = updateObject(RubricCategoryV, RubricCategoryVPatch, 'rubricCategories');
   public static delete = deleteObject(RubricCategoryV, 'rubricCategories');
-}
 
-const sortRubricCategory = (rubricCategories: RubricCategoryType[]): RubricCategoryType[] => {
-  // First sort by RubricCategory 'sortKey', then by ID
-  const compareRubricCategories = (a: RubricCategoryType, b: RubricCategoryType) => {
+  public static compare = (a: RubricCategoryType, b: RubricCategoryType) => {
     if (a.sortKey === b.sortKey) {
       return a.id - b.id;
     } else {
       return a.sortKey - b.sortKey;
     }
   };
+}
 
-  return rubricCategories.sort(compareRubricCategories);
-};
-
-export { RubricCategoryType, RubricCategory, RubricCategoryV, RubricCategoryVPatch, sortRubricCategory };
+export { RubricCategoryType, RubricCategoryPatchType, RubricCategory, RubricCategoryV, RubricCategoryVPatch };

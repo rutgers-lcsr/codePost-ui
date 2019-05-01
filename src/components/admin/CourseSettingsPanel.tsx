@@ -19,6 +19,7 @@ interface IState {
   showStudentsStatistics: boolean;
   timezone: string;
   emailNewUsers: boolean;
+  anonymousGradingDefault: boolean;
   allowGradersToEditRubric: boolean;
 }
 
@@ -28,6 +29,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     showStudentsStatistics: this.props.currentCourse.showStudentsStatistics,
     timezone: this.props.currentCourse.timezone,
     emailNewUsers: this.props.currentCourse.emailNewUsers,
+    anonymousGradingDefault: this.props.currentCourse.anonymousGradingDefault,
     allowGradersToEditRubric: this.props.currentCourse.allowGradersToEditRubric,
   };
 
@@ -62,6 +64,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       allowGradersToEditRubric: this.state.allowGradersToEditRubric,
       assignments: [], // ignored by API
       sections: [], // ignored by API
+      anonymousGradingDefault: this.state.anonymousGradingDefault,
     };
 
     this.props.updateSettings(payload);
@@ -73,6 +76,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       showStudentsStatistics,
       timezone,
       emailNewUsers,
+      anonymousGradingDefault,
       allowGradersToEditRubric,
     } = this.state;
     const timezoneOptions = timezones.map((el) => {
@@ -148,6 +152,24 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
+                <div className="CourseSettings__settingItem__name">Default to Anonymous Grading Mode</div>
+                <div className="CourseSettings__settingItem__description">
+                  If selected, new Assignments will default to Anonymous Grading Mode. You can toggle this setting at
+                  the assignment level from Assignment settings.
+                </div>
+              </div>
+              <SelectionControl
+                id="toggleAnonymousSetting"
+                type="switch"
+                name="CourseSettings__Anonymous"
+                className="CourseSettings__settingItem__control"
+                defaultChecked={anonymousGradingDefault}
+                onChange={this.toggleValue.bind(this.props, 'anonymousGradingDefault')}
+                aria-label={'Hide student information from graders'}
+              />
+            </div>
+            <div className="CourseSettings__settingItem">
+              <div className="CourseSettings__settingItem__content">
                 <div className="CourseSettings__settingItem__name">Allow graders to edit rubric</div>
                 <div className="CourseSettings__settingItem__description">
                   If selected, graders will have the option to add, update, and delete unlinked assignment rubric
@@ -162,8 +184,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 className="CourseSettings__settingItem__control"
                 defaultChecked={allowGradersToEditRubric}
                 onChange={this.toggleValue.bind(this.props, 'allowGradersToEditRubric')}
-                aria-label={'Allow graders to edit rubric'}
-              />
+                aria-label={'Allow graders to edit rubric'}/>
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
