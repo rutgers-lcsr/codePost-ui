@@ -1,7 +1,15 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* other library imports */
 import { Redirect } from 'react-router-dom';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
+/* codePost imports */
 import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
 import SectionPanel from './components/grader/SectionPanel';
 import ViewAllPanel from './components/grader/ViewAllPanel';
@@ -14,7 +22,9 @@ import { Assignment, AssignmentType, sortAssignments } from './infrastructure/as
 import { CourseType } from './infrastructure/course';
 import { loadIDList } from './infrastructure/generics';
 import { Section, SectionType } from './infrastructure/section';
-import { Submission, SubmissionType } from './infrastructure/submission';
+import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+
+/**********************************************************************************************************************/
 
 interface IGraderState {
   courses: CourseType[];
@@ -22,7 +32,7 @@ interface IGraderState {
   currentAssignment?: AssignmentType;
   currentCourse?: CourseType;
   currentSections: SectionType[];
-  currentSubmissions: SubmissionType[];
+  currentSubmissions: AnonymousSubmissionType[];
 
   isLoggedIn: boolean;
   redirect: boolean;
@@ -101,7 +111,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
         if (currentAssignment) {
           this.setState({ isLoadingSubmissions: true });
-          const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, {
+          const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
             grader: this.props.email,
           });
 
@@ -152,7 +162,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     if (currentAssignment) {
       this.setState({ isLoadingSubmissions: true });
-      const currentSubmissions = await Assignment.readSubmissions(currentAssignment.id, { grader: this.props.email });
+      const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
+        grader: this.props.email,
+      });
 
       this.setState({
         currentAssignment,
@@ -285,6 +297,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       : false;
   };
 
+  public isCourseAdmin = (courseAdminCourses: CourseType[], currentCourse: CourseType): boolean => {
+    return courseAdminCourses.find((course: CourseType) => {
+      return course.id === currentCourse.id;
+    })
+      ? true
+      : false;
+  };
+
   public getViewAllComponent = () => {
     if (!this.state.currentCourse || !this.state.currentAssignment) {
       return ['', ''];
@@ -401,8 +421,12 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
               releaseSubmission={this.releaseSubmission}
               assignment={currentAssignment}
               submissions={currentSubmissions}
+              isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
               isLoadingSubmissions={isLoadingSubmissions}
               sections={currentSections}
+              canViewSubmissionInfo={
+                currentSubmissions.length > 0 ? typeof currentSubmissions[0].students !== 'undefined' : false
+              }
             />
           </TabPanel>
           {viewAllPanel}

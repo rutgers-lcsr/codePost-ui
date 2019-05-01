@@ -214,6 +214,7 @@ export {
   updateObject,
   deleteObject,
   GenericObject,
+  GenericObjectType,
   readObjectDetail,
   updateObjectDetail,
   loadIDList,
