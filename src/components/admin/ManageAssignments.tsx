@@ -66,7 +66,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
 export enum DETAIL_TYPE {
@@ -164,7 +164,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           if (assignment.isReleased && submission.id in this.props.viewsBySubmission) {
             submission.students.forEach((student) => {
               if (
-                !this.props.viewsBySubmission[submission.id].includes(student) &&
+                !(student in this.props.viewsBySubmission[submission.id]) &&
                 submissionsByStudent[student][assignment.id] &&
                 submissionsByStudent[student][assignment.id].isFinalized
               ) {
@@ -289,7 +289,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             if (sub && sub.id in this.props.viewsBySubmission) {
               sub.students.forEach((student) => {
                 if (
-                  !this.props.viewsBySubmission[sub.id].includes(student) &&
+                  !(student in this.props.viewsBySubmission[sub.id]) &&
                   submissionsByStudent[student][assignment.id] &&
                   submissionsByStudent[student][assignment.id].isFinalized
                 ) {

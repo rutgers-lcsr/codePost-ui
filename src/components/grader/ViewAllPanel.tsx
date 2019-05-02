@@ -44,7 +44,7 @@ interface IViewAllState {
   submissions: SubmissionType[];
   selectedGraders: string[];
   isLoading: boolean;
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   sortedIndex: Array<boolean | undefined>;
   showStudentEmails: boolean;
 }
@@ -81,10 +81,10 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         histories.forEach((history: SubmissionHistoryType) => {
           const submissionID = history.submission;
           if (!(submissionID in viewsBySubmission)) {
-            viewsBySubmission[submissionID] = [];
+            viewsBySubmission[submissionID] = {};
           }
           if (history.hasViewed) {
-            viewsBySubmission[submissionID] = [...viewsBySubmission[submissionID], history.student];
+            viewsBySubmission[submissionID][history.student] = history.dateViewed;
           }
         });
         return viewsBySubmission;
@@ -134,19 +134,37 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     if (!(submission.id in this.state.viewsBySubmission) || !submission.isFinalized) {
       return '--';
     } else {
-      switch (this.state.viewsBySubmission[submission.id].length) {
+      const views = this.state.viewsBySubmission[submission.id];
+
+      const getTooltipLabel = () => {
+        switch (submission.students.length) {
+          // For a single student submission we want only the date
+          case 1:
+            return moment(views[submission.students[0]]).format('llll');
+          // For multiple students, we want the student name and the date
+          default:
+            return `${Object.keys(views)
+              .map((student) => {
+                return `${student} on ${moment(views[student]).format('llll')}`;
+              })
+              .join(', ')}`;
+        }
+      };
+
+      switch (Object.keys(views).length) {
         case 0:
           return <FontIcon secondary>visibility_off</FontIcon>;
         case submission.students.length:
-          return <FontIcon>visibility</FontIcon>;
+          return (
+            <Tooltipped label={getTooltipLabel()} position="left" setPosition={true} delay={500}>
+              <div>
+                <FontIcon>visibility</FontIcon>
+              </div>
+            </Tooltipped>
+          );
         default:
           return (
-            <Tooltipped
-              label={`Viewed by: ${this.state.viewsBySubmission[submission.id].toString()}`}
-              position="left"
-              setPosition={true}
-              delay={500}
-            >
+            <Tooltipped label={getTooltipLabel()} position="left" setPosition={true} delay={500}>
               <div>
                 <FontIcon style={{ color: '#999999' }}>visibility</FontIcon>
               </div>

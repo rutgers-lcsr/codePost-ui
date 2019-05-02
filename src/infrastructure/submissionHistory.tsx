@@ -8,6 +8,7 @@ const SubmissionHistoryV = t.intersection(
       student: t.string,
       hasViewed: t.boolean,
       submission: t.number,
+      dateViewed: t.union([t.null, t.string]),
     }),
     t.partial({}),
   ],

@@ -34,7 +34,7 @@ interface IPropsCourseData {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
 interface IState {

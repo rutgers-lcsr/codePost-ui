@@ -10,8 +10,10 @@ import {
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 
+import * as moment from 'moment';
 import Select from 'react-select';
 
 import { IOption, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -33,7 +35,7 @@ interface IPropsStudentOverview {
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
 interface IState {
@@ -156,9 +158,20 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';
-    } else if (this.props.viewsBySubmission[submission.id].includes(student)) {
+    } else if (student in this.props.viewsBySubmission[submission.id]) {
       // case: submission has been viewed
-      return <FontIcon>visibility</FontIcon>;
+      return (
+        <Tooltipped
+          label={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}
+          position="left"
+          setPosition={true}
+          delay={500}
+        >
+          <div>
+            <FontIcon>visibility</FontIcon>
+          </div>
+        </Tooltipped>
+      );
     } else {
       // case: submission has not been viewed
       return <FontIcon secondary>visibility_off</FontIcon>;

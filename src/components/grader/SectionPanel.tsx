@@ -15,6 +15,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Tooltipped,
 } from 'react-md';
 
 /* other library imports */
@@ -47,7 +48,7 @@ interface ISectionPanelState {
   // It makes sense to leave this in state because it's slow to make copies and sort on every render
   sortedSubmissions: Array<[string, SubmissionType | undefined]>;
   // Map of submission id to an array of student emails who have viewed the submission
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   showStudentEmails: boolean;
 }
 
@@ -107,13 +108,13 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
                   // If there is no history object, there will be an empty array returned.
                   // If there is a history object it will be [{submission: int, student: string, hasViewed: boolean}]
                   if (history && history[0]) {
-                    const { submission, student, hasViewed } = history[0];
+                    const { submission, student, hasViewed, dateViewed } = history[0];
                     if (!(submission in viewsBySubmission)) {
-                      viewsBySubmission[submission] = [];
+                      viewsBySubmission[submission] = {};
                     }
                     if (hasViewed) {
                       // If there are partners, there will be multiple histories for the same submission
-                      viewsBySubmission[submission] = [...viewsBySubmission[submission], student];
+                      viewsBySubmission[submission][student] = dateViewed;
                     }
                   }
                 });
@@ -183,9 +184,20 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     if (!(submission.id in this.state.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or un finalized
       return '--';
-    } else if (this.state.viewsBySubmission[submission.id].includes(student)) {
+    } else if (student in this.state.viewsBySubmission[submission.id]) {
       // case: submission has been viewed
-      return <FontIcon>visibility</FontIcon>;
+      return (
+        <Tooltipped
+          label={moment(this.state.viewsBySubmission[submission.id][student]).format('llll')}
+          position="left"
+          setPosition={true}
+          delay={500}
+        >
+          <div>
+            <FontIcon>visibility</FontIcon>
+          </div>
+        </Tooltipped>
+      );
     } else {
       // case: submission has not been viewed
       return <FontIcon secondary>visibility_off</FontIcon>;

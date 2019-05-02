@@ -85,7 +85,7 @@ interface IAdminState {
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   submissionsbyUserLoadComplete: boolean;
-  viewsBySubmission: { [submissionID: number]: string[] };
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   // Props for Enroll panels
   lockChanges: boolean;
@@ -534,12 +534,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return Assignment.readSubmissionHistories(assignmentID).then((histories: SubmissionHistoryType[]) => {
           histories.forEach((history: SubmissionHistoryType) => {
             // History object has format of {submission: int, student: string, hasViewed: boolean}
-            const { submission, student, hasViewed } = history;
+            const { submission, student, hasViewed, dateViewed } = history;
             if (!(submission in viewsBySubmission)) {
-              viewsBySubmission[submission] = [];
+              viewsBySubmission[submission] = {};
             }
             if (hasViewed) {
-              viewsBySubmission[submission] = [...viewsBySubmission[submission], student];
+              viewsBySubmission[submission][student] = dateViewed;
             }
           });
           this.setState({ viewsBySubmission }, () => {
