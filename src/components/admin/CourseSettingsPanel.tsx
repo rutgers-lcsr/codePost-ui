@@ -170,7 +170,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
             </div>
             <div className="CourseSettings__settingItem">
               <div className="CourseSettings__settingItem__content">
-                <div className="CourseSettings__settingItem__name">Allow graders to edit rubric</div>
+                <div className="CourseSettings__settingItem__name">Allow rubric editing from code review console</div>
                 <div className="CourseSettings__settingItem__description">
                   If selected, graders will have the option to add, update, and delete unlinked assignment rubric
                   comments. The privilege to edit rubric comments already associated with submissions is reserved for
