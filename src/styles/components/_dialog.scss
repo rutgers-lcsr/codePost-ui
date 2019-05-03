@@ -81,4 +81,13 @@
       display: flex;
     }
   }
+
+  &--merge-comments {
+    .md-dialog {
+      width: 50%;
+    }
+    .md-dialog-content {
+      overflow: visible;
+    }
+  }
 }

@@ -8,6 +8,8 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
+import GraderEditRubric from './GraderEditRubric';
+
 import { Button } from 'react-md';
 
 interface IVisibleMap {
@@ -18,6 +20,10 @@ interface IProps {
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
+  refreshRubric: () => void;
+  allowGradersToEditRubric: boolean;
+  addToast: (text: string, action: string | undefined) => void;
+  addErrorToast: (text: string, action: string | undefined) => void;
 }
 
 interface IState {
@@ -61,7 +67,20 @@ class Rubric extends React.Component<IProps, IState> {
 
     return (
       <div className="grade-rubric">
-        <div className="grade-rubric__title">Assignment Rubric</div>
+        <div>
+          <div className="grade-rubric__title" style={{ display: 'inline-block' }}>
+            Assignment Rubric
+          </div>
+          {this.props.allowGradersToEditRubric ? (
+            <GraderEditRubric
+              rubricCategories={rubricCategories}
+              rubricComments={rubricComments}
+              refreshRubric={this.props.refreshRubric}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+            />
+          ) : null}
+        </div>
         <SearchBar placeholder={'Search...'} onChange={this.onChange} onCancel={this.onCancel} />
         <div className="grade-rubric__scrollable-container">
           {rubricCategories.map((rubricCategory: RubricCategoryType, index: number) => {

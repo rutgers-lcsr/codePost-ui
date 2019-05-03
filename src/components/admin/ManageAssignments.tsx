@@ -118,8 +118,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   };
 
   /******************************************************************************
-   * Assignment stat calculation
-   ******************************************************************************/
+   Assignment stat calculation
+  *****************************************************************************/
 
   public memoizedStats = memoizeOne(
     (

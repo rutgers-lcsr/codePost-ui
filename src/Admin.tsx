@@ -1217,6 +1217,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       timezone: 'US/Eastern',
       emailNewUsers: false,
       anonymousGradingDefault: false,
+      allowGradersToEditRubric: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {

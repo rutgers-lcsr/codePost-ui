@@ -29,6 +29,9 @@ describe('Grade', () => {
           hash: '',
         },
         user: {},
+        addToast: (text: string, action: string | undefined) => {
+          return;
+        },
         addErrorToast: (text: string, action: string | undefined) => {
           return;
         },

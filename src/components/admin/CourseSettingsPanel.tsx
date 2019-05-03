@@ -20,6 +20,7 @@ interface IState {
   timezone: string;
   emailNewUsers: boolean;
   anonymousGradingDefault: boolean;
+  allowGradersToEditRubric: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
@@ -29,6 +30,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     timezone: this.props.currentCourse.timezone,
     emailNewUsers: this.props.currentCourse.emailNewUsers,
     anonymousGradingDefault: this.props.currentCourse.anonymousGradingDefault,
+    allowGradersToEditRubric: this.props.currentCourse.allowGradersToEditRubric,
   };
 
   public toggleValue = (label: string) => {
@@ -59,6 +61,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       showStudentsStatistics: this.state.showStudentsStatistics,
       timezone: this.state.timezone,
       emailNewUsers: this.state.emailNewUsers,
+      allowGradersToEditRubric: this.state.allowGradersToEditRubric,
       assignments: [], // ignored by API
       sections: [], // ignored by API
       anonymousGradingDefault: this.state.anonymousGradingDefault,
@@ -74,6 +77,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       timezone,
       emailNewUsers,
       anonymousGradingDefault,
+      allowGradersToEditRubric,
     } = this.state;
     const timezoneOptions = timezones.map((el) => {
       return { label: el, value: el };
@@ -162,6 +166,25 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
                 defaultChecked={anonymousGradingDefault}
                 onChange={this.toggleValue.bind(this.props, 'anonymousGradingDefault')}
                 aria-label={'Hide student information from graders'}
+              />
+            </div>
+            <div className="CourseSettings__settingItem">
+              <div className="CourseSettings__settingItem__content">
+                <div className="CourseSettings__settingItem__name">Allow graders to edit rubric</div>
+                <div className="CourseSettings__settingItem__description">
+                  If selected, graders will have the option to add, update, and delete unlinked assignment rubric
+                  comments. The privilege to edit rubric comments already associated with submissions is reserved for
+                  Admins.
+                </div>
+              </div>
+              <SelectionControl
+                id="toggleGraderEditSetting"
+                type="switch"
+                name="CourseSettings__GraderEdit"
+                className="CourseSettings__settingItem__control"
+                defaultChecked={allowGradersToEditRubric}
+                onChange={this.toggleValue.bind(this.props, 'allowGradersToEditRubric')}
+                aria-label={'Allow graders to edit rubric'}
               />
             </div>
             <div className="CourseSettings__settingItem">

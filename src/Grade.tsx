@@ -11,7 +11,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CommentIO, CommentType } from './infrastructure/comment';
-import { Course, CourseType } from './infrastructure/course';
+import { Course, CourseSettingsType, CourseType } from './infrastructure/course';
 import { FileType } from './infrastructure/file';
 
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
@@ -36,12 +36,14 @@ interface IGradeState {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   positiveNegativeAlert: boolean;
+  allowGradersToEditRubric: boolean;
 }
 
 export interface IGradeProps {
   match: any;
   history: any;
   user: UserType;
+  addToast: any;
   addErrorToast: (text: string, action: string | undefined) => void;
 }
 
@@ -60,6 +62,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     submission: undefined,
     unsavedComments: [],
     positiveNegativeAlert: false,
+    allowGradersToEditRubric: false,
   };
 
   //////////////////////////////////////
@@ -86,6 +89,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       //     });
 
       const course = await Course.read(assignment.course);
+      const settings = await this.loadSettings(assignment);
+      const allowGradersToEditRubric = settings.allowGradersToEditRubric;
       const graders = this.isCourseAdmin(assignment) ? (await Course.readRoster(assignment.course))['graders'] : [];
 
       if (assignment && !submission.isFinalized) {
@@ -105,6 +110,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         rubricComments,
         graders,
         positiveNegativeAlert: this.hasPositiveAndNegativeComments(comments, commentRubricComments),
+        allowGradersToEditRubric,
         isLoading: false,
       });
     }
@@ -113,6 +119,24 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   ///////////////////////////////////////
   // Loading methods
   ///////////////////////////////////////
+
+  public loadSettings = async (assignment: AssignmentType) => {
+    const courseID = assignment.course;
+    const settings: CourseSettingsType = await Course.readSettings(courseID);
+    return settings;
+  };
+
+  public refreshRubric = async () => {
+    if (!this.state.assignment) {
+      return;
+    }
+
+    this.setState({ isLoading: true });
+    const [rubricCategories, rubricComments] = await this.loadRubric(this.state.assignment.id);
+    // @ts-ignore
+    this.setState({ rubricCategories, rubricComments });
+    this.setState({ isLoading: false });
+  };
 
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
@@ -491,6 +515,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               rubricCategories={rubricCategories}
               rubricComments={rubricComments}
               handleRubricCommentClick={this.handleRubricCommentClick}
+              refreshRubric={this.refreshRubric}
+              allowGradersToEditRubric={this.state.allowGradersToEditRubric}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
             />
           </div>
           <div className="grade__main-container__right-panel">

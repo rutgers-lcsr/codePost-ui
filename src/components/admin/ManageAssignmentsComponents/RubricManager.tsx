@@ -18,6 +18,7 @@ import RubricCommentExplorer from './RubricCommentExplorer';
 
 import { LinkedCommentsAlert, LinkedCommentsConfirm } from './LinkedCommentsAlert';
 
+import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
 import RubricFileDialog from './RubricFileDialog';
 
 import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
@@ -906,6 +907,16 @@ class RubricManager extends React.Component<IProps, IState> {
             addToast={this.props.addToast}
             onRubricUpload={this.replaceRubric}
             isDisabled={changeLock}
+          />
+          <br />
+          <MergeRubricCommentsDialog
+            isDisabled={changeLock}
+            rubricCategories={this.state.rubricCategories}
+            rubricComments={this.state.rubricComments}
+            addToast={this.props.addToast}
+            addErrorToast={this.props.addErrorToast}
+            assignment={this.props.assignment}
+            reloadRubric={this.loadAssignmentRubric}
           />
           {categoryTables}{' '}
           <Button
