@@ -73,7 +73,11 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
       const category = this.props.rubricCategories.find((rubricCategory: RubricCategoryType) => {
         return rubricCategory.id === rubricComment.category;
       });
-      this.setState({ newComment: rubricComment, newCommentCategory: category ? category : null });
+      if (!category) {
+        this.setState({ newComment: null, newCommentCategory: null });
+      } else {
+        this.setState({ newComment: rubricComment, newCommentCategory: category });
+      }
     } else {
       this.setState({ newComment: null, newCommentCategory: null });
     }
