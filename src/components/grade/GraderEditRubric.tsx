@@ -55,6 +55,7 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
       newComment: null,
       newCommentCategory: null,
       drawerVisible: false,
+      isLoading: false,
     });
   };
 
@@ -127,14 +128,12 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
         .then((result: RubricComment) => {
           this.props.addToast('Successfully created new rubric comment.', undefined);
           this.props.refreshRubric();
-          this.setState({ isLoading: false });
           this.closeEditDrawer();
         })
         .catch((errors) => {
           Object.keys(errors).forEach((key) => {
             errors[key].forEach((error: string) => {
               this.props.addErrorToast(`[${key}] ${error}`, undefined);
-              this.setState({ isLoading: false });
               this.closeEditDrawer();
             });
           });
@@ -144,14 +143,12 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
         .then((result: RubricComment) => {
           this.props.addToast('Successfully updated rubric comment.', undefined);
           this.props.refreshRubric();
-          this.setState({ isLoading: false });
           this.closeEditDrawer();
         })
         .catch((errors) => {
           Object.keys(errors).forEach((key) => {
             errors[key].forEach((error: string) => {
               this.props.addErrorToast(`[${key}] ${error}`, undefined);
-              this.setState({ isLoading: false });
               this.closeEditDrawer();
             });
           });
@@ -175,7 +172,6 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
       .then(() => {
         this.props.addToast('Successfully deleted rubric comment.', undefined);
         this.props.refreshRubric();
-        this.setState({ isLoading: false });
         this.closeEditDrawer();
       })
       .catch((errors) => {
@@ -184,7 +180,6 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
           undefined,
         );
         this.props.refreshRubric();
-        this.setState({ isLoading: false });
         this.closeEditDrawer();
       });
   };
