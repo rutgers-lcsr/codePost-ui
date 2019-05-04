@@ -74,6 +74,7 @@ enum STATUS {
   NONE,
   READING /* reading files from user's file system */,
   UPLOADING /* saving submissions via codePost API */,
+  FILE_ERROR /* error reading files, so aborting upload */,
 }
 
 interface IState {
@@ -190,7 +191,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         const anyFile: any = file;
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
-        studentsReader.onerror = () => console.log('file reading has failed');
+        studentsReader.onerror = () => {
+          const errorPaths = this.state.errorPaths;
+          const newMessage = `Failed to read file: ${anyFile.path}`;
+          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
+        };
         studentsReader.onload = () => {
           const result = studentsReader.result;
           const fileMap = this.state.fileMap;
@@ -471,9 +476,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
     let errors;
     if (this.state.errorPaths.length > 0) {
+      let fileError;
+      if (this.state.status === STATUS.FILE_ERROR) {
+        fileError = <p> An error occurred while reading file from your computer. Please cancel and try again</p>;
+      }
+
       errors = (
         <div className="error">
           <h3> Errors </h3>
+          {fileError}
           <ul>
             {this.state.errorPaths.map((el, i) => {
               return <li key={i}>{el}</li>;
