@@ -38,6 +38,7 @@ interface IProps {
 interface IDownloadCategory {
   name: string;
   pointLimit: number;
+  helpText: string;
   rubricComments: IDownloadComment[];
 }
 
@@ -145,6 +146,7 @@ class RubricFileDialog extends React.Component<IProps, IState> {
         assignment: this.props.assignment.id,
         pointLimit: newCategory.pointLimit,
         sortKey: index,
+        helpText: newCategory.helpText,
       };
 
       newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {

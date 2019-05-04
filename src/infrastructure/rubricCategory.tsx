@@ -10,6 +10,21 @@ const RubricCategoryV = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       sortKey: t.number,
+      helpText: t.string,
+    }),
+  ],
+  'RubricCategory',
+);
+
+const RubricCategoryStudentV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      name: t.string,
+      rubricComments: t.array(t.number),
+      assignment: t.number,
+      pointLimit: t.union([t.number, t.null]),
+      sortKey: t.number,
     }),
   ],
   'RubricCategory',
@@ -23,12 +38,14 @@ const RubricCategoryVPatch = t.intersection(
       rubricComments: t.array(t.number),
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
+      helpText: t.string,
     }),
   ],
   'RubricCategoryPatch',
 );
 
 type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
+type RubricCategoryStudentType = t.TypeOf<typeof RubricCategoryStudentV>;
 type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
 
 class RubricCategory {
@@ -46,4 +63,11 @@ class RubricCategory {
   };
 }
 
-export { RubricCategoryType, RubricCategoryPatchType, RubricCategory, RubricCategoryV, RubricCategoryVPatch };
+export {
+  RubricCategoryType,
+  RubricCategoryPatchType,
+  RubricCategory,
+  RubricCategoryV,
+  RubricCategoryVPatch,
+  RubricCategoryStudentType,
+};
