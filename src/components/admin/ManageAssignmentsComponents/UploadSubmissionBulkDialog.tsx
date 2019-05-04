@@ -494,15 +494,22 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       );
     }
 
-    /* tslint:disable:jsx-no-lambda */
+    /* tslint:disable */
     return (
       <div>
         <Dropzone onDrop={this.onFileDrop}>
           {({ getRootProps, getInputProps }) => (
             <section className="container">
-              <div style={baseStyle} {...getRootProps({ className: 'dropzone' })}>
+              <div
+                style={baseStyle}
+                {...getRootProps({ className: 'dropzone', onClick: (event) => event.stopPropagation() })}
+              >
                 <input {...getInputProps()} />
-                <p>Drag your submissions folder here. Make sure to follow the format below</p>
+                <p>
+                  Drag your submissions folder here. Make sure to follow the format below. To learn more about how to
+                  use submission upload, check out{' '}
+                  <a href="https://help.codepost.io/docs/upload-submissions-in-bulk-gui">our docs.</a>
+                </p>
               </div>
             </section>
           )}
