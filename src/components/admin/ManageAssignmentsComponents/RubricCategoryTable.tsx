@@ -51,6 +51,7 @@ interface IProps {
 interface IState {
   name: string;
   pointLimit: number | null;
+  helpText: string;
   status: STATUS;
 }
 
@@ -62,6 +63,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
     this.state = {
       name: this.props.rubricCategory.name,
       pointLimit: this.props.rubricCategory.pointLimit,
+      helpText: this.props.rubricCategory.helpText,
       status: typeof this.props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
     };
   }
@@ -76,6 +78,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
           {
             name: this.props.rubricCategory.name,
             pointLimit: this.props.rubricCategory.pointLimit,
+            helpText: this.props.rubricCategory.helpText,
           },
           () => {
             this.updateStatus();
@@ -87,11 +90,11 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
 
   public updateStatus = () => {
     const { savedRubricCategory } = this.props;
-    const { name, pointLimit, status } = this.state;
+    const { name, pointLimit, helpText, status } = this.state;
     if (savedRubricCategory) {
       const newStatus = statusChange(
-        [savedRubricCategory.name, savedRubricCategory.pointLimit],
-        [name, pointLimit],
+        [savedRubricCategory.name, savedRubricCategory.pointLimit, savedRubricCategory.helpText],
+        [name, pointLimit, helpText],
         status,
       );
       if (newStatus !== status) {
@@ -133,19 +136,24 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
 
   public saveCategory = () => {
     const { rubricCategory } = this.props;
-    const { name, pointLimit } = this.state;
+    const { name, pointLimit, helpText } = this.state;
 
-    if (name !== rubricCategory.name || pointLimit !== rubricCategory.pointLimit) {
+    if (
+      name !== rubricCategory.name ||
+      pointLimit !== rubricCategory.pointLimit ||
+      helpText !== rubricCategory.helpText
+    ) {
       const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
+      payload.helpText = this.state.helpText;
       this.props.updateCategory(payload);
     }
   };
 
   public render() {
     const { isDisabled, deleteCategory, rubricCategory, rubricComments } = this.props;
-    const { name, pointLimit, status } = this.state;
+    const { name, pointLimit, helpText, status } = this.state;
 
     let deleteCategoryButton = null;
     let deleteCommentHeader = null;
@@ -216,6 +224,18 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
               : ''}
           </div>
         </div>
+        <TextField
+          value={helpText}
+          label={'Category Help Text'}
+          onChange={this.setValue.bind(this, 'helpText')}
+          disabled={isDisabled}
+          onBlur={this.saveCategory}
+          customSize="font-size-large"
+          fullWidth={false}
+          maxRows={5}
+          rows={1}
+          style={{ width: '50%' }}
+        />
         <DataTable
           key={rubricCategory.id}
           className="DataTable--RubricCategory"

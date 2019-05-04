@@ -12,6 +12,8 @@ import GraderEditRubric from './GraderEditRubric';
 
 import { Button } from 'react-md';
 
+import ReactTooltip from 'react-tooltip';
+
 interface IVisibleMap {
   [categoryID: number]: boolean;
 }
@@ -121,6 +123,8 @@ const RubricCategory = (props: IRubricCategoryProps) => {
   return (
     <div className="grade-rubric__category">
       <div
+        data-tip
+        data-for={`rubric-category-tooltip-${rubricCategory.id}`}
         className="grade-rubric__category__title-row"
         onClick={props.handleDropDown.bind(props, rubricCategory, visible)}
       >
@@ -130,6 +134,11 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           </Button>
           <ReactMarkdown source={rubricCategory.name} />
         </div>
+        {rubricCategory.helpText !== '' ? (
+          <ReactTooltip id={`rubric-category-tooltip-${rubricCategory.id}`} type="light" border={true} place={'right'}>
+            <ReactMarkdown style={{ color: 'white' }} source={rubricCategory.helpText} />
+          </ReactTooltip>
+        ) : null}
       </div>
       {visible &&
         rubricComments
