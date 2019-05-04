@@ -64,6 +64,8 @@
     .md-dialog {
       width: 50%;
       height: 60%;
+      min-width: 800px;
+      min-height: 700px;
     }
 
     &__assignment {
