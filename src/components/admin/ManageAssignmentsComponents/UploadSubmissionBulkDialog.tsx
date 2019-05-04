@@ -95,6 +95,9 @@ interface IState {
 
   /* overwrite mode toggle */
   overwriteMode: boolean;
+
+  /* files with an invalid path */
+  errorPaths: string[];
 }
 
 class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
@@ -105,6 +108,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     status: STATUS.NONE,
     numFiles: 0,
     overwriteMode: false,
+    errorPaths: [],
   };
 
   /***************************************************************************************/
@@ -317,38 +321,73 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return Promise.all(promises);
   };
 
+  public allStudentsValid = (candidates: string[], students: string[]) => {
+    for (const candidate of candidates) {
+      if (!this.isValidStudent(candidate, students)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  public noDuplicates = (candidates: string[]) => {
+    const seenCandidates = {};
+    for (const candidate of candidates) {
+      if (seenCandidates[candidate]) {
+        return false;
+      } else {
+        seenCandidates[candidate] = true;
+      }
+    }
+
+    return true;
+  };
+
   public onFileDrop = (acceptedFiles: File[]) => {
     // Process list of uploaded files to see which have valid student information
-    this.setState(
-      {
-        protoSubmissions: [],
-        studentMap: this.buildNewStudentMap(this.props.students, this.props.submissions),
-        fileMap: {},
-        status: STATUS.NONE,
-        numFiles: 0,
-      },
-      () => {
-        const folderMap = { ...this.state.protoSubmissions };
-        const students = this.props.students;
-        const oldStudentMap = this.state.studentMap;
-        const newStudentMap = { ...oldStudentMap };
+    const folderMap = { ...this.state.protoSubmissions };
+    const students = this.props.students;
+    const oldStudentMap = this.buildNewStudentMap(this.props.students, this.props.submissions);
+    const newStudentMap = { ...oldStudentMap };
+    const invalidPaths: string[] = [];
 
-        // casting File (el) to any to access path property (not part of Typescript file object)
-        acceptedFiles.forEach((newFile: any) => {
-          const path: string = newFile.path;
-          if (path.split('/').length === 4) {
-            const folderName = path.split('/')[2];
-            const emails = folderName.split(',');
+    /*************************************************************
+    Types of errors to check for:
+    - path doesn't follow TLD/<students>/file
+    - path contains invalid <students>
+    - path contains a student listed in a different folder
+    - path contains a student multiple times
+    /*************************************************************/
 
-            // No need to check folders which we've already validated
-            if (!(folderName in folderMap)) {
-              // Only use valid emails
-              const validEmails = emails.filter((el) => {
-                // Email must be valid and so far unsued
-                return this.isValidStudent(el, students) && oldStudentMap[el] !== STUDENT_STATUS.PENDING;
-              });
+    // casting File (el) to any to access path property (not part of Typescript file object)
+    acceptedFiles.forEach((newFile: any) => {
+      // Validate file path
+      const path: string = newFile.path;
+      if (path.split('/').length !== 4) {
+        invalidPaths.push(`Invalid folder structure: ${path}`);
+      } else {
+        const folderName = path.split('/')[2];
+        const emails = folderName.split(',');
 
-              if (this.state.overwriteMode && validEmails.length > 0) {
+        if (!this.allStudentsValid(emails, students)) {
+          invalidPaths.push(`Folder refers to invalid student: ${path}`);
+        } else if (!this.noDuplicates(emails)) {
+          invalidPaths.push(`Folder contains duplicate students: ${path}`);
+        } else {
+          // No need to check folders which we've already validated
+          if (!(folderName in folderMap)) {
+            // Only use valid emails
+            const validEmails = emails.filter((el) => {
+              // Email must be valid and so far unsued
+              return newStudentMap[el] !== STUDENT_STATUS.PENDING;
+            });
+
+            if (validEmails.length !== emails.length) {
+              // Some email in the folder name was invalid
+              invalidPaths.push(`Contains a duplicate student: ${path}`);
+            } else {
+              if (this.state.overwriteMode) {
                 folderMap[folderName] = {
                   files: [],
                   students: validEmails,
@@ -357,7 +396,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                   newStudentMap[el] = STUDENT_STATUS.PENDING;
                 });
               } else {
-                let noCollisions = validEmails.length > 0; // don't proceed if no valid emails to work with
+                let noCollisions = true;
                 for (const email of emails) {
                   if (
                     oldStudentMap[email] === STUDENT_STATUS.UPLOADED ||
@@ -382,27 +421,30 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               }
             }
           }
-        });
+        }
+      }
+    });
 
-        // Sort files into appropriate protoSubmissions
-        let numFiles = 0;
-        acceptedFiles.forEach((el: any) => {
-          const folderName = el.path.split('/')[2];
-          if (folderName in folderMap) {
-            folderMap[folderName].files.push(el);
-            numFiles = numFiles + 1;
-          }
-        });
+    // Sort files into appropriate protoSubmissions
+    let numFiles = 0;
+    acceptedFiles.forEach((el: any) => {
+      const folderName = el.path.split('/')[2];
+      if (folderName in folderMap) {
+        folderMap[folderName].files.push(el);
+        numFiles = numFiles + 1;
+      }
+    });
 
-        this.setState({
-          protoSubmissions: Object.keys(folderMap).map((key) => {
-            return folderMap[key];
-          }),
-          studentMap: newStudentMap,
-          numFiles,
-        });
-      },
-    );
+    this.setState({
+      protoSubmissions: Object.keys(folderMap).map((key) => {
+        return folderMap[key];
+      }),
+      studentMap: newStudentMap,
+      fileMap: {},
+      numFiles,
+      errorPaths: invalidPaths,
+      status: STATUS.NONE,
+    });
   };
 
   public toggleOverwriteMode = () => {
@@ -426,6 +468,20 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         student2@university.edu,student3@university.edu/\n\
           file1.java\n\
           file2.txt\n ';
+
+    let errors;
+    if (this.state.errorPaths.length > 0) {
+      errors = (
+        <div className="error">
+          <h3> Errors </h3>
+          <ul>
+            {this.state.errorPaths.map((el, i) => {
+              return <li key={i}>{el}</li>;
+            })}
+          </ul>
+        </div>
+      );
+    }
 
     /* tslint:disable:jsx-no-lambda */
     return (
@@ -479,6 +535,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             Upload
           </Button>
         </div>
+        {errors}
         <div className="error-padding" />
         <div className="error-padding" />
         <h2>Students</h2>
