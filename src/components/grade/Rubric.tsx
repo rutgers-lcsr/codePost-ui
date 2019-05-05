@@ -134,7 +134,7 @@ const RubricCategory = (props: IRubricCategoryProps) => {
           </Button>
           <ReactMarkdown source={rubricCategory.name} />
         </div>
-        {rubricCategory.helpText && rubricCategory.helpText !== '' ? (
+        {rubricCategory.helpText !== '' ? (
           <ReactTooltip id={`rubric-category-tooltip-${rubricCategory.id}`} type="light" border={true} place={'right'}>
             <ReactMarkdown style={{ color: 'white' }} source={rubricCategory.helpText} />
           </ReactTooltip>

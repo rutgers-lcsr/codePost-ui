@@ -63,7 +63,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
     this.state = {
       name: this.props.rubricCategory.name,
       pointLimit: this.props.rubricCategory.pointLimit,
-      helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
+      helpText: this.props.rubricCategory.helpText,
       status: typeof this.props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
     };
   }
@@ -79,7 +79,7 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
         {
           name: this.props.rubricCategory.name,
           pointLimit: this.props.rubricCategory.pointLimit,
-          helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
+          helpText: this.props.rubricCategory.helpText,
         },
         () => {
           this.updateStatus();
