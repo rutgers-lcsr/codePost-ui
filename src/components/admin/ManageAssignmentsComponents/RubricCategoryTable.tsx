@@ -71,20 +71,20 @@ class RubricCategoryTable extends React.Component<IProps, IState> {
   public componentDidUpdate(prevProps: IProps) {
     if (this.props.savedRubricCategory !== prevProps.savedRubricCategory) {
       this.updateStatus();
+    }
 
-      // For undoing local changes
-      if (this.props.rubricCategory !== prevProps.rubricCategory) {
-        this.setState(
-          {
-            name: this.props.rubricCategory.name,
-            pointLimit: this.props.rubricCategory.pointLimit,
-            helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
-          },
-          () => {
-            this.updateStatus();
-          },
-        );
-      }
+    // For undoing local changes
+    if (this.props.rubricCategory !== prevProps.rubricCategory) {
+      this.setState(
+        {
+          name: this.props.rubricCategory.name,
+          pointLimit: this.props.rubricCategory.pointLimit,
+          helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
+        },
+        () => {
+          this.updateStatus();
+        },
+      );
     }
   }
 
