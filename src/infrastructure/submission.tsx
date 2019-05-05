@@ -1,11 +1,21 @@
 import * as t from 'io-ts';
 import { compare } from '../components/Utils/SortUtils';
-import { createObject, deleteObject, GenericObject, loadIDList, readObject, updateObject } from './generics';
+import {
+  createObject,
+  deleteObject,
+  GenericObject,
+  loadIDList,
+  readObject,
+  readObjectDetail,
+  updateObject,
+  updateObjectDetail,
+} from './generics';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
 import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
+import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 
 /*****************************************************************************/
 /* Type Definitions
@@ -103,6 +113,13 @@ class Submission {
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
+  public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
+  public static updateHistory = updateObjectDetail(
+    SubmissionHistoryV,
+    SubmissionHistoryVPatch,
+    'submissions',
+    'history',
+  );
 
   public static loadData = async (
     submission: SubmissionType | StudentSubmissionType | AnonymousSubmissionType,

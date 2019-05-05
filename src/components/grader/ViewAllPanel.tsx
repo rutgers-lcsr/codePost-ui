@@ -15,6 +15,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Tooltipped,
 } from 'react-md';
 
 /* other library imports */
@@ -27,6 +28,7 @@ import { openSubmission } from '../admin/AdminUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { Course, CourseType } from '../../infrastructure/course';
 import { sortSubmissions, SubmissionType } from '../../infrastructure/submission';
+import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { IOptionNumber } from '../../types/common';
 import { getSortIndex } from '../Utils/SortUtils';
@@ -42,6 +44,7 @@ interface IViewAllState {
   submissions: SubmissionType[];
   selectedGraders: string[];
   isLoading: boolean;
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   sortedIndex: Array<boolean | undefined>;
   showStudentEmails: boolean;
 }
@@ -51,23 +54,43 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     graders: [],
     submissions: [],
     selectedGraders: [],
+    viewsBySubmission: {},
     isLoading: true,
     showStudentEmails: false,
 
-    // SortedIndex index corresponds to columns: index 0 is email
-    sortedIndex: [true, undefined, undefined, undefined, undefined],
+    // SortedIndex index corresponds to columns: index 0 is email. Length must equal number of columns
+    sortedIndex: [true, undefined, undefined, undefined, undefined, undefined],
   };
 
   public async componentDidMount() {
-    const [submissions, roster] = await Promise.all([
+    const [submissions, viewsBySubmission, roster] = await Promise.all([
       await Assignment.readSubmissions(this.props.currentAssignment.id),
+      await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.currentCourse.id),
     ]);
 
     submissions.sort(this.sort.bind(this));
 
-    this.setState({ graders: roster.graders, submissions, isLoading: false });
+    this.setState({ graders: roster.graders, viewsBySubmission, submissions, isLoading: false });
   }
+
+  public loadSubmissionsViews = () => {
+    return Assignment.readSubmissionHistories(this.props.currentAssignment.id).then(
+      (histories: SubmissionHistoryType[]) => {
+        const viewsBySubmission = {};
+        histories.forEach((history: SubmissionHistoryType) => {
+          const submissionID = history.submission;
+          if (!(submissionID in viewsBySubmission)) {
+            viewsBySubmission[submissionID] = {};
+          }
+          if (history.hasViewed) {
+            viewsBySubmission[submissionID][history.student] = history.dateViewed;
+          }
+        });
+        return viewsBySubmission;
+      },
+    );
+  };
 
   public toggleShowStudentEmails = () => {
     this.setState({
@@ -107,6 +130,50 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     return sortSubmissions(sortAttribute, ascending, a, b);
   }
 
+  public getViewIcon = (submission: SubmissionType) => {
+    if (!(submission.id in this.state.viewsBySubmission) || !submission.isFinalized) {
+      return '--';
+    } else {
+      const views = this.state.viewsBySubmission[submission.id];
+
+      const getTooltipLabel = () => {
+        switch (submission.students.length) {
+          // For a single student submission we want only the date
+          case 1:
+            return moment(views[submission.students[0]]).format('llll');
+          // For multiple students, we want the student name and the date
+          default:
+            return `${Object.keys(views)
+              .map((student) => {
+                return `${student} on ${moment(views[student]).format('llll')}`;
+              })
+              .join(', ')}`;
+        }
+      };
+
+      switch (Object.keys(views).length) {
+        case 0:
+          return <FontIcon secondary>visibility_off</FontIcon>;
+        case submission.students.length:
+          return (
+            <Tooltipped label={getTooltipLabel()} position="left" setPosition={true} delay={500}>
+              <div>
+                <FontIcon>visibility</FontIcon>
+              </div>
+            </Tooltipped>
+          );
+        default:
+          return (
+            <Tooltipped label={getTooltipLabel()} position="left" setPosition={true} delay={500}>
+              <div>
+                <FontIcon style={{ color: '#999999' }}>visibility</FontIcon>
+              </div>
+            </Tooltipped>
+          );
+      }
+    }
+  };
+
   public render() {
     const { graders, submissions, selectedGraders, sortedIndex } = this.state;
     let tableBody;
@@ -127,11 +194,14 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         const cellType = submission.isFinalized ? '--graded' : '--unfinalized';
         return (
           <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-            <TableColumn>{showingEmails ? submission.students.toString() : submission.id}</TableColumn>
+            <TableColumn className="left-aligned">
+              {showingEmails ? submission.students.toString() : submission.id}
+            </TableColumn>
             <TableColumn className={`table-cell${cellType}`}>{grade}</TableColumn>
             <TableColumn>{submission.grader}</TableColumn>
             <TableColumn>{submission.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
             <TableColumn>{moment(submission.dateEdited).format('llll')}</TableColumn>
+            <TableColumn>{this.getViewIcon(submission)}</TableColumn>
           </TableRow>
         );
       });
@@ -175,7 +245,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         <DataTable className="data-table--view-all" plain={true}>
           <TableHeader>
             <TableRow>
-              <TableColumn key={'Student'} sorted={sortedIndex[0]} onClick={this.toggleSort.bind(this.props, 0)}>
+              <TableColumn
+                key={'Student'}
+                className="left-aligned"
+                sorted={sortedIndex[0]}
+                onClick={this.toggleSort.bind(this.props, 0)}
+              >
                 Student Name
               </TableColumn>
               <TableColumn key={'Grade'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
@@ -189,6 +264,9 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
               </TableColumn>
               <TableColumn key={'Last Edited'} sorted={sortedIndex[4]} onClick={this.toggleSort.bind(this.props, 4)}>
                 Last Edited
+              </TableColumn>
+              <TableColumn key={'hasViewed'} sorted={sortedIndex[5]} onClick={this.toggleSort.bind(this.props, 5)}>
+                Viewed by Student(s)
               </TableColumn>
             </TableRow>
           </TableHeader>

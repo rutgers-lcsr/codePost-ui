@@ -26,6 +26,7 @@ describe('ManageAssignments', () => {
           timezone: 'US/Eastern',
           emailNewUsers: false,
         },
+        viewsBySubmission: {},
         assignments: [],
         submissionsByStudent: {},
         students: ['student1@princeton.edu', 'student2@princeton.edu'],

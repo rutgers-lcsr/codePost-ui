@@ -7,7 +7,12 @@
       display: table;
       table-layout: fixed;
       width: 100%;
-      text-align: center;
+      .md-table-column {
+        text-align: center;
+      }
+      .left-aligned {
+        text-align: left !important;
+      }
     }
   }
 
@@ -26,6 +31,12 @@
       table-layout: fixed;
       width: 100%;
       cursor: pointer;
+      .md-table-column {
+        text-align: center;
+      }
+      .left-aligned {
+        text-align: left !important;
+      }
     }
 
     .frame::-webkit-scrollbar:vertical {
@@ -122,6 +133,10 @@
 .table--section {
   @include fixedTableHeader(calc(100vh - 280px), 400px);
   @include wrapHeaders(200px);
+}
+
+.DataTable--ManageAssignments {
+  @include fixedTableHeader(calc(100vh - 340px), 400px);
 }
 
 .DataTable--RubricCategory {

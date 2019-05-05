@@ -119,11 +119,13 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
 
     return (
       <TableRow key={submission.id} onClick={openSubmission.bind(this.props, submission.id)}>
-        <TableColumn key={`${submission.id}-assignment`} className={`table-cell${cellType}`}>
+        <TableColumn key={`${submission.id}-assignment`} className="left-aligned">
           {assignmentName}
         </TableColumn>
         <TableColumn key={`${submission.id}-students`}>{submission.students.toString()}</TableColumn>
-        <TableColumn key={`${submission.id}-grade`}>{grade}</TableColumn>
+        <TableColumn key={`${submission.id}-grade`} className={`table-cell${cellType}`}>
+          {grade}
+        </TableColumn>
         <TableColumn key={`${submission.id}-finalized`}>
           {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
         </TableColumn>
@@ -166,7 +168,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
         }
         return (
           <TableRow key={graderEmail} onClick={changeActiveGrader.bind(this.props, graderEmail)}>
-            <TableColumn key={graderEmail}>{graderEmail}</TableColumn>
+            <TableColumn key={graderEmail} className="left-aligned">
+              {graderEmail}
+            </TableColumn>
             {sortedAssignments.map((assignment) => {
               const submissions = submissionsByGrader[graderEmail][assignment.id];
               const assignmentName = assignment.name;
@@ -259,7 +263,9 @@ class GraderData extends React.Component<IPropsGraderOverview, {}> {
           <DataTable className="DataTable--GraderData-Selected" plain={true}>
             <TableHeader>
               <TableRow>
-                <TableColumn key={'Assignment'}>{'Assignment'}</TableColumn>
+                <TableColumn className="left-aligned" key={'Assignment'}>
+                  {'Assignment'}
+                </TableColumn>
                 <TableColumn key={'Student'}>{'Student'}</TableColumn>
                 <TableColumn key={'Grade'}>{'Grade'}</TableColumn>
                 <TableColumn key={'Finalized'}>{'Finalized'}</TableColumn>

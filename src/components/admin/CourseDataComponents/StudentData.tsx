@@ -10,8 +10,10 @@ import {
   TableHeader,
   TableRow,
   TextField,
+  Tooltipped,
 } from 'react-md';
 
+import * as moment from 'moment';
 import Select from 'react-select';
 
 import { IOption, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -33,6 +35,7 @@ interface IPropsStudentOverview {
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
 interface IState {
@@ -151,6 +154,30 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
     }
   };
 
+  public getViewIcon = (submission: SubmissionType, student: string) => {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or unfinalized
+      return '--';
+    } else if (student in this.props.viewsBySubmission[submission.id]) {
+      // case: submission has been viewed
+      return (
+        <Tooltipped
+          label={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}
+          position="left"
+          setPosition={true}
+          delay={500}
+        >
+          <div>
+            <FontIcon>visibility</FontIcon>
+          </div>
+        </Tooltipped>
+      );
+    } else {
+      // case: submission has not been viewed
+      return <FontIcon secondary>visibility_off</FontIcon>;
+    }
+  };
+
   public render() {
     const {
       submissionsByStudent,
@@ -184,7 +211,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         }
         return (
           <TableRow key={studentEmail} onClick={changeActiveStudent.bind(this.props, studentEmail)}>
-            <TableColumn key={studentEmail} plain={true}>
+            <TableColumn className="left-aligned" key={studentEmail} plain={true}>
               {studentEmail}
             </TableColumn>
             {sortedAssignments.map((assignment) => {
@@ -227,13 +254,14 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-All">
             <TableHeader>
               <TableRow key={'index'}>
-                {headers.map((header) => {
+                {headers.map((header, index) => {
                   return (
                     <TableColumn
                       sorted={sortedIndex[header]}
                       onClick={this.toggleSort.bind(this.props, header)}
                       key={header}
                       plain={true}
+                      className={index === 0 ? 'left-aligned' : ''}
                     >
                       {header}
                     </TableColumn>
@@ -274,7 +302,12 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
         const cellClick = openSubmission.bind(this.props, submission.id);
         return (
           <TableRow key={submission.id.toString()}>
-            <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
+            <TableColumn
+              className="left-aligned"
+              onClick={cellClick}
+              tooltipLabel="Click to open submission."
+              tooltipDelay={1500}
+            >
               {
                 assignments.filter((assignment) => {
                   return assignment.id === assignmentID;
@@ -299,6 +332,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             <TableColumn onClick={cellClick} tooltipLabel="Click to open submission." tooltipDelay={1500}>
               {submission.isFinalized ? <FontIcon>done</FontIcon> : null}
             </TableColumn>
+            <TableColumn onClick={cellClick}>{this.getViewIcon(submission, activeStudent)}</TableColumn>
             <TableColumn>
               <Button
                 key={`button--deleteSubmission-${submission.id}`}
@@ -314,8 +348,6 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           </TableRow>
         );
       });
-
-      console.log(activeStudent);
 
       return (
         <div>
@@ -341,10 +373,13 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
           <DataTable plain={true} className="DataTable--StudentData-Selected">
             <TableHeader>
               <TableRow>
-                <TableColumn key="Assignment">Assignment</TableColumn>
+                <TableColumn className="left-aligned" key="Assignment">
+                  Assignment
+                </TableColumn>
                 <TableColumn key="Grade">Grade</TableColumn>
                 <TableColumn key="Grader">Grader</TableColumn>
                 <TableColumn key="Finalized">Finalized</TableColumn>
+                <TableColumn key="hasViewed">Viewed by Student</TableColumn>
                 <TableColumn key="Delete">Delete</TableColumn>
               </TableRow>
             </TableHeader>
