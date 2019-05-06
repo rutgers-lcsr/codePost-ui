@@ -247,6 +247,7 @@ class ManageGraders extends React.Component<IProps, IState> {
                 type="switch"
                 name="ManageGraders__toggleSuperGrader"
                 className="ManageGraders__toggleSuperGrader"
+                style={{ justifyContent: 'center' }}
                 defaultChecked={isSuperGrader}
                 disabled={lockedGraderChange || isBeingChanged}
                 onChange={this.changeSuperGrader.bind(this.props, grader)}
