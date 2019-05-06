@@ -517,6 +517,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 id={`${assignmentID}-release-checkbox`}
                 name="assignment-release-checkbox"
                 type="switch"
+                style={{ justifyContent: 'center' }}
                 defaultChecked={assignment.isReleased}
                 onChange={this.props.updateAssignment.bind(this, {
                   id: assignment.id,
