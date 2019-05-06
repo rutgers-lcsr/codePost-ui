@@ -14,10 +14,7 @@ class Pricing extends React.Component<IProps, {}> {
         <div className="Pricing__background" />
         <LandingTopBar />
         <div className="Pricing__title-box">
-          <div className="Pricing__title1">
-            codePost is free for as long as you want, <br />
-            for as many courses and people that you need.
-          </div>
+          <div className="Pricing__title1">codePost is free for as many courses and people that you need.</div>
         </div>
         <div className="Pricing__main-container">
           <div className="Pricing__free">
@@ -69,7 +66,7 @@ class Pricing extends React.Component<IProps, {}> {
               <div className="Pricing__free__item">
                 <img className="Pricing__free__item__check" src={require('../img/green-check.png')} />
                 <div className="Pricing__free__item__text">
-                  Guaranteed <b>24 hour</b> response time
+                  Guaranteed <b>48 hour</b> response time
                 </div>
               </div>
             </div>
@@ -79,13 +76,18 @@ class Pricing extends React.Component<IProps, {}> {
           </div>
           <div className="Pricing__premium">
             <div className="Pricing__premium__title">Premium</div>
-            <div className="Pricing__premium__subtext">Additional features. Ideal for online code academies.</div>
+            <div className="Pricing__premium__subtext">
+              Additional features. Ideal for large departments that want enterprise-grade support.
+            </div>
             <div className="Pricing__premium__features">
               <div className="Pricing__premium__item">
                 <div className="Pricing__premium__item__text">Unlimited number of API requests/day</div>
               </div>
               <div className="Pricing__premium__item">
-                <div className="Pricing__premium__item__text">Guaranteed 3 hour response time</div>
+                <div className="Pricing__premium__item__text">Guaranteed 12 hour response time</div>
+              </div>
+              <div className="Pricing__premium__item">
+                <div className="Pricing__premium__item__text">Influence on product roadmap</div>
               </div>
               <div className="Pricing__premium__item">
                 <div className="Pricing__premium__item__text">White label (custom logo + styles)</div>
