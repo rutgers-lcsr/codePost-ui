@@ -87,10 +87,10 @@ class Pricing extends React.Component<IProps, {}> {
                 <div className="Pricing__premium__item__text">Guaranteed 12 hour response time</div>
               </div>
               <div className="Pricing__premium__item">
-                <div className="Pricing__premium__item__text">Influence on product roadmap</div>
+                <div className="Pricing__premium__item__text">White labeled (custom logo + styles)</div>
               </div>
               <div className="Pricing__premium__item">
-                <div className="Pricing__premium__item__text">White label (custom logo + styles)</div>
+                <div className="Pricing__premium__item__text">Influence our product roadmap</div>
               </div>
             </div>
             <Button

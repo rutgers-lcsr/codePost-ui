@@ -137,6 +137,7 @@
 
 .DataTable--ManageAssignments {
   @include fixedTableHeader(calc(100vh - 340px), 400px);
+  @include wrapHeaders(100px);
 }
 
 .DataTable--RubricCategory {

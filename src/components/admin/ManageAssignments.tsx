@@ -667,14 +667,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                     Assignment
                   </TableColumn>
                   <TableColumn key={'Publish'}>Published</TableColumn>
-                  <TableColumn key={'SubNumber'}># submissions</TableColumn>
-                  <TableColumn key={'GradedNumber'}># finalized</TableColumn>
-                  <TableColumn key={'UngradedNumber'}># in progress</TableColumn>
-                  <TableColumn key={'UnclaimedNumber'}># unclaimed</TableColumn>
-                  <TableColumn key={'NumMissing'}>Students missing </TableColumn>
-                  <TableColumn key={'numUnviewed'}># unviewed </TableColumn>
-                  <TableColumn key={'Mean'}>Mean Grade</TableColumn>
-                  <TableColumn key={'Median'}>Median Grade</TableColumn>
+                  <TableColumn key={'SubNumber'}>Submissions</TableColumn>
+                  <TableColumn key={'GradedNumber'}>Finalized</TableColumn>
+                  <TableColumn key={'UngradedNumber'}>In progress</TableColumn>
+                  <TableColumn key={'UnclaimedNumber'}>Unclaimed</TableColumn>
+                  <TableColumn key={'NumMissing'}>Missing</TableColumn>
+                  <TableColumn key={'numUnviewed'}>Unviewed</TableColumn>
+                  <TableColumn key={'Mean'}>Mean</TableColumn>
+                  <TableColumn key={'Median'}>Median</TableColumn>
                   <TableColumn className="left-aligned" key={'Menu'} />
                 </TableRow>
               </TableHeader>
