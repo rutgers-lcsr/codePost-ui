@@ -1,7 +1,5 @@
 .SignUpManager {
   @include formatAsWhiteBox();
-  min-height: 100vh;
-
   padding-top: 100px;
   min-height: calc(100vh - 60px) !important;
 
@@ -63,7 +61,6 @@
     &--right {
       padding: 12px 4px 12px 4px;
     }
-
 
     @media only screen and (max-width: 600px) {
       @include pairedbuttons(150px, 45px);
