@@ -252,7 +252,7 @@ public boolean contains(int[] x, int y) {\n\n\
         <div className="Gradient">
           <div className="WhyBox">
             <div className="WhyBox__textBox">
-              <div className="WhyBox__textBox__title">Why you should read your students' code</div>
+              <div className="WhyBox__textBox__title">Code review = better feedback</div>
               <div className="WhyBox__textBox__itemList">
                 <div className="WhyBox__textBox__item">
                   Autograding can tell your students whether their code is correct, but
