@@ -10,8 +10,6 @@ const RubricCategoryV = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       sortKey: t.number,
-    }),
-    t.partial({
       helpText: t.string,
     }),
   ],
