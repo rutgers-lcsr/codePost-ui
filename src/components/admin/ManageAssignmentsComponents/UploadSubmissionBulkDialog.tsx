@@ -75,6 +75,7 @@ enum STATUS {
   READING /* reading files from user's file system */,
   UPLOADING /* saving submissions via codePost API */,
   FILE_ERROR /* error reading files, so aborting upload */,
+  COMPLETE /* completed upload */,
 }
 
 interface IState {
@@ -259,7 +260,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
       Promise.all(promises).then(() => {
         this.setState({
-          status: STATUS.NONE,
+          status: STATUS.COMPLETE,
         });
       });
     });
@@ -495,64 +496,82 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
 
     /* tslint:disable */
-    return (
-      <div>
-        <Dropzone onDrop={this.onFileDrop}>
-          {({ getRootProps, getInputProps }) => (
-            <section className="container">
-              <div
-                style={baseStyle}
-                {...getRootProps({ className: 'dropzone', onClick: (event) => event.stopPropagation() })}
-              >
-                <input {...getInputProps()} />
-                <p>
-                  Drag your submissions folder here. Make sure to follow the format below. To learn more about how to
-                  use submission upload, check out{' '}
-                  <a href="https://help.codepost.io/docs/upload-submissions-in-bulk-gui">our docs.</a>
-                </p>
-              </div>
-            </section>
-          )}
-        </Dropzone>
-        <div className="error-padding" />
-        <div className="error-padding" />
-        <ReactMarkdown source={exampleText} />
-        <div className="dialog--upload-submission__actions">
-          <div style={{ display: 'inline-block', padding: '0px 20px' }}>
-            Overwrite mode:
-            <SelectionControl
-              id="toggleShowStudents"
-              name="toggleShowStudents"
-              type="switch"
-              className="toggleShowStudents"
-              defaultChecked={this.state.overwriteMode}
-              onChange={this.toggleOverwriteMode}
-              aria-label={'Overwrite mode'}
-              style={{ display: 'inline-block' }}
-            />
-          </div>
-          <Button raised onClick={this.cancel} primary={false} flat={true} style={{ marginLeft: 'auto' }}>
-            Cancel
-          </Button>
-          <Button
-            raised
-            onClick={this.clearFiles}
-            disabled={this.state.numFiles === 0}
-            primary={false}
-            style={{ marginLeft: '10px' }}
-          >
-            Clear Uploads
-          </Button>
-          <Button
-            raised
-            onClick={this.onUpload}
-            disabled={this.state.numFiles === 0}
-            primary={true}
-            style={{ marginLeft: '10px' }}
-          >
-            Upload
+    let controls;
+    if (this.state.status === STATUS.COMPLETE) {
+      controls = (
+        <div>
+          <h4>Upload complete!</h4>
+          <Button onClick={this.clearFiles} raised primary={true} flat={true} style={{ marginLeft: 'auto' }}>
+            Upload again
           </Button>
         </div>
+      );
+    } else {
+      controls = (
+        <div>
+          <Dropzone onDrop={this.onFileDrop}>
+            {({ getRootProps, getInputProps }) => (
+              <section className="container">
+                <div
+                  style={baseStyle}
+                  {...getRootProps({ className: 'dropzone', onClick: (event) => event.stopPropagation() })}
+                >
+                  <input {...getInputProps()} />
+                  <p>
+                    Drag your submissions folder here. Make sure to follow the format below. To learn more about how to
+                    use submission upload, check out{' '}
+                    <a href="https://help.codepost.io/docs/upload-submissions-in-bulk-gui">our docs.</a>
+                  </p>
+                </div>
+              </section>
+            )}
+          </Dropzone>
+          <div className="error-padding" />
+          <div className="error-padding" />
+          <ReactMarkdown source={exampleText} />
+          <div className="dialog--upload-submission__actions">
+            <div style={{ display: 'inline-block', padding: '0px 20px' }}>
+              Overwrite mode:
+              <SelectionControl
+                id="toggleShowStudents"
+                name="toggleShowStudents"
+                type="switch"
+                className="toggleShowStudents"
+                defaultChecked={this.state.overwriteMode}
+                onChange={this.toggleOverwriteMode}
+                aria-label={'Overwrite mode'}
+                style={{ display: 'inline-block' }}
+              />
+            </div>
+            <Button raised onClick={this.cancel} primary={false} flat={true} style={{ marginLeft: 'auto' }}>
+              Cancel
+            </Button>
+            <Button
+              raised
+              onClick={this.clearFiles}
+              disabled={this.state.numFiles === 0}
+              primary={false}
+              style={{ marginLeft: '10px' }}
+            >
+              Clear Uploads
+            </Button>
+            <Button
+              raised
+              onClick={this.onUpload}
+              disabled={this.state.numFiles === 0}
+              primary={true}
+              style={{ marginLeft: '10px' }}
+            >
+              Upload
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        {controls}
         {errors}
         <div className="error-padding" />
         <div className="error-padding" />
