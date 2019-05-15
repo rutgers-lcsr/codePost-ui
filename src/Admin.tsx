@@ -771,7 +771,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       this.props.addErrorToast('No students selected for the upload.', undefined);
-      return;
+      return Promise.reject();
     }
 
     const submissionPayload = {
@@ -797,14 +797,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return File.create(filePayload);
       });
 
-      const { submissionsByStudent } = this.state;
+      const { submissionsByStudent, submissions } = this.state;
       partners.forEach((student) => {
         if (!submissionsByStudent[student]) {
           submissionsByStudent[student] = {};
         }
         submissionsByStudent[student][assignment.id] = submission;
       });
-      this.setState({ submissionsByStudent });
+      submissions[submission.assignment].push(submission);
+      this.setState({ submissionsByStudent, submissions });
       return Promise.all(filePromises).then(() => {
         return Submission.read(submission.id);
       });
