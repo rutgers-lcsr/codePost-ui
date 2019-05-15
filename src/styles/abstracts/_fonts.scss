@@ -1,0 +1,11 @@
+// Fonts
+
+$fontMain: 'Avenir Next';
+
+$fontCode: 'AndaleMono';
+
+// Export for tsx
+:export {
+  fontMain: $fontMain;
+  fontCode: $fontCode;
+}

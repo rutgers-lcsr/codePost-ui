@@ -22,7 +22,7 @@ const createColorGroup = (prefix: string, title: string): [any, any] => {
 
   const columns = [
     {
-      title: title,
+      title,
       dataIndex: 'token',
       width: '30%',
     },

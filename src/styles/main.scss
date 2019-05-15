@@ -3,6 +3,7 @@
 // 1. Configuration and helpers
 @import 'abstracts/functions', 'abstracts/mixins';
 @import 'abstracts/variables';
+@import 'abstracts/colors', 'abstracts/fonts', 'abstracts/typography';
 
 // 2. Vendors
 @import 'vendors/react-md', 'vendors/codeMirror';
@@ -16,7 +17,7 @@
   'components/selector', 'components/dialog', 'components/select', 'components/controlToggle',
   'components/rubricCommentExplorer', 'components/whiteBox', 'components/submission-info', 'components/progress',
   'components/carousel', 'components/cardList', 'components/drawer', 'components/file-upload',
-  'components/roster-upload', 'components/tooltip', 'components/markdown-code';
+  'components/roster-upload', 'components/tooltip', 'components/markdown-code', 'components/cpbutton';
 
 // 5. Layout-related sections
 @import 'layout/header';
