@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, DialogContainer, FileUpload } from 'react-md';
+import { Button, FileUpload } from 'react-md';
 
 import UploadedFileCard from './UploadedFileCard';
 
@@ -210,17 +210,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         <div className="error-padding" />
       </div>
     );
-    return (
-      <DialogContainer
-        id="rubricFile-dialog"
-        className="dialog--upload-submission"
-        visible={true}
-        title="Upload Submission"
-        onHide={this.cancel}
-      >
-        {content}
-      </DialogContainer>
-    );
+    return content;
   }
 }
 export default UploadSubmissionDialog;

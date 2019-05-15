@@ -3,10 +3,10 @@ import { DialogContainer } from 'react-md';
 // import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import UploadSubmissionBulkDialog from './UploadSubmissionBulkDialog';
+import UploadSubmissionDialog from './UploadSubmissionDialog';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
-// import UploadSubmissionDialog from './UploadSubmissionDialog';
 
 interface IState {
   shownTab: number;
@@ -29,7 +29,20 @@ class UploadManager extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
+  public changeTab = (newTab: number) => {
+    this.setState({ shownTab: newTab });
+  };
+
   public render() {
+    let buttons;
+    if (this.state.shownTab === 0) {
+      buttons = (
+        <div>
+          <button onClick={this.changeTab.bind(this, 1)}>Single submission</button>
+          <button onClick={this.changeTab.bind(this, 2)}>Multiple submissions</button>
+        </div>
+      );
+    }
     return (
       <DialogContainer
         id="rubricFile-dialog"
@@ -38,8 +51,18 @@ class UploadManager extends React.Component<IProps, IState> {
         title="Upload Submissions"
         onHide={this.onCancel}
       >
+        {buttons}
+        <UploadSubmissionDialog
+          isVisible={this.state.shownTab === 1}
+          onCancel={this.onCancel}
+          assignments={[this.props.assignment]}
+          selectedAssignment={this.props.assignment}
+          students={this.props.students}
+          uploadSubmission={this.props.uploadSubmission}
+          selectedStudents={null}
+        />
         <UploadSubmissionBulkDialog
-          isVisible={true}
+          isVisible={this.state.shownTab === 2}
           assignment={this.props.assignment}
           students={this.props.students}
           onCancel={this.onCancel}
@@ -52,23 +75,10 @@ class UploadManager extends React.Component<IProps, IState> {
 }
 export default UploadManager;
 
-// <Tabs defaultIndex={this.state.shownTab}>
-//   <TabList className="tabList--CourseData">
-//     <Tab className="tabList--Upload__tab">Single Submission</Tab>
-//     <Tab className="tabList--Upload__tab">Multiple Submissions</Tab>
-//   </TabList>
-//   <TabPanel>
-//     <div className="tabList--Upload__panelPadding" />
-//     <UploadSubmissionBulkDialog
-//       isVisible={true}
-//       assignment={this.props.assignment}
-//       students={this.props.students}
-//       onCancel={this.onCancel}
-//       submissions={this.props.submissions}
-//       uploadSubmission={this.props.uploadSubmission}
-//     />
-//   </TabPanel>
-//   <TabPanel>
-//     <div className="tabList--Upload__panelPadding" />
-//   </TabPanel>
-// </Tabs>;
+// isVisible: boolean;
+//   onCancel: () => void;
+//   assignments: AssignmentType[];
+//   selectedAssignment: AssignmentType | null;
+//   students: string[];
+//   selectedStudents: string[] | null;
+//   uploadSubmission: any;
