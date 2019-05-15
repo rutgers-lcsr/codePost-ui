@@ -100,6 +100,9 @@ interface IState {
 
   /* files with an invalid path */
   errorPaths: string[];
+
+  /* number of successfully uploaded submissions */
+  numUploaded: number;
 }
 
 class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
@@ -111,6 +114,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     numFiles: 0,
     overwriteMode: false,
     errorPaths: [],
+    numUploaded: 0,
   };
 
   /***************************************************************************************/
@@ -247,7 +251,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             newSub.students.forEach((student) => {
               studentMap[student] = STUDENT_STATUS.SUCCESS;
             });
-            this.setState({ studentMap });
+            this.setState({ studentMap, numUploaded: this.state.numUploaded + 1 });
           })
           .catch((errors) => {
             const studentMap = this.state.studentMap;
@@ -273,6 +277,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       fileMap: {},
       status: STATUS.NONE,
       numFiles: 0,
+      numUploaded: 0,
     });
   };
 
@@ -501,9 +506,22 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       controls = (
         <div>
           <h4>Upload complete!</h4>
+          <Button raised onClick={this.cancel} primary={false} flat={true} style={{ marginLeft: 'auto' }}>
+            Close
+          </Button>
+          &nbsp; &nbsp;
           <Button onClick={this.clearFiles} raised primary={true} flat={true} style={{ marginLeft: 'auto' }}>
             Upload again
           </Button>
+        </div>
+      );
+    } else if (this.state.status === STATUS.UPLOADING) {
+      controls = (
+        <div>
+          <h4>Uploading...</h4>
+          <p>
+            Uploaded {this.state.numUploaded} / {this.state.protoSubmissions.length} submissions.
+          </p>
         </div>
       );
     } else {
