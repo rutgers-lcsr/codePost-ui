@@ -1,12 +1,21 @@
-import React from 'react';
-import { DialogContainer } from 'react-md';
-// import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
 
+/* react imports */
+import React from 'react';
+
+/* react-md imports */
+import { DialogContainer } from 'react-md';
+
+/* codePost imports */
 import UploadSubmissionBulkDialog from './UploadSubmissionBulkDialog';
 import UploadSubmissionDialog from './UploadSubmissionDialog';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
+
+/**********************************************************************************************************************/
 
 interface IState {
   shownTab: number;
@@ -59,7 +68,8 @@ class UploadManager extends React.Component<IProps, IState> {
           selectedAssignment={this.props.assignment}
           students={this.props.students}
           uploadSubmission={this.props.uploadSubmission}
-          selectedStudents={null}
+          selectedStudents={[]}
+          submissions={this.props.submissions}
         />
         <UploadSubmissionBulkDialog
           isVisible={this.state.shownTab === 2}
@@ -74,11 +84,3 @@ class UploadManager extends React.Component<IProps, IState> {
   }
 }
 export default UploadManager;
-
-// isVisible: boolean;
-//   onCancel: () => void;
-//   assignments: AssignmentType[];
-//   selectedAssignment: AssignmentType | null;
-//   students: string[];
-//   selectedStudents: string[] | null;
-//   uploadSubmission: any;

@@ -34,7 +34,7 @@ interface IPropsStudentOverview {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -410,6 +410,7 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
             selectedStudents={[activeStudent]}
             onCancel={this.toggleUploadSubmission}
             uploadSubmission={this.props.uploadSubmission}
+            submissions={Object.values(this.props.submissionsByStudent[activeStudent])}
           />
         </div>
       );
