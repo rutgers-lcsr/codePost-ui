@@ -17,8 +17,16 @@ module.exports = ({config}) => {
             }),
           },
         },
-        { loader: require.resolve('react-docgen-typescript-loader') }
+        { loader: require.resolve('react-docgen-typescript-loader') },
       ]
+  });
+  config.module.rules.push({
+    test:/\.scss$/,
+    loaders: [
+      require.resolve('style-loader'),
+      require.resolve('css-loader'),
+      require.resolve('sass-loader')
+    ]
   });
   config.resolve.extensions.push('.ts', '.tsx');
   return config;

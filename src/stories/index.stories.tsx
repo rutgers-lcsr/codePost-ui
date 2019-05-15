@@ -1,10 +1,13 @@
 import React from 'react';
 
-import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { linkTo } from '@storybook/addon-links';
+import { storiesOf } from '@storybook/react';
 
 import { Button, Welcome } from '@storybook/react/demo';
+
+import Colors from './Colors';
+import { StorybookContainer } from './helpers';
 
 storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
@@ -17,3 +20,9 @@ storiesOf('Button', module)
       </span>
     </Button>
   ));
+
+storiesOf('Styles', module).add('Colors', () => (
+  <StorybookContainer title="Colors">
+    <Colors />
+  </StorybookContainer>
+));
