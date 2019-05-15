@@ -485,7 +485,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           },
           {
             leftIcon: <FontIcon>vertical_align_top</FontIcon>,
-            primaryText: 'Upload Submission',
+            primaryText: 'Upload Submissions',
             onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Upload, assignment),
           },
           {
