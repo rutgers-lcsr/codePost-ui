@@ -804,8 +804,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         }
         submissionsByStudent[student][assignment.id] = submission;
       });
-      submissions[submission.assignment].push(submission);
-      this.setState({ submissionsByStudent, submissions });
+
+      const newSubmissions = { ...submissions };
+      newSubmissions[submission.assignment].push(submission);
+      this.setState({ submissionsByStudent, submissions: newSubmissions });
       return Promise.all(filePromises).then(() => {
         return Submission.read(submission.id);
       });
