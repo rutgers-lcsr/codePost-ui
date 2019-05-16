@@ -195,7 +195,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             median = 0;
           } else {
             // calculate mean
-            mean = totalScore / numGraded;
+            mean = parseFloat((totalScore / numGraded).toPrecision(2));
 
             // calculate median
             const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
@@ -347,7 +347,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     if (deletingAssignment) {
       this.setState({ activeAssignment: undefined, detailType: undefined });
       this.props.setLoadingDialog(
-        'This action could impact a lot of data and may take a few minutes.',
+        'Deleting an assignment can impact a lot of data and may take a few minutes.',
         'Assignment is being deleted',
       );
       this.props.deleteAssignment(deletingAssignment).then(() => {

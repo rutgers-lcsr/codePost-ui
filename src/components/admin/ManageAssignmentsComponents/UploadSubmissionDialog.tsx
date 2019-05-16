@@ -191,7 +191,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       errorText = (
         <div>
           <div>
-            A submission already exists for one of these students. Please delete it before uploading a new submission.
+            A submission already exists for one of these students. You must delete it before uploading a new submission.
           </div>
           <div className="error-padding" />
           <div className="error-padding" />
