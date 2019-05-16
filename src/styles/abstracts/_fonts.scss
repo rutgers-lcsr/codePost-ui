@@ -1,8 +1,8 @@
 // Fonts
 
-$fontMain: 'Avenir Next';
+$fontMain: get('ant.font-family');
 
-$fontCode: 'AndaleMono';
+$fontCode: get('ant.code-family');
 
 // Export for tsx
 :export {

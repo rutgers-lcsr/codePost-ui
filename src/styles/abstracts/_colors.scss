@@ -1,7 +1,7 @@
 // Colors
 
 // Brand Colors
-$brandPrimary: #24be85;
+$brandPrimary: get('ant.primary-color');
 $brandLight: #f0fff6;
 $brandVibrant: #48cc98;
 $brandDark: #17996e;
@@ -11,11 +11,11 @@ $brandBlack: #1b1b1b;
 // Action Colors
 $actionBlue: #1890ff;
 $actionBlueFade: #40a9ff;
-$actionGreen: #24be85;
-$actionGreenFade: #48cc98;
-$actionYellow: #ffbf00;
+$actionGreen: get('ant.success-color');
+$actionGreenFade: #48cc98; // Should probably be a fade?...
+$actionYellow: get('ant.warning-color');
 $actionYellowFade: #ffd129;
-$actionRed: #f64852;
+$actionRed: get('ant.error-color');
 $actionRedFade: #ff7375;
 
 // Green Palette
@@ -31,10 +31,10 @@ $green9: #034d39;
 $green10: #02261e;
 
 // Neutral Colors - Light background
-$neutralTitle: rgba(0, 0, 0, 0.8);
-$neutralMainText: rgba(0, 0, 0, 0.7);
-$neutralSecondaryText: rgba(0, 0, 0, 0.5);
-$neutralDisable: rgba(0, 0, 0, 0.3);
+$neutralTitle: get('ant.heading-color');
+$neutralMainText: get('ant.text-color');
+$neutralSecondaryText: get('ant.text-color-secondary');
+$neutralDisable: get('ant.disabled-color');
 $neutralBorder: rgba(0, 0, 0, 0.2);
 $neutralDivider: rgba(0, 0, 0, 0.1);
 $neutralBackground: rgba(0, 0, 0, 0.05);

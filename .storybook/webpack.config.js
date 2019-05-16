@@ -1,8 +1,11 @@
 const path = require("path");
 const SRC_PATH = path.join(__dirname, '../src');
 const tsImportPluginFactory = require('ts-import-plugin')
-// const STORIES_PATH = path.join(__dirname, '../stories');
-//dont need stories path if you have your stories inside your //components folder
+
+var sass = require("node-sass");
+const sassUtils = require("node-sass-utils")(sass);
+const themeVars = require('../src/styles/abstracts/_ant_overrides.js');
+
 module.exports = ({config}) => {
   config.module.rules.push({
     test: /\.(ts|tsx)$/,
@@ -13,7 +16,7 @@ module.exports = ({config}) => {
           options: {
             configFileName: './tsconfig.json',
             getCustomTransformers: () => ({
-              before: [ tsImportPluginFactory( { style: 'css' } ) ]
+              before: [ tsImportPluginFactory( { style: true } ) ]
             }),
           },
         },
@@ -21,12 +24,47 @@ module.exports = ({config}) => {
       ]
   });
   config.module.rules.push({
-    test:/\.scss$/,
-    loaders: [
-      require.resolve('style-loader'),
-      require.resolve('css-loader'),
-      require.resolve('sass-loader')
-    ]
+    test: /\.scss/,
+    use: [{
+      loader: 'style-loader',
+    }, {
+      loader: 'css-loader',
+    }, {
+      loader: 'sass-loader',
+      // ------ Sharing variables between JS and SASS --------//
+      // https://itnext.io/sharing-variables-between-js-and-sass-using-webpack-sass-loader-713f51fa7fa0
+      options: {
+        functions: {
+          "get($keys)": function(keys) {
+            keys = keys.getValue().split(".");
+            let result = themeVars;
+            let i;
+            for (i = 0; i < keys.length; i++) {
+              result = result[keys[i]];
+            }
+            result = sassUtils.castToSass(result);
+            return result;
+          }
+        }
+      }
+
+    }],
+  });
+  config.module.rules.push({
+    //------------------- For Ant Theme Override -------------------//
+    // https://ant.design/docs/react/customize-theme
+    test: /\.less$/,
+    use: [{
+      loader: 'style-loader',
+    }, {
+      loader: 'css-loader', // translates CSS into CommonJS
+    }, {
+      loader: 'less-loader', // compiles Less to CSS
+      options: {
+        modifyVars: themeVars.ant,
+        javascriptEnabled: true,
+      },
+    }],
   });
   config.resolve.extensions.push('.ts', '.tsx');
   return config;
