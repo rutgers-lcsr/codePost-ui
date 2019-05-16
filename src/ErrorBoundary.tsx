@@ -7,6 +7,7 @@ interface IErrorBoundaryProps {
 interface IErrorBoundaryState {
   error?: Error;
   errorInfo?: React.ErrorInfo;
+  url?: string;
 }
 
 class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
@@ -16,11 +17,13 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
     this.setState({
       error,
       errorInfo,
+      url: window.location.href,
     });
 
     const payload = {
       error: error.toString(),
-      errorInfo,
+      errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      url: window.location.href,
     };
 
     // Log errors to server
