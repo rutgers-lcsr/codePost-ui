@@ -47,8 +47,19 @@ class UploadManager extends React.Component<IProps, IState> {
     if (this.state.shownTab === 0) {
       buttons = (
         <div>
+          <button onClick={this.onCancel}>Cancel</button>
+          &nbsp;&nbsp;
           <button onClick={this.changeTab.bind(this, 1)}>Single submission</button>
+          &nbsp;&nbsp;
           <button onClick={this.changeTab.bind(this, 2)}>Multiple submissions</button>
+        </div>
+      );
+    } else {
+      buttons = (
+        <div>
+          <button onClick={this.changeTab.bind(this, 0)}>Back</button>
+          <br />
+          <br />
         </div>
       );
     }
