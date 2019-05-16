@@ -30,12 +30,19 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
 }
 
+enum STATUS {
+  NONE,
+  SAVING /* reading files from user's file system */,
+  COMPLETE /* completed upload */,
+}
+
 interface IState {
   selectedStudents: string[];
   selectedAssignment: AssignmentType | null;
   file?: any;
   files: any[];
   foundCollision: boolean;
+  status: STATUS;
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
@@ -47,6 +54,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     file: undefined,
     files: [],
     foundCollision: false,
+    status: STATUS.NONE,
   };
 
   public componentDidUpdate(prevProps: IProps) {
@@ -111,16 +119,30 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public upload = () => {
     if (this.state.selectedAssignment !== null) {
-      this.props.uploadSubmission(this.state.selectedAssignment, this.state.selectedStudents, this.state.files);
-      this.props.onCancel();
-      // If the students or assignment was passed in, we want to keep it in state
-      if (!this.props.selectedStudents) {
-        this.setState({ files: [], selectedStudents: [] });
-      } else if (!this.props.selectedAssignment) {
-        this.setState({ files: [], selectedAssignment: null });
-      } else {
-        this.setState({ files: [] });
-      }
+      this.setState({ status: STATUS.SAVING }, () => {
+        if (this.state.selectedAssignment !== null) {
+          this.props
+            .uploadSubmission(this.state.selectedAssignment, this.state.selectedStudents, this.state.files)
+            .then((newSubmission) => {
+              this.setState({
+                status: STATUS.COMPLETE,
+                files: [],
+                selectedStudents: this.props.selectedStudents ? this.props.selectedStudents : [],
+                selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : null,
+              });
+            });
+        }
+      });
+
+      /* JE: why do we need the below? */
+      // // If the students or assignment was passed in, we want to keep it in state
+      // if (!this.props.selectedStudents) {
+      //   this.setState({ files: [], selectedStudents: [] });
+      // } else if (!this.props.selectedAssignment) {
+      //   this.setState({ files: [], selectedAssignment: null });
+      // } else {
+      //   this.setState({ files: [] });
+      // }
     }
   };
 
@@ -159,9 +181,45 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return;
   };
 
+  public changeStatus = (newStatus: STATUS) => {
+    this.setState({ status: newStatus });
+  };
+
   public render() {
-    if (!this.props.isVisible) {
+    const { isVisible } = this.props;
+    const { status } = this.state;
+
+    if (!isVisible) {
       return <div />;
+    }
+
+    if (status === STATUS.COMPLETE) {
+      return (
+        <div>
+          <p>Submission upload complete!</p>
+          <Button raised onClick={this.cancel} primary={true} flat={true} style={{ marginLeft: 'auto' }}>
+            Close
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            raised
+            onClick={this.changeStatus.bind(this, STATUS.NONE)}
+            primary={false}
+            flat={true}
+            style={{ marginLeft: 'auto' }}
+          >
+            Upload another
+          </Button>
+        </div>
+      );
+    }
+
+    if (status === STATUS.SAVING) {
+      return (
+        <div>
+          <p>Loading...</p>
+        </div>
+      );
     }
 
     const uploadedFileCards = this.state.files.map((file) => {
@@ -199,7 +257,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       );
     }
 
-    const content = (
+    return (
       <div>
         <div className="error-padding" />
         <Select
@@ -265,7 +323,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         <div className="error-padding" />
       </div>
     );
-    return content;
   }
 }
 export default UploadSubmissionDialog;
