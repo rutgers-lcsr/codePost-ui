@@ -102,7 +102,7 @@ class CPLayoutAdmin extends React.Component<any, {}> {
       {
         title: '',
         key: 'action',
-        render: (text: string, record: any) => <Icon type="ellipsis" />,
+        render: (text: string, record: any) => <Icon type="more" />,
       },
     ];
 
@@ -180,52 +180,87 @@ class CPLayoutAdmin extends React.Component<any, {}> {
         median: 19,
       },
     ];
+    // <div style={{ display: 'flex' }}>
+    //           <div style={{ display: 'flex', flex: 1 }}>
+    //             <div style={{ display: 'inline-block', marginRight: '10px' }}>{dropdown}</div>
+    //             <div style={{ display: 'inline-block', marginRight: '10px' }}>{createButton}</div>
+    //           </div>
+    //           <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
+    //             <div style={{ display: 'inline-block', marginLeft: '10px' }}>
+    //               <Text strong style={{ whiteSpace: 'nowrap' }}>
+    //                 Hello, hello@andreacg.com!
+    //               </Text>
+    //             </div>
+    //             <div style={{ display: 'inline-block', marginLeft: '26px' }}>
+    //               <Button shape="circle" icon="setting" />
+    //             </div>
+    //             <div style={{ display: 'inline-block', marginLeft: '26px' }}>
+    //               <Button shape="circle" icon="logout" />
+    //             </div>
+    //           </div>
+    //         </div>
 
     return (
       <Layout className="layout--admin">
         <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
           <Header className="layout--admin__sider__header">
-            <CPLogo />
+            {this.state.collapsed ? (
+              <Icon type="fire" theme="twoTone" twoToneColor="#52c41a" style={{ fontSize: '30px' }} />
+            ) : (
+              <CPLogo />
+            )}
           </Header>
-          <CPMainNav />
+          <CPMainNav isCollapsed={this.state.collapsed} />
         </Sider>
         <Layout>
           <Header className="layout--admin__header">
-            <div style={{ display: 'flex' }}>
-              <div style={{ display: 'flex', flex: 1 }}>
-                <div style={{ display: 'inline-block', marginRight: '10px' }}>{dropdown}</div>
-                <div style={{ display: 'inline-block', marginRight: '10px' }}>{createButton}</div>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'nowrap',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                overflowX: 'scroll',
+              }}
+            >
+              <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>{dropdown}</div>
+              <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>{createButton}</div>
+              <div style={{ flex: '1 1 auto', margin: '0 -10px 0 0' }} />
+              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
+                <Text strong style={{ whiteSpace: 'nowrap' }}>
+                  Hello, hello@andreacg.com!
+                </Text>
               </div>
-              <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-                <div style={{ display: 'inline-block', marginLeft: '10px' }}>
-                  <Text strong style={{ whiteSpace: 'nowrap' }}>
-                    Hello, hello@andreacg.com!
-                  </Text>
-                </div>
-                <div style={{ display: 'inline-block', marginLeft: '26px' }}>
-                  <Button shape="circle" icon="setting" />
-                </div>
-                <div style={{ display: 'inline-block', marginLeft: '26px' }}>
-                  <Button shape="circle" icon="logout" />
-                </div>
+              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
+                <Button shape="circle" icon="setting" />
+              </div>
+              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
+                <Button shape="circle" icon="logout" />
               </div>
             </div>
           </Header>
           <Content className="layout--admin__content">
             <div style={{ backgroundColor: '#f2f2f2', padding: '0px', marginBottom: '36px' }}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ display: 'flex', flex: 1 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  overflowX: 'scroll',
+                }}
+              >
+                <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>
                   <Title level={1} style={{ fontWeight: 500, margin: 'auto 0' }}>
                     Assignments
                   </Title>
                 </div>
-                <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <div style={{ display: 'inline-block', marginLeft: '10px' }}>
-                    <Button type="primary">Create Assignment</Button>
-                  </div>
-                  <div style={{ display: 'inline-block', marginLeft: '10px' }}>
-                    <Button>Download All Grades</Button>
-                  </div>
+                <div style={{ flex: '1 1 auto', margin: '0 -10px 0 0' }} />
+                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
+                  <Button type="primary">Create Assignment</Button>
+                </div>
+                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
+                  <Button>Download All Grades</Button>
                 </div>
               </div>
             </div>
