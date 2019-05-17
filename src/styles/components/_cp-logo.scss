@@ -1,0 +1,17 @@
+.cp-logo {
+  width: 114px;
+  height: 31px;
+  font-family: $fontLogo;
+  font-size: 25px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: 0px;
+  text-align: center;
+  color: #ffffff;
+
+  &__highlight {
+    font-weight: 800;
+  }
+}

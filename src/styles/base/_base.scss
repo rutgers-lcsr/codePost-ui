@@ -37,12 +37,12 @@ body {
 /**
  * Basic styles for links
  */
-a {
-  color: $text-color;
-  text-decoration: none;
+// a {
+//   color: $text-color;
+//   text-decoration: none;
 
-  @include attention {
-    color: $brand-color;
-    text-decoration: underline;
-  }
-}
+//   @include attention {
+//     color: $brand-color;
+//     text-decoration: underline;
+//   }
+// }

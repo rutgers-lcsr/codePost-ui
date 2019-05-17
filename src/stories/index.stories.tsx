@@ -1,5 +1,7 @@
 import React from 'react';
 
+import 'typeface-muli';
+
 import { linkTo } from '@storybook/addon-links';
 import { storiesOf } from '@storybook/react';
 
@@ -7,12 +9,17 @@ import { Welcome } from '@storybook/react/demo';
 
 import { ButtonsDisabled, ButtonsPrimary, ButtonsSecondary } from './Buttons';
 import { DropdownActive } from './Dropdown';
+console.log('-----');
 
+console.log('window');
 import CPLayoutAdmin from '../components/core/CPLayoutAdmin';
 import CPLayoutGrade from '../components/core/CPLayoutGrade';
 
+import CPMainNav from '../components/core/CPMainNav';
+
 import Colors from './Styles/Colors';
 import Fonts from './Styles/Fonts';
+
 import { StorybookContainer } from './helpers';
 
 import '../styles/main.scss';
@@ -53,6 +60,8 @@ storiesOf('Dropdown', module).add('Active', () => (
     <DropdownActive />
   </StorybookContainer>
 ));
+
+storiesOf('Navigation', module).add('Main Navigation', () => <CPMainNav />);
 
 storiesOf('Layout', module)
   .add('Admin', () => <CPLayoutAdmin />)

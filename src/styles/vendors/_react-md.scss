@@ -9,15 +9,15 @@ $md-text-field-custom-sizes: (
     16px,
     0.25s,
     22px,
-    20px,
+    20px
   ),
   font-size-xxlarge: (
     30px,
     0.25s,
     36px,
-    34px,
-  ),
+    34px
+  )
 );
 
-@include react-md-everything;
+// @include react-md-everything;
 @include react-md-theme-everything($brand-color, $theme-grey);

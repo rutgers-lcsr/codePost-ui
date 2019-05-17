@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-import 'typeface-roboto';
+import 'typeface-muli';
 
 import App from './App';
 import unregister from './registerServiceWorker';

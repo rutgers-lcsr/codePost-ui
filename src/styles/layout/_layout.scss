@@ -1,13 +1,19 @@
 .layout--admin {
   min-height: 100vh;
 
+  &__sider {
+    &__header {
+      padding: 16px 20px;
+    }
+  }
+
   &__header {
     background-color: #fff;
     box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
   }
 
   &__content {
-    margin: 48px 61px;
+    margin: 46px 61px;
   }
 }
 
@@ -17,6 +23,10 @@
   &__sider {
     background-color: #fff;
     box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+  }
+
+  &__header {
+    padding: 16px;
   }
 
   &__subheader {

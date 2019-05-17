@@ -83,6 +83,13 @@ module.exports = {
     'layout-body-background': '#f2f2f2',
     'layout-header-background': brandBlack,
 
+    'menu-dark-submenu-bg': brandBlackHighlight,
+
+    'page-header-padding-horizontal': '0px',
+    'layout-header-padding': '0px 61px',
+
+    'heading-1-size': '30px',
+
     'font-family': fontMain,
     'code-family': fontCode,
   },

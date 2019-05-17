@@ -13,7 +13,6 @@ const menu = (
 export const DropdownActive = () => {
   return (
     <div>
-      {' '}
       <Dropdown overlay={menu}>
         <Button>
           Dropdown <Icon type="down" />

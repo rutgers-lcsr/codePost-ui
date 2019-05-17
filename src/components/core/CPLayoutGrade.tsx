@@ -1,13 +1,18 @@
 import * as React from 'react';
+
 import { Layout } from 'antd';
 
-const { Header, Content, Sider } = Layout;
+const { Content, Header, Sider } = Layout;
+
+import CPLogo from './CPLogo';
 
 class CPLayoutGrade extends React.Component<any, {}> {
-  render() {
+  public render() {
     return (
       <Layout className="layout--grade">
-        <Header />
+        <Header className="layout--grade__header">
+          <CPLogo />
+        </Header>
         <Layout>
           <Sider width={300} className="layout--grade__sider" />
           <Layout>
