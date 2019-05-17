@@ -17,7 +17,7 @@ const tsImportPluginFactory = require('ts-import-plugin')
 
 var sass = require("node-sass");
 const sassUtils = require("node-sass-utils")(sass);
-const themeVars = require('../src/styles/abstracts/_ant_overrides.js');
+const themeVars = require('../src/styles/abstracts/_theme.js');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.

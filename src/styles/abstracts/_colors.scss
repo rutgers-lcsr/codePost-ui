@@ -1,52 +1,52 @@
 // Colors
 
 // Brand Colors
-$brandPrimary: get('ant.primary-color');
-$brandLight: #f0fff6;
-$brandVibrant: #48cc98;
-$brandDark: #17996e;
-$brandAccent: #4e78ff;
-$brandBlack: #1b1b1b;
+$brandPrimary: get('theme.brandPrimary');
+$brandLight: get('theme.brandLight');
+$brandVibrant: get('theme.brandVibrant');
+$brandDark: get('theme.brandDark');
+$brandAccent: get('theme.brandAccent');
+$brandBlack: get('theme.brandBlack');
+$brandBlackHighlight: get('theme.brandBlackHighlight');
 
 // Action Colors
-$actionBlue: #1890ff;
-$actionBlueFade: #40a9ff;
-$actionGreen: get('ant.success-color');
-$actionGreenFade: #48cc98; // Should probably be a fade?...
-$actionYellow: get('ant.warning-color');
-$actionYellowFade: #ffd129;
-$actionRed: get('ant.error-color');
-$actionRedFade: #ff7375;
+$actionBlue: get('theme.actionBlue');
+$actionBlueFade: get('theme.actionBlueFade');
+$actionGreen: get('theme.actionGreen');
+$actionGreenFade: get('theme.actionGreenFade');
+$actionYellow: get('theme.actionYellow');
+$actionYellowFade: get('theme.actionYellowFade');
+$actionRed: get('theme.actionRed');
+$actionRedFade: get('theme.actionRedFade');
 
 // Green Palette
-$green1: #f0fff6; // $brandLight
-$green2: #caf2df;
-$green3: #9ce6c3;
-$green4: #71d9ac;
-$green5: #48cc98; // $brandVibrant
-$green6: #24be85; // $brandPrimary
-$green7: #17996e; // $brandDark
-$green8: #0d7354;
-$green9: #034d39;
-$green10: #02261e;
+$green1: get('theme.green1');
+$green2: get('theme.green2');
+$green3: get('theme.green3');
+$green4: get('theme.green4');
+$green5: get('theme.green5');
+$green6: get('theme.green6');
+$green7: get('theme.green7');
+$green8: get('theme.green8');
+$green9: get('theme.green9');
+$green10: get('theme.green10');
 
-// Neutral Colors - Light background
-$neutralTitle: get('ant.heading-color');
-$neutralMainText: get('ant.text-color');
-$neutralSecondaryText: get('ant.text-color-secondary');
-$neutralDisable: get('ant.disabled-color');
-$neutralBorder: rgba(0, 0, 0, 0.2);
-$neutralDivider: rgba(0, 0, 0, 0.1);
-$neutralBackground: rgba(0, 0, 0, 0.05);
+// Neutral Colors - Light Background
+$neutralTitle: get('theme.neutralTitle');
+$neutralMainText: get('theme.neutralMainText');
+$neutralSecondaryText: get('theme.neutralSecondaryText');
+$neutralDisable: get('theme.neutralDisable');
+$neutralBorder: get('theme.neutralBorder');
+$neutralDivider: get('theme.neutralDivider');
+$neutralBackground: get('theme.neutralBackground');
 
-// Neutral Colors - Dark background
-$neutralDarkTitle: rgba(1, 1, 1, 0);
-$neutralDarkMainText: rgba(1, 1, 1, 0.1);
-$neutralDarkSecondaryText: rgba(1, 1, 1, 0.3);
-$neutralDarkDisable: rgba(1, 1, 1, 0.5);
-$neutralDarkBorder: rgba(1, 1, 1, 0.7);
-$neutralDarkDivider: rgba(1, 1, 1, 0.8);
-$neutralDarkBackground: rgba(1, 1, 1, 0.9);
+// Neutral Colors - Dark Background
+$neutralDarkMainText: get('theme.neutralDarkMainText');
+$neutralDarkSecondaryText: get('theme.neutralDarkSecondaryText');
+$neutralDarkDisable: get('theme.neutralDarkDisable');
+$neutralDarkBorder: get('theme.neutralDarkBorder');
+$neutralDarkDivider: get('theme.neutralDarkDivider');
+$neutralDarkBackground: get('theme.neutralDarkBackground');
 
 // Export for tsx
 :export {
@@ -56,6 +56,7 @@ $neutralDarkBackground: rgba(1, 1, 1, 0.9);
   brandDark: $brandDark;
   brandAccent: $brandAccent;
   brandBlack: $brandBlack;
+  brandBlackHighlight: $brandBlackHighlight;
 
   actionBlue: $actionBlue;
   actionBlueFade: $actionBlueFade;

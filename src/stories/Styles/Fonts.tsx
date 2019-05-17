@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import * as colors from '../styles/abstracts/_colors.scss';
-import * as fonts from '../styles/abstracts/_fonts.scss';
-import * as typography from '../styles/abstracts/_typography.scss';
+import * as colors from '../../styles/abstracts/_colors.scss';
+import * as fonts from '../../styles/abstracts/_fonts.scss';
+import * as typography from '../../styles/abstracts/_typography.scss';
 
 const Fonts = () => {
   const captionStyle: React.CSSProperties = {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as colors from '../styles/abstracts/_colors.scss';
+import * as colors from '../../styles/abstracts/_colors.scss';
 
 import { Table } from 'antd';
 

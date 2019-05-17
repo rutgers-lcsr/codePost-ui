@@ -20,7 +20,7 @@
   'components/roster-upload', 'components/tooltip', 'components/markdown-code', 'components/cpbutton';
 
 // 5. Layout-related sections
-@import 'layout/header';
+@import 'layout/header', 'layout/layout';
 
 // 6. Page-specific styles
 @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',

@@ -4,7 +4,7 @@ const tsImportPluginFactory = require('ts-import-plugin')
 
 var sass = require("node-sass");
 const sassUtils = require("node-sass-utils")(sass);
-const themeVars = require('../src/styles/abstracts/_ant_overrides.js');
+const themeVars = require('../src/styles/abstracts/_theme.js');
 
 module.exports = ({config}) => {
   config.module.rules.push({

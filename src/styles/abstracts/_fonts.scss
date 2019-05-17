@@ -1,11 +1,12 @@
 // Fonts
 
-$fontMain: get('ant.font-family');
-
-$fontCode: get('ant.code-family');
+$fontMain: get('theme.fontMain');
+$fontCode: get('theme.fontCode');
+$fontLogo: get('theme.fontLogo');
 
 // Export for tsx
 :export {
   fontMain: $fontMain;
   fontCode: $fontCode;
+  fontLogo: $fontLogo;
 }
