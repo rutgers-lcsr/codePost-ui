@@ -1,0 +1,29 @@
+.cp-file-menu {
+  max-height: calc((100vh - (64px + 108px + 41px)) / 2);
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  border-right: 0px !important;
+
+  .ant-menu-item {
+    width: 100%; // undoes an Ant hack (calc(100% + 1px))
+
+    height: 44px !important;
+    line-height: 44px !important;
+
+    padding-left: 26px !important;
+    padding-right: 40px;
+
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.5);
+
+    &:after {
+      border-right: 5px solid $brandPrimary !important;
+    }
+  }
+
+  .ant-menu-item-selected {
+    color: $brandPrimary;
+  }
+}

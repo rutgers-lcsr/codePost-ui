@@ -9,13 +9,15 @@ import { Welcome } from '@storybook/react/demo';
 
 import { ButtonsDisabled, ButtonsPrimary, ButtonsSecondary } from './Buttons';
 import { DropdownActive } from './Dropdown';
-console.log('-----');
 
-console.log('window');
+import CPComment from '../components/core/CPComment';
+
 import CPLayoutAdmin from '../components/core/CPLayoutAdmin';
 import CPLayoutGrade from '../components/core/CPLayoutGrade';
 
+import CPFileMenu from '../components/core/CPFileMenu';
 import CPMainNav from '../components/core/CPMainNav';
+import CPRubricMenu from '../components/core/CPRubricMenu';
 
 import Colors from './Styles/Colors';
 import Fonts from './Styles/Fonts';
@@ -61,7 +63,12 @@ storiesOf('Dropdown', module).add('Active', () => (
   </StorybookContainer>
 ));
 
-storiesOf('Navigation', module).add('Main Navigation', () => <CPMainNav />);
+storiesOf('Comment', module).add('Comment', () => <CPComment />);
+
+storiesOf('Menus', module)
+  .add('Main Navigation', () => <CPMainNav />)
+  .add('Rubric Menu', () => <CPRubricMenu />)
+  .add('File Menu', () => <CPFileMenu />);
 
 storiesOf('Layout', module)
   .add('Admin', () => <CPLayoutAdmin />)

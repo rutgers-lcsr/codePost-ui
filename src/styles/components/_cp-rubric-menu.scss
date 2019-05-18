@@ -1,0 +1,36 @@
+.cp-rubric-menu {
+  max-height: calc((100vh - (64px + 108px + 41px + 5px)) / 2);
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  border-right: 0px !important;
+
+  .ant-menu-submenu-title {
+    width: 100%; // undoes an Ant hack
+
+    height: 32px !important;
+    line-height: 32px !important;
+
+    background-color: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+
+    font-weight: 500;
+    font-size: 12px;
+
+    padding-left: 26px !important;
+    padding-right: 40px;
+  }
+
+  .ant-menu-item {
+    width: 100%; // undoes an Ant hack
+
+    height: 32px !important;
+    line-height: 32px !important;
+
+    padding-left: 26px !important;
+    padding-right: 40px;
+
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+}

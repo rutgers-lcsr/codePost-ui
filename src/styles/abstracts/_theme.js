@@ -88,7 +88,7 @@ module.exports = {
     'page-header-padding-horizontal': '0px',
     'layout-header-padding': '0px 61px',
 
-    'heading-1-size': '30px',
+    'heading-4-size': '16px',
 
     'font-family': fontMain,
     'code-family': fontCode,

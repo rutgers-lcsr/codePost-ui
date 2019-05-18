@@ -251,7 +251,7 @@ class CPLayoutAdmin extends React.Component<any, {}> {
                 }}
               >
                 <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>
-                  <Title level={1} style={{ fontWeight: 500, margin: 'auto 0' }}>
+                  <Title level={2} style={{ fontWeight: 500, margin: 'auto 0' }}>
                     Assignments
                   </Title>
                 </div>
