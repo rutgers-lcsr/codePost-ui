@@ -1,26 +1,24 @@
 import * as React from 'react';
 
-import { Badge, Menu, Typography } from 'antd';
-
-const { Title } = Typography;
+import { Badge, Menu } from 'antd';
 
 class CPFileMenu extends React.Component<any, {}> {
   public render() {
     return (
       <div>
         <div style={{ padding: '13px 20px 0px 16px' }}>
-          <Title level={4} style={{ fontWeight: 500 }}>
+          <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Files
-          </Title>
+          </div>
         </div>
         <Menu defaultSelectedKeys={['1']} mode="inline" className="cp-file-menu">
           <Menu.Item key="1">
             <span>hello.java</span>
             <span style={{ position: 'absolute', right: '60px' }}>
-              <Badge count={1} style={{ minWidth: '33px', backgroundColor: 'rgba(0,0,0,0.5)' }} />
+              <Badge count={1} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
             </span>
             <span style={{ position: 'absolute', right: '20px' }}>
-              <Badge count={-3} style={{ minWidth: '33px', backgroundColor: '#f64852' }} />
+              <Badge count={-3} className="cp-badge" style={{ backgroundColor: '#f64852' }} />
             </span>
           </Menu.Item>
           <Menu.Item key="2">hello.java</Menu.Item>

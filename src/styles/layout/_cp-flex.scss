@@ -1,0 +1,38 @@
+@mixin cp-flex($margin) {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: scroll;
+
+  .left {
+    flex: 0 0 content;
+    margin: 0 $margin 0 0;
+  }
+
+  .gap {
+    flex: 1 1 auto;
+    margin: 0 -$margin 0 0;
+  }
+
+  .right {
+    flex: 0 0 content;
+    margin: 0 0 0 $margin;
+  }
+}
+
+.cp-flex--tight {
+  @include cp-flex(6px);
+}
+
+.cp-flex--normal {
+  @include cp-flex(10px);
+}
+
+.cp-flex--wider {
+  @include cp-flex(14px);
+}
+
+.cp-flex--wide {
+  @include cp-flex(20px);
+}

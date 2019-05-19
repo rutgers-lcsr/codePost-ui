@@ -12,6 +12,12 @@
     box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
   }
 
+  &__subheader {
+    background-color: #f2f2f2;
+    padding: 0px;
+    margin-bottom: 36px;
+  }
+
   &__content {
     margin: 46px 61px;
   }
@@ -39,7 +45,6 @@
   }
 
   &__content {
-    margin: 48px 61px;
+    margin: 48px 21px 48px 61px;
   }
 }
-

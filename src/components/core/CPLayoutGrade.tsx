@@ -1,17 +1,42 @@
 import * as React from 'react';
 
-import { Button, Divider, Dropdown, Icon, Layout, Menu, Tag, Typography } from 'antd';
-const { Text } = Typography;
+import { Button, Divider, Dropdown, Icon, Layout, Menu, Tag } from 'antd';
 
 const { Content, Header, Sider } = Layout;
 
 import CPLogo from './CPLogo';
 
+import CPButton from './CPButton';
+import CPComment from './CPComment';
+
 import CPFileMenu from './CPFileMenu';
 import CPRubricMenu from './CPRubricMenu';
 
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+
 class CPLayoutGrade extends React.Component<any, {}> {
   public render() {
+    const codeString = `/******************************************************************
+ *  Student: student1@andreacg.com
+ *  Section: Section 1
+ *
+ *  Partner: none
+ *  Partner section: N/A
+ *
+ *  Description:  Prints 'Hello, World' to the terminal.
+ *                By tradition, this is everyone's first program.
+ *                Brian Kernighan initiated this tradition in 1974.
+ *
+ ***************************************************************/
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.print("Hello, World");
+
+    }
+}`;
+
     const menu = (
       <Menu>
         <Menu.Item key="1">1st menu item</Menu.Item>
@@ -21,8 +46,8 @@ class CPLayoutGrade extends React.Component<any, {}> {
     );
 
     const dropdown = (
-      <Dropdown overlay={menu}>
-        <Button>
+      <Dropdown className="cp-dropdown" overlay={menu}>
+        <Button style={{ color: 'rgba(0, 0, 0, 0.25)' }}>
           grader: vinay@princeton.edu <Icon type="down" />
         </Button>
       </Dropdown>
@@ -31,34 +56,16 @@ class CPLayoutGrade extends React.Component<any, {}> {
     return (
       <Layout className="layout--grade">
         <Header className="layout--grade__header">
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'nowrap',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              overflowX: 'scroll',
-            }}
-          >
-            <div style={{ flex: '0 0 content', margin: '0 20px 0 0' }}>
+          <div className="cp-flex--wide">
+            <div className="left">
               <CPLogo />
             </div>
-            <div style={{ flex: '1 1 auto', margin: '0 -20px 0 0' }} />
-            <div style={{ flex: '0 0 content', margin: '0 0 0 20px' }}>
-              <Text style={{ whiteSpace: 'nowrap', color: '#fff', fontWeight: 500 }}>hello@andreacg.com!</Text>
+            <div className="gap" />
+            <div className="right">
+              <span className="cp-label cp-label--white cp-label--bold">hello@andreacg.com!</span>
             </div>
-            <div style={{ flex: '0 0 content', margin: '0 0 0 20px' }}>
-              <Button
-                style={{
-                  minWidth: '127px',
-                  borderRadius: '3px',
-                  border: 'solid 1px #5e5e5e',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  color: 'rgba(255,255,255,0.5',
-                }}
-              >
-                Log Out
-              </Button>
+            <div className="right">
+              <CPButton cpType="dark">Log Out </CPButton>
             </div>
           </div>
         </Header>
@@ -69,62 +76,63 @@ class CPLayoutGrade extends React.Component<any, {}> {
           </Sider>
           <Layout>
             <Header className="layout--grade__subheader">
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'nowrap',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  overflowX: 'scroll',
-                }}
-              >
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
-                  <span style={{ fontSize: '24px', fontWeight: 600, color: 'rgba(0,0,0,0.85)', lineHeight: 1.17 }}>
-                    Loops
-                  </span>
+              <div className="cp-flex--tight">
+                <div className="left">
+                  <span className="cp-label cp-label--very-bold cp-label--large cp-label--title">Loops</span>
                 </div>
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 600, color: 'rgba(0,0,0,0.3)', lineHeight: 1.56 }}>
-                    17/20
-                  </span>
+                <div className="left">
+                  <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">17/20</span>
                 </div>
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
-                  <Icon type="question-circle" style={{ fontSize: '20px', color: '#1890ff' }} />
+                <div className="left">
+                  <CPButton cpType="highlight" size="small" icon="question" />
                 </div>
-                <div style={{ flex: '1 1 auto', margin: '0 -6px 0 0' }} />
-                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>{dropdown}</div>
-                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                  <Button style={{ minWidth: '127px' }}>Unfinalize</Button>
+                <div className="gap" />
+                <div className="right">{dropdown}</div>
+                <div className="right">
+                  <CPButton cpType="secondary">Unfinalize</CPButton>
                 </div>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'nowrap',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  overflowX: 'scroll',
-                }}
-              >
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
+              <div className="cp-flex--tight">
+                <div className="left">
                   <Tag color="red" style={{ marginRight: '0px' }}>
                     not finalized
                   </Tag>
                 </div>
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
+                <div className="left">
                   <Divider type="vertical" />
                 </div>
-                <div style={{ flex: '0 0 content', margin: '0 6px 0 0' }}>
-                  <span>hello@andreacg.com</span>
+                <div className="left">
+                  <span className="cp-label">hello@andreacg.com</span>
                 </div>
-                <div style={{ flex: '1 1 auto', margin: '0 -6px 0 0' }} />
-                <div style={{ flex: '0 0 content', margin: '0 0 0 6px' }}>
-                  <span style={{ fontWeight: 500 }}>Last Edited: May 01, 2019 6:09 PM</span>
+                <div className="gap" />
+                <div className="right">
+                  <span className="cp-label cp-label--bold">Last Edited: May 01, 2019 6:09 PM</span>
                 </div>
               </div>
             </Header>
             <Content className="layout--grade__content">
-              <div style={{ padding: 24, background: '#fff', minHeight: 360 }}>.</div>
+              <div style={{ display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
+                <div style={{ flex: '0 0 600px', marginRight: '10px' }}>
+                  <div
+                    id="code__underlay-pre"
+                    style={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e3e3e3',
+                      borderRadius: '5px',
+                      minHeight: '380px',
+                      padding: '25px 40px 20px 20px',
+                      lineHeight: '20px',
+                    }}
+                  >
+                    <SyntaxHighlighter language={'java'} style={googlecode} showLineNumbers={true} wrapLines={false}>
+                      {codeString}
+                    </SyntaxHighlighter>
+                  </div>
+                </div>
+                <div style={{ flex: '1 1 auto', minWidth: '250px', position: 'relative' }}>
+                  <CPComment />
+                </div>
+              </div>
             </Content>
           </Layout>
         </Layout>

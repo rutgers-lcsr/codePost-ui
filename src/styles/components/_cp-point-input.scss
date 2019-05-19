@@ -1,0 +1,37 @@
+.cp-point-input {
+  .ant-input-number-handler-wrap {
+    visibility: hidden;
+    width: 0px;
+  }
+
+  .ant-input-number {
+    width: 42px;
+    font-size: 12px;
+  }
+
+  .ant-input-number-input {
+    padding: 0px 8px;
+  }
+
+  .anticon {
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 9px;
+  }
+
+  .ant-btn {
+    padding: 0px 4px !important;
+    &:active {
+      color: rgba(0, 0, 0, 0.8);
+      background-color: #fafafa;
+      border-color: #d9d9d9;
+    }
+    &:focus {
+      color: rgba(0, 0, 0, 0.7);
+      border-color: #d9d9d9;
+    }
+    &:hover {
+      color: rgba(0, 0, 0, 0.7);
+      border-color: #d9d9d9;
+    }
+  }
+}

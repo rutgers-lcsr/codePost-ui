@@ -1,0 +1,51 @@
+.cp-label {
+  white-space: nowrap;
+
+  &--white {
+    color: $neutralDarkTitle;
+  }
+
+  &--italic {
+    font-style: italic;
+  }
+
+  &--bold {
+    font-weight: 500;
+  }
+
+  &--mid-bold {
+    font-weight: 500;
+  }
+
+  &--very-bold {
+    font-weight: 600;
+  }
+
+  &--very-large {
+    font-size: 30px;
+  }
+
+  &--large {
+    font-size: 24px;
+  }
+
+  &--medium {
+    font-size: 18px;
+  }
+
+  &--plus {
+    font-size: 16px;
+  }
+
+  &--small {
+    font-size: 12px;
+  }
+
+  &--title {
+    color: $neutralTitle;
+  }
+
+  &--subtitle {
+    color: $neutralDisable;
+  }
+}

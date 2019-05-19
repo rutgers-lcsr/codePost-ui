@@ -1,21 +1,19 @@
 import * as React from 'react';
 
-import { Input, Menu, Typography } from 'antd';
+import { Input, Menu } from 'antd';
 
 const SubMenu = Menu.SubMenu;
 
 const Search = Input.Search;
-
-const { Title } = Typography;
 
 class CPRubricMenu extends React.Component<any, {}> {
   public render() {
     return (
       <div>
         <div style={{ padding: '18px 20px 20px 16px' }}>
-          <Title level={4} style={{ fontWeight: 500 }}>
+          <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Rubric
-          </Title>
+          </div>
           <Search placeholder="Search..." onSearch={(value) => console.log(value)} />
         </div>
         <Menu defaultOpenKeys={['category-1']} mode="inline" className="cp-rubric-menu">

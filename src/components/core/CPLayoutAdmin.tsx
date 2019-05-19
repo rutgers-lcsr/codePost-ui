@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import { Button, Dropdown, Icon, Layout, Menu, Switch, Table, Typography } from 'antd';
+import { Button, Dropdown, Icon, Layout, Menu, Switch, Table } from 'antd';
 
 import CPLogo from './CPLogo';
 
 const { Header, Content, Sider } = Layout;
-const { Text, Title } = Typography;
 
 import withWindowWatcher from './withWindowWatcher';
 
+import CPButton from './CPButton';
 import CPMainNav from './CPMainNav';
 
 // const SubMenu = Menu.SubMenu;
@@ -41,14 +41,14 @@ class CPLayoutAdmin extends React.Component<any, {}> {
     );
 
     const dropdown = (
-      <Dropdown overlay={menu}>
-        <Button>
+      <Dropdown className="cp-dropdown" overlay={menu}>
+        <Button style={{ color: 'rgba(0, 0, 0, 0.25)' }}>
           COS126 | Spring 2019 <Icon type="down" />
         </Button>
       </Dropdown>
     );
 
-    const createButton = <Button>Create Course</Button>;
+    const createButton = <CPButton cpType="secondary">Create Course</CPButton>;
     console.log('width', this.props.windowWidth);
 
     const columns = [
@@ -180,26 +180,6 @@ class CPLayoutAdmin extends React.Component<any, {}> {
         median: 19,
       },
     ];
-    // <div style={{ display: 'flex' }}>
-    //           <div style={{ display: 'flex', flex: 1 }}>
-    //             <div style={{ display: 'inline-block', marginRight: '10px' }}>{dropdown}</div>
-    //             <div style={{ display: 'inline-block', marginRight: '10px' }}>{createButton}</div>
-    //           </div>
-    //           <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-    //             <div style={{ display: 'inline-block', marginLeft: '10px' }}>
-    //               <Text strong style={{ whiteSpace: 'nowrap' }}>
-    //                 Hello, hello@andreacg.com!
-    //               </Text>
-    //             </div>
-    //             <div style={{ display: 'inline-block', marginLeft: '26px' }}>
-    //               <Button shape="circle" icon="setting" />
-    //             </div>
-    //             <div style={{ display: 'inline-block', marginLeft: '26px' }}>
-    //               <Button shape="circle" icon="logout" />
-    //             </div>
-    //           </div>
-    //         </div>
-
     return (
       <Layout className="layout--admin">
         <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
@@ -214,68 +194,50 @@ class CPLayoutAdmin extends React.Component<any, {}> {
         </Sider>
         <Layout>
           <Header className="layout--admin__header">
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'nowrap',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                overflowX: 'scroll',
-              }}
-            >
-              <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>{dropdown}</div>
-              <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>{createButton}</div>
-              <div style={{ flex: '1 1 auto', margin: '0 -10px 0 0' }} />
-              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                <Text strong style={{ whiteSpace: 'nowrap' }}>
-                  Hello, hello@andreacg.com!
-                </Text>
+            <div className="cp-flex--normal">
+              <div className="left">{dropdown}</div>
+              <div className="left">{createButton}</div>
+              <div className="gap" />
+              <div className="right">
+                <span className="cp-label cp-label--bold">Hello, hello@andreacg.com!</span>
               </div>
-              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                <Button shape="circle" icon="setting" />
+              <div className="right">
+                <CPButton cpType="secondary" icon="setting" size="small" />
               </div>
-              <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                <Button shape="circle" icon="logout" />
+              <div className="right">
+                <CPButton cpType="secondary" icon="logout" size="small" />
               </div>
             </div>
           </Header>
           <Content className="layout--admin__content">
-            <div style={{ backgroundColor: '#f2f2f2', padding: '0px', marginBottom: '36px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'nowrap',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  overflowX: 'scroll',
-                }}
-              >
-                <div style={{ flex: '0 0 content', margin: '0 10px 0 0' }}>
-                  <Title level={2} style={{ fontWeight: 500, margin: 'auto 0' }}>
-                    Assignments
-                  </Title>
+            <Layout>
+              <Header className="layout--admin__subheader">
+                <div className="cp-flex--normal">
+                  <div className="left">
+                    <span className="cp-label cp-label--large cp-label--bold">Assignments</span>
+                  </div>
+                  <div className="gap" />
+                  <div className="right">
+                    <CPButton cpType="primary">Create Assignment</CPButton>
+                  </div>
+                  <div className="right">
+                    <CPButton cpType="secondary">Download All Grades</CPButton>
+                  </div>
                 </div>
-                <div style={{ flex: '1 1 auto', margin: '0 -10px 0 0' }} />
-                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                  <Button type="primary">Create Assignment</Button>
-                </div>
-                <div style={{ flex: '0 0 content', margin: '0 0 0 10px' }}>
-                  <Button>Download All Grades</Button>
-                </div>
+              </Header>
+              <div style={{ overflowX: 'scroll' }}>
+                <Table
+                  columns={columns}
+                  dataSource={data}
+                  pagination={false}
+                  onRow={(record, rowIndex) => {
+                    return {
+                      style: { backgroundColor: '#fff' },
+                    };
+                  }}
+                />
               </div>
-            </div>
-            <div style={{ overflowX: 'scroll' }}>
-              <Table
-                columns={columns}
-                dataSource={data}
-                pagination={false}
-                onRow={(record, rowIndex) => {
-                  return {
-                    style: { backgroundColor: '#fff' },
-                  };
-                }}
-              />
-            </div>
+            </Layout>
           </Content>
         </Layout>
       </Layout>

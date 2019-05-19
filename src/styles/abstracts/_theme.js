@@ -46,13 +46,13 @@ const neutralDivider = 'rgba(0, 0, 0, 0.1)';
 const neutralBackground = 'rgba(0, 0, 0, 0.05)';
 
 // Neutral Colors - Dark Background
-const neutralDarkTitle = 'rgba(1, 1, 1, 0)';
-const neutralDarkMainText = 'rgba(1, 1, 1, 0.1)';
-const neutralDarkSecondaryText = 'rgba(1, 1, 1, 0.3)';
-const neutralDarkDisable = 'rgba(1, 1, 1, 0.5)';
-const neutralDarkBorder = 'rgba(1, 1, 1, 0.7)';
-const neutralDarkDivider = 'rgba(1, 1, 1, 0.8)';
-const neutralDarkBackground = 'rgba(1, 1, 1, 0.9)';
+const neutralDarkTitle = 'rgba(255, 255, 255, 1)';
+const neutralDarkMainText = 'rgba(255, 255, 255, 0.9)';
+const neutralDarkSecondaryText = 'rgba(255, 255, 255, 0.7)';
+const neutralDarkDisable = 'rgba(255, 255, 255, 0.5)';
+const neutralDarkBorder = 'rgba(255, 255, 255, 0.3)';
+const neutralDarkDivider = 'rgba(255, 255, 255, 0.2)';
+const neutralDarkBackground = 'rgba(255, 255, 255, 0.1)';
 
 // --------------- FONTS --------------- //
 
@@ -77,6 +77,10 @@ module.exports = {
     'border-radius-base': '4px', // major border radius
     'border-color-base': '#d9d9d9', // major border color
     'box-shadow-base': '0 2px 8px rgba(0, 0, 0, 0.15)', // major shadow for layer
+
+    'btn-border-radius-base': '3px',
+    'btn-border-radius-sm': '3px',
+    'btn-height-sm': '20px',
 
     'layout-sider-background': brandBlack,
     'layout-trigger-background': brandBlackHighlight,
@@ -129,6 +133,7 @@ module.exports = {
     neutralDivider: neutralDivider,
     neutralBackground: neutralBackground,
 
+    neutralDarkTitle: neutralDarkTitle,
     neutralDarkMainText: neutralDarkMainText,
     neutralDarkSecondaryText: neutralDarkSecondaryText,
     neutralDarkDisable: neutralDarkDisable,

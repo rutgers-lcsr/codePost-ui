@@ -17,11 +17,12 @@
   'components/selector', 'components/dialog', 'components/select', 'components/controlToggle',
   'components/rubricCommentExplorer', 'components/whiteBox', 'components/submission-info', 'components/progress',
   'components/carousel', 'components/cardList', 'components/drawer', 'components/file-upload',
-  'components/roster-upload', 'components/tooltip', 'components/markdown-code', 'components/cpbutton',
-  'components/cp-logo', 'components/cp-rubric-menu', 'components/cp-file-menu', 'components/cp-comment';
+  'components/roster-upload', 'components/tooltip', 'components/markdown-code', 'components/cp-button',
+  'components/cp-logo', 'components/cp-rubric-menu', 'components/cp-file-menu', 'components/cp-comment',
+  'components/cp-point-input', 'components/cp-label', 'components/cp-badge', 'components/cp-dropdown';
 
 // 5. Layout-related sections
-@import 'layout/header', 'layout/layout';
+@import 'layout/header', 'layout/layout', 'layout/cp-flex';
 
 // 6. Page-specific styles
 @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',

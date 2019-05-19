@@ -8,7 +8,6 @@ import { storiesOf } from '@storybook/react';
 import { Welcome } from '@storybook/react/demo';
 
 import { ButtonsDisabled, ButtonsPrimary, ButtonsSecondary } from './Buttons';
-import { DropdownActive } from './Dropdown';
 
 import CPComment from '../components/core/CPComment';
 
@@ -57,13 +56,11 @@ storiesOf('Buttons', module)
     </StorybookContainer>
   ));
 
-storiesOf('Dropdown', module).add('Active', () => (
-  <StorybookContainer title="Dropdown - Active">
-    <DropdownActive />
+storiesOf('Comment', module).add('Comment', () => (
+  <StorybookContainer title="Comment">
+    <CPComment />
   </StorybookContainer>
 ));
-
-storiesOf('Comment', module).add('Comment', () => <CPComment />);
 
 storiesOf('Menus', module)
   .add('Main Navigation', () => <CPMainNav />)
