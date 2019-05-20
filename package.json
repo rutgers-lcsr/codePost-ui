@@ -97,6 +97,7 @@
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@storybook/addon-actions": "^5.0.11",
+    "@storybook/addon-knobs": "^5.0.11",
     "@storybook/addon-links": "^5.0.11",
     "@storybook/addons": "^5.0.11",
     "@storybook/react": "^5.0.11",
@@ -126,7 +127,8 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.2",
+    "utility-types": "^3.7.0"
   },
   "proxy": "http://localhost:8000",
   "jest": {

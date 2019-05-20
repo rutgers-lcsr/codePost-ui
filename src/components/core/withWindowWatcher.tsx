@@ -1,7 +1,14 @@
 import * as React from 'react';
 
-const withWindowWatcher = (Component: React.ComponentType<any>) => {
-  return class WrappedComponent extends React.Component<any, any> {
+import { Subtract } from 'utility-types';
+
+export interface IWithWindowWatcherProps {
+  windowWidth: number;
+  windowHeight: number;
+}
+
+const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
+  return class WrappedComponent extends React.Component<Subtract<P, IWithWindowWatcherProps>, any> {
     public constructor(props: any) {
       super(props);
       this.state = { width: 0, height: 0 };
@@ -22,7 +29,7 @@ const withWindowWatcher = (Component: React.ComponentType<any>) => {
     };
 
     public render() {
-      return <Component {...this.props} windowWidth={this.state.width} windowHeight={this.state.height} />;
+      return <Component {...this.props as P} windowWidth={this.state.width} windowHeight={this.state.height} />;
     }
   };
 };

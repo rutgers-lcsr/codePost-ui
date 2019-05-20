@@ -11,7 +11,7 @@ class CPFileMenu extends React.Component<any, {}> {
             Files
           </div>
         </div>
-        <Menu defaultSelectedKeys={['1']} mode="inline" className="cp-file-menu">
+        <Menu defaultSelectedKeys={['1']} mode="inline" className="cp-file-menu" id="cp-file-menu">
           <Menu.Item key="1">
             <span>hello.java</span>
             <span style={{ position: 'absolute', right: '60px' }}>

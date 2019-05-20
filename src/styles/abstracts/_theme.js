@@ -54,6 +54,10 @@ const neutralDarkBorder = 'rgba(255, 255, 255, 0.3)';
 const neutralDarkDivider = 'rgba(255, 255, 255, 0.2)';
 const neutralDarkBackground = 'rgba(255, 255, 255, 0.1)';
 
+// --------------- LAYOUT --------------- //
+
+const headerHeight = '64px';
+
 // --------------- FONTS --------------- //
 
 const fontMain = 'Avenir Next';
@@ -86,11 +90,12 @@ module.exports = {
     'layout-trigger-background': brandBlackHighlight,
     'layout-body-background': '#f2f2f2',
     'layout-header-background': brandBlack,
-
-    'menu-dark-submenu-bg': brandBlackHighlight,
+    'layout-header-height': headerHeight,
 
     'page-header-padding-horizontal': '0px',
     'layout-header-padding': '0px 61px',
+
+    'menu-dark-submenu-bg': brandBlackHighlight,
 
     'heading-4-size': '16px',
 
@@ -144,6 +149,8 @@ module.exports = {
     fontMain: fontMain,
     fontCode: fontCode,
     fontLogo: fontLogo,
+
+    headerHeight: headerHeight,
   }
 };
 

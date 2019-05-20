@@ -1,142 +1,68 @@
 import * as React from 'react';
 
-import { Button, Divider, Dropdown, Icon, Layout, Menu, Tag } from 'antd';
+import { Layout } from 'antd';
 
 const { Content, Header, Sider } = Layout;
 
-import CPLogo from './CPLogo';
+import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
-import CPButton from './CPButton';
-import CPComment from './CPComment';
+interface ICPLayoutGradeProps extends IWithWindowWatcherProps {
+  header: React.ReactNode;
+  subheader: React.ReactNode;
+  files: React.ReactNode;
+  rubric: React.ReactNode;
+  content: React.ReactNode;
+}
 
-import CPFileMenu from './CPFileMenu';
-import CPRubricMenu from './CPRubricMenu';
+class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
+  public componentDidMount() {
+    this.resizeSidebar();
+  }
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
-
-import { CommentMock } from '../../infrastructure/comment';
-import { RubricCommentMock } from '../../infrastructure/rubricComment';
-
-class CPLayoutGrade extends React.Component<any, {}> {
-  public render() {
-    const codeString = `/******************************************************************
- *  Student: student1@andreacg.com
- *  Section: Section 1
- *
- *  Partner: none
- *  Partner section: N/A
- *
- *  Description:  Prints 'Hello, World' to the terminal.
- *                By tradition, this is everyone's first program.
- *                Brian Kernighan initiated this tradition in 1974.
- *
- ***************************************************************/
-
-public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.print("Hello, World");
-
+  public componentDidUpdate(prevProps: ICPLayoutGradeProps) {
+    if (this.props.windowHeight !== prevProps.windowHeight) {
+      this.resizeSidebar();
     }
-}`;
+  }
 
-    const menu = (
-      <Menu>
-        <Menu.Item key="1">1st menu item</Menu.Item>
-        <Menu.Item key="2">2nd menu item</Menu.Item>
-        <Menu.Item key="3">3rd item</Menu.Item>
-      </Menu>
-    );
+  // Assert that the max-height of the rubric menu fits within the the space between
+  // the bottom of the viewport and the bottom of the files
+  public resizeSidebar = () => {
+    if (this.props.windowHeight !== 0) {
+      const fileMenu = document.getElementById('cp-file-menu');
+      const rubricMenu = document.getElementById('cp-rubric-menu');
+      const rubricMenuTitle = document.getElementById('cp-rubric-menu-title');
+      if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null) {
+        const fileMenuBottom = fileMenu.getBoundingClientRect().bottom;
+        const rubricMenuTitleHeight = rubricMenuTitle.getBoundingClientRect().height;
+        const rubricMenuMaxHeight = this.props.windowHeight - fileMenuBottom - rubricMenuTitleHeight;
+        rubricMenu.style.setProperty('max-height', `${rubricMenuMaxHeight}px`);
+      }
 
-    const dropdown = (
-      <Dropdown className="cp-dropdown" overlay={menu}>
-        <Button style={{ color: 'rgba(0, 0, 0, 0.25)' }}>
-          grader: vinay@princeton.edu <Icon type="down" />
-        </Button>
-      </Dropdown>
-    );
+      const codeContainer = document.getElementById('cp-grade-code-container');
+      if (codeContainer !== null) {
+        console.log('height', this.props.windowHeight);
+        const codeContainerTop = codeContainer.getBoundingClientRect().top;
+        console.log('codeContainerTop', codeContainerTop);
+        const codeContainerMaxHeight = this.props.windowHeight - codeContainerTop - 48 - 20;
+        console.log('codeContainerMaxHeight', codeContainerMaxHeight);
+        codeContainer.style.setProperty('max-height', `${codeContainerMaxHeight}px`);
+      }
+    }
+  };
 
+  public render() {
     return (
       <Layout className="layout--grade">
-        <Header className="layout--grade__header">
-          <div className="cp-flex--wide">
-            <div className="left">
-              <CPLogo />
-            </div>
-            <div className="gap" />
-            <div className="right">
-              <span className="cp-label cp-label--white cp-label--bold">hello@andreacg.com!</span>
-            </div>
-            <div className="right">
-              <CPButton cpType="dark">Log Out </CPButton>
-            </div>
-          </div>
-        </Header>
+        <Header className="layout--grade__header">{this.props.header}</Header>
         <Layout>
           <Sider width={300} className="layout--grade__sider">
-            <CPFileMenu />
-            <CPRubricMenu />
+            {this.props.files}
+            {this.props.rubric}
           </Sider>
           <Layout>
-            <Header className="layout--grade__subheader">
-              <div className="cp-flex--tight">
-                <div className="left">
-                  <span className="cp-label cp-label--very-bold cp-label--large cp-label--title">Loops</span>
-                </div>
-                <div className="left">
-                  <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">17/20</span>
-                </div>
-                <div className="left">
-                  <CPButton cpType="highlight" size="small" icon="question" />
-                </div>
-                <div className="gap" />
-                <div className="right">{dropdown}</div>
-                <div className="right">
-                  <CPButton cpType="secondary">Unfinalize</CPButton>
-                </div>
-              </div>
-              <div className="cp-flex--tight">
-                <div className="left">
-                  <Tag color="red" style={{ marginRight: '0px' }}>
-                    not finalized
-                  </Tag>
-                </div>
-                <div className="left">
-                  <Divider type="vertical" />
-                </div>
-                <div className="left">
-                  <span className="cp-label">hello@andreacg.com</span>
-                </div>
-                <div className="gap" />
-                <div className="right">
-                  <span className="cp-label cp-label--bold">Last Edited: May 01, 2019 6:09 PM</span>
-                </div>
-              </div>
-            </Header>
-            <Content className="layout--grade__content">
-              <div style={{ display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-                <div style={{ flex: '0 0 600px', marginRight: '10px' }}>
-                  <div
-                    id="code__underlay-pre"
-                    style={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #e3e3e3',
-                      borderRadius: '5px',
-                      minHeight: '380px',
-                      padding: '25px 40px 20px 20px',
-                      lineHeight: '20px',
-                    }}
-                  >
-                    <SyntaxHighlighter language={'java'} style={googlecode} showLineNumbers={true} wrapLines={false}>
-                      {codeString}
-                    </SyntaxHighlighter>
-                  </div>
-                </div>
-                <div style={{ flex: '1 1 auto', minWidth: '250px', position: 'relative' }}>
-                  <CPComment commentType="readonly" comment={CommentMock} rubricComment={RubricCommentMock} />
-                </div>
-              </div>
-            </Content>
+            <Header className="layout--grade__subheader">{this.props.subheader}</Header>
+            <Content className="layout--grade__content">{this.props.content}</Content>
           </Layout>
         </Layout>
       </Layout>
@@ -144,4 +70,4 @@ public class HelloWorld {
   }
 }
 
-export default CPLayoutGrade;
+export default withWindowWatcher(CPLayoutGrade);

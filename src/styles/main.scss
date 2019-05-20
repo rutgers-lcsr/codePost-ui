@@ -3,7 +3,7 @@
 // 1. Configuration and helpers
 @import 'abstracts/functions', 'abstracts/mixins';
 @import 'abstracts/variables';
-@import 'abstracts/colors', 'abstracts/fonts', 'abstracts/typography';
+@import 'abstracts/colors', 'abstracts/fonts', 'abstracts/typography', 'abstracts/layouts';
 
 // 2. Vendors
 @import 'vendors/react-md', 'vendors/codeMirror';

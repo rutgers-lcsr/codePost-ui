@@ -18,8 +18,12 @@
     margin-bottom: 36px;
   }
 
-  &__content {
+  &__detail {
     margin: 46px 61px;
+  }
+
+  &__content {
+    overflow: scroll;
   }
 }
 

@@ -1,11 +1,9 @@
 import * as React from 'react';
 
-import { Badge, Input } from 'antd';
-const { TextArea } = Input;
-
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore
-import { Popover } from 'antd';
+import { Badge, Input, Popover } from 'antd';
+const { TextArea } = Input;
 
 import CPButton from './CPButton';
 import CPPointInput from './CPPointInput';
