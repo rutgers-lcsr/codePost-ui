@@ -15,6 +15,9 @@ import CPRubricMenu from './CPRubricMenu';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
+import { CommentMock } from '../../infrastructure/comment';
+import { RubricCommentMock } from '../../infrastructure/rubricComment';
+
 class CPLayoutGrade extends React.Component<any, {}> {
   public render() {
     const codeString = `/******************************************************************
@@ -130,7 +133,7 @@ public class HelloWorld {
                   </div>
                 </div>
                 <div style={{ flex: '1 1 auto', minWidth: '250px', position: 'relative' }}>
-                  <CPComment />
+                  <CPComment commentType="readonly" comment={CommentMock} rubricComment={RubricCommentMock} />
                 </div>
               </div>
             </Content>

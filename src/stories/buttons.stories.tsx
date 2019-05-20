@@ -1,10 +1,30 @@
 import * as React from 'react';
 
 import CPButton from '../components/core/CPButton';
+import { StorybookContainer } from './helpers';
+
+import { storiesOf } from '@storybook/react';
 
 import * as fonts from '../styles/abstracts/_fonts.scss';
 
-export const ButtonsPrimary = () => {
+storiesOf('Buttons', module)
+  .add('Primary', () => (
+    <StorybookContainer title="Buttons - Primary">
+      <ButtonsPrimary />
+    </StorybookContainer>
+  ))
+  .add('Secondary', () => (
+    <StorybookContainer title="Buttons - Secondary">
+      <ButtonsSecondary />
+    </StorybookContainer>
+  ))
+  .add('Disabled', () => (
+    <StorybookContainer title="Buttons - Disabled">
+      <ButtonsDisabled />
+    </StorybookContainer>
+  ));
+
+const ButtonsPrimary = () => {
   const captionStyle: React.CSSProperties = {
     color: 'rgba(0, 0, 0, .3)',
     fontSize: '12px',
@@ -40,7 +60,7 @@ export const ButtonsPrimary = () => {
   );
 };
 
-export const ButtonsSecondary = () => {
+const ButtonsSecondary = () => {
   return (
     <div>
       <div style={{ display: 'inline-block', padding: '10px' }}>
@@ -53,7 +73,7 @@ export const ButtonsSecondary = () => {
   );
 };
 
-export const ButtonsDisabled = () => {
+const ButtonsDisabled = () => {
   return (
     <div>
       <div style={{ display: 'inline-block', padding: '10px' }}>

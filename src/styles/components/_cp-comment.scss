@@ -3,50 +3,68 @@
   width: 100%;
 
   .ant-popover-arrow {
-    top: 36px !important;
+    top: 44px !important;
   }
 
   .ant-popover-title {
     background-color: #fafafa !important;
-    font-style: italic !important;
-    font-weight: 500 !important;
   }
 
-  &__point-input {
-    .ant-input-number-handler-wrap {
-      visibility: hidden;
-      width: 0px;
-    }
+  .ant-popover-inner-content {
+    padding-bottom: 10px;
+  }
 
-    .ant-input-number {
-      width: 42px;
-      font-size: 12px;
+  &--inactive {
+    .ant-popover-arrow {
+      box-shadow: none !important;
     }
+    .ant-popover-inner {
+      box-shadow: none;
+    }
+  }
 
-    .ant-input-number-input {
-      padding: 0px 8px;
+  &--readonly {
+    .ant-popover-arrow {
+      box-shadow: none !important;
     }
+    .ant-popover-inner {
+      box-shadow: none;
+    }
+  }
 
-    .anticon {
-      color: rgba(0, 0, 0, 0.5);
-      font-size: 9px;
-    }
+  &__rubric-comment {
+    padding: 0px 10px;
+    margin-bottom: 10px;
 
-    .ant-btn {
-      padding: 0px 4px !important;
-      &:active {
-        color: rgba(0, 0, 0, 0.8);
-        background-color: #fafafa;
-        border-color: #d9d9d9;
-      }
-      &:focus {
-        color: rgba(0, 0, 0, 0.7);
-        border-color: #d9d9d9;
-      }
-      &:hover {
-        color: rgba(0, 0, 0, 0.7);
-        border-color: #d9d9d9;
-      }
+    font-size: 12px;
+    line-height: 1.67;
+
+    &--positive {
+      border-left: 3px solid $actionGreen;
+      color: $actionGreen;
     }
+    &--negative {
+      border-left: 3px solid $actionRed;
+      color: $actionRed;
+    }
+    &--neutral {
+      border-left: 3px solid $neutralSecondaryText;
+      color: $neutralSecondaryText;
+    }
+  }
+
+  &__text-area {
+    border: 0px;
+    background-color: #fafafa;
+    resize: none;
+    font-size: 12px;
+    line-height: 1.83;
+  }
+
+  &__comment {
+    font-size: 12px;
+    line-height: 1.67;
+
+    padding: 4px 11px;
   }
 }

@@ -5,6 +5,10 @@
     color: $neutralDarkTitle;
   }
 
+  &--success {
+    color: $actionGreen;
+  }
+
   &--italic {
     font-style: italic;
   }
@@ -14,7 +18,7 @@
   }
 
   &--mid-bold {
-    font-weight: 500;
+    font-weight: 550;
   }
 
   &--very-bold {
@@ -39,6 +43,10 @@
 
   &--small {
     font-size: 12px;
+  }
+
+  &--very-small {
+    font-size: 10px;
   }
 
   &--title {

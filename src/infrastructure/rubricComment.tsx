@@ -59,4 +59,13 @@ class RubricComment {
   };
 }
 
-export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV };
+const RubricCommentMock: RubricCommentType = {
+  id: 1,
+  text: 'Mocked rubric comment',
+  pointDelta: 3,
+  category: 1,
+  comments: [1],
+  sortKey: 0,
+};
+
+export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV, RubricCommentMock };

@@ -49,4 +49,17 @@ class CommentIO {
   public static delete = deleteObject(CommentV, 'comments');
 }
 
-export { CommentType, CommentIO };
+const CommentMock: CommentType = {
+  id: 1,
+  text: 'This is a mocked comment',
+  pointDelta: null,
+  startChar: 1,
+  endChar: 3,
+  startLine: 0,
+  endLine: 0,
+  file: 1,
+  rubricComment: 1,
+  author: 'grader@myschool.edu',
+};
+
+export { CommentType, CommentIO, CommentMock };
