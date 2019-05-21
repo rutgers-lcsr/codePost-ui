@@ -107,14 +107,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public cancel = () => {
     this.props.onCancel();
-    // If the students or assignment was passed in, we want to keep it in state
-    if (!this.props.selectedStudents) {
-      this.setState({ files: [], selectedStudents: [] });
-    } else if (!this.props.selectedAssignment) {
-      this.setState({ files: [], selectedAssignment: null });
-    } else {
-      this.setState({ files: [] });
-    }
   };
 
   public upload = () => {
@@ -133,16 +125,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             });
         }
       });
-
-      /* JE: why do we need the below? */
-      // // If the students or assignment was passed in, we want to keep it in state
-      // if (!this.props.selectedStudents) {
-      //   this.setState({ files: [], selectedStudents: [] });
-      // } else if (!this.props.selectedAssignment) {
-      //   this.setState({ files: [], selectedAssignment: null });
-      // } else {
-      //   this.setState({ files: [] });
-      // }
     }
   };
 

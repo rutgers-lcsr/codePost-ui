@@ -402,16 +402,25 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               Delete
             </Button>
           </DialogContainer>
-          <UploadSubmissionDialog
-            isVisible={this.state.showSubmissionUpload}
-            assignments={this.props.assignments}
-            selectedAssignment={null}
-            students={[activeStudent]}
-            selectedStudents={[activeStudent]}
-            onCancel={this.toggleUploadSubmission}
-            uploadSubmission={this.props.uploadSubmission}
-            submissions={Object.values(this.props.submissionsByStudent[activeStudent])}
-          />
+
+          <DialogContainer
+            id="rubricFile-dialog"
+            className="dialog--upload-submission"
+            visible={this.state.showSubmissionUpload}
+            title="Upload Submission"
+            onHide={this.toggleUploadSubmission}
+          >
+            <UploadSubmissionDialog
+              isVisible={this.state.showSubmissionUpload}
+              assignments={this.props.assignments}
+              selectedAssignment={null}
+              students={[activeStudent]}
+              selectedStudents={[activeStudent]}
+              onCancel={this.toggleUploadSubmission}
+              uploadSubmission={this.props.uploadSubmission}
+              submissions={Object.values(this.props.submissionsByStudent[activeStudent])}
+            />
+          </DialogContainer>
         </div>
       );
     }
