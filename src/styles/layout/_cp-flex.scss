@@ -36,3 +36,7 @@
 .cp-flex--wide {
   @include cp-flex(20px);
 }
+
+.cp-flex--very-wide {
+  @include cp-flex(60px);
+}

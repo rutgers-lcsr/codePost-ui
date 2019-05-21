@@ -16,19 +16,19 @@ interface ICPLayoutGradeProps extends IWithWindowWatcherProps {
 
 class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
   public componentDidMount() {
-    this.resizeSidebar();
+    this.resizeComponents();
   }
 
   public componentDidUpdate(prevProps: ICPLayoutGradeProps) {
     if (this.props.windowHeight !== prevProps.windowHeight) {
-      this.resizeSidebar();
+      this.resizeComponents();
     }
   }
 
-  // Assert that the max-height of the rubric menu fits within the the space between
-  // the bottom of the viewport and the bottom of the files
-  public resizeSidebar = () => {
+  public resizeComponents = () => {
     if (this.props.windowHeight !== 0) {
+      // Set the max-height of the rubric menu to fit within the the space between
+      // the bottom of the viewport and the bottom of the files
       const fileMenu = document.getElementById('cp-file-menu');
       const rubricMenu = document.getElementById('cp-rubric-menu');
       const rubricMenuTitle = document.getElementById('cp-rubric-menu-title');
@@ -39,13 +39,11 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
         rubricMenu.style.setProperty('max-height', `${rubricMenuMaxHeight}px`);
       }
 
+      // Set the max-height of the code container to fit in the viewport, with some margin at the bottom
       const codeContainer = document.getElementById('cp-grade-code-container');
       if (codeContainer !== null) {
-        console.log('height', this.props.windowHeight);
         const codeContainerTop = codeContainer.getBoundingClientRect().top;
-        console.log('codeContainerTop', codeContainerTop);
         const codeContainerMaxHeight = this.props.windowHeight - codeContainerTop - 48 - 20;
-        console.log('codeContainerMaxHeight', codeContainerMaxHeight);
         codeContainer.style.setProperty('max-height', `${codeContainerMaxHeight}px`);
       }
     }

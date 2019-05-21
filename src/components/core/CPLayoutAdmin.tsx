@@ -6,13 +6,12 @@ import CPLogo from './CPLogo';
 
 const { Header, Content, Sider } = Layout;
 
-// import withWindowWatcher from './withWindowWatcher';
-
 import CPMainNav from './CPMainNav';
 
 interface ICPLayoutAdminProps {
   header: React.ReactNode;
   detail: React.ReactNode;
+  isRubric: boolean;
 }
 
 interface ICPLayoutAdminState {
@@ -25,12 +24,12 @@ class CPLayoutAdmin extends React.Component<ICPLayoutAdminProps, {}> {
   };
 
   public onCollapse = (collapsed: boolean) => {
-    console.log(collapsed);
     this.setState({ collapsed });
   };
 
   public render() {
     // console.log('width', this.props.windowWidth);
+
     return (
       <Layout className="layout--admin">
         <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
@@ -41,7 +40,9 @@ class CPLayoutAdmin extends React.Component<ICPLayoutAdminProps, {}> {
         </Sider>
         <Layout>
           <Header className="layout--admin__header">{this.props.header}</Header>
-          <Content className="layout--admin__detail">{this.props.detail}</Content>
+          <Content className={this.props.isRubric ? 'layout--admin__detail--rubric' : 'layout--admin__detail'}>
+            {this.props.detail}
+          </Content>
         </Layout>
       </Layout>
     );

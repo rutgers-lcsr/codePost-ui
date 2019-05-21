@@ -1,13 +1,15 @@
 import React from 'react';
 
-import { Icon, Layout, Menu, Switch, Table } from 'antd';
-
-const { Header, Content } = Layout;
+import { Icon, Input, Menu, Switch, Table } from 'antd';
 
 import CPLayoutAdmin from '../../components/core/CPLayoutAdmin';
 
+import CPAdminDetail from '../../components/core/CPAdminDetail';
+
 import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
+
+const Search = Input.Search;
 
 const menu = (
   <Menu>
@@ -34,21 +36,6 @@ const header = (
     </div>
     <div className="right">
       <CPButton cpType="secondary" icon="logout" size="small" />
-    </div>
-  </div>
-);
-
-const subheader = (
-  <div className="cp-flex--normal">
-    <div className="left">
-      <span className="cp-label cp-label--large cp-label--bold">Assignments</span>
-    </div>
-    <div className="gap" />
-    <div className="right">
-      <CPButton cpType="primary">Create Assignment</CPButton>
-    </div>
-    <div className="right">
-      <CPButton cpType="secondary">Download All Grades</CPButton>
     </div>
   </div>
 );
@@ -104,7 +91,7 @@ const columns = [
   {
     title: '',
     key: 'action',
-    render: (text: string, record: any) => <Icon type="more" />,
+    render: (text: string, record: any) => <Icon type="ellipsis" className="cp-label--highlight" />,
   },
 ];
 
@@ -191,13 +178,29 @@ const onRow = (record: any, rowIndex: number) => {
 
 const content = <Table columns={columns} dataSource={data} pagination={false} onRow={onRow} />;
 
-const detail = (
-  <Layout>
-    <Header className="layout--admin__subheader">{subheader}</Header>
-    <Content className="layout--admin__content">{content}</Content>
-  </Layout>
-);
+export const Admin = (goback: any, title: string, actionsGroup: string) => {
+  let actions: React.ReactNode[] = [];
+  if (actionsGroup === 'assignments') {
+    actions = [
+      <CPButton key="action-1" cpType="primary">
+        Create Assignment
+      </CPButton>,
+      <CPButton key="action-2" cpType="secondary">
+        Download All Grades
+      </CPButton>,
+    ];
+  } else if (actionsGroup === 'graders' || actionsGroup === 'students') {
+    actions = [<Search key="action-1" placeholder="Search..." />];
+  } else if (actionsGroup === 'detail') {
+    actions = [
+      <CPButton key="action-1" cpType="primary">
+        Upload Submission
+      </CPButton>,
+    ];
+  } else {
+    actions = [];
+  }
 
-export const AdminAssignments = () => {
-  return <CPLayoutAdmin header={header} detail={detail} />;
+  const adminDetail = <CPAdminDetail goBack={goback} title={title} actions={actions} content={content} />;
+  return <CPLayoutAdmin header={header} detail={adminDetail} isRubric={false} />;
 };

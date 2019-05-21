@@ -15,11 +15,32 @@ import CPLogo from '../../components/core/CPLogo';
 import CPRubricMenu from '../../components/core/CPRubricMenu';
 
 import { CommentMock } from '../../infrastructure/comment';
+import { FileMock, FileType } from '../../infrastructure/file';
 import { RubricCategoryMock } from '../../infrastructure/rubricCategory';
 import { RubricCommentMock } from '../../infrastructure/rubricComment';
 
-const rubricCategories = [RubricCategoryMock];
-const rubricComments = { 1: [RubricCommentMock] };
+// --------- Mock Data --------- //
+
+const category1 = RubricCategoryMock;
+const category2 = { ...RubricCategoryMock, id: 2, name: 'Another Category' };
+
+const comment1 = RubricCommentMock;
+const comment2 = { ...RubricCommentMock, id: 2, text: 'another rubric comment' };
+const comment3 = { ...RubricCommentMock, id: 3, category: 2, text: 'missing a semicolon' };
+
+const rubricCategories = [category1, category2];
+const rubricComments = { 1: [comment1, comment2], 2: [comment3] };
+
+const file1 = FileMock;
+const file2 = { ...FileMock, id: 2, name: 'loops.java', comments: [2] };
+
+const files = [file1, file2];
+
+const getPointsInFile = (file: FileType): number => {
+  return Math.floor(Math.random() * 10) - 4;
+};
+
+// ------------------------------ //
 
 const header = (
   <div className="cp-flex--wide">
@@ -85,7 +106,7 @@ const subheader = (
 );
 
 const codeString = `/******************************************************************
- *  Student: student1@andreacg.com
+ *  Student: student@myschool.edu
  *  Section: Section 1
  *
  *  Partner: none
@@ -135,7 +156,7 @@ export const Grade = () => {
     <CPLayoutGrade
       header={header}
       subheader={subheader}
-      files={<CPFileMenu />}
+      files={<CPFileMenu files={files} getPointsInFile={getPointsInFile} />}
       rubric={<CPRubricMenu rubricCategories={rubricCategories} rubricComments={rubricComments} />}
       content={content}
     />

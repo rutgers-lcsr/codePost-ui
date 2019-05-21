@@ -2,8 +2,9 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore
-import { Badge, Input, Popover } from 'antd';
+import { Badge, Input, Popover, Typography } from 'antd';
 const { TextArea } = Input;
+const { Paragraph } = Typography;
 
 import CPButton from './CPButton';
 import CPPointInput from './CPPointInput';
@@ -56,13 +57,13 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     if (points > 0) {
       badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: '#f64852' }} />;
     } else if (points < 0) {
-      badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: '#24be85' }} />;
+      badge = <Badge count={`+${points * -1}`} className="cp-badge" style={{ backgroundColor: '#24be85' }} />;
     } else {
       badge = <Badge count={points} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />;
     }
 
     if (this.props.commentType === 'active') {
-      commentElements.points = <CPPointInput />;
+      commentElements.points = <CPPointInput value={points} />;
       commentElements.comment = <TextArea autosize className="cp-comment__text-area" />;
       commentElements.status = <span className="cp-label--small cp-label--italic">Draft</span>;
       commentElements.saveButton = <CPButton cpType="secondary" icon="save" />;
@@ -72,7 +73,9 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
       commentElements.comment = (
-        <div className="cp-comment__comment">{this.props.comment.text ? this.props.comment.text : ''}</div>
+        <Paragraph className="cp-comment__comment" ellipsis={{ rows: 2, expandable: true }}>
+          {this.props.comment.text ? this.props.comment.text : ''}
+        </Paragraph>
       );
       commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" />;
@@ -81,24 +84,28 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
       commentElements.comment = (
-        <div className="cp-comment__comment">{this.props.comment.text ? this.props.comment.text : ''}</div>
+        <Paragraph className="cp-comment__comment" ellipsis={{ rows: 2, expandable: true }}>
+          {this.props.comment.text ? this.props.comment.text : ''}
+        </Paragraph>
       );
     }
 
     if (this.props.rubricComment) {
       let rubricCommentClassName = 'cp-comment__rubric-comment';
-      if (this.props.rubricComment.pointDelta < 0) {
-        rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--positive');
-      } else if (this.props.rubricComment.pointDelta > 0) {
+      let pointsString = '';
+      if (this.props.rubricComment.pointDelta > 0) {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--negative');
+        pointsString = `${points * -1}`;
+      } else if (this.props.rubricComment.pointDelta < 0) {
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--positive');
+        pointsString = `+${points * -1}`;
       } else {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--neutral');
       }
 
       commentElements.rubricComment = (
         <div className={rubricCommentClassName}>
-          <span className="cp-label--very-bold">-{this.props.rubricComment.pointDelta}</span>{' '}
-          {this.props.rubricComment.text}
+          <span className="cp-label--very-bold">{pointsString}</span> {this.props.rubricComment.text}
         </div>
       );
     }
@@ -106,7 +113,7 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     return (
       <div
         className={className}
-        style={{ transformOrigin: '-4px 0px', top: '100px' }} // placeholders for storybook
+        style={{ transformOrigin: '-4px 0px', top: '100px' }} // placeholders for storybook, will relocate to .stories
       >
         <div className="ant-popover-content">
           <div className="ant-popover-arrow" />

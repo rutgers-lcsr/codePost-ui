@@ -10,16 +10,59 @@
   &__header {
     background-color: #fff;
     box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
+    position: relative;
+    z-index: 2;
   }
 
   &__subheader {
-    background-color: #f2f2f2;
+    background-color: #fff;
     padding: 0px;
     margin-bottom: 36px;
+
+    position: relative;
+
+    &__go-back {
+      position: absolute;
+      top: 5px;
+      line-height: 14px;
+    }
   }
 
   &__detail {
-    margin: 46px 61px;
+    margin: 20px 61px;
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px 35px;
+
+    .ant-layout {
+      background-color: #fff;
+    }
+
+    &--rubric {
+      margin: 0px;
+    }
+  }
+
+  &__rubric {
+    &__subheader {
+      background-color: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 16px 61px 0px 61px;
+      height: auto;
+
+      position: relative;
+      &__go-back {
+        position: absolute;
+        top: 24px;
+        line-height: 1px;
+      }
+    }
+
+    &__content {
+      overflow: scroll;
+
+      margin: 40px 61px;
+    }
   }
 
   &__content {
