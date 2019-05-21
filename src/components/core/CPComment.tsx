@@ -63,7 +63,7 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     }
 
     if (this.props.commentType === 'active') {
-      commentElements.points = <CPPointInput value={points} />;
+      commentElements.points = <CPPointInput value={points} size="small" />;
       commentElements.comment = <TextArea autosize className="cp-comment__text-area" />;
       commentElements.status = <span className="cp-label--small cp-label--italic">Draft</span>;
       commentElements.saveButton = <CPButton cpType="secondary" icon="save" />;

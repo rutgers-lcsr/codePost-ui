@@ -10,8 +10,6 @@ import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
 import CPRubricCategory from '../../components/core/CPRubricCategory';
 
-// const Search = Input.Search;
-
 const menu = (
   <Menu>
     <Menu.Item key="1">1st menu item</Menu.Item>
@@ -51,7 +49,12 @@ export const Rubric = () => {
     </CPButton>,
   ];
 
-  const content = <CPRubricCategory />;
+  const content = (
+    <div>
+      <CPRubricCategory />
+      <CPRubricCategory />
+    </div>
+  );
 
   const rubric = <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} content={content} />;
   return <CPLayoutAdmin header={header} detail={rubric} isRubric={true} />;

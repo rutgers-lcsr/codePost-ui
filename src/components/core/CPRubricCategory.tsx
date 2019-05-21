@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Badge, Icon, Input, Table } from 'antd';
 
 import CPButton from './CPButton';
+import CPPointInput from './CPPointInput';
 
 // interface ICPRubricCateogryProps {
 //   goBack: any;
@@ -36,7 +37,7 @@ class CPRubricCategory extends React.Component<{}, {}> {
         title: '',
         dataIndex: 'delete',
         key: 'delete',
-        render: (text: string, record: any) => <Icon type="delete" />,
+        render: (record: any) => <Icon type="delete" />,
       },
     ];
 
@@ -62,14 +63,8 @@ class CPRubricCategory extends React.Component<{}, {}> {
     ];
 
     return (
-      <div style={{ backgroundColor: '#fff', minHeight: '400px', borderRadius: '5px' }}>
-        <div
-          className="cp-rubric-category__title "
-          style={{
-            padding: '17px 32px 14px 35px',
-            borderBottom: '1px solid #e9e9e9',
-          }}
-        >
+      <div className="cp-rubric-category">
+        <div className="cp-rubric-category__title ">
           <div className="cp-flex--normal">
             <div className="left">
               <span className="cp-label cp-label--plus cp-label--bold">Category: Correctness</span>
@@ -85,7 +80,7 @@ class CPRubricCategory extends React.Component<{}, {}> {
             </div>
           </div>
         </div>
-        <div style={{ padding: '25px 32px 72px 35px', position: 'relative' }}>
+        <div className="cp-rubric-category__content">
           <div className="cp-flex--very-wide">
             <div className="left">
               <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
@@ -97,13 +92,13 @@ class CPRubricCategory extends React.Component<{}, {}> {
               <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
                 Category Point Limit
               </div>
-              <Input />
+              <CPPointInput value={3} size="default" />
             </div>
             <div className="gap" />
           </div>
           <div style={{ height: '40px' }} />
           <Table columns={columns} dataSource={data} pagination={false} />
-          <div style={{ position: 'absolute', bottom: '22px', left: '60px' }}>
+          <div className="cp-rubric-category__add-new-comment">
             <CPButton cpType="primary" icon="plus" />
             <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
               ADD NEW COMMENT
