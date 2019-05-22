@@ -20,7 +20,11 @@ const menu = (
 
 const dropdown = <CPDropdown value="COS126 | Spring 2019" overlay={menu} />;
 
-const createButton = <CPButton cpType="secondary">Create Course</CPButton>;
+const createButton = (
+  <CPButton cpType="secondary" fallback="plus">
+    Create Course
+  </CPButton>
+);
 
 const header = (
   <div className="cp-flex--normal">
@@ -41,10 +45,10 @@ const header = (
 
 export const Rubric = () => {
   const actions = [
-    <CPButton key="action-1" cpType="primary">
+    <CPButton key="action-1" cpType="primary" fallback="upload">
       Upload/Download Rubric
     </CPButton>,
-    <CPButton key="action-2" cpType="secondary">
+    <CPButton key="action-2" cpType="secondary" fallback="fork">
       Merge Comments
     </CPButton>,
   ];

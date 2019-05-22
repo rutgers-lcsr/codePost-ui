@@ -21,7 +21,11 @@ const menu = (
 
 const dropdown = <CPDropdown value="COS126 | Spring 2019" overlay={menu} />;
 
-const createButton = <CPButton cpType="secondary">Create Course</CPButton>;
+const createButton = (
+  <CPButton cpType="secondary" fallback="plus">
+    Create Course
+  </CPButton>
+);
 
 const header = (
   <div className="cp-flex--normal">
@@ -182,10 +186,10 @@ export const Admin = (goback: any, title: string, actionsGroup: string) => {
   let actions: React.ReactNode[] = [];
   if (actionsGroup === 'assignments') {
     actions = [
-      <CPButton key="action-1" cpType="primary">
+      <CPButton key="action-1" cpType="primary" fallback="plus">
         Create Assignment
       </CPButton>,
-      <CPButton key="action-2" cpType="secondary">
+      <CPButton key="action-2" cpType="secondary" fallback="download">
         Download All Grades
       </CPButton>,
     ];
@@ -193,7 +197,7 @@ export const Admin = (goback: any, title: string, actionsGroup: string) => {
     actions = [<Search key="action-1" placeholder="Search..." />];
   } else if (actionsGroup === 'detail') {
     actions = [
-      <CPButton key="action-1" cpType="primary">
+      <CPButton key="action-1" cpType="primary" fallback="upload">
         Upload Submission
       </CPButton>,
     ];

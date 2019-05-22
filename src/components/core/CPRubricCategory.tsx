@@ -71,10 +71,12 @@ class CPRubricCategory extends React.Component<{}, {}> {
             </div>
             <div className="gap" />
             <div className="right">
-              <CPButton cpType="danger">Delete</CPButton>
+              <CPButton cpType="danger" fallback="delete">
+                Delete
+              </CPButton>
             </div>
             <div className="right">
-              <CPButton cpType="secondary" icon="plus">
+              <CPButton cpType="secondary" icon="plus" fallback="plus">
                 Add New Category
               </CPButton>
             </div>
