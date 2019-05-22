@@ -10,6 +10,19 @@ import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
 import CPRubricCategory from '../../components/core/CPRubricCategory';
 
+import { RubricCategoryMock } from '../../infrastructure/rubricCategory';
+import { RubricCommentMock } from '../../infrastructure/rubricComment';
+
+// --------- Mock Data --------- //
+
+const category1 = RubricCategoryMock;
+const category2 = { ...RubricCategoryMock, id: 2, name: 'Another Category' };
+
+const comments1 = [RubricCommentMock, { ...RubricCommentMock, id: 2, text: 'another rubric comment' }];
+const comments2 = [{ ...RubricCommentMock, id: 3, category: 2, text: 'missing a semicolon' }];
+
+// ------------------------------ //
+
 const menu = (
   <Menu>
     <Menu.Item key="1">1st menu item</Menu.Item>
@@ -55,8 +68,8 @@ export const Rubric = () => {
 
   const content = (
     <div>
-      <CPRubricCategory />
-      <CPRubricCategory />
+      <CPRubricCategory rubricCategory={category1} rubricComments={comments1} />
+      <CPRubricCategory rubricCategory={category2} rubricComments={comments2} />
     </div>
   );
 

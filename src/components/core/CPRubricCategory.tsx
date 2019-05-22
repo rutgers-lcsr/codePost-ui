@@ -5,69 +5,68 @@ import { Badge, Icon, Input, Table } from 'antd';
 import CPButton from './CPButton';
 import CPPointInput from './CPPointInput';
 
-// interface ICPRubricCateogryProps {
-//   goBack: any;
-//   title: string;
-//   actions: React.ReactNode[];
-//   content: React.ReactNode;
-// }
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-class CPRubricCategory extends React.Component<{}, {}> {
+interface ICPRubricCategoryProps {
+  rubricCategory: RubricCategoryType;
+  rubricComments: RubricCommentType[];
+
+  // deleteCategory: () =>;
+
+  // addComment: () => ;
+  // deleteComment: () => ;
+}
+
+const commentTableColumns = [
+  {
+    title: 'Comment Text',
+    dataIndex: 'text',
+    key: 'text',
+  },
+  {
+    title: 'Deduction',
+    dataIndex: 'deduction',
+    key: 'deduction',
+  },
+  {
+    title: 'Linked Comments',
+    key: 'linked',
+    dataIndex: 'linked',
+    render: (count: number, record: any) => (
+      <Badge count={count} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
+    ),
+  },
+  {
+    title: '',
+    dataIndex: 'delete',
+    key: 'delete',
+    render: (record: any) => <Icon type="delete" />,
+  },
+];
+
+class CPRubricCategory extends React.Component<ICPRubricCategoryProps, {}> {
+  public buildCommentTableData = (rubricComments: RubricCommentType[]) => {
+    return rubricComments.map((rubricComment: RubricCommentType, index: number) => {
+      return {
+        key: index,
+        text: rubricComment.text,
+        deduction: rubricComment.pointDelta,
+        linked: rubricComment.comments.length,
+      };
+    });
+  };
+
   public render() {
-    const columns = [
-      {
-        title: 'Comment Text',
-        dataIndex: 'text',
-        key: 'text',
-      },
-      {
-        title: 'Deduction',
-        dataIndex: 'deduction',
-        key: 'deduction',
-      },
-      {
-        title: 'Linked Comments',
-        key: 'linked',
-        dataIndex: 'linked',
-        render: (count: number, record: any) => (
-          <Badge count={count} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
-        ),
-      },
-      {
-        title: '',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (record: any) => <Icon type="delete" />,
-      },
-    ];
+    const data = this.buildCommentTableData(this.props.rubricComments);
 
-    const data = [
-      {
-        key: '1',
-        text: 'First comment',
-        deduction: 3,
-        linked: 1,
-      },
-      {
-        key: '2',
-        text: 'Second comment',
-        deduction: 2,
-        linked: 0,
-      },
-      {
-        key: '3',
-        text: 'Third comment',
-        deduction: 1,
-        linked: 3,
-      },
-    ];
-
+    // Should we have Add New Category within this table?
     return (
       <div className="cp-rubric-category">
         <div className="cp-rubric-category__title ">
           <div className="cp-flex--normal">
             <div className="left">
-              <span className="cp-label cp-label--plus cp-label--bold">Category: Correctness</span>
+              <span className="cp-label cp-label--plus cp-label--bold">Category: {this.props.rubricCategory.name}</span>
             </div>
             <div className="gap" />
             <div className="right">
@@ -88,7 +87,7 @@ class CPRubricCategory extends React.Component<{}, {}> {
               <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
                 Category Name
               </div>
-              <Input />
+              <Input value={this.props.rubricCategory.name} />
             </div>
             <div className="left">
               <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
@@ -99,7 +98,7 @@ class CPRubricCategory extends React.Component<{}, {}> {
             <div className="gap" />
           </div>
           <div style={{ height: '40px' }} />
-          <Table columns={columns} dataSource={data} pagination={false} />
+          <Table columns={commentTableColumns} dataSource={data} pagination={false} />
           <div className="cp-rubric-category__add-new-comment">
             <CPButton cpType="primary" icon="plus" />
             <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
