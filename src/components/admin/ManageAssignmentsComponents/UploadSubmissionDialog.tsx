@@ -119,7 +119,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               this.setState({
                 status: STATUS.COMPLETE,
                 files: [],
-                selectedStudents: this.props.selectedStudents ? this.props.selectedStudents : [],
+                selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : null,
               });
             });
