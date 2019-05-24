@@ -771,66 +771,50 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       this.props.addErrorToast('No students selected for the upload.', undefined);
-      return;
+      return Promise.reject();
     }
 
-    // Check for collisions for each student
-    const checkForCollisions = Promise.all(
-      partners.map((student) => {
-        return Assignment.readSubmissionsStudent(assignment.id, { student }).then((subs: SubmissionType[]) => {
-          return subs.length > 0;
-        });
-      }),
-    );
+    const submissionPayload = {
+      id: -1,
+      isFinalized: false,
+      files: [],
+      assignment: assignment.id,
+      students: partners,
+    };
 
-    checkForCollisions.then((values: boolean[]) => {
-      // We found a collision
-      if (values.includes(true)) {
-        this.props.addErrorToast(
-          'Collisions exist for this student group, so this upload has been aborted. \
-          Please delete all associated submissions and try again.',
-          undefined,
-        );
-      } else {
-        // Create submission
-        const submissionPayload = {
+    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
+      // Create each file
+      const filePromises = files.map((file: any) => {
+        const ext = this.getFileExtension(file.name);
+        const filePayload = {
           id: -1,
-          isFinalized: false,
-          files: [],
-          assignment: assignment.id,
-          students: partners,
+          name: file.name,
+          extension: ext,
+          code: file.data,
+          submission: submission.id,
+          comments: [],
         };
+        return File.create(filePayload);
+      });
 
-        const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
-          // Create each file
-          const filePromises = files.map((file: any) => {
-            const ext = this.getFileExtension(file.name);
-            const filePayload = {
-              id: -1,
-              name: file.name,
-              extension: ext,
-              code: file.data,
-              submission: submission.id,
-              comments: [],
-            };
-            return File.create(filePayload);
-          });
-          const { submissionsByStudent } = this.state;
-          partners.forEach((student) => {
-            if (!submissionsByStudent[student]) {
-              submissionsByStudent[student] = {};
-            }
-            submissionsByStudent[student][assignment.id] = submission;
-          });
-          this.setState({ submissionsByStudent });
-          return Promise.all(filePromises);
-        });
+      const { submissionsByStudent, submissions } = this.state;
+      partners.forEach((student) => {
+        if (!submissionsByStudent[student]) {
+          submissionsByStudent[student] = {};
+        }
+        submissionsByStudent[student][assignment.id] = submission;
+      });
 
-        submissionPromise.then((v: any) => {
-          this.props.addLongToast(`New ${assignment.name} submission for ${partners.join(', ')} created`, undefined);
-        });
-      }
+      const newSubmissions = { ...submissions };
+      const newAssignmentSubmissions = [...newSubmissions[submission.assignment], submission];
+      newSubmissions[submission.assignment] = newAssignmentSubmissions;
+      this.setState({ submissionsByStudent, submissions: newSubmissions });
+      return Promise.all(filePromises).then(() => {
+        return Submission.read(submission.id);
+      });
     });
+
+    return submissionPromise;
   };
 
   // ------------------- Manage sections API calls  -------------------

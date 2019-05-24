@@ -32,7 +32,7 @@ import { CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
+import UploadManager from './ManageAssignmentsComponents/UploadManager';
 
 import { openSubmission } from './AdminUtils';
 
@@ -65,7 +65,7 @@ export interface IManageAssignmentsProps {
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -195,7 +195,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             median = 0;
           } else {
             // calculate mean
-            mean = totalScore / numGraded;
+            mean = parseFloat((totalScore / numGraded).toPrecision(2));
 
             // calculate median
             const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
@@ -347,7 +347,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     if (deletingAssignment) {
       this.setState({ activeAssignment: undefined, detailType: undefined });
       this.props.setLoadingDialog(
-        'This action could impact a lot of data and may take a few minutes.',
+        'Deleting an assignment can impact a lot of data and may take a few minutes.',
         'Assignment is being deleted',
       );
       this.props.deleteAssignment(deletingAssignment).then(() => {
@@ -485,7 +485,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           },
           {
             leftIcon: <FontIcon>vertical_align_top</FontIcon>,
-            primaryText: 'Upload Submission',
+            primaryText: 'Upload Submissions',
             onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Upload, assignment),
           },
           {
@@ -614,12 +614,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           break;
         case DETAIL_TYPE.Upload:
           detailComponent = (
-            <UploadSubmissionDialog
-              isVisible={true}
-              assignments={this.props.assignments}
-              selectedAssignment={activeAssignment!}
+            <UploadManager
+              assignment={activeAssignment}
               students={this.props.students}
-              selectedStudents={null}
+              submissions={this.props.submissions[activeAssignment.id]}
               onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               uploadSubmission={this.props.uploadSubmission}
             />

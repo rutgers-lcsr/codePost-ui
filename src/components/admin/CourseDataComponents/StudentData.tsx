@@ -34,7 +34,7 @@ interface IPropsStudentOverview {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => void;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -402,15 +402,25 @@ class StudentData extends React.Component<IPropsStudentOverview, IState> {
               Delete
             </Button>
           </DialogContainer>
-          <UploadSubmissionDialog
-            isVisible={this.state.showSubmissionUpload}
-            assignments={this.props.assignments}
-            selectedAssignment={null}
-            students={[activeStudent]}
-            selectedStudents={[activeStudent]}
-            onCancel={this.toggleUploadSubmission}
-            uploadSubmission={this.props.uploadSubmission}
-          />
+
+          <DialogContainer
+            id="rubricFile-dialog"
+            className="dialog--upload-submission"
+            visible={this.state.showSubmissionUpload}
+            title="Upload Submission"
+            onHide={this.toggleUploadSubmission}
+          >
+            <UploadSubmissionDialog
+              isVisible={this.state.showSubmissionUpload}
+              assignments={this.props.assignments}
+              selectedAssignment={null}
+              students={[activeStudent]}
+              selectedStudents={[activeStudent]}
+              onCancel={this.toggleUploadSubmission}
+              uploadSubmission={this.props.uploadSubmission}
+              submissions={Object.values(this.props.submissionsByStudent[activeStudent])}
+            />
+          </DialogContainer>
         </div>
       );
     }

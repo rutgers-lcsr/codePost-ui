@@ -1,11 +1,23 @@
-import * as React from 'react';
-import { Button, DialogContainer, FileUpload } from 'react-md';
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
 
+/* react imports */
+import * as React from 'react';
+
+/* react-md imports */
+import { Button, FileUpload } from 'react-md';
+
+/* other library imports */
+import Select from 'react-select';
+
+/* codePost imports */
 import UploadedFileCard from './UploadedFileCard';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
-import Select from 'react-select';
+/**********************************************************************************************************************/
 
 interface IProps {
   isVisible: boolean;
@@ -13,8 +25,15 @@ interface IProps {
   assignments: AssignmentType[];
   selectedAssignment: AssignmentType | null;
   students: string[];
-  selectedStudents: string[] | null;
-  uploadSubmission: any;
+  selectedStudents: string[];
+  submissions: SubmissionType[];
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
+}
+
+enum STATUS {
+  NONE,
+  SAVING /* reading files from user's file system */,
+  COMPLETE /* completed upload */,
 }
 
 interface IState {
@@ -22,16 +41,20 @@ interface IState {
   selectedAssignment: AssignmentType | null;
   file?: any;
   files: any[];
+  foundCollision: boolean;
+  status: STATUS;
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public fileUpload: any = React.createRef();
 
   public state: Readonly<IState> = {
-    selectedStudents: this.props.selectedStudents ? this.props.selectedStudents : [],
+    selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     file: undefined,
     files: [],
+    foundCollision: false,
+    status: STATUS.NONE,
   };
 
   public componentDidUpdate(prevProps: IProps) {
@@ -43,44 +66,65 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   }
 
+  public checkForCollision = (assignment: AssignmentType, submissions: SubmissionType[], students: string[]) => {
+    return submissions.some((el) => {
+      if (el.assignment === assignment.id) {
+        return el.students.some((student) => {
+          return students.some((el2) => {
+            return el2 === student;
+          });
+        });
+      } else {
+        return false;
+      }
+    });
+  };
+
   public changeStudents = (options: any) => {
     const selectedStudents = options.map((option: any) => {
       return option.value;
     });
-    this.setState({ selectedStudents });
+
+    let newCollision = false;
+    if (this.state.selectedAssignment !== null) {
+      newCollision = this.checkForCollision(this.state.selectedAssignment, this.props.submissions, selectedStudents);
+    }
+
+    this.setState({ selectedStudents, foundCollision: newCollision });
   };
 
   public changeAssignment = (option: any) => {
     const selectedAssignment = this.props.assignments.find((assn) => {
       return assn.id === option.value;
     });
+
+    let newCollision = false;
     if (selectedAssignment) {
-      this.setState({ selectedAssignment });
+      newCollision = this.checkForCollision(selectedAssignment, this.props.submissions, this.state.selectedStudents);
+      this.setState({ selectedAssignment, foundCollision: newCollision });
     }
   };
 
   public cancel = () => {
     this.props.onCancel();
-    // If the students or assignment was passed in, we want to keep it in state
-    if (!this.props.selectedStudents) {
-      this.setState({ files: [], selectedStudents: [] });
-    } else if (!this.props.selectedAssignment) {
-      this.setState({ files: [], selectedAssignment: null });
-    } else {
-      this.setState({ files: [] });
-    }
   };
 
   public upload = () => {
-    this.props.uploadSubmission(this.state.selectedAssignment, this.state.selectedStudents, this.state.files);
-    this.props.onCancel();
-    // If the students or assignment was passed in, we want to keep it in state
-    if (!this.props.selectedStudents) {
-      this.setState({ files: [], selectedStudents: [] });
-    } else if (!this.props.selectedAssignment) {
-      this.setState({ files: [], selectedAssignment: null });
-    } else {
-      this.setState({ files: [] });
+    if (this.state.selectedAssignment !== null) {
+      this.setState({ status: STATUS.SAVING }, () => {
+        if (this.state.selectedAssignment !== null) {
+          this.props
+            .uploadSubmission(this.state.selectedAssignment, this.state.selectedStudents, this.state.files)
+            .then((newSubmission) => {
+              this.setState({
+                status: STATUS.COMPLETE,
+                files: [],
+                selectedStudents: this.props.selectedStudents,
+                selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : null,
+              });
+            });
+        }
+      });
     }
   };
 
@@ -119,9 +163,45 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return;
   };
 
+  public changeStatus = (newStatus: STATUS) => {
+    this.setState({ status: newStatus });
+  };
+
   public render() {
-    if (!this.props.isVisible) {
+    const { isVisible } = this.props;
+    const { status } = this.state;
+
+    if (!isVisible) {
       return <div />;
+    }
+
+    if (status === STATUS.COMPLETE) {
+      return (
+        <div>
+          <p>Submission upload complete!</p>
+          <Button raised onClick={this.cancel} primary={true} flat={true} style={{ marginLeft: 'auto' }}>
+            Close
+          </Button>
+          &nbsp;&nbsp;
+          <Button
+            raised
+            onClick={this.changeStatus.bind(this, STATUS.NONE)}
+            primary={false}
+            flat={true}
+            style={{ marginLeft: 'auto' }}
+          >
+            Upload another
+          </Button>
+        </div>
+      );
+    }
+
+    if (status === STATUS.SAVING) {
+      return (
+        <div>
+          <p>Loading...</p>
+        </div>
+      );
     }
 
     const uploadedFileCards = this.state.files.map((file) => {
@@ -146,7 +226,20 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
     const selectedStudents = this.state.selectedStudents;
 
-    const content = (
+    let errorText;
+    if (this.state.foundCollision) {
+      errorText = (
+        <div>
+          <div>
+            A submission already exists for one of these students. You must delete it before uploading a new submission.
+          </div>
+          <div className="error-padding" />
+          <div className="error-padding" />
+        </div>
+      );
+    }
+
+    return (
       <div>
         <div className="error-padding" />
         <Select
@@ -164,7 +257,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           classNamePrefix="multiselect--ManageSections"
           closeMenuOnSelect={true}
           isMulti={true}
-          isDisabled={this.props.selectedStudents}
+          isDisabled={this.props.selectedStudents.length > 0}
           options={studentOptions}
           onChange={this.changeStudents}
           placeholder="Select students..."
@@ -174,6 +267,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           menuPlacement="auto"
         />
         <div className="error-padding" />
+        {errorText}
         <FileUpload
           id="multiple-file-upload"
           multiple
@@ -189,6 +283,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
         <div className="error-padding" />
         {uploadedFileCards}
+
         <div className="error-padding" />
         <div className="error-padding" />
 
@@ -199,7 +294,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           <Button
             raised
             onClick={this.upload}
-            disabled={disableUpload}
+            disabled={disableUpload || this.state.foundCollision}
             primary={true}
             flat={true}
             style={{ marginLeft: '10px' }}
@@ -209,17 +304,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         </div>
         <div className="error-padding" />
       </div>
-    );
-    return (
-      <DialogContainer
-        id="rubricFile-dialog"
-        className="dialog--upload-submission"
-        visible={true}
-        title="Upload Submission"
-        onHide={this.cancel}
-      >
-        {content}
-      </DialogContainer>
     );
   }
 }
