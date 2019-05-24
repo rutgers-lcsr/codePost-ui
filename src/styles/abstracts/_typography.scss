@@ -1,0 +1,77 @@
+// Typography
+
+// Font Weight
+$fontWeightLight: 300;
+$fontWeightRegular: 500;
+$fontWeightMedium: 600;
+
+// Font Size
+$fontSizeSuper: 88;
+$fontSizeHeading1: 64;
+$fontSizeHeading2: 48;
+$fontSizeHeading3: 40;
+$fontSizeHeading4: 32;
+$fontSizeHeading5: 24;
+$fontSizeHeading6: 20;
+$fontSizeHeading7: 16;
+$fontSizeHeading8: 11;
+$fontSizeBodyArticle: 20;
+$fontSizeBodyArticleSmall: 16;
+$fontSizeBodySmall: 14;
+$fontSizeAccent: 16;
+$fontSizeUppercase: 11;
+
+// Line Height
+$lineHeightSuper: (96 / $fontSizeSuper);
+$lineHeightHeading1: (72 / $fontSizeHeading1);
+$lineHeightHeading2: (56 / $fontSizeHeading2);
+$lineHeightHeading3: (48 / $fontSizeHeading3);
+$lineHeightHeading4: (40 / $fontSizeHeading4);
+$lineHeightHeading5: (32 / $fontSizeHeading5);
+$lineHeightHeading6: (28 / $fontSizeHeading6);
+$lineHeightHeading7: (24 / $fontSizeHeading7);
+$lineHeightHeading8: (16 / $fontSizeHeading8);
+$lineHeightBodyArticle: (36 / $fontSizeBodyArticle);
+$lineHeightBodyArticleSmall: (32 / $fontSizeBodyArticleSmall);
+$lineHeightBodySmall: (20 / $fontSizeBodySmall);
+$lineHeightAccent: (24 / $fontSizeAccent);
+$lineHeightUppercase: (11 / $fontSizeUppercase);
+$lineHeightReset: 1;
+
+// Export for tsx
+:export {
+  fontWeightLight: $fontWeightLight;
+  fontWeightRegular: $fontWeightRegular;
+  fontWeightMedium: $fontWeightMedium;
+
+  fontSizeSuper: $fontSizeSuper;
+  fontSizeHeading1: $fontSizeHeading1;
+  fontSizeHeading2: $fontSizeHeading2;
+  fontSizeHeading3: $fontSizeHeading3;
+  fontSizeHeading4: $fontSizeHeading4;
+  fontSizeHeading5: $fontSizeHeading5;
+  fontSizeHeading6: $fontSizeHeading6;
+  fontSizeHeading7: $fontSizeHeading7;
+  fontSizeHeading8: $fontSizeHeading8;
+  fontSizeBodyArticle: $fontSizeBodyArticle;
+  fontSizeBodyArticleSmall: $fontSizeBodyArticleSmall;
+  fontSizeBodySmall: $fontSizeBodySmall;
+  fontSizeAccent: $fontSizeAccent;
+  fontSizeUppercase: $fontSizeUppercase;
+
+  lineHeightSuper: $lineHeightSuper;
+  lineHeightHeading1: $lineHeightHeading1;
+  lineHeightHeading2: $lineHeightHeading2;
+  lineHeightHeading3: $lineHeightHeading3;
+  lineHeightHeading4: $lineHeightHeading4;
+  lineHeightHeading5: $lineHeightHeading5;
+  lineHeightHeading6: $lineHeightHeading6;
+  lineHeightHeading7: $lineHeightHeading7;
+  lineHeightHeading8: $lineHeightHeading8;
+  lineHeightBodyArticle: $lineHeightBodyArticle;
+  lineHeightBodyArticleSmall: $lineHeightBodyArticleSmall;
+  lineHeightBodySmall: $lineHeightBodySmall;
+  lineHeightAccent: $lineHeightAccent;
+  lineHeightUppercase: $lineHeightUppercase;
+  lineHeightReset: $lineHeightReset;
+}

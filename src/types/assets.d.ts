@@ -16,3 +16,14 @@ declare module 'turndown';
 declare module 'turndown-plugin-gfm';
 declare module 'react-beautiful-dnd';
 declare module 'react-tooltip';
+declare module 'storybook';
+declare module '@storybook/react';
+declare module '@storybook/addon-actions';
+declare module '@storybook/addon-links';
+declare module '@storybook/react/demo';
+declare module '@storybook/addon-knobs';
+
+declare module '*.scss' {
+  const content: { [className: string]: string };
+  export = content;
+}

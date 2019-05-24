@@ -1,0 +1,11 @@
+.cp-badge {
+  min-width: 33px;
+
+  &--neutral {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  &--bad {
+    background-color: $actionRed;
+  }
+}

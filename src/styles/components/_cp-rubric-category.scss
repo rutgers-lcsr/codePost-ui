@@ -1,0 +1,22 @@
+.cp-rubric-category {
+  min-height: 400px; //tmp
+  background-color: #fff;
+  border-radius: 5px;
+  margin-bottom: 20px;
+
+  &__title {
+    padding: 17px 32px 14px 35px;
+    border-bottom: 1px solid $neutralBorder;
+  }
+
+  &__content {
+    padding: 25px 32px 72px 35px;
+    position: relative;
+  }
+
+  &__add-new-comment {
+    position: absolute;
+    bottom: 22px;
+    left: 60px;
+  }
+}

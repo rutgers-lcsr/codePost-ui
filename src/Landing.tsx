@@ -325,6 +325,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 0 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 0)}
+                  id="carousel-review"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -339,6 +340,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 1 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 1)}
+                  id="carousel-manage-course"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -353,6 +355,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 2 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 2)}
+                  id="carousel-manage-graders"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -367,6 +370,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 3 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 3)}
+                  id="carousel-student"
                 />
               </div>
             </div>

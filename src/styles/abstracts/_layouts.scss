@@ -1,0 +1,8 @@
+// Layouts
+
+$headerHeight: get('theme.headerHeight');
+
+// Export for tsx
+:export {
+  headerHeight: $headerHeight;
+}

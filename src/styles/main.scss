@@ -3,6 +3,7 @@
 // 1. Configuration and helpers
 @import 'abstracts/functions', 'abstracts/mixins';
 @import 'abstracts/variables';
+@import 'abstracts/colors', 'abstracts/fonts', 'abstracts/typography', 'abstracts/layouts';
 
 // 2. Vendors
 @import 'vendors/react-md', 'vendors/codeMirror';
@@ -16,10 +17,13 @@
   'components/selector', 'components/dialog', 'components/select', 'components/controlToggle',
   'components/rubricCommentExplorer', 'components/whiteBox', 'components/submission-info', 'components/progress',
   'components/carousel', 'components/cardList', 'components/drawer', 'components/file-upload',
-  'components/roster-upload', 'components/tooltip', 'components/markdown-code';
+  'components/roster-upload', 'components/tooltip', 'components/markdown-code', 'components/cp-button',
+  'components/cp-logo', 'components/cp-rubric-menu', 'components/cp-file-menu', 'components/cp-comment',
+  'components/cp-point-input', 'components/cp-label', 'components/cp-badge', 'components/cp-dropdown',
+  'components/cp-rubric-category';
 
 // 5. Layout-related sections
-@import 'layout/header';
+@import 'layout/header', 'layout/layout', 'layout/cp-flex';
 
 // 6. Page-specific styles
 @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
