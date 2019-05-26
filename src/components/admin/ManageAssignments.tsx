@@ -26,7 +26,7 @@ import { CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
+import UploadManager from './ManageAssignmentsComponents/UploadManager';
 
 // import { openSubmission } from './AdminUtils';
 
@@ -59,7 +59,7 @@ export interface IManageAssignmentsProps {
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => void;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -189,7 +189,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             median = 0;
           } else {
             // calculate mean
-            mean = totalScore / numGraded;
+            mean = parseFloat((totalScore / numGraded).toPrecision(2));
 
             // calculate median
             const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
@@ -593,7 +593,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             break;
           case DETAIL_TYPE.Upload:
             detailComponent = (
-              <UploadSubmissionDialog
+              <UploadManager
                 isVisible={true}
                 assignments={this.props.assignments}
                 selectedAssignment={this.state.activeAssignment!}

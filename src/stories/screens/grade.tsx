@@ -82,7 +82,9 @@ const subheader = (
       <div className="gap" />
       <div className="right">{dropdown}</div>
       <div className="right">
-        <CPButton cpType="secondary">Unfinalize</CPButton>
+        <CPButton cpType="secondary" fallback="undo">
+          Unfinalize
+        </CPButton>
       </div>
     </div>
     <div className="cp-flex--tight">
