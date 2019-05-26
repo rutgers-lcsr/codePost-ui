@@ -1,123 +1,107 @@
 import * as React from 'react';
-import { Button, DialogContainer, TextField } from 'react-md';
+
+import { Form, Input, InputNumber, Modal } from 'antd';
+
+import CPButton from '../../../components/core/CPButton';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 
 interface IProps {
   assignments: AssignmentType[];
-  addErrorToast: (text: string, action: string | undefined) => void;
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
 }
 
 interface IState {
-  newAssignmentName: string;
-  newAssignmentPoints: number;
   dialogVisible: boolean;
 }
 
 class NewAssignmentDialog extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
-    newAssignmentName: '',
-    newAssignmentPoints: 0,
     dialogVisible: false,
   };
+
+  private formRef = React.createRef();
 
   public toggleDialog = () => {
     const { dialogVisible } = this.state;
     this.setState({
       dialogVisible: !dialogVisible,
-      newAssignmentName: '',
     });
   };
 
-  public changeNameField = (newName: string) => {
-    this.setState({ newAssignmentName: newName });
-  };
+  public handleCreate = () => {
+    const formRefCast: any = this.formRef;
+    const form = formRefCast.props.form;
+    form.validateFields((err: any, values: any) => {
+      if (err) {
+        return;
+      }
 
-  public changePointsField = (newPoints: number) => {
-    this.setState({ newAssignmentPoints: newPoints });
-  };
-
-  public handleKeyPress = (event: any) => {
-    if (event.keyCode === 13) {
-      this.createNewAssignment();
-    }
-  };
-
-  public createNewAssignment = () => {
-    const { newAssignmentName, newAssignmentPoints } = this.state;
-    const { assignments } = this.props;
-    if (newAssignmentName.length < 4) {
-      this.props.addErrorToast('Assignment name must be longer than 4 characters', undefined);
-      return;
-    }
-    if (
-      assignments
-        .map((i) => {
-          return i.name.toLowerCase();
-        })
-        .indexOf(newAssignmentName.toLowerCase()) !== -1
-    ) {
-      this.props.addErrorToast('Assignment name must be distinct from other assignments in course.', undefined);
-      return;
-    }
-    if (newAssignmentPoints < 0) {
-      this.props.addErrorToast('Assignment total points cannot be negative.', undefined);
-      return;
-    }
-    this.props.createAssignment(newAssignmentName, newAssignmentPoints).then(() => {
-      this.toggleDialog();
+      this.createNewAssignment(values.name, values.points);
+      form.resetFields();
+      this.setState({ dialogVisible: false });
     });
+  };
+
+  public createNewAssignment = (name: string, points: number) => {
+    this.props.createAssignment(name, points);
+    this.toggleDialog();
+  };
+
+  public saveFormRef = (formRef: any) => {
+    this.formRef = formRef;
   };
 
   public render() {
-    const { dialogVisible } = this.state;
-    const dialogActions = [];
-    dialogActions.push({
-      secondary: true,
-      children: 'Cancel',
-      onClick: this.toggleDialog,
-    });
-
-    dialogActions.push(
-      <Button flat primary onClick={this.createNewAssignment}>
-        Create
-      </Button>,
-    );
-
     return (
-      <div className="dialog--new-assignment">
-        <Button raised onClick={this.toggleDialog}>
-          Add a new assignment
-        </Button>
-        <DialogContainer
-          id="newAssignment-dialog"
-          visible={dialogVisible}
-          title="Add new assignment"
-          onHide={this.toggleDialog}
-          actions={dialogActions}
-          modal
-        >
-          <TextField
-            id="newAssignment-name"
-            label="New Assignment name"
-            defaultValue=""
-            onChange={this.changeNameField}
-            onKeyDown={this.handleKeyPress}
-          />
-          <TextField
-            id="newAssignment-points"
-            label="Total points"
-            pattern="^d+(\.|\,)\d{1}"
-            type="number"
-            min={0}
-            defaultValue=""
-            onChange={this.changePointsField}
-            onKeyDown={this.handleKeyPress}
-          />
-        </DialogContainer>
+      <div>
+        <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
+          Add assignment
+        </CPButton>
+        <CollectionCreateForm
+          wrappedComponentRef={this.saveFormRef}
+          visible={this.state.dialogVisible}
+          onCancel={this.toggleDialog}
+          onCreate={this.handleCreate}
+        />
       </div>
     );
   }
 }
+
+interface ISubProps {
+  form: any;
+  visible: any;
+  onCreate: any;
+  onCancel: any;
+}
+
+const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
+  // eslint-disable-next-line
+  class extends React.Component<ISubProps, {}> {
+    public render() {
+      const { visible, onCancel, onCreate, form } = this.props;
+      const { getFieldDecorator } = form;
+      return (
+        <Modal visible={visible} title="Create an assignment" okText="Create" onCancel={onCancel} onOk={onCreate}>
+          <Form layout="vertical">
+            <Form.Item label="Name">
+              {getFieldDecorator('name', {
+                rules: [
+                  { required: true, message: 'Please input an assignment name with at least 4 characters', min: 4 },
+                ],
+              })(<Input />)}
+            </Form.Item>
+            <Form.Item label="Points">
+              {getFieldDecorator('points', {
+                rules: [{ required: true }],
+              })(<InputNumber min={0} />)}
+            </Form.Item>
+          </Form>
+        </Modal>
+      );
+    }
+  },
+);
+
 export default NewAssignmentDialog;

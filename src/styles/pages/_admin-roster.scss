@@ -1,47 +1,47 @@
-@mixin RosterStandardFormat($newUserBoxWidth) {
-  &__top-container {
-    display: flex;
-    justify-content: space-between;
-  }
-  &__top-container__newUser {
-    display: flex;
-    min-width: $newUserBoxWidth;
-    align-items: flex-end;
-  }
-  &__addUser__Btn {
-    min-width: fit-content;
-    margin-bottom: 5px;
-    margin-left: 5px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border-radius: 5px;
-  }
-}
+// @mixin RosterStandardFormat($newUserBoxWidth) {
+//   &__top-container {
+//     display: flex;
+//     justify-content: space-between;
+//   }
+//   &__top-container__newUser {
+//     display: flex;
+//     min-width: $newUserBoxWidth;
+//     align-items: flex-end;
+//   }
+//   &__addUser__Btn {
+//     min-width: fit-content;
+//     margin-bottom: 5px;
+//     margin-left: 5px;
+//     padding-top: 5px;
+//     padding-bottom: 5px;
+//     border-radius: 5px;
+//   }
+// }
 
-.roster-student {
-  @include RosterStandardFormat(500px);
-}
+// .roster-student {
+//   @include RosterStandardFormat(500px);
+// }
 
-.roster-grader {
-  @include RosterStandardFormat(200px);
-}
+// .roster-grader {
+//   @include RosterStandardFormat(200px);
+// }
 
-.roster-admin {
-  @include RosterStandardFormat(200px);
-}
+// .roster-admin {
+//   @include RosterStandardFormat(200px);
+// }
 
-.roster-section {
-  &__addSection {
-    width: 250px;
-    display: flex;
-    align-items: center;
-    &__Btn {
-      min-width: fit-content;
-      height: fit-content;
-      margin-left: 5px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 5px;
-    }
-  }
-}
+// .roster-section {
+//   &__addSection {
+//     width: 250px;
+//     display: flex;
+//     align-items: center;
+//     &__Btn {
+//       min-width: fit-content;
+//       height: fit-content;
+//       margin-left: 5px;
+//       padding-top: 5px;
+//       padding-bottom: 5px;
+//       border-radius: 5px;
+//     }
+//   }
+// }

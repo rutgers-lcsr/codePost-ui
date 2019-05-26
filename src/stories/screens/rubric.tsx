@@ -56,6 +56,7 @@ export const Rubric = () => {
     </div>
   );
 
+  const onClick = (e: any) => null;
   const rubric = <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} content={content} />;
-  return <CPLayoutAdmin header={header} detail={rubric} isRubric={true} />;
+  return <CPLayoutAdmin onClick={onClick} header={header} detail={rubric} isRubric={true} />;
 };

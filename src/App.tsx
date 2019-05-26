@@ -6,7 +6,7 @@ import { Snackbar } from 'react-md';
 
 import IndexManager from './components/IndexManager';
 import TermsOfService from './components/TermsAndPrivacy/TermsOfService';
-import { TopBar } from './components/TopBar';
+// import { TopBar } from './components/TopBar';
 
 import LogInAs from './LogInAs';
 
@@ -312,7 +312,7 @@ class App extends React.Component<{}, IState> {
         adminRoute = (
           <Route
             exact={true}
-            path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
             render={(props: any) => (
               <AsyncAdmin
                 {...props}
@@ -383,73 +383,63 @@ class App extends React.Component<{}, IState> {
         maxWidth: '100%',
       };
 
-      const isChromeBrowser = window.hasOwnProperty('chrome');
+      // const isChromeBrowser = window.hasOwnProperty('chrome');
 
       return (
-        <div>
-          <TopBar
-            email={this.state.user.email}
-            handleLogout={this.handleLogout}
-            showSettings={this.state.user.canCreateCourses}
-            isChromeBrowser={isChromeBrowser}
+        <Switch>
+          <Route
+            exact={true}
+            path={'/loginAs/:email'}
+            render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
           />
-          <div className="AppHome">
-            <Switch>
-              <Route
-                exact={true}
-                path={'/loginAs/:email'}
-                render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-              />
 
-              <Route
-                exact={true}
-                path={'/settings'}
-                render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
-              />
-              <Route
-                exact={true}
-                path={'/terms'}
-                render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
-              />
+          <Route
+            exact={true}
+            path={'/settings'}
+            render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
+          />
+          <Route
+            exact={true}
+            path={'/terms'}
+            render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
+          />
 
-              {pageSelector}
-              {studentRoute}
-              {graderRoute}
-              {adminRoute}
-              {gradeRoute}
-            </Switch>
-            <Snackbar
-              id="short-snackbar"
-              className="short-snackbar"
-              toasts={this.state.toasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={2000}
-              onDismiss={this.dismissToast}
-              style={snackBarStyle}
-            />
-            <Snackbar
-              id="long-snackbar"
-              className="long-snackbar"
-              toasts={this.state.longToasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={4000}
-              onDismiss={this.dismissLongToast}
-              style={snackBarStyle}
-            />
-            <Snackbar
-              id="error-snackbar"
-              className="error-snackbar"
-              toasts={this.state.errorToasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={5000}
-              onDismiss={this.dismissErrorToast}
-              style={errorSnackBarStyle}
-            />
-          </div>
-        </div>
+          {pageSelector}
+          {studentRoute}
+          {graderRoute}
+          {adminRoute}
+          {gradeRoute}
+          <Snackbar
+            id="short-snackbar"
+            className="short-snackbar"
+            toasts={this.state.toasts}
+            autohide={true}
+            lastChild={true}
+            autohideTimeout={2000}
+            onDismiss={this.dismissToast}
+            style={snackBarStyle}
+          />
+          <Snackbar
+            id="long-snackbar"
+            className="long-snackbar"
+            toasts={this.state.longToasts}
+            autohide={true}
+            lastChild={true}
+            autohideTimeout={4000}
+            onDismiss={this.dismissLongToast}
+            style={snackBarStyle}
+          />
+          <Snackbar
+            id="error-snackbar"
+            className="error-snackbar"
+            toasts={this.state.errorToasts}
+            autohide={true}
+            lastChild={true}
+            autohideTimeout={5000}
+            onDismiss={this.dismissErrorToast}
+            style={errorSnackBarStyle}
+          />
+        </Switch>
       );
     }
     if (this.state.triedLoading) {

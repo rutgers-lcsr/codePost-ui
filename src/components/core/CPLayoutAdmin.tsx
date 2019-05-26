@@ -1,17 +1,21 @@
 import * as React from 'react';
 
+import CPMainNav from './CPMainNav';
+
+import { ClickParam } from 'antd/lib/menu';
+
 import { Layout } from 'antd';
 
 import CPLogo from './CPLogo';
 
 const { Header, Content, Sider } = Layout;
 
-import CPMainNav from './CPMainNav';
-
 interface ICPLayoutAdminProps {
   header: React.ReactNode;
   detail: React.ReactNode;
   isRubric: boolean;
+  onClick: (e: ClickParam) => void;
+  selectedPanel: number;
 }
 
 interface ICPLayoutAdminState {
@@ -31,12 +35,12 @@ class CPLayoutAdmin extends React.Component<ICPLayoutAdminProps, {}> {
     // console.log('width', this.props.windowWidth);
 
     return (
-      <Layout className="layout--admin">
+      <Layout id="Admin" className="layout--admin">
         <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
           <Header className="layout--admin__sider__header">
             {this.state.collapsed ? <CPLogo cpType="icon" /> : <CPLogo cpType="main" />}
           </Header>
-          <CPMainNav />
+          <CPMainNav selectedPanel={this.props.selectedPanel} onClick={this.props.onClick} />
         </Sider>
         <Layout>
           <Header className="layout--admin__header">{this.props.header}</Header>

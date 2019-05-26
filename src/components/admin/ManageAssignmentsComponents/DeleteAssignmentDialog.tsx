@@ -1,5 +1,8 @@
 import * as React from 'react';
-import { Button, DialogContainer, TextField } from 'react-md';
+
+import { Input, Modal } from 'antd';
+
+import CPButton from '../../../components/core/CPButton';
 
 interface IProps {
   isVisible: boolean;
@@ -17,8 +20,8 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
     typedName: '',
   };
 
-  public changeTypedName = (newName: string) => {
-    this.setState({ typedName: newName });
+  public changeTypedName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ typedName: e.target.value });
   };
 
   public render() {
@@ -27,39 +30,39 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
     }
     const content = (
       <div>
-        <div className="error-padding" />
         Are you sure you want to delete this assignment? If you proceed, you will delete all submissions associated with
         this assignment, including all grades and comments. <b>You cannot undo this.</b>
-        <div className="error-padding" />
-        To continue, type the name of the assignment into the field below.
-        <TextField id="" label="" defaultValue="" onChange={this.changeTypedName} />
-        <div className="error-padding" />
-        <Button raised onClick={this.props.onCancel} primary={true} flat={true}>
-          Cancel
-        </Button>
-        <Button
-          raised
-          onClick={this.props.onDelete}
-          primary={false}
-          flat={true}
-          disabled={this.state.typedName !== this.props.assignmentName}
-          style={{ marginLeft: '55px' }}
-        >
-          Delete
-        </Button>
-        <div className="error-padding" />
+        <br />
+        <br />
+        To continue, type the <b>name of the assignment</b> into the field below.
+        <br />
+        <br />
+        <Input onChange={this.changeTypedName} placeholder="Assignment name" />
       </div>
     );
     return (
-      <DialogContainer
-        id="rubricFile-dialog"
-        visible={true}
-        title="Are you sure you want to delete this assignment?"
-        onHide={this.props.onCancel}
-        modal
+      <Modal
+        visible={this.props.isVisible}
+        title={`Delete assignment: ${this.props.assignmentName}`}
+        okText="Delete"
+        onCancel={this.props.onCancel}
+        onOk={this.props.onDelete}
+        footer={[
+          <CPButton cpType="secondary" key="back" onClick={this.props.onCancel}>
+            Cancel
+          </CPButton>,
+          <CPButton
+            key="submit"
+            disabled={this.state.typedName !== this.props.assignmentName}
+            cpType="danger"
+            onClick={this.props.onDelete}
+          >
+            Delete
+          </CPButton>,
+        ]}
       >
         {content}
-      </DialogContainer>
+      </Modal>
     );
   }
 }

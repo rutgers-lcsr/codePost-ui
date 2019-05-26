@@ -5,30 +5,36 @@
 /* react imports */
 import * as React from 'react';
 
-/* react-md imports */
-import { CircularProgress, DialogContainer } from 'react-md';
+/* ant imports */
+import { Empty, Menu } from 'antd';
+import { ClickParam } from 'antd/lib/menu';
+
+// import { Icon, Switch, Table } from 'antd';
+
+import CPLayoutAdmin from './components/core/CPLayoutAdmin';
+
+// import CPAdminDetail from './components/core/CPAdminDetail';
+
+import CPButton from './components/core/CPButton';
+import CPDropdown from './components/core/CPDropdown';
 
 /* other library imports */
-import { Redirect } from 'react-router-dom';
-import Select from 'react-select';
-
 import queryString from 'query-string';
 
 /* codePost imports */
 
 /* components */
-import CourseData from './components/admin/CourseData';
+// import CourseData from './components/admin/CourseData';
 import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
 import ManageAssignments from './components/admin/ManageAssignments';
-import ManageUsers from './components/admin/ManageUsers';
+// import ManageUsers from './components/admin/ManageUsers';
 import NewCourseDialog from './components/admin/NewCourseDialog';
-import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
+// import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
 
 /* types */
 import {
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
-  IOptionNumber,
   ISectionNoStudents,
   IStudentSubmissionsDataTable,
   IToast,
@@ -47,9 +53,27 @@ import { SubmissionHistoryType } from './infrastructure/submissionHistory';
 import { UserType } from './infrastructure/user';
 import { addToPayload } from './infrastructure/utils';
 
+/**********************************************************************************************************************/
+
+const panels = [
+  'submissions/students', // 0
+  'submissions/graders', // 1
+  'submissions/inactive_students', // 2
+  'submissions/inactive_graders', // 3
+  'assignments/', // 4
+  'roster/students', // 5
+  'roster/graders', // 6
+  'roster/admins', // 7
+  'roster/sections', // 8
+  'roster/inactive_students', // 9
+  'roster/inactive_graders', // 10
+  'settings/', // 11
+];
+
 interface IAdminState {
   currentCourse?: CourseType; // Course for selector
-  loadedPanel?: number; // Which active_panel to load, enum
+  currentPanel: number;
+
   courses: CourseType[]; // Set of courses for the admin for the selector
 
   // roster data, all from a single api call so only needs a single loadComplete boolean
@@ -94,13 +118,6 @@ interface IAdminState {
   longToasts: IToast[];
   errorToasts: IToast[];
 
-  // URL variables
-  toLoadCourse: boolean;
-  toLoadPanel: boolean;
-
-  // Pre-loaded initializtion paramters for children
-  initialTab: number;
-
   // Generic loading dialog for actions
   isLoading: boolean;
   loadingMessage: string;
@@ -123,190 +140,112 @@ interface IAdminProps {
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
-  public state: Readonly<IAdminState> = {
-    currentCourse: undefined,
-    loadedPanel: undefined,
+  public constructor(props: IAdminProps) {
+    super(props);
+    const { course, panel } = this.setStateFromURL(this.props.user.courseadminCourses);
+    if (course) {
+      this.changeURL(course, panel);
+      this.loadAllCourseData(course);
+    }
 
-    // Can't take credit for this gem...
-    // https://medium.com/@gamshan001/javascript-deep-copy-for-array-and-object-97e3d4bc401a
-    // Deep copies array so we don't mutate the state of the parent
-    courses: JSON.parse(JSON.stringify(this.props.initialCourses)),
+    this.state = {
+      currentCourse: course,
+      currentPanel: panel,
 
-    students: [],
-    inactiveStudents: [],
-    graders: [],
-    inactiveGraders: [],
-    admins: [],
-    superGraders: [],
-    rosterLoadComplete: false,
+      // Can't take credit for this gem...
+      // https://medium.com/@gamshan001/javascript-deep-copy-for-array-and-object-97e3d4bc401a
+      // Deep copies array so we don't mutate the state of the parent
+      courses: JSON.parse(JSON.stringify(this.props.initialCourses)),
 
-    sections: [],
-    sectionsLoadComplete: false,
+      students: [],
+      inactiveStudents: [],
+      graders: [],
+      inactiveGraders: [],
+      admins: [],
+      superGraders: [],
+      rosterLoadComplete: false,
 
-    sectionsByStudent: {},
+      sections: [],
+      sectionsLoadComplete: false,
 
-    submissions: {},
-    submissionsLoadComplete: false,
+      sectionsByStudent: {},
 
-    assignments: [],
-    assignmentsLoadComplete: false,
+      submissions: {},
+      submissionsLoadComplete: false,
 
-    submissionsByStudent: {},
-    submissionsByGrader: {},
-    submissionsByInactiveStudent: {},
-    submissionsByInactiveGrader: {},
-    submissionsbyUserLoadComplete: false,
-    viewsBySubmission: {},
+      assignments: [],
+      assignmentsLoadComplete: false,
 
-    lockChanges: true,
+      submissionsByStudent: {},
+      submissionsByGrader: {},
+      submissionsByInactiveStudent: {},
+      submissionsByInactiveGrader: {},
+      submissionsbyUserLoadComplete: false,
+      viewsBySubmission: {},
 
-    toasts: [],
-    longToasts: [],
-    errorToasts: [],
+      lockChanges: true,
 
-    initialTab: 0,
+      toasts: [],
+      longToasts: [],
+      errorToasts: [],
 
-    toLoadCourse: false,
-    toLoadPanel: false,
-
-    isLoading: false,
-    loadingMessage: '',
-    loadingTitle: '',
-    onboardingModalVisible:
-      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-      this.props.initialCourses.length === 0,
-  };
-
-  public panels: { [key: string]: string } = {
-    0: 'Course Data',
-    1: 'Manage Assignments',
-    2: 'Manage Users',
-    3: 'Course Settings',
-  };
-
-  public panelMapForURL = ['course-data', 'assignments', 'manage-users', 'settings'];
-
-  public defaultPanelArgForURL = ['students', null, null, null];
-
-  public snackBarStyle = {
-    width: '100%',
-    fontWeight: 500,
-    fontSize: 14,
-    backgroundColor: '#24b47e',
-    maxWidth: '100%',
-  };
-
-  public errorSnackBarStyl4e = {
-    width: '100%',
-    fontWeight: 500,
-    fontSize: 14,
-    backgroundColor: 'red',
-    maxWidth: '100%',
-  };
-
-  private interval: any;
+      isLoading: false,
+      loadingMessage: '',
+      loadingTitle: '',
+      onboardingModalVisible:
+        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+        this.props.initialCourses.length === 0,
+    };
+  }
 
   ///////////////////////////////////////
   // URL handler methods
   ///////////////////////////////////////
 
-  public setStateFromURL = () => {
-    const { courseName, period, panelName } = this.props.match.params;
-    const { courses } = this.state;
-
-    // Test whether (courseName, period) corresponds to loaded course
-
-    let currentCourse: CourseType | undefined;
-    let loadedPanel;
-    if (courseName && period) {
-      const formattedCourseName = courseName.replace(/_/g, ' ');
-      const formattedPeriod = period.replace(/_/g, ' ');
-      currentCourse = courses.find((obj: CourseType) => {
-        return obj.name === formattedCourseName && obj.period === formattedPeriod;
-      });
-
-      // Given (courseName, period), test whether panelName corresponds to valid panel
-      if (currentCourse) {
-        if (panelName) {
-          loadedPanel = this.panelFromString(panelName);
-        } else {
-          loadedPanel = 0;
-        }
-      }
-    }
-
-    // the toLoadPanel assignment causes the URL to add default loadedPanel if none is specified
-    const isValid = currentCourse && (panelName ? this.panelMapForURL.indexOf(panelName) >= 0 : false);
-    this.setState({ currentCourse, loadedPanel, toLoadPanel: !isValid }, () => {
-      if (currentCourse) {
-        this.updateNewCourse({ value: currentCourse.id, label: '' });
-      }
-    });
-  };
-
   public panelFromString(name: string) {
-    const toRet = this.panelMapForURL.indexOf(name);
+    const toRet = panels.indexOf(name);
     return toRet >= 0 ? toRet : 0;
   }
 
-  public stringFromPanel(panel: number) {
-    if (panel < this.panelMapForURL.length && panel >= 0) {
-      return this.panelMapForURL[panel];
-    }
-    return null;
-  }
+  public setStateFromURL = (courses: CourseType[]) => {
+    const { courseName, period, panelName1, panelName2 } = this.props.match.params;
+    if (courses.length === 0) {
+      return { course: undefined, panel: 0 };
+    } else {
+      // is the URL trying to set the course?
+      const tryingToSetCourse = courseName && period;
+      let currentCourse: CourseType | undefined;
+      let currentPanel = 0;
+      if (tryingToSetCourse) {
+        const formattedCourseName = courseName.replace(/_/g, ' ');
+        const formattedPeriod = period.replace(/_/g, ' ');
+        currentCourse = courses.find((obj: CourseType) => {
+          return obj.name === formattedCourseName && obj.period === formattedPeriod;
+        });
+      }
 
-  public panelArgFromPanel(panel: number) {
-    if (panel < this.defaultPanelArgForURL.length && panel >= 0) {
-      return this.defaultPanelArgForURL[panel];
+      if (currentCourse) {
+        currentPanel = this.panelFromString(`${panelName1}/${panelName2 ? panelName2 : ''}`);
+      }
+
+      if (!currentCourse && courses.length > 0) {
+        currentCourse = courses[0];
+      }
+
+      return { course: currentCourse, panel: currentPanel };
     }
-    return null;
-  }
+  };
 
   // ------------------- Permissions check functions -------------------
 
-  public componentDidMount() {
-    this.setStateFromURL();
-    this.interval = setInterval(() => {
-      if (this.state.currentCourse) {
-        this.loadAllCourseData();
-      }
-    }, 20000);
-  }
-
-  public componentDidUpdate(prevProps: IAdminProps, prevState: IAdminState) {
-    const { toLoadCourse, toLoadPanel, courses, currentCourse } = this.state;
-    if (toLoadCourse || toLoadPanel) {
-      this.setState({ toLoadCourse: false, toLoadPanel: false });
+  public updateNewCourse = (newCourse: CourseType) => {
+    if (this.state.currentCourse && this.state.currentCourse.id === newCourse.id) {
+      return;
     }
 
-    // Eagerly load most rececently created course, using id as a (perfect) proxy
-    // for creation date.
-    if (courses && courses.length > 0 && !currentCourse) {
-      const courseToLoad = courses.sort((a, b) => {
-        return b.id - a.id; // sort descending by id
-      })[0];
-      this.updateNewCourse({ value: courseToLoad.id, label: '' });
-    }
-  }
-
-  public componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-  public updateNewCourse = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: CourseType) => {
-      return course.id === option.value;
-    })[0];
-
-    window.clearInterval(this.interval);
-    window.clearTimeout(this.interval);
-
-    const currentPanel = this.state.loadedPanel ? this.state.loadedPanel : 0;
     this.setState(
       {
-        currentCourse,
-        loadedPanel: currentPanel,
+        currentCourse: newCourse,
 
         students: [],
         inactiveStudents: [],
@@ -337,80 +276,43 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         loadingMessage: '',
         loadingTitle: '',
 
-        // trigger URL change
-        toLoadCourse: true,
-
         // Props for Enroll panels
         lockChanges: true,
       },
       () => {
-        this.loadAllCourseData();
-        this.interval = setInterval(() => {
-          if (this.state.currentCourse) {
-            this.loadAllCourseData();
-          }
-        }, 25000);
+        this.changeURL(newCourse, this.state.currentPanel);
+        this.loadAllCourseData(newCourse);
       },
     );
   };
 
   // Course Selector functions
-  public handleCourseChange = (option: IOptionNumber) => {
-    const currentCourse = this.state.courses.filter((course: CourseType) => {
-      return course.id === option.value;
-    })[0];
-
-    // reminder: set students graders everything to undefined
-    this.setState({ currentCourse, toLoadCourse: true }, () => {
-      this.updateNewCourse(option);
+  public handleCourseChange = (courseID: number) => {
+    const newCourse = this.state.courses.find((course: CourseType) => {
+      return course.id === courseID;
     });
-  };
 
-  public handlePanelChange = (panelNumber: number) => {
-    const { currentCourse } = this.state;
-
-    if (!currentCourse) {
-      return;
+    if (newCourse) {
+      this.updateNewCourse(newCourse);
     }
-
-    this.setState({ loadedPanel: Number(panelNumber), toLoadPanel: true }, () => {
-      this.forceUpdate();
-    });
-  };
-
-  public selectorItemsFormatter = (courses: CourseType[]) => {
-    return courses.map((course, i) => ({
-      value: course.id,
-      label: `${course.name} | ${course.period}`,
-    }));
-  };
-
-  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
-    if (!currentCourse) {
-      return undefined;
-    }
-    return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
   };
 
   // ------------------- Initial data load functions  -------------------
-  public loadAllCourseData = () => {
-    this.loadSubmissions();
-    this.loadViewsBySubmission();
-    this.loadAssignments();
-    this.loadRoster();
+  public loadAllCourseData = (course: CourseType) => {
+    this.loadSubmissions(course);
+    this.loadViewsBySubmission(course);
+    this.loadAssignments(course);
+    this.loadRoster(course);
   };
 
-  public loadAssignments = () => {
-    const { currentCourse } = this.state;
-    if (currentCourse && currentCourse.assignments) {
-      const getData = currentCourse.assignments.map((assignmentID) => {
-        return Assignment.read(assignmentID);
-      });
-      Promise.all(getData).then((newAssignments: AssignmentType[]) => {
-        const sortedAssignments = sortAssignments(newAssignments);
-        this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true });
-      });
-    }
+  public loadAssignments = (course: CourseType) => {
+    const getData = course.assignments.map((assignmentID) => {
+      return Assignment.read(assignmentID);
+    });
+    Promise.all(getData).then((newAssignments: AssignmentType[]) => {
+      const sortedAssignments = sortAssignments(newAssignments);
+      this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true });
+    });
   };
 
   public async generateSubmissionsByStudent() {
@@ -492,14 +394,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   }
 
-  public loadSubmissions = () => {
-    const { currentCourse } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
-      return;
-    }
-
+  public loadSubmissions = (course: CourseType) => {
     Promise.all(
-      currentCourse.assignments.map((assignmentID) => {
+      course.assignments.map((assignmentID) => {
         return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
           const submissions = this.state.submissions;
           submissions[assignmentID] = subs;
@@ -522,15 +419,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
   };
 
-  public loadViewsBySubmission = () => {
-    const { currentCourse } = this.state;
-    if (!currentCourse || !currentCourse.assignments) {
-      return;
-    }
-
+  public loadViewsBySubmission = (course: CourseType) => {
     const viewsBySubmission = {};
     Promise.all(
-      currentCourse.assignments.map((assignmentID) => {
+      course.assignments.map((assignmentID) => {
         return Assignment.readSubmissionHistories(assignmentID).then((histories: SubmissionHistoryType[]) => {
           histories.forEach((history: SubmissionHistoryType) => {
             // History object has format of {submission: int, student: string, hasViewed: boolean}
@@ -557,13 +449,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
   };
 
-  public loadRoster = () => {
-    const { currentCourse } = this.state;
-    if (!currentCourse) {
-      return;
-    }
-    // courses/id/roster . students
-    Course.readRoster(currentCourse.id).then((roster: RosterType) => {
+  public loadRoster = (course: CourseType) => {
+    Course.readRoster(course.id).then((roster: RosterType) => {
       this.setState(
         {
           students: roster.students,
@@ -575,20 +462,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           rosterLoadComplete: true,
         },
         () => {
-          this.loadSections();
+          this.loadSections(course);
           this.generateSubmissionsByStudent();
         },
       );
     });
   };
 
-  public loadSections = () => {
-    const { currentCourse } = this.state;
-    if (!currentCourse || !currentCourse.sections) {
-      return;
-    }
+  public loadSections = (course: CourseType) => {
     Promise.all(
-      currentCourse.sections.map((sectionID) => {
+      course.sections.map((sectionID) => {
         return Section.read(sectionID).then((section: SectionType) => {
           // Reminder --- should really filter out if the
           // section is already there to eliminate duplicates
@@ -615,13 +498,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
         return Promise.reject();
       });
-  };
-
-  // ------------------- Toggle data change locks  -------------------
-  public toggleLock = () => {
-    this.setState({
-      lockChanges: !this.state.lockChanges,
-    });
   };
 
   // ------------------- Manage users API calls  -------------------
@@ -1320,54 +1196,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             newCourses.push(course);
             this.setState({ courses: newCourses }, () => this.props.addCourse(course));
             this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-            this.setState({ toLoadCourse: true }, () => {
-              this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
-            });
-
-            return;
+            this.updateNewCourse(course);
           });
         });
       } else {
         const newCourses = this.state.courses;
         newCourses.push(course);
-        this.setState({ courses: newCourses }, () => this.props.addCourse(course));
+        this.setState({ courses: newCourses, currentPanel: 0 }, () => this.props.addCourse(course));
         this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
-        this.setState({ toLoadCourse: true }, () => {
-          this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
-        });
-
+        this.updateNewCourse(course);
         return;
       }
     });
   };
 
   public updateSettings = (course: CoursePatchType) => {
-    const { currentCourse, courses } = this.state;
-    if (!currentCourse) {
-      return Promise.reject();
-    }
-
-    if (course.id !== currentCourse.id) {
-      return Promise.reject();
-    }
-
     return Course.update(course).then((newCourse: CourseType) => {
-      const newCourses = courses.filter((el) => {
+      const newCourses = this.state.courses.filter((el) => {
         return el.id !== newCourse.id;
       });
       newCourses.push(newCourse);
-      this.setState({ currentCourse: newCourse, courses: newCourses }, () => {
-        this.props.addToast(`Settings for ${currentCourse.name} | ${currentCourse.period} saved.`, undefined);
-      });
+      this.setState({ currentCourse: newCourse, courses: newCourses });
+      this.changeURL(newCourse, this.state.currentPanel);
+      return newCourse;
     });
   };
 
   public handleDemoCourse = (course: CourseType) => {
     const newCourses = this.state.courses;
     newCourses.push(course);
-    this.setState({ courses: newCourses, toLoadCourse: true }, () => {
+    this.setState({ courses: newCourses }, () => {
       this.props.addCourse(course);
-      this.updateNewCourse(this.selectorItemsFormatter([course])[0]);
+      this.updateNewCourse(course);
       this.props.addLongToast('Demo course successfully created.', undefined);
     });
     return;
@@ -1419,249 +1279,327 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     this.props.history.push(this.props.location.pathname);
   };
 
-  // ------------------- Render -------------------
+  public changeURL = (course: CourseType, panel: number) => {
+    const formCourseName = course.name.replace(/ /g, '_');
+    const formPeriod = course.period.replace(/ /g, '_');
+    this.props.history.push(`/course-admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
+  };
+
+  public toggleLock = () => {
+    this.setState({
+      lockChanges: !this.state.lockChanges,
+    });
+  };
+
+  public handleMenuClick = (e: ClickParam) => {
+    this.handleCourseChange(parseInt(e.key, 10));
+  };
+
+  public changeTab = (e: ClickParam) => {
+    this.setState({ currentPanel: parseInt(e.key, 10) }, () => {
+      if (this.state.currentCourse) {
+        this.changeURL(this.state.currentCourse!, this.state.currentPanel);
+      }
+    });
+  };
+
+  /* ------------------------------------------ Render ------------------------------------------ */
   public render() {
-    const { courses, currentCourse, loadedPanel, toLoadCourse, toLoadPanel } = this.state;
-
-    if (toLoadCourse || toLoadPanel) {
-      if (currentCourse) {
-        const formattedCourseName = currentCourse.name.replace(/ /g, '_');
-        const formattedPeriod = currentCourse.period.replace(/ /g, '_');
-
-        // hacky way to set default to 0
-        let panel = 0;
-        if (typeof loadedPanel !== 'undefined') {
-          panel = loadedPanel;
-        }
-        const panelName = this.stringFromPanel(panel);
-
-        return (
-          <Redirect
-            to={`/course-admin/${formattedCourseName}/${formattedPeriod}/${panelName}${this.props.location.search}`}
-          />
-        );
-      }
-    }
-
-    if (!this.props.user.canCreateCourses) {
-      return (
-        <div className="admin__getStarted__text">
-          Sorry, you're not registered as a course admin. Want access? Email us at team@codepost.io
-        </div>
-      );
-    }
-
-    let courseManagementPanel = null;
-
-    if (currentCourse && loadedPanel === 0) {
-      courseManagementPanel = (
-        <div className="admin__main-panel__content-container">
-          <CourseData
-            currentCourseID={currentCourse.id}
-            assignments={this.state.assignments}
-            assignmentsLoadComplete={this.state.assignmentsLoadComplete}
-            students={this.state.students}
-            graders={this.state.graders}
-            submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-            submissions={this.state.submissions}
-            submissionsLoadComplete={this.state.submissionsLoadComplete}
-            submissionsByStudent={this.state.submissionsByStudent}
-            submissionsByGrader={this.state.submissionsByGrader}
-            addToast={this.props.addToast}
-            initialTab={this.state.initialTab}
-            inactiveStudents={this.state.inactiveStudents}
-            inactiveGraders={this.state.inactiveGraders}
-            submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
-            submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
-            deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
-            changeSubmissionGrader={this.changeSubmissionGrader}
-            uploadSubmission={this.uploadSubmission}
-            viewsBySubmission={this.state.viewsBySubmission}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 1) {
-      const { submissionsLoadComplete, assignmentsLoadComplete, submissionsbyUserLoadComplete } = this.state;
-
-      courseManagementPanel = (
-        <div>
-          <ManageAssignments
-            key={currentCourse.id}
-            loadComplete={submissionsLoadComplete && assignmentsLoadComplete && submissionsbyUserLoadComplete}
-            submissions={this.state.submissions}
-            currentCourse={this.state.currentCourse}
-            addToast={this.props.addToast}
-            addErrorToast={this.props.addErrorToast}
-            assignments={this.state.assignments}
-            updateAssignment={this.updateAssignment}
-            createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
-            deleteAssignment={this.wrapLoading.bind(
-              this,
-              'Deleting Assignment...',
-              'This action can impact a lot of data and may take a few minutes.',
-              this.deleteAssignment,
-            )}
-            setLoadingDialog={this.setLoadingDialog}
-            clearLoadingDialog={this.clearLoadingDialog}
-            submissionsByStudent={this.state.submissionsByStudent}
-            students={this.state.students}
-            uploadSubmission={this.uploadSubmission}
-            viewsBySubmission={this.state.viewsBySubmission}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 2) {
-      courseManagementPanel = (
-        <div className={`admin__main-panel__content-container${this.state.lockChanges ? '--locked' : ''}`}>
-          <ManageUsers
-            key={currentCourse.id}
-            currentCourse={this.state.currentCourse}
-            sections={this.state.sections}
-            students={this.state.students}
-            graders={this.state.graders}
-            superGraders={this.state.superGraders}
-            admins={this.state.admins}
-            inactiveStudents={this.state.inactiveStudents}
-            inactiveGraders={this.state.inactiveGraders}
-            sectionsByStudent={this.state.sectionsByStudent}
-            rosterLoadComplete={this.state.rosterLoadComplete}
-            sectionsLoadComplete={this.state.sectionsLoadComplete}
-            lockChanges={this.state.lockChanges}
-            toggleLock={this.toggleLock}
-            enrollUser={this.enrollUser}
-            unEnrollUsers={this.unEnrollUsers}
-            changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
-            changeStudentSection={this.changeStudentSection}
-            changeSectionStudents={this.changeSectionStudents}
-            createSection={this.createSection}
-            changeLeaders={this.changeSectionLeaders}
-            addToast={this.props.addToast}
-            addErrorToast={this.props.addErrorToast}
-            initialTab={this.state.initialTab}
-            setLoadingDialog={this.setLoadingDialog}
-            clearLoadingDialog={this.clearLoadingDialog}
-            deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
-            isStudent={this.isStudent}
-          />
-        </div>
-      );
-    } else if (currentCourse && loadedPanel === 3) {
-      courseManagementPanel = (
-        <div className="content-container">
-          <CourseSettingsPanel currentCourse={currentCourse} updateSettings={this.updateSettings} />
-        </div>
-      );
-    } else if (!currentCourse) {
-      if (courses.length > 0) {
-        courseManagementPanel = (
-          <div className="admin__getStarted">
-            <img className="admin__getStarted__arrow" src={require('./img/get-started-arrow.png')} />
-            <div className="admin__getStarted__text">Select a course to get started.</div>
-          </div>
-        );
-      } else {
-        courseManagementPanel = <div>Create a course to get started!</div>;
-      }
-    }
-
-    const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
-    const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
-    const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
-    const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
-    const isLoading = this.state.isLoading ? (
-      <div>
-        <DialogContainer
-          id="loading-dialog"
-          className={
-            !this.state.loadingMessage && !this.state.loadingTitle
-              ? 'dialog--generalLoading-notext'
-              : 'dialog--generalLoading-text'
-          }
-          visible={true}
-          title={this.state.loadingTitle}
-          modal
-          portal={true}
-          focusOnMount={false}
-          containFocus={false}
-          disableScrollLocking={true}
-        >
-          <div className="dialog--generalLoading__message">{this.state.loadingMessage}</div>
-          <CircularProgress id="progress" className="progress-circle--dialogLoading" style={{ color: 'black' }} />
-        </DialogContainer>
-      </div>
-    ) : (
-      <div />
+    const menu = (
+      <Menu onClick={this.handleMenuClick}>
+        {this.props.user.courseadminCourses.map((course, i) => {
+          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
+        })}
+      </Menu>
     );
 
-    const stillLoadingCourse =
-      courses.length > 0 &&
-      (!this.state.assignmentsLoadComplete ||
-        !this.state.submissionsLoadComplete ||
-        !this.state.submissionsbyUserLoadComplete ||
-        !this.state.sectionsLoadComplete);
+    let selectorText = 'No courses yet...';
+    if (this.state.currentCourse) {
+      selectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
+    }
+    const dropdown = <CPDropdown value={selectorText} overlay={menu} />;
+
+    const createButton = (
+      <NewCourseDialog
+        courses={this.state.courses}
+        createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
+      />
+    );
+
+    const header = (
+      <div className="cp-flex--normal">
+        <div className="left">{dropdown}</div>
+        <div className="left">{createButton}</div>
+        <div className="gap" />
+        <div className="right">
+          <span className="cp-label cp-label--bold">{this.props.user.email}</span>
+        </div>
+        <div className="right">
+          <CPButton cpType="secondary" icon="setting" size="small" />
+        </div>
+        <div className="right">
+          <CPButton cpType="secondary" icon="logout" size="small" />
+        </div>
+      </div>
+    );
+
+    let detail;
+    if (this.state.courses.length === 0) {
+      detail = (
+        <Empty
+          imageStyle={{
+            height: 60,
+          }}
+          description={<span>Get started by creating a course!</span>}
+        >
+          <CPButton cpType="primary">Create a course</CPButton>
+        </Empty>
+      );
+    } else {
+      switch (this.state.currentPanel) {
+        case 4:
+          detail = (
+            <ManageAssignments
+              key={this.state.currentCourse!.id}
+              loadComplete={
+                this.state.submissionsLoadComplete &&
+                this.state.assignmentsLoadComplete &&
+                this.state.submissionsbyUserLoadComplete
+              }
+              submissions={this.state.submissions}
+              currentCourse={this.state.currentCourse}
+              addToast={this.props.addToast}
+              addErrorToast={this.props.addErrorToast}
+              assignments={this.state.assignments}
+              updateAssignment={this.updateAssignment}
+              createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
+              deleteAssignment={this.wrapLoading.bind(
+                this,
+                'Deleting Assignment...',
+                'This action can impact a lot of data and may take a few minutes.',
+                this.deleteAssignment,
+              )}
+              setLoadingDialog={this.setLoadingDialog}
+              clearLoadingDialog={this.clearLoadingDialog}
+              submissionsByStudent={this.state.submissionsByStudent}
+              students={this.state.students}
+              uploadSubmission={this.uploadSubmission}
+              viewsBySubmission={this.state.viewsBySubmission}
+            />
+          );
+          break;
+        case 11:
+          detail = (
+            <CourseSettingsPanel currentCourse={this.state.currentCourse!} updateSettings={this.updateSettings} />
+          );
+          break;
+        default:
+          detail = <div>{panels[this.state.currentPanel]}</div>;
+      }
+    }
 
     return (
-      <div className="admin">
-        <div className="admin__topbar">
-          <Select
-            className="selector--admin-topbar"
-            options={this.selectorItemsFormatter(courses)}
-            onChange={this.handleCourseChange}
-            value={this.selectorCurrentFormatter(currentCourse)}
-            isLoading={stillLoadingCourse}
-            isDisabled={stillLoadingCourse}
-          />
-          <div className="admin__topbar__nav">
-            <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
-              Submissions
-            </div>
-            <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
-              Assignments
-            </div>
-            <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
-              Roster
-            </div>
-            <div className={settingsNav} onClick={this.handlePanelChange.bind(this.props, 3)}>
-              Settings
-            </div>
-          </div>
-          <div className="admin__topbar__rightBox">
-            <NewCourseDialog
-              courses={this.state.courses}
-              addErrorToast={this.props.addErrorToast}
-              createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
-              selectorItemsFormatter={this.selectorItemsFormatter}
-              selectorCurrentFormatter={this.selectorCurrentFormatter}
-            />
-            <div className="admin__onboardingModal" onClick={this.openModal}>
-              i
-            </div>
-          </div>
-        </div>
-        <div className="admin__topbar__spacing" />
-        <div className="admin__main-panel">
-          {courseManagementPanel}
-          {isLoading}
-        </div>
-        <ModalCarousel
-          closeModal={this.closeModal}
-          isVisible={this.state.onboardingModalVisible}
-          content={adminCarouselContent}
-          defaultIndex={0}
-          isModal={true}
-          className="onboarding-carousel-modal"
-          onlyImage={false}
-          userEmail={this.props.user.email}
-          onDemoCreate={this.handleDemoCourse}
-          demoCreated={
-            typeof this.state.courses.find((el) => {
-              return el.period === 'demo';
-            }) !== 'undefined'
-          }
-        />
-      </div>
+      <CPLayoutAdmin
+        selectedPanel={this.state.currentPanel}
+        onClick={this.changeTab}
+        header={header}
+        detail={detail}
+        isRubric={false}
+      />
     );
   }
+
+  // public render() {
+  //   const { courses, currentCourse, loadedPanel, toLoadCourse, toLoadPanel } = this.state;
+
+  //   if (!this.props.user.canCreateCourses) {
+  //     return (
+  //       <div className="admin__getStarted__text">
+  //         Sorry, you're not registered as a course admin. Want access? Email us at team@codepost.io
+  //       </div>
+  //     );
+  //   }
+
+  //   let courseManagementPanel = null;
+
+  //   if (currentCourse && loadedPanel === 0) {
+  //     courseManagementPanel = (
+  //       <div className="admin__main-panel__content-container">
+  //         <CourseData
+  //           currentCourseID={currentCourse.id}
+  //           assignments={this.state.assignments}
+  //           assignmentsLoadComplete={this.state.assignmentsLoadComplete}
+  //           students={this.state.students}
+  //           graders={this.state.graders}
+  //           submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+  //           submissions={this.state.submissions}
+  //           submissionsLoadComplete={this.state.submissionsLoadComplete}
+  //           submissionsByStudent={this.state.submissionsByStudent}
+  //           submissionsByGrader={this.state.submissionsByGrader}
+  //           addToast={this.props.addToast}
+  //           initialTab={this.state.initialTab}
+  //           inactiveStudents={this.state.inactiveStudents}
+  //           inactiveGraders={this.state.inactiveGraders}
+  //           submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
+  //           submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
+  //           deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
+  //           changeSubmissionGrader={this.changeSubmissionGrader}
+  //           uploadSubmission={this.uploadSubmission}
+  //           viewsBySubmission={this.state.viewsBySubmission}
+  //         />
+  //       </div>
+  //     );
+  //   } else if (currentCourse && loadedPanel === 1) {
+  //     const { submissionsLoadComplete, assignmentsLoadComplete, submissionsbyUserLoadComplete } = this.state;
+
+  //     courseManagementPanel = (
+  //       <div>
+  //     );
+  //   } else if (currentCourse && loadedPanel === 2) {
+  //     courseManagementPanel = (
+  //       <div className={`admin__main-panel__content-container${this.state.lockChanges ? '--locked' : ''}`}>
+  //         <ManageUsers
+  //           key={currentCourse.id}
+  //           currentCourse={this.state.currentCourse}
+  //           sections={this.state.sections}
+  //           students={this.state.students}
+  //           graders={this.state.graders}
+  //           superGraders={this.state.superGraders}
+  //           admins={this.state.admins}
+  //           inactiveStudents={this.state.inactiveStudents}
+  //           inactiveGraders={this.state.inactiveGraders}
+  //           sectionsByStudent={this.state.sectionsByStudent}
+  //           rosterLoadComplete={this.state.rosterLoadComplete}
+  //           sectionsLoadComplete={this.state.sectionsLoadComplete}
+  //           lockChanges={this.state.lockChanges}
+  //           toggleLock={this.toggleLock}
+  //           enrollUser={this.enrollUser}
+  //           unEnrollUsers={this.unEnrollUsers}
+  //           changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
+  //           changeStudentSection={this.changeStudentSection}
+  //           changeSectionStudents={this.changeSectionStudents}
+  //           createSection={this.createSection}
+  //           changeLeaders={this.changeSectionLeaders}
+  //           addToast={this.props.addToast}
+  //           addErrorToast={this.props.addErrorToast}
+  //           initialTab={this.state.initialTab}
+  //           setLoadingDialog={this.setLoadingDialog}
+  //           clearLoadingDialog={this.clearLoadingDialog}
+  //           deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
+  //           isStudent={this.isStudent}
+  //         />
+  //       </div>
+  //     );
+  //   } else if (currentCourse && loadedPanel === 3) {
+  //     courseManagementPanel = (
+  //       <div className="content-container">
+  //
+  //       </div>
+  //     );
+  //   } else if (!currentCourse) {
+  //     if (courses.length > 0) {
+  //       courseManagementPanel = (
+  //         <div className="admin__getStarted">
+  //           <img className="admin__getStarted__arrow" src={require('./img/get-started-arrow.png')} />
+  //           <div className="admin__getStarted__text">Select a course to get started.</div>
+  //         </div>
+  //       );
+  //     } else {
+  //       courseManagementPanel = <div>Create a course to get started!</div>;
+  //     }
+  //   }
+
+  //   const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
+  //   const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
+  //   const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
+  //   const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
+  //   const isLoading = this.state.isLoading ? (
+  //     <div>
+  //       <DialogContainer
+  //         id="loading-dialog"
+  //         className={
+  //           !this.state.loadingMessage && !this.state.loadingTitle
+  //             ? 'dialog--generalLoading-notext'
+  //             : 'dialog--generalLoading-text'
+  //         }
+  //         visible={true}
+  //         title={this.state.loadingTitle}
+  //         modal
+  //         portal={true}
+  //         focusOnMount={false}
+  //         containFocus={false}
+  //         disableScrollLocking={true}
+  //       >
+  //         <div className="dialog--generalLoading__message">{this.state.loadingMessage}</div>
+  //         <CircularProgress id="progress" className="progress-circle--dialogLoading" style={{ color: 'black' }} />
+  //       </DialogContainer>
+  //     </div>
+  //   ) : (
+  //     <div />
+  //   );
+
+  //   const stillLoadingCourse =
+  //     courses.length > 0 &&
+  //     (!this.state.assignmentsLoadComplete ||
+  //       !this.state.submissionsLoadComplete ||
+  //       !this.state.submissionsbyUserLoadComplete ||
+  //       !this.state.sectionsLoadComplete);
+
+  //   return (
+  //     <div className="admin">
+  //       <div className="admin__topbar">
+  //         <Select
+  //           className="selector--admin-topbar"
+  //           options={this.selectorItemsFormatter(courses)}
+  //           onChange={this.handleCourseChange}
+  //           value={this.selectorCurrentFormatter(currentCourse)}
+  //           isLoading={stillLoadingCourse}
+  //           isDisabled={stillLoadingCourse}
+  //         />
+  //         <div className="admin__topbar__nav">
+  //           <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
+  //             Submissions
+  //           </div>
+  //           <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
+  //             Assignments
+  //           </div>
+  //           <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
+  //             Roster
+  //           </div>
+  //           <div className={settingsNav} onClick={this.handlePanelChange.bind(this.props, 3)}>
+  //             Settings
+  //           </div>
+  //         </div>
+  //         <div className="admin__topbar__rightBox">
+  //           <div className="admin__onboardingModal" onClick={this.openModal}>
+  //             i
+  //           </div>
+  //         </div>
+  //       </div>
+  //       <div className="admin__topbar__spacing" />
+  //       <div className="admin__main-panel">
+  //         {courseManagementPanel}
+  //         {isLoading}
+  //       </div>
+  //       <ModalCarousel
+  //         closeModal={this.closeModal}
+  //         isVisible={this.state.onboardingModalVisible}
+  //         content={adminCarouselContent}
+  //         defaultIndex={0}
+  //         isModal={true}
+  //         className="onboarding-carousel-modal"
+  //         onlyImage={false}
+  //         userEmail={this.props.user.email}
+  //         onDemoCreate={this.handleDemoCourse}
+  //         demoCreated={
+  //           typeof this.state.courses.find((el) => {
+  //             return el.period === 'demo';
+  //           }) !== 'undefined'
+  //         }
+  //       />
+  //     </div>
+  //   );
+  // }
 }
 
 export default Admin;

@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* react-md imports */
-import { DialogContainer, SelectionControl, TextField } from 'react-md';
+import { Form, Input, InputNumber, message, Modal, Switch } from 'antd';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
@@ -16,54 +16,44 @@ import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/ass
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  onSave: (assignment: AssignmentPatchType) => void;
+  onSave: (assignment: AssignmentPatchType) => Promise<void>;
   currentAssignment: AssignmentType;
 }
 
-interface IState {
-  anonymousGrading: boolean;
-  hideGrades: boolean;
-  assignmentName: string;
-  points: number;
-}
+class AssignmentSettingsDialog extends React.Component<IProps, {}> {
+  private formRef = React.createRef();
 
-class AssignmentSettingsDialog extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
-    anonymousGrading: this.props.currentAssignment.anonymousGrading,
-    hideGrades: this.props.currentAssignment.hideGrades,
-    assignmentName: this.props.currentAssignment.name,
-    points: this.props.currentAssignment.points,
-  };
-
-  public toggleValue = (label: string) => {
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[label] = !this.state[label];
-      return newState;
-    });
-  };
-
-  public setValue = (label: string, value: any) => {
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[label] = value;
-      return newState;
-    });
-  };
-
-  public updateSettings = (e: any) => {
-    e.preventDefault();
+  public updateSettings = (name: string, points: number, anonymousGrading: boolean, hideGrades: boolean) => {
     const { currentAssignment } = this.props;
     const payload = {
       id: currentAssignment.id,
-      anonymousGrading: this.state.anonymousGrading,
-      hideGrades: this.state.hideGrades,
-      name: this.state.assignmentName,
-      points: this.state.points,
+      name,
+      points,
+      anonymousGrading,
+      hideGrades,
     };
 
-    console.log(payload);
-    this.props.onSave(payload);
+    this.props.onSave(payload).then(() => {
+      message.success('Assignment settings updated!');
+      this.props.onCancel();
+    });
+  };
+
+  public saveFormRef = (formRef: any) => {
+    this.formRef = formRef;
+  };
+
+  public handleCreate = () => {
+    const formRefCast: any = this.formRef;
+    const form = formRefCast.props.form;
+    form.validateFields((err: any, values: any) => {
+      if (err) {
+        return;
+      }
+
+      this.updateSettings(values.name, values.points, values.anonymousGrading, values.hideGrades);
+      form.resetFields();
+    });
   };
 
   public render() {
@@ -71,95 +61,72 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       return <div />;
     }
 
-    const { anonymousGrading, hideGrades, assignmentName, points } = this.state;
-
-    const content = (
-      <div>
-        <div className="AssignmentSettings__settingItem">
-          <div className="AssignmentSettings__settingItem__content">
-            <div className="AssignmentSettings__settingItem__name">Name</div>
-            <div className="AssignmentSettings__settingItem__description">Must be unique within this course.</div>
-          </div>
-          <TextField
-            defaultValue={assignmentName}
-            label={'Assignment Name'}
-            fullWidth={false}
-            onChange={this.setValue.bind(this.props, 'assignmentName')}
-          />
-        </div>
-        <div className="AssignmentSettings__settingItem">
-          <div className="AssignmentSettings__settingItem__content">
-            <div className="AssignmentSettings__settingItem__name">Points</div>
-            <div className="AssignmentSettings__settingItem__description">
-              Total points possible for this assignment.
-            </div>
-          </div>
-          <TextField
-            defaultValue={points}
-            step={0.5}
-            pattern="^d+(\.|\,)\d{1}"
-            type="number"
-            min={0}
-            label={'Assignment Points'}
-            fullWidth={false}
-            onChange={this.setValue.bind(this.props, 'points')}
-          />
-        </div>
-        <div className="AssignmentSettings__settingItem">
-          <div className="AssignmentSettings__settingItem__content">
-            <div className="AssignmentSettings__settingItem__name">Anonymous grading mode</div>
-            <div className="AssignmentSettings__settingItem__description">
-              When enabled, graders will not be able to see student emails associated with submissions. For more info,
-              see <a href="https://help.codepost.io">our docs</a>
-            </div>
-          </div>
-          <SelectionControl
-            id="toggleAnonymousGrading"
-            type="switch"
-            name="AssignmentSettings__anonymous"
-            className="AssignmentSettings__settingItem__control"
-            defaultChecked={anonymousGrading}
-            onChange={this.toggleValue.bind(this.props, 'anonymousGrading')}
-            aria-label={'Toggle anonymous grading mode'}
-          />
-        </div>
-        <div className="AssignmentSettings__settingItem">
-          <div className="AssignmentSettings__settingItem__content">
-            <div className="AssignmentSettings__settingItem__name">Hide grades</div>
-            <div className="AssignmentSettings__settingItem__description">
-              When enabled, students won't be able to view the grades associated with their submissions.
-            </div>
-          </div>
-          <SelectionControl
-            id="toggleHideGrades"
-            type="switch"
-            name="AssignmentSettings__hidegrades"
-            className="AssignmentSettings__settingItem__control"
-            defaultChecked={hideGrades}
-            onChange={this.toggleValue.bind(this.props, 'hideGrades')}
-            aria-label={'Hide submission grades from students'}
-          />
-        </div>
-        <div className="AssignmentSettings__cancel" onClick={this.props.onCancel}>
-          Cancel
-        </div>
-        <div className="AssignmentSettings__submit" onClick={this.updateSettings}>
-          Submit
-        </div>
-      </div>
-    );
     return (
-      <DialogContainer
-        className="dialog--assignment-settings"
-        id="assignment-settings"
+      <CollectionCreateForm
+        wrappedComponentRef={this.saveFormRef}
         visible={true}
-        title="Assignment settings"
-        onHide={this.props.onCancel}
-        modal
-      >
-        {content}
-      </DialogContainer>
+        onSave={this.handleCreate}
+        onCancel={this.props.onCancel}
+        assignment={this.props.currentAssignment}
+      />
     );
   }
 }
+
+interface ISubProps {
+  form: any;
+  visible: any;
+  onSave: any;
+  onCancel: any;
+  assignment: AssignmentType;
+}
+
+const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
+  class extends React.Component<ISubProps, {}> {
+    public render() {
+      const { visible, onCancel, onSave, form } = this.props;
+      const { getFieldDecorator } = form;
+      return (
+        <Modal visible={visible} title="Update assignment settings" okText="Save" onCancel={onCancel} onOk={onSave}>
+          <Form layout="horizontal" hideRequiredMark={true}>
+            <Form.Item label="Name" extra="Must be unique within this course.">
+              {getFieldDecorator('name', {
+                initialValue: this.props.assignment.name,
+                rules: [{ required: true }],
+              })(<Input />)}
+            </Form.Item>
+            <Form.Item label="Points" extra="Total points possible for this assignment.">
+              {getFieldDecorator('points', {
+                initialValue: this.props.assignment.points,
+                rules: [{ required: true }],
+              })(<InputNumber min={0} />)}
+            </Form.Item>
+            <Form.Item
+              label="Anonymous Grading Mode"
+              extra={
+                <div>
+                  When enabled, graders will not be able to see student emails associated with submissions. For more
+                  info, see <a href="https://help.codepost.io">our docs</a>.
+                </div>
+              }
+            >
+              {getFieldDecorator('anonymous-grading-mode', {
+                initialValue: this.props.assignment.anonymousGrading,
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Hide grades from students"
+              extra=" When enabled, students won't be able to view the grades associated with their submissions."
+            >
+              {getFieldDecorator('hide-grades-from-students', {
+                initialValue: this.props.assignment.hideGrades,
+              })(<Switch />)}
+            </Form.Item>
+          </Form>
+        </Modal>
+      );
+    }
+  },
+);
+
 export default AssignmentSettingsDialog;

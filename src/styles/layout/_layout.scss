@@ -1,4 +1,8 @@
-.layout--admin {
+#Admin {
+  height: 100%;
+}
+
+#Admin .layout--admin {
   min-height: 100vh;
 
   &__sider {
@@ -8,7 +12,7 @@
   }
 
   &__header {
-    background-color: #fff;
+    background: #fff;
     box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
     position: relative;
     z-index: 2;

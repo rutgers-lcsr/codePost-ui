@@ -6,19 +6,13 @@
 import * as React from 'react';
 
 /* React-md imports */
-import {
-  Button,
-  CircularProgress,
-  DataTable,
-  Drawer,
-  FontIcon,
-  MenuButtonColumn,
-  SelectionControl,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from 'react-md';
+import { Dropdown, Empty, Icon, Menu, message, Popconfirm, Spin, Switch, Table, Typography } from 'antd';
+const { Text } = Typography;
+
+type alignType = 'left' | 'right' | 'center';
+
+import CPAdminDetail from '../../components/core/CPAdminDetail';
+import CPButton from '../../components/core/CPButton';
 
 /* other library imports */
 import memoizeOne from 'memoize-one';
@@ -34,13 +28,13 @@ import { SubmissionType } from '../../infrastructure/submission';
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
 import UploadSubmissionDialog from './ManageAssignmentsComponents/UploadSubmissionDialog';
 
-import { openSubmission } from './AdminUtils';
+// import { openSubmission } from './AdminUtils';
 
 import NewAssignmentDialog from './ManageAssignmentsComponents/NewAssignmentDialog';
 
 import AssignmentSettingsDialog from './ManageAssignmentsComponents/AssignmentSettingsDialog';
 
-import RubricManager from './ManageAssignmentsComponents/RubricManager';
+// import RubricManager from './ManageAssignmentsComponents/RubricManager';
 
 /**********************************************************************************************************************/
 
@@ -338,20 +332,15 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
    ******************************************************************************/
 
   public saveSettings = (assignment: AssignmentPatchType) => {
-    this.props.updateAssignment(assignment);
-    this.changeDetailType(undefined, undefined);
+    return this.props.updateAssignment(assignment);
   };
 
   public deleteAssignment = () => {
     const deletingAssignment = this.state.activeAssignment;
     if (deletingAssignment) {
       this.setState({ activeAssignment: undefined, detailType: undefined });
-      this.props.setLoadingDialog(
-        'This action could impact a lot of data and may take a few minutes.',
-        'Assignment is being deleted',
-      );
       this.props.deleteAssignment(deletingAssignment).then(() => {
-        this.props.clearLoadingDialog();
+        message.success('Assignment successfully deleted!');
       });
     }
   };
@@ -430,311 +419,213 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
    * Render
    ******************************************************************************/
 
+  /* To-Do:
+   * (3) drawers
+   * (4) upload submission modal
+   * (5) rubric view
+   * (6) download grades
+   */
+
   public render() {
-    const { submissions, assignments, loadComplete, submissionsByStudent } = this.props;
-    const { activeAssignment, drawerContent, detailType } = this.state;
+    let content;
+    let actions: React.ReactNode[] = [];
+    if (!this.props.loadComplete) {
+      content = <Spin />;
+    } else {
+      if (this.props.assignments.length === 0) {
+        content = (
+          <Empty
+            imageStyle={{
+              height: 60,
+            }}
+            description={<span>No assignments yet</span>}
+          >
+            <CPButton cpType="primary">Create an assignment</CPButton>
+          </Empty>
+        );
+      } else {
+        actions = [
+          <NewAssignmentDialog
+            key={1}
+            assignments={this.props.assignments}
+            createAssignment={this.props.createAssignment}
+          />,
+          <CPButton onClick={this.downloadAllGrades} cpType="secondary" key={2} icon="download">
+            Download grades
+          </CPButton>,
+        ];
 
-    const dummyFunction = () => {
-      return;
-    };
+        const assignmentStats: IAssignmentStatsMap = this.memoizedStats(
+          this.props.assignments,
+          this.props.submissions,
+          this.props.submissionsByStudent,
+        );
 
-    if (detailType === DETAIL_TYPE.Rubric && activeAssignment) {
-      return (
-        <RubricManager
-          assignment={activeAssignment}
-          submissions={submissions[activeAssignment.id]}
-          addErrorToast={this.props.addErrorToast}
-          addToast={this.props.addToast}
-          onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-          setLoadingDialog={this.props.setLoadingDialog}
-          clearLoadingDialog={this.props.clearLoadingDialog}
-        />
-      );
-    }
-
-    let tableBody;
-    if (loadComplete) {
-      const submissionAssignments = assignments
-        .filter((assignment) => {
-          return assignment.id in submissions;
-        })
-        .map((assignment) => {
-          return `${assignment.id}`;
-        });
-
-      const assignmentStats: IAssignmentStatsMap = this.memoizedStats(assignments, submissions, submissionsByStudent);
-      tableBody = submissionAssignments.map((assignmentID) => {
-        const assignment = assignments.filter((assn) => {
-          return assn.id === Number(assignmentID);
-        })[0];
-
-        if (!assignment) {
-          return <div />;
-        }
-
-        const menuItems = [
+        const aligner: alignType = 'center';
+        const columns = [
           {
-            leftIcon: <FontIcon>toc</FontIcon>,
-            primaryText: 'Edit Rubric',
-            onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Rubric, assignment),
+            title: 'Assignment',
+            dataIndex: 'assignment',
+            key: 'assignment',
           },
           {
-            leftIcon: <FontIcon>vertical_align_bottom</FontIcon>,
-            primaryText: 'Download Grades',
-            onClick: this.downloadGrades.bind(this.props, assignment),
+            title: 'Published',
+            dataIndex: 'published',
+            key: 'published',
+            align: aligner,
           },
           {
-            leftIcon: <FontIcon>vertical_align_top</FontIcon>,
-            primaryText: 'Upload Submission',
-            onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Upload, assignment),
+            title: 'Submissions',
+            dataIndex: 'submissions',
+            key: 'submissions',
+            align: aligner,
           },
           {
-            leftIcon: <FontIcon>settings</FontIcon>,
-            primaryText: 'Settings',
-            onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Settings, assignment),
+            title: 'Finalized',
+            dataIndex: 'finalized',
+            key: 'finalized',
+            align: aligner,
           },
           {
-            leftIcon: <FontIcon>cancel</FontIcon>,
-            primaryText: 'Delete Assignment',
-            onClick: this.changeDetailType.bind(this.props, DETAIL_TYPE.Delete, assignment),
+            title: 'Unclaimed',
+            dataIndex: 'unclaimed',
+            key: 'unclaimed',
+            align: aligner,
+          },
+          {
+            title: 'Missing',
+            dataIndex: 'missing',
+            key: 'missing',
+            align: aligner,
+          },
+          {
+            title: 'Unviewed',
+            dataIndex: 'unviewed',
+            key: 'unviewed',
+            align: aligner,
+          },
+          {
+            title: 'Mean',
+            dataIndex: 'mean',
+            key: 'mean',
+            align: aligner,
+          },
+          {
+            title: 'Actions',
+            dataIndex: 'actions',
+            key: 'actions',
+            align: aligner,
           },
         ];
 
-        const statsForRow = assignmentStats[assignmentID];
-
-        return (
-          <TableRow key={assignmentID}>
-            <TableColumn
-              key={`${assignmentID}-1`}
-              style={{ cursor: 'pointer' }}
-              className="left-aligned"
-              onClick={this.changeDetailType.bind(this.props, DETAIL_TYPE.Rubric, assignment)}
-            >
-              {assignment.name}
-            </TableColumn>
-            <TableColumn key={`${assignmentID}-2`}>
-              <SelectionControl
-                id={`${assignmentID}-release-checkbox`}
-                name="assignment-release-checkbox"
-                type="switch"
-                style={{ justifyContent: 'center' }}
-                defaultChecked={assignment.isReleased}
-                onChange={this.props.updateAssignment.bind(this, {
+        const data = this.props.assignments.map((assignment, i) => {
+          const statsForRow = assignmentStats[assignment.id];
+          const menu = (
+            <Menu>
+              <Menu.Item key="0" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload, assignment)}>
+                <Icon type="upload" />
+                Upload submissions
+              </Menu.Item>
+              <Menu.Item key="1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Rubric, assignment)}>
+                <Icon type="ordered-list" />
+                Edit rubric
+              </Menu.Item>
+              <Menu.Item key="2" onClick={this.downloadGrades.bind(this, assignment)}>
+                <Icon type="download" /> Download grades
+              </Menu.Item>
+              <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
+                <Icon type="setting" />
+                Settings
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item
+                key="4"
+                style={{ color: 'red' }}
+                onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Delete, assignment)}
+              >
+                <Icon type="delete" />
+                Delete assignment
+              </Menu.Item>
+            </Menu>
+          );
+          return {
+            key: assignment.id,
+            assignment: <Text strong>{assignment.name}</Text>,
+            published: (
+              <Popconfirm
+                onConfirm={this.props.updateAssignment.bind(this, {
                   id: assignment.id,
                   isReleased: !assignment.isReleased,
                 })}
-              />
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-3`}
-              onClick={
-                statsForRow.numSubmissions > 0
-                  ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)
-                  : dummyFunction
-              }
-              style={statsForRow.numSubmissions > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {statsForRow.numSubmissions}
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-4`}
-              onClick={
-                statsForRow.numGraded > 0 ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded) : dummyFunction
-              }
-              style={statsForRow.numGraded > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {statsForRow.numGraded}
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-5`}
-              onClick={
-                statsForRow.numUngraded > 0
-                  ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Ungraded)
-                  : dummyFunction
-              }
-              style={statsForRow.numUngraded > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {statsForRow.numUngraded}
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-6`}
-              onClick={
-                statsForRow.numUnclaimed > 0
-                  ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unclaimed)
-                  : dummyFunction
-              }
-              style={statsForRow.numUnclaimed > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {statsForRow.numUnclaimed}
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-7`}
-              onClick={
-                statsForRow.numMissing > 0 ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing) : dummyFunction
-              }
-              style={statsForRow.numMissing > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {statsForRow.numMissing}
-            </TableColumn>
-            <TableColumn
-              key={`${assignmentID}-8`}
-              onClick={
-                statsForRow.numUnviewed > 0
-                  ? this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unviewed)
-                  : dummyFunction
-              }
-              style={statsForRow.numUnviewed > 0 ? { cursor: 'pointer' } : {}}
-            >
-              {assignment.isReleased ? statsForRow.numUnviewed : '--'}
-            </TableColumn>
-            <TableColumn key={`${assignmentID}-9`}>{statsForRow.numGraded > 0 ? statsForRow.mean : '--'}</TableColumn>
-            <TableColumn key={`${assignmentID}-10`}>
-              {statsForRow.numGraded > 0 ? statsForRow.median : '--'}
-            </TableColumn>
-            <MenuButtonColumn className="left-aligned" icon menuItems={menuItems}>
-              more_vert
-            </MenuButtonColumn>
-          </TableRow>
-        );
-      });
-    }
+                title="Are you sure you want to publish this assignment?"
+                icon={<Icon type="question-circle-o" />}
+              >
+                <Switch checked={assignment.isReleased} />
+              </Popconfirm>
+            ),
+            submissions: statsForRow.numSubmissions,
+            finalized: statsForRow.numGraded,
+            unclaimed: statsForRow.numUnclaimed,
+            missing: statsForRow.numMissing,
+            unviewed: statsForRow.numUnviewed,
+            mean: statsForRow.mean.toFixed(1),
+            actions: (
+              <Dropdown overlay={menu} trigger={['click']}>
+                <a className="ant-dropdown-link" href="#">
+                  <Icon type="ellipsis" />
+                </a>
+              </Dropdown>
+            ),
+          };
+        });
 
-    let detailComponent;
-    if (activeAssignment) {
-      switch (detailType) {
-        case DETAIL_TYPE.Delete:
-          detailComponent = (
-            <DeleteAssignmentDialog
-              isVisible={true}
-              assignmentName={activeAssignment.name}
-              onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-              onDelete={this.deleteAssignment}
-            />
-          );
-          break;
-        case DETAIL_TYPE.Upload:
-          detailComponent = (
-            <UploadSubmissionDialog
-              isVisible={true}
-              assignments={this.props.assignments}
-              selectedAssignment={activeAssignment!}
-              students={this.props.students}
-              selectedStudents={null}
-              onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-              uploadSubmission={this.props.uploadSubmission}
-            />
-          );
-          break;
-        case DETAIL_TYPE.Settings:
-          detailComponent = (
-            <AssignmentSettingsDialog
-              isVisible={true}
-              onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-              onSave={this.saveSettings}
-              currentAssignment={activeAssignment}
-            />
-          );
-          break;
-        default:
-          break;
+        let detailComponent;
+        switch (this.state.detailType) {
+          case DETAIL_TYPE.Settings:
+            detailComponent = (
+              <AssignmentSettingsDialog
+                isVisible={true}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onSave={this.saveSettings}
+                currentAssignment={this.state.activeAssignment!}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Upload:
+            detailComponent = (
+              <UploadSubmissionDialog
+                isVisible={true}
+                assignments={this.props.assignments}
+                selectedAssignment={this.state.activeAssignment!}
+                students={this.props.students}
+                selectedStudents={null}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                uploadSubmission={this.props.uploadSubmission}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Delete:
+            detailComponent = (
+              <DeleteAssignmentDialog
+                isVisible={true}
+                assignmentName={this.state.activeAssignment!.name}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onDelete={this.deleteAssignment}
+              />
+            );
+            break;
+        }
+
+        content = (
+          <div>
+            <Table pagination={false} columns={columns} dataSource={data} />
+            {detailComponent}
+          </div>
+        );
       }
     }
 
-    return (
-      <div className="admin__main-panel__content-container">
-        <div className="padding" />
-        <NewAssignmentDialog
-          assignments={this.props.assignments}
-          addErrorToast={this.props.addErrorToast}
-          createAssignment={this.props.createAssignment}
-        />
-        {this.state.isDownloading ? (
-          <Button raised className="button--download-assignments">
-            Downloading...
-          </Button>
-        ) : (
-          <Button raised className="button--download-assignments" onClick={this.downloadAllGrades}>
-            Download All Grades
-          </Button>
-        )}
-
-        <div className="padding" />
-        {loadComplete ? (
-          <div>
-            <DataTable className="DataTable--ManageAssignments" baseId="DataTable--ManageAssignments" plain={true}>
-              <TableHeader>
-                <TableRow>
-                  <TableColumn className="left-aligned" key={'AssignmentName'}>
-                    Assignment
-                  </TableColumn>
-                  <TableColumn key={'Publish'}>Published</TableColumn>
-                  <TableColumn key={'SubNumber'}>Submissions</TableColumn>
-                  <TableColumn key={'GradedNumber'}>Finalized</TableColumn>
-                  <TableColumn key={'UngradedNumber'}>In progress</TableColumn>
-                  <TableColumn key={'UnclaimedNumber'}>Unclaimed</TableColumn>
-                  <TableColumn key={'NumMissing'}>Missing</TableColumn>
-                  <TableColumn key={'numUnviewed'}>Unviewed</TableColumn>
-                  <TableColumn key={'Mean'}>Mean</TableColumn>
-                  <TableColumn key={'Median'}>Median</TableColumn>
-                  <TableColumn className="left-aligned" key={'Menu'} />
-                </TableRow>
-              </TableHeader>
-              <TableBody>{tableBody}</TableBody>
-            </DataTable>
-            {detailComponent}
-            <div>
-              <div
-                className={`drawer__background${detailType !== DETAIL_TYPE.Drawer ? '--hidden' : ''}`}
-                onClick={
-                  detailType === DETAIL_TYPE.Drawer
-                    ? this.changeDetailType.bind(this.props, undefined, undefined)
-                    : dummyFunction
-                }
-              />
-              <Drawer
-                id="drawer--ManageAssignments"
-                type={Drawer.DrawerTypes.TEMPORARY}
-                className="drawer--ManageAssignments"
-                visible={detailType === DETAIL_TYPE.Drawer}
-                position={'right'}
-                onVisibilityChange={this.changeDetailType.bind(this.props, undefined, undefined)}
-                style={{ zIndex: 16777271 }}
-                header={
-                  <div className="drawer__header">
-                    <div className="drawer__title">{drawerContent.title}</div>
-                    <Button
-                      className="drawer__close"
-                      icon={true}
-                      flat={true}
-                      onClick={this.changeDetailType.bind(this.props, undefined, undefined)}
-                    >
-                      clear
-                    </Button>
-                    <div className="drawer__subtitle">{drawerContent.subtitle}</div>
-                  </div>
-                }
-              >
-                <div className="drawer__content">
-                  {drawerContent.content.map((item: { email: string; subID: number | null }) => {
-                    return (
-                      <div
-                        key={item.email}
-                        className={`drawer__item${item.subID ? '--allowHover' : ''}`}
-                        onClick={item.subID ? openSubmission.bind(this, item.subID) : dummyFunction}
-                      >
-                        {item.email}
-                      </div>
-                    );
-                  })}
-                </div>
-              </Drawer>
-            </div>
-          </div>
-        ) : (
-          <CircularProgress id="progress" className="progress-circle" />
-        )}
-      </div>
-    );
+    return <CPAdminDetail goBack={null} title={'Assignments'} actions={actions} content={content} />;
   }
 }
 

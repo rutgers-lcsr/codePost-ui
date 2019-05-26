@@ -34,8 +34,10 @@ const getPointsInFile = (file: FileType): number => {
 
 // ------------------------------ //
 
+const onClick = (e: any) => null;
+
 storiesOf('Menus', module)
   .addDecorator(withKnobs)
-  .add('Main Navigation', () => <CPMainNav />)
+  .add('Main Navigation', () => <CPMainNav onClick={onClick} />)
   .add('Rubric Menu', () => <CPRubricMenu rubricCategories={rubricCategories} rubricComments={rubricComments} />)
   .add('File Menu', () => <CPFileMenu files={files} getPointsInFile={getPointsInFile} />);
