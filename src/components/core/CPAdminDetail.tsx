@@ -4,6 +4,8 @@ import { Layout } from 'antd';
 
 const { Header, Content } = Layout;
 
+import CPFlex from './CPFlex';
+
 interface ICPAdminDetailProps {
   goBack: any;
   title: string;
@@ -26,17 +28,19 @@ class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
       goBack = <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
     }
 
+    const left = [
+      <span key={0} className="cp-label cp-label--large cp-label--bold">
+        {this.props.title}
+      </span>,
+    ];
+
+    const right = actions;
+
     return (
       <Layout>
         <Header className="layout--admin__subheader">
           {goBack}
-          <div className="cp-flex--normal">
-            <div className="left">
-              <span className="cp-label cp-label--large cp-label--bold">{this.props.title}</span>
-            </div>
-            <div className="gap" />
-            {actions}
-          </div>
+          <CPFlex left={left} right={right} gutterSize={10} />
         </Header>
         <Content className="layout--admin__content">{this.props.content}</Content>
       </Layout>

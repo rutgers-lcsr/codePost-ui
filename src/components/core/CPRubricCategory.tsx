@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Badge, Icon, Input, Table } from 'antd';
 
 import CPButton from './CPButton';
+import CPFlex from './CPFlex';
 import CPPointInput from './CPPointInput';
 
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -60,43 +61,46 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, {}> {
   public render() {
     const data = this.buildCommentTableData(this.props.rubricComments);
 
+    const headerLeft = [
+      <span key={0} className="cp-label cp-label--plus cp-label--bold">
+        Category: {this.props.rubricCategory.name}
+      </span>,
+    ];
+
+    const headerRight = [
+      <CPButton key={'delete'} cpType="danger" fallback="delete">
+        Delete
+      </CPButton>,
+      <CPButton key={'add'} cpType="secondary" icon="plus" fallback="plus">
+        Add New Category
+      </CPButton>,
+    ];
+
+    const contentLeft = [
+      <div key={'name'}>
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+          Category Name
+        </div>
+        <Input value={this.props.rubricCategory.name} />
+      </div>,
+      <div key={'point-limit'}>
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+          Category Point Limit
+        </div>
+        <CPPointInput value={3} size="default" />
+      </div>,
+    ];
+
+    const contentRight: React.ReactNode[] = [];
+
     // Should we have Add New Category within this table?
     return (
       <div className="cp-rubric-category">
         <div className="cp-rubric-category__title ">
-          <div className="cp-flex--normal">
-            <div className="left">
-              <span className="cp-label cp-label--plus cp-label--bold">Category: {this.props.rubricCategory.name}</span>
-            </div>
-            <div className="gap" />
-            <div className="right">
-              <CPButton cpType="danger" fallback="delete">
-                Delete
-              </CPButton>
-            </div>
-            <div className="right">
-              <CPButton cpType="secondary" icon="plus" fallback="plus">
-                Add New Category
-              </CPButton>
-            </div>
-          </div>
+          <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />
         </div>
         <div className="cp-rubric-category__content">
-          <div className="cp-flex--very-wide">
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-                Category Name
-              </div>
-              <Input value={this.props.rubricCategory.name} />
-            </div>
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-                Category Point Limit
-              </div>
-              <CPPointInput value={3} size="default" />
-            </div>
-            <div className="gap" />
-          </div>
+          <CPFlex left={contentLeft} right={contentRight} gutterSize={60} />
           <div style={{ height: '40px' }} />
           <Table columns={commentTableColumns} dataSource={data} pagination={false} />
           <div className="cp-rubric-category__add-new-comment">

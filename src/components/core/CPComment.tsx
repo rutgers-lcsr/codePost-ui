@@ -7,6 +7,7 @@ const { TextArea } = Input;
 const { Paragraph } = Typography;
 
 import CPButton from './CPButton';
+import CPFlex from './CPFlex';
 import CPPointInput from './CPPointInput';
 
 import { CommentType } from '../../infrastructure/comment';
@@ -110,6 +111,14 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
       );
     }
 
+    const titleLeft = [commentElements.line, commentElements.status];
+
+    const titleRight = [commentElements.points];
+
+    const footerLeft = [commentElements.author];
+
+    const footerRight = [commentElements.saveButton, commentElements.deleteButton];
+
     return (
       <div
         className={className}
@@ -120,24 +129,14 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
           <div className="ant-popover-inner">
             <div>
               <div className="ant-popover-title">
-                <div className="cp-flex--wider">
-                  <div className="left">{commentElements.line}</div>
-                  <div className="left">{commentElements.status}</div>
-                  <div className="gap" />
-                  <div className="right">{commentElements.points}</div>
-                </div>
+                <CPFlex left={titleLeft} right={titleRight} gutterSize={14} />
               </div>
               <div className="ant-popover-inner-content">
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
               <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '15px' }}>
-                <div className="cp-flex--normal" style={{ minHeight: '32px' }}>
-                  <div className="left">{commentElements.author}</div>
-                  <div className="gap" />
-                  <div className="right">{commentElements.saveButton}</div>
-                  <div className="right">{commentElements.deleteButton}</div>
-                </div>
+                <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
               </div>
             </div>
           </div>

@@ -26,7 +26,7 @@ import { CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 
 import DeleteAssignmentDialog from './ManageAssignmentsComponents/DeleteAssignmentDialog';
-import UploadManager from './ManageAssignmentsComponents/UploadManager';
+// import UploadManager from './ManageAssignmentsComponents/UploadManager';
 
 // import { openSubmission } from './AdminUtils';
 
@@ -593,15 +593,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             break;
           case DETAIL_TYPE.Upload:
             detailComponent = (
-              <UploadManager
-                isVisible={true}
-                assignments={this.props.assignments}
-                selectedAssignment={this.state.activeAssignment!}
-                students={this.props.students}
-                selectedStudents={null}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-                uploadSubmission={this.props.uploadSubmission}
-              />
+              <div />
+              // <UploadManager
+              //   isVisible={true}
+              //   assignments={this.props.assignments}
+              //   selectedAssignment={this.state.activeAssignment!}
+              //   students={this.props.students}
+              //   selectedStudents={null}
+              //   onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              //   uploadSubmission={this.props.uploadSubmission}
+              // />
             );
             break;
           case DETAIL_TYPE.Delete:
