@@ -38,20 +38,12 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
         const rubricMenuMaxHeight = this.props.windowHeight - fileMenuBottom - rubricMenuTitleHeight;
         rubricMenu.style.setProperty('max-height', `${rubricMenuMaxHeight}px`);
       }
-
-      // Set the max-height of the code container to fit in the viewport, with some margin at the bottom
-      const codeContainer = document.getElementById('cp-grade-code-container');
-      if (codeContainer !== null) {
-        const codeContainerTop = codeContainer.getBoundingClientRect().top;
-        const codeContainerMaxHeight = this.props.windowHeight - codeContainerTop - 48 - 20;
-        codeContainer.style.setProperty('max-height', `${codeContainerMaxHeight}px`);
-      }
     }
   };
 
   public render() {
     return (
-      <Layout className="layout--grade">
+      <Layout id="Grade" className="layout--grade">
         <Header className="layout--grade__header">{this.props.header}</Header>
         <Layout>
           <Sider width={300} className="layout--grade__sider">

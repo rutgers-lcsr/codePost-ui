@@ -121,6 +121,7 @@ class Submission {
     'history',
   );
 
+  // FIXME, duplicate
   public static loadData = async (
     submission: SubmissionType | StudentSubmissionType | AnonymousSubmissionType,
   ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {

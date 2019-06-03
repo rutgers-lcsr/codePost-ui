@@ -39,6 +39,7 @@
     "venv",
     "coverage",
     "config",
-    "prettier.config.js"
+    "prettier.config.js",
+    "src/stories"
   ]
 }

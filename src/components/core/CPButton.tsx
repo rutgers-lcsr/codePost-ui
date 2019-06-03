@@ -15,7 +15,7 @@ interface ICPButtonProps extends IWithWindowWatcherProps {
 
 class CPButton extends React.Component<ButtonProps & ICPButtonProps, {}> {
   public render() {
-    const { cpType, fallback, ...props } = this.props;
+    const { cpType, fallback, windowWidth, windowHeight, ...props } = this.props;
 
     const customProps = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;

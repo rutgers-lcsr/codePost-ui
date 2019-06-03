@@ -8,20 +8,19 @@ import { SelectParam } from 'antd/lib/menu';
 
 interface ICPFileMenuProps {
   files: FileType[];
+  selectedFile?: FileType;
+  changeSelectedFile: (fileID: number) => void;
   getPointsInFile: (file: FileType) => number;
 }
 
-interface ICPFileMenuState {
-  selectedKey: string;
-}
-
-class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
-  public state: Readonly<ICPFileMenuState> = {
-    selectedKey: this.props.files.length > 0 ? `file-${this.props.files[0].id}` : '',
-  };
+class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
+  // public state: Readonly<ICPFileMenuState> = {
+  //   selectedKey: this.props.files.length > 0 ? `file-${this.props.files[0].id}` : '',
+  // };
 
   public onSelect = (param: SelectParam) => {
-    this.setState({ selectedKey: param.key });
+    const fileID = +param.key.split('-')[1];
+    this.props.changeSelectedFile(fileID);
   };
 
   public buildFileMenu = (files: FileType[]) => {
@@ -29,7 +28,7 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
       const totalPointsInFile = this.props.getPointsInFile(file) * -1;
 
       let opacity = 0.7;
-      if (this.state.selectedKey === `file-${file.id}`) {
+      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
         opacity = 1;
       }
 
@@ -49,7 +48,7 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
         pointsCountBadge = (
           <Badge count={totalPointsInFile} className="cp-badge" style={{ backgroundColor: '#f64852', opacity }} />
         );
-      } else {
+      } else if (totalPointsInFile > 0) {
         pointsCountBadge = (
           <Badge count={`+${totalPointsInFile}`} className="cp-badge" style={{ backgroundColor: '#24be85', opacity }} />
         );
@@ -76,7 +75,7 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
           </div>
         </div>
         <Menu
-          defaultSelectedKeys={[this.state.selectedKey]}
+          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
           mode="inline"
           className="cp-file-menu"
           id="cp-file-menu"

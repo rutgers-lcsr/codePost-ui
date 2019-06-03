@@ -10,6 +10,7 @@ import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
+// @ts-ignore
 import Code from './Code';
 import MarkdownCode from './MarkdownCode';
 
@@ -227,6 +228,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
                   markdown={markdown}
                 />
               ) : (
+                // @ts-ignore
                 <Code
                   submission={this.props.submission}
                   file={file}

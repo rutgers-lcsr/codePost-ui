@@ -8,11 +8,19 @@ export type CPPointInputType = 'small' | 'default';
 interface ICPPointInputProps {
   value: number;
   size: CPPointInputType;
+  onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
   onPlus?: any;
   onMinus?: any;
 }
 
 class CPPointInput extends React.Component<ICPPointInputProps, {}> {
+  // parser
+  // value
+  //
+  // public parser = (value: string): number => {
+  //   return parseFloat(value) ? parseFloat(value) : this.props.value;
+  // };
+
   public render() {
     let className = 'cp-point-input';
     if (this.props.size === 'default') {
@@ -23,9 +31,9 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
 
     return (
       <InputGroup compact className={className}>
-        <InputNumber value={this.props.value} step={0.5} size={this.props.size} />
-        <Button icon="plus" />
-        <Button icon="minus" />
+        <InputNumber value={this.props.value} step={0.5} size={this.props.size} onChange={this.props.onChange} />
+        <Button icon="plus" onClick={this.props.onPlus} />
+        <Button icon="minus" onClick={this.props.onMinus} />
       </InputGroup>
     );
   }

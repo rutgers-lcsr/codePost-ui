@@ -1,0 +1,68 @@
+.cp-code-container {
+  background-color: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 5px;
+  padding: 25px 40px 20px 20px;
+  line-height: 20px;
+  font-size: 12px;
+
+  position: relative;
+
+  overflow-y: hidden;
+  // overflow-x: scroll;
+
+  #syntax-highlighter {
+    z-index: 0;
+    position: absolute;
+    top: 25px;
+
+    border: 0px;
+    overflow: scroll;
+
+    line-height: 20px !important;
+    font-size: 12px !important;
+
+    margin: 0px !important;
+    padding: 0px !important;
+
+    code {
+      white-space: pre;
+    }
+  }
+
+  #code-underlay {
+    z-index: 0;
+    position: absolute;
+    top: 25px;
+
+    border: 0px;
+    // overflow: hidden;
+    overflow-x: scroll;
+    overflow-y: hidden;
+
+    line-height: 20px;
+    font-size: 12px;
+
+    margin: 0px;
+    padding: 0px 0px 8px 24.41px; // room for scrollbar at bottom
+
+    font-family: $fontCode;
+
+    color: blue;
+
+    //
+
+    text-rendering: optimizeLegibility;
+    overflow-wrap: break-word;
+    white-space: pre;
+    word-break: break-all;
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+    font-stretch: 100%;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  strong {
+    background-color: rgba(255, 202, 147, 0.5);
+  }
+}

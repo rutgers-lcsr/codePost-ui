@@ -11,6 +11,7 @@ import CPFlex from './CPFlex';
 import CPPointInput from './CPPointInput';
 
 import { CommentType } from '../../infrastructure/comment';
+import { FileType } from '../../infrastructure/file';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
@@ -20,11 +21,200 @@ interface ICPCommentProps {
 
   comment: CommentType;
   rubricComment?: RubricCommentType;
+
+  setCommentPlacements: () => void;
+  placement: number;
+
+  file: FileType;
+  changeActive: (id: number | undefined) => void;
+  deleteComment: (comment: CommentType, file: FileType) => void;
+  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
+  updateSubmissionGrade: () => void;
+
+  isUnsaved: boolean;
+  saveComment: any;
 }
 
-class CPComment extends React.Component<ICPCommentProps, {}> {
+interface ICPCommentState {
+  recentlySaved: boolean;
+}
+
+// https://github.com/ant-design/ant-design/blob/master/components/input/TextArea.tsx
+const onNextFrame = (cb: any) => {
+  if (window.requestAnimationFrame) {
+    return window.requestAnimationFrame(cb);
+  }
+  return window.setTimeout(cb, 1);
+};
+
+const clearNextFrameAction = (nextFrameId: number) => {
+  if (window.cancelAnimationFrame) {
+    window.cancelAnimationFrame(nextFrameId);
+  } else {
+    window.clearTimeout(nextFrameId);
+  }
+};
+
+class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
+  public nextFrameActionId: number;
+
+  public state: Readonly<ICPCommentState> = {
+    recentlySaved: false,
+  };
+
+  public componentDidMount() {
+    console.log(`Mounted: ${this.props.comment.id}`);
+    this.placeCommentOnNextFrame();
+  }
+
+  public componentDidUpdate(prevProps: ICPCommentProps) {
+    if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
+      // console.log(`Updated Type: ${this.props.comment.id}`);
+      // this.props.setCommentPlacements();
+      this.placeCommentOnNextFrame();
+      // setTimeout(() => {
+      //   console.log('--->');
+      //   this.props.setCommentPlacements();
+      // }, 1);
+      // this.props.setCommentPlacements();
+    }
+
+    if (!this.props.isUnsaved && prevProps.isUnsaved) {
+      // console.log('just saved!!!!!');
+      this.fadeSavedState();
+    }
+  }
+
+  public placeCommentOnNextFrame = () => {
+    if (this.nextFrameActionId) {
+      clearNextFrameAction(this.nextFrameActionId);
+    }
+    this.nextFrameActionId = onNextFrame(this.props.setCommentPlacements);
+  };
+
+  public save = async () => {
+    this.unhighlightRelatedComment();
+    await this.props.saveComment(this.props.comment, this.props.file);
+    this.props.changeActive(undefined);
+  };
+
+  // Ant type bug https://cl.ly/c5094e2c4526
+  public onChangePointInput = (value: any) => {
+    const parsed = parseFloat(value);
+    const points = parsed ? parsed : this.points();
+    const comment = { ...this.props.comment, pointDelta: points };
+    this.props.updateComment(comment.id, comment, this.props.file, false);
+  };
+
+  public roundDownToNearestMultiple = (n: number, m: number) => {
+    return Math.floor(n / m) * m;
+  };
+
+  public roundUpToNearestMultiple = (n: number, m: number) => {
+    return Math.ceil(n / m) * m;
+  };
+
+  public onPlus = () => {
+    const points = this.roundDownToNearestMultiple(this.points(), 0.5) + 0.5;
+    const comment = { ...this.props.comment, pointDelta: points };
+    this.props.updateComment(comment.id, comment, this.props.file, false);
+  };
+
+  public onMinus = () => {
+    const points = this.roundUpToNearestMultiple(this.points(), 0.5) - 0.5;
+    const comment = { ...this.props.comment, pointDelta: points };
+    this.props.updateComment(comment.id, comment, this.props.file, false);
+  };
+
+  public activate = () => {
+    this.props.changeActive(this.props.comment.id);
+  };
+
+  public deactivate = () => {
+    this.props.changeActive(undefined);
+  };
+
+  public onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const comment = { ...this.props.comment, text: e.target.value };
+    this.props.updateComment(comment.id, comment, this.props.file, false);
+    // this.setState({ text: e.target.value });
+
+    // update unsaved conditional on match
+    // MISSING
+    // @ts-ignore
+    // https://stackoverflow.com/questions/16429511/how-can-i-detect-when-a-line-is-automatically-wrapped-in-a-textarea
+    // Maybe try to updates placement only on wrap
+    this.props.setCommentPlacements();
+  };
+
+  public delete = () => {
+    this.props.deleteComment(this.props.comment, this.props.file);
+  };
+
+  public points = () => {
+    return this.getPoints(this.props.comment, this.props.rubricComment);
+  };
+
+  public getPoints = (comment: CommentType, rubricComment: RubricCommentType | undefined) => {
+    const points = rubricComment ? rubricComment.pointDelta : comment.pointDelta;
+
+    return points ? points : 0;
+  };
+
+  public fadeSavedState = () => {
+    this.setState({ recentlySaved: true });
+    window.setTimeout(() => this.setState({ recentlySaved: false }), 1000);
+  };
+
+  // public isUnsaved = () => {
+  //   return (
+  //     this.state.text !== this.props.comment.text ||
+  //     this.state.points !== this.points(this.props.comment, this.props.rubricComment) ||
+  //     this.state.rubricComment !== this.props.rubricComment
+  //   );
+  // };
+
+  // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
+  public handleShiftEnter = (e: any) => {
+    if (e.key === 'Enter' && e.shiftKey) {
+      this.save();
+    }
+  };
+
+  public highlightRelatedComment = (event?: any) => {
+    const className = `highlight-${this.props.comment.id}`;
+    const elems = document.getElementsByClassName(className);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.setProperty('background-color', 'rgba(250,255,145, 0.5)', 'important');
+    });
+
+    // For handling markdown
+    // const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+    // if (blockElement) {
+    //   blockElement.className = 'markdown-code__block--focused';
+    //   // blockElement.style.setProperty('border-left', '5px solid #f9ff91');
+    // }
+  };
+
+  public unhighlightRelatedComment = (event?: any) => {
+    const className = `highlight-${this.props.comment.id}`;
+    const elems = document.getElementsByClassName(className);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.backgroundColor = 'rgba(255, 202, 147, 0.5)';
+    });
+
+    // For handling markdown
+    // const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+    // if (blockElement) {
+    //   blockElement.className = 'markdown-code__block--commented';
+    //   // blockElement.style.setProperty('border-left', '5px solid #24b47e');
+    // }
+  };
+
   public render() {
     const className = `cp-comment cp-comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
+
+    // console.log('commment', this.props.comment.id, this.props.placement);
 
     const commentElements: { [key: string]: React.ReactNode } = {
       line: null,
@@ -32,13 +222,17 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
       status: null,
       comment: null,
       rubricComment: null,
+      rubricCommentAction: null,
       saveButton: null,
       deleteButton: null,
       author: null,
     };
 
+    let onClick;
+    let cursor = 'auto';
+
     commentElements.line = (
-      <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine}</span>
+      <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine + 1}</span>
     );
 
     if (this.props.comment.author) {
@@ -47,12 +241,7 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
       );
     }
 
-    let points: number = 0;
-    if (this.props.rubricComment) {
-      points = this.props.rubricComment.pointDelta;
-    } else {
-      points = this.props.comment.pointDelta ? this.props.comment.pointDelta : 0;
-    }
+    const points: number = this.points();
 
     let badge = null;
     if (points > 0) {
@@ -63,29 +252,70 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
       badge = <Badge count={points} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />;
     }
 
-    if (this.props.commentType === 'active') {
-      commentElements.points = <CPPointInput value={points} size="small" />;
-      commentElements.comment = <TextArea autosize className="cp-comment__text-area" />;
+    if (this.props.isUnsaved) {
       commentElements.status = <span className="cp-label--small cp-label--italic">Draft</span>;
-      commentElements.saveButton = <CPButton cpType="secondary" icon="save" />;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" />;
+    }
+
+    if (this.state.recentlySaved) {
+      commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
+    }
+
+    if (this.props.commentType === 'active') {
+      commentElements.points = (
+        <CPPointInput
+          value={points}
+          size="small"
+          onPlus={this.onPlus}
+          onMinus={this.onMinus}
+          onChange={this.onChangePointInput}
+        />
+      );
+      commentElements.comment = (
+        <TextArea
+          autosize
+          className="cp-comment__text-area"
+          value={this.props.comment.text ? this.props.comment.text : ''}
+          onChange={this.onChangeText}
+          onPressEnter={this.handleShiftEnter}
+        />
+      );
+
+      commentElements.saveButton = <CPButton cpType="secondary" icon="save" onClick={this.save} />;
+      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+
+      if (this.props.rubricComment) {
+        commentElements.rubricCommentAction = (
+          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }}>X</span>
+        );
+      }
     }
 
     if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
       commentElements.comment = (
-        <Paragraph className="cp-comment__comment" ellipsis={{ rows: 2, expandable: true }}>
+        <Paragraph
+          className="cp-comment__comment"
+          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+          ellipsis={{ rows: 2, expandable: true, onExpand: this.placeCommentOnNextFrame }}
+        >
           {this.props.comment.text ? this.props.comment.text : ''}
         </Paragraph>
       );
-      commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" />;
+      // commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
+      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+
+      onClick = this.activate;
+      cursor = 'pointer';
     }
 
     if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
       commentElements.comment = (
-        <Paragraph className="cp-comment__comment" ellipsis={{ rows: 2, expandable: true }}>
+        <Paragraph
+          className="cp-comment__comment"
+          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+          ellipsis={{ rows: 2, expandable: true, onExpand: this.placeCommentOnNextFrame }}
+        >
           {this.props.comment.text ? this.props.comment.text : ''}
         </Paragraph>
       );
@@ -107,6 +337,7 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
       commentElements.rubricComment = (
         <div className={rubricCommentClassName}>
           <span className="cp-label--very-bold">{pointsString}</span> {this.props.rubricComment.text}
+          {commentElements.rubricCommentAction}
         </div>
       );
     }
@@ -122,7 +353,11 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
     return (
       <div
         className={className}
-        style={{ transformOrigin: '-4px 0px', top: '100px' }} // placeholders for storybook, will relocate to .stories
+        id={`comment-${this.props.comment.id}`}
+        style={{ transformOrigin: '-4px 0px', top: `${this.props.placement}px`, cursor }}
+        onClick={onClick}
+        onMouseEnter={this.highlightRelatedComment}
+        onMouseLeave={this.unhighlightRelatedComment}
       >
         <div className="ant-popover-content">
           <div className="ant-popover-arrow" />
@@ -135,7 +370,7 @@ class CPComment extends React.Component<ICPCommentProps, {}> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '15px' }}>
+              <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '15px', lineHeight: '9px' }}>
                 <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
               </div>
             </div>
