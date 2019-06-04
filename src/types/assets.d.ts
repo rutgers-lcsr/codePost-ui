@@ -16,3 +16,4 @@ declare module 'turndown';
 declare module 'turndown-plugin-gfm';
 declare module 'react-beautiful-dnd';
 declare module 'react-tooltip';
+declare module 'react-scrollable-anchor';
