@@ -51,6 +51,7 @@
     "react-md": "^1.9.2",
     "react-router-dom": "^4.3.1",
     "react-scroll": "^1.7.11",
+    "react-scrollable-anchor": "^0.6.1",
     "react-select": "^2.2.0",
     "react-syntax-highlighter": "^10.1.2",
     "react-tabs": "^2.3.0",
