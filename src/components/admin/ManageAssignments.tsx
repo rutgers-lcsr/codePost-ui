@@ -165,6 +165,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             submission.students.forEach((student) => {
               if (
                 !(student in this.props.viewsBySubmission[submission.id]) &&
+                submissionsByStudent[student] &&
                 submissionsByStudent[student][assignment.id] &&
                 submissionsByStudent[student][assignment.id].isFinalized
               ) {
