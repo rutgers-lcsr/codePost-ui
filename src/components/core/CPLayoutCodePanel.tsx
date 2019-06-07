@@ -2,8 +2,8 @@ import * as React from 'react';
 
 // import CPComment from './CPComment';
 
-// import SyntaxHighlighter from 'react-syntax-highlighter';
-// import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 // import { CommentMock } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
@@ -25,27 +25,20 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
 
     const comments = document.getElementById('cp-code-panel--comments');
     if (comments !== null) {
-      comments.addEventListener('scroll', this.updateScrolls);
+      comments.addEventListener('scroll', this.updateCommentScrolls);
     }
 
     const codeContainer = document.getElementById('cp-code-container');
     if (codeContainer !== null) {
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
-
-    // document.addEventListener('scroll', this.scr);
   }
 
   public componentWillUnmount() {
     const comments = document.getElementById('cp-code-panel--comments');
     if (comments !== null) {
-      comments.removeEventListener('scroll', this.updateScrolls);
+      comments.removeEventListener('scroll', this.updateCommentScrolls);
     }
-
-    // const codeContainer = document.getElementById('cp-code-container');
-    // if (codeContainer !== null) {
-    //   codeContainer.removeEventListener('scroll', this.scr);
-    // }
 
     const codeContainer = document.getElementById('cp-code-container');
     if (codeContainer !== null) {
@@ -57,17 +50,25 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     const comments = document.getElementById('cp-code-panel--comments');
 
     if (comments !== null) {
-      // console.log('comments height', this.commentsHeight, comments.scrollTop);
       comments.scrollTop = comments.scrollTop + e.deltaY;
+    }
+
+    const codeUnderlay = document.getElementById('code-underlay');
+    const codeSyntax = document.getElementById('code-syntax');
+
+    if (codeUnderlay !== null && codeSyntax !== null) {
+      codeSyntax.scrollLeft = codeUnderlay.scrollLeft;
     }
   };
 
-  public updateScrolls = () => {
+  public updateCommentScrolls = () => {
     const comments = document.getElementById('cp-code-panel--comments');
     const codeUnderlay = document.getElementById('code-underlay');
+    const codeSyntax = document.getElementById('code-syntax');
 
-    if (comments !== null && codeUnderlay !== null) {
+    if (comments !== null && codeUnderlay !== null && codeSyntax !== null) {
       codeUnderlay.scrollTop = comments.scrollTop;
+      codeSyntax.scrollTop = codeUnderlay.scrollTop;
     }
   };
 
@@ -90,8 +91,8 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     if (this.props.windowHeight !== 0) {
       const codeContainer = document.getElementById('cp-code-container');
       const codeUnderlay = document.getElementById('code-underlay');
-      // const codeSyntax = document.getElementById('code-syntax');
-      const codeSyntax = 1;
+      const codeSyntax = document.getElementById('code-syntax');
+      // const codeSyntax = 1;
       const commentsContainer = document.getElementById('cp-code-panel--comments');
       const comments = document.getElementById('comments');
 
@@ -111,8 +112,10 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
 
         codeContainer.style.setProperty('height', `${codeContainerHeight}px`);
         codeUnderlay.style.setProperty('height', `${codeContainerHeight - 20 - 25}px`);
+        codeSyntax.style.setProperty('height', `${codeContainerHeight - 20 - 25}px`);
         const codeContainerWidth = codeContainer.getBoundingClientRect().width;
         codeUnderlay.style.setProperty('width', `${codeContainerWidth - 40 - 20}px`);
+        codeSyntax.style.setProperty('width', `${codeContainerWidth - 40 - 20}px`);
 
         const commentsContainerHeight = this.props.windowHeight - commentsContainer.offsetTop - 20;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
@@ -151,27 +154,6 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
   public render() {
     // console.log('width', this.props.windowWidth);
 
-    // @ts-ignore
-    const codeString = `/******************************************************************
-*  Student: student@myschool.edu
-*  Section: Section 1
-*
-*  Partner: none
-*  Partner section: N/A
-*
-*  Description:  Prints 'Hello, World' to the terminal.
-*                By tradition, this is everyone's first program.
-*                Brian Kernighan initiated this tradition in 1974.
-*
-***************************************************************/
-
-public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.print("Hello, World");
-
-    }
-}`;
-
     // const numberOfLines = codeString.split('\n').length;
     // const lineHeight = 20;
     // const linesPlaceholder = <div style={{ height: `${numberOfLines * lineHeight}px` }} />;
@@ -191,7 +173,20 @@ public class HelloWorld {
         <div className="cp-code-panel">
           <div className="cp-code-panel--code">
             <div id="cp-code-container" className="cp-code-container">
-              <div id="code-underlay">{this.props.code}</div>
+              <SyntaxHighlighter
+                id="code-syntax"
+                className="cp-code"
+                language={'java'}
+                style={googlecode}
+                showLineNumbers={true}
+                wrapLines={false}
+              >
+                {this.props.file.code}
+              </SyntaxHighlighter>
+              ;
+              <div id="code-underlay" className="cp-code">
+                {this.props.code}
+              </div>
             </div>
           </div>
           <div id="cp-code-panel--comments" className="cp-code-panel--comments">

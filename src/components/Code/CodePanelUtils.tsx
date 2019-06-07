@@ -144,10 +144,15 @@ export default class CodePanelUtils {
           className = className.substring(1, className.length - 1);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
+        // return (
+        //   <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
+        //     {text}
+        //   </strong>
+        // );
         return (
-          <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
+          <span key={`${line}-${i}`} id={`line-${line}-${i}`} className={`highlight ${className}`}>
             {text}
-          </strong>
+          </span>
         );
       } else {
         return html;
@@ -167,9 +172,9 @@ export default class CodePanelUtils {
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
     for (const [highlight, level] of Object.entries(styles)) {
-      const tint = 0.5 + 0.2 * level;
+      const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: rgba(255, 202, 147, ${tint}) !important;}`,
+        `.highlight-${highlight} {background-color: #ffbf00 !important; opacity: ${tint} !important;}`,
       );
     }
 

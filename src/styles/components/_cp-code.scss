@@ -11,46 +11,22 @@
   overflow-y: hidden;
   // overflow-x: scroll;
 
-  #syntax-highlighter {
+  .cp-code {
     z-index: 0;
     position: absolute;
     top: 25px;
 
-    border: 0px;
-    overflow: scroll;
+    border: 0px !important;
+    overflow-x: scroll;
+    overflow-y: hidden;
 
     line-height: 20px !important;
     font-size: 12px !important;
 
     margin: 0px !important;
-    padding: 0px !important;
+    padding: 0px !important; // room for scrollbar at bottom
 
-    code {
-      white-space: pre;
-    }
-  }
-
-  #code-underlay {
-    z-index: 0;
-    position: absolute;
-    top: 25px;
-
-    border: 0px;
-    // overflow: hidden;
-    overflow-x: scroll;
-    overflow-y: hidden;
-
-    line-height: 20px;
-    font-size: 12px;
-
-    margin: 0px;
-    padding: 0px 0px 8px 24.41px; // room for scrollbar at bottom
-
-    font-family: $fontCode;
-
-    color: blue;
-
-    //
+    font-family: $fontCode !important;
 
     text-rendering: optimizeLegibility;
     overflow-wrap: break-word;
@@ -60,9 +36,50 @@
     text-size-adjust: 100%;
     font-stretch: 100%;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+    code {
+      white-space: pre;
+    }
+
+    .highlight {
+      display: inline-block;
+      background-color: #ffbf00;
+      opacity: 0.2;
+      height: 16px;
+      vertical-align: middle;
+
+      &::selection {
+        color: transparent; /* WebKit/Blink Browsers */
+        background: transparent;
+      }
+
+      &::-moz-selection {
+        color: transparent; /* Gecko Browsers */
+        background: transparent;
+      }
+    }
+  }
+
+  #code-underlay {
+    padding-left: 24.41px !important;
+    color: transparent;
+  }
+
+  #code-syntax {
+    &::-webkit-scrollbar {
+      width: 0px;
+      background: transparent; /* make scrollbar transparent */
+    }
+
+    // ::-webkit-scrollbar {
+    //   display: none;
+    // }
   }
 
   strong {
-    background-color: rgba(255, 202, 147, 0.5);
+    // background-color: rgba(255, 202, 147, 0.5);
+    background-color: #ffbf00;
+    opacity: 0.2;
+    height: 22px;
   }
 }

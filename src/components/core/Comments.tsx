@@ -219,6 +219,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public render() {
+    console.log('Comments rerender');
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;

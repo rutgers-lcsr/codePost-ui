@@ -211,7 +211,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     const className = `highlight-${this.props.comment.id}`;
     const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', 'rgba(250,255,145, 0.5)', 'important');
+      elem.style.setProperty('background-color', '#c0ff00', 'important');
     });
 
     // For handling markdown
@@ -226,7 +226,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     const className = `highlight-${this.props.comment.id}`;
     const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.backgroundColor = 'rgba(255, 202, 147, 0.5)';
+      elem.style.setProperty('background-color', '#ffbf00', 'important');
+      // elem.style.setProperty('opacity', '0.2', 'important');
     });
 
     // For handling markdown
