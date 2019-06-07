@@ -22,7 +22,7 @@ interface ICodeProps {
   // rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
-  addComment: (comment: CommentType, file: FileType) => boolean;
+  addComment: (comment: CommentType, file: FileType) => void;
 
   // activeCommentId?: number;
   // changeActive: (id: number | number) => void;

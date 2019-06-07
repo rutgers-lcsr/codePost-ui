@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Badge, Menu } from 'antd';
+import { Badge, Menu, Popconfirm } from 'antd';
 
 import { FileType } from '../../infrastructure/file';
 
@@ -10,17 +10,41 @@ interface ICPFileMenuProps {
   files: FileType[];
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
+  canChange: boolean;
   getPointsInFile: (file: FileType) => number;
 }
 
-class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
-  // public state: Readonly<ICPFileMenuState> = {
-  //   selectedKey: this.props.files.length > 0 ? `file-${this.props.files[0].id}` : '',
-  // };
+interface ICPFileMenuState {
+  popconfirmVisible: boolean;
+  selectedParam: SelectParam | null;
+}
 
-  public onSelect = (param: SelectParam) => {
-    const fileID = +param.key.split('-')[1];
-    this.props.changeSelectedFile(fileID);
+class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
+  public state: Readonly<ICPFileMenuState> = {
+    popconfirmVisible: false,
+    selectedParam: null,
+  };
+
+  public onSelect = (selectedParam: SelectParam) => {
+    if (this.props.canChange) {
+      this.setState({ selectedParam, popconfirmVisible: true });
+    } else {
+      this.setState({ selectedParam }, () => {
+        this.confirm();
+      });
+    }
+  };
+
+  public confirm = () => {
+    if (this.state.selectedParam) {
+      const fileID = +this.state.selectedParam.key.split('-')[1];
+      this.props.changeSelectedFile(fileID);
+      this.setState({ selectedParam: null, popconfirmVisible: false });
+    }
+  };
+
+  public cancel = () => {
+    this.setState({ popconfirmVisible: false, selectedParam: null });
   };
 
   public buildFileMenu = (files: FileType[]) => {
@@ -74,15 +98,32 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
             Files
           </div>
         </div>
-        <Menu
-          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-          mode="inline"
-          className="cp-file-menu"
-          id="cp-file-menu"
-          onSelect={this.onSelect}
+        <Popconfirm
+          title={
+            <div>
+              <p>You have draft comments that will not be saved.</p>{' '}
+              <p>
+                <b>Are you sure you want to continue?</b>
+              </p>
+            </div>
+          }
+          visible={this.state.popconfirmVisible}
+          onConfirm={this.confirm}
+          onCancel={this.cancel}
+          okText="Yes"
+          cancelText="No"
+          placement="rightTop"
         >
-          {fileMenu}
-        </Menu>
+          <Menu
+            selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+            mode="inline"
+            className="cp-file-menu"
+            id="cp-file-menu"
+            onSelect={this.onSelect}
+          >
+            {fileMenu}
+          </Menu>
+        </Popconfirm>
       </div>
     );
   }

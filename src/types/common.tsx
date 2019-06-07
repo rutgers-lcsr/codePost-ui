@@ -8,6 +8,10 @@ import { RubricCategoryType } from '../infrastructure/rubricCategory';
 import { RubricCommentType } from '../infrastructure/rubricComment';
 import { SubmissionType } from '../infrastructure/submission';
 
+export type IdMapType = {
+  [id: number]: boolean;
+};
+
 export enum USER_APP {
   Student,
   Grader,

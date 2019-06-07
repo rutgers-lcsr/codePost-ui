@@ -9,6 +9,10 @@
     color: $actionGreen;
   }
 
+  &--error {
+    color: $actionRed;
+  }
+
   &--highlight {
     color: $brandAccent;
   }

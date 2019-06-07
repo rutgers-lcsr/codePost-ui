@@ -44,6 +44,7 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
   public render() {
     return (
       <Layout id="Grade" className="layout--grade">
+        {this.props.children}
         <Header className="layout--grade__header">{this.props.header}</Header>
         <Layout>
           <Sider width={300} className="layout--grade__sider">

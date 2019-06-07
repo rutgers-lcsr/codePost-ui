@@ -24,12 +24,11 @@ export interface ICommentsProps {
   file: FileType;
   activeCommentID?: number;
   changeActive: (id: number | undefined) => void;
-  deleteComment: (comment: CommentType, file: FileType) => void;
-  updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
-  updateSubmissionGrade: () => void;
-
-  unsavedComments: number[];
   saveComment: any;
+  deleteComment: (comment: CommentType) => void;
+
+  addUnsaved: any;
+  removeUnsaved: any;
 }
 
 interface ICommentPlacement {
@@ -187,10 +186,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     });
   };
 
-  public setCommentPlacements = () => {
-    const placements = this.calculateCommentPlacements(this.props.comments);
-
-    const lastPlacement = placements[placements.length - 1];
+  public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
     const commentElement = document.getElementById(`comment-${lastPlacement.commentID}`);
     let heightOfComment = 80;
     if (commentElement) {
@@ -209,6 +205,12 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     if (comments) {
       comments.style.setProperty('height', `${commentsHeight}px`);
     }
+  };
+
+  public setCommentPlacements = () => {
+    const placements = this.calculateCommentPlacements(this.props.comments);
+
+    this.setBottomOfCommentBox(placements[placements.length - 1]);
 
     console.table(placements);
     // // tslint:disable-next-line
@@ -237,8 +239,9 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       // console.log('rubricComment before comment', rubricComment);
       // console.log('rub', rubricComment);
 
-      console.log('unsaved comments', this.props.unsavedComments);
-      const isUnsaved = this.props.unsavedComments.includes(comment.id);
+      // console.log('unsaved comments', { ...this.props.unsavedComments });
+
+      // const uiComment = { comment, rubricComment };
 
       return (
         <CPComment
@@ -246,15 +249,13 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
           commentType={commentType}
           comment={comment}
           rubricComment={rubricComment}
-          setCommentPlacements={this.setCommentPlacements}
           placement={placement}
-          file={this.props.file}
           changeActive={this.changeActive}
-          deleteComment={this.props.deleteComment}
-          updateComment={this.props.updateComment}
-          updateSubmissionGrade={this.props.updateSubmissionGrade}
-          isUnsaved={isUnsaved}
-          saveComment={this.props.saveComment}
+          onSave={this.props.saveComment}
+          onDelete={this.props.deleteComment}
+          addUnsaved={this.props.addUnsaved}
+          removeUnsaved={this.props.removeUnsaved}
+          setCommentPlacements={this.setCommentPlacements}
         />
       );
     });

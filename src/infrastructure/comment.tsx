@@ -1,5 +1,7 @@
 import * as t from 'io-ts';
 
+import { RubricCommentType } from './rubricComment';
+
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 const CommentV = t.intersection(
@@ -50,6 +52,21 @@ class CommentIO {
   public static delete = deleteObject(CommentV, 'comments');
 }
 
+/* tslint:disable:max-classes-per-file */
+class UiComment {
+  public static isNew = (comment: CommentType) => {
+    return comment.id < 0;
+  };
+
+  public static points = (comment: CommentType, rubricComment?: RubricCommentType): number => {
+    if (rubricComment) {
+      return rubricComment.pointDelta ? rubricComment.pointDelta : 0;
+    } else {
+      return comment.pointDelta ? comment.pointDelta : 0;
+    }
+  };
+}
+
 const CommentMock: CommentType = {
   id: 1,
   text: 'This is a mocked comment',
@@ -63,4 +80,4 @@ const CommentMock: CommentType = {
   author: 'grader@myschool.edu',
 };
 
-export { CommentType, CommentIO, CommentMock };
+export { CommentType, CommentIO, CommentMock, UiComment };
