@@ -1,0 +1,244 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import * as React from 'react';
+
+/* style imports */
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
+const confirm = Modal.confirm;
+
+import { ColumnProps } from 'antd/lib/table';
+
+/* codePost imports */
+import { USER_APP, USER_TYPE } from '../../../types/common';
+
+import { CourseType } from '../../../infrastructure/course';
+import { SectionType } from '../../../infrastructure/section';
+
+import AddSectionDialog from './sections/AddSectionDialog';
+
+import DownloadRoster from './other/DownloadRoster';
+import RosterFileUpload from './other/RosterFileUpload';
+
+import TableDetail from '../other/TableDetail';
+
+/**********************************************************************************************************************/
+
+interface IProps {
+  /* students data */
+  students: string[];
+  graders: string[];
+  admins: string[];
+  sections: SectionType[];
+  currentCourse: CourseType;
+  sectionsByStudent: { [studentEmail: string]: SectionType };
+
+  /* loading state */
+  loadComplete: boolean;
+
+  /* object-level REST operations */
+  updateStudentSection: (student: string, section: number) => Promise<void>;
+  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  deleteSection: (sectionID: number) => Promise<void>;
+  createSection: (sectionName: string) => Promise<void>;
+  updateSection: (section: SectionType) => Promise<void>;
+}
+
+interface IState {
+  activeSection: string;
+}
+
+class ManageSections extends React.Component<IProps, IState> {
+  public constructor(props: any) {
+    super(props);
+    this.state = {
+      activeSection: '',
+    };
+  }
+
+  public setActiveSection = (section: string) => {
+    this.setState({ activeSection: section });
+  };
+
+  public deleteSection = (toRemove: number) => {
+    confirm({
+      title: 'Are you sure you want to delete this section?',
+      onOk: () => {
+        return this.props.deleteSection(toRemove);
+      },
+      okText: 'Delete',
+    });
+  };
+
+  public changeLeaders = (section: number, leaders: string[]) => {
+    const sectionObj = this.props.sections.find((el) => {
+      return el.id === section;
+    });
+    if (sectionObj) {
+      const updated = { ...sectionObj };
+      updated.leaders = leaders;
+      this.props.updateSection(updated).then(() => {
+        message.success('Leaders updated');
+      });
+    }
+  };
+
+  public render() {
+    let actions: React.ReactNode[] = [];
+    let columns: Array<ColumnProps<any>> = [];
+    let data: any[] = [];
+
+    if (this.props.loadComplete) {
+      actions = [
+        <DownloadRoster
+          sectionsByStudent={this.props.sectionsByStudent}
+          key={0}
+          startingPage={USER_TYPE.ADMIN}
+          students={this.props.students}
+          graders={this.props.graders}
+          admins={this.props.admins}
+          course={this.props.currentCourse}
+          isDisabled={false}
+        />,
+        <RosterFileUpload
+          key={1}
+          students={this.props.students}
+          graders={this.props.graders}
+          admins={this.props.admins}
+          sections={this.props.sections}
+          sectionsByStudent={this.props.sectionsByStudent}
+          changeRoster={this.props.updateRoster}
+          isDisabled={false}
+          updateStudentSection={this.props.updateStudentSection}
+          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          createSection={this.props.createSection}
+        />,
+        <AddSectionDialog key={2} sections={this.props.sections} addSection={this.props.createSection} />,
+      ];
+
+      const aligner: 'left' | 'center' | 'right' = 'center';
+      columns = [
+        {
+          title: 'Sections',
+          dataIndex: 'section',
+          key: 'primary',
+          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+        },
+        {
+          title: 'Leaders',
+          dataIndex: 'leaders',
+          key: 'leaders',
+          align: aligner,
+        },
+        {
+          title: 'Actions',
+          dataIndex: 'actions',
+          key: 'actions',
+          align: aligner,
+        },
+      ];
+
+      data = this.props.sections.map((section, i) => {
+        let leadersElement;
+        if (section.name === this.state.activeSection) {
+          leadersElement = (
+            <div>
+              <Select
+                mode="multiple"
+                value={section.leaders}
+                onChange={this.changeLeaders.bind(this, section.id)}
+                style={{ width: 400 }}
+              >
+                {this.props.graders.map((grader) => {
+                  return <Select.Option key={grader}>{grader}</Select.Option>;
+                })}
+              </Select>{' '}
+              &nbsp;&nbsp;
+              <Icon type="edit" onClick={this.setActiveSection.bind(this, '')} />
+            </div>
+          );
+        } else {
+          leadersElement = (
+            <div>
+              <Select mode="multiple" value={section.leaders} style={{ width: 400 }} disabled={true}>
+                {this.props.graders.map((grader) => {
+                  return <Select.Option key={grader}>{grader}</Select.Option>;
+                })}
+              </Select>{' '}
+              &nbsp;&nbsp;
+              <Icon type="edit" onClick={this.setActiveSection.bind(this, section.name)} />
+            </div>
+          );
+        }
+
+        const menu = (
+          <Menu>
+            <Menu.Item key="1" onClick={this.deleteSection.bind(this, section.id)}>
+              <Icon type="delete" />
+              Delete
+            </Menu.Item>
+          </Menu>
+        );
+
+        return {
+          key: section.name,
+          section: section.name,
+          leaders: leadersElement,
+          actions: (
+            <Dropdown overlay={menu} trigger={['click']}>
+              <Icon type="menu" />
+            </Dropdown>
+          ),
+        };
+      });
+    }
+
+    return (
+      <TableDetail
+        title={'Sections'}
+        loadComplete={this.props.loadComplete}
+        isEmpty={this.props.sections.length === 0}
+        emptyNode={
+          <Empty
+            imageStyle={{
+              height: 60,
+            }}
+            description={<span>No sections yet</span>}
+          >
+            <AddSectionDialog key={0} addSection={this.props.createSection} sections={this.props.sections} />
+            <br />
+            <RosterFileUpload
+              key={1}
+              students={this.props.students}
+              graders={this.props.graders}
+              admins={this.props.admins}
+              sections={this.props.sections}
+              sectionsByStudent={this.props.sectionsByStudent}
+              changeRoster={this.props.updateRoster}
+              isDisabled={false}
+              updateStudentSection={this.props.updateStudentSection}
+              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              createSection={this.props.createSection}
+            />
+            ,
+          </Empty>
+        }
+        columns={columns}
+        data={data}
+        actions={actions}
+        breadcrumbs={
+          <Breadcrumb>
+            <Breadcrumb.Item>Roster</Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <a>Sections</a>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        }
+      />
+    );
+  }
+}
+
+export default ManageSections;

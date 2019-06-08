@@ -8,6 +8,12 @@ import { RubricCategoryType } from '../infrastructure/rubricCategory';
 import { RubricCommentType } from '../infrastructure/rubricComment';
 import { SubmissionType } from '../infrastructure/submission';
 
+export enum USER_TYPE {
+  STUDENT,
+  GRADER,
+  ADMIN,
+}
+
 export enum USER_APP {
   Student,
   Grader,
@@ -45,11 +51,6 @@ export interface IOption {
 export interface IOptionNumber {
   label: string;
   value: number;
-}
-
-export interface ISectionNoStudents {
-  name: string;
-  id: number;
 }
 
 export interface IToast {

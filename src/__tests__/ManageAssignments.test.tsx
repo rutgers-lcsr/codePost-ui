@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { shallow } from 'enzyme';
 
-import ManageAssignments, { IManageAssignmentsProps } from '../components/admin/ManageAssignments';
+import ManageAssignments, { IManageAssignmentsProps } from '../components/admin/assignments/ManageAssignments';
 
 describe('ManageAssignments', () => {
   const setup = (propOverrides?: Partial<IManageAssignmentsProps>) => {

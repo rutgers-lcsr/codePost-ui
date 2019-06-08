@@ -6,38 +6,40 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Empty, Menu } from 'antd';
+import { Button, Empty, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-
-// import { Icon, Switch, Table } from 'antd';
-
-import CPLayoutAdmin from './components/core/CPLayoutAdmin';
-
-// import CPAdminDetail from './components/core/CPAdminDetail';
 
 import CPButton from './components/core/CPButton';
 import CPDropdown from './components/core/CPDropdown';
 
 /* other library imports */
+import _ from 'lodash';
 import queryString from 'query-string';
 
 /* codePost imports */
+import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
 
-/* components */
-// import CourseData from './components/admin/CourseData';
-import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
-import ManageAssignments from './components/admin/ManageAssignments';
-// import ManageUsers from './components/admin/ManageUsers';
-import NewCourseDialog from './components/admin/NewCourseDialog';
+import GraderData from './components/admin/submissions/GraderSubmissions';
+import StudentData from './components/admin/submissions/StudentSubmissions';
+
+import ManageAssignments from './components/admin/assignments/ManageAssignments';
+
+import ManageAdmins from './components/admin/roster/ManageAdmins';
+import ManageGraders from './components/admin/roster/ManageGraders';
+import ManageSections from './components/admin/roster/ManageSections';
+import ManageStudents from './components/admin/roster/ManageStudents';
+
+import CourseSettingsPanel from './components/admin/settings/CourseSettingsPanel';
+
+import NewCourseDialog from './components/admin/other/NewCourseDialog';
+
 // import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
 
 /* types */
 import {
   IAssignmentToSubmissionsMap,
   IGraderSubmissionsDataTable,
-  ISectionNoStudents,
   IStudentSubmissionsDataTable,
-  IToast,
   USER_APP,
 } from './types/common';
 
@@ -55,76 +57,75 @@ import { addToPayload } from './infrastructure/utils';
 
 /**********************************************************************************************************************/
 
-const panels = [
-  'submissions/students', // 0
-  'submissions/graders', // 1
-  'submissions/inactive_students', // 2
-  'submissions/inactive_graders', // 3
-  'assignments/', // 4
-  'roster/students', // 5
-  'roster/graders', // 6
-  'roster/admins', // 7
-  'roster/sections', // 8
-  'roster/inactive_students', // 9
-  'roster/inactive_graders', // 10
-  'settings/', // 11
+export enum PANELS {
+  SUBMISSION_STUDENTS,
+  SUBMISSION_GRADERS,
+  ASSIGNMENTS,
+  ROSTER_STUDENTS,
+  ROSTER_GRADERS,
+  ROSTER_ADMINS,
+  ROSTER_SECTIONS,
+  SETTINGS,
+}
+
+const panels = {
+  [PANELS.SUBMISSION_STUDENTS]: 'submissions/students',
+  [PANELS.SUBMISSION_GRADERS]: 'submissions/graders',
+  [PANELS.ASSIGNMENTS]: 'assignments/',
+  [PANELS.ROSTER_STUDENTS]: 'roster/students',
+  [PANELS.ROSTER_GRADERS]: 'roster/graders',
+  [PANELS.ROSTER_ADMINS]: 'roster/admins',
+  [PANELS.ROSTER_SECTIONS]: 'roster/sections',
+  [PANELS.SETTINGS]: 'settings/',
+};
+
+const panelStrings = [
+  'submissions/students',
+  'submissions/graders',
+  'assignments/',
+  'roster/students',
+  'roster/graders',
+  'roster/admins',
+  'roster/sections',
+  'settings/',
 ];
 
 interface IAdminState {
-  currentCourse?: CourseType; // Course for selector
-  currentPanel: number;
+  /**** UI control data ****/
+  currentPanel: PANELS;
+  onboardingModalVisible: boolean;
 
-  courses: CourseType[]; // Set of courses for the admin for the selector
+  /**** Top-level course data ****/
+  currentCourse?: CourseType;
+  courses: CourseType[];
 
-  // roster data, all from a single api call so only needs a single loadComplete boolean
+  /**** Roster data ****/
+  rosterLoadComplete: boolean;
   students: string[];
   inactiveStudents: string[];
   graders: string[];
   inactiveGraders: string[];
   admins: string[];
   superGraders: string[];
-  rosterLoadComplete: boolean;
 
-  // sections data
-  sections: SectionType[];
+  /**** Sections data ****/
   sectionsLoadComplete: boolean;
+  sections: SectionType[];
+  sectionsByStudent: { [studentEmail: string]: SectionType };
 
-  // A calculated mapping each student to their section to speed up render time
-  // Reminder - need to get rid of ISectionNoStudents, it's ugly
-  sectionsByStudent: { [studentEmail: string]: ISectionNoStudents };
-
-  // Submissions data
-  submissions: IAssignmentToSubmissionsMap;
-  submissionsLoadComplete: boolean;
-
-  // Assignments data
-  assignments: AssignmentType[];
+  /**** Assignments data ****/
   assignmentsLoadComplete: boolean;
+  assignments: AssignmentType[];
 
-  // Calculated mappings to render the CourseData tab quickly
-  // submissionsByStudent is for the StudentData tab
-  // submissionsByGrader is for the GraderData tab
+  /*** Submissions data ****/
+  submissionsLoadComplete: boolean;
+  submissionsbyUserLoadComplete: boolean;
+  submissions: IAssignmentToSubmissionsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
   submissionsByInactiveStudent: IStudentSubmissionsDataTable;
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
-  submissionsbyUserLoadComplete: boolean;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-
-  // Props for Enroll panels
-  lockChanges: boolean;
-
-  toasts: IToast[];
-  longToasts: IToast[];
-  errorToasts: IToast[];
-
-  // Generic loading dialog for actions
-  isLoading: boolean;
-  loadingMessage: string;
-  loadingTitle: string;
-
-  // onboarding modal
-  onboardingModalVisible: boolean;
 }
 
 interface IAdminProps {
@@ -134,9 +135,7 @@ interface IAdminProps {
   match: any;
   history: any;
   location: any;
-  addToast: (text: string, action: string | undefined) => void;
-  addLongToast: (text: string, action: string | undefined) => void;
-  addErrorToast: (text: string, action: string | undefined) => void;
+  logout: () => void;
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
@@ -149,14 +148,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     this.state = {
-      currentCourse: course,
+      /**** UI control data ****/
       currentPanel: panel,
+      onboardingModalVisible:
+        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+        this.props.initialCourses.length === 0,
 
-      // Can't take credit for this gem...
-      // https://medium.com/@gamshan001/javascript-deep-copy-for-array-and-object-97e3d4bc401a
-      // Deep copies array so we don't mutate the state of the parent
-      courses: JSON.parse(JSON.stringify(this.props.initialCourses)),
+      /**** Top-level course data ****/
+      currentCourse: course,
+      courses: _.cloneDeep(this.props.initialCourses),
 
+      /**** Roster data ****/
       students: [],
       inactiveStudents: [],
       graders: [],
@@ -165,45 +167,33 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       superGraders: [],
       rosterLoadComplete: false,
 
+      /**** Sections data ****/
       sections: [],
       sectionsLoadComplete: false,
-
       sectionsByStudent: {},
 
-      submissions: {},
-      submissionsLoadComplete: false,
-
+      /**** Assignments data ****/
       assignments: [],
       assignmentsLoadComplete: false,
 
+      /**** Submissions data ****/
+      submissions: {},
+      submissionsLoadComplete: false,
       submissionsByStudent: {},
       submissionsByGrader: {},
       submissionsByInactiveStudent: {},
       submissionsByInactiveGrader: {},
       submissionsbyUserLoadComplete: false,
       viewsBySubmission: {},
-
-      lockChanges: true,
-
-      toasts: [],
-      longToasts: [],
-      errorToasts: [],
-
-      isLoading: false,
-      loadingMessage: '',
-      loadingTitle: '',
-      onboardingModalVisible:
-        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-        this.props.initialCourses.length === 0,
     };
   }
 
-  ///////////////////////////////////////
-  // URL handler methods
-  ///////////////////////////////////////
+  /***********************************************************************************
+  /* URL + UI handling methods
+  /**********************************************************************************/
 
   public panelFromString(name: string) {
-    const toRet = panels.indexOf(name);
+    const toRet = panelStrings.indexOf(name);
     return toRet >= 0 ? toRet : 0;
   }
 
@@ -235,8 +225,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return { course: currentCourse, panel: currentPanel };
     }
   };
-
-  // ------------------- Permissions check functions -------------------
 
   public updateNewCourse = (newCourse: CourseType) => {
     if (this.state.currentCourse && this.state.currentCourse.id === newCourse.id) {
@@ -271,13 +259,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         submissionsByInactiveStudent: {},
         submissionsByInactiveGrader: {},
         submissionsbyUserLoadComplete: false,
-
-        isLoading: false,
-        loadingMessage: '',
-        loadingTitle: '',
-
-        // Props for Enroll panels
-        lockChanges: true,
       },
       () => {
         this.changeURL(newCourse, this.state.currentPanel);
@@ -286,7 +267,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     );
   };
 
-  // Course Selector functions
   public handleCourseChange = (courseID: number) => {
     const newCourse = this.state.courses.find((course: CourseType) => {
       return course.id === courseID;
@@ -297,813 +277,289 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   };
 
-  // ------------------- Initial data load functions  -------------------
+  public handleDemoCourse = (course: CourseType) => {
+    const newCourses = this.state.courses;
+    newCourses.push(course);
+    this.setState({ courses: newCourses }, () => {
+      this.props.addCourse(course);
+      this.updateNewCourse(course);
+    });
+    return;
+  };
+
+  public openModal = () => {
+    this.setState({ onboardingModalVisible: true });
+  };
+
+  public closeModal = () => {
+    this.setState({ onboardingModalVisible: false });
+    this.props.history.push(this.props.location.pathname);
+  };
+
+  public changeURL = (course: CourseType, panel: number) => {
+    const formCourseName = course.name.replace(/ /g, '_');
+    const formPeriod = course.period.replace(/ /g, '_');
+    this.props.history.push(`/course-admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
+  };
+
+  public handleMenuClick = (e: ClickParam) => {
+    this.handleCourseChange(parseInt(e.key, 10));
+  };
+
+  public changeTab = (panelNum: number) => {
+    this.setState({ currentPanel: panelNum }, () => {
+      if (this.state.currentCourse) {
+        this.changeURL(this.state.currentCourse!, this.state.currentPanel);
+      }
+    });
+  };
+
+  public handleTabClick = (e: ClickParam) => {
+    this.changeTab(parseInt(e.key, 10));
+  };
+
+  /***********************************************************************************
+  /* Load data and build data structures to cache relationships between
+  /* objects.
+  /**********************************************************************************/
   public loadAllCourseData = (course: CourseType) => {
-    this.loadSubmissions(course);
-    this.loadViewsBySubmission(course);
-    this.loadAssignments(course);
-    this.loadRoster(course);
-  };
-
-  public loadAssignments = (course: CourseType) => {
-    const getData = course.assignments.map((assignmentID) => {
-      return Assignment.read(assignmentID);
+    this.loadAssignments(course).then((assignments) => {
+      if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
+        this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
+          this.setState({ assignments, assignmentsLoadComplete: true });
+        });
+      } else {
+        this.setState({ assignments, assignmentsLoadComplete: true });
+      }
     });
-    Promise.all(getData).then((newAssignments: AssignmentType[]) => {
-      const sortedAssignments = sortAssignments(newAssignments);
-      this.setState({ assignments: sortedAssignments, assignmentsLoadComplete: true });
+
+    this.loadSubmissions(course).then((submissionList) => {
+      const submissionMap = {};
+      submissionList.forEach((submissionObj) => {
+        submissionMap[submissionObj.assignment] = submissionObj.submissions;
+      });
+      if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
+        this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
+          this.setState({ submissions: submissionMap, submissionsLoadComplete: true });
+        });
+      } else {
+        this.setState({ submissions: submissionMap, submissionsLoadComplete: true });
+      }
     });
-  };
 
-  public async generateSubmissionsByStudent() {
-    const {
-      students,
-      graders,
-      inactiveStudents,
-      inactiveGraders,
-      submissions,
-      rosterLoadComplete,
-      submissionsLoadComplete,
-    } = this.state;
-    if (rosterLoadComplete && submissionsLoadComplete) {
-      const promise = new Promise((resolve, reject) => {
-        const subsByStudent: IStudentSubmissionsDataTable = {};
-        const subsByGrader: IGraderSubmissionsDataTable = {};
-        const subsByInactiveStudent: IStudentSubmissionsDataTable = {};
-        const subsByInactiveGrader: IGraderSubmissionsDataTable = {};
-
-        students.forEach((student) => {
-          subsByStudent[student] = {};
-        });
-
-        inactiveStudents.forEach((inactiveStudent) => {
-          subsByInactiveStudent[inactiveStudent] = {};
-        });
-
-        graders.forEach((grader) => {
-          subsByGrader[grader] = {};
-        });
-
-        inactiveGraders.forEach((inactiveGrader) => {
-          subsByInactiveGrader[inactiveGrader] = {};
-        });
-
-        Object.keys(submissions).forEach((assignmentID) => {
-          const assignmentSubs = submissions[assignmentID];
-          assignmentSubs.forEach((submission: SubmissionType) => {
-            submission.students.forEach((student: string) => {
-              // If a student is un enrolled, the submission won't be deleted,
-              // so need to check to make sure it's in the subsByStudent
-              if (subsByStudent[student]) {
-                subsByStudent[student][assignmentID] = submission;
-              } else if (subsByInactiveStudent[student]) {
-                subsByInactiveStudent[student][assignmentID] = submission;
-              }
-            });
-            if (submission.grader) {
-              if (submission.grader in subsByGrader) {
-                if (subsByGrader[submission.grader][assignmentID]) {
-                  subsByGrader[submission.grader][assignmentID].push(submission);
-                } else {
-                  subsByGrader[submission.grader][assignmentID] = [submission];
-                }
-              } else if (submission.grader in subsByInactiveGrader) {
-                if (subsByInactiveGrader[submission.grader][assignmentID]) {
-                  subsByInactiveGrader[submission.grader][assignmentID].push(submission);
-                } else {
-                  subsByInactiveGrader[submission.grader][assignmentID] = [submission];
-                }
-              }
-            }
+    this.loadRoster(course).then((roster) => {
+      if (this.state.assignmentsLoadComplete && this.state.submissionsLoadComplete) {
+        this.updateSubmissionsByUser(roster, undefined, undefined, () => {
+          this.setState({
+            rosterLoadComplete: true,
+            students: roster.students,
+            graders: roster.graders,
+            admins: roster.courseAdmins,
+            superGraders: roster.superGraders,
+            inactiveStudents: roster.inactive_students,
+            inactiveGraders: roster.inactive_graders,
           });
         });
-
-        this.setState(
-          {
-            submissionsByStudent: subsByStudent,
-            submissionsByGrader: subsByGrader,
-            submissionsByInactiveStudent: subsByInactiveStudent,
-            submissionsByInactiveGrader: subsByInactiveGrader,
-            submissionsbyUserLoadComplete: true,
-          },
-          () => resolve('done'),
-        );
-      });
-
-      await promise;
-    }
-  }
-
-  public loadSubmissions = (course: CourseType) => {
-    Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
-          const submissions = this.state.submissions;
-          submissions[assignmentID] = subs;
-          this.setState({ submissions }, () => {
-            return;
-          });
-        });
-      }),
-    )
-      .then(() => {
-        this.setState({ submissionsLoadComplete: true }, () => this.generateSubmissionsByStudent());
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  public loadViewsBySubmission = (course: CourseType) => {
-    const viewsBySubmission = {};
-    Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissionHistories(assignmentID).then((histories: SubmissionHistoryType[]) => {
-          histories.forEach((history: SubmissionHistoryType) => {
-            // History object has format of {submission: int, student: string, hasViewed: boolean}
-            const { submission, student, hasViewed, dateViewed } = history;
-            if (!(submission in viewsBySubmission)) {
-              viewsBySubmission[submission] = {};
-            }
-            if (hasViewed) {
-              viewsBySubmission[submission][student] = dateViewed;
-            }
-          });
-          this.setState({ viewsBySubmission }, () => {
-            return;
-          });
-        });
-      }),
-    ).catch((errors) => {
-      Object.keys(errors).forEach((key) => {
-        errors[key].forEach((error: string) => {
-          this.props.addErrorToast(error, undefined);
-        });
-      });
-      return Promise.reject();
-    });
-  };
-
-  public loadRoster = (course: CourseType) => {
-    Course.readRoster(course.id).then((roster: RosterType) => {
-      this.setState(
-        {
+      } else {
+        this.setState({
+          rosterLoadComplete: true,
           students: roster.students,
           graders: roster.graders,
           admins: roster.courseAdmins,
           superGraders: roster.superGraders,
           inactiveStudents: roster.inactive_students,
           inactiveGraders: roster.inactive_graders,
-          rosterLoadComplete: true,
-        },
-        () => {
-          this.loadSections(course);
-          this.generateSubmissionsByStudent();
-        },
-      );
+        });
+      }
+    });
+
+    this.loadSections(course).then((sections) => {
+      const sectionsByStudent = this.generateSectionsByStudent(sections);
+      this.setState({
+        sections,
+        sectionsByStudent,
+        sectionsLoadComplete: true,
+      });
+    });
+
+    this.loadViewsBySubmission(course).then((viewHistoryLists) => {
+      const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
+      this.setState({ viewsBySubmission });
     });
   };
 
-  public loadSections = (course: CourseType) => {
-    Promise.all(
-      course.sections.map((sectionID) => {
-        return Section.read(sectionID).then((section: SectionType) => {
-          // Reminder --- should really filter out if the
-          // section is already there to eliminate duplicates
-          const { sectionsByStudent } = this.state;
-          section.students.forEach((studentEmail: string) => {
-            sectionsByStudent[studentEmail] = {
-              name: section.name,
-              id: section.id,
-            };
-          });
-          this.setState({ sectionsByStudent });
-          return section;
+  public loadAssignments = (course: CourseType) => {
+    const getData = course.assignments.map((assignmentID) => {
+      return Assignment.read(assignmentID);
+    });
+    return Promise.all(getData);
+  };
+
+  public loadSubmissions = (course: CourseType) => {
+    return Promise.all(
+      course.assignments.map((assignmentID) => {
+        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
+          return {
+            assignment: assignmentID,
+            submissions: subs,
+          };
         });
       }),
-    )
-      .then((sections) => {
-        this.setState({ sections, sectionsLoadComplete: true });
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject();
-      });
-  };
-
-  // ------------------- Manage users API calls  -------------------
-
-  public isStudent = (user: string) => {
-    return this.state.students.includes(user);
-  };
-
-  public changeRoster = (newRoster: string[], userType: USER_APP) => {
-    const { currentCourse } = this.state;
-
-    if (!currentCourse) {
-      return Promise.reject();
-    }
-
-    const payload = { id: currentCourse.id };
-    switch (userType) {
-      case USER_APP.Student:
-        addToPayload(payload, 'students', newRoster);
-        break;
-      case USER_APP.Grader:
-        addToPayload(payload, 'graders', newRoster);
-        break;
-      case USER_APP.CourseAdmin:
-        addToPayload(payload, 'courseAdmins', newRoster);
-        break;
-      case USER_APP.SuperGrader:
-        addToPayload(payload, 'superGraders', newRoster);
-        break;
-    }
-
-    return (
-      Course.updateRoster(payload)
-        .then((roster: RosterType) => {
-          switch (userType) {
-            case USER_APP.Student:
-              this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-                this.props.addToast('Student roster successfully updated.', undefined);
-                this.generateSubmissionsByStudent();
-              });
-              break;
-            case USER_APP.Grader:
-              this.setState({ graders: roster.graders, inactiveGraders: roster.inactive_graders }, () => {
-                this.props.addToast('Grader roster successfully updated.', undefined);
-                this.generateSubmissionsByStudent();
-              });
-              break;
-            case USER_APP.CourseAdmin:
-              this.setState({ admins: roster.courseAdmins }, () =>
-                this.props.addToast('Admin roster successfully updated.', undefined),
-              );
-              break;
-            case USER_APP.SuperGrader:
-              this.setState({ superGraders: roster.superGraders }, () =>
-                this.props.addToast('Grader privileges successfully updated.', undefined),
-              );
-              break;
-          }
-        })
-        // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
-        .catch((errors) => {
-          Object.keys(errors).forEach((key) => {
-            errors[key].forEach((error: string) => {
-              this.props.addErrorToast(error, undefined);
-            });
-          });
-          return Promise.reject();
-        })
     );
   };
 
-  public unEnrollUsers = (selectedUserEmails: string[], userType: USER_APP) => {
-    switch (userType) {
-      case USER_APP.Student:
-        const newStudents = this.state.students.filter((user) => {
-          return selectedUserEmails.indexOf(user) === -1;
-        });
-        return this.changeRoster(newStudents, userType);
-      case USER_APP.Grader:
-        const newGraders = this.state.graders.filter((user) => {
-          return selectedUserEmails.indexOf(user) === -1;
-        });
-        return this.changeRoster(newGraders, userType);
-      case USER_APP.CourseAdmin:
-        const newAdmins = this.state.admins.filter((user) => {
-          return selectedUserEmails.indexOf(user) === -1;
-        });
-        return this.changeRoster(newAdmins, userType);
-      case USER_APP.SuperGrader:
-        const newSuperGraders = this.state.superGraders.filter((user) => {
-          return selectedUserEmails.indexOf(user) === -1;
-        });
-        return this.changeRoster(newSuperGraders, userType);
-    }
+  public loadRoster = (course: CourseType) => {
+    return Course.readRoster(course.id);
   };
 
-  public enrollUser = (userEmail: string, userType: USER_APP) => {
-    const { students, graders, admins, superGraders } = this.state;
-    switch (userType) {
-      case USER_APP.Student:
-        if (students.indexOf(userEmail) !== -1) {
-          this.props.addErrorToast('Student is already enrolled in course', undefined);
-          return Promise.reject();
-        }
-        // Need to do a deep copy of state array in case adding fails, we don't update state
-        const newStudents = JSON.parse(JSON.stringify(students));
-        newStudents.push(userEmail);
-
-        // Check if the student is in the inactives for the course, and remove them if so
-        return this.changeRoster(newStudents, userType);
-      case USER_APP.Grader:
-        if (graders.indexOf(userEmail) !== -1) {
-          this.props.addErrorToast('Grader is already enrolled in course', undefined);
-          return Promise.reject();
-        }
-        // Need to do a deep copy of state array in case adding fails, we don't update state
-        const newGraders = JSON.parse(JSON.stringify(graders));
-        newGraders.push(userEmail);
-        return this.changeRoster(newGraders, userType);
-      case USER_APP.CourseAdmin:
-        if (admins.indexOf(userEmail) !== -1) {
-          this.props.addErrorToast('Admin is already enrolled in course', undefined);
-          return Promise.reject();
-        }
-        // Need to do a deep copy of state array in case adding fails, we don't update state
-        const newAdmins = JSON.parse(JSON.stringify(admins));
-        newAdmins.push(userEmail);
-        return this.changeRoster(newAdmins, userType);
-      case USER_APP.SuperGrader:
-        if (superGraders.indexOf(userEmail) !== -1) {
-          this.props.addErrorToast('Grader already has view all privileges.', undefined);
-          return Promise.reject();
-        }
-        // Need to do a deep copy of state array in case adding fails, we don't update state
-        const newSuperGraders = JSON.parse(JSON.stringify(superGraders));
-        newSuperGraders.push(userEmail);
-        return this.changeRoster(newSuperGraders, userType);
-    }
+  public loadSections = (course: CourseType) => {
+    return Promise.all(
+      course.sections.map((sectionID) => {
+        return Section.read(sectionID);
+      }),
+    );
   };
 
-  public getFileExtension = (fileName: string): string => {
-    const split = fileName.split('.');
-    return split.length === 1 ? 'txt' : split[split.length - 1];
+  public loadViewsBySubmission = (course: CourseType) => {
+    return Promise.all(
+      course.assignments.map((assignmentID) => {
+        return Assignment.readSubmissionHistories(assignmentID);
+      }),
+    );
   };
 
-  // Upload a submission in cautious mode
-  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
-    if (partners.length === 0) {
-      this.props.addErrorToast('No students selected for the upload.', undefined);
-      return Promise.reject();
-    }
-
-    const submissionPayload = {
-      id: -1,
-      isFinalized: false,
-      files: [],
-      assignment: assignment.id,
-      students: partners,
-    };
-
-    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
-      // Create each file
-      const filePromises = files.map((file: any) => {
-        const ext = this.getFileExtension(file.name);
-        const filePayload = {
-          id: -1,
-          name: file.name,
-          extension: ext,
-          code: file.data,
-          submission: submission.id,
-          comments: [],
-        };
-        return File.create(filePayload);
-      });
-
-      const { submissionsByStudent, submissions } = this.state;
-      partners.forEach((student) => {
-        if (!submissionsByStudent[student]) {
-          submissionsByStudent[student] = {};
+  public generateViewsBySubmissions = (viewHistoryLists: SubmissionHistoryType[][]) => {
+    const viewsBySubmission = {};
+    viewHistoryLists.forEach((viewHistoryList: SubmissionHistoryType[]) => {
+      viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
+        const { submission, student, hasViewed, dateViewed } = viewHistory;
+        if (!(submission in viewsBySubmission)) {
+          viewsBySubmission[submission] = {};
         }
-        submissionsByStudent[student][assignment.id] = submission;
-      });
-
-      const newSubmissions = { ...submissions };
-      const newAssignmentSubmissions = [...newSubmissions[submission.assignment], submission];
-      newSubmissions[submission.assignment] = newAssignmentSubmissions;
-      this.setState({ submissionsByStudent, submissions: newSubmissions });
-      return Promise.all(filePromises).then(() => {
-        return Submission.read(submission.id);
-      });
-    });
-
-    return submissionPromise;
-  };
-
-  // ------------------- Manage sections API calls  -------------------
-  public createSection = (newSection: string) => {
-    const { currentCourse, sections } = this.state;
-
-    if (!currentCourse) {
-      return Promise.reject();
-    }
-    const payload = {
-      name: newSection,
-      course: currentCourse.id,
-      leaders: [],
-      students: [],
-      id: -1,
-    };
-
-    return Section.create(payload).then((section: SectionType) => {
-      sections.push(section);
-      currentCourse.sections.push(section.id);
-      this.setState({ sections, currentCourse }, () =>
-        this.props.addToast(`New section ${section.name} created`, undefined),
-      );
-    });
-  };
-
-  public deleteSection = (sectionID: number) => {
-    const { sections } = this.state;
-
-    if (!sections) {
-      return Promise.reject();
-    }
-
-    const thisSection = sections.find((section) => {
-      return section.id === sectionID;
-    });
-
-    if (!thisSection) {
-      return Promise.reject();
-    }
-
-    const students = thisSection.students;
-    return Section.delete(sectionID).then(() => {
-      const { currentCourse, sectionsByStudent } = this.state;
-      // remove deleted section from state
-      const newSections = sections.filter((section) => {
-        return section.id !== sectionID;
-      });
-      // remove section from currentCourseID
-      const newSectionIDs = newSections.map((section) => {
-        return section.id;
-      });
-      if (currentCourse) {
-        currentCourse.sections = newSectionIDs;
-      }
-      // remove each student from deleted section from section mapping
-      students.forEach((student) => {
-        delete sectionsByStudent[student];
-      });
-      this.setState({ currentCourse, sections: newSections, sectionsByStudent });
-      return;
-    });
-  };
-
-  public removeStudentFromSection = (
-    sectionID: number,
-    studentEmail: string,
-    showToast: boolean,
-  ): Promise<SectionType> => {
-    const { sections, sectionsByStudent } = this.state;
-
-    const thisSection = sections.find((section) => {
-      return section.id === sectionID;
-    });
-    if (!thisSection) {
-      return Promise.reject();
-    }
-
-    const newStudents = thisSection.students.filter((student) => {
-      return student !== studentEmail;
-    });
-
-    const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
-
-    return Section.update(payload).then((json: SectionType) => {
-      const newSections = sections.map((section) => {
-        if (section.id === json.id) {
-          section.students = json.students;
-        }
-        return section;
-      });
-
-      delete sectionsByStudent[studentEmail];
-
-      this.setState({ sections: newSections, sectionsByStudent }, () => {
-        if (showToast) {
-          this.props.addToast(`Student ${studentEmail} removed from section ${json.name}`, undefined);
+        if (hasViewed) {
+          viewsBySubmission[submission][student] = dateViewed;
         }
       });
-      return json;
     });
+    return viewsBySubmission;
   };
 
-  public addStudentToSection = (sectionID: number, studentEmail: string, showToast: boolean): Promise<SectionType> => {
-    const { sections, sectionsByStudent } = this.state;
-
-    const thisSection = sections.filter((section) => {
-      return section.id === sectionID;
-    })[0];
-    const newStudents = thisSection.students;
-    newStudents.push(studentEmail);
-
-    const payload = { id: thisSection.id, name: thisSection.name, students: newStudents };
-
-    return Section.update(payload).then((json: SectionType) => {
-      const newSections = sections.map((section) => {
-        if (section.id === json.id) {
-          section.students = json.students;
-        }
-        return section;
+  public generateSectionsByStudent = (sections: SectionType[]) => {
+    const sectionsByStudent: { [studentEmail: string]: SectionType } = {};
+    sections.forEach((section) => {
+      section.students.forEach((student) => {
+        sectionsByStudent[student] = section;
       });
+    });
+    return sectionsByStudent;
+  };
 
-      sectionsByStudent[studentEmail] = {
-        name: json.name,
-        id: json.id,
+  public updateSubmissionsByUser = (
+    roster?: { students: string[]; graders: string[]; inactive_students: string[]; inactive_graders: string[] },
+    submissions?: IAssignmentToSubmissionsMap,
+    assignments?: AssignmentType[],
+    callback?: () => void,
+  ) => {
+    const submissionsToUse = submissions ? submissions : this.state.submissions;
+    const assignmentsToUse = assignments ? assignments : this.state.assignments;
+    let rosterToUse;
+    if (roster) {
+      rosterToUse = roster;
+    } else {
+      rosterToUse = {
+        students: this.state.students,
+        graders: this.state.graders,
+        inactive_graders: this.state.inactiveGraders,
+        inactive_students: this.state.inactiveStudents,
       };
-
-      this.setState({ sections: newSections, sectionsByStudent }, () => {
-        if (showToast) {
-          this.props.addToast(`Student ${studentEmail} added to section ${json.name}`, undefined);
-        }
-      });
-      return json;
-    });
-  };
-
-  public changeStudentSection = (
-    newSectionID: number | undefined,
-    studentEmail: string,
-    showToast: boolean,
-  ): Promise<SectionType> => {
-    const { sectionsByStudent } = this.state;
-    const previousSection = sectionsByStudent[studentEmail];
-    if (previousSection && newSectionID) {
-      if (previousSection.id === newSectionID) {
-        return Promise.reject();
-      }
-      return this.removeStudentFromSection(previousSection.id, studentEmail, showToast).then(() => {
-        return this.addStudentToSection(newSectionID, studentEmail, showToast);
-      });
-    } else if (previousSection) {
-      return this.removeStudentFromSection(previousSection.id, studentEmail, showToast);
-    } else if (newSectionID) {
-      return this.addStudentToSection(newSectionID, studentEmail, showToast);
     }
-    this.props.addErrorToast('Error - both old section and new section are empty.', undefined);
-    return Promise.reject();
+    const subsByUser = this.generateSubmissionsByUser(rosterToUse, submissionsToUse, assignmentsToUse);
+
+    this.setState(
+      {
+        submissionsByStudent: subsByUser.subsByStudent,
+        submissionsByGrader: subsByUser.subsByGrader,
+        submissionsByInactiveStudent: subsByUser.subsByInactiveStudent,
+        submissionsByInactiveGrader: subsByUser.subsByInactiveGrader,
+        submissionsbyUserLoadComplete: true,
+      },
+      () => {
+        if (callback) {
+          callback();
+        }
+      },
+    );
   };
 
-  // Set section's students. Warning: This is not a partial add, you must include all of the section's students
-  // For a partial roster change see changeStudentSection()
-  public changeSectionStudents = (sectionID: number, students: string[], showToast: boolean): Promise<SectionType> => {
-    const { sections, sectionsByStudent } = this.state;
-    const payload = { id: sectionID, students };
+  public generateSubmissionsByUser = (
+    roster: { students: string[]; graders: string[]; inactive_students: string[]; inactive_graders: string[] },
+    submissions: IAssignmentToSubmissionsMap,
+    assignments: AssignmentType[],
+  ) => {
+    const subsByStudent: IStudentSubmissionsDataTable = {};
+    const subsByGrader: IGraderSubmissionsDataTable = {};
+    const subsByInactiveStudent: IStudentSubmissionsDataTable = {};
+    const subsByInactiveGrader: IGraderSubmissionsDataTable = {};
 
-    return Section.update(payload).then((json: SectionType) => {
-      const newSections = sections.map((section) => {
-        if (section.id === json.id) {
-          section.students = json.students;
-        }
-        return section;
-      });
-
-      students.forEach((studentEmail) => {
-        sectionsByStudent[studentEmail] = {
-          name: json.name,
-          id: json.id,
-        };
-      });
-
-      this.setState({ sections: newSections, sectionsByStudent }, () => {
-        if (showToast) {
-          this.props.addToast('Section updated.', undefined);
-        }
-      });
-      return json;
+    roster.students.forEach((student) => {
+      subsByStudent[student] = {};
     });
-  };
 
-  public changeSectionLeaders = (sectionID: number, newLeaders: string[]): Promise<string[]> => {
-    const { sections } = this.state;
-    const payload = { id: sectionID, leaders: newLeaders };
-
-    return Section.update(payload).then((json) => {
-      const newSections = sections.map((section) => {
-        if (section.id === sectionID) {
-          section.leaders = json.leaders;
-        }
-        return section;
-      });
-
-      this.setState({ sections: newSections });
-      this.props.addToast(`Section ${json.name} leaders updated`, undefined);
-      return json.leaders;
+    roster.inactive_students.forEach((inactiveStudent) => {
+      subsByInactiveStudent[inactiveStudent] = {};
     });
-  };
 
-  // ------------------- Manage assignments API calls  ------------------
-  // Updates return a Promise<void> instead of Promise<ObjectType> because (a) the
-  // returned assignment should never by the child, only used to change state, and it renders faster on testing
+    roster.graders.forEach((grader) => {
+      subsByGrader[grader] = {};
+      assignments.forEach((assignment) => {
+        subsByGrader[grader][assignment.id] = [];
+      });
+    });
 
-  public updateAssignment = (patchObj: AssignmentPatchType): Promise<void> => {
-    const { assignments } = this.state;
-    const newAssignments: AssignmentType[] = [];
+    roster.inactive_students.forEach((inactiveGrader) => {
+      subsByInactiveGrader[inactiveGrader] = {};
+      assignments.forEach((assignment) => {
+        subsByInactiveGrader[inactiveGrader][assignment.id] = [];
+      });
+    });
 
-    return Assignment.update(patchObj)
-      .then((assignment) => {
-        assignments.forEach((assn) => {
-          if (assn.id === assignment.id) {
-            newAssignments.push(assignment);
-          } else {
-            newAssignments.push(assn);
+    assignments.forEach((assignment) => {
+      const assignmentSubs = submissions[assignment.id];
+      assignmentSubs.forEach((submission: SubmissionType) => {
+        // NOTE: students in submission.students might be inactive
+        submission.students.forEach((student: string) => {
+          if (subsByStudent[student]) {
+            subsByStudent[student][assignment.id] = submission;
+          } else if (subsByInactiveStudent[student]) {
+            subsByInactiveStudent[student][assignment.id] = submission;
           }
         });
-        this.setState({ assignments: newAssignments }, () =>
-          this.props.addToast('Assignment has been updated', undefined),
-        );
-        return;
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-        return Promise.reject(errors);
+
+        // NOTE: graders in submission.students might be inactive
+        if (submission.grader) {
+          if (submission.grader in subsByGrader) {
+            subsByGrader[submission.grader][assignment.id].push(submission);
+          } else if (submission.grader in subsByInactiveGrader) {
+            if (subsByInactiveGrader[submission.grader][assignment.id]) {
+              subsByInactiveGrader[submission.grader][assignment.id].push(submission);
+            }
+          }
+        }
       });
-  };
+    });
 
-  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
-    const { currentCourse } = this.state;
-    if (!currentCourse) {
-      return Promise.reject();
-    }
-
-    const payload = {
-      id: -1, // codePost convention
-      course: currentCourse.id,
-      name: aName,
-      points: aPoints,
-      isReleased: false,
-      hideGrades: false,
-      rubricCategories: [],
+    return {
+      subsByStudent,
+      subsByGrader,
+      subsByInactiveStudent,
+      subsByInactiveGrader,
     };
-
-    return Assignment.create(payload).then((assignment: AssignmentType) => {
-      const { submissions, assignments } = this.state;
-      currentCourse.assignments.push(assignment.id);
-      submissions[assignment.id] = [];
-      const newAssignments = [...assignments, assignment];
-      this.setState({ currentCourse, submissions, assignments: newAssignments }, () => {
-        this.props.addLongToast(`Assignment ${assignment.name} successfully created.`, undefined);
-      });
-      return assignment;
-    });
   };
 
-  public deleteAssignment = (toDelete: AssignmentType) => {
-    const { currentCourse, assignments } = this.state;
-    if (!currentCourse) {
-      return Promise.reject();
-    }
+  /************************************************************************
+  /* Course handling methods
+  /***********************************************************************/
 
-    return Assignment.delete(toDelete.id).then(() => {
-      const newAssignments = assignments.filter((el) => {
-        return el.id !== toDelete.id;
-      });
-      const { submissions } = this.state;
-      delete submissions[toDelete.id];
-
-      const newAssignmentIDs = newAssignments.map((i) => {
-        return i.id;
-      });
-
-      const newCurrentCourse = currentCourse;
-      newCurrentCourse.assignments = newAssignmentIDs;
-
-      this.setState(
-        {
-          assignments: newAssignments,
-          submissions,
-          currentCourse: newCurrentCourse,
-          submissionsbyUserLoadComplete: false,
-        },
-        () => {
-          this.props.addToast('Assignment deleted.', undefined);
-          this.generateSubmissionsByStudent();
-        },
-      );
-    });
-  };
-
-  public deleteSubmission = (sub: SubmissionType) => {
-    const {
-      submissions,
-      submissionsByStudent,
-      submissionsByGrader,
-      submissionsByInactiveStudent,
-      submissionsByInactiveGrader,
-    } = this.state;
-    const assignmentID = sub.assignment;
-    return Submission.delete(sub.id).then(() => {
-      submissions[assignmentID] = submissions[assignmentID].filter((s) => {
-        return s.id !== sub.id;
-      });
-      this.setState({ submissions });
-      sub.students.forEach((student) => {
-        if (student in submissionsByStudent) {
-          delete submissionsByStudent[student][assignmentID];
-          this.setState({ submissionsByStudent });
-        }
-        if (student in submissionsByInactiveStudent) {
-          delete submissionsByInactiveStudent[student][assignmentID];
-          this.setState({ submissionsByInactiveStudent });
-        }
-      });
-      if (sub.grader && sub.grader in submissionsByGrader) {
-        const newSubs = submissionsByGrader[sub.grader][assignmentID].filter((s) => {
-          return s.id !== sub.id;
-        });
-        submissionsByGrader[sub.grader][assignmentID] = newSubs;
-        this.setState({ submissionsByGrader });
-      }
-      if (sub.grader && sub.grader in submissionsByInactiveGrader) {
-        const newSubs = submissionsByInactiveGrader[sub.grader][assignmentID].filter((s) => {
-          return s.id !== sub.id;
-        });
-        submissionsByInactiveGrader[sub.grader][assignmentID] = newSubs;
-        this.setState({ submissionsByInactiveGrader });
-      }
-      this.props.addToast('Submission deleted.', undefined);
-    });
-  };
-
-  // ------------------- Manage submission API calls  ------------------
-  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
-    const payload = {
-      id: sub.id,
-      grader,
-    };
-
-    const {
-      students,
-      graders,
-      submissionsByStudent,
-      submissionsByInactiveStudent,
-      submissionsByGrader,
-      submissionsByInactiveGrader,
-    } = this.state;
-
-    const oldGrader = sub.grader;
-
-    Submission.update(payload).then((submission) => {
-      // Add submission to appropriate student and grader entries in cached data structures
-      const subStudents = submission.students;
-      const subGrader = submission.grader;
-
-      subStudents.forEach((student) => {
-        if (students.includes(student)) {
-          submissionsByStudent[student][submission.assignment] = submission;
-        } else {
-          // Account for partner, who might be inactive
-          submissionsByInactiveStudent[student][submission.assignment] = submission;
-        }
-      });
-
-      // Shouldn't be assigning this submission to an inactive grader
-      if (typeof subGrader === 'string' && graders.includes(subGrader)) {
-        if (submissionsByGrader[subGrader][submission.assignment]) {
-          submissionsByGrader[subGrader][submission.assignment].push(submission);
-        } else {
-          submissionsByGrader[subGrader][submission.assignment] = [submission];
-        }
-      }
-
-      // Unassign old grader, if she exists
-      if (typeof oldGrader === 'string') {
-        if (graders.includes(oldGrader)) {
-          submissionsByGrader[oldGrader][submission.assignment].filter((el) => {
-            return el.id !== submission.id;
-          });
-        } else {
-          submissionsByInactiveGrader[oldGrader][submission.assignment].filter((el) => {
-            return el.id !== submission.id;
-          });
-        }
-      }
-
-      this.setState(
-        {
-          submissionsByStudent,
-          submissionsByInactiveStudent,
-          submissionsByGrader,
-          submissionsByInactiveGrader,
-        },
-        () => {
-          this.props.addToast('Submission successfully updated.', undefined);
-        },
-      );
-    });
-  };
-
-  // ------------------- Manage course API calls  ------------------
   public createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
     const payload = {
       id: -1, // codePost convention
@@ -1179,7 +635,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             const newCourses = this.state.courses;
             newCourses.push(course);
             this.setState({ courses: newCourses }, () => this.props.addCourse(course));
-            this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
             this.updateNewCourse(course);
           });
         });
@@ -1187,7 +642,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         const newCourses = this.state.courses;
         newCourses.push(course);
         this.setState({ courses: newCourses, currentPanel: 0 }, () => this.props.addCourse(course));
-        this.props.addLongToast(`Course ${course.name} | ${course.period} successfully created.`, undefined);
         this.updateNewCourse(course);
         return;
       }
@@ -1201,94 +655,455 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
       newCourses.push(newCourse);
       this.setState({ currentCourse: newCourse, courses: newCourses });
+
+      // gracefully handle situations in which user changes course name
+      // by automatically updating active URL
       this.changeURL(newCourse, this.state.currentPanel);
       return newCourse;
     });
   };
 
-  public handleDemoCourse = (course: CourseType) => {
-    const newCourses = this.state.courses;
-    newCourses.push(course);
-    this.setState({ courses: newCourses }, () => {
-      this.props.addCourse(course);
-      this.updateNewCourse(course);
-      this.props.addLongToast('Demo course successfully created.', undefined);
-    });
-    return;
-  };
+  /**********************************************************************************
+  /* Roster handling methods
+  /**********************************************************************************/
 
-  // ------------------- Set loading dialogs -------------------
-  public setLoadingDialog = (title: string, message: string) => {
-    this.setState({ isLoading: true, loadingMessage: message, loadingTitle: title });
-  };
+  public updateRoster = (newRoster: string[], userType: USER_APP) => {
+    const { currentCourse } = this.state;
 
-  public clearLoadingDialog = () => {
-    this.setState({ isLoading: false, loadingMessage: '', loadingTitle: '' });
-  };
-
-  // A function that takes another function as argument and wraps it such that, while the function is executing,
-  // a loading Dialog will appear. For use with functions that take a long time (like deletion, unenroll),
-  // because quicker functions will look odd with a flash of loading
-  public wrapLoading = (
-    title: string,
-    message: string,
-    func: ((...args: any[]) => Promise<void>),
-    ...props: any[]
-  ): Promise<void> => {
-    this.setLoadingDialog(title, message);
-    const promise = func(...props);
-    if (promise) {
-      return promise
-        .then(() => {
-          this.clearLoadingDialog();
-        })
-        .catch(() => {
-          this.clearLoadingDialog();
-        });
-    } else {
-      // This clause is purely a catch in case we haven't been strict on making sure the promises
-      // return an error instead of returning nothing
-      this.clearLoadingDialog();
+    if (!currentCourse) {
       return Promise.reject();
     }
+
+    const payload = { id: currentCourse.id };
+    switch (userType) {
+      case USER_APP.Student:
+        addToPayload(payload, 'students', newRoster);
+        break;
+      case USER_APP.Grader:
+        addToPayload(payload, 'graders', newRoster);
+        break;
+      case USER_APP.CourseAdmin:
+        addToPayload(payload, 'courseAdmins', newRoster);
+        break;
+      case USER_APP.SuperGrader:
+        addToPayload(payload, 'superGraders', newRoster);
+        break;
+    }
+
+    return (
+      Course.updateRoster(payload)
+        .then((roster: RosterType) => {
+          switch (userType) {
+            case USER_APP.Student:
+              this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
+                this.updateSubmissionsByUser(roster);
+              });
+              break;
+            case USER_APP.Grader:
+              this.setState({ graders: roster.graders, inactiveGraders: roster.inactive_graders }, () => {
+                this.updateSubmissionsByUser(roster);
+              });
+              break;
+            case USER_APP.CourseAdmin:
+              this.setState({ admins: roster.courseAdmins });
+              break;
+            case USER_APP.SuperGrader:
+              this.setState({ superGraders: roster.superGraders });
+              break;
+          }
+          return;
+        })
+        // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
+        .catch((errors) => {
+          return Promise.reject();
+        })
+    );
   };
 
-  // ------------------- Modal functions -------------------
-  public openModal = () => {
-    this.setState({ onboardingModalVisible: true });
-  };
+  /************************************************************************
+  /* Section handling methods
+  /***********************************************************************/
 
-  public closeModal = () => {
-    this.setState({ onboardingModalVisible: false });
-    this.props.history.push(this.props.location.pathname);
-  };
+  public createSection = (newSection: string) => {
+    if (!this.state.currentCourse) {
+      return Promise.reject();
+    }
+    const payload = {
+      name: newSection,
+      course: this.state.currentCourse.id,
+      leaders: [],
+      students: [],
+      id: -1,
+    };
 
-  public changeURL = (course: CourseType, panel: number) => {
-    const formCourseName = course.name.replace(/ /g, '_');
-    const formPeriod = course.period.replace(/ /g, '_');
-    this.props.history.push(`/course-admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
-  };
-
-  public toggleLock = () => {
-    this.setState({
-      lockChanges: !this.state.lockChanges,
+    return Section.create(payload).then((section: SectionType) => {
+      const newSections = [...this.state.sections];
+      const updatedCourse = { ...this.state.currentCourse! };
+      newSections.push(section);
+      updatedCourse.sections.push(section.id);
+      this.setState({ sections: newSections, currentCourse: updatedCourse });
     });
   };
 
-  public handleMenuClick = (e: ClickParam) => {
-    this.handleCourseChange(parseInt(e.key, 10));
+  public deleteSection = (sectionID: number) => {
+    const sections = this.state.sections;
+
+    const thisSection = sections.find((section) => {
+      return section.id === sectionID;
+    });
+
+    if (!thisSection) {
+      return Promise.reject('No section with this ID exists.');
+    }
+
+    const students = thisSection.students;
+    return Section.delete(sectionID).then(() => {
+      const { currentCourse, sectionsByStudent } = this.state;
+      // remove deleted section from state
+      const newSections = sections.filter((section) => {
+        return section.id !== sectionID;
+      });
+      // remove section from currentCourseID
+      const newSectionIDs = newSections.map((section) => {
+        return section.id;
+      });
+      if (currentCourse) {
+        currentCourse.sections = newSectionIDs;
+      }
+      // remove each student from deleted section from section mapping
+      students.forEach((student) => {
+        delete sectionsByStudent[student];
+      });
+      this.setState({ currentCourse, sections: newSections, sectionsByStudent });
+      return;
+    });
   };
 
-  public changeTab = (e: ClickParam) => {
-    this.setState({ currentPanel: parseInt(e.key, 10) }, () => {
-      if (this.state.currentCourse) {
-        this.changeURL(this.state.currentCourse!, this.state.currentPanel);
+  public updateSection = (toUpdate: SectionType): Promise<void> => {
+    // get old section corresponding to this one
+    const oldSection = this.state.sections.find((el) => {
+      return el.id === toUpdate.id;
+    });
+
+    if (!oldSection) {
+      return Promise.reject('This section does not exist.');
+    }
+
+    const oldStudents = [...oldSection.students];
+
+    return Section.update(toUpdate).then((newSection) => {
+      const cleanedSections = [
+        ...this.state.sections.filter((el) => {
+          return el.id !== newSection.id;
+        }),
+        newSection,
+      ];
+
+      // have the students changed?
+      const newStudents = toUpdate.students;
+      const removedStudents = oldStudents.filter((student) => {
+        return !newStudents.includes(student);
+      });
+
+      const addedStudents = newStudents.filter((student) => {
+        return !oldStudents.includes(student);
+      });
+
+      // update cached data structure
+      const sectionMap = { ...this.state.sectionsByStudent };
+      for (const removed of removedStudents) {
+        delete sectionMap[removed];
+      }
+      for (const added of addedStudents) {
+        sectionMap[added] = newSection;
+      }
+
+      this.setState({ sections: cleanedSections, sectionsByStudent: sectionMap });
+      return;
+    });
+  };
+
+  public updateStudentSection = (studentEmail: string, sectionID: number): Promise<void> => {
+    const oldSection = this.state.sectionsByStudent[studentEmail];
+    const newSection = this.state.sections.find((el) => {
+      return el.id === sectionID;
+    });
+
+    const promises = [];
+
+    // we only need to update one section: updateSection does the work
+    // of removing the student from its old section if we update
+    // the new one, so only update the old one if no new one exists
+    if (newSection) {
+      const updatedSection = _.cloneDeep(newSection);
+      updatedSection.students.push(studentEmail); // Assume that student is not a member of this section
+      promises.push(this.updateSection(updatedSection));
+    } else if (oldSection) {
+      const updatedSection = { ...oldSection };
+      updatedSection.students = updatedSection.students.filter((el) => {
+        return el !== studentEmail;
+      });
+      promises.push(this.updateSection(updatedSection));
+    }
+
+    return Promise.all(promises).then(() => {
+      return;
+    });
+  };
+
+  /************************************************************************
+  /* Assignment handling methods
+  /***********************************************************************/
+
+  public updateAssignment = (patchObj: AssignmentPatchType): Promise<void> => {
+    const { assignments } = this.state;
+    const newAssignments: AssignmentType[] = [];
+
+    return Assignment.update(patchObj)
+      .then((assignment) => {
+        assignments.forEach((assn) => {
+          if (assn.id === assignment.id) {
+            newAssignments.push(assignment);
+          } else {
+            newAssignments.push(assn);
+          }
+        });
+        this.setState({ assignments: newAssignments });
+        return;
+      })
+      .catch((errors) => {
+        return Promise.reject(errors);
+      });
+  };
+
+  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
+    const { currentCourse } = this.state;
+    if (!currentCourse) {
+      return Promise.reject();
+    }
+
+    const payload = {
+      id: -1, // codePost convention
+      course: currentCourse.id,
+      name: aName,
+      points: aPoints,
+      isReleased: false,
+      hideGrades: false,
+      rubricCategories: [],
+    };
+
+    return Assignment.create(payload).then((assignment: AssignmentType) => {
+      const { submissions, assignments } = this.state;
+      currentCourse.assignments.push(assignment.id);
+      submissions[assignment.id] = [];
+      const newAssignments = [...assignments, assignment];
+      this.setState({ currentCourse, submissions, assignments: newAssignments });
+      return assignment;
+    });
+  };
+
+  public deleteAssignment = (toDelete: AssignmentType) => {
+    const { currentCourse, assignments } = this.state;
+    if (!currentCourse) {
+      return Promise.reject();
+    }
+
+    return Assignment.delete(toDelete.id).then(() => {
+      const newAssignments = assignments.filter((el) => {
+        return el.id !== toDelete.id;
+      });
+      const { submissions } = this.state;
+      delete submissions[toDelete.id];
+
+      const newAssignmentIDs = newAssignments.map((i) => {
+        return i.id;
+      });
+
+      const newCurrentCourse = currentCourse;
+      newCurrentCourse.assignments = newAssignmentIDs;
+
+      this.setState(
+        {
+          assignments: newAssignments,
+          submissions,
+          currentCourse: newCurrentCourse,
+          submissionsbyUserLoadComplete: false,
+        },
+        () => {
+          this.updateSubmissionsByUser(undefined, submissions, newAssignments);
+        },
+      );
+    });
+  };
+
+  /************************************************************************
+  /* Submission handling methods
+  /***********************************************************************/
+
+  public deleteSubmission = (sub: SubmissionType) => {
+    const {
+      submissions,
+      submissionsByStudent,
+      submissionsByGrader,
+      submissionsByInactiveStudent,
+      submissionsByInactiveGrader,
+    } = this.state;
+    const assignmentID = sub.assignment;
+    return Submission.delete(sub.id).then(() => {
+      submissions[assignmentID] = submissions[assignmentID].filter((s) => {
+        return s.id !== sub.id;
+      });
+      this.setState({ submissions });
+      sub.students.forEach((student) => {
+        if (student in submissionsByStudent) {
+          delete submissionsByStudent[student][assignmentID];
+          this.setState({ submissionsByStudent });
+        }
+        if (student in submissionsByInactiveStudent) {
+          delete submissionsByInactiveStudent[student][assignmentID];
+          this.setState({ submissionsByInactiveStudent });
+        }
+      });
+      if (sub.grader && sub.grader in submissionsByGrader) {
+        const newSubs = submissionsByGrader[sub.grader][assignmentID].filter((s) => {
+          return s.id !== sub.id;
+        });
+        submissionsByGrader[sub.grader][assignmentID] = newSubs;
+        this.setState({ submissionsByGrader });
+      }
+      if (sub.grader && sub.grader in submissionsByInactiveGrader) {
+        const newSubs = submissionsByInactiveGrader[sub.grader][assignmentID].filter((s) => {
+          return s.id !== sub.id;
+        });
+        submissionsByInactiveGrader[sub.grader][assignmentID] = newSubs;
+        this.setState({ submissionsByInactiveGrader });
       }
     });
   };
 
-  /* ------------------------------------------ Render ------------------------------------------ */
+  public getFileExtension = (fileName: string): string => {
+    const split = fileName.split('.');
+    return split.length === 1 ? 'txt' : split[split.length - 1];
+  };
+
+  // Upload a submission in cautious mode
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    if (partners.length === 0) {
+      return Promise.reject();
+    }
+
+    const submissionPayload = {
+      id: -1,
+      isFinalized: false,
+      files: [],
+      assignment: assignment.id,
+      students: partners,
+    };
+
+    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
+      // Create each file
+      const filePromises = files.map((file: any) => {
+        const ext = this.getFileExtension(file.name);
+        const filePayload = {
+          id: -1,
+          name: file.name,
+          extension: ext,
+          code: file.data,
+          submission: submission.id,
+          comments: [],
+        };
+        return File.create(filePayload);
+      });
+
+      const { submissionsByStudent, submissions } = this.state;
+      partners.forEach((student) => {
+        if (!submissionsByStudent[student]) {
+          submissionsByStudent[student] = {};
+        }
+        submissionsByStudent[student][assignment.id] = submission;
+      });
+
+      const newSubmissions = { ...submissions };
+      const newAssignmentSubmissions = [...newSubmissions[submission.assignment], submission];
+      newSubmissions[submission.assignment] = newAssignmentSubmissions;
+      this.setState({ submissionsByStudent, submissions: newSubmissions });
+      return Promise.all(filePromises).then(() => {
+        return;
+      });
+    });
+
+    return submissionPromise;
+  };
+
+  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
+    const payload = {
+      id: sub.id,
+      grader,
+    };
+
+    const {
+      students,
+      graders,
+      submissionsByStudent,
+      submissionsByInactiveStudent,
+      submissionsByGrader,
+      submissionsByInactiveGrader,
+    } = this.state;
+
+    const oldGrader = sub.grader;
+
+    return Submission.update(payload).then((submission) => {
+      // Add submission to appropriate student and grader entries in cached data structures
+      const subStudents = submission.students;
+      const subGrader = submission.grader;
+
+      subStudents.forEach((student) => {
+        if (students.includes(student)) {
+          submissionsByStudent[student][submission.assignment] = submission;
+        } else {
+          // Account for partner, who might be inactive
+          submissionsByInactiveStudent[student][submission.assignment] = submission;
+        }
+      });
+
+      // Shouldn't be assigning this submission to an inactive grader
+      if (typeof subGrader === 'string' && graders.includes(subGrader)) {
+        if (submissionsByGrader[subGrader][submission.assignment]) {
+          submissionsByGrader[subGrader][submission.assignment].push(submission);
+        } else {
+          submissionsByGrader[subGrader][submission.assignment] = [submission];
+        }
+      }
+
+      // Unassign old grader, if she exists
+      if (typeof oldGrader === 'string') {
+        if (graders.includes(oldGrader)) {
+          submissionsByGrader[oldGrader][submission.assignment].filter((el) => {
+            return el.id !== submission.id;
+          });
+        } else {
+          submissionsByInactiveGrader[oldGrader][submission.assignment].filter((el) => {
+            return el.id !== submission.id;
+          });
+        }
+      }
+
+      this.setState({
+        submissionsByStudent,
+        submissionsByInactiveStudent,
+        submissionsByGrader,
+        submissionsByInactiveGrader,
+      });
+
+      return;
+    });
+  };
+
+  /************************************************************************************
+  /* Render
+  /************************************************************************************/
   public render() {
+    /* build course selector */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         {this.props.user.courseadminCourses.map((course, i) => {
@@ -1296,20 +1111,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         })}
       </Menu>
     );
-
     let selectorText = 'No courses yet...';
     if (this.state.currentCourse) {
       selectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
     }
     const dropdown = <CPDropdown value={selectorText} overlay={menu} />;
+    const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
 
-    const createButton = (
-      <NewCourseDialog
-        courses={this.state.courses}
-        createCourse={this.wrapLoading.bind(this, 'Creating Course...', '', this.createCourse)}
-      />
-    );
-
+    /* build header */
     const header = (
       <div className="cp-flex--normal">
         <div className="left">{dropdown}</div>
@@ -1319,14 +1128,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <span className="cp-label cp-label--bold">{this.props.user.email}</span>
         </div>
         <div className="right">
-          <CPButton cpType="secondary" icon="setting" size="small" />
+          <CPButton cpType="secondary" icon="setting" size="small" href="/settings" />
         </div>
         <div className="right">
-          <CPButton cpType="secondary" icon="logout" size="small" />
+          <Button size="small" onClick={this.props.logout}>
+            Logout
+          </Button>
         </div>
       </div>
     );
 
+    /* select relevant panel */
     let detail;
     if (this.state.courses.length === 0) {
       detail = (
@@ -1339,9 +1151,39 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <CPButton cpType="primary">Create a course</CPButton>
         </Empty>
       );
-    } else {
+    } else if (this.state.currentCourse) {
       switch (this.state.currentPanel) {
-        case 4:
+        case PANELS.SUBMISSION_STUDENTS:
+          detail = (
+            <StudentData
+              loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
+              assignments={this.state.assignments}
+              submissionsByStudent={this.state.submissionsByStudent}
+              deleteSubmission={this.deleteSubmission}
+              graders={this.state.graders}
+              changeSubmissionGrader={this.changeSubmissionGrader}
+              uploadSubmission={this.uploadSubmission}
+              viewsBySubmission={this.state.viewsBySubmission}
+              changeTab={this.changeTab}
+            />
+          );
+          break;
+        case PANELS.SUBMISSION_GRADERS:
+          detail = (
+            <GraderData
+              loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
+              assignments={this.state.assignments}
+              submissionsByGrader={this.state.submissionsByGrader}
+              deleteSubmission={this.deleteSubmission}
+              graders={this.state.graders}
+              changeSubmissionGrader={this.changeSubmissionGrader}
+              uploadSubmission={this.uploadSubmission}
+              viewsBySubmission={this.state.viewsBySubmission}
+              changeTab={this.changeTab}
+            />
+          );
+          break;
+        case PANELS.ASSIGNMENTS:
           detail = (
             <ManageAssignments
               key={this.state.currentCourse!.id}
@@ -1352,19 +1194,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               }
               submissions={this.state.submissions}
               currentCourse={this.state.currentCourse}
-              addToast={this.props.addToast}
-              addErrorToast={this.props.addErrorToast}
               assignments={this.state.assignments}
               updateAssignment={this.updateAssignment}
-              createAssignment={this.wrapLoading.bind(this, '', '', this.createAssignment)}
-              deleteAssignment={this.wrapLoading.bind(
-                this,
-                'Deleting Assignment...',
-                'This action can impact a lot of data and may take a few minutes.',
-                this.deleteAssignment,
-              )}
-              setLoadingDialog={this.setLoadingDialog}
-              clearLoadingDialog={this.clearLoadingDialog}
+              createAssignment={this.createAssignment}
+              deleteAssignment={this.deleteAssignment}
               submissionsByStudent={this.state.submissionsByStudent}
               students={this.state.students}
               uploadSubmission={this.uploadSubmission}
@@ -1372,7 +1205,74 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             />
           );
           break;
-        case 11:
+        case PANELS.ROSTER_STUDENTS:
+          detail = (
+            <ManageStudents
+              sections={this.state.sections}
+              students={this.state.students}
+              graders={this.state.graders}
+              admins={this.state.admins}
+              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+              currentCourse={this.state.currentCourse}
+              updateRoster={this.updateRoster}
+              sectionsByStudent={this.state.sectionsByStudent}
+              updateStudentSection={this.updateStudentSection}
+              createSection={this.createSection}
+            />
+          );
+          break;
+        case PANELS.ROSTER_GRADERS:
+          detail = (
+            <ManageGraders
+              sections={this.state.sections}
+              students={this.state.students}
+              graders={this.state.graders}
+              superGraders={this.state.superGraders}
+              admins={this.state.admins}
+              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+              currentCourse={this.state.currentCourse}
+              updateRoster={this.updateRoster}
+              sectionsByStudent={this.state.sectionsByStudent}
+              updateStudentSection={this.updateStudentSection}
+              createSection={this.createSection}
+            />
+          );
+          break;
+        case PANELS.ROSTER_ADMINS:
+          detail = (
+            <ManageAdmins
+              sections={this.state.sections}
+              students={this.state.students}
+              graders={this.state.graders}
+              admins={this.state.admins}
+              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+              currentCourse={this.state.currentCourse}
+              updateRoster={this.updateRoster}
+              sectionsByStudent={this.state.sectionsByStudent}
+              updateStudentSection={this.updateStudentSection}
+              createSection={this.createSection}
+            />
+          );
+          break;
+        case PANELS.ROSTER_SECTIONS:
+          detail = (
+            <ManageSections
+              sections={this.state.sections}
+              students={this.state.students}
+              graders={this.state.graders}
+              admins={this.state.admins}
+              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+              currentCourse={this.state.currentCourse}
+              updateRoster={this.updateRoster}
+              sectionsByStudent={this.state.sectionsByStudent}
+              updateStudentSection={this.updateStudentSection}
+              deleteSection={this.deleteSection}
+              updateSection={this.updateSection}
+              createSection={this.createSection}
+            />
+          );
+          break;
+        case PANELS.SETTINGS:
           detail = (
             <CourseSettingsPanel currentCourse={this.state.currentCourse!} updateSettings={this.updateSettings} />
           );
@@ -1385,205 +1285,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return (
       <CPLayoutAdmin
         selectedPanel={this.state.currentPanel}
-        onClick={this.changeTab}
+        onClick={this.handleTabClick}
         header={header}
         detail={detail}
-        isRubric={false}
       />
     );
   }
-
-  // public render() {
-  //   const { courses, currentCourse, loadedPanel, toLoadCourse, toLoadPanel } = this.state;
-
-  //   if (!this.props.user.canCreateCourses) {
-  //     return (
-  //       <div className="admin__getStarted__text">
-  //         Sorry, you're not registered as a course admin. Want access? Email us at team@codepost.io
-  //       </div>
-  //     );
-  //   }
-
-  //   let courseManagementPanel = null;
-
-  //   if (currentCourse && loadedPanel === 0) {
-  //     courseManagementPanel = (
-  //       <div className="admin__main-panel__content-container">
-  //         <CourseData
-  //           currentCourseID={currentCourse.id}
-  //           assignments={this.state.assignments}
-  //           assignmentsLoadComplete={this.state.assignmentsLoadComplete}
-  //           students={this.state.students}
-  //           graders={this.state.graders}
-  //           submissionsbyUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-  //           submissions={this.state.submissions}
-  //           submissionsLoadComplete={this.state.submissionsLoadComplete}
-  //           submissionsByStudent={this.state.submissionsByStudent}
-  //           submissionsByGrader={this.state.submissionsByGrader}
-  //           addToast={this.props.addToast}
-  //           initialTab={this.state.initialTab}
-  //           inactiveStudents={this.state.inactiveStudents}
-  //           inactiveGraders={this.state.inactiveGraders}
-  //           submissionsByInactiveStudent={this.state.submissionsByInactiveStudent}
-  //           submissionsByInactiveGrader={this.state.submissionsByInactiveGrader}
-  //           deleteSubmission={this.wrapLoading.bind(this, '', '', this.deleteSubmission)}
-  //           changeSubmissionGrader={this.changeSubmissionGrader}
-  //           uploadSubmission={this.uploadSubmission}
-  //           viewsBySubmission={this.state.viewsBySubmission}
-  //         />
-  //       </div>
-  //     );
-  //   } else if (currentCourse && loadedPanel === 1) {
-  //     const { submissionsLoadComplete, assignmentsLoadComplete, submissionsbyUserLoadComplete } = this.state;
-
-  //     courseManagementPanel = (
-  //       <div>
-  //     );
-  //   } else if (currentCourse && loadedPanel === 2) {
-  //     courseManagementPanel = (
-  //       <div className={`admin__main-panel__content-container${this.state.lockChanges ? '--locked' : ''}`}>
-  //         <ManageUsers
-  //           key={currentCourse.id}
-  //           currentCourse={this.state.currentCourse}
-  //           sections={this.state.sections}
-  //           students={this.state.students}
-  //           graders={this.state.graders}
-  //           superGraders={this.state.superGraders}
-  //           admins={this.state.admins}
-  //           inactiveStudents={this.state.inactiveStudents}
-  //           inactiveGraders={this.state.inactiveGraders}
-  //           sectionsByStudent={this.state.sectionsByStudent}
-  //           rosterLoadComplete={this.state.rosterLoadComplete}
-  //           sectionsLoadComplete={this.state.sectionsLoadComplete}
-  //           lockChanges={this.state.lockChanges}
-  //           toggleLock={this.toggleLock}
-  //           enrollUser={this.enrollUser}
-  //           unEnrollUsers={this.unEnrollUsers}
-  //           changeRoster={this.wrapLoading.bind(this, '', '', this.changeRoster)}
-  //           changeStudentSection={this.changeStudentSection}
-  //           changeSectionStudents={this.changeSectionStudents}
-  //           createSection={this.createSection}
-  //           changeLeaders={this.changeSectionLeaders}
-  //           addToast={this.props.addToast}
-  //           addErrorToast={this.props.addErrorToast}
-  //           initialTab={this.state.initialTab}
-  //           setLoadingDialog={this.setLoadingDialog}
-  //           clearLoadingDialog={this.clearLoadingDialog}
-  //           deleteSection={this.wrapLoading.bind(this, 'Deleting Section...', '', this.deleteSection)}
-  //           isStudent={this.isStudent}
-  //         />
-  //       </div>
-  //     );
-  //   } else if (currentCourse && loadedPanel === 3) {
-  //     courseManagementPanel = (
-  //       <div className="content-container">
-  //
-  //       </div>
-  //     );
-  //   } else if (!currentCourse) {
-  //     if (courses.length > 0) {
-  //       courseManagementPanel = (
-  //         <div className="admin__getStarted">
-  //           <img className="admin__getStarted__arrow" src={require('./img/get-started-arrow.png')} />
-  //           <div className="admin__getStarted__text">Select a course to get started.</div>
-  //         </div>
-  //       );
-  //     } else {
-  //       courseManagementPanel = <div>Create a course to get started!</div>;
-  //     }
-  //   }
-
-  //   const courseManagementNav = `admin__topbar__navButton${loadedPanel === 0 ? '--active' : ''}`;
-  //   const manageAssignmenstNav = `admin__topbar__navButton${loadedPanel === 1 ? '--active' : ''}`;
-  //   const manageUsersNav = `admin__topbar__navButton${loadedPanel === 2 ? '--active' : ''}`;
-  //   const settingsNav = `admin__topbar__navButton${loadedPanel === 3 ? '--active' : ''}`;
-  //   const isLoading = this.state.isLoading ? (
-  //     <div>
-  //       <DialogContainer
-  //         id="loading-dialog"
-  //         className={
-  //           !this.state.loadingMessage && !this.state.loadingTitle
-  //             ? 'dialog--generalLoading-notext'
-  //             : 'dialog--generalLoading-text'
-  //         }
-  //         visible={true}
-  //         title={this.state.loadingTitle}
-  //         modal
-  //         portal={true}
-  //         focusOnMount={false}
-  //         containFocus={false}
-  //         disableScrollLocking={true}
-  //       >
-  //         <div className="dialog--generalLoading__message">{this.state.loadingMessage}</div>
-  //         <CircularProgress id="progress" className="progress-circle--dialogLoading" style={{ color: 'black' }} />
-  //       </DialogContainer>
-  //     </div>
-  //   ) : (
-  //     <div />
-  //   );
-
-  //   const stillLoadingCourse =
-  //     courses.length > 0 &&
-  //     (!this.state.assignmentsLoadComplete ||
-  //       !this.state.submissionsLoadComplete ||
-  //       !this.state.submissionsbyUserLoadComplete ||
-  //       !this.state.sectionsLoadComplete);
-
-  //   return (
-  //     <div className="admin">
-  //       <div className="admin__topbar">
-  //         <Select
-  //           className="selector--admin-topbar"
-  //           options={this.selectorItemsFormatter(courses)}
-  //           onChange={this.handleCourseChange}
-  //           value={this.selectorCurrentFormatter(currentCourse)}
-  //           isLoading={stillLoadingCourse}
-  //           isDisabled={stillLoadingCourse}
-  //         />
-  //         <div className="admin__topbar__nav">
-  //           <div className={courseManagementNav} onClick={this.handlePanelChange.bind(this.props, 0)}>
-  //             Submissions
-  //           </div>
-  //           <div className={manageAssignmenstNav} onClick={this.handlePanelChange.bind(this.props, 1)}>
-  //             Assignments
-  //           </div>
-  //           <div className={manageUsersNav} onClick={this.handlePanelChange.bind(this.props, 2)}>
-  //             Roster
-  //           </div>
-  //           <div className={settingsNav} onClick={this.handlePanelChange.bind(this.props, 3)}>
-  //             Settings
-  //           </div>
-  //         </div>
-  //         <div className="admin__topbar__rightBox">
-  //           <div className="admin__onboardingModal" onClick={this.openModal}>
-  //             i
-  //           </div>
-  //         </div>
-  //       </div>
-  //       <div className="admin__topbar__spacing" />
-  //       <div className="admin__main-panel">
-  //         {courseManagementPanel}
-  //         {isLoading}
-  //       </div>
-  //       <ModalCarousel
-  //         closeModal={this.closeModal}
-  //         isVisible={this.state.onboardingModalVisible}
-  //         content={adminCarouselContent}
-  //         defaultIndex={0}
-  //         isModal={true}
-  //         className="onboarding-carousel-modal"
-  //         onlyImage={false}
-  //         userEmail={this.props.user.email}
-  //         onDemoCreate={this.handleDemoCourse}
-  //         demoCreated={
-  //           typeof this.state.courses.find((el) => {
-  //             return el.period === 'demo';
-  //           }) !== 'undefined'
-  //         }
-  //       />
-  //     </div>
-  //   );
-  // }
 }
 
 export default Admin;

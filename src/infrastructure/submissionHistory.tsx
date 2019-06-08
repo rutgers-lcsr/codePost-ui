@@ -10,7 +10,6 @@ const SubmissionHistoryV = t.intersection(
       submission: t.number,
       dateViewed: t.union([t.null, t.string]),
     }),
-    t.partial({}),
   ],
   'SubmissionHistory',
 );
@@ -21,7 +20,6 @@ const SubmissionHistoryVPatch = t.intersection(
     t.type({
       hasViewed: t.boolean,
     }),
-    t.partial({}),
   ],
   'SubmissionHistory',
 );

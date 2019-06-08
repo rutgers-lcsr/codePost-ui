@@ -23,7 +23,7 @@ import * as moment from 'moment';
 import Select from 'react-select';
 
 /* codePost imports */
-import { openSubmission } from '../admin/AdminUtils';
+import { openSubmission } from '../admin/other/AdminUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';

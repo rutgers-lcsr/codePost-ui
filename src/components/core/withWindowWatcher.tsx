@@ -29,7 +29,7 @@ const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.C
     };
 
     public render() {
-      return <Component {...this.props as P} windowWidth={this.state.width} windowHeight={this.state.height} />;
+      return <Component {...this.props as P} windowwidth={this.state.width} windowheight={this.state.height} />;
     }
   };
 };
