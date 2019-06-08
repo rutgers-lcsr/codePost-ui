@@ -7,29 +7,6 @@ interface IStyles {
 }
 
 export default class CodePanelUtils {
-  public static sortComments = (comments: CommentType[]): CommentType[] => {
-    return comments.sort((a: CommentType, b: CommentType) => {
-      if (a.startLine === b.startLine) {
-        if (a.startChar > b.startChar) {
-          return 1;
-        }
-        if (a.id < 0 && b.id < 0) {
-          return a.id + b.id;
-        } else if (a.id > 0 && b.id > 0) {
-          return a.id - b.id;
-        } else if (b.id < 0) {
-          return -1;
-        } else {
-          return 1;
-        }
-      }
-      if (a.startLine > b.startLine) {
-        return 1;
-      }
-      return -1;
-    });
-  };
-
   public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)

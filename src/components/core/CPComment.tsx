@@ -13,6 +13,8 @@ import CPPointInput from './CPPointInput';
 import { CommentType, UiComment } from '../../infrastructure/comment';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
+import * as Animation from '../../infrastructure/animation';
+
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
@@ -40,22 +42,6 @@ interface ICPCommentState {
   points: number;
 }
 
-// https://github.com/ant-design/ant-design/blob/master/components/input/TextArea.tsx
-const onNextFrame = (cb: any) => {
-  if (window.requestAnimationFrame) {
-    return window.requestAnimationFrame(cb);
-  }
-  return window.setTimeout(cb, 1);
-};
-
-const clearNextFrameAction = (nextFrameId: number) => {
-  if (window.cancelAnimationFrame) {
-    window.cancelAnimationFrame(nextFrameId);
-  } else {
-    window.clearTimeout(nextFrameId);
-  }
-};
-
 class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   public nextFrameActionId: number;
 
@@ -67,6 +53,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public componentDidMount() {
     console.log(`Mounted: ${this.props.comment.id}`);
+    console.log(`comment mount: ${this.props.comment.id}`, this.state.text);
     this.placeCommentOnNextFrame();
   }
 
@@ -85,9 +72,9 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public placeCommentOnNextFrame = () => {
     if (this.nextFrameActionId) {
-      clearNextFrameAction(this.nextFrameActionId);
+      Animation.clearNextFrameAction(this.nextFrameActionId);
     }
-    this.nextFrameActionId = onNextFrame(this.props.setCommentPlacements);
+    this.nextFrameActionId = Animation.onNextFrame(this.props.setCommentPlacements);
   };
 
   public save = async () => {
@@ -239,6 +226,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   };
 
   public render() {
+    console.log(`comment ${this.props.comment.id}:`, this.props.comment, this.state.text);
     const className = `cp-comment cp-comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
     // console.log('commment', this.props.comment.id, this.props.placement);
 

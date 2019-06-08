@@ -14,37 +14,10 @@ interface ICPFileMenuProps {
   getPointsInFile: (file: FileType) => number;
 }
 
-interface ICPFileMenuState {
-  popconfirmVisible: boolean;
-  selectedParam: SelectParam | null;
-}
-
-class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
-  public state: Readonly<ICPFileMenuState> = {
-    popconfirmVisible: false,
-    selectedParam: null,
-  };
-
+class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
   public onSelect = (selectedParam: SelectParam) => {
-    if (this.props.canChange) {
-      this.setState({ selectedParam, popconfirmVisible: true });
-    } else {
-      this.setState({ selectedParam }, () => {
-        this.confirm();
-      });
-    }
-  };
-
-  public confirm = () => {
-    if (this.state.selectedParam) {
-      const fileID = +this.state.selectedParam.key.split('-')[1];
-      this.props.changeSelectedFile(fileID);
-      this.setState({ selectedParam: null, popconfirmVisible: false });
-    }
-  };
-
-  public cancel = () => {
-    this.setState({ popconfirmVisible: false, selectedParam: null });
+    const fileID = +selectedParam.key.split('-')[1];
+    this.props.changeSelectedFile(fileID);
   };
 
   public buildFileMenu = (files: FileType[]) => {
@@ -98,35 +71,77 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
             Files
           </div>
         </div>
-        <Popconfirm
-          title={
-            <div>
-              <p>You have draft comments that will not be saved.</p>{' '}
-              <p>
-                <b>Are you sure you want to continue?</b>
-              </p>
-            </div>
-          }
-          visible={this.state.popconfirmVisible}
-          onConfirm={this.confirm}
-          onCancel={this.cancel}
-          okText="Yes"
-          cancelText="No"
-          placement="rightTop"
-        >
+        <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
             className="cp-file-menu"
             id="cp-file-menu"
-            onSelect={this.onSelect}
           >
             {fileMenu}
           </Menu>
-        </Popconfirm>
+        </UnsavedCommentsPopconfirm>
       </div>
     );
   }
 }
+
+interface IUnsavedCommentsPopconfirmProps {
+  changeSelectedFile: (fileID: number) => void;
+  canChange: boolean;
+  children: any;
+}
+
+export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps) => {
+  const [selectedParam, setSelectedParam] = React.useState<SelectParam | null>(null);
+  const [visible, setVisible] = React.useState<boolean>(false);
+
+  const onSelect = (selectParam: SelectParam) => {
+    setSelectedParam(selectParam);
+  };
+
+  const confirm = () => {
+    if (selectedParam) {
+      const fileID = +selectedParam.key.split('-')[1];
+      props.changeSelectedFile(fileID);
+    }
+    setSelectedParam(null);
+    setVisible(false);
+  };
+
+  const cancel = () => {
+    setSelectedParam(null);
+    setVisible(false);
+  };
+
+  React.useEffect(() => {
+    if (selectedParam && props.canChange) {
+      confirm();
+    } else if (selectedParam && !props.canChange) {
+      setVisible(true);
+    }
+  });
+
+  return (
+    <Popconfirm
+      title={
+        <div>
+          <p>You have draft comments that will not be saved.</p>{' '}
+          <p>
+            <b>Are you sure you want to continue?</b>
+          </p>
+        </div>
+      }
+      visible={visible}
+      onConfirm={confirm}
+      onCancel={cancel}
+      okText="Yes"
+      cancelText="No"
+      placement="rightTop"
+    >
+      {React.cloneElement(props.children, { onSelect })}
+    </Popconfirm>
+  );
+};
 
 export default CPFileMenu;

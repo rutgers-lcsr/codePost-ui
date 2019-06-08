@@ -197,7 +197,7 @@ class CodePanel extends React.Component<ICodePanelProps, ICodePanelState> {
           })}
         </TabList>
         {files.map((file: FileType, i: number) => {
-          const sortedComments = CodePanelUtils.sortComments(this.props.comments[file.id]);
+          const sortedComments = this.props.comments[file.id];
 
           const isJupyter = file.extension === ('ipynb' || '.ipynb');
           const isMarkdown = isJupyter || file.extension === ('md' || '.md');

@@ -7,6 +7,8 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 // import { CommentMock } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
+
+// import * as Animation from '../../infrastructure/animation';
 // import { RubricCommentMock } from '../../infrastructure/rubricComment';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
@@ -18,6 +20,7 @@ interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
 }
 
 class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
+  // public nextFrameActionId: number;
   public commentsHeight = 0;
 
   public componentDidMount() {
@@ -150,6 +153,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
       // }
     }
   };
+
+  // public onNextFrame = (callback: any) => {
+  //   if (this.nextFrameActionId) {
+  //     Animation.clearNextFrameAction(this.nextFrameActionId);
+  //   }
+  //   this.nextFrameActionId = Animation.onNextFrame(callback);
+  // };
 
   public render() {
     // console.log('width', this.props.windowWidth);

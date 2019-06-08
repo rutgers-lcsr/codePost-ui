@@ -11,6 +11,7 @@ import { POSITION } from '../../types/common';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
+import { UserType } from '../../infrastructure/user';
 // import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 // import LangMap from 'lang-map';
@@ -23,6 +24,7 @@ interface ICodeProps {
   readOnly: boolean;
   // giving a partial comment breaks the IComment type constraint, could make some fields optional?
   addComment: (comment: CommentType, file: FileType) => void;
+  user: UserType;
 
   // activeCommentId?: number;
   // changeActive: (id: number | number) => void;
@@ -86,6 +88,7 @@ const Code = (props: ICodeProps) => {
       startLine,
       text: '',
       rubricComment: null,
+      author: props.user.email,
     };
 
     setCommentCounter(commentCounter - 1);

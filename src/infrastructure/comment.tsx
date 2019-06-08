@@ -50,6 +50,47 @@ class CommentIO {
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
+
+  public static sortComments = (comments: CommentType[]): CommentType[] => {
+    return comments.sort((a: CommentType, b: CommentType) => {
+      if (a.startLine === b.startLine) {
+        if (a.startChar > b.startChar) {
+          return 1;
+        }
+        if (a.id < 0 && b.id < 0) {
+          return a.id + b.id;
+        } else if (a.id > 0 && b.id > 0) {
+          return a.id - b.id;
+        } else if (b.id < 0) {
+          return -1;
+        } else {
+          return 1;
+        }
+      }
+      if (a.startLine > b.startLine) {
+        return 1;
+      }
+      return -1;
+    });
+  };
+
+  public static compare = (a: CommentType, b: CommentType) => {
+    if (a.startLine === b.startLine) {
+      if (a.startChar === b.startChar) {
+        if (a.id > 0 && b.id > 0) {
+          return a.id - b.id;
+        } else if (a.id < 0 && b.id < 0) {
+          return a.id + b.id;
+        } else if (a.id < 0) {
+          return 1;
+        } else {
+          return -1;
+        }
+      }
+      return a.startChar - b.startChar;
+    }
+    return a.startLine - b.startLine;
+  };
 }
 
 /* tslint:disable:max-classes-per-file */

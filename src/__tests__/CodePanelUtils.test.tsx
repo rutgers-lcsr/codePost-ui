@@ -1,5 +1,5 @@
 import CodePanelUtils from '../components/Code/CodePanelUtils';
-import { CommentType } from '../infrastructure/comment';
+import { CommentIO, CommentType } from '../infrastructure/comment';
 
 describe('CodePanelUtils', () => {
   it('sortComments()', () => {
@@ -50,7 +50,7 @@ describe('CodePanelUtils', () => {
       },
     ];
 
-    const sortedIDs = CodePanelUtils.sortComments(comments).map((comment: CommentType) => {
+    const sortedIDs = comments.sort(CommentIO.compare).map((comment: CommentType) => {
       return comment.id;
     });
 
@@ -84,7 +84,7 @@ describe('CodePanelUtils', () => {
       },
     ];
 
-    const sortedComments = CodePanelUtils.sortComments(comments);
+    const sortedComments = comments.sort(CommentIO.compare);
 
     const highlights = CodePanelUtils.getHighlights(sortedComments, 'Lorem ipsum dolor sit amet', 2);
     expect(highlights).toEqual([]);
@@ -106,7 +106,7 @@ describe('CodePanelUtils', () => {
     ];
 
     const thetext = 'Lorem ipsum dolor sit amet';
-    const sortedComments = CodePanelUtils.sortComments(comments);
+    const sortedComments = comments.sort(CommentIO.compare);
 
     const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[0, thetext.length, 1]]);
@@ -128,7 +128,7 @@ describe('CodePanelUtils', () => {
     ];
 
     const thetext = 'Lorem ipsum dolor sit amet';
-    const sortedComments = CodePanelUtils.sortComments(comments);
+    const sortedComments = comments.sort(CommentIO.compare);
 
     const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[1, 4, 1]]);
@@ -150,7 +150,7 @@ describe('CodePanelUtils', () => {
     ];
 
     const thetext = 'Lorem ipsum dolor sit amet';
-    const sortedComments = CodePanelUtils.sortComments(comments);
+    const sortedComments = comments.sort(CommentIO.compare);
 
     const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[1, thetext.length, 1]]);
@@ -172,7 +172,7 @@ describe('CodePanelUtils', () => {
     ];
 
     const thetext = 'Lorem ipsum dolor sit amet';
-    const sortedComments = CodePanelUtils.sortComments(comments);
+    const sortedComments = comments.sort(CommentIO.compare);
 
     const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[0, 4, 1]]);

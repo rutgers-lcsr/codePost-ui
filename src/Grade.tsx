@@ -43,7 +43,7 @@ import CPRubricMenu from './components/core/CPRubricMenu';
 import { FileType } from './infrastructure/file';
 
 import Code from './components/Code/Code';
-import CodePanelUtils from './components/Code/CodePanelUtils';
+// import CodePanelUtils from './components/Code/CodePanelUtils';
 
 import Comments from './components/core/Comments';
 
@@ -83,7 +83,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   // --- Comments
   public static addCommentToState = (comments: IFileToCommentsMap, comment: CommentType, file: FileType) => {
     const fileComments = Immutable.arrayAdd(comments[file.id], comment);
-    return { ...comments, [file.id]: fileComments };
+    return { ...comments, [file.id]: fileComments.sort(CommentIO.compare) };
   };
 
   public static removeCommentFromState = (comments: IFileToCommentsMap, comment: CommentType) => {
@@ -378,7 +378,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
+    console.log('adding comment', comment);
     const comments = Grade.addCommentToState(this.state.comments, comment, file);
+    console.log('comments', comments);
     const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     this.setState({ comments, unsavedComments, activeCommentId: comment.id });
   };
@@ -753,15 +755,16 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       const code = (
         <Code
           file={this.state.selectedFile}
-          comments={CodePanelUtils.sortComments(this.state.comments[this.state.selectedFile.id])}
+          comments={this.state.comments[this.state.selectedFile.id]}
           readOnly={false}
           addComment={this.addComment}
+          user={this.props.user}
         />
       );
       // console.log('grade unsaved', this.state.unsavedComments);
       const comments = (
         <Comments
-          comments={CodePanelUtils.sortComments(this.state.comments[this.state.selectedFile.id])}
+          comments={this.state.comments[this.state.selectedFile.id]}
           rubricComments={this.state.commentRubricComments}
           readOnly={false}
           file={this.state.selectedFile}
@@ -787,7 +790,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             selectedFile={this.state.selectedFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
-            canChange={Object.keys(this.state.unsavedComments).length > 0}
+            canChange={Object.keys(this.state.unsavedComments).length === 0}
           />
         }
         rubric={

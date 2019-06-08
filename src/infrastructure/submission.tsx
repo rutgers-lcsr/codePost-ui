@@ -133,7 +133,7 @@ class Submission {
     const comments: IFileToCommentsMap = {};
     await Promise.all(
       files.map(async (file: FileType) => {
-        comments[file.id] = await loadIDList(file.comments, CommentIO);
+        comments[file.id] = (await loadIDList(file.comments, CommentIO)).sort(CommentIO.compare);
         return;
       }),
     );
