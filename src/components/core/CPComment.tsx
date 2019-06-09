@@ -60,6 +60,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       // console.log(`Updated Type: ${this.props.comment.id}`);
       // this.props.setCommentPlacements();
       console.log('---------->');
+      this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
       this.props.setCommentPlacements();
       // setTimeout(() => {
       //   console.log('--->');
@@ -70,7 +71,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   }
 
   public save = async () => {
-    console.log('props', this.props.rubricComment);
     this.unhighlightRelatedComment();
 
     const comment = {
@@ -79,8 +79,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       pointDelta: this.state.points,
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
     };
-
-    console.log('payload', comment);
 
     await this.props.onSave(comment);
     this.fadeSavedState();
@@ -307,6 +305,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
           onPlus={this.onPlus}
           onMinus={this.onMinus}
           onChange={this.onChangePointInput}
+          disabled={this.props.rubricComment ? true : false}
         />
       );
       commentElements.comment = (
@@ -397,7 +396,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       <div
         className={className}
         id={`comment-${this.props.comment.id}`}
-        style={{ transformOrigin: '-4px 0px', top: `${this.props.placement}px`, cursor }}
+        style={{ top: `${this.props.placement}px`, cursor }}
         onClick={onClick}
         onMouseEnter={this.highlightRelatedComment}
         onMouseLeave={this.unhighlightRelatedComment}

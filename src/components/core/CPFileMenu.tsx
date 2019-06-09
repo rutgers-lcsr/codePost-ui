@@ -4,6 +4,8 @@ import { Badge, Menu, Popconfirm } from 'antd';
 
 import { FileType } from '../../infrastructure/file';
 
+import themeVars from '../../styles/abstracts/_theme.js';
+
 import { SelectParam } from 'antd/lib/menu';
 
 interface ICPFileMenuProps {
@@ -11,7 +13,7 @@ interface ICPFileMenuProps {
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
   canChange: boolean;
-  getPointsInFile: (file: FileType) => number;
+  getPointsInFile: (file: FileType) => number[];
 }
 
 class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
@@ -22,7 +24,8 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
 
   public buildFileMenu = (files: FileType[]) => {
     return files.map((file: FileType) => {
-      const totalPointsInFile = this.props.getPointsInFile(file) * -1;
+      // const totalPointsInFile = 10;
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
 
       let opacity = 0.7;
       if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
@@ -35,27 +38,51 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
           <Badge
             count={file.comments.length}
             className="cp-badge"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity }}
+            style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
           />
         );
       }
 
-      let pointsCountBadge = null;
-      if (totalPointsInFile < 0) {
-        pointsCountBadge = (
-          <Badge count={totalPointsInFile} className="cp-badge" style={{ backgroundColor: '#f64852', opacity }} />
+      let deductionBadge = null;
+      let bonusBadge = null;
+
+      if (deductions > 0) {
+        deductionBadge = (
+          <Badge
+            count={deductions * -1}
+            className="cp-badge"
+            style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
+          />
         );
-      } else if (totalPointsInFile > 0) {
-        pointsCountBadge = (
-          <Badge count={`+${totalPointsInFile}`} className="cp-badge" style={{ backgroundColor: '#24be85', opacity }} />
+      }
+
+      if (bonuses > 0) {
+        bonusBadge = (
+          <Badge
+            count={`+${bonuses}`}
+            className="cp-badge"
+            style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
+          />
         );
       }
 
       return (
         <Menu.Item key={`file-${file.id}`}>
-          <span>{file.name}</span>
-          <span style={{ position: 'absolute', right: '60px' }}>{commentCountBadge}</span>
-          <span style={{ position: 'absolute', right: '20px' }}>{pointsCountBadge}</span>
+          <span
+            style={{
+              display: 'inline-block',
+              maxWidth: '148px',
+              wordWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+              lineHeight: '12px',
+              verticalAlign: 'middle',
+            }}
+          >
+            {file.name}
+          </span>
+          <span style={{ position: 'absolute', right: '95px' }}>{bonusBadge}</span>
+          <span style={{ position: 'absolute', right: '55px' }}>{deductionBadge}</span>
+          <span style={{ position: 'absolute', right: '15px' }}>{commentCountBadge}</span>
         </Menu.Item>
       );
     });

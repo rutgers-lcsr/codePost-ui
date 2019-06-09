@@ -43,7 +43,6 @@ import CPRubricMenu from './components/core/CPRubricMenu';
 import { FileType } from './infrastructure/file';
 
 import Code from './components/Code/Code';
-// import CodePanelUtils from './components/Code/CodePanelUtils';
 
 import Comments from './components/core/Comments';
 
@@ -57,7 +56,7 @@ interface IGradeState {
   submission?: AnonymousSubmissionType;
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  activeCommentId?: number;
+  activeCommentID?: number;
   unsavedComments: IdMapType;
 
   files: FileType[];
@@ -170,14 +169,24 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     file: FileType,
     comments: CommentType[],
     rubricComments: ICommentToRubricCommentMap,
-  ): number => {
-    return comments.reduce((accumulator: number, comment: CommentType) => {
-      if (!UiComment.isNew(comment)) {
-        return accumulator + UiComment.points(comment, rubricComments[comment.id]);
-      } else {
-        return accumulator;
-      }
-    }, 0);
+  ): number[] => {
+    return comments.reduce(
+      (accumulator: number[], comment: CommentType) => {
+        if (!UiComment.isNew(comment)) {
+          const points = UiComment.points(comment, rubricComments[comment.id]);
+          if (points > 0) {
+            // Deduction
+            return [accumulator[0] + points, accumulator[1]];
+          } else {
+            // Bonus points
+            return [accumulator[0], accumulator[1] - points];
+          }
+        } else {
+          return accumulator;
+        }
+      },
+      [0, 0],
+    );
   };
 
   // Points from generic comments
@@ -254,7 +263,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   // -------------------------- Initialization / Lifecycles -------------------------- //
 
   public state: Readonly<IGradeState> = {
-    activeCommentId: undefined,
+    activeCommentID: undefined,
     assignment: undefined,
     commentRubricComments: {},
     comments: {},
@@ -371,7 +380,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   // -------------------------- Handlers -------------------------- //
 
   public changeActiveComment = (id: number | undefined): void => {
-    this.setState({ activeCommentId: id });
+    this.setState({ activeCommentID: id });
   };
 
   public changeSelectedFile = (fileID: number): void => {
@@ -388,7 +397,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const comments = Grade.addCommentToState(this.state.comments, comment, file);
     console.log('comments', comments);
     const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
-    this.setState({ comments, unsavedComments, activeCommentId: comment.id });
+    this.setState({ comments, unsavedComments, activeCommentID: comment.id });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -423,7 +432,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     // MISSING: what happens if unsuccessful save?
     this.updateComment(comment.id, savedComment);
 
-    this.setState({ unsavedComments, activeCommentId: undefined });
+    this.setState({ unsavedComments, activeCommentID: undefined });
     return;
   };
 
@@ -464,11 +473,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public onRubricCommentClick = (rubricComment: RubricCommentType): void => {
-    if (!this.state.activeCommentId) {
+    if (!this.state.activeCommentID) {
       return;
     }
 
-    const comments = Grade.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentId);
+    const comments = Grade.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
       return;
@@ -476,10 +485,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const commentRubricComments = Grade.addToCommentRubricCommentsState(
       this.state.commentRubricComments,
-      this.state.activeCommentId,
+      this.state.activeCommentID,
       rubricComment,
     );
-    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentId);
+    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentID);
 
     this.setState({ comments, commentRubricComments, unsavedComments });
   };
@@ -497,7 +506,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     );
   };
 
-  public getPointsInFile = (file: FileType): number => {
+  public getPointsInFile = (file: FileType): number[] => {
     return Grade.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
   };
 
@@ -632,7 +641,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   public render() {
     // const {
     //   assignment,
-    //   activeCommentId,
+    //   activeCommentID  ,
     //   commentRubricComments,
     //   files,
     //   rubricCategories,
@@ -751,7 +760,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       //   addComment={addComment}
       //   commentCounter={1} // MISSING
       //   updateCommentCounter={updateCounter}
-      //   // activeCommentId={1} // MISSING
+      //   // activeCommentID  ={1} // MISSING
       //   // changeActive={this.changeActiveComment}
       //   // deleteComment={this.deleteComment}
       //   // updateComment={this.updateComment}
@@ -775,7 +784,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           rubricComments={this.state.commentRubricComments}
           readOnly={false}
           file={this.state.selectedFile}
-          activeCommentID={this.state.activeCommentId}
+          activeCommentID={this.state.activeCommentID}
           changeActive={this.changeActiveComment}
           deleteComment={this.deleteComment}
           saveComment={this.saveComment}
@@ -995,8 +1004,8 @@ const StatusTags = (props: IStatusTagsProps) => {
   }
 
   return (
-    <Tooltip title={tooltipText}>
-      <Tag color={tagColor} style={{ marginRight: '0px' }}>
+    <Tooltip title={tooltipText} placement="bottom">
+      <Tag color={tagColor} style={{ marginRight: '0px', cursor: 'help' }}>
         {tagText}
       </Tag>
     </Tooltip>

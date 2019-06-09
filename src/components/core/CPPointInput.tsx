@@ -11,6 +11,7 @@ interface ICPPointInputProps {
   onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
   onPlus?: any;
   onMinus?: any;
+  disabled?: boolean;
 }
 
 class CPPointInput extends React.Component<ICPPointInputProps, {}> {
@@ -31,9 +32,15 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
 
     return (
       <InputGroup compact className={className}>
-        <InputNumber value={this.props.value} step={0.5} size={this.props.size} onChange={this.props.onChange} />
-        <Button icon="plus" onClick={this.props.onPlus} />
-        <Button icon="minus" onClick={this.props.onMinus} />
+        <InputNumber
+          value={this.props.value}
+          step={0.5}
+          size={this.props.size}
+          onChange={this.props.onChange}
+          disabled={this.props.disabled}
+        />
+        <Button icon="plus" onClick={this.props.onPlus} disabled={this.props.disabled} />
+        <Button icon="minus" onClick={this.props.onMinus} disabled={this.props.disabled} />
       </InputGroup>
     );
   }
