@@ -64,7 +64,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public save = async () => {
     this.unhighlightRelatedComment();
-
+    console.log('this', JSON.stringify(this.state.text));
     const comment = {
       ...this.props.comment,
       text: this.state.text,
@@ -165,6 +165,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
   public handleShiftEnter = (e: any) => {
     if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault(); // skip OnChange method
       this.save();
     }
   };

@@ -54,20 +54,45 @@ const neutralDarkBorder = 'rgba(255, 255, 255, 0.3)';
 const neutralDarkDivider = 'rgba(255, 255, 255, 0.2)';
 const neutralDarkBackground = 'rgba(255, 255, 255, 0.1)';
 
-// Code highlighting
-const highlight = '#ffbf00';
-const highlightActive = '#c0ff00';
-
 
 // --------------- LAYOUT --------------- //
 
-const headerHeight = '64px';
+const headerHeight = 64; // px
 
 // --------------- FONTS --------------- //
 
 const fontMain = 'Avenir Next';
 const fontCode = 'AndaleMono';
 const fontLogo = 'Muli';
+
+// --------------- GRADE CONSTANTS --------------- //
+
+const subheaderHeight = 116; // px
+const codeLineHeight = 20; // px
+const codeFontSize = 12; // px
+
+// FIXME: Thes should be a function of codeFontSize and codeLineHeight
+const lineNumberPadding = 14.41; // px
+const highlightHeight = 16; // px
+
+// Highlighting
+const highlight = '#ffbf00';
+const highlightActive = '#c0ff00';
+
+const marginBottom = 20; // px
+
+const codeContainerMarginTop = 28; // px
+const codeContainerMarginBottom = 16; // px
+
+const codeContainerPaddingTop = 25; // px
+const codeContainerPaddingBottom = 20; // px
+const codeContainerPaddingRight = 40; // px
+const codeContainerPaddingLeft = 20; // px
+
+// Comments
+const arrowDisplacement = 32; // px
+const commentSpacing = 10; // px
+const intercomDisplacement = 90; // px
 
 // --------------- EXPORTS --------------- //
 
@@ -95,7 +120,7 @@ module.exports = {
     'layout-trigger-background': brandBlackHighlight,
     'layout-body-background': '#f2f2f2',
     'layout-header-background': brandBlack,
-    'layout-header-height': headerHeight,
+    'layout-header-height': `${headerHeight}px`,
 
     'page-header-padding-horizontal': '0px',
     'layout-header-padding': '0px 61px',
@@ -159,6 +184,33 @@ module.exports = {
 
     highlight: highlight,
     highlightActive: highlightActive,
+    highlightHeight: highlightHeight,
+  },
+  grade: {
+    headerHeight: headerHeight,
+    subheaderHeight: subheaderHeight,
+
+    codeLineHeight: codeLineHeight,
+    codeFontSize: codeFontSize,
+    lineNumberPadding: lineNumberPadding,
+    highlightHeight: highlightHeight,
+    marginBottom: marginBottom,
+
+    codeContainer: {
+      marginTop: codeContainerMarginTop,
+      marginBottom: codeContainerMarginBottom,
+      paddingTop: codeContainerPaddingTop,
+      paddingBottom: codeContainerPaddingBottom,
+      paddingRight: codeContainerPaddingRight,
+      paddingLeft: codeContainerPaddingLeft,
+    },
+
+    highlight: highlight,
+    highlightActive: highlightActive,
+
+    arrowDisplacement: arrowDisplacement,
+    commentSpacing: commentSpacing,
+    intercomDisplacement: intercomDisplacement,
   }
 };
 

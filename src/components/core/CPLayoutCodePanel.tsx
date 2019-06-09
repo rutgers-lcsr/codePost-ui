@@ -16,6 +16,8 @@ import * as Animation from '../../infrastructure/animation';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
+import themeVars from '../../styles/abstracts/_theme.js';
+
 interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
   file: FileType;
   code: React.ReactNode;
@@ -28,12 +30,6 @@ interface ICPLayoutCodePanelState {
 }
 
 class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayoutCodePanelState> {
-  // Pre-sets
-  public lineHeight = 20;
-  public fontSize = 12;
-  public highlightHeight = 16;
-  public lineNumberPadding = 14.41;
-  public commentsHeight = 0;
   public nextFrameActionId: number;
 
   public state: Readonly<ICPLayoutCodePanelState> = {
@@ -42,11 +38,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public componentDidMount() {
-    this.resizeComponents();
+    this.resizeOnNextFrame();
 
     const comments = document.getElementById('cp-code-panel--comments');
     if (comments !== null) {
-      comments.addEventListener('scroll', this.updateCommentScrolls);
+      comments.addEventListener('scroll', this.scrollFromComments);
     }
 
     const codeContainer = document.getElementById('cp-code-container');
@@ -54,6 +50,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
 
+    // Make sure to resize when changing files
     const fileMenu = document.getElementById('file-menu');
     if (fileMenu !== null) {
       fileMenu.addEventListener('click', this.resizeOnNextFrame);
@@ -63,7 +60,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   public componentWillUnmount() {
     const comments = document.getElementById('cp-code-panel--comments');
     if (comments !== null) {
-      comments.removeEventListener('scroll', this.updateCommentScrolls);
+      comments.removeEventListener('scroll', this.scrollFromComments);
     }
 
     const codeContainer = document.getElementById('cp-code-container');
@@ -80,6 +77,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   public scrollFromCodeContainer = (e: WheelEvent) => {
     const comments = document.getElementById('cp-code-panel--comments');
 
+    // Scroll vertically
     if (comments !== null) {
       comments.scrollTop = comments.scrollTop + e.deltaY;
     }
@@ -87,12 +85,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     const codeUnderlay = document.getElementById('code-underlay');
     const codeSyntax = document.getElementById('code-syntax');
 
+    // Scroll horizontally
     if (codeUnderlay !== null && codeSyntax !== null) {
       codeSyntax.scrollLeft = codeUnderlay.scrollLeft;
     }
   };
 
-  public updateCommentScrolls = () => {
+  public scrollFromComments = () => {
     const comments = document.getElementById('cp-code-panel--comments');
     const codeUnderlay = document.getElementById('code-underlay');
     const codeSyntax = document.getElementById('code-syntax');
@@ -105,10 +104,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
 
   public componentDidUpdate(prevProps: ICPLayoutCodePanelProps) {
     if (this.props.windowHeight !== prevProps.windowHeight || this.props.windowWidth !== prevProps.windowWidth) {
-      this.resizeComponents();
+      this.resizeOnNextFrame();
     }
   }
 
+  // Browser optimization to facilitate smoother animations
   public resizeOnNextFrame = () => {
     if (this.nextFrameActionId) {
       Animation.clearNextFrameAction(this.nextFrameActionId);
@@ -124,8 +124,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
       const commentsContainer = document.getElementById('cp-code-panel--comments');
       const comments = document.getElementById('comments');
 
-      const lineHeight = Layout.pixelsPerLine();
-      const codeHeight = this.props.file.code.split('\n').length * lineHeight;
+      const codeHeight = Layout.codeHeight(this.props.file.code);
 
       if (
         codeContainer !== null &&
@@ -134,18 +133,33 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         commentsContainer !== null &&
         comments !== null
       ) {
-        // Viewport restrictions
-        const codeContainerMaxHeight = this.props.windowHeight - codeContainer.offsetTop - 48 - 20;
-        const codeContainerHeight = Math.min(codeContainerMaxHeight, codeHeight + 20 + 25);
+        const codeContainerMaxHeight =
+          this.props.windowHeight -
+          codeContainer.offsetTop -
+          themeVars.grade.codeContainer.marginBottom -
+          themeVars.grade.marginBottom;
+
+        const codeContainerHeight = Math.min(
+          codeContainerMaxHeight,
+          codeHeight + themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.paddingBottom,
+        );
+
+        const codeUnderlayHeight =
+          codeContainerHeight - themeVars.grade.codeContainer.paddingTop - themeVars.grade.codeContainer.paddingBottom;
 
         codeContainer.style.setProperty('height', `${codeContainerHeight}px`);
-        codeUnderlay.style.setProperty('height', `${codeContainerHeight - 20 - 25}px`);
-        codeSyntax.style.setProperty('height', `${codeContainerHeight - 20 - 25}px`);
-        const codeContainerWidth = codeContainer.getBoundingClientRect().width;
-        codeUnderlay.style.setProperty('width', `${codeContainerWidth - 40 - 20}px`);
-        codeSyntax.style.setProperty('width', `${codeContainerWidth - 40 - 20}px`);
+        codeUnderlay.style.setProperty('height', `${codeUnderlayHeight}px`);
+        codeSyntax.style.setProperty('height', `${codeUnderlayHeight}px`);
 
-        const commentsContainerHeight = this.props.windowHeight - commentsContainer.offsetTop - 20;
+        const codeUnderlayWidth =
+          codeContainer.offsetWidth -
+          themeVars.grade.codeContainer.paddingLeft -
+          themeVars.grade.codeContainer.paddingRight;
+        codeUnderlay.style.setProperty('width', `${codeUnderlayWidth}px`);
+        codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
+
+        const commentsContainerHeight =
+          this.props.windowHeight - commentsContainer.offsetTop - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
     }
@@ -161,12 +175,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     this.setState({ zoom }, this.resizeComponents);
   };
 
-  public updateCodeStyle = () => {
+  public getCodeStyle = () => {
     return {
-      lineHeight: `${this.lineHeight * this.state.zoom}px`,
-      fontSize: `${this.fontSize * this.state.zoom}px`,
-      paddingLeft: `${this.lineNumberPadding * this.state.zoom + 10}px`,
-      highlightHeight: `${this.highlightHeight * this.state.zoom}px`,
+      lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
+      fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
+      // FIXME: 10 on next line comes from SyntaxHighlighter styles
+      paddingLeft: `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+      highlightHeight: `${themeVars.grade.highlightHeight * this.state.zoom}px`,
     };
   };
 
@@ -179,8 +194,10 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public render() {
-    const { highlightHeight, paddingLeft, ...codeStyle } = this.updateCodeStyle();
+    const { highlightHeight, paddingLeft, ...codeStyle } = this.getCodeStyle();
 
+    // FIXME: This only catches existing highlights.
+    //        New highlights will start with the template height and adjust after render
     const highlights = document.getElementsByClassName('highlight');
     [].forEach.call(highlights, (highlight: any) => {
       highlight.style.setProperty('height', highlightHeight);
@@ -189,10 +206,18 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     return (
       <div className="cp-code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
         <div className="cp-code-panel">
-          <div className="cp-code-panel--code">
+          <div
+            className="cp-code-panel--code"
+            style={{ margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px 29px` }}
+          >
             <div
               id="cp-code-container"
               className="cp-code-container"
+              style={{
+                padding: `${themeVars.grade.codeContainer.paddingTop}px ${
+                  themeVars.grade.codeContainer.paddingRight
+                }px ${themeVars.grade.codeContainer.paddingBottom}px ${themeVars.grade.codeContainer.paddingLeft}px`,
+              }}
               onMouseEnter={this.onMouseEnter}
               onMouseLeave={this.onMouseLeave}
             >
@@ -223,7 +248,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   }
 }
 
-const Magnifier = (props: any) => {
+interface IMagnifierProps {
+  visible: boolean;
+  zoomIn: () => void;
+  zoomOut: () => void;
+}
+
+const Magnifier = (props: IMagnifierProps) => {
   return (
     <div
       style={{

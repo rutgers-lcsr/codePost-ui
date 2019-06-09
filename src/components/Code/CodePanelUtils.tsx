@@ -4,9 +4,9 @@ import { POSITION } from '../../types/common';
 
 import themeVars from '../../styles/abstracts/_theme.js';
 
-interface IStyles {
+type StyleType = {
   [highlightID: string]: number;
-}
+};
 
 export default class CodePanelUtils {
   public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
@@ -40,10 +40,10 @@ export default class CodePanelUtils {
     return highlights;
   };
 
-  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, IStyles] => {
+  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, StyleType] => {
     const elements: any[] = [];
     let prevIDs: number[] = [];
-    let styles: IStyles = {};
+    let styles: StyleType = {};
 
     // We need to loop through each character on the line
     // tslint:disable-next-line
@@ -209,46 +209,5 @@ export default class CodePanelUtils {
     }
 
     return offset + CodePanelUtils.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
-  };
-
-  // The Code Console needs to update its dimensions when the relevant DOM components update
-  // This can either be new comments that would otherwise overflow or newly rendered code snippets
-  public static updateCommentPanelHeight = (height?: number) => {
-    const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
-    if (selectedTabElement) {
-      const commentPanel = selectedTabElement.getElementsByClassName(
-        'grade__main-container__tab-content__comment-panel',
-      )[0];
-      const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
-      if (!syntaxHighlighter) {
-        return;
-      }
-      const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
-
-      let newHeight = currentHeight;
-      const commentElements = document.getElementsByClassName('comment');
-
-      // tslint:disable-next-line
-      for (let i = 0; i < commentElements.length; i++) {
-        const elem = document.getElementById(commentElements[i].id)!;
-
-        // The TextArea has a transition on it
-        // So when this code reads the DOM, it sees the TextArea as smaller than it is
-        // Here we hard-code the expected final height of a transitioning TextArea
-        let buffer = 0;
-        if (elem.getElementsByTagName('textarea').length > 0) {
-          const textAreaHeight = elem.getElementsByTagName('textarea')[0].getBoundingClientRect().height;
-          if (textAreaHeight < 42) {
-            buffer = 42;
-          }
-        }
-
-        newHeight = Math.max(
-          currentHeight,
-          +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30 + buffer,
-        );
-      }
-      document.getElementById(commentPanel.id)!.style.setProperty('height', `${newHeight}px`);
-    }
   };
 }

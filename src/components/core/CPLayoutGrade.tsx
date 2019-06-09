@@ -6,6 +6,8 @@ const { Content, Header, Sider } = Layout;
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
+import themeVars from '../../styles/abstracts/_theme.js';
+
 interface ICPLayoutGradeProps extends IWithWindowWatcherProps {
   header: React.ReactNode;
   subheader: React.ReactNode;
@@ -25,16 +27,22 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
     }
   }
 
+  // Set the scroll heights for FileMenu and RubricMenu
   public resizeComponents = () => {
     if (this.props.windowHeight !== 0) {
-      // Set the max-height of the rubric menu to fit within the the space between
-      // the bottom of the viewport and the bottom of the files
       const fileMenu = document.getElementById('cp-file-menu');
       const rubricMenu = document.getElementById('cp-rubric-menu');
       const rubricMenuTitle = document.getElementById('cp-rubric-menu-title');
+
       if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null) {
+        // Don't let the file menu take up more than half of the vertical space
+        // allowable for files and rubric
+        const fileMenuMaxHeight =
+          (this.props.windowHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
+        fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
+
         const fileMenuBottom = fileMenu.getBoundingClientRect().bottom;
-        const rubricMenuTitleHeight = rubricMenuTitle.getBoundingClientRect().height;
+        const rubricMenuTitleHeight = rubricMenuTitle.offsetHeight;
         const rubricMenuMaxHeight = this.props.windowHeight - fileMenuBottom - rubricMenuTitleHeight;
         rubricMenu.style.setProperty('max-height', `${rubricMenuMaxHeight}px`);
       }
@@ -52,7 +60,9 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
             {this.props.rubric}
           </Sider>
           <Layout>
-            <Header className="layout--grade__subheader">{this.props.subheader}</Header>
+            <Header className="layout--grade__subheader" style={{ height: themeVars.grade.subheaderHeight }}>
+              {this.props.subheader}
+            </Header>
             <Content className="layout--grade__content">{this.props.content}</Content>
           </Layout>
         </Layout>

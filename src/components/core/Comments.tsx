@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import CPComment from './CPComment';
+import Layout from './LayoutUtils';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
@@ -10,6 +11,8 @@ import { ICommentToRubricCommentMap } from '../../types/common';
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
 import * as Animation from '../../infrastructure/animation';
+
+import themeVars from '../../styles/abstracts/_theme.js';
 
 export interface ICommentsProps extends IWithWindowWatcherProps {
   comments: CommentType[];
@@ -36,23 +39,19 @@ interface ICommentsState {
   placements: ICommentPlacement[];
 }
 
-interface IBlock {
+type BlockType = {
   startAt: number;
   endAt: number;
-}
-
-const pixelsPerLine = (): number => {
-  let lineHeight = 20; // estimate until the lines are rendered
-  const lineElement = document.getElementById('line-0');
-  if (lineElement) {
-    lineHeight = lineElement.getBoundingClientRect().height;
-  }
-  return lineHeight;
 };
 
 class Comments extends React.Component<ICommentsProps, ICommentsState> {
+  public static getCommentType = (readOnly: boolean, commentID: number, activeCommentID?: number) => {
+    return readOnly ? 'readonly' : commentID === activeCommentID ? 'active' : 'inactive';
+  };
+
   public nextFrameActionId: number;
   public wrapperRef: any;
+
   public constructor(props: ICommentsProps) {
     super(props);
 
@@ -61,7 +60,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
     this.state = {
       placements: this.props.comments.map((comment: CommentType, index: number) => {
-        return { commentID: comment.id, placement: comment.startLine * 18 };
+        return { commentID: comment.id, placement: comment.startLine * themeVars.grade.codeLineHeight };
       }),
     };
   }
@@ -71,9 +70,14 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public handleClickOutside = (event: any) => {
-    if (this.wrapperRef && !this.wrapperRef.contains(event.target)) {
-      // this.props.changeActive(undefined);
-      console.log('clicked outside');
+    const rubricMenu = document.getElementById('cp-rubric-menu');
+    if (
+      this.wrapperRef &&
+      !this.wrapperRef.contains(event.target) &&
+      rubricMenu !== null &&
+      !rubricMenu.contains(event.target)
+    ) {
+      this.props.changeActive(undefined);
     }
   };
 
@@ -118,20 +122,14 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
   public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
     console.log('!! Calculating Placements !!');
-    const blocks: IBlock[] = [];
+    const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
-      const lineHeight = pixelsPerLine();
+      const lineHeight = Layout.pixelsPerLine();
 
-      const arrowDisplacement = 32;
+      const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
-      // containerDifference =
-      //    code-panel--code::padding-top
-      //     +
-      //    code-container::padding-top
-      const containerDifference = 28 + 25;
-
-      let startAt = comment.startLine * lineHeight - arrowDisplacement + containerDifference;
+      let startAt = comment.startLine * lineHeight - themeVars.grade.arrowDisplacement + containerDifference;
 
       // MISSING
       // Find position of markdown block elements
@@ -148,22 +146,15 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
         }
       }
 
-      let heightOfComment = 80; // estimate until the elements are rendered
-      const commentElement = document.getElementById(`comment-${comment.id}`);
-      // console.log(`looking for comment ${comment.id} - ${commentElement ? 'found' : 'not found'}`);
-      if (commentElement) {
-        heightOfComment = commentElement.clientHeight;
-      }
+      const blockHeight = Layout.commentHeight(comment.id) + themeVars.grade.commentSpacing;
 
-      heightOfComment = heightOfComment + 10; // padding
-
-      const newBlock: IBlock = {
+      const newBlock: BlockType = {
         startAt,
-        endAt: startAt + heightOfComment,
+        endAt: startAt + blockHeight,
       };
       blocks.push(newBlock);
 
-      blocks.sort((a: IBlock, b: IBlock) => {
+      blocks.sort((a: BlockType, b: BlockType) => {
         return a.startAt - b.startAt;
       });
 
@@ -172,26 +163,27 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
-    const lineHeight = pixelsPerLine();
-    const codeHeight = this.props.file.code.split('\n').length * lineHeight;
+    const codeHeight = Layout.codeHeight(this.props.file.code);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
-      const commentElement = document.getElementById(`comment-${lastPlacement.commentID}`);
-      let heightOfComment = 80;
-      if (commentElement) {
-        heightOfComment = commentElement.clientHeight;
-      }
+      const lastBlockHeight = Layout.commentHeight(lastPlacement.commentID) + themeVars.grade.commentSpacing;
 
-      lowestCommentBottom = lastPlacement.placement + heightOfComment + 10;
+      lowestCommentBottom = lastPlacement.placement + lastBlockHeight;
     }
 
-    // 25, 28 = padding on top of code
-    // 90 = intercom padding
-    const commentsHeight = Math.max(codeHeight + 25 + 28 + 90, lowestCommentBottom);
+    const commentsHeight =
+      codeHeight +
+      themeVars.grade.codeContainer.paddingTop +
+      themeVars.grade.codeContainer.paddingBottom +
+      themeVars.grade.codeContainer.marginTop +
+      themeVars.grade.codeContainer.marginBottom;
+
+    const commentsMaxHeight = Math.max(commentsHeight, lowestCommentBottom);
+
     const comments = document.getElementById('comments');
     if (comments) {
-      comments.style.setProperty('height', `${commentsHeight}px`);
+      comments.style.setProperty('height', `${commentsMaxHeight}px`);
     }
   };
 
@@ -214,11 +206,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
       const placement = commentPlacement ? commentPlacement.placement : 0;
 
-      const commentType = this.props.readOnly
-        ? 'readonly'
-        : comment.id === this.props.activeCommentID
-        ? 'active'
-        : 'inactive';
+      const commentType = Comments.getCommentType(this.props.readOnly, comment.id, this.props.activeCommentID);
 
       const rubricComment = this.props.rubricComments.hasOwnProperty(comment.id)
         ? this.props.rubricComments[comment.id]

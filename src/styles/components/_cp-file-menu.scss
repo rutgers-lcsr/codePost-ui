@@ -1,6 +1,5 @@
 .cp-file-menu {
-  max-height: calc(((100vh - $headerHeight) / 2) - 108px); // 108 = height of Rubric Header
-
+  // max-height set by javascript
   overflow-y: scroll;
   overflow-x: hidden;
 
