@@ -23,6 +23,7 @@ import Settings from './settings';
 
 import RouterLoading from './RouterLoading';
 
+import { AdminAnimation } from './components/LandingAnimations/Admin/AdminAnimation';
 import APIAnimation from './components/LandingAnimations/API/APIAnimation';
 
 import Loadable from 'react-loadable';
@@ -409,6 +410,11 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={'/animations/api'}
             render={(props: any) => <APIAnimation {...props} isAuthenticated={true} />}
+          />
+          <Route
+            exact={true}
+            path={'/animations/admin'}
+            render={(props: any) => <AdminAnimation {...props} isAuthenticated={true} />}
           />
 
           {pageSelector}
