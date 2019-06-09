@@ -23,7 +23,7 @@ import { UserType } from './infrastructure/user';
 
 import CPLayoutGrade from './components/core/CPLayoutGrade';
 
-import { Divider, Menu, Popover, Tag, Tooltip } from 'antd';
+import { Divider, Menu, message, Popconfirm, Popover, Tag, Tooltip } from 'antd';
 
 import { SelectParam } from 'antd/lib/menu';
 
@@ -90,9 +90,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public static updateCommentsState = (comments: IFileToCommentsMap, commentID: number, newComment: CommentType) => {
     const index = comments[newComment.file].findIndex((comment: CommentType) => comment.id === commentID);
-    console.log('old', comments[newComment.file]);
     const fileComments = Immutable.arrayUpdate(comments[newComment.file], newComment, index);
-    console.log('new', fileComments);
 
     return { ...comments, [newComment.file]: fileComments };
   };
@@ -284,6 +282,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     document.body.style.overflow = 'hidden';
 
     this.setState({ isLoading: true });
+
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     const submission = await Submission.readAnonymous(submissionID);
     if (submission) {
@@ -296,10 +295,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         Submission.loadData(submission),
         this.loadRubric(submission.assignment),
       ]);
-      // add catch
-      //     .catch((errors) => {
-      //       this.setState({ isLoading: false });
-      //     });
 
       const course = await Course.read(assignment.course);
       const settings = await this.loadSettings(assignment);
@@ -405,6 +400,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public saveComment = async (comment: CommentType) => {
     let savedComment;
+
     if (comment.id < 0) {
       savedComment = await CommentIO.create(comment);
     } else {
@@ -413,14 +409,16 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, savedComment.id);
 
-    // MISSING: what happens if unsuccessful save?
     this.updateComment(comment.id, savedComment);
 
     this.setState({ unsavedComments, activeCommentID: undefined });
-    return;
   };
 
-  public deleteComment = (comment: CommentType) => {
+  public deleteComment = async (comment: CommentType) => {
+    if (comment.id > 0) {
+      await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
+    }
+
     const comments = Grade.removeCommentFromState(this.state.comments, comment);
     const [, commentRubricComments] = Grade.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
@@ -429,10 +427,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
     this.setState({ comments, unsavedComments, commentRubricComments });
-    // MISSING
-    if (comment.id > 0) {
-      CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
-    }
   };
 
   public addUnsaved = (commentID: number) => {
@@ -506,31 +500,22 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
   };
 
-  public toggleFinalized = (): Promise<any> => {
-    const { submission } = this.state;
-    if (!submission) {
-      return Promise.resolve();
+  public toggleFinalized = async () => {
+    if (!this.state.submission) {
+      return;
     }
 
     const payload = {
-      id: submission.id,
-      isFinalized: !submission.isFinalized,
+      id: this.state.submission.id,
+      isFinalized: !this.state.submission.isFinalized,
     };
 
-    return Submission.update(payload)
-      .then((json: any) => {
-        this.setState({
-          submission: json,
-        });
-        return json;
-      })
-      .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((error: string) => {
-            this.props.addErrorToast(error, undefined);
-          });
-        });
-      });
+    try {
+      const submission = await Submission.update(payload);
+      this.setState({ submission });
+    } catch (error) {
+      message.error(`Error updating submission: ${JSON.stringify(error)}`);
+    }
   };
 
   public updateGrader = (sub: AnonymousSubmissionType, graderUsername: string | undefined) => {
@@ -612,6 +597,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       <FinalizeButton
         key="subheader-finalize"
         submission={this.state.submission}
+        canToggle={Object.keys(this.state.unsavedComments).length === 0}
         toggleFinalized={this.toggleFinalized}
       />,
     ];
@@ -635,13 +621,13 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       </div>
     );
 
-    let content = <div>no selected file</div>;
+    let content;
     if (this.state.selectedFile) {
       const code = (
         <Code
           file={this.state.selectedFile}
           comments={this.state.comments[this.state.selectedFile.id]}
-          readOnly={false}
+          readOnly={this.state.submission.isFinalized}
           addComment={this.addComment}
           user={this.props.user}
         />
@@ -651,7 +637,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         <Comments
           comments={this.state.comments[this.state.selectedFile.id]}
           rubricComments={this.state.commentRubricComments}
-          readOnly={false}
+          readOnly={this.state.submission.isFinalized}
           file={this.state.selectedFile}
           activeCommentID={this.state.activeCommentID}
           changeActive={this.changeActiveComment}
@@ -776,31 +762,102 @@ const SubheaderGrader = (props: ISubheaderGraderProps) => {
 
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
-  toggleFinalized: () => Promise<any>;
+  canToggle: boolean;
+  toggleFinalized: () => void;
 }
 
 const FinalizeButton = (props: IFinalizeButtonProps) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
+  const [notice, setNotice] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  useOnClickOutside(ref, (e: any) => {
+    const fileMenu = document.getElementById('file-menu');
+    if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
+      setNotice(true);
+      window.setTimeout(() => setNotice(false), 250);
+    }
+  });
 
   const onClick = async () => {
     setIsLoading(true);
+    if (!props.submission.isFinalized && !props.canToggle) {
+      setPopconfirmVisible(true);
+    } else {
+      await props.toggleFinalized();
+      setIsLoading(false);
+    }
+  };
+
+  const confirm = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
+    setPopconfirmVisible(false);
+  };
+
+  const cancel = () => {
+    setIsLoading(false);
+    setPopconfirmVisible(false);
   };
 
   if (props.submission.isFinalized) {
     return (
-      <CPButton cpType="secondary" fallback="unlock" onClick={onClick} loading={isLoading}>
-        Unfinalize
-      </CPButton>
+      <div ref={ref}>
+        <CPButton cpType={notice ? 'primary' : 'secondary'} fallback="unlock" onClick={onClick} loading={isLoading}>
+          Unfinalize
+        </CPButton>
+      </div>
     );
   } else {
     return (
       <CPButton cpType="primary" fallback="lock" onClick={onClick} loading={isLoading}>
-        Finalize
+        <Popconfirm
+          title={
+            <div>
+              <p>You have draft comments that will not be saved.</p>{' '}
+              <p>
+                <b>Are you sure you want to continue?</b>
+              </p>
+            </div>
+          }
+          visible={popconfirmVisible}
+          onConfirm={confirm}
+          onCancel={cancel}
+          okText="Yes"
+          cancelText="No"
+          placement="rightTop"
+        >
+          Finalize
+        </Popconfirm>
       </CPButton>
     );
   }
+};
+
+const useOnClickOutside = (ref: any, handler: any) => {
+  React.useEffect(
+    () => {
+      const listener = (event: any) => {
+        // Do nothing
+        if (!ref.current || ref.current.contains(event.target)) {
+          return;
+        }
+
+        handler(event);
+      };
+
+      document.addEventListener('mousedown', listener);
+      document.addEventListener('touchstart', listener);
+
+      return () => {
+        document.removeEventListener('mousedown', listener);
+        document.removeEventListener('touchstart', listener);
+      };
+    },
+
+    [ref, handler],
+  );
 };
 
 interface IStatusTagsProps {

@@ -72,6 +72,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   public handleClickOutside = (event: any) => {
     const rubricMenu = document.getElementById('cp-rubric-menu');
     if (
+      !this.props.readOnly &&
       this.wrapperRef &&
       !this.wrapperRef.contains(event.target) &&
       rubricMenu !== null &&

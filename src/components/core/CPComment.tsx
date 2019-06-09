@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Badge, Input, Popover, Typography } from 'antd';
+import { Badge, Input, message, Popover, Typography } from 'antd';
 const { TextArea } = Input;
 const { Paragraph } = Typography;
 
@@ -64,7 +64,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public save = async () => {
     this.unhighlightRelatedComment();
-    console.log('this', JSON.stringify(this.state.text));
+
     const comment = {
       ...this.props.comment,
       text: this.state.text,
@@ -72,8 +72,12 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
     };
 
-    await this.props.onSave(comment);
-    this.fadeSavedState();
+    try {
+      await this.props.onSave(comment);
+      this.fadeSavedState();
+    } catch (error) {
+      message.error(`Error saving comment: ${JSON.stringify(error)}`);
+    }
   };
 
   public edited = () => {
@@ -153,8 +157,12 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     }
   };
 
-  public delete = () => {
-    this.props.onDelete(this.props.comment);
+  public delete = async () => {
+    try {
+      await this.props.onDelete(this.props.comment);
+    } catch (error) {
+      message.error(`Error deleting comment: ${JSON.stringify(error)}`);
+    }
   };
 
   public fadeSavedState = () => {
