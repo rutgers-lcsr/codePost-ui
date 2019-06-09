@@ -619,7 +619,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const subHeaderLeftBottom = [
       <StatusTags key="subheader-status-tags" assignment={this.state.assignment} submission={this.state.submission} />,
       <Divider key="subheader-divider" type="vertical" />,
-      <Students key="subheader-students" submission={this.state.submission} />,
+      <Students
+        key="subheader-students"
+        submission={this.state.submission}
+        isAnonymous={this.state.assignment.anonymousGrading}
+      />,
     ];
 
     const subHeaderRightBottom = [<LastEdited key="subheader-last-edited" submission={this.state.submission} />];
@@ -873,16 +877,35 @@ const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
   );
 };
 
-// MISSING: Anonymized Logic
-const Students = (props: { submission: AnonymousSubmissionType }) => {
-  let studentString;
+const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boolean }) => {
+  const [showStudents, setShowStudents] = React.useState(false);
 
-  if (props.submission.students === undefined) {
+  const reveal = () => {
+    setShowStudents(true);
+  };
+
+  let studentString;
+  let revealButton;
+
+  if (props.submission.students === undefined || (props.isAnonymous && !showStudents)) {
     studentString = `${props.submission.id} <Anonymized>`;
+
+    if (props.submission.students !== undefined && !showStudents) {
+      revealButton = (
+        <CPButton cpType="secondary" size="small" onClick={reveal} style={{ minWidth: '70px' }}>
+          reveal
+        </CPButton>
+      );
+    }
   } else {
     studentString = props.submission.students.join(', ');
   }
-  return <span className="cp-label">{studentString}</span>;
+  return (
+    <span>
+      <span className="cp-label">{studentString} </span>
+      {revealButton}
+    </span>
+  );
 };
 
 const UseEscKey = (props: { onPress: () => void }) => {
