@@ -54,6 +54,11 @@ const neutralDarkBorder = 'rgba(255, 255, 255, 0.3)';
 const neutralDarkDivider = 'rgba(255, 255, 255, 0.2)';
 const neutralDarkBackground = 'rgba(255, 255, 255, 0.1)';
 
+// Code highlighting
+const highlight = '#ffbf00';
+const highlightActive = '#c0ff00';
+
+
 // --------------- LAYOUT --------------- //
 
 const headerHeight = '64px';
@@ -151,6 +156,9 @@ module.exports = {
     fontLogo: fontLogo,
 
     headerHeight: headerHeight,
+
+    highlight: highlight,
+    highlightActive: highlightActive,
   }
 };
 

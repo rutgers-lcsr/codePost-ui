@@ -13,7 +13,7 @@ import CPPointInput from './CPPointInput';
 import { CommentType, UiComment } from '../../infrastructure/comment';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-import * as Animation from '../../infrastructure/animation';
+import themeVars from '../../styles/abstracts/_theme.js';
 
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
@@ -32,6 +32,7 @@ interface ICPCommentProps {
 
   addUnsaved: any;
   removeUnsaved: any;
+  removeRubricComment: any;
 
   setCommentPlacements: () => void;
 }
@@ -43,8 +44,6 @@ interface ICPCommentState {
 }
 
 class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
-  public nextFrameActionId: number;
-
   public state: Readonly<ICPCommentState> = {
     status: 'idle',
     text: this.props.comment.text ? this.props.comment.text : '',
@@ -53,15 +52,15 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public componentDidMount() {
     console.log(`Mounted: ${this.props.comment.id}`);
-    console.log(`comment mount: ${this.props.comment.id}`, this.state.text);
-    this.placeCommentOnNextFrame();
+    this.props.setCommentPlacements();
   }
 
   public componentDidUpdate(prevProps: ICPCommentProps) {
     if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
       // console.log(`Updated Type: ${this.props.comment.id}`);
       // this.props.setCommentPlacements();
-      this.placeCommentOnNextFrame();
+      console.log('---------->');
+      this.props.setCommentPlacements();
       // setTimeout(() => {
       //   console.log('--->');
       //   this.props.setCommentPlacements();
@@ -70,22 +69,18 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     }
   }
 
-  public placeCommentOnNextFrame = () => {
-    if (this.nextFrameActionId) {
-      Animation.clearNextFrameAction(this.nextFrameActionId);
-    }
-    this.nextFrameActionId = Animation.onNextFrame(this.props.setCommentPlacements);
-  };
-
   public save = async () => {
+    console.log('props', this.props.rubricComment);
     this.unhighlightRelatedComment();
 
     const comment = {
       ...this.props.comment,
       text: this.state.text,
       pointDelta: this.state.points,
-      rubricComment: this.props.rubricComment ? this.props.rubricComment.id : undefined,
+      rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
     };
+
+    console.log('payload', comment);
 
     await this.props.onSave(comment);
     this.fadeSavedState();
@@ -142,6 +137,14 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     // this.props.updateComment(comment.id, comment, this.props.file, false);
   };
 
+  public onCommentClick = (e: any) => {
+    if (e.target.textContent === 'expand') {
+      e.stopPropagation();
+    } else {
+      this.activate();
+    }
+  };
+
   public activate = () => {
     this.props.changeActive(this.props.comment.id);
   };
@@ -168,6 +171,13 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     // https://stackoverflow.com/questions/16429511/how-can-i-detect-when-a-line-is-automatically-wrapped-in-a-textarea
     // Maybe try to updates placement only on wrap
     this.props.setCommentPlacements();
+  };
+
+  public removeRubricComment = () => {
+    if (this.props.rubricComment) {
+      this.edited();
+      this.props.removeRubricComment(this.props.comment, this.props.rubricComment);
+    }
   };
 
   public delete = () => {
@@ -198,7 +208,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     const className = `highlight-${this.props.comment.id}`;
     const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', '#c0ff00', 'important');
+      elem.style.setProperty('background-color', themeVars.theme.highlightActive, 'important');
     });
 
     // For handling markdown
@@ -213,7 +223,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     const className = `highlight-${this.props.comment.id}`;
     const elems = document.getElementsByClassName(className);
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', '#ffbf00', 'important');
+      elem.style.setProperty('background-color', themeVars.theme.highlight, 'important');
       // elem.style.setProperty('opacity', '0.2', 'important');
     });
 
@@ -225,8 +235,11 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     // }
   };
 
+  public onExpand = (e: any) => {
+    console.log('e', e);
+  };
+
   public render() {
-    console.log(`comment ${this.props.comment.id}:`, this.props.comment, this.state.text);
     const className = `cp-comment cp-comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
     // console.log('commment', this.props.comment.id, this.props.placement);
 
@@ -259,11 +272,19 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
     let badge = null;
     if (points > 0) {
-      badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: '#f64852' }} />;
+      badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: themeVars.theme.actionRed }} />;
     } else if (points < 0) {
-      badge = <Badge count={`+${points * -1}`} className="cp-badge" style={{ backgroundColor: '#24be85' }} />;
+      badge = (
+        <Badge
+          count={`+${points * -1}`}
+          className="cp-badge"
+          style={{ backgroundColor: themeVars.theme.actionGreen }}
+        />
+      );
     } else {
-      badge = <Badge count={points} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />;
+      badge = (
+        <Badge count={points} className="cp-badge" style={{ backgroundColor: themeVars.theme.neutralSecondaryText }} />
+      );
     }
 
     switch (this.state.status) {
@@ -304,7 +325,9 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
-          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }}>X</span>
+          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }} onClick={this.removeRubricComment}>
+            X
+          </span>
         );
       }
     }
@@ -314,8 +337,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       commentElements.comment = (
         <Paragraph
           className="cp-comment__comment"
-          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-          ellipsis={{ rows: 2, expandable: true, onExpand: this.placeCommentOnNextFrame }}
+          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
+          ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
         >
           {this.state.text}
         </Paragraph>
@@ -323,7 +346,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       // commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
-      onClick = this.activate;
+      // onClick = this.activate;
+      onClick = this.onCommentClick;
       cursor = 'pointer';
     }
 
@@ -332,8 +356,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       commentElements.comment = (
         <Paragraph
           className="cp-comment__comment"
-          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-          ellipsis={{ rows: 2, expandable: true, onExpand: this.placeCommentOnNextFrame }}
+          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
+          ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
         >
           {this.state.text}
         </Paragraph>
@@ -389,7 +413,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '15px', lineHeight: '9px' }}>
+              <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '6px', lineHeight: '9px' }}>
                 <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
               </div>
             </div>

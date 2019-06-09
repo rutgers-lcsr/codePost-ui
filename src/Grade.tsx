@@ -272,6 +272,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public async componentDidMount() {
+    document.body.style.overflow = 'hidden';
+
     this.setState({ isLoading: true });
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     const submission = await Submission.readAnonymous(submissionID);
@@ -323,6 +325,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         selectedFile,
       });
     }
+  }
+
+  public componentWillUnmount() {
+    document.body.style.overflow = 'auto';
   }
 
   // -------------------------- Loading -------------------------- //
@@ -403,12 +409,13 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public saveComment = async (comment: CommentType) => {
-    // console.log('save comment grade');
+    console.log('save comment grade', comment);
     let savedComment;
     if (comment.id < 0) {
       savedComment = await CommentIO.create(comment);
     } else {
       savedComment = await CommentIO.update(comment);
+      console.log('saved comment', savedComment);
     }
 
     const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, savedComment.id);
@@ -774,6 +781,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           saveComment={this.saveComment}
           addUnsaved={this.addUnsaved}
           removeUnsaved={this.removeUnsaved}
+          removeRubricComment={this.removeRubricComment}
         />
       );
 

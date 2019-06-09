@@ -1,5 +1,9 @@
 import * as React from 'react';
 
+import { Button, Icon } from 'antd';
+
+const ButtonGroup = Button.Group;
+
 // import CPComment from './CPComment';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -8,10 +12,14 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 // import { CommentMock } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 
-// import * as Animation from '../../infrastructure/animation';
+import CPButton from '../core/CPButton';
+
+import * as Animation from '../../infrastructure/animation';
 // import { RubricCommentMock } from '../../infrastructure/rubricComment';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
+
+import Layout from '../core/LayoutUtils';
 
 interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
   file: FileType;
@@ -19,9 +27,24 @@ interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
   comments: React.ReactNode;
 }
 
-class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
-  // public nextFrameActionId: number;
+interface ICPLayoutCodePanelState {
+  zoom: number;
+  zoomVisible: boolean;
+}
+
+class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayoutCodePanelState> {
+  // Pre-sets
+  public lineHeight = 20;
+  public fontSize = 12;
+  public highlightHeight = 16;
+  public lineNumberPadding = 14.41;
   public commentsHeight = 0;
+  public nextFrameActionId: number;
+
+  public state: Readonly<ICPLayoutCodePanelState> = {
+    zoom: 1,
+    zoomVisible: false,
+  };
 
   public componentDidMount() {
     this.resizeComponents();
@@ -35,6 +58,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     if (codeContainer !== null) {
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
+
+    const fileMenu = document.getElementById('file-menu');
+    if (fileMenu !== null) {
+      fileMenu.addEventListener('click', this.resizeOnNextFrame);
+    }
   }
 
   public componentWillUnmount() {
@@ -46,6 +74,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     const codeContainer = document.getElementById('cp-code-container');
     if (codeContainer !== null) {
       codeContainer.removeEventListener('wheel', this.scrollFromCodeContainer);
+    }
+
+    const fileMenu = document.getElementById('file-menu');
+    if (fileMenu !== null) {
+      fileMenu.removeEventListener('click', this.resizeOnNextFrame);
     }
   }
 
@@ -81,6 +114,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     }
   }
 
+  public resizeOnNextFrame = () => {
+    if (this.nextFrameActionId) {
+      Animation.clearNextFrameAction(this.nextFrameActionId);
+    }
+    this.nextFrameActionId = Animation.onNextFrame(this.resizeComponents);
+  };
+
   public resizeComponents = () => {
     // codeContainer
     // codeUnderlay
@@ -99,7 +139,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
       const commentsContainer = document.getElementById('cp-code-panel--comments');
       const comments = document.getElementById('comments');
 
-      const lineHeight = 20;
+      const lineHeight = Layout.pixelsPerLine();
       const codeHeight = this.props.file.code.split('\n').length * lineHeight;
 
       if (
@@ -161,6 +201,35 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
   //   this.nextFrameActionId = Animation.onNextFrame(callback);
   // };
 
+  public zoomIn = () => {
+    console.log('zi');
+    const zoom = Math.min(2, this.state.zoom + 0.1);
+    this.setState({ zoom }, this.resizeComponents);
+  };
+
+  public zoomOut = () => {
+    console.log('zo');
+    const zoom = Math.max(0.5, this.state.zoom - 0.1);
+    this.setState({ zoom }, this.resizeComponents);
+  };
+
+  public updateCodeStyle = () => {
+    return {
+      lineHeight: `${this.lineHeight * this.state.zoom}px`,
+      fontSize: `${this.fontSize * this.state.zoom}px`,
+      paddingLeft: `${this.lineNumberPadding * this.state.zoom + 10}px`,
+      highlightHeight: `${this.highlightHeight * this.state.zoom}px`,
+    };
+  };
+
+  public onMouseEnter = () => {
+    this.setState({ zoomVisible: true });
+  };
+
+  public onMouseLeave = () => {
+    this.setState({ zoomVisible: false });
+  };
+
   public render() {
     // console.log('width', this.props.windowWidth);
 
@@ -178,11 +247,24 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     //   {this.props.file.code}
     // </SyntaxHighlighter>;
 
+    const { highlightHeight, paddingLeft, ...codeStyle } = this.updateCodeStyle();
+
+    const highlights = document.getElementsByClassName('highlight');
+    [].forEach.call(highlights, (highlight: any) => {
+      highlight.style.setProperty('height', highlightHeight);
+    });
+
     return (
       <div className="cp-code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
         <div className="cp-code-panel">
           <div className="cp-code-panel--code">
-            <div id="cp-code-container" className="cp-code-container">
+            <div
+              id="cp-code-container"
+              className="cp-code-container"
+              onMouseEnter={this.onMouseEnter}
+              onMouseLeave={this.onMouseLeave}
+            >
+              <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.zoomVisible} />
               <SyntaxHighlighter
                 id="code-syntax"
                 className="cp-code"
@@ -190,11 +272,12 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
                 style={googlecode}
                 showLineNumbers={true}
                 wrapLines={false}
+                customStyle={{ ...codeStyle, padding: '0px' }}
               >
                 {this.props.file.code}
               </SyntaxHighlighter>
               ;
-              <div id="code-underlay" className="cp-code">
+              <div id="code-underlay" className="cp-code" style={{ ...codeStyle, paddingLeft }}>
                 {this.props.code}
               </div>
             </div>
@@ -207,5 +290,25 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, {}> {
     );
   }
 }
+
+const Magnifier = (props: any) => {
+  return (
+    <div
+      style={{
+        ...{ position: 'absolute', top: '5px', right: '5px' },
+        visibility: props.visible ? 'visible' : 'hidden',
+      }}
+    >
+      <ButtonGroup>
+        <CPButton id="zoom-out" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
+          <Icon type="zoom-out" />
+        </CPButton>
+        <CPButton id="zoom-in" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
+          <Icon type="zoom-in" />
+        </CPButton>
+      </ButtonGroup>
+    </div>
+  );
+};
 
 export default withWindowWatcher(CPLayoutCodePanel);

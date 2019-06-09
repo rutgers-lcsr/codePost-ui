@@ -65,7 +65,7 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
     const fileMenu = this.buildFileMenu(this.props.files);
 
     return (
-      <div>
+      <div id="file-menu">
         <div style={{ padding: '13px 20px 0px 16px' }}>
           <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Files

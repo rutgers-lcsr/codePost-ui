@@ -2,6 +2,8 @@ import * as React from 'react';
 import { CommentType } from '../../infrastructure/comment';
 import { POSITION } from '../../types/common';
 
+import themeVars from '../../styles/abstracts/_theme.js';
+
 interface IStyles {
   [highlightID: string]: number;
 }
@@ -151,7 +153,9 @@ export default class CodePanelUtils {
     for (const [highlight, level] of Object.entries(styles)) {
       const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: #ffbf00 !important; opacity: ${tint} !important;}`,
+        `.highlight-${highlight} {background-color: ${
+          themeVars.theme.highlight
+        } !important; opacity: ${tint} !important;}`,
       );
     }
 

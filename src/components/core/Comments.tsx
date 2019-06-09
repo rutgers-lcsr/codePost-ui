@@ -9,7 +9,11 @@ import { FileType } from '../../infrastructure/file';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
-export interface ICommentsProps {
+import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
+
+import * as Animation from '../../infrastructure/animation';
+
+export interface ICommentsProps extends IWithWindowWatcherProps {
   // file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
@@ -29,6 +33,7 @@ export interface ICommentsProps {
 
   addUnsaved: any;
   removeUnsaved: any;
+  removeRubricComment: any;
 }
 
 interface ICommentPlacement {
@@ -46,7 +51,17 @@ interface IBlock {
   endAt: number;
 }
 
+const pixelsPerLine = (): number => {
+  let lineHeight = 20; // estimate until the lines are rendered
+  const lineElement = document.getElementById('line-0');
+  if (lineElement) {
+    lineHeight = lineElement.getBoundingClientRect().height;
+  }
+  return lineHeight;
+};
+
 class Comments extends React.Component<ICommentsProps, ICommentsState> {
+  public nextFrameActionId: number;
   public wrapperRef: any;
   public constructor(props: ICommentsProps) {
     super(props);
@@ -81,11 +96,38 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
+
+    const zoomIn = document.getElementById('zoom-in');
+    const zoomOut = document.getElementById('zoom-out');
+    if (zoomIn !== null && zoomOut !== null) {
+      zoomIn.addEventListener('click', this.placeCommentsOnNextFrame);
+      zoomOut.addEventListener('click', this.placeCommentsOnNextFrame);
+    }
   }
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
+
+    const zoomIn = document.getElementById('zoom-in');
+    const zoomOut = document.getElementById('zoom-out');
+    if (zoomIn !== null && zoomOut !== null) {
+      zoomIn.removeEventListener('click', this.placeCommentsOnNextFrame);
+      zoomOut.removeEventListener('click', this.placeCommentsOnNextFrame);
+    }
   }
+
+  public componentDidUpdate(prevProps: ICommentsProps) {
+    if (this.props.windowWidth !== prevProps.windowWidth || this.props.windowHeight !== prevProps.windowHeight) {
+      this.placeCommentsOnNextFrame();
+    }
+  }
+
+  public placeCommentsOnNextFrame = () => {
+    if (this.nextFrameActionId) {
+      Animation.clearNextFrameAction(this.nextFrameActionId);
+    }
+    this.nextFrameActionId = Animation.onNextFrame(this.setCommentPlacements);
+  };
 
   public changeActive = (id: number | undefined) => {
     if (id && id !== this.props.activeCommentID) {
@@ -105,11 +147,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       //    - Make comment position absolute
       //    - Set upper margin at <startLine> em down from top
 
-      let pixelsPerLine = 20; // estimate until the lines are rendered
-      const lineElement = document.getElementById('line-0');
-      if (lineElement) {
-        pixelsPerLine = lineElement.getBoundingClientRect().height;
-      }
+      const lineHeight = pixelsPerLine();
 
       const arrowDisplacement = 32;
 
@@ -119,7 +157,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       //    code-container::padding-top
       const containerDifference = 28 + 25;
 
-      let startAt = comment.startLine * pixelsPerLine - arrowDisplacement + containerDifference;
+      let startAt = comment.startLine * lineHeight - arrowDisplacement + containerDifference;
 
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
@@ -187,16 +225,19 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
-    const commentElement = document.getElementById(`comment-${lastPlacement.commentID}`);
-    let heightOfComment = 80;
-    if (commentElement) {
-      heightOfComment = commentElement.clientHeight;
-    }
-
-    const lowestCommentBottom = lastPlacement.placement + heightOfComment + 10;
-
-    const lineHeight = 20;
+    const lineHeight = pixelsPerLine();
     const codeHeight = this.props.file.code.split('\n').length * lineHeight;
+
+    let lowestCommentBottom = 0;
+    if (lastPlacement) {
+      const commentElement = document.getElementById(`comment-${lastPlacement.commentID}`);
+      let heightOfComment = 80;
+      if (commentElement) {
+        heightOfComment = commentElement.clientHeight;
+      }
+
+      lowestCommentBottom = lastPlacement.placement + heightOfComment + 10;
+    }
 
     // 25, 28 = padding on top of code
     // 90 = intercom padding
@@ -219,7 +260,6 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public render() {
-    console.log('Comments rerender', this.props.comments);
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;
@@ -256,7 +296,8 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
           onDelete={this.props.deleteComment}
           addUnsaved={this.props.addUnsaved}
           removeUnsaved={this.props.removeUnsaved}
-          setCommentPlacements={this.setCommentPlacements}
+          setCommentPlacements={this.placeCommentsOnNextFrame}
+          removeRubricComment={this.props.removeRubricComment}
         />
       );
     });
@@ -268,4 +309,4 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   }
 }
 
-export default Comments;
+export default withWindowWatcher(Comments);
