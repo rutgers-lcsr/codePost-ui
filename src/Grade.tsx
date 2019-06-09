@@ -2,11 +2,6 @@ import * as React from 'react';
 
 import * as moment from 'moment';
 
-// import { CodePanel } from './components/Code/CodePanel';
-// import Finalize from './components/grade/Finalize';
-// import Rubric from './components/grade/Rubric';
-// import SubmissionInfo from './components/grade/SubmissionInfo';
-
 import { CircularProgress } from 'react-md';
 
 import {
@@ -56,14 +51,15 @@ interface IGradeState {
   submission?: AnonymousSubmissionType;
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  activeCommentID?: number;
-  unsavedComments: IdMapType;
 
   files: FileType[];
   graders: string[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   allowGradersToEditRubric: boolean;
+
+  activeCommentID?: number;
+  unsavedComments: IdMapType;
 
   selectedFile: FileType | undefined;
 }
@@ -165,6 +161,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   // --- Grading
+
+  // return [deductions, bonuses]
   public static pointsInFile = (
     file: FileType,
     comments: CommentType[],
@@ -175,10 +173,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         if (!UiComment.isNew(comment)) {
           const points = UiComment.points(comment, rubricComments[comment.id]);
           if (points > 0) {
-            // Deduction
+            // Deductions
             return [accumulator[0] + points, accumulator[1]];
           } else {
-            // Bonus points
+            // Bonuses
             return [accumulator[0], accumulator[1] - points];
           }
         } else {
@@ -281,6 +279,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public async componentDidMount() {
+    // Prevent document from "pulling" on scroll
+    // 'es muy importante!'
     document.body.style.overflow = 'hidden';
 
     this.setState({ isLoading: true });
@@ -348,18 +348,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     return settings;
   };
 
-  public refreshRubric = async () => {
-    if (!this.state.assignment) {
-      return;
-    }
-
-    this.setState({ isLoading: true });
-    const [rubricCategories, rubricComments] = await this.loadRubric(this.state.assignment.id);
-    // @ts-ignore
-    this.setState({ rubricCategories, rubricComments });
-    this.setState({ isLoading: false });
-  };
-
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
 
@@ -393,9 +381,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
-    console.log('adding comment', comment);
     const comments = Grade.addCommentToState(this.state.comments, comment, file);
-    console.log('comments', comments);
     const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     this.setState({ comments, unsavedComments, activeCommentID: comment.id });
   };
@@ -418,13 +404,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public saveComment = async (comment: CommentType) => {
-    console.log('save comment grade', comment);
     let savedComment;
     if (comment.id < 0) {
       savedComment = await CommentIO.create(comment);
     } else {
       savedComment = await CommentIO.update(comment);
-      console.log('saved comment', savedComment);
     }
 
     const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, savedComment.id);
@@ -522,62 +506,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
   };
 
-  // public updateComment = (commentID: number, newComment: CommentType, isSaved: boolean): boolean => {
-  //   if (!this.state.submission) {
-  //     return false;
-  //   }
-
-  //   const [comments, commentRubricComments, unsavedComments] = this.updateCommentHelper(
-  //     commentID,
-  //     newComment,
-  //     isSaved,
-  //     this.state.comments,
-  //     this.state.commentRubricComments,
-  //     this.state.unsavedComments,
-  //   );
-
-  //   this.setState({ comments, commentRubricComments, unsavedComments });
-  //   return true;
-  // };
-
-  // Delete the comment json from the submission state
-  // Then delete the comment from the remote db
-  // public deleteComment = (comment: CommentType): void => {
-  //   // const { submission, comments, commentRubricComments } = this.state;
-  //   // if (!submission) {
-  //   //   return;
-  //   // }
-
-  //   const index = this.state.comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
-  //   const comments = {
-  //     ...this.state.comments,
-  //     [comment.file]: [
-  //       ...this.state.comments[comment.file].slice(0, index),
-  //       ...this.state.comments[comment.file].slice(index + 1),
-  //     ],
-  //   };
-
-  //   const { [comment.id]: comm, ...commentRubricComments } = this.state.commentRubricComments;
-
-  //   this.setState({ comments, commentRubricComments });
-
-  //   if (this.state.unsavedComments.includes(comment.id)) {
-  //     const unsavedComments = this.state.unsavedComments.filter((i: number) => {
-  //       return i !== comment.id;
-  //     });
-  //     this.setState({ unsavedComments });
-  //   }
-
-  //   // Think about how to handle this case
-  //   // Options:
-  //   // - Leave as is. If the DELETE fails, it's not that big of a deal. Just annoying.
-  //   // - Keep comment rendered until DELETE completes
-  //   // - Remove comment render, add in a global page loading icon.
-  //   if (comment.id > 0) {
-  //     CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
-  //   }
-  // };
-
   public toggleFinalized = (): Promise<any> => {
     const { submission } = this.state;
     if (!submission) {
@@ -639,22 +567,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   //////////////////////////////////////
 
   public render() {
-    // const {
-    //   assignment,
-    //   activeCommentID  ,
-    //   commentRubricComments,
-    //   files,
-    //   rubricCategories,
-    //   rubricComments,
-    //   submission,
-    //   comments,
-    //   isLoading,
-    //   graders,
-    //   positiveNegativeAlert,
-    // } = this.state;]
-
-    // console.log(this.state.files);
-
     const isCourseAdmin = this.isCourseAdmin(this.state.assignment);
 
     if (this.state.isLoading) {
@@ -664,29 +576,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     if (!this.state.submission || !this.state.assignment) {
       return <div>No Submission Found</div>;
     }
-
-    // --------- Mock Data --------- //
-
-    // const category1 = RubricCategoryMock;
-    // const category2 = { ...RubricCategoryMock, id: 2, name: 'Another Category' };
-
-    // const comment1 = RubricCommentMock;
-    // const comment2 = { ...RubricCommentMock, id: 2, text: 'another rubric comment' };
-    // const comment3 = { ...RubricCommentMock, id: 3, category: 2, text: 'missing a semicolon' };
-
-    // const rubricCategories = [category1, category2];
-    // const rubricComments = { 1: [comment1, comment2], 2: [comment3] };
-
-    // const file1 = FileMock;
-    // const file2 = { ...FileMock, id: 2, name: 'loops.java', comments: [2] };
-
-    // const files = [file1, file2];
-
-    // const getPointsInFile = (file: FileType): number => {
-    //   return Math.floor(Math.random() * 10) - 4;
-    // };
-
-    // ------------------------------ //
 
     const headerLeft = [<CPLogo key="header-0" cpType="main" />];
 
@@ -742,32 +631,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       </div>
     );
 
-    // const addComment = (comment: CommentType, file: FileType) => {
-    //   this.changeActiveComment(comment.id);
-    //   const didCommentAdd = this.addComment(comment, file);
-    //   // CodePanelUtils.updateCommentPanelHeight();
-    //   return didCommentAdd;
-    // };
-
     let content = <div>no selected file</div>;
     if (this.state.selectedFile) {
-      //       <Code
-      //   // submission={this.state.submission}
-      //   file={this.state.selectedFile}
-      //   comments={CodePanelUtils.sortComments(this.state.comments[this.state.selectedFile.id])}
-      //   // rubricComments={this.state.commentRubricComments}
-      //   readOnly={false}
-      //   addComment={addComment}
-      //   commentCounter={1} // MISSING
-      //   updateCommentCounter={updateCounter}
-      //   // activeCommentID  ={1} // MISSING
-      //   // changeActive={this.changeActiveComment}
-      //   // deleteComment={this.deleteComment}
-      //   // updateComment={this.updateComment}
-      //   // updateSubmissionGrade={this.updateSubmissionGrade}
-      //   // unsavedComments={this.state.unsavedComments}
-      // />
-
       const code = (
         <Code
           file={this.state.selectedFile}
@@ -777,7 +642,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           user={this.props.user}
         />
       );
-      // console.log('grade unsaved', this.state.unsavedComments);
+
       const comments = (
         <Comments
           comments={this.state.comments[this.state.selectedFile.id]}
@@ -796,7 +661,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
       content = <CPLayoutCodePanel comments={comments} code={code} file={this.state.selectedFile} />;
     }
-    //
+
     return (
       <CPLayoutGrade
         header={header}
@@ -905,23 +770,11 @@ const SubheaderGrader = (props: ISubheaderGraderProps) => {
   return dropdown;
 };
 
-// interface IToggleFinalizeProps {
-//   submission: AnonymousSubmissionType;
-//   comments: IFileToCommentsMap;
-//   toggleFinalized: any;
-//   positiveNegativeAlert: boolean;
-//   updateSubmissionGrade: any;
-//   updateComment: any;
-//   files: FileType[];
-//   unsavedComments: number[];
-// }
-
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
   toggleFinalized: () => Promise<any>;
 }
 
-// MISSING: Positive/Negative, Toggle click, Unsaved comments modal
 const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -971,7 +824,7 @@ const StatusTags = (props: IStatusTagsProps) => {
       return 3;
     }
 
-    // never hits
+    // should never hit
     return 0;
   };
 
@@ -1048,44 +901,5 @@ const UseEscKey = (props: { onPress: () => void }) => {
 
   return null;
 };
-
-// const ToggleFinalize = (props: IToggleFinalizeProps) => {
-//   const {
-//     submission,
-//     comments,
-//     toggleFinalized,
-//     positiveNegativeAlert,
-//     updateSubmissionGrade,
-//     updateComment,
-//     files,
-//   } = props;
-//   const warningClassName = positiveNegativeAlert
-//     ? 'grade__finalize__positive-negative-alert'
-//     : 'grade__finalize__positive-negative-alert--none';
-//   return (
-//     <div className="grade__finalize">
-//       <div className="grade__finalize--warning">
-//         <Button
-//           icon
-//           tooltipLabel="Warning: This submission has both positive and negative point comments.
-//         Please check to make sure that this is intentional."
-//           tooltipPosition="left"
-//           className={warningClassName}
-//         >
-//           warning
-//         </Button>
-//       </div>
-//       <Finalize
-//         submission={submission}
-//         comments={comments}
-//         toggleFinalized={toggleFinalized}
-//         updateSubmissionGrade={updateSubmissionGrade}
-//         updateComment={updateComment}
-//         files={files}
-//         unsavedComments={props.unsavedComments}
-//       />
-//     </div>
-//   );
-// };
 
 export default Grade;

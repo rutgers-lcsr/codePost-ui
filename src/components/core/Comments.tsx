@@ -5,8 +5,6 @@ import CPComment from './CPComment';
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 
-// import CodePanelUtils from './CodePanelUtils';
-
 import { ICommentToRubricCommentMap } from '../../types/common';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
@@ -14,16 +12,9 @@ import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher'
 import * as Animation from '../../infrastructure/animation';
 
 export interface ICommentsProps extends IWithWindowWatcherProps {
-  // file: FileType;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   readOnly: boolean;
-  // activeCommentId?: number;
-  // changeActive: (id: number | number) => void;
-  // deleteComment: (comment: CommentType, file: FileType) => void;
-  // updateComment: (commentID: number, newComment: CommentType, file: FileType, isSaved: boolean) => boolean;
-  // updateSubmissionGrade: () => void;
-  // unsavedComments: number[];
 
   file: FileType;
   activeCommentID?: number;
@@ -42,7 +33,6 @@ interface ICommentPlacement {
 }
 
 interface ICommentsState {
-  recentlyActivatedComment: boolean;
   placements: ICommentPlacement[];
 }
 
@@ -70,18 +60,11 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     this.handleClickOutside = this.handleClickOutside.bind(this);
 
     this.state = {
-      recentlyActivatedComment: false,
       placements: this.props.comments.map((comment: CommentType, index: number) => {
         return { commentID: comment.id, placement: comment.startLine * 18 };
       }),
     };
   }
-  // public state: Readonly<ICommentsState> = {
-  //   recentlyActivatedComment: false,
-  //   placements: this.props.comments.map((comment: CommentType, index: number) => {
-  //     return { commentID: comment.id, placement: comment.startLine * 18 };
-  //   }),
-  // };
 
   public setWrapperRef = (node: any) => {
     this.wrapperRef = node;
@@ -130,10 +113,6 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   };
 
   public changeActive = (id: number | undefined) => {
-    if (id && id !== this.props.activeCommentID) {
-      this.setState({ recentlyActivatedComment: true });
-    }
-
     this.props.changeActive(id);
   };
 
@@ -142,11 +121,6 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     const blocks: IBlock[] = [];
 
     return comments.map((comment: CommentType) => {
-      // Figure out where to place comment vertically
-      // Placement model:
-      //    - Make comment position absolute
-      //    - Set upper margin at <startLine> em down from top
-
       const lineHeight = pixelsPerLine();
 
       const arrowDisplacement = 32;
@@ -159,6 +133,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
       let startAt = comment.startLine * lineHeight - arrowDisplacement + containerDifference;
 
+      // MISSING
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
       if (blockElement) {
@@ -173,33 +148,11 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
         }
       }
 
-      // const isActive = activeCommentId === comment.id;
       let heightOfComment = 80; // estimate until the elements are rendered
       const commentElement = document.getElementById(`comment-${comment.id}`);
       // console.log(`looking for comment ${comment.id} - ${commentElement ? 'found' : 'not found'}`);
       if (commentElement) {
         heightOfComment = commentElement.clientHeight;
-
-        if (this.state.recentlyActivatedComment && comment.id === this.props.activeCommentID) {
-          // console.log('------->>>>>>');
-          // heightOfComment = heightOfComment - 18;
-          this.setState({ recentlyActivatedComment: false });
-        }
-        // console.log(
-        //   commentElement,
-        //   commentElement.clientHeight,
-        //   commentElement.scrollHeight,
-        //   commentElement.offsetHeight,
-        //   commentElement.getBoundingClientRect().height,
-        // );
-        // console.log(comment.id, heightOfComment);
-        // const textArea = commentElement.getElementsByTagName('textarea')[0];
-
-        // if (textArea && textArea.getBoundingClientRect().height < 42) {
-        //   heightOfComment += 33;
-        // }
-      } else {
-        console.error('just in case');
       }
 
       heightOfComment = heightOfComment + 10; // padding
@@ -213,12 +166,6 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       blocks.sort((a: IBlock, b: IBlock) => {
         return a.startAt - b.startAt;
       });
-
-      // const zindex = 100000 - startAt;
-      // const style: ICSSStyleObject = {
-      //   top: `${startAt}px`,
-      //   zIndex: zindex.toString(),
-      // };
 
       return { commentID: comment.id, placement: startAt };
     });
@@ -276,13 +223,6 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       const rubricComment = this.props.rubricComments.hasOwnProperty(comment.id)
         ? this.props.rubricComments[comment.id]
         : undefined;
-
-      // console.log('rubricComment before comment', rubricComment);
-      // console.log('rub', rubricComment);
-
-      // console.log('unsaved comments', { ...this.props.unsavedComments });
-
-      // const uiComment = { comment, rubricComment };
 
       return (
         <CPComment

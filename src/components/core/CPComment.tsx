@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
-// @ts-ignore
+// @ts-ignore: no-unused-variable
 import { Badge, Input, Popover, Typography } from 'antd';
 const { TextArea } = Input;
 const { Paragraph } = Typography;
@@ -57,16 +57,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
 
   public componentDidUpdate(prevProps: ICPCommentProps) {
     if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
-      // console.log(`Updated Type: ${this.props.comment.id}`);
-      // this.props.setCommentPlacements();
-      console.log('---------->');
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
       this.props.setCommentPlacements();
-      // setTimeout(() => {
-      //   console.log('--->');
-      //   this.props.setCommentPlacements();
-      // }, 1);
-      // this.props.setCommentPlacements();
     }
   }
 
@@ -106,8 +98,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     }
 
     this.setState({ points });
-    // const comment = { ...this.props.comment, pointDelta: points };
-    // this.props.updateComment(comment.id, comment, this.props.file, false);
   };
 
   public roundDownToNearestMultiple = (n: number, m: number) => {
@@ -121,18 +111,11 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   public onPlus = () => {
     const points = this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
     this.onChangePointInput(points);
-    // this.setState({ points });
-    // const comment = { ...this.props.comment, pointDelta: points };
-    // this.props.updateComment(comment.id, comment, this.props.file, false);
   };
 
   public onMinus = () => {
     const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
     this.onChangePointInput(points);
-    // this.setState({ points });
-
-    // const comment = { ...this.props.comment, pointDelta: points };
-    // this.props.updateComment(comment.id, comment, this.props.file, false);
   };
 
   public onCommentClick = (e: any) => {
@@ -152,8 +135,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   };
 
   public onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // const comment = { ...this.props.comment, text: e.target.value };
-    // this.props.updateComment(comment.id, comment, this.props.file, false);
     const text = e.target.value;
     this.setState({ text });
     if (text !== this.props.comment.text) {
@@ -161,13 +142,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     } else {
       this.idle();
     }
-    // update unsaved
 
-    // update unsaved conditional on match
-    // MISSING
-    // @ts-ignore
-    // https://stackoverflow.com/questions/16429511/how-can-i-detect-when-a-line-is-automatically-wrapped-in-a-textarea
-    // Maybe try to updates placement only on wrap
     this.props.setCommentPlacements();
   };
 
@@ -186,14 +161,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     this.setState({ status: 'saved' });
     window.setTimeout(() => this.setState({ status: 'idle' }), 1000);
   };
-
-  // public isUnsaved = () => {
-  //   return (
-  //     this.state.text !== this.props.comment.text ||
-  //     this.state.points !== this.points(this.props.comment, this.props.rubricComment) ||
-  //     this.state.rubricComment !== this.props.rubricComment
-  //   );
-  // };
 
   // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
   public handleShiftEnter = (e: any) => {
@@ -233,13 +200,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     // }
   };
 
-  public onExpand = (e: any) => {
-    console.log('e', e);
-  };
-
   public render() {
     const className = `cp-comment cp-comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
-    // console.log('commment', this.props.comment.id, this.props.placement);
 
     const commentElements: { [key: string]: React.ReactNode } = {
       line: null,
@@ -313,7 +275,6 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
           autosize
           className="cp-comment__text-area"
           value={this.state.text}
-          // value={this.props.comment.text ? this.props.comment.text : ''}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
         />
@@ -342,10 +303,8 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
           {this.state.text}
         </Paragraph>
       );
-      // commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
-      // onClick = this.activate;
       onClick = this.onCommentClick;
       cursor = 'pointer';
     }
