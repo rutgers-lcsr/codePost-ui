@@ -2,24 +2,24 @@ import React from 'react';
 
 import { Menu } from 'antd';
 
-import CPLayoutAdmin from '../../components/core/CPLayoutAdmin';
+import CPLayoutAdmin from '../../components/admin/other/CPLayoutAdmin';
 
-import CPAdminRubric from '../../components/core/CPAdminRubric';
+import CPAdminRubric from '../../components/admin/assignments/rubric/CPAdminRubric';
+// import CPRubricCategory from '../../components/admin/assignments/rubric/CPRubricCategory';
 
 import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
-import CPRubricCategory from '../../components/core/CPRubricCategory';
 
-import { RubricCategoryMock } from '../../infrastructure/rubricCategory';
-import { RubricCommentMock } from '../../infrastructure/rubricComment';
+// import { RubricCategoryMock } from '../../infrastructure/rubricCategory';
+// import { RubricCommentMock } from '../../infrastructure/rubricComment';
 
 // --------- Mock Data --------- //
 
-const category1 = RubricCategoryMock;
-const category2 = { ...RubricCategoryMock, id: 2, name: 'Another Category' };
-
-const comments1 = [RubricCommentMock, { ...RubricCommentMock, id: 2, text: 'another rubric comment' }];
-const comments2 = [{ ...RubricCommentMock, id: 3, category: 2, text: 'missing a semicolon' }];
+// const category1 = RubricCategoryMock;
+// const category2 = { ...RubricCategoryMock, id: 2, name: 'Another Category' };
+//
+// const comments1 = [RubricCommentMock, { ...RubricCommentMock, id: 2, text: 'another rubric comment' }];
+// const comments2 = [{ ...RubricCommentMock, id: 3, category: 2, text: 'missing a semicolon' }];
 
 // ------------------------------ //
 
@@ -66,14 +66,16 @@ export const Rubric = () => {
     </CPButton>,
   ];
 
-  const content = (
-    <div>
-      <CPRubricCategory rubricCategory={category1} rubricComments={comments1} />
-      <CPRubricCategory rubricCategory={category2} rubricComments={comments2} />
-    </div>
-  );
+  // const content = (
+  //   <div>
+  //     <CPRubricCategory rubricCategory={category1} rubricComments={comments1} />
+  //     <CPRubricCategory rubricCategory={category2} rubricComments={comments2} />
+  //   </div>
+  // );
 
   const onClick = (e: any) => null;
-  const rubric = <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} content={content} />;
-  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={rubric} isRubric={true} />;
+  const rubric = (
+    <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} isEmpty={false} content={<div />} />
+  );
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={rubric} />;
 };

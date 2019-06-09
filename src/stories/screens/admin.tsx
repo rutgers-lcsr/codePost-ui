@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Icon, Input, Menu, Switch, Table } from 'antd';
 
-import CPLayoutAdmin from '../../components/core/CPLayoutAdmin';
+import CPLayoutAdmin from '../../components/admin/other/CPLayoutAdmin';
 
-import CPAdminDetail from '../../components/core/CPAdminDetail';
+import CPAdminDetail from '../../components/admin/other/CPAdminDetail';
 
 import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
@@ -207,5 +207,5 @@ export const Admin = (goback: any, title: string, actionsGroup: string) => {
 
   const onClick = (e: any) => null;
   const adminDetail = <CPAdminDetail goBack={goback} title={title} actions={actions} content={content} />;
-  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} isRubric={false} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} />;
 };
