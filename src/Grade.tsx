@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import * as moment from 'moment';
 
-import { CircularProgress } from 'react-md';
+import Loading from './components/core/Loading';
 
 import {
   ICommentToRubricCommentMap,
@@ -570,7 +570,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const isCourseAdmin = this.isCourseAdmin(this.state.assignment);
 
     if (this.state.isLoading) {
-      return <CircularProgress id="progress" className="progress-circle" />;
+      return <Loading />;
     }
 
     if (!this.state.submission || !this.state.assignment) {
