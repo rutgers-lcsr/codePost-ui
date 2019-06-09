@@ -7,22 +7,29 @@ import * as React from 'react';
 
 /* other library imports */
 import { Redirect } from 'react-router-dom';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+
+import Arrow from './components/core/Arrow';
+import GenericLayout from './components/core/layouts/GenericLayout';
+import SelectorSider from './components/core/SelectorSider';
+
+import { Tabs } from 'antd';
+import { ClickParam } from 'antd/lib/menu';
+import { OptionProps } from 'antd/lib/select';
 
 /* codePost imports */
-import GraderAssignmentPanel from './components/grader/GraderAssignmentPanel';
+import MySubmissionsPanel from './components/grader/MySubmissionsPanel';
 import SectionPanel from './components/grader/SectionPanel';
 import ViewAllPanel from './components/grader/ViewAllPanel';
 
-import VerticalPane from './components/VerticalPane';
-
-import { ICourseToAssignmentMap, IOption } from './types/common';
+import { ICourseToAssignmentMap } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
 import { loadIDList } from './infrastructure/generics';
 import { Section, SectionType } from './infrastructure/section';
 import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+
+const { TabPane } = Tabs;
 
 /**********************************************************************************************************************/
 
@@ -53,6 +60,9 @@ export interface IGraderProps {
   history: any;
   superGraderCourses: CourseType[];
   sectionsLed: SectionType[];
+
+  // handleLogout
+  handleLogout: () => void;
 }
 
 class Grader extends React.Component<IGraderProps, IGraderState> {
@@ -149,7 +159,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   // Handlers
   ///////////////////////////////////////
 
-  public handleAssignmentChange = async (option: IOption, event: any) => {
+  public handleAssignmentChange = async (newAssignment: ClickParam) => {
     const { assignments, currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -157,7 +167,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     const currentAssignment = assignments[currentCourse.id].filter((obj: AssignmentType) => {
-      return obj.id === option.value;
+      return obj.id === Number(newAssignment.key);
     })[0];
 
     if (currentAssignment) {
@@ -175,9 +185,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
   };
 
-  public handleCourseChange = async (option: IOption) => {
+  public handleCourseChange = async (newCourseID: string, option: React.ReactElement<OptionProps>) => {
     const currentCourse = this.state.courses.filter((obj: CourseType) => {
-      return obj.id === option.value;
+      return obj.id === Number(newCourseID);
     })[0];
 
     const currentSections = await loadIDList(currentCourse.sections, Section);
@@ -212,13 +222,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       label: assignment.name,
       value: assignment.id,
     }));
-  };
-
-  public tabCurrentFormatter = (currentAssignment: AssignmentType | undefined) => {
-    if (!currentAssignment) {
-      return undefined;
-    }
-    return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
   public getSectionParameters = (sections: SectionType[]) => {
@@ -307,29 +310,27 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
   public getViewAllComponent = () => {
     if (!this.state.currentCourse || !this.state.currentAssignment) {
-      return ['', ''];
+      return null;
     }
 
     const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, this.state.currentCourse);
 
     if (!isSuperGrader) {
-      return ['', ''];
+      return null;
     }
 
-    const viewAllTab = <Tab className="tabs--grader__tab">View All</Tab>;
     const viewAllPanel = (
-      <TabPanel>
-        <div className="tabs--grader__panel-padding" />
+      <TabPane key="2" tab="View All">
         <ViewAllPanel currentCourse={this.state.currentCourse} currentAssignment={this.state.currentAssignment} />
-      </TabPanel>
+      </TabPane>
     );
 
-    return [viewAllTab, viewAllPanel];
+    return viewAllPanel;
   };
 
   public getSectionsComponent = () => {
     if (!this.state.currentCourse || !this.state.currentAssignment) {
-      return ['', ''];
+      return null;
     }
 
     const sections = this.props.sectionsLed.slice();
@@ -339,22 +340,20 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const hasSections = sectionsInThisCourse.length > 0;
 
     if (!hasSections) {
-      return ['', ''];
+      return null;
     }
 
-    const sectionsTab = <Tab className="tabs--grader__tab">Sections</Tab>;
     const sectionsPanel = (
-      <TabPanel>
-        <div className="tabs--grader__panel-padding" />
+      <TabPane key="3" tab="Sections">
         <SectionPanel
           sectionsLed={sectionsInThisCourse}
           currentCourse={this.state.currentCourse}
           currentAssignment={this.state.currentAssignment}
         />
-      </TabPanel>
+      </TabPane>
     );
 
-    return [sectionsTab, sectionsPanel];
+    return sectionsPanel;
   };
 
   ///////////////////////////////////////
@@ -390,65 +389,60 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     // if not loaded yet, render a get started div
     if (!currentCourse) {
-      graderPanelContent = (
-        <div className="grader__get-started">
-          <img className="grader__get-started__arrow" src={require('./img/get-started-arrow-left.png')} />
-          <div className="grader__get-started__text">Select a course to get started.</div>
-        </div>
-      );
+      graderPanelContent = <Arrow direction="left" color="green" text="Select a course to get started." />;
     } else if (!currentAssignment) {
       graderPanelContent = (
-        <div className="grader__get-started--assignment">
-          <img className="grader__get-started__arrow" src={require('./img/get-started-arrow-left-2.png')} />
-          <div className="grader__get-started__text">Select an assignment.</div>
+        <div style={{ paddingTop: 40 }}>
+          <Arrow direction="left" color="grey" text="Select an assignment." />
         </div>
       );
     } else {
-      const [viewAllTab, viewAllPanel] = this.getViewAllComponent();
-      const [sectionsTab, sectionsPanel] = this.getSectionsComponent();
+      const viewAllPanel = this.getViewAllComponent();
+      const sectionPanel = this.getSectionsComponent();
 
       graderPanelContent = (
-        <Tabs defaultIndex={0}>
-          <TabList className="tabs--grader">
-            <Tab className="tabs--grader__tab">My Claimed Submissions</Tab>
-            {viewAllTab}
-            {sectionsTab}
-          </TabList>
-          <TabPanel>
-            <div className="tabs--grader__panel-padding" />
-            <GraderAssignmentPanel
-              claimSubmission={this.claimSubmission}
-              releaseSubmission={this.releaseSubmission}
-              assignment={currentAssignment}
-              submissions={currentSubmissions}
-              isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
-              isLoadingSubmissions={isLoadingSubmissions}
-              sections={currentSections}
-              canViewSubmissionInfo={
-                currentSubmissions.length > 0 ? typeof currentSubmissions[0].students !== 'undefined' : false
-              }
-            />
-          </TabPanel>
-          {viewAllPanel}
-          {sectionsPanel}
-        </Tabs>
+        <div style={{ background: 'white', paddingTop: 25, paddingBottom: 25, paddingLeft: 50, paddingRight: 50 }}>
+          <Tabs defaultActiveKey="1" animated={false}>
+            <TabPane key="1" tab="My Submissions" style={{ overflow: 'scroll' }}>
+              <MySubmissionsPanel
+                claimSubmission={this.claimSubmission}
+                releaseSubmission={this.releaseSubmission}
+                assignment={currentAssignment}
+                submissions={currentSubmissions}
+                isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
+                isLoadingSubmissions={isLoadingSubmissions}
+                sections={currentSections}
+                canViewSubmissionInfo={
+                  currentSubmissions.length > 0 ? typeof currentSubmissions[0].students !== 'undefined' : false
+                }
+              />
+            </TabPane>
+            {viewAllPanel}
+            {sectionPanel}
+          </Tabs>
+        </div>
       );
     }
 
+    const sider = (
+      <SelectorSider
+        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
+        activeSelector={this.selectorCurrentFormatter(currentCourse)}
+        selectorItems={this.selectorItemsFormatter(courses)}
+        menuItems={this.tabItemsFormatter(currentCourse)}
+        onMenuClick={this.handleAssignmentChange}
+        onSelect={this.handleCourseChange}
+        theme="light"
+      />
+    );
+
     return (
-      <div className="grader">
-        <div className="grader__left-panel">
-          <VerticalPane
-            currentTab={this.tabCurrentFormatter(currentAssignment)}
-            currentSelector={this.selectorCurrentFormatter(currentCourse)}
-            selectorItems={this.selectorItemsFormatter(courses)}
-            tabItems={this.tabItemsFormatter(currentCourse)}
-            handleTabChange={this.handleAssignmentChange}
-            handleSelectorChange={this.handleCourseChange}
-          />
-        </div>
-        <div className="grader__right-panel">{graderPanelContent}</div>
-      </div>
+      <GenericLayout
+        sider={sider}
+        email={this.props.email}
+        handleLogout={this.props.handleLogout}
+        content={graderPanelContent}
+      />
     );
   }
 }

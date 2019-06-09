@@ -12,6 +12,7 @@
     "no-string-literal": false,
     "object-literal-sort-keys": false,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
+    "function-name": [false],
     "variable-name": [
       true,
       "check-format",

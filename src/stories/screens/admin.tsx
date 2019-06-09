@@ -207,5 +207,5 @@ export const Admin = (goback: any, title: string, actionsGroup: string) => {
 
   const onClick = (e: any) => null;
   const adminDetail = <CPAdminDetail goBack={goback} title={title} actions={actions} content={content} />;
-  return <CPLayoutAdmin onClick={onClick} header={header} detail={adminDetail} isRubric={false} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} isRubric={false} />;
 };

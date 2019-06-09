@@ -10,6 +10,7 @@ import { loadIDList } from '../infrastructure/generics';
 describe('Grader', () => {
   const setup = (propOverrides?: Partial<IGraderProps>) => {
     // default props
+    const logout = () => null;
     const props = Object.assign(
       {
         match: {
@@ -23,6 +24,7 @@ describe('Grader', () => {
         initialCourses: [],
         superGraderCourses: [],
         sectionsLed: [],
+        handleLogout: logout,
       },
       propOverrides,
     );
