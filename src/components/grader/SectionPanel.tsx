@@ -12,7 +12,6 @@ const { Option } = Select;
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './graderUtils';
-
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';

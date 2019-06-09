@@ -2,8 +2,16 @@
   height: 100%;
 }
 
+#Admin .student-table {
+  padding: 12px 5px;
+}
+
 #Admin .layout--admin {
   min-height: 100vh;
+
+  table {
+    padding-bottom: 15px;
+  }
 
   &__sider {
     &__header {
@@ -33,10 +41,11 @@
   }
 
   &__detail {
-    margin: 20px 61px;
+    margin: 20px 61px 0 61px;
     background-color: #fff;
     border-radius: 5px;
     padding: 20px 35px;
+    overflow: inherit;
 
     .ant-layout {
       background-color: #fff;
@@ -98,6 +107,10 @@
   &__content {
     margin: 48px 21px 48px 61px;
   }
+}
+
+.ant-collapse tr {
+  line-height: 5px;
 }
 
 #Generic {

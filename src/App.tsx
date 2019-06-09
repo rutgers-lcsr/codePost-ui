@@ -325,9 +325,7 @@ class App extends React.Component<{}, IState> {
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
-                addToast={this.addToast}
-                addLongToast={this.addLongToast}
-                addErrorToast={this.addErrorToast}
+                logout={this.handleLogout}
               />
             )}
           />

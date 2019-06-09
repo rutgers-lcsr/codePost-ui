@@ -43,16 +43,12 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
     switch (defaultPanel) {
       case 0:
       case 1:
-      case 2:
-      case 3:
         return 'submissions';
         break;
+      case 3:
+      case 4:
       case 5:
       case 6:
-      case 7:
-      case 8:
-      case 9:
-      case 10:
         return 'roster';
         break;
     }
@@ -85,10 +81,8 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
         >
           <Menu.Item key="0">Students</Menu.Item>
           <Menu.Item key="1">Graders</Menu.Item>
-          <Menu.Item key="2">Inactive Students</Menu.Item>
-          <Menu.Item key="3">Inactive Graders</Menu.Item>
         </SubMenu>
-        <Menu.Item key="4">
+        <Menu.Item key="2">
           <Icon type="file-text" />
           <span>Assignments</span>
         </Menu.Item>
@@ -101,14 +95,12 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
             </span>
           }
         >
-          <Menu.Item key="5">Students</Menu.Item>
-          <Menu.Item key="6">Graders</Menu.Item>
-          <Menu.Item key="7">Admin</Menu.Item>
-          <Menu.Item key="8">Sections</Menu.Item>
-          <Menu.Item key="9">Inactive Students</Menu.Item>
-          <Menu.Item key="10">Inactive Graders</Menu.Item>
+          <Menu.Item key="3">Students</Menu.Item>
+          <Menu.Item key="4">Graders</Menu.Item>
+          <Menu.Item key="5">Admin</Menu.Item>
+          <Menu.Item key="6">Sections</Menu.Item>
         </SubMenu>
-        <Menu.Item key="11">
+        <Menu.Item key="7">
           <Icon type="setting" />
           <span>Course Settings</span>
         </Menu.Item>
