@@ -3,11 +3,14 @@ import { Redirect } from 'react-router-dom';
 
 import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
-import VerticalPane from './components/VerticalPane';
+import GenericLayout from './components/core/layouts/GenericLayout';
+import SelectorSider from './components/core/SelectorSider';
 
-import { CircularProgress } from 'react-md';
+import { Card, Icon, Row, Spin, Statistic } from 'antd';
+import { ClickParam } from 'antd/lib/menu';
+import Arrow from './components/core/Arrow';
 
-import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, IOption } from './types/common';
+import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from './types/common';
 
 import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
@@ -45,7 +48,22 @@ export interface IStudentProps {
   email: string;
   match: any;
   history: any;
+
+  // handleLogout
+  handleLogout: () => void;
 }
+
+export enum STATUS {
+  SelectCourse,
+  NoAssignments,
+  SelectAssignment,
+  NoSubmission,
+  SubmissionLoading,
+  NotGraded,
+  ShowSubmission,
+}
+
+const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
 class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
@@ -166,7 +184,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return;
   };
 
-  public handleAssignmentChange = (option: IOption, event: any) => {
+  public handleAssignmentChange = (newAssignment: ClickParam) => {
     const { assignments, currentCourse } = this.state;
 
     if (!currentCourse) {
@@ -174,7 +192,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     const currentAssignment = assignments[currentCourse.id].filter((assignment: AssignmentType) => {
-      return assignment.id === option.value;
+      return assignment.id === Number(newAssignment.key);
     })[0];
 
     if (currentAssignment) {
@@ -240,11 +258,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return messages;
   };
 
-  public handleCourseChange = (option: IOption) => {
+  public handleCourseChange = (newCourseID: string) => {
     const currentCourse = this.state.courses.filter((course: CourseType) => {
-      return course.id === option.value;
+      return course.id === Number(newCourseID);
     })[0];
-
     this.setState({
       currentAssignment: undefined,
       currentCourse,
@@ -276,11 +293,79 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }));
   };
 
-  public tabCurrentFormatter = (currentAssignment: AssignmentType | undefined) => {
-    if (!currentAssignment) {
-      return undefined;
+  public getStatus = (
+    currentCourse: CourseType | undefined,
+    hasAssignments: boolean,
+    currentAssignment: AssignmentType | undefined,
+    isLoading: boolean,
+    currentSubmission: StudentSubmissionType | undefined,
+  ) => {
+    if (!currentCourse) return STATUS.SelectCourse;
+    if (!hasAssignments) return STATUS.NoAssignments;
+    if (!currentAssignment) return STATUS.SelectAssignment;
+    if (isLoading) return STATUS.SubmissionLoading;
+    if (!currentSubmission) return STATUS.NoSubmission;
+    if (!currentSubmission.isFinalized) return STATUS.NotGraded;
+    else return STATUS.ShowSubmission;
+  };
+
+  public getContent = (
+    currentAssignment: AssignmentType | undefined,
+    status: STATUS,
+    currentSubmission: StudentSubmissionType | undefined,
+    files: FileType[],
+    comments: IFileToCommentsMap,
+    rubricComments: ICommentToRubricCommentMap,
+  ) => {
+    switch (status) {
+      case STATUS.SelectCourse:
+        return <Arrow direction="left" color="green" text="Select a course to get started." />;
+      case STATUS.NoAssignments:
+        return <div style={{ fontSize: 28 }}>No assignments available.</div>;
+      case STATUS.SelectAssignment:
+        return (
+          <div style={{ paddingTop: 40 }}>
+            <Arrow direction="left" color="grey" text="Select an assignment." />
+          </div>
+        );
+      case STATUS.SubmissionLoading:
+        return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
+      case STATUS.NoSubmission:
+        return (
+          <div style={{ fontSize: 28 }}>
+            Nothing submitted yet. If you think this is a mistake, please contact your instructor.
+          </div>
+        );
+      case STATUS.NotGraded:
+        return <div style={{ fontSize: 28 }}>Your {currentAssignment!.name} has not yet been graded.</div>;
+      case STATUS.ShowSubmission:
+        const pointsPerCategory = this.getPointsPerCategory(this.state.commentRubricComments);
+        const messages = this.writeCategoryCapMessages(pointsPerCategory, this.state.rubricCategories);
+
+        const gradeBox = currentAssignment!.hideGrades ? null : (
+          <Card size="small" style={{ paddingLeft: 20, paddingRight: 20, marginBottom: 20 }}>
+            <Row type="flex" justify="space-between" style={{ maxWidth: 300 }}>
+              <Statistic title="Grade" value={currentSubmission!.grade!} suffix={`/ ${currentAssignment!.points}`} />
+              {currentAssignment!.mean ? <Statistic title="Mean" value={currentAssignment!.mean!} /> : <div />}
+              {currentAssignment!.median ? <Statistic title="Median" value={currentAssignment!.median!} /> : <div />}
+            </Row>
+            {messages.length > 0 ? <div>Category points exceeded: {messages.join(', ')}</div> : <div />}
+          </Card>
+        );
+        return (
+          <div className="student">
+            <div id="studentSubmission" className="student__studentSubmission">
+              {gradeBox}
+              <ReadOnlyCodePanel
+                submission={currentSubmission!}
+                files={files}
+                comments={comments}
+                rubricComments={rubricComments}
+              />
+            </div>
+          </div>
+        );
     }
-    return { value: currentAssignment.id, label: currentAssignment.name };
   };
 
   ///////////////////////////////////////
@@ -305,87 +390,43 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       }
     }
 
-    const ReadOnlyCodePanel = makeReadOnly(CodePanel);
+    const hasAssignments = currentCourse && this.state.assignments[currentCourse.id] ? true : false;
+    const status = this.getStatus(
+      currentCourse,
+      hasAssignments,
+      currentAssignment,
+      this.state.isLoadingSubmission,
+      currentSubmission,
+    );
 
-    const pointsPerCategory = this.getPointsPerCategory(this.state.commentRubricComments);
-    const messages = this.writeCategoryCapMessages(pointsPerCategory, this.state.rubricCategories);
+    const contentArea = this.getContent(
+      currentAssignment,
+      status,
+      currentSubmission,
+      files,
+      comments,
+      this.state.commentRubricComments,
+    );
 
-    const stats = [];
-    if (currentAssignment && currentAssignment.mean && currentAssignment.median) {
-      stats.push(<div>Mean: {currentAssignment.mean}</div>);
-      stats.push(<div>Median: {currentAssignment.median}</div>);
-    }
-
-    let contentArea;
-    if (currentSubmission && currentAssignment && currentSubmission.isFinalized) {
-      const gradeBox = currentAssignment.hideGrades ? null : (
-        <div className="student__grade-container">
-          <div className="student__grade-container__top">
-            <div>
-              Grade: {currentSubmission!.grade} / {currentAssignment!.points}
-            </div>
-            {stats}
-          </div>
-          {messages.length > 0 ? (
-            <div className="student__grade-container__bottom">
-              <div>Category points exceeded: {messages.join(', ')}</div>
-            </div>
-          ) : (
-            <div />
-          )}
-        </div>
-      );
-      contentArea = (
-        <div className="student__submission-view">
-          {gradeBox}
-          <ReadOnlyCodePanel
-            submission={currentSubmission!}
-            files={files}
-            comments={comments}
-            rubricComments={this.state.commentRubricComments}
-          />
-        </div>
-      );
-    } else if (currentSubmission && currentAssignment && !currentSubmission.isFinalized) {
-      contentArea = (
-        <div className="student__getStarted__text">Your {currentAssignment.name} has not yet been graded.</div>
-      );
-    } else if (currentAssignment && this.state.isLoadingSubmission) {
-      contentArea = <CircularProgress id="progress" className="progress-circle" />;
-    } else if (currentCourse) {
-      if (!this.state.assignments[currentCourse.id]) {
-        contentArea = <div className="student__getStarted__text">No assignments available.</div>;
-      } else {
-        contentArea = (
-          <div className="student__getStarted--assignment">
-            <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left-2.png')} />
-            <div className="student__getStarted__text">Select an assignment.</div>
-          </div>
-        );
-      }
-    } else {
-      contentArea = (
-        <div className="student__getStarted">
-          <img className="student__getStarted__arrow" src={require('./img/get-started-arrow-left.png')} />
-          <div className="student__getStarted__text">Select a course to get started.</div>
-        </div>
-      );
-    }
+    const sider = (
+      <SelectorSider
+        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
+        activeSelector={this.selectorCurrentFormatter(currentCourse)}
+        selectorItems={this.selectorItemsFormatter(courses)}
+        menuItems={this.tabItemsFormatter(currentCourse)}
+        onMenuClick={this.handleAssignmentChange}
+        onSelect={this.handleCourseChange}
+        theme="light"
+      />
+    );
 
     return (
-      <div className="student">
-        <div className="student__left-panel">
-          <VerticalPane
-            currentTab={this.tabCurrentFormatter(currentAssignment)}
-            currentSelector={this.selectorCurrentFormatter(currentCourse)}
-            selectorItems={this.selectorItemsFormatter(courses)}
-            tabItems={this.tabItemsFormatter(currentCourse)}
-            handleTabChange={this.handleAssignmentChange}
-            handleSelectorChange={this.handleCourseChange}
-          />
-        </div>
-        <div className="student__right-panel">{contentArea}</div>
-      </div>
+      <GenericLayout
+        sider={sider}
+        email={this.props.email}
+        handleLogout={this.props.handleLogout}
+        content={contentArea}
+      />
     );
   }
 }
