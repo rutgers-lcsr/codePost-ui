@@ -286,7 +286,9 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => <AsyncStudent {...props} email={email} initialCourses={studentCourses} />}
+            render={(props: any) => (
+              <AsyncStudent {...props} email={email} handleLogout={this.handleLogout} initialCourses={studentCourses} />
+            )}
           />
         );
       }
@@ -301,6 +303,7 @@ class App extends React.Component<{}, IState> {
               <AsyncGrader
                 {...props}
                 email={email}
+                handleLogout={this.handleLogout}
                 superGraderCourses={superGraderCourses}
                 initialCourses={graderCourses}
                 sectionsLed={sectionsLed}
