@@ -214,6 +214,25 @@ module.exports = {
               },
             ],
           },
+
+
+          //------------------- For Ant Theme Override -------------------//
+          // https://ant.design/docs/react/customize-theme
+          {
+            test: /\.less$/,
+            use: [{
+              loader: 'style-loader',
+            }, {
+              loader: 'css-loader', // translates CSS into CommonJS
+            }, {
+              loader: 'less-loader', // compiles Less to CSS
+              options: {
+                modifyVars: themeVars.ant,
+                javascriptEnabled: true,
+              },
+            }],
+          },
+
           //------------------- Add SCSS Loaders -------------------//
           // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
           {
@@ -241,23 +260,6 @@ module.exports = {
                 }
               }
 
-            }],
-          },
-
-          //------------------- For Ant Theme Override -------------------//
-          // https://ant.design/docs/react/customize-theme
-          {
-            test: /\.less$/,
-            use: [{
-              loader: 'style-loader',
-            }, {
-              loader: 'css-loader', // translates CSS into CommonJS
-            }, {
-              loader: 'less-loader', // compiles Less to CSS
-              options: {
-                modifyVars: themeVars.ant,
-                javascriptEnabled: true,
-              },
             }],
           },
 

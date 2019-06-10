@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
+// import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
 import GenericLayout from './components/core/layouts/GenericLayout';
 import SelectorSider from './components/core/SelectorSider';
@@ -63,7 +63,8 @@ export enum STATUS {
   ShowSubmission,
 }
 
-const ReadOnlyCodePanel = makeReadOnly(CodePanel);
+const ReadOnlyCodePanel = <div />;
+// const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
 class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
@@ -356,12 +357,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <div className="student">
             <div id="studentSubmission" className="student__studentSubmission">
               {gradeBox}
-              <ReadOnlyCodePanel
-                submission={currentSubmission!}
-                files={files}
-                comments={comments}
-                rubricComments={rubricComments}
-              />
+              {ReadOnlyCodePanel}
             </div>
           </div>
         );
@@ -430,5 +426,4 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
   }
 }
-
 export default Student;

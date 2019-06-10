@@ -1,35 +1,34 @@
 import * as React from 'react';
 
-import { Badge, Menu } from 'antd';
+import { Badge, Menu, Popconfirm } from 'antd';
 
 import { FileType } from '../../infrastructure/file';
+
+import themeVars from '../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
 interface ICPFileMenuProps {
   files: FileType[];
-  getPointsInFile: (file: FileType) => number;
+  selectedFile?: FileType;
+  changeSelectedFile: (fileID: number) => void;
+  canChange: boolean;
+  getPointsInFile: (file: FileType) => number[];
 }
 
-interface ICPFileMenuState {
-  selectedKey: string;
-}
-
-class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
-  public state: Readonly<ICPFileMenuState> = {
-    selectedKey: this.props.files.length > 0 ? `file-${this.props.files[0].id}` : '',
-  };
-
-  public onSelect = (param: SelectParam) => {
-    this.setState({ selectedKey: param.key });
+class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
+  public onSelect = (selectedParam: SelectParam) => {
+    const fileID = +selectedParam.key.split('-')[1];
+    this.props.changeSelectedFile(fileID);
   };
 
   public buildFileMenu = (files: FileType[]) => {
     return files.map((file: FileType) => {
-      const totalPointsInFile = this.props.getPointsInFile(file) * -1;
+      // const totalPointsInFile = 10;
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
 
       let opacity = 0.7;
-      if (this.state.selectedKey === `file-${file.id}`) {
+      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
         opacity = 1;
       }
 
@@ -39,27 +38,51 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
           <Badge
             count={file.comments.length}
             className="cp-badge"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity }}
+            style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
           />
         );
       }
 
-      let pointsCountBadge = null;
-      if (totalPointsInFile < 0) {
-        pointsCountBadge = (
-          <Badge count={totalPointsInFile} className="cp-badge" style={{ backgroundColor: '#f64852', opacity }} />
+      let deductionBadge = null;
+      let bonusBadge = null;
+
+      if (deductions > 0) {
+        deductionBadge = (
+          <Badge
+            count={deductions * -1}
+            className="cp-badge"
+            style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
+          />
         );
-      } else {
-        pointsCountBadge = (
-          <Badge count={`+${totalPointsInFile}`} className="cp-badge" style={{ backgroundColor: '#24be85', opacity }} />
+      }
+
+      if (bonuses > 0) {
+        bonusBadge = (
+          <Badge
+            count={`+${bonuses}`}
+            className="cp-badge"
+            style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
+          />
         );
       }
 
       return (
         <Menu.Item key={`file-${file.id}`}>
-          <span>{file.name}</span>
-          <span style={{ position: 'absolute', right: '60px' }}>{commentCountBadge}</span>
-          <span style={{ position: 'absolute', right: '20px' }}>{pointsCountBadge}</span>
+          <span
+            style={{
+              display: 'inline-block',
+              maxWidth: '148px',
+              wordWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+              lineHeight: '12px',
+              verticalAlign: 'middle',
+            }}
+          >
+            {file.name}
+          </span>
+          <span style={{ position: 'absolute', right: '95px' }}>{bonusBadge}</span>
+          <span style={{ position: 'absolute', right: '55px' }}>{deductionBadge}</span>
+          <span style={{ position: 'absolute', right: '15px' }}>{commentCountBadge}</span>
         </Menu.Item>
       );
     });
@@ -69,24 +92,83 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, ICPFileMenuState> {
     const fileMenu = this.buildFileMenu(this.props.files);
 
     return (
-      <div>
+      <div id="file-menu">
         <div style={{ padding: '13px 20px 0px 16px' }}>
           <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Files
           </div>
         </div>
-        <Menu
-          defaultSelectedKeys={[this.state.selectedKey]}
-          mode="inline"
-          className="cp-file-menu"
-          id="cp-file-menu"
-          onSelect={this.onSelect}
-        >
-          {fileMenu}
-        </Menu>
+        <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
+          <Menu
+            selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+            mode="inline"
+            className="cp-file-menu"
+            id="cp-file-menu"
+          >
+            {fileMenu}
+          </Menu>
+        </UnsavedCommentsPopconfirm>
       </div>
     );
   }
 }
+
+interface IUnsavedCommentsPopconfirmProps {
+  changeSelectedFile: (fileID: number) => void;
+  canChange: boolean;
+  children: any;
+}
+
+export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps) => {
+  const [selectedParam, setSelectedParam] = React.useState<SelectParam | null>(null);
+  const [visible, setVisible] = React.useState<boolean>(false);
+
+  const onSelect = (selectParam: SelectParam) => {
+    setSelectedParam(selectParam);
+  };
+
+  const confirm = () => {
+    if (selectedParam) {
+      const fileID = +selectedParam.key.split('-')[1];
+      props.changeSelectedFile(fileID);
+    }
+    setSelectedParam(null);
+    setVisible(false);
+  };
+
+  const cancel = () => {
+    setSelectedParam(null);
+    setVisible(false);
+  };
+
+  React.useEffect(() => {
+    if (selectedParam && props.canChange) {
+      confirm();
+    } else if (selectedParam && !props.canChange) {
+      setVisible(true);
+    }
+  });
+
+  return (
+    <Popconfirm
+      title={
+        <div>
+          <p>You have draft comments that will not be saved.</p>{' '}
+          <p>
+            <b>Are you sure you want to continue?</b>
+          </p>
+        </div>
+      }
+      visible={visible}
+      onConfirm={confirm}
+      onCancel={cancel}
+      okText="Yes"
+      cancelText="No"
+      placement="rightTop"
+    >
+      {React.cloneElement(props.children, { onSelect })}
+    </Popconfirm>
+  );
+};
 
 export default CPFileMenu;
