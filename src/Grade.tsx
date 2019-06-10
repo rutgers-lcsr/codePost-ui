@@ -711,7 +711,7 @@ const SubheaderInfo = (props: ISubheaderInfoProps) => {
   const content = props.submission.files.length;
   return (
     <Popover content={content} title={title} placement="right">
-      <CPButton key="subheader-info" cpType="highlight" size="small" icon="question" />
+      <CPButton key="subheader-info" cpType="highlight" size="small" icon="question" style={{ cursor: 'help' }} />
     </Popover>
   );
 };
@@ -826,7 +826,7 @@ const FinalizeButton = (props: IFinalizeButtonProps) => {
           onCancel={cancel}
           okText="Yes"
           cancelText="No"
-          placement="rightTop"
+          placement="bottomRight"
         >
           Finalize
         </Popconfirm>
@@ -913,7 +913,7 @@ const StatusTags = (props: IStatusTagsProps) => {
     case 3:
       tagColor = 'gold';
       tagText = 'finalized and published';
-      tooltipText = '';
+      tooltipText = 'student can view';
       break;
   }
 

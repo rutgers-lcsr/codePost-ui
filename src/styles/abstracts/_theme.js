@@ -83,6 +83,7 @@ const marginBottom = 20; // px
 
 const codeContainerMarginTop = 28; // px
 const codeContainerMarginBottom = 16; // px
+const codeContainerMarginLeft = 29; // px
 
 const codeContainerPaddingTop = 25; // px
 const codeContainerPaddingBottom = 20; // px
@@ -93,6 +94,10 @@ const codeContainerPaddingLeft = 20; // px
 const arrowDisplacement = 32; // px
 const commentSpacing = 10; // px
 const intercomDisplacement = 90; // px
+
+const commentMinWidth = 250; // px
+
+const splitBasis = 600; // px
 
 // --------------- EXPORTS --------------- //
 
@@ -199,6 +204,7 @@ module.exports = {
     codeContainer: {
       marginTop: codeContainerMarginTop,
       marginBottom: codeContainerMarginBottom,
+      marginLeft: codeContainerMarginLeft,
       paddingTop: codeContainerPaddingTop,
       paddingBottom: codeContainerPaddingBottom,
       paddingRight: codeContainerPaddingRight,
@@ -211,6 +217,10 @@ module.exports = {
     arrowDisplacement: arrowDisplacement,
     commentSpacing: commentSpacing,
     intercomDisplacement: intercomDisplacement,
+
+    commentMinWidth: commentMinWidth,
+
+    splitBasis: splitBasis,
   }
 };
 

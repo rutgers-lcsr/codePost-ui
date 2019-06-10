@@ -91,7 +91,24 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
       zoomIn.addEventListener('click', this.placeCommentsOnNextFrame);
       zoomOut.addEventListener('click', this.placeCommentsOnNextFrame);
     }
+
+    const grow = document.getElementById('grow');
+    const shrink = document.getElementById('shrink');
+    if (grow !== null && shrink !== null) {
+      grow.addEventListener('click', this.manualWait);
+      shrink.addEventListener('click', this.manualWait);
+    }
   }
+
+  // FIXME: This forces comments with 'expand' to stack correctly
+  //          The downside is that it now looks choppy
+  //          The correct way to do this is to figure out how to
+  //          order the animation frames.
+  public manualWait = () => {
+    window.setTimeout(() => {
+      this.placeCommentsOnNextFrame();
+    }, 5);
+  };
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
@@ -101,6 +118,13 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     if (zoomIn !== null && zoomOut !== null) {
       zoomIn.removeEventListener('click', this.placeCommentsOnNextFrame);
       zoomOut.removeEventListener('click', this.placeCommentsOnNextFrame);
+    }
+
+    const grow = document.getElementById('grow');
+    const shrink = document.getElementById('shrink');
+    if (grow !== null && shrink !== null) {
+      grow.removeEventListener('click', this.manualWait);
+      shrink.removeEventListener('click', this.manualWait);
     }
   }
 

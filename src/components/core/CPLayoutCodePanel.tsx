@@ -26,7 +26,8 @@ interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
 
 interface ICPLayoutCodePanelState {
   zoom: number;
-  zoomVisible: boolean;
+  adjustmentsVisible: boolean;
+  splitBasis: number;
 }
 
 class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayoutCodePanelState> {
@@ -34,7 +35,8 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
 
   public state: Readonly<ICPLayoutCodePanelState> = {
     zoom: 1,
-    zoomVisible: false,
+    adjustmentsVisible: false,
+    splitBasis: themeVars.grade.splitBasis,
   };
 
   public componentDidMount() {
@@ -135,7 +137,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
       ) {
         const codeContainerMaxHeight =
           this.props.windowHeight -
-          codeContainer.offsetTop -
+          codeContainer.getBoundingClientRect().top -
           themeVars.grade.codeContainer.marginBottom -
           themeVars.grade.marginBottom;
 
@@ -159,9 +161,23 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
 
         const commentsContainerHeight =
-          this.props.windowHeight - commentsContainer.offsetTop - themeVars.grade.marginBottom;
+          this.props.windowHeight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
+    }
+  };
+
+  public shrink = () => {
+    const splitBasis = Math.max(200, this.state.splitBasis - 100);
+    this.setState({ splitBasis }, this.resizeComponents);
+  };
+
+  public grow = () => {
+    const codeContainer = document.getElementById('cp-code-container');
+    if (codeContainer !== null) {
+      const maxWidth = this.props.windowWidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
+      const splitBasis = Math.min(maxWidth, this.state.splitBasis + 100);
+      this.setState({ splitBasis }, this.resizeComponents);
     }
   };
 
@@ -186,11 +202,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public onMouseEnter = () => {
-    this.setState({ zoomVisible: true });
+    this.setState({ adjustmentsVisible: true });
   };
 
   public onMouseLeave = () => {
-    this.setState({ zoomVisible: false });
+    this.setState({ adjustmentsVisible: false });
   };
 
   public render() {
@@ -208,7 +224,12 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         <div className="cp-code-panel">
           <div
             className="cp-code-panel--code"
-            style={{ margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px 29px` }}
+            style={{
+              margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
+                themeVars.grade.codeContainer.marginLeft
+              }px`,
+              flex: `0 1 ${this.state.splitBasis}px`,
+            }}
           >
             <div
               id="cp-code-container"
@@ -221,7 +242,8 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
               onMouseEnter={this.onMouseEnter}
               onMouseLeave={this.onMouseLeave}
             >
-              <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.zoomVisible} />
+              <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
+              <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
               <SyntaxHighlighter
                 id="code-syntax"
                 className="cp-code"
@@ -268,6 +290,32 @@ const Magnifier = (props: IMagnifierProps) => {
         </CPButton>
         <CPButton id="zoom-in" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
           <Icon type="zoom-in" />
+        </CPButton>
+      </ButtonGroup>
+    </div>
+  );
+};
+
+interface ISizerProps {
+  visible: boolean;
+  shrink: () => void;
+  grow: () => void;
+}
+
+const Sizer = (props: ISizerProps) => {
+  return (
+    <div
+      style={{
+        ...{ position: 'absolute', top: '5px', right: '68px' },
+        visibility: props.visible ? 'visible' : 'hidden',
+      }}
+    >
+      <ButtonGroup>
+        <CPButton id="shrink" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
+          <Icon type="double-left" />
+        </CPButton>
+        <CPButton id="grow" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
+          <Icon type="double-right" />
         </CPButton>
       </ButtonGroup>
     </div>
