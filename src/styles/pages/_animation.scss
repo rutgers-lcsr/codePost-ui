@@ -1,0 +1,13 @@
+.Animation2 {
+  transform: scale(0.9) translateX(50px) translateY(0) perspective(2000px) rotateY(-19deg) rotateX(1deg) rotate(1deg);
+  box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
+    10px 25px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+  &__sider {
+    border-radius: 5px 0px 0px 5px;
+  }
+}
+
+.animation-row-active {
+  background-color: rgba(46, 205, 133, 0.2) !important;
+}

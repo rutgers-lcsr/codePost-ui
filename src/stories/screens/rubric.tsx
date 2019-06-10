@@ -68,5 +68,5 @@ export const Rubric = () => {
   );
 
   const rubric = <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} content={content} />;
-  return <CPLayoutAdmin header={header} detail={rubric} isRubric={true} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={rubric} isRubric={true} />;
 };

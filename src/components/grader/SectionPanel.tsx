@@ -5,33 +5,20 @@
 /* react imports */
 import * as React from 'react';
 
-/* react-md imports */
-import {
-  CircularProgress,
-  DataTable,
-  FontIcon,
-  SelectionControl,
-  TableBody,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  Tooltipped,
-} from 'react-md';
-
-/* other library imports */
-import * as moment from 'moment';
-import Select from 'react-select';
+/* ant imports */
+import { Icon, Select, Spin, Switch, Table, Typography } from 'antd';
+const { Title } = Typography;
+const { Option } = Select;
 
 /* codePost imports */
-import { openSubmission } from '../admin/AdminUtils';
-
+import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './graderUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { sortSubmissions, StudentSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
+import { StudentSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
 
-import { IOptionNumber } from '../../types/common';
-import { compare, getSortIndex } from '../Utils/SortUtils';
+import { compare } from '../Utils/SortUtils';
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -40,35 +27,41 @@ interface ISectionPanelProps {
   currentAssignment: AssignmentType;
   sectionsLed: SectionType[];
 }
+
+interface ITableRow extends ISubDataBasic {
+  key: string;
+  student: string;
+  viewIcon: string | React.ReactElement;
+  partners: string;
+}
+
 interface ISectionPanelState {
   submissionsBySection: { [sectionID: number]: { [student: string]: SubmissionType | undefined } };
   activeSection: SectionType | undefined;
-  sortedIndex: Array<boolean | undefined>;
-  // Beacuse we want to include students without submissions in our list, we need a student, submission|undefined array
-  // It makes sense to leave this in state because it's slow to make copies and sort on every render
-  sortedSubmissions: Array<[string, SubmissionType | undefined]>;
+  submissions: Array<[string, SubmissionType | undefined]>;
   // Map of submission id to an array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   showStudentEmails: boolean;
+  isLoading: boolean;
 }
 
 class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelState> {
   public state: Readonly<ISectionPanelState> = {
     submissionsBySection: {},
     activeSection: undefined,
-    // SortedIndex index corresponds to columns: index 0 is email. Ignoring the 'students' column
-    sortedIndex: [true, undefined, undefined, undefined, undefined, undefined],
-    sortedSubmissions: [],
     viewsBySubmission: {},
     showStudentEmails: false,
+    submissions: [],
+    isLoading: false,
   };
 
   public async componentDidMount() {
+    this.setState({ isLoading: true });
     const [submissionsBySection, viewsBySubmission] = await this.loadSubmissionsForSection();
-    this.setState({ submissionsBySection, viewsBySubmission });
+    this.setState({ submissionsBySection, viewsBySubmission, isLoading: false });
 
     if (this.props.sectionsLed.length === 1) {
-      this.handleSelect({ value: this.props.sectionsLed[0].id, label: this.props.sectionsLed[0].name });
+      this.handleSelect(String(this.props.sectionsLed[0].id));
     }
   }
 
@@ -131,141 +124,124 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
     return [submissionsBySection, viewsBySubmission];
   };
 
-  public handleSelect = (input: IOptionNumber) => {
+  public handleSelect = (sectionID: string) => {
     const activeSection = this.props.sectionsLed.find((section) => {
-      return section.id === input.value;
+      return section.id === Number(sectionID);
     });
 
-    const thisSectionSubmissions = this.state.submissionsBySection[input.value];
+    const thisSectionSubmissions = this.state.submissionsBySection[Number(sectionID)];
 
     // return a new array for (1) sorting purposes (2) create new data so sort doesn't affect state;
     const newSubmissions = Object.keys(thisSectionSubmissions).map((student) => {
       const x: [string, SubmissionType | undefined] = [student, thisSectionSubmissions[student]];
       return x;
     });
-    newSubmissions.sort(this.sort.bind(this));
-    this.setState({ activeSection, sortedSubmissions: newSubmissions });
-  };
-
-  public toggleSort = (columnIndex: number) => {
-    const { sortedIndex } = this.state;
-    const newSortedIndex = getSortIndex(sortedIndex, columnIndex);
-    this.setState({ sortedIndex: newSortedIndex }, () => {
-      const { sortedSubmissions } = this.state;
-      sortedSubmissions.sort(this.sort.bind(this));
-      this.setState({ sortedSubmissions });
-    });
-  };
-
-  public sort(a: [string, SubmissionType | undefined], b: [string, SubmissionType | undefined]) {
-    const { sortedIndex } = this.state;
-    const sortAttribute = sortedIndex.findIndex((elem) => {
-      return typeof elem !== 'undefined';
-    });
-
-    if (sortAttribute === -1) {
-      return 0;
-    }
-
-    const ascending = sortedIndex[sortAttribute] ? true : false;
-    if (sortAttribute === 0) {
-      // sort by email
-      return compare(ascending, a[0], b[0]);
-    }
-    // check if a submission exists
-    if (!a[1] && !b[1]) return 0;
-    if (!b[1]) return ascending ? -1 : 1;
-    if (!a[1]) return ascending ? 1 : -1;
-    // if submission exists, sort by submission. Pass in sortAttribute as SUBMISSION_SORT_TYPE enum index
-    return sortSubmissions(sortAttribute, ascending, a[1], b[1]);
-  }
-
-  public getViewIcon = (submission: SubmissionType, student: string) => {
-    if (!(submission.id in this.state.viewsBySubmission) || !submission.isFinalized) {
-      // case: No history object or un finalized
-      return '--';
-    } else if (student in this.state.viewsBySubmission[submission.id]) {
-      // case: submission has been viewed
-      return (
-        <Tooltipped
-          label={moment(this.state.viewsBySubmission[submission.id][student]).format('llll')}
-          position="left"
-          setPosition={true}
-          delay={500}
-        >
-          <div>
-            <FontIcon>visibility</FontIcon>
-          </div>
-        </Tooltipped>
-      );
-    } else {
-      // case: submission has not been viewed
-      return <FontIcon secondary>visibility_off</FontIcon>;
-    }
+    this.setState({ activeSection, submissions: newSubmissions });
   };
 
   public render() {
-    const { activeSection, sortedSubmissions, sortedIndex } = this.state;
-    let tableBody;
-    let title;
+    const { activeSection, submissions } = this.state;
     const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+
+    const centerAlign: alignType = 'center';
+    const columns = [
+      {
+        title: 'Student',
+        dataIndex: 'student',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+      },
+      {
+        title: 'Partner(s)',
+        dataIndex: 'partners',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
+        align: centerAlign,
+      },
+      {
+        title: 'Grade',
+        dataIndex: 'gradeString',
+        sorter: (a: ITableRow, b: ITableRow) => {
+          if (a.isFinalized && !b.isFinalized) return 1;
+          else if (!a.isFinalized && b.isFinalized) return -1;
+          else return compare(true, a.grade, b.grade);
+        },
+        align: centerAlign,
+      },
+      { title: 'Grader', dataIndex: 'grader', sorter: (a: any, b: any) => compare(true, a.grader, b.grader) },
+      {
+        title: 'Finalized',
+        dataIndex: 'finalizeIcon',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.isFinalized, b.isFinalized),
+        align: centerAlign,
+      },
+      {
+        title: 'Last Edited',
+        dataIndex: 'dateEditedString',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.dateEdited, b.dateEdited),
+        align: centerAlign,
+      },
+      {
+        title: 'Viewed by Student',
+        dataIndex: 'viewIcon',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.viewIcon, b.viewIcon),
+        align: centerAlign,
+      },
+    ];
 
     if (this.props.sectionsLed.length === 0) {
       // Sections haven't been loaded yet
-      tableBody = <CircularProgress id="progress" className="progress-circle" />;
-    } else if (this.props.sectionsLed.length === 1 || activeSection) {
-      title = `Submissions for ${activeSection ? activeSection.name : ''}`;
-      tableBody = sortedSubmissions.map(([student, sub]) => {
-        if (sub) {
-          return (
-            <TableRow key={student} onClick={openSubmission.bind(this.props, sub.id)}>
-              <TableColumn className="left-aligned">{showingEmails ? student : '----'}</TableColumn>
-              <TableColumn>{showingEmails ? sub.students.toString() : sub.id}</TableColumn>
-              <TableColumn className={sub.isFinalized ? 'table-cell--graded' : 'table-cell--unfinalized'}>
-                {sub.isFinalized ? String(sub.grade) : 'Unfinalized'}
-              </TableColumn>
-              <TableColumn>{sub.grader}</TableColumn>
-              <TableColumn>{sub.isFinalized ? <FontIcon>done</FontIcon> : null}</TableColumn>
-              <TableColumn>{moment(sub.dateEdited).format('llll')}</TableColumn>
-              <TableColumn>{this.getViewIcon(sub, student)}</TableColumn>
-            </TableRow>
-          );
-        } else {
-          return (
-            <TableRow key={student}>
-              <TableColumn className="left-aligned">{student}</TableColumn>
-              <TableColumn>{'---'}</TableColumn>
-              <TableColumn className="table-cell--unsubmitted">{'--'}</TableColumn>
-              <TableColumn>{'---'}</TableColumn>
-              <TableColumn>{'---'}</TableColumn>
-              <TableColumn>{'---'}</TableColumn>
-              <TableColumn>{'---'}</TableColumn>
-            </TableRow>
-          );
-        }
-      });
-    } else {
-      // Section hasn't been selected yet
-      tableBody = <div />;
+      return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
     }
 
     let selectContent;
     if (this.props.sectionsLed.length > 1) {
       const menuItems = this.props.sectionsLed.map((section) => {
-        return { value: section.id, label: section.name };
+        return <Option key={section.id}>{section.name} </Option>;
       });
       selectContent = (
         <div style={{ display: 'inline-block', width: '20%' }}>
           <Select
-            classNamePrefix="select--grader-section"
-            closeMenuOnSelect={true}
-            options={menuItems}
-            onChange={this.handleSelect}
             placeholder="Select Section..."
-          />
+            onSelect={this.handleSelect}
+            value={this.state.activeSection ? this.state.activeSection.name : undefined}
+            loading={this.state.isLoading}
+            disabled={this.state.isLoading}
+            style={{ width: 500, marginBottom: 20 }}
+          >
+            {menuItems}
+          </Select>
         </div>
       );
     }
+
+    if (this.props.sectionsLed.length !== 1 && !activeSection) {
+      return <div>{selectContent}</div>;
+    }
+
+    const title = (
+      <Title level={4} style={{ marginBottom: 20 }}>{`Submissions for ${
+        activeSection ? activeSection.name : ''
+      }`}</Title>
+    );
+
+    const data = submissions.map(
+      ([student, sub]): ITableRow => {
+        const partnerStudents =
+          sub && sub.students.length > 1
+            ? sub.students
+                .filter((obj) => {
+                  return obj !== student;
+                })
+                .toString()
+            : '--';
+        return {
+          ...formatSub(sub),
+          key: student,
+          student,
+          partners: partnerStudents,
+          viewIcon: <div>{sub ? getViewIcon(sub, this.state.viewsBySubmission, student) : ''}</div>,
+        };
+      },
+    );
 
     // If we're in anonymous grading mode, add a toggle to reveal student emails
     let anonymousToggle;
@@ -273,14 +249,10 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
       anonymousToggle = (
         <div style={{ display: 'inline-block', padding: '0px 20px' }}>
           Reveal students:
-          <SelectionControl
-            id="toggleShowStudents"
-            name="toggleShowStudents"
-            type="switch"
-            className="toggleShowStudents"
+          <Switch
             defaultChecked={showingEmails}
             onChange={this.toggleShowStudentEmails}
-            aria-label={'Reveal student emails'}
+            key="toggleShowStudents"
             style={{ display: 'inline-block' }}
           />
         </div>
@@ -292,37 +264,13 @@ class SectionPanel extends React.Component<ISectionPanelProps, ISectionPanelStat
         {anonymousToggle}
         {selectContent}
         <div className="grader__section-panel__title">{title}</div>
-        <DataTable className="table--section" plain={true}>
-          <TableHeader>
-            <TableRow>
-              <TableColumn
-                key={'Student'}
-                className="left-aligned"
-                sorted={sortedIndex[0]}
-                onClick={this.toggleSort.bind(this.props, 0)}
-              >
-                Student Name
-              </TableColumn>
-              <TableColumn key={'Submission Students'}>Submission Students</TableColumn>
-              <TableColumn key={'Grade'} sorted={sortedIndex[1]} onClick={this.toggleSort.bind(this.props, 1)}>
-                Grade
-              </TableColumn>
-              <TableColumn key={'Grader'} sorted={sortedIndex[2]} onClick={this.toggleSort.bind(this.props, 2)}>
-                Grader
-              </TableColumn>
-              <TableColumn key={'Finalized'} sorted={sortedIndex[3]} onClick={this.toggleSort.bind(this.props, 3)}>
-                Finalized
-              </TableColumn>
-              <TableColumn key={'Last Edited'} sorted={sortedIndex[4]} onClick={this.toggleSort.bind(this.props, 4)}>
-                Last Edited
-              </TableColumn>
-              <TableColumn key={'Viewed'} sorted={sortedIndex[5]} onClick={this.toggleSort.bind(this.props, 5)}>
-                Viewed By Student
-              </TableColumn>
-            </TableRow>
-          </TableHeader>
-          <TableBody>{tableBody}</TableBody>
-        </DataTable>
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          loading={this.state.isLoading}
+          onRow={openSubmissionRow}
+        />
       </div>
     );
   }

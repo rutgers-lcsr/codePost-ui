@@ -10,6 +10,7 @@
 // describe('Student', () => {
 //   const setup = (propOverrides?: Partial<IStudentProps>) => {
 //     // default props
+//     const logout = () => null;
 //     const props = Object.assign(
 //       {
 //         match: {
@@ -21,6 +22,7 @@
 //         history: {},
 //         email: 'jack@myschool.edu',
 //         initialCourses: [],
+//         handleLogout: logout,
 //       },
 //       propOverrides,
 //     );

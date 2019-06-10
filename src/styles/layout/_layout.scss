@@ -2,8 +2,16 @@
   height: 100%;
 }
 
+#Admin .student-table {
+  padding: 12px 5px;
+}
+
 #Admin .layout--admin {
   min-height: 100vh;
+
+  table {
+    padding-bottom: 15px;
+  }
 
   &__sider {
     &__header {
@@ -33,10 +41,11 @@
   }
 
   &__detail {
-    margin: 20px 61px;
+    margin: 20px 61px 0 61px;
     background-color: #fff;
     border-radius: 5px;
     padding: 20px 35px;
+    overflow: inherit;
 
     .ant-layout {
       background-color: #fff;
@@ -95,5 +104,52 @@
 
   &__content {
     margin: 0px;
+  }
+}
+
+.ant-collapse tr {
+  line-height: 5px;
+}
+
+#Generic {
+  min-height: 100vh;
+
+  tr {
+    padding: 8px 16px;
+  }
+
+  .layout--generic {
+    &__sider {
+      background-color: #fff;
+      box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+      position: fixed;
+      height: 100vh;
+      overflow: auto;
+      width: 200;
+      &__header {
+        background-color: #fff;
+        padding: 0px 20px 0px 16px;
+      }
+    }
+
+    &__header {
+      padding: 0px 20px 0px 16px;
+      color: white;
+      position: fixed;
+      width: 100%;
+      z-index: 16777200;
+      height: $topbar-height;
+    }
+
+    &__content {
+      padding-top: $topbar-height;
+      @include setMinPageHeight($topbar-height);
+    }
+
+    &__subcontent {
+      overflow: scroll;
+      width: calc(100% - 200px);
+      margin: 21px 60px 21px 260px;
+    }
   }
 }

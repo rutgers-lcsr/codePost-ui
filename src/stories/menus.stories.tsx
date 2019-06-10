@@ -1,7 +1,7 @@
-// import React from 'react';
+import React from 'react';
 
-// import { withKnobs } from '@storybook/addon-knobs';
-// import { storiesOf } from '@storybook/react';
+import { withKnobs } from '@storybook/addon-knobs';
+import { storiesOf } from '@storybook/react';
 
 // import CPFileMenu from '../components/core/CPFileMenu';
 // import CPMainNav from '../components/core/CPMainNav';
@@ -36,8 +36,8 @@
 
 // const onClick = (e: any) => null;
 
-// storiesOf('Menus', module)
-//   .addDecorator(withKnobs)
-//   .add('Main Navigation', () => <CPMainNav onClick={onClick} />)
-//   .add('Rubric Menu', () => <CPRubricMenu rubricCategories={rubricCategories} rubricComments={rubricComments} />)
-//   .add('File Menu', () => <CPFileMenu files={files} getPointsInFile={getPointsInFile} />);
+storiesOf('Menus', module)
+  .addDecorator(withKnobs)
+  .add('Main Navigation', () => <CPMainNav onClick={onClick} selectedPanel={0} />)
+  .add('Rubric Menu', () => <CPRubricMenu rubricCategories={rubricCategories} rubricComments={rubricComments} />)
+  .add('File Menu', () => <CPFileMenu files={files} getPointsInFile={getPointsInFile} />);

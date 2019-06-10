@@ -23,6 +23,9 @@ import Settings from './settings';
 
 import RouterLoading from './RouterLoading';
 
+import { AdminAnimation } from './components/LandingAnimations/Admin/AdminAnimation';
+import APIAnimation from './components/LandingAnimations/API/APIAnimation';
+
 import Loadable from 'react-loadable';
 
 /******************************************************************************
@@ -283,7 +286,9 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => <AsyncStudent {...props} email={email} initialCourses={studentCourses} />}
+            render={(props: any) => (
+              <AsyncStudent {...props} email={email} handleLogout={this.handleLogout} initialCourses={studentCourses} />
+            )}
           />
         );
       }
@@ -298,6 +303,7 @@ class App extends React.Component<{}, IState> {
               <AsyncGrader
                 {...props}
                 email={email}
+                handleLogout={this.handleLogout}
                 superGraderCourses={superGraderCourses}
                 initialCourses={graderCourses}
                 sectionsLed={sectionsLed}
@@ -319,9 +325,7 @@ class App extends React.Component<{}, IState> {
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
-                addToast={this.addToast}
-                addLongToast={this.addLongToast}
-                addErrorToast={this.addErrorToast}
+                logout={this.handleLogout}
               />
             )}
           />
@@ -402,6 +406,16 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={'/terms'}
             render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
+          />
+          <Route
+            exact={true}
+            path={'/animations/api'}
+            render={(props: any) => <APIAnimation {...props} isAuthenticated={true} />}
+          />
+          <Route
+            exact={true}
+            path={'/animations/admin'}
+            render={(props: any) => <AdminAnimation {...props} isAuthenticated={true} />}
           />
 
           {pageSelector}
