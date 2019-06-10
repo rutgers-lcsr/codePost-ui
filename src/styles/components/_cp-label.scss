@@ -13,6 +13,10 @@
     color: $actionRed;
   }
 
+  &--neutral {
+    color: $neutralDisable;
+  }
+
   &--highlight {
     color: $brandAccent;
   }

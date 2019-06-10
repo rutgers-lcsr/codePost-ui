@@ -23,7 +23,7 @@ import { UserType } from './infrastructure/user';
 
 import CPLayoutGrade from './components/core/CPLayoutGrade';
 
-import { Divider, Menu, message, Popconfirm, Popover, Tag, Tooltip } from 'antd';
+import { Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
 
 import { SelectParam } from 'antd/lib/menu';
 
@@ -247,9 +247,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   ): number => {
     const commentPoints = Grade.genericCommentPoints(comments);
     const pointsPerCategory = Grade.pointsPerCategory(commentRubricComments);
-    const poinstPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
+    const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
 
-    const categoryPoints = Object.values(poinstPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+    const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
       return accumulator + current;
     }, 0);
 
@@ -391,7 +391,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const commentRubricComments = Grade.addToCommentRubricCommentsState(
       restOfCommentRubricComments,
-      commentID,
+      newComment.id,
       newRubricComment ? newRubricComment : rubricComment,
     );
 
@@ -583,7 +583,14 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         submission={this.state.submission}
         calculateGrade={this.calculateGradeFromState}
       />,
-      <SubheaderInfo key="subheader-info" submission={this.state.submission} />,
+      <SubheaderInfo
+        key="subheader-info"
+        submission={this.state.submission}
+        assignment={this.state.assignment}
+        rubricCategories={this.state.rubricCategories}
+        comments={this.state.comments}
+        commentRubricComments={this.state.commentRubricComments}
+      />,
     ];
 
     const subHeaderRightTop = [
@@ -703,14 +710,154 @@ const SubheaderGrade = (props: ISubheaderGradeProps) => {
 };
 
 interface ISubheaderInfoProps {
+  assignment: AssignmentType;
   submission: AnonymousSubmissionType;
+  rubricCategories: RubricCategoryType[];
+  comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
 }
 
+// FIXME: Although the calculate methods that compose this component are modularized,
+//         it will be prudent to find a way to rigorously test this presentation.
+//         Possibly with Snapshot tests
+//         Wrong values here will damage the accountability chain.
 const SubheaderInfo = (props: ISubheaderInfoProps) => {
+  let content = <Skeleton active />;
   const title = 'How was this calculated?';
-  const content = props.submission.files.length;
+
+  const pointsPerCategory = Grade.pointsPerCategory(props.commentRubricComments);
+  const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
+  const genericPoints = Grade.genericCommentPoints(props.comments);
+
+  const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+    return accumulator + current;
+  }, 0);
+
+  const styledLabel = (n: number, excluded?: boolean) => {
+    let points = n;
+    let style = {};
+    let className = 'cp-label';
+    let modifier = null;
+
+    if (n > 0) {
+      modifier = '-';
+      className = 'cp-label cp-label--bold cp-label--error';
+    } else if (n < 0) {
+      modifier = '+';
+      points = n * -1;
+      className = 'cp-label cp-label--bold cp-label--success';
+    } else {
+      className = 'cp-label cp-label--bold cp-label--neutral';
+    }
+
+    if (excluded) {
+      style = { ...style, textDecoration: 'line-through' };
+      className = 'cp-label cp-label--neutral';
+    }
+
+    return (
+      <span style={style} className={className}>
+        {modifier}
+        {points}
+      </span>
+    );
+  };
+
+  let categories = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+    const uncappedPoints = pointsPerCategory.hasOwnProperty(rubricCategory.id)
+      ? pointsPerCategory[rubricCategory.id]
+      : null;
+
+    const cappedPoints = pointsPerCategoryWithCaps.hasOwnProperty(rubricCategory.id)
+      ? pointsPerCategoryWithCaps[rubricCategory.id]
+      : null;
+
+    let exceededBy = null;
+    if (uncappedPoints !== null && cappedPoints !== null && uncappedPoints !== cappedPoints) {
+      const diff = uncappedPoints - cappedPoints;
+      exceededBy = <span className="cp-label cp-label--italic cp-label--bold">(exceeded limit by {diff})</span>;
+    }
+
+    let points;
+    if (exceededBy !== null && uncappedPoints !== null && cappedPoints !== null) {
+      points = (
+        <span className="cp-label">
+          {styledLabel(uncappedPoints, true)} <Icon type="caret-right" /> {styledLabel(cappedPoints)}
+        </span>
+      );
+    } else if (cappedPoints !== null) {
+      points = <span className="cp-label">{styledLabel(cappedPoints)}</span>;
+    }
+
+    return {
+      description: (
+        <span className="cp-label cp-label--italic">
+          {rubricCategory.name} {exceededBy}
+        </span>
+      ),
+      value: <span className="cp-label">{points}</span>,
+    };
+  });
+
+  categories = [
+    ...categories,
+    {
+      description: <span className="cp-label cp-label--italic">other</span>,
+      value: styledLabel(genericPoints),
+    },
+  ];
+
+  const categoriesTable = (
+    <Descriptions title="Category Breakdown" column={1} bordered>
+      {categories.map((item: any, index: number) => {
+        return (
+          <Descriptions.Item key={index} label={item.description}>
+            {item.value}
+          </Descriptions.Item>
+        );
+      })}
+    </Descriptions>
+  );
+
+  const summary = [
+    {
+      description: <span className="cp-label">Assignment Total</span>,
+      value: <span>{props.assignment.points}</span>,
+    },
+    {
+      description: <span className="cp-label">Net Point Delta</span>,
+      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+    },
+    {
+      description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
+      value: (
+        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
+      ),
+    },
+  ];
+
+  const summaryTable = (
+    <Descriptions title="Summary" column={1} bordered>
+      {summary.map((item: any, index: number) => {
+        return (
+          <Descriptions.Item key={index} label={item.description}>
+            {item.value}
+          </Descriptions.Item>
+        );
+      })}
+    </Descriptions>
+  );
+
+  content = (
+    <div>
+      {categoriesTable}
+      <Divider />
+      {summaryTable}
+    </div>
+  );
+
   return (
-    <Popover content={content} title={title} placement="right">
+    <Popover content={content} title={title} placement="rightTop">
       <CPButton key="subheader-info" cpType="highlight" size="small" icon="question" style={{ cursor: 'help' }} />
     </Popover>
   );
@@ -755,7 +902,7 @@ const SubheaderGrader = (props: ISubheaderGraderProps) => {
   if (props.isCourseAdmin) {
     return dropdown;
   } else {
-    return <span className="cp-label p-label--bold">{currentGraderString}</span>;
+    return <span className="cp-label cp-label--bold">{currentGraderString}</span>;
   }
   return dropdown;
 };

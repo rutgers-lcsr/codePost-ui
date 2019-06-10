@@ -57,7 +57,7 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
         if (rubricComment.pointDelta > 0) {
           points = `-${rubricComment.pointDelta}`;
         } else if (rubricComment.pointDelta < 0) {
-          points = `+${rubricComment.pointDelta}`;
+          points = `+${rubricComment.pointDelta * -1}`;
         } else {
           points = `${rubricComment.pointDelta}`;
         }

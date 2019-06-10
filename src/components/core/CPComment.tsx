@@ -73,7 +73,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     };
 
     try {
-      await this.props.onSave(comment);
+      await this.props.onSave(comment, this.props.rubricComment);
       this.fadeSavedState();
     } catch (error) {
       message.error(`Error saving comment: ${JSON.stringify(error)}`);
@@ -157,8 +157,10 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     }
   };
 
-  public delete = async () => {
+  public delete = async (e: any) => {
     try {
+      e.preventDefault();
+      e.stopPropagation();
       await this.props.onDelete(this.props.comment);
     } catch (error) {
       message.error(`Error deleting comment: ${JSON.stringify(error)}`);
