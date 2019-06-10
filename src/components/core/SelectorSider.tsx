@@ -10,7 +10,7 @@ import { OptionProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 const { Header, Content } = Layout;
 
-type themeType = 'light' | 'dark';
+type ThemeType = 'light' | 'dark';
 
 interface IProps {
   // callback when a selector item is selected
@@ -26,7 +26,7 @@ interface IProps {
   // menu items
   menuItems: IOption[];
   // theme: light or dark
-  theme: themeType;
+  theme: ThemeType;
 }
 
 class SelectorSider extends React.Component<IProps, {}> {

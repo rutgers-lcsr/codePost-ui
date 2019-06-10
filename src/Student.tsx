@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 
 // import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
-import GenericLayout from './components/core/layouts/GenericLayout';
+import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
 import SelectorSider from './components/core/SelectorSider';
 
 import { Card, Icon, Row, Spin, Statistic } from 'antd';
@@ -417,7 +417,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
 
     return (
-      <GenericLayout
+      <StudentAndGraderLayout
         sider={sider}
         email={this.props.email}
         handleLogout={this.props.handleLogout}

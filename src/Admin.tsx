@@ -11,6 +11,7 @@ import { ClickParam } from 'antd/lib/menu';
 
 import CPButton from './components/core/CPButton';
 import CPDropdown from './components/core/CPDropdown';
+import CPFlex from './components/core/CPFlex';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1118,25 +1119,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const dropdown = <CPDropdown value={selectorText} overlay={menu} />;
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
 
-    /* build header */
-    const header = (
-      <div className="cp-flex--normal">
-        <div className="left">{dropdown}</div>
-        <div className="left">{createButton}</div>
-        <div className="gap" />
-        <div className="right">
-          <span className="cp-label cp-label--bold">{this.props.user.email}</span>
-        </div>
-        <div className="right">
-          <CPButton cpType="secondary" icon="setting" size="small" href="/settings" />
-        </div>
-        <div className="right">
-          <Button size="small" onClick={this.props.logout}>
-            Logout
-          </Button>
-        </div>
-      </div>
-    );
+    const headerLeft = [dropdown, createButton];
+    const headerRight = [
+      <span key="header-user" className="cp-label cp-label--bold">
+        {this.props.user.email}
+      </span>,
+      <CPButton key="header-settings" cpType="secondary" icon="setting" size="small" href="/settings" />,
+      <Button key="header-logout" size="small" onClick={this.props.logout}>
+        Logout
+      </Button>,
+    ];
+
+    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
     /* select relevant panel */
     let detail;

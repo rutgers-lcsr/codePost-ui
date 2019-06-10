@@ -9,6 +9,8 @@ import * as React from 'react';
 import { Layout } from 'antd';
 const { Header, Content } = Layout;
 
+import CPFlex from './../../../core/CPFlex';
+
 /**********************************************************************************************************************/
 
 interface ICPAdminRubricProps {
@@ -23,26 +25,18 @@ interface ICPAdminRubricProps {
 
 class CPAdminRubric extends React.Component<ICPAdminRubricProps, {}> {
   public render() {
-    const actions = this.props.actions.map((node: React.ReactNode, index: number) => {
-      return (
-        <div key={`action-${index}`} className="right">
-          {node}
-        </div>
-      );
-    });
+    const subheaderLeft = [
+      <span key="breadcrumbs">{this.props.breadcrumbs}</span>,
+      <span key="title" className="cp-label cp-label--large cp-label--bold">
+        {this.props.title}
+      </span>,
+    ];
 
     return (
       <Content className="layout--admin__detail--rubric">
         <Layout>
           <Header className="layout--admin__rubric__subheader">
-            <div className="cp-flex--normal">
-              <div className="left">
-                <span>{this.props.breadcrumbs}</span>
-                <span className="cp-label cp-label--large cp-label--bold">{this.props.title}</span>
-              </div>
-              <div className="gap" />
-              {actions}
-            </div>
+            <CPFlex left={subheaderLeft} right={this.props.actions} gutterSize={10} />
           </Header>
           <Content className="layout--admin__rubric__content">
             {this.props.isEmpty ? this.props.emptyNode : this.props.content}

@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
 import Arrow from './components/core/Arrow';
-import GenericLayout from './components/core/layouts/GenericLayout';
+import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
 import SelectorSider from './components/core/SelectorSider';
 
 import { Tabs } from 'antd';
@@ -437,7 +437,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
 
     return (
-      <GenericLayout
+      <StudentAndGraderLayout
         sider={sider}
         email={this.props.email}
         handleLogout={this.props.handleLogout}
