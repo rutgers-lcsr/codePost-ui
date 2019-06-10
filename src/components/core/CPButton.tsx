@@ -15,7 +15,7 @@ interface ICPButtonProps extends IWithWindowWatcherProps {
 
 class CPButton extends React.Component<ButtonProps & ICPButtonProps, {}> {
   public render() {
-    const { cpType, fallback, windowWidth, windowHeight, ...props } = this.props;
+    const { cpType, fallback, windowwidth, windowheight, ...props } = this.props;
 
     const customProps = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;
@@ -25,7 +25,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, {}> {
     }
 
     // Optionally resize a button to an icon button if it has fallback defined
-    if (this.props.windowWidth < 900 && fallback) {
+    if (this.props.windowwidth < 900 && fallback) {
       const { children, ...withoutChildren } = props;
       return (
         <Tooltip title={children}>

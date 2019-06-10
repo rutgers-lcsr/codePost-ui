@@ -357,12 +357,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <div className="student">
             <div id="studentSubmission" className="student__studentSubmission">
               {gradeBox}
-              <ReadOnlyCodePanel
-                submission={currentSubmission!}
-                files={files}
-                comments={comments}
-                rubricComments={rubricComments}
-              />
+              {ReadOnlyCodePanel}
             </div>
           </div>
         );

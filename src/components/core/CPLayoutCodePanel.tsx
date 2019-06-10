@@ -105,7 +105,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public componentDidUpdate(prevProps: ICPLayoutCodePanelProps) {
-    if (this.props.windowHeight !== prevProps.windowHeight || this.props.windowWidth !== prevProps.windowWidth) {
+    if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
       this.resizeOnNextFrame();
     }
   }
@@ -119,7 +119,9 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public resizeComponents = () => {
-    if (this.props.windowHeight !== 0) {
+    console.log('abc');
+    if (this.props.windowheight !== 0) {
+      console.log('def');
       const codeContainer = document.getElementById('cp-code-container');
       const codeUnderlay = document.getElementById('code-underlay');
       const codeSyntax = document.getElementById('code-syntax');
@@ -135,11 +137,14 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         commentsContainer !== null &&
         comments !== null
       ) {
+        console.log('hij', this.props.windowheight);
         const codeContainerMaxHeight =
-          this.props.windowHeight -
+          this.props.windowheight -
           codeContainer.getBoundingClientRect().top -
           themeVars.grade.codeContainer.marginBottom -
           themeVars.grade.marginBottom;
+
+        console.log('max', codeContainerMaxHeight);
 
         const codeContainerHeight = Math.min(
           codeContainerMaxHeight,
@@ -161,7 +166,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
 
         const commentsContainerHeight =
-          this.props.windowHeight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
+          this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
     }
@@ -175,7 +180,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   public grow = () => {
     const codeContainer = document.getElementById('cp-code-container');
     if (codeContainer !== null) {
-      const maxWidth = this.props.windowWidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
+      const maxWidth = this.props.windowwidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
       const splitBasis = Math.min(maxWidth, this.state.splitBasis + 100);
       this.setState({ splitBasis }, this.resizeComponents);
     }

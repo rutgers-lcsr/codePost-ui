@@ -129,7 +129,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   }
 
   public componentDidUpdate(prevProps: ICommentsProps) {
-    if (this.props.windowWidth !== prevProps.windowWidth || this.props.windowHeight !== prevProps.windowHeight) {
+    if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
   }

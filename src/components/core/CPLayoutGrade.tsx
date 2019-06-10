@@ -22,14 +22,14 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
   }
 
   public componentDidUpdate(prevProps: ICPLayoutGradeProps) {
-    if (this.props.windowHeight !== prevProps.windowHeight) {
+    if (this.props.windowheight !== prevProps.windowheight) {
       this.resizeComponents();
     }
   }
 
   // Set the scroll heights for FileMenu and RubricMenu
   public resizeComponents = () => {
-    if (this.props.windowHeight !== 0) {
+    if (this.props.windowheight !== 0) {
       const fileMenu = document.getElementById('cp-file-menu');
       const rubricMenu = document.getElementById('cp-rubric-menu');
       const rubricMenuTitle = document.getElementById('cp-rubric-menu-title');
@@ -38,12 +38,12 @@ class CPLayoutGrade extends React.Component<ICPLayoutGradeProps, {}> {
         // Don't let the file menu take up more than half of the vertical space
         // allowable for files and rubric
         const fileMenuMaxHeight =
-          (this.props.windowHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
+          (this.props.windowheight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
         fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
 
         const fileMenuBottom = fileMenu.getBoundingClientRect().bottom;
         const rubricMenuTitleHeight = rubricMenuTitle.offsetHeight;
-        const rubricMenuMaxHeight = this.props.windowHeight - fileMenuBottom - rubricMenuTitleHeight;
+        const rubricMenuMaxHeight = this.props.windowheight - fileMenuBottom - rubricMenuTitleHeight;
         rubricMenu.style.setProperty('max-height', `${rubricMenuMaxHeight}px`);
       }
     }

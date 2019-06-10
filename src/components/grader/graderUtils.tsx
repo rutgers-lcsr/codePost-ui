@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import * as React from 'react';
 import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
-import { openSubmission } from '../admin/AdminUtils';
+import { openSubmission } from '../admin/other/AdminUtils';
 
 const { Text } = Typography;
 

@@ -6,7 +6,7 @@ import { ClickParam } from 'antd/lib/menu';
 
 import { IOption } from '../../types/common';
 
-import { OptionProps, SelectedValue } from 'antd/lib/select';
+import { OptionProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 const { Header, Content } = Layout;
 
@@ -14,7 +14,7 @@ type themeType = 'light' | 'dark';
 
 interface IProps {
   // callback when a selector item is selected
-  onSelect: (val: SelectedValue, option: React.ReactElement<OptionProps>) => void;
+  onSelect: (val: SelectValue, option: React.ReactElement<OptionProps>) => void;
   // active selector item - controlled
   activeSelector?: IOption;
   // selector items
