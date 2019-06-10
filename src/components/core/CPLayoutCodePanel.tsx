@@ -119,9 +119,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public resizeComponents = () => {
-    console.log('abc');
     if (this.props.windowheight !== 0) {
-      console.log('def');
       const codeContainer = document.getElementById('cp-code-container');
       const codeUnderlay = document.getElementById('code-underlay');
       const codeSyntax = document.getElementById('code-syntax');
@@ -137,14 +135,11 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
         commentsContainer !== null &&
         comments !== null
       ) {
-        console.log('hij', this.props.windowheight);
         const codeContainerMaxHeight =
           this.props.windowheight -
           codeContainer.getBoundingClientRect().top -
           themeVars.grade.codeContainer.marginBottom -
           themeVars.grade.marginBottom;
-
-        console.log('max', codeContainerMaxHeight);
 
         const codeContainerHeight = Math.min(
           codeContainerMaxHeight,

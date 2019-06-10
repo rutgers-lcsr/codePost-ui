@@ -407,7 +407,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       savedComment = await CommentIO.update(comment);
     }
 
-    const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, savedComment.id);
+    let unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    unsavedComments = Grade.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
     this.updateComment(comment.id, savedComment);
 
