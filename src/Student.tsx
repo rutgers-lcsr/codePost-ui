@@ -1,14 +1,19 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
+// import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
 
-import GenericLayout from './components/core/layouts/GenericLayout';
+import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
+
+import StandardConsoleHeader from './components/core/StandardConsoleHeader';
+import StandardConsoleLayout from './components/core/StandardConsoleLayout';
+
+// import ReadOnlyComments from './components/core/ReadOnlyComments';
+
 import SelectorSider from './components/core/SelectorSider';
 
-import { Card, Icon, Row, Spin, Statistic } from 'antd';
+import { Card, Row, Spin, Statistic } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-import Arrow from './components/core/Arrow';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from './types/common';
 
@@ -63,7 +68,8 @@ export enum STATUS {
   ShowSubmission,
 }
 
-const ReadOnlyCodePanel = makeReadOnly(CodePanel);
+const ReadOnlyCodePanel = <div />;
+// const ReadOnlyCodePanel = makeReadOnly(CodePanel);
 
 class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
@@ -258,17 +264,34 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return messages;
   };
 
-  public handleCourseChange = (newCourseID: string) => {
-    const currentCourse = this.state.courses.filter((course: CourseType) => {
-      return course.id === Number(newCourseID);
-    })[0];
-    this.setState({
-      currentAssignment: undefined,
-      currentCourse,
-      currentSubmission: undefined,
-      toLoadCourse: true,
+  public handleCourseChange = (e: ClickParam) => {
+    const courseID = +e.key;
+    const currentCourses = this.state.courses.filter((course: CourseType) => {
+      return course.id === courseID;
     });
+
+    if (currentCourses.length > 0) {
+      const currentCourse = currentCourses[0];
+      this.setState({
+        currentAssignment: undefined,
+        currentCourse,
+        currentSubmission: undefined,
+        toLoadCourse: true,
+      });
+    }
   };
+
+  // public handleCourseChange = (newCourseID: string) => {
+  //   const currentCourse = this.state.courses.filter((course: CourseType) => {
+  //     return course.id === Number(newCourseID);
+  //   })[0];
+  //   this.setState({
+  //     currentAssignment: undefined,
+  //     currentCourse,
+  //     currentSubmission: undefined,
+  //     toLoadCourse: true,
+  //   });
+  // };
 
   public selectorItemsFormatter = (courses: CourseType[]) => {
     return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
@@ -319,17 +342,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ) => {
     switch (status) {
       case STATUS.SelectCourse:
-        return <Arrow direction="left" color="green" text="Select a course to get started." />;
+        return <div>Select a course to get started</div>;
       case STATUS.NoAssignments:
         return <div style={{ fontSize: 28 }}>No assignments available.</div>;
       case STATUS.SelectAssignment:
         return (
           <div style={{ paddingTop: 40 }}>
-            <Arrow direction="left" color="grey" text="Select an assignment." />
+            <div>Select a course to get started</div>;
           </div>
         );
       case STATUS.SubmissionLoading:
-        return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
+        return <Spin />;
       case STATUS.NoSubmission:
         return (
           <div style={{ fontSize: 28 }}>
@@ -356,12 +379,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <div className="student">
             <div id="studentSubmission" className="student__studentSubmission">
               {gradeBox}
-              <ReadOnlyCodePanel
-                submission={currentSubmission!}
-                files={files}
-                comments={comments}
-                rubricComments={rubricComments}
-              />
+              {ReadOnlyCodePanel}
             </div>
           </div>
         );
@@ -408,27 +426,38 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.state.commentRubricComments,
     );
 
+    // const comments = <ReadOnlyComments
+    //       comments={this.state.comments[this.state.selectedFile.id]}
+    //       rubricComments={this.state.commentRubricComments}
+    //       file={this.state.selectedFile}/>
+
+    const siderTitle = this.state.currentCourse ? 'Select an assignment' : 'Select a course';
+
     const sider = (
       <SelectorSider
-        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
+        title={siderTitle}
         activeSelector={this.selectorCurrentFormatter(currentCourse)}
         selectorItems={this.selectorItemsFormatter(courses)}
+        onSelectorClick={this.handleCourseChange}
+        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
         menuItems={this.tabItemsFormatter(currentCourse)}
         onMenuClick={this.handleAssignmentChange}
-        onSelect={this.handleCourseChange}
-        theme="light"
       />
     );
 
-    return (
-      <GenericLayout
+    const x = (
+      <StudentAndGraderLayout
         sider={sider}
         email={this.props.email}
         handleLogout={this.props.handleLogout}
         content={contentArea}
       />
     );
+    console.log('x', x);
+
+    const header = <StandardConsoleHeader email={this.props.email} handleLogout={this.props.handleLogout} />;
+
+    return <StandardConsoleLayout header={header} subheader={null} sider={[sider]} content={null} />;
   }
 }
-
 export default Student;

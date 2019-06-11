@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { Menu } from 'antd';
 
@@ -9,6 +9,7 @@ import CPAdminRubric from '../../components/admin/assignments/rubric/CPAdminRubr
 
 import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
+import CPFlex from '../../components/core/CPFlex';
 
 // import { RubricCategoryMock } from '../../infrastructure/rubricCategory';
 // import { RubricCommentMock } from '../../infrastructure/rubricComment';
@@ -39,22 +40,17 @@ const createButton = (
   </CPButton>
 );
 
-const header = (
-  <div className="cp-flex--normal">
-    <div className="left">{dropdown}</div>
-    <div className="left">{createButton}</div>
-    <div className="gap" />
-    <div className="right">
-      <span className="cp-label cp-label--bold">Hello, hello@andreacg.com!</span>
-    </div>
-    <div className="right">
-      <CPButton cpType="secondary" icon="setting" size="small" />
-    </div>
-    <div className="right">
-      <CPButton cpType="secondary" icon="logout" size="small" />
-    </div>
-  </div>
-);
+const headerLeft = [dropdown, createButton];
+
+const headerRight = [
+  <span key={0} className="cp-label cp-label--bold">
+    Hello, hello@andreacg.com!
+  </span>,
+  <CPButton key={1} cpType="secondary" icon="setting" size="small" />,
+  <CPButton key={2} cpType="secondary" icon="logout" size="small" />,
+];
+
+const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
 export const Rubric = () => {
   const actions = [

@@ -3,8 +3,8 @@ import * as React from 'react';
 import { Subtract } from 'utility-types';
 
 export interface IWithWindowWatcherProps {
-  windowWidth: number;
-  windowHeight: number;
+  windowwidth: number;
+  windowheight: number;
 }
 
 const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {

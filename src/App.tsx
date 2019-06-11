@@ -462,6 +462,7 @@ class App extends React.Component<{}, IState> {
         </Switch>
       );
     }
+
     if (this.state.triedLoading) {
       return (
         <div>

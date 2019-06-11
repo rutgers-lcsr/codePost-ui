@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Badge, Icon, Input, Table } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
+import CPFlex from '../../../components/core/CPFlex';
 
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
@@ -59,25 +60,26 @@ class SimpleRubricCategory extends React.Component<ICPRubricCategoryProps, {}> {
   public render() {
     const data = this.buildCommentTableData(this.props.rubricComments);
 
+    const content = [
+      <div key="name">
+        <div className="cp-label cp-label--bold" style={{}}>
+          Category Name
+        </div>
+        <Input value={this.props.rubricCategory.name} />
+      </div>,
+      <div key="points">
+        <div className="cp-label cp-label--bold" style={{}}>
+          Category Point Limit
+        </div>
+        <Input value={'3.0'} />
+      </div>,
+    ];
+
     // Should we have Add New Category within this table?
     return (
       <div style={{ marginBottom: 10 }}>
         <div className="cp-rubric-category__content" style={{ paddingBottom: 60, paddingLeft: 15, paddingRight: 15 }}>
-          <div className="cp-flex--very-wide">
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{}}>
-                Category Name
-              </div>
-              <Input value={this.props.rubricCategory.name} />
-            </div>
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{}}>
-                Category Point Limit
-              </div>
-              <Input value={'3.0'} />
-            </div>
-            <div className="gap" />
-          </div>
+          <CPFlex left={content} right={[]} gutterSize={60} />
           <div style={{ height: '40px' }} />
           <Table columns={commentTableColumns} dataSource={data} pagination={false} />
           <div className="cp-rubric-category__add-new-comment" style={{ bottom: 10 }}>

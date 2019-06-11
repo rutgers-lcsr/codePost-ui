@@ -2,34 +2,13 @@ import * as React from 'react';
 import { CommentType } from '../../infrastructure/comment';
 import { POSITION } from '../../types/common';
 
-interface IStyles {
+import themeVars from '../../styles/abstracts/_theme.js';
+
+type StyleType = {
   [highlightID: string]: number;
-}
+};
 
 export default class CodePanelUtils {
-  public static sortComments = (comments: CommentType[]): CommentType[] => {
-    return comments.sort((a: CommentType, b: CommentType) => {
-      if (a.startLine === b.startLine) {
-        if (a.startChar > b.startChar) {
-          return 1;
-        }
-        if (a.id < 0 && b.id < 0) {
-          return a.id + b.id;
-        } else if (a.id > 0 && b.id > 0) {
-          return a.id - b.id;
-        } else if (b.id < 0) {
-          return -1;
-        } else {
-          return 1;
-        }
-      }
-      if (a.startLine > b.startLine) {
-        return 1;
-      }
-      return -1;
-    });
-  };
-
   public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
@@ -61,10 +40,10 @@ export default class CodePanelUtils {
     return highlights;
   };
 
-  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, IStyles] => {
+  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, StyleType] => {
     const elements: any[] = [];
     let prevIDs: number[] = [];
-    let styles: IStyles = {};
+    let styles: StyleType = {};
 
     // We need to loop through each character on the line
     // tslint:disable-next-line
@@ -144,10 +123,15 @@ export default class CodePanelUtils {
           className = className.substring(1, className.length - 1);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
+        // return (
+        //   <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
+        //     {text}
+        //   </strong>
+        // );
         return (
-          <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
+          <span key={`${line}-${i}`} id={`line-${line}-${i}`} className={`highlight ${className}`}>
             {text}
-          </strong>
+          </span>
         );
       } else {
         return html;
@@ -167,9 +151,11 @@ export default class CodePanelUtils {
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
     for (const [highlight, level] of Object.entries(styles)) {
-      const tint = 0.5 + 0.2 * level;
+      const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: rgba(255, 202, 147, ${tint}) !important;}`,
+        `.highlight-${highlight} {background-color: ${
+          themeVars.theme.highlight
+        } !important; opacity: ${tint} !important;}`,
       );
     }
 
@@ -223,46 +209,5 @@ export default class CodePanelUtils {
     }
 
     return offset + CodePanelUtils.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
-  };
-
-  // The Code Console needs to update its dimensions when the relevant DOM components update
-  // This can either be new comments that would otherwise overflow or newly rendered code snippets
-  public static updateCommentPanelHeight = (height?: number) => {
-    const selectedTabElement = document.getElementsByClassName('react-tabs__tab-panel--selected')[0];
-    if (selectedTabElement) {
-      const commentPanel = selectedTabElement.getElementsByClassName(
-        'grade__main-container__tab-content__comment-panel',
-      )[0];
-      const syntaxHighlighter = selectedTabElement.getElementsByClassName('code__syntax-highlighter')[0];
-      if (!syntaxHighlighter) {
-        return;
-      }
-      const currentHeight = height ? height : syntaxHighlighter.getBoundingClientRect().height;
-
-      let newHeight = currentHeight;
-      const commentElements = document.getElementsByClassName('comment');
-
-      // tslint:disable-next-line
-      for (let i = 0; i < commentElements.length; i++) {
-        const elem = document.getElementById(commentElements[i].id)!;
-
-        // The TextArea has a transition on it
-        // So when this code reads the DOM, it sees the TextArea as smaller than it is
-        // Here we hard-code the expected final height of a transitioning TextArea
-        let buffer = 0;
-        if (elem.getElementsByTagName('textarea').length > 0) {
-          const textAreaHeight = elem.getElementsByTagName('textarea')[0].getBoundingClientRect().height;
-          if (textAreaHeight < 42) {
-            buffer = 42;
-          }
-        }
-
-        newHeight = Math.max(
-          currentHeight,
-          +elem.style.top!.slice(0, -2) + elem.getBoundingClientRect().height + 30 + buffer,
-        );
-      }
-      document.getElementById(commentPanel.id)!.style.setProperty('height', `${newHeight}px`);
-    }
   };
 }

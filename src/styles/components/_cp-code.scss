@@ -1,0 +1,68 @@
+.cp-code-container {
+  position: relative;
+
+  background-color: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 5px;
+
+  overflow-y: hidden;
+
+  .cp-code {
+    z-index: 0;
+    position: absolute;
+    top: 25px;
+
+    // FIXME: get rid of all these !importants
+    font-family: $fontCode !important;
+
+    border: 0px !important;
+    overflow-x: scroll;
+    overflow-y: hidden;
+
+    margin: 0px !important;
+
+    // SyntaxHighlighter style clone
+    text-rendering: optimizeLegibility;
+    overflow-wrap: break-word;
+    white-space: pre;
+    word-break: break-all;
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+    font-stretch: 100%;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+    code {
+      white-space: pre;
+    }
+
+    .highlight {
+      display: inline-block;
+      background-color: get('theme.highlight');
+      opacity: 0.2;
+      height: get('theme.highlightHeight');
+      vertical-align: middle;
+
+      // Override selection styling
+      &::selection {
+        color: transparent; /* WebKit/Blink Browsers */
+        background: transparent;
+      }
+
+      &::-moz-selection {
+        color: transparent; /* Gecko Browsers */
+        background: transparent;
+      }
+    }
+  }
+
+  #code-underlay {
+    color: transparent;
+  }
+
+  #code-syntax {
+    // We can hide code-syntax scrollbar while showing code-underlay scrollbar
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}

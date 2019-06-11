@@ -1,20 +1,16 @@
-// This component is a generic controlled sider component with a selector and a menu
 import * as React from 'react';
 
-import { Layout, Menu, Select } from 'antd';
+import CPDropdown from './CPDropdown';
+
+import { Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { IOption } from '../../types/common';
 
-import { OptionProps, SelectedValue } from 'antd/lib/select';
-const { Option } = Select;
-const { Header, Content } = Layout;
-
-type themeType = 'light' | 'dark';
-
 interface IProps {
+  title?: string;
   // callback when a selector item is selected
-  onSelect: (val: SelectedValue, option: React.ReactElement<OptionProps>) => void;
+  onSelectorClick: (e: ClickParam) => void;
   // active selector item - controlled
   activeSelector?: IOption;
   // selector items
@@ -25,46 +21,47 @@ interface IProps {
   activeMenuItem?: number;
   // menu items
   menuItems: IOption[];
-  // theme: light or dark
-  theme: themeType;
 }
 
-class SelectorSider extends React.Component<IProps, {}> {
-  public render() {
-    const { activeMenuItem, theme } = this.props;
+const SelectorSider = (props: IProps) => {
+  const selectorOverlay = (
+    <Menu onClick={props.onSelectorClick}>
+      {props.selectorItems.map((item: IOption, index: number) => {
+        return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
+      })}
+    </Menu>
+  );
 
-    const background = theme === 'light' ? '#fff' : '#1b1b1b';
-    const color = theme === 'light' ? '#000' : '#fff';
-
-    return (
-      <Layout style={{ minHeight: '100%', background: `${background}` }}>
-        <Header style={{ background: `${background}`, color: `${color}`, paddingLeft: 10 }}>
-          <Select
-            placeholder="Select a course"
-            value={this.props.activeSelector ? this.props.activeSelector.label : undefined}
-            onSelect={this.props.onSelect}
-            style={{ width: 180 }}
-          >
-            {this.props.selectorItems.map((item: IOption) => {
-              return <Option key={item.value}>{item.label}</Option>;
-            })}
-          </Select>
-        </Header>
-        <Content>
-          <Menu
-            onClick={this.props.onMenuClick}
-            theme={theme}
-            selectedKeys={activeMenuItem ? [activeMenuItem.toString()] : []}
-            mode="inline"
-          >
-            {this.props.menuItems.map((item: IOption) => {
-              return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
-            })}
-          </Menu>
-        </Content>
-      </Layout>
-    );
+  let title;
+  if (props.title) {
+    title = <div className="cp-label cp-label--medium cp-label--bold">{props.title}</div>;
   }
-}
+
+  return (
+    <div>
+      <div style={{ padding: '18px 20px 22px 16px' }}>
+        {title}
+        <div style={{ height: '13px' }} />
+        <CPDropdown
+          key="selector"
+          value={props.activeSelector ? props.activeSelector.label : 'Select...'}
+          overlay={selectorOverlay}
+          overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+        />
+      </div>
+      <Menu
+        key="menu"
+        className="sider-menu"
+        onClick={props.onMenuClick}
+        selectedKeys={props.activeMenuItem ? [props.activeMenuItem.toString()] : []}
+        mode="inline"
+      >
+        {props.menuItems.map((item: IOption) => {
+          return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
+        })}
+      </Menu>
+    </div>
+  );
+};
 
 export default SelectorSider;
