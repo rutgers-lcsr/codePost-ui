@@ -8,7 +8,6 @@ import * as React from 'react';
 /* other library imports */
 import { Redirect } from 'react-router-dom';
 
-import Arrow from './components/core/Arrow';
 import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
 import SelectorSider from './components/core/SelectorSider';
 
@@ -389,11 +388,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     // if not loaded yet, render a get started div
     if (!currentCourse) {
-      graderPanelContent = <Arrow direction="left" color="green" text="Select a course to get started." />;
+      graderPanelContent = <div>Select a course to get started</div>;
     } else if (!currentAssignment) {
       graderPanelContent = (
         <div style={{ paddingTop: 40 }}>
-          <Arrow direction="left" color="grey" text="Select an assignment." />
+          <div>Select an assignment</div>
         </div>
       );
     } else {
@@ -425,6 +424,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
 
     const sider = (
+      // @ts-ignore
       <SelectorSider
         activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
         activeSelector={this.selectorCurrentFormatter(currentCourse)}
