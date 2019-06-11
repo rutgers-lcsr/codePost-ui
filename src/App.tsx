@@ -99,14 +99,12 @@ class App extends React.Component<{}, IState> {
 
   public componentDidMount() {
     if (this.state.has_token && !this.state.user) {
-      console.log('mounting');
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
         },
       })
         .then((res) => {
-          console.log('res', res);
           if (res.ok) {
             return res.json();
           }
@@ -250,7 +248,6 @@ class App extends React.Component<{}, IState> {
   };
 
   public render() {
-    console.log('render', this.state.user);
     if (this.state.toRedirect) {
       return <Redirect to={'/'} />;
     }
@@ -285,7 +282,6 @@ class App extends React.Component<{}, IState> {
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
-        console.log('abc');
         studentRoute = (
           <Route
             exact={true}
@@ -460,17 +456,14 @@ class App extends React.Component<{}, IState> {
         </Switch>
       );
     }
-    console.log('after undefined');
 
     if (this.state.triedLoading) {
-      console.log('loading');
       return (
         <div>
           <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
         </div>
       );
     } else {
-      console.log('failed');
       (window as any).Intercom('boot', {
         app_id: 'kg4u5rp1',
         custom_launcher_selector: '#IntercomDefaultWidget',

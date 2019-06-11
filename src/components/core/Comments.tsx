@@ -82,8 +82,16 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     }
   };
 
+  // Handle ESC key
+  public handleKeyPress = (e: KeyboardEvent) => {
+    if (e.keyCode === 27) {
+      this.props.changeActive(undefined);
+    }
+  };
+
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
+    document.addEventListener('keydown', this.handleKeyPress);
 
     const zoomIn = document.getElementById('zoom-in');
     const zoomOut = document.getElementById('zoom-out');
@@ -112,6 +120,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
+    document.removeEventListener('keydown', this.handleKeyPress);
 
     const zoomIn = document.getElementById('zoom-in');
     const zoomOut = document.getElementById('zoom-out');

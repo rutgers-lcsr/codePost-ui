@@ -255,7 +255,6 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
               >
                 {this.props.file.code}
               </SyntaxHighlighter>
-              ;
               <div id="code-underlay" className="cp-code" style={{ ...codeStyle, paddingLeft }}>
                 {this.props.code}
               </div>

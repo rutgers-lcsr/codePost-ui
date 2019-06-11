@@ -21,7 +21,9 @@ import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastru
 
 import { UserType } from './infrastructure/user';
 
-import CPLayoutGrade from './components/core/CPLayoutGrade';
+// import CPLayoutGrade from './components/core/CPLayoutGrade';
+import StandardConsoleHeader from './components/core/StandardConsoleHeader';
+import StandardConsoleLayout from './components/core/StandardConsoleLayout';
 
 import { Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
 
@@ -32,7 +34,6 @@ import CPDropdown from './components/core/CPDropdown';
 import CPFileMenu from './components/core/CPFileMenu';
 import CPFlex from './components/core/CPFlex';
 import CPLayoutCodePanel from './components/core/CPLayoutCodePanel';
-import CPLogo from './components/core/CPLogo';
 import CPRubricMenu from './components/core/CPRubricMenu';
 
 import { FileType } from './infrastructure/file';
@@ -277,10 +278,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public async componentDidMount() {
-    // Prevent document from "pulling" on scroll
-    // 'es muy importante!'
-    document.body.style.overflow = 'hidden';
-
     this.setState({ isLoading: true });
 
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
@@ -329,10 +326,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         selectedFile,
       });
     }
-  }
-
-  public componentWillUnmount() {
-    document.body.style.overflow = 'auto';
   }
 
   // -------------------------- Loading -------------------------- //
@@ -563,18 +556,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <div>No Submission Found</div>;
     }
 
-    const headerLeft = [<CPLogo key="header-0" cpType="main" />];
-
-    const headerRight = [
-      <span key="header-user" className="cp-label cp-label--white cp-label--bold">
-        {this.props.user.email}
-      </span>,
-      <CPButton key="header-logout" cpType="dark">
-        Log Out
-      </CPButton>,
-    ];
-
-    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={20} />;
+    const header = <StandardConsoleHeader email={this.props.user.email} handleLogout={this.onEscKeyPress} />;
 
     const subHeaderLeftTop = [
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
@@ -661,29 +643,28 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
 
     return (
-      <CPLayoutGrade
+      <StandardConsoleLayout
+        consoleType="grade"
         header={header}
         subheader={subheader}
-        files={
+        sider={[
           <CPFileMenu
+            key={'file-menu'}
             files={this.state.files}
             selectedFile={this.state.selectedFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
             canChange={Object.keys(this.state.unsavedComments).length === 0}
-          />
-        }
-        rubric={
+          />,
           <CPRubricMenu
+            key={'rubric-menu'}
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             handleRubricCommentClick={this.onRubricCommentClick}
-          />
-        }
+          />,
+        ]}
         content={content}
-      >
-        <UseEscKey onPress={this.onEscKeyPress} />
-      </CPLayoutGrade>
+      />
     );
   }
 }
@@ -1111,23 +1092,6 @@ const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boo
       {revealButton}
     </span>
   );
-};
-
-const UseEscKey = (props: { onPress: () => void }) => {
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.keyCode === 27) {
-      props.onPress();
-    }
-  };
-
-  React.useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  });
-
-  return null;
 };
 
 export default Grade;
