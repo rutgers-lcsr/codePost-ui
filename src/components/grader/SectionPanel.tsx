@@ -11,7 +11,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 /* codePost imports */
-import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './graderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';

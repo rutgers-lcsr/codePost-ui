@@ -7,6 +7,8 @@ import { ClickParam } from 'antd/lib/menu';
 
 import { IOption } from '../../types/common';
 
+type ThemeType = 'light' | 'dark';
+
 interface IProps {
   title?: string;
   // callback when a selector item is selected
@@ -21,9 +23,12 @@ interface IProps {
   activeMenuItem?: number;
   // menu items
   menuItems: IOption[];
+  theme?: ThemeType;
 }
 
 const SelectorSider = (props: IProps) => {
+  const theme = props.theme ? props.theme : 'light';
+
   const selectorOverlay = (
     <Menu onClick={props.onSelectorClick}>
       {props.selectorItems.map((item: IOption, index: number) => {
@@ -47,14 +52,16 @@ const SelectorSider = (props: IProps) => {
           value={props.activeSelector ? props.activeSelector.label : 'Select...'}
           overlay={selectorOverlay}
           overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+          theme="dark"
         />
       </div>
       <Menu
         key="menu"
-        className="sider-menu"
+        className={`sider-menu sider-menu-${theme}`}
         onClick={props.onMenuClick}
         selectedKeys={props.activeMenuItem ? [props.activeMenuItem.toString()] : []}
         mode="inline"
+        theme="dark"
       >
         {props.menuItems.map((item: IOption) => {
           return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
