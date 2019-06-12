@@ -7,7 +7,6 @@ import * as CodeMirror from 'react-codemirror';
 
 import { Button } from 'react-md';
 import { animateScroll as scroll } from 'react-scroll';
-import LandingTopBar from './components/LandingTopBar';
 
 import { ModalCarousel } from './components/Utils/ModalCarousel';
 import Footer from './Footer';
@@ -217,8 +216,6 @@ public boolean contains(int[] x, int y) {\n\n\
 
     return (
       <div className="Landing">
-        <LandingTopBar />
-
         <div className="topbar--Landing__spacing" />
         <div className="Hero-background" />
         <div className="Hero">
