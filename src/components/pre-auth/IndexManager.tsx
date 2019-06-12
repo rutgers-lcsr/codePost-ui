@@ -1,7 +1,15 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* other library imports */
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import Landing from '../Landing';
+/* codePost imports */
+import Landing from '../../Landing';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -11,14 +19,16 @@ import PasswordReset from './PasswordReset';
 import CreateSignup from './CreateSignup';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
+import PrivacyPolicy from './PrivacyPolicy';
 import SignUpManager from './SignUpManager';
-import PrivacyPolicy from './TermsAndPrivacy/PrivacyPolicy';
-import TermsOfService from './TermsAndPrivacy/TermsOfService';
-import UpgradeSignup from './UpgradeSignup';
+import TermsOfService from './TermsOfService';
+
+/**********************************************************************************************************************/
 
 interface IndexManagerProps {
   error: string;
-  handleLogin: (e: any, data: any) => void;
+  handleLogin: (email: string, password: string) => void;
+  isAuthenticated: boolean;
 }
 
 class IndexManager extends React.Component<IndexManagerProps, {}> {
@@ -36,7 +46,6 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} />}
             />
 
-            <Route exact={true} path={'/upgrade'} component={UpgradeSignup} />
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
             <Route exact={true} path={'/signup/student'} component={JoinSignup} />
             <Route exact={true} path={'/signup/staff/join'} component={JoinSignup} />
@@ -70,11 +79,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               render={(props: any) => <PasswordReset {...props} message={'activate'} />}
             />
 
-            <Route
-              exact={true}
-              path={'/upgrade/:uid/:token'}
-              render={(props: any) => <PasswordReset {...props} message={'upgrade'} />}
-            />
+            {/* Reminder: we used to offer an "upgrade" path */}
 
             <Route component={NoMatch} />
           </Switch>

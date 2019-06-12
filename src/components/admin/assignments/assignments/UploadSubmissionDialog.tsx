@@ -18,12 +18,6 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
 /**********************************************************************************************************************/
 
-/********************************/
-/* Issues
-/* - read files don't contain contents
-/* - student select is very slow
-/********************************/
-
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
