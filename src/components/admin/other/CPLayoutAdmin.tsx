@@ -10,6 +10,9 @@ import { Layout } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 const { Header, Sider } = Layout;
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';
 import CPMainNav from '../../core/CPMainNav';
@@ -42,7 +45,15 @@ class CPLayoutAdmin extends React.Component<ICPLayoutAdminProps, {}> {
       <Layout id="Admin" className="layout--admin">
         <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
           <Header className="layout--admin__sider__header">
-            {this.state.collapsed ? <CPLogo cpType="icon" /> : <CPLogo cpType="main" />}
+            {this.state.collapsed ? (
+              <Link to="/">
+                <CPLogo cpType="icon" />
+              </Link>
+            ) : (
+              <Link to="/">
+                <CPLogo cpType="main" />
+              </Link>
+            )}
           </Header>
           <CPMainNav selectedPanel={this.props.selectedPanel} onClick={this.props.onClick} />
         </Sider>
