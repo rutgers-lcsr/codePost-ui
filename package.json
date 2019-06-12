@@ -11,6 +11,7 @@
     "@types/react-loadable": "^5.5.0",
     "@types/react-scroll": "^1.5.4",
     "@types/react-scrollable-anchor": "^0.6.0",
+    "ant": "^0.2.0",
     "antd": "^3.19.3",
     "array-move": "^2.1.0",
     "autoprefixer": "7.1.6",
