@@ -17,7 +17,12 @@ import { Course, CourseSettingsType, CourseType } from './infrastructure/course'
 
 import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
-import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+import {
+  AnonymousSubmissionType,
+  StudentSubmissionType,
+  Submission,
+  SubmissionType,
+} from './infrastructure/submission';
 
 import { UserType } from './infrastructure/user';
 
@@ -40,7 +45,7 @@ import { FileType } from './infrastructure/file';
 
 import Code from './components/Code/Code';
 
-import Comments from './components/core/Comments';
+import { GradeComments } from './components/core/Comments';
 
 import * as Immutable from './infrastructure/immutable';
 
@@ -619,12 +624,12 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           comments={this.state.comments[this.state.selectedFile.id]}
           readOnly={this.state.submission.isFinalized}
           addComment={this.addComment}
-          user={this.props.user}
+          user={this.props.user.email}
         />
       );
 
       const comments = (
-        <Comments
+        <GradeComments
           comments={this.state.comments[this.state.selectedFile.id]}
           rubricComments={this.state.commentRubricComments}
           readOnly={this.state.submission.isFinalized}
@@ -644,12 +649,13 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     return (
       <StandardConsoleLayout
-        consoleType="grade"
+        consoleTypes={['grade', 'subheader']}
         header={header}
         subheader={subheader}
         sider={[
           <CPFileMenu
             key={'file-menu'}
+            title="Files"
             files={this.state.files}
             selectedFile={this.state.selectedFile}
             getPointsInFile={this.getPointsInFile}
@@ -693,7 +699,7 @@ const SubheaderGrade = (props: ISubheaderGradeProps) => {
 
 interface ISubheaderInfoProps {
   assignment: AssignmentType;
-  submission: AnonymousSubmissionType;
+  submission: AnonymousSubmissionType | StudentSubmissionType;
   rubricCategories: RubricCategoryType[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
@@ -703,7 +709,7 @@ interface ISubheaderInfoProps {
 //         it will be prudent to find a way to rigorously test this presentation.
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
-const SubheaderInfo = (props: ISubheaderInfoProps) => {
+export const SubheaderInfo = (props: ISubheaderInfoProps) => {
   let content = <Skeleton active />;
   const title = 'How was this calculated?';
 

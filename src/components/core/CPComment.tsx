@@ -382,9 +382,11 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '6px', lineHeight: '9px' }}>
-                <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
-              </div>
+              {this.props.commentType !== 'readonly' ? (
+                <div style={{ margin: '0px 20px 0px 20px', paddingBottom: '6px', lineHeight: '9px' }}>
+                  <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

@@ -1,10 +1,13 @@
 import * as React from 'react';
 
+// import { Subtract } from 'utility-types';
+
 import CPComment from './CPComment';
 import Layout from './LayoutUtils';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
+import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../types/common';
 
@@ -14,12 +17,16 @@ import * as Animation from '../../infrastructure/animation';
 
 import themeVars from '../../styles/abstracts/_theme.js';
 
-export interface ICommentsProps extends IWithWindowWatcherProps {
+// interface ICommentsProps = ICommentsCoreProps & ICommentsEditProps & IWithWindowWatcherProps;
+
+interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
-  readOnly: boolean;
-
   file: FileType;
+}
+
+interface ICommentsEditProps {
+  readOnly: boolean;
   activeCommentID?: number;
   changeActive: (id: number | undefined) => void;
   saveComment: any;
@@ -44,7 +51,7 @@ type BlockType = {
   endAt: number;
 };
 
-class Comments extends React.Component<ICommentsProps, ICommentsState> {
+class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, ICommentsState> {
   public static getCommentType = (readOnly: boolean, commentID: number, activeCommentID?: number) => {
     return readOnly ? 'readonly' : commentID === activeCommentID ? 'active' : 'inactive';
   };
@@ -52,7 +59,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
   public nextFrameActionId: number;
   public wrapperRef: any;
 
-  public constructor(props: ICommentsProps) {
+  public constructor(props: ICommentsCoreProps & ICommentsEditProps) {
     super(props);
 
     this.setWrapperRef = this.setWrapperRef.bind(this);
@@ -137,7 +144,7 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     }
   }
 
-  public componentDidUpdate(prevProps: ICommentsProps) {
+  public componentDidUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps) {
     if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
@@ -270,5 +277,55 @@ class Comments extends React.Component<ICommentsProps, ICommentsState> {
     );
   }
 }
+
+const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & ICommentsEditProps>) => {
+  return class WrappedComponent extends React.Component<ICommentsCoreProps, {}> {
+    public readOnly = true;
+    public activeCommentID = undefined;
+
+    public saveComment = (comment: any) => {
+      return;
+    };
+
+    public changeActive = (id: number) => {
+      return;
+    };
+
+    public deleteComment = (comment: CommentType) => {
+      return;
+    };
+
+    public addUnsaved = (commentID: number) => {
+      return;
+    };
+
+    public removeUnsaved = (commentID: number) => {
+      return;
+    };
+
+    public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
+      return;
+    };
+
+    public render() {
+      return (
+        <Component
+          {...this.props as ICommentsCoreProps}
+          readOnly={this.readOnly}
+          activeCommentID={this.activeCommentID}
+          changeActive={this.changeActive}
+          saveComment={this.saveComment}
+          deleteComment={this.deleteComment}
+          addUnsaved={this.addUnsaved}
+          removeUnsaved={this.removeUnsaved}
+          removeRubricComment={this.removeRubricComment}
+        />
+      );
+    }
+  };
+};
+
+export const GradeComments = withWindowWatcher(Comments);
+export const StudentComments = withWindowWatcher(makeReadOnly(Comments));
 
 export default withWindowWatcher(Comments);

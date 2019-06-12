@@ -8,38 +8,41 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 import { useGradeResizer } from './useGradeResizer';
 
-type ConsoleType = 'grade' | 'student' | 'grader';
+export type ConsoleType = 'grade' | 'subheader';
 
 interface IStandardConsoleLayoutProps {
-  consoleType?: ConsoleType;
+  consoleTypes?: ConsoleType[];
   header: React.ReactNode;
   subheader: React.ReactNode;
   sider: React.ReactNode[];
   content: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
 
-  if (props.consoleType === 'grade') {
+  if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();
   }
 
   return (
-    <Layout id="Grade" className="layout--standard-console">
+    <Layout className="layout--standard-console">
       <Header className="layout--standard-console__header">{props.header}</Header>
       <Layout>
         <Sider width={300} className="layout--standard-console__sider">
           {props.sider.map((siderNode: React.ReactNode) => {
-            console.log('sider', siderNode);
             return siderNode;
           })}
         </Sider>
         <Layout>
-          <Header className="layout--standard-console__subheader" style={{ height: themeVars.grade.subheaderHeight }}>
-            {props.subheader}
-          </Header>
+          {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
+            <Header className="layout--standard-console__subheader" style={{ height: themeVars.grade.subheaderHeight }}>
+              {props.subheader}
+            </Header>
+          ) : null}
           <Content className="layout--standard-console__content">{props.content}</Content>
+          {props.children}
         </Layout>
       </Layout>
     </Layout>

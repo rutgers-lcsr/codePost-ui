@@ -1,18 +1,25 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-// import { CodePanel, makeReadOnly } from './components/Code/CodePanel';
+import themeVars from './styles/abstracts/_theme.js';
 
-import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
+import Grade, { SubheaderInfo } from './Grade';
 
 import StandardConsoleHeader from './components/core/StandardConsoleHeader';
-import StandardConsoleLayout from './components/core/StandardConsoleLayout';
+import StandardConsoleLayout, { ConsoleType } from './components/core/StandardConsoleLayout';
 
-// import ReadOnlyComments from './components/core/ReadOnlyComments';
+import { StudentCode } from './components/Code/Code';
+
+import { StudentComments } from './components/core/Comments';
+
+import CPFileMenu from './components/core/CPFileMenu';
+import CPFlex from './components/core/CPFlex';
+
+import CPLayoutCodePanel from './components/core/CPLayoutCodePanel';
 
 import SelectorSider from './components/core/SelectorSider';
 
-import { Card, Row, Spin, Statistic } from 'antd';
+import { Drawer, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from './types/common';
@@ -25,7 +32,6 @@ import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCateg
 import { StudentSubmissionType, Submission } from './infrastructure/submission';
 
 interface IStudentState {
-  courses: CourseType[];
   assignments: ICourseToAssignmentMap;
   files: FileType[];
   comments: IFileToCommentsMap;
@@ -35,6 +41,7 @@ interface IStudentState {
   currentCourse?: CourseType;
   currentAssignment?: AssignmentType;
   currentSubmission?: StudentSubmissionType;
+  currentFile?: FileType;
 
   isLoggedIn: boolean;
   redirect: boolean;
@@ -68,17 +75,14 @@ export enum STATUS {
   ShowSubmission,
 }
 
-const ReadOnlyCodePanel = <div />;
-// const ReadOnlyCodePanel = makeReadOnly(CodePanel);
-
 class Student extends React.Component<IStudentProps, IStudentState> {
   public state: Readonly<IStudentState> = {
     assignments: {},
     comments: {},
-    courses: this.props.initialCourses,
     currentAssignment: undefined,
     currentCourse: undefined,
     currentSubmission: undefined,
+    currentFile: undefined,
     files: [],
     isLoadingAssignments: true,
     isLoadingSubmission: false,
@@ -91,8 +95,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public async componentDidMount() {
-    const assignments = await this.loadAssignments(this.state.courses);
-    this.setState({ assignments });
+    const assignments = await this.loadAssignments(this.props.initialCourses);
+    this.setState({ assignments, isLoadingAssignments: false });
 
     await this.setStateFromURL();
   }
@@ -114,7 +118,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     let currentAssignment: AssignmentType | undefined;
 
     if (courseName && period) {
-      currentCourse = this.state.courses.find((course: CourseType) => {
+      currentCourse = this.props.initialCourses.find((course: CourseType) => {
         return course.name === courseName.replace(/_/g, ' ') && course.period === period.replace(/_/g, ' ');
       });
 
@@ -130,8 +134,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
           if (currentSubmission) {
             const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
+            let currentFile;
+            if (files.length > 0) {
+              currentFile = files[0];
+            }
             // @ts-ignore
-            this.setState({ files, comments, commentRubricComments });
+            this.setState({ files, comments, commentRubricComments, currentFile });
           }
           this.setState({
             currentCourse,
@@ -168,7 +176,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!assignment.isReleased) {
       return undefined;
     }
-
     return (await Assignment.readSubmissionsStudent(assignment.id, { student: this.props.email }))[0];
   };
 
@@ -190,15 +197,28 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return;
   };
 
-  public handleAssignmentChange = (newAssignment: ClickParam) => {
+  public handleAssignmentChange = (newAssignment?: ClickParam) => {
     const { assignments, currentCourse } = this.state;
 
     if (!currentCourse) {
       return;
     }
 
+    if (newAssignment === undefined) {
+      this.setState({
+        currentAssignment: undefined,
+        currentSubmission: undefined,
+        files: [],
+        comments: {},
+        rubricCategories: [],
+        commentRubricComments: {},
+        currentFile: undefined,
+      });
+      return;
+    }
+
     const currentAssignment = assignments[currentCourse.id].filter((assignment: AssignmentType) => {
-      return assignment.id === Number(newAssignment.key);
+      return assignment.id === +newAssignment.key;
     })[0];
 
     if (currentAssignment) {
@@ -209,6 +229,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
         if (currentSubmission) {
           const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
+          let currentFile;
+          if (files.length > 0) {
+            currentFile = files[0];
+          }
           // Mark submission as viewed
           this.markViewed(currentSubmission);
           // @ts-ignore
@@ -218,6 +242,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             commentRubricComments,
             currentSubmission,
             rubricCategories,
+            currentFile,
             isLoadingSubmission: false,
             toLoadAssignment: true,
           });
@@ -228,45 +253,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
   };
 
-  public getPointsPerCategory = (commentRubricComments: ICommentToRubricCommentMap) => {
-    const pointsPerCategory = {};
-
-    for (const commentID in commentRubricComments) {
-      // Don't count unsaved comments
-      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
-        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
-          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
-        } else {
-          pointsPerCategory[commentRubricComments[commentID].category] =
-            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
-        }
-      }
-    }
-
-    return pointsPerCategory;
-  };
-
-  public writeCategoryCapMessages = (
-    pointsPerCategory: { [categoryID: number]: number },
-    rubricCategories: RubricCategory[],
-  ) => {
-    const messages: string[] = [];
-
-    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      if (pointsPerCategory[rubricCategory.id]) {
-        if (pointsPerCategory[rubricCategory.id] > rubricCategory.pointLimit!) {
-          const diff = pointsPerCategory[rubricCategory.id] - rubricCategory.pointLimit!;
-          messages.push(`${rubricCategory.name} (${diff})`);
-        }
-      }
-    });
-
-    return messages;
-  };
-
   public handleCourseChange = (e: ClickParam) => {
     const courseID = +e.key;
-    const currentCourses = this.state.courses.filter((course: CourseType) => {
+    const currentCourses = this.props.initialCourses.filter((course: CourseType) => {
       return course.id === courseID;
     });
 
@@ -280,18 +269,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       });
     }
   };
-
-  // public handleCourseChange = (newCourseID: string) => {
-  //   const currentCourse = this.state.courses.filter((course: CourseType) => {
-  //     return course.id === Number(newCourseID);
-  //   })[0];
-  //   this.setState({
-  //     currentAssignment: undefined,
-  //     currentCourse,
-  //     currentSubmission: undefined,
-  //     toLoadCourse: true,
-  //   });
-  // };
 
   public selectorItemsFormatter = (courses: CourseType[]) => {
     return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
@@ -318,72 +295,96 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public getStatus = (
     currentCourse: CourseType | undefined,
+    isLoadingAssignments: boolean,
     hasAssignments: boolean,
     currentAssignment: AssignmentType | undefined,
-    isLoading: boolean,
+    isLoadingSubmission: boolean,
     currentSubmission: StudentSubmissionType | undefined,
   ) => {
     if (!currentCourse) return STATUS.SelectCourse;
     if (!hasAssignments) return STATUS.NoAssignments;
     if (!currentAssignment) return STATUS.SelectAssignment;
-    if (isLoading) return STATUS.SubmissionLoading;
+    if (isLoadingSubmission) return STATUS.SubmissionLoading;
     if (!currentSubmission) return STATUS.NoSubmission;
     if (!currentSubmission.isFinalized) return STATUS.NotGraded;
     else return STATUS.ShowSubmission;
   };
 
-  public getContent = (
-    currentAssignment: AssignmentType | undefined,
-    status: STATUS,
-    currentSubmission: StudentSubmissionType | undefined,
-    files: FileType[],
-    comments: IFileToCommentsMap,
-    rubricComments: ICommentToRubricCommentMap,
-  ) => {
+  public getContent = (status: STATUS) => {
     switch (status) {
       case STATUS.SelectCourse:
-        return <div>Select a course to get started</div>;
+        return <div style={{ padding: '40px', fontSize: 28 }}>Select a course to get started</div>;
+
       case STATUS.NoAssignments:
-        return <div style={{ fontSize: 28 }}>No assignments available.</div>;
+        return <div style={{ padding: '40px', fontSize: 28 }}>No assignments available</div>;
       case STATUS.SelectAssignment:
         return (
-          <div style={{ paddingTop: 40 }}>
-            <div>Select a course to get started</div>;
+          <div style={{ padding: '40px', fontSize: 28 }}>
+            <div>Select an assignment</div>
           </div>
         );
       case STATUS.SubmissionLoading:
-        return <Spin />;
+        return (
+          <div style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
+            <Spin />
+          </div>
+        );
       case STATUS.NoSubmission:
-        return (
-          <div style={{ fontSize: 28 }}>
-            Nothing submitted yet. If you think this is a mistake, please contact your instructor.
-          </div>
-        );
-      case STATUS.NotGraded:
-        return <div style={{ fontSize: 28 }}>Your {currentAssignment!.name} has not yet been graded.</div>;
-      case STATUS.ShowSubmission:
-        const pointsPerCategory = this.getPointsPerCategory(this.state.commentRubricComments);
-        const messages = this.writeCategoryCapMessages(pointsPerCategory, this.state.rubricCategories);
-
-        const gradeBox = currentAssignment!.hideGrades ? null : (
-          <Card size="small" style={{ paddingLeft: 20, paddingRight: 20, marginBottom: 20 }}>
-            <Row type="flex" justify="space-between" style={{ maxWidth: 300 }}>
-              <Statistic title="Grade" value={currentSubmission!.grade!} suffix={`/ ${currentAssignment!.points}`} />
-              {currentAssignment!.mean ? <Statistic title="Mean" value={currentAssignment!.mean!} /> : <div />}
-              {currentAssignment!.median ? <Statistic title="Median" value={currentAssignment!.median!} /> : <div />}
-            </Row>
-            {messages.length > 0 ? <div>Category points exceeded: {messages.join(', ')}</div> : <div />}
-          </Card>
-        );
-        return (
-          <div className="student">
-            <div id="studentSubmission" className="student__studentSubmission">
-              {gradeBox}
-              {ReadOnlyCodePanel}
+        if (this.state.currentAssignment) {
+          return (
+            <div style={{ padding: '40px', fontSize: 28 }}>
+              Your instructor has not yet uploaded your {this.state.currentAssignment.name} submission
             </div>
-          </div>
-        );
+          );
+        }
+        return null;
+      case STATUS.NotGraded:
+        if (this.state.currentAssignment) {
+          return (
+            <div style={{ padding: '40px', fontSize: 28 }}>
+              Your {this.state.currentAssignment.name} has not yet been graded
+            </div>
+          );
+        }
+        return null;
+      case STATUS.ShowSubmission:
+        if (this.state.currentSubmission !== undefined && this.state.currentFile !== undefined) {
+          const comments = (
+            <StudentComments
+              comments={this.state.comments[this.state.currentFile.id]}
+              rubricComments={this.state.commentRubricComments}
+              file={this.state.currentFile}
+            />
+          );
+          const code = (
+            <StudentCode
+              file={this.state.currentFile}
+              comments={this.state.comments[this.state.currentFile.id]}
+              readOnly={this.state.currentSubmission.isFinalized}
+              user={this.props.email}
+            />
+          );
+          return <CPLayoutCodePanel comments={comments} code={code} file={this.state.currentFile} />;
+        } else {
+          return null;
+        }
     }
+  };
+
+  public goBackToAssignments = () => {
+    this.handleAssignmentChange(undefined);
+  };
+
+  public getPointsInFile = (file: FileType): number[] => {
+    return Grade.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
+  };
+
+  public changeCurrentFile = (fileID: number): void => {
+    const currentFile = this.state.files.find((file: FileType) => {
+      return file.id === fileID;
+    });
+
+    this.setState({ currentFile });
   };
 
   ///////////////////////////////////////
@@ -391,7 +392,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   ///////////////////////////////////////
 
   public render() {
-    const { courses, currentAssignment, currentCourse, currentSubmission, files, comments } = this.state;
+    const { currentAssignment, currentCourse, currentSubmission } = this.state;
 
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       if (currentCourse) {
@@ -411,33 +412,21 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const hasAssignments = currentCourse && this.state.assignments[currentCourse.id] ? true : false;
     const status = this.getStatus(
       currentCourse,
+      this.state.isLoadingAssignments,
       hasAssignments,
       currentAssignment,
       this.state.isLoadingSubmission,
       currentSubmission,
     );
 
-    const contentArea = this.getContent(
-      currentAssignment,
-      status,
-      currentSubmission,
-      files,
-      comments,
-      this.state.commentRubricComments,
-    );
-
-    // const comments = <ReadOnlyComments
-    //       comments={this.state.comments[this.state.selectedFile.id]}
-    //       rubricComments={this.state.commentRubricComments}
-    //       file={this.state.selectedFile}/>
+    const content = this.getContent(status);
 
     const siderTitle = this.state.currentCourse ? 'Select an assignment' : 'Select a course';
-
     const sider = (
       <SelectorSider
         title={siderTitle}
         activeSelector={this.selectorCurrentFormatter(currentCourse)}
-        selectorItems={this.selectorItemsFormatter(courses)}
+        selectorItems={this.selectorItemsFormatter(this.props.initialCourses)}
         onSelectorClick={this.handleCourseChange}
         activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
         menuItems={this.tabItemsFormatter(currentCourse)}
@@ -445,19 +434,150 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       />
     );
 
-    const x = (
-      <StudentAndGraderLayout
-        sider={sider}
-        email={this.props.email}
-        handleLogout={this.props.handleLogout}
-        content={contentArea}
-      />
-    );
-    console.log('x', x);
-
     const header = <StandardConsoleHeader email={this.props.email} handleLogout={this.props.handleLogout} />;
 
-    return <StandardConsoleLayout header={header} subheader={null} sider={[sider]} content={null} />;
+    let subheader;
+    let consoleTypes: ConsoleType[] = [];
+    if (status === STATUS.ShowSubmission) {
+      consoleTypes = ['subheader'];
+      let subheaderTitle;
+      let subheaderInfo;
+      if (this.state.currentAssignment !== undefined && this.state.currentSubmission !== undefined) {
+        subheaderTitle = <SubheaderTitle key="subheader-title" assignment={this.state.currentAssignment} />;
+        subheaderInfo = (
+          <SubheaderInfo
+            assignment={this.state.currentAssignment}
+            submission={this.state.currentSubmission}
+            rubricCategories={this.state.rubricCategories}
+            comments={this.state.comments}
+            commentRubricComments={this.state.commentRubricComments}
+          />
+        );
+      }
+      const subheaderLeft = [
+        subheaderTitle,
+        <SubheaderStatistic
+          key="grade"
+          name="Grade"
+          course={this.state.currentCourse}
+          assignment={this.state.currentAssignment}
+          submission={this.state.currentSubmission}
+        />,
+        <SubheaderStatistic
+          key="mean"
+          name="Mean"
+          course={this.state.currentCourse}
+          assignment={this.state.currentAssignment}
+          submission={this.state.currentSubmission}
+        />,
+        <SubheaderStatistic
+          key="median"
+          name="Median"
+          course={this.state.currentCourse}
+          assignment={this.state.currentAssignment}
+          submission={this.state.currentSubmission}
+        />,
+        subheaderInfo,
+      ];
+
+      subheader = <CPFlex left={subheaderLeft} right={[]} gutterSize={14} />;
+    }
+
+    let fileMenu;
+    if (this.state.currentFile !== undefined) {
+      fileMenu = (
+        <CPFileMenu
+          key={'file-menu'}
+          files={this.state.files}
+          selectedFile={this.state.currentFile}
+          getPointsInFile={this.getPointsInFile}
+          changeSelectedFile={this.changeCurrentFile}
+          canChange={true}
+        />
+      );
+    }
+
+    return (
+      <StandardConsoleLayout
+        consoleTypes={consoleTypes}
+        header={header}
+        subheader={subheader}
+        sider={[sider]}
+        content={content}
+      >
+        <FileDrawer visible={status === STATUS.ShowSubmission} onClose={this.goBackToAssignments} fileMenu={fileMenu} />
+      </StandardConsoleLayout>
+    );
   }
 }
+
+interface ISubheaderTitleProps {
+  assignment: AssignmentType;
+}
+
+const SubheaderTitle = (props: ISubheaderTitleProps) => {
+  return <span className=" cp-label cp-label--very-bold cp-label--large cp-label--title">{props.assignment.name}</span>;
+};
+
+type StatisticType = 'Grade' | 'Mean' | 'Median';
+
+interface ISubheaderStatisticProps {
+  name: StatisticType;
+  course?: CourseType;
+  assignment?: AssignmentType;
+  submission?: StudentSubmissionType;
+}
+
+const SubheaderStatistic = (props: ISubheaderStatisticProps) => {
+  if (props.course === undefined || props.assignment === undefined || props.submission === undefined) {
+    return null;
+  }
+
+  if (props.assignment.hideGrades) {
+    return null;
+  }
+
+  if (props.name === 'Mean' || props.name === 'Median') {
+    if (!props.course.showStudentsStatistics) {
+      return null;
+    }
+  }
+
+  let statString;
+  if (props.name === 'Grade') {
+    statString = `${props.submission.grade} / ${props.assignment.points}`;
+  }
+  if (props.name === 'Mean') {
+    statString = props.assignment.mean;
+  }
+  if (props.name === 'Median') {
+    statString = props.assignment.median;
+  }
+  return (
+    <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">
+      {`${props.name} ${statString}`}
+    </span>
+  );
+};
+
+const FileDrawer = (props: any) => {
+  return (
+    <Drawer
+      title="Files"
+      placement={'left'}
+      closable={true}
+      mask={false}
+      width={300}
+      onClose={props.onClose}
+      visible={props.visible}
+      style={{ top: `${themeVars.theme.headerHeight}px` }}
+      bodyStyle={{ padding: '0px' }}
+      destroyOnClose={false}
+      className="file-drawer"
+    >
+      {props.fileMenu}
+    </Drawer>
+  );
+};
+
 export default Student;

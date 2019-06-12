@@ -9,6 +9,7 @@ import themeVars from '../../styles/abstracts/_theme.js';
 import { SelectParam } from 'antd/lib/menu';
 
 interface ICPFileMenuProps {
+  title?: string;
   files: FileType[];
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
@@ -93,11 +94,13 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
 
     return (
       <div id="file-menu">
-        <div style={{ padding: '13px 20px 0px 16px' }}>
-          <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
-            Files
+        {this.props.title ? (
+          <div style={{ padding: '13px 20px 0px 16px' }}>
+            <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
+              {this.props.title}
+            </div>
           </div>
-        </div>
+        ) : null}
         <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}

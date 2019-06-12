@@ -6,19 +6,21 @@ import { POSITION } from '../../types/common';
 
 import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
-import { UserType } from '../../infrastructure/user';
 // import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
-interface ICodeProps {
+interface ICodeCoreProps {
   // submission: AnonymousSubmissionType;
   file: FileType;
   comments: CommentType[];
   readOnly: boolean;
-  addComment: (comment: CommentType, file: FileType) => void;
-  user: UserType;
+  user: string;
 }
 
-const Code = (props: ICodeProps) => {
+interface ICodeEditProps {
+  addComment: (comment: CommentType, file: FileType) => void;
+}
+
+const Code = (props: ICodeCoreProps & ICodeEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
 
   const onMouseUp = (event: any) => {
@@ -72,7 +74,7 @@ const Code = (props: ICodeProps) => {
       startLine,
       text: '',
       rubricComment: null,
-      author: props.user.email,
+      author: props.user,
     };
 
     setCommentCounter(commentCounter - 1);
@@ -92,5 +94,20 @@ const Code = (props: ICodeProps) => {
 
   return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
 };
+
+const makeReadOnly = (Component: React.ComponentType<ICodeCoreProps & ICodeEditProps>) => {
+  return class WrappedComponent extends React.Component<ICodeCoreProps, {}> {
+    public addComment = (comment: CommentType, file: FileType) => {
+      return;
+    };
+
+    public render() {
+      return <Component {...this.props as ICodeCoreProps} addComment={this.addComment} />;
+    }
+  };
+};
+
+export const GradeCode = Code;
+export const StudentCode = makeReadOnly(Code);
 
 export default Code;

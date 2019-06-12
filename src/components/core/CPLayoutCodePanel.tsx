@@ -40,6 +40,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public componentDidMount() {
+    console.log('didmount');
     this.resizeOnNextFrame();
 
     const comments = document.getElementById('cp-code-panel--comments');
@@ -51,15 +52,10 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     if (codeContainer !== null) {
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
-
-    // Make sure to resize when changing files
-    const fileMenu = document.getElementById('file-menu');
-    if (fileMenu !== null) {
-      fileMenu.addEventListener('click', this.resizeOnNextFrame);
-    }
   }
 
   public componentWillUnmount() {
+    console.log('unmount');
     const comments = document.getElementById('cp-code-panel--comments');
     if (comments !== null) {
       comments.removeEventListener('scroll', this.scrollFromComments);
@@ -68,11 +64,6 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     const codeContainer = document.getElementById('cp-code-container');
     if (codeContainer !== null) {
       codeContainer.removeEventListener('wheel', this.scrollFromCodeContainer);
-    }
-
-    const fileMenu = document.getElementById('file-menu');
-    if (fileMenu !== null) {
-      fileMenu.removeEventListener('click', this.resizeOnNextFrame);
     }
   }
 
@@ -106,6 +97,10 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
 
   public componentDidUpdate(prevProps: ICPLayoutCodePanelProps) {
     if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
+      this.resizeOnNextFrame();
+    }
+
+    if (this.props.file !== prevProps.file) {
       this.resizeOnNextFrame();
     }
   }
