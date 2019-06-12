@@ -55,7 +55,11 @@ class CPLayoutAdmin extends React.Component<ICPLayoutAdminProps, {}> {
               </Link>
             )}
           </Header>
-          <CPMainNav selectedPanel={this.props.selectedPanel} onClick={this.props.onClick} />
+          <CPMainNav
+            selectedPanel={this.props.selectedPanel}
+            onClick={this.props.onClick}
+            collapsed={this.state.collapsed}
+          />
         </Sider>
         <Layout>
           <Header className="layout--admin__header">{this.props.header}</Header>
