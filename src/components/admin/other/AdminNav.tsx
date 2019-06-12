@@ -5,19 +5,19 @@ import { ClickParam } from 'antd/lib/menu';
 
 const SubMenu = Menu.SubMenu;
 
-interface ICPMainNavProps {
+interface IAdminNavProps {
   onClick: (e: ClickParam) => void;
   selectedPanel: number;
   collapsed: boolean;
 }
 
-interface ICPMainNavState {
+interface IAdminNavState {
   openKeys: string[];
   openKeysCollapsed: string[];
 }
 
-class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
-  public constructor(props: ICPMainNavProps) {
+class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
+  public constructor(props: IAdminNavProps) {
     super(props);
     this.state = {
       openKeys: [],
@@ -30,7 +30,7 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
     this.setState({ openKeys: [selectedPanelKey] });
   }
 
-  public componentDidUpdate(oldProps: ICPMainNavProps) {
+  public componentDidUpdate(oldProps: IAdminNavProps) {
     // key of the selected panel
     const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
 
@@ -116,4 +116,4 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
   }
 }
 
-export default CPMainNav;
+export default AdminNav;
