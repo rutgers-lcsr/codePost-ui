@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import CPButton from './CPButton';
-import CPFlex from './CPFlex';
-import CPLogo from './CPLogo';
+import CPButton from '../CPButton';
+import CPFlex from '../CPFlex';
+import CPLogo from '../CPLogo';
 
 interface IStandardConsoleHeaderProps {
   email: string;

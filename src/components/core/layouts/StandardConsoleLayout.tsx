@@ -4,11 +4,11 @@ import { Layout } from 'antd';
 
 const { Content, Header, Sider } = Layout;
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
-import { useGradeResizer } from './useGradeResizer';
+import { useGradeResizer } from '../../code-review/useGradeResizer';
 
-import useFixedWindow from './useFixedWindow';
+import useFixedWindow from '../useFixedWindow';
 
 export type ConsoleType = 'grade' | 'subheader';
 

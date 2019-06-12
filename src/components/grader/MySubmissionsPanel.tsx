@@ -14,7 +14,7 @@ const { Option } = Select;
 import { BUTTON_STATE } from '../../types/common';
 import CPButton from '../core/CPButton';
 
-import { formatSub, ISubDataBasic, openSubmissionRow } from './graderUtils';
+import { formatSub, ISubDataBasic, openSubmissionRow } from './GraderUtils';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SectionType } from '../../infrastructure/section';

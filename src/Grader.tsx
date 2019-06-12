@@ -10,7 +10,7 @@ import { Redirect } from 'react-router-dom';
 
 import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
 
-import StandardManagementHeader from './components/core/StandardManagementHeader';
+import StandardManagementHeader from './components/core/layouts/StandardManagementHeader';
 
 import SelectorSider from './components/core/SelectorSider';
 
@@ -83,6 +83,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public async componentDidMount() {
+    document.title = 'codePost - Grader';
     const assignments = await this.loadAssignments(this.state.courses);
     this.setState({ assignments });
 

@@ -17,7 +17,7 @@ import CPFlex from './components/core/CPFlex';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import CPMainNav from './components/core/CPMainNav';
+import AdminNav from './components/admin/other/AdminNav';
 
 /* codePost imports */
 import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
@@ -189,6 +189,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissionsbyUserLoadComplete: false,
       viewsBySubmission: {},
     };
+  }
+
+  public componentDidMount() {
+    document.title = 'codePost - Admin';
   }
 
   /***********************************************************************************
@@ -1278,7 +1282,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       }
     }
 
-    const navigation = <CPMainNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} />;
+    const navigation = <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} />;
 
     return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collabsible={true} />;
   }

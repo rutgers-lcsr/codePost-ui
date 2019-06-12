@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import CPButton from './CPButton';
-import CPFlex from './CPFlex';
+import CPButton from '../CPButton';
+import CPFlex from '../CPFlex';
 
 interface IStandardManagementHeaderProps {
   email: string;

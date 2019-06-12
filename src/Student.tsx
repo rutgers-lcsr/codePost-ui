@@ -3,10 +3,12 @@ import { Redirect } from 'react-router-dom';
 
 import themeVars from './styles/abstracts/_theme.js';
 
-import Grade, { SubheaderInfo } from './Grade';
+import Grade from './Grade';
 
-import StandardConsoleHeader from './components/core/StandardConsoleHeader';
-import StandardConsoleLayout, { ConsoleType } from './components/core/StandardConsoleLayout';
+import StandardConsoleHeader from './components/core/layouts/StandardConsoleHeader';
+import StandardConsoleLayout, { ConsoleType } from './components/core/layouts/StandardConsoleLayout';
+
+import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from './components/code-review/Subheader';
 
 import { StudentCode } from './components/code-review/code-panel/Code';
 
@@ -98,6 +100,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public async componentDidMount() {
+    document.title = 'codePost - Student';
     const assignments = await this.loadAssignments(this.props.initialCourses);
     this.setState({ assignments, isLoadingAssignments: false });
 
@@ -509,55 +512,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
   }
 }
-
-interface ISubheaderTitleProps {
-  assignment: AssignmentType;
-}
-
-const SubheaderTitle = (props: ISubheaderTitleProps) => {
-  return <span className=" cp-label cp-label--very-bold cp-label--large cp-label--title">{props.assignment.name}</span>;
-};
-
-type StatisticType = 'Grade' | 'Mean' | 'Median';
-
-interface ISubheaderStatisticProps {
-  name: StatisticType;
-  course?: CourseType;
-  assignment?: AssignmentType;
-  submission?: StudentSubmissionType;
-}
-
-const SubheaderStatistic = (props: ISubheaderStatisticProps) => {
-  if (props.course === undefined || props.assignment === undefined || props.submission === undefined) {
-    return null;
-  }
-
-  if (props.assignment.hideGrades) {
-    return null;
-  }
-
-  if (props.name === 'Mean' || props.name === 'Median') {
-    if (!props.course.showStudentsStatistics) {
-      return null;
-    }
-  }
-
-  let statString;
-  if (props.name === 'Grade') {
-    statString = `${props.submission.grade} / ${props.assignment.points}`;
-  }
-  if (props.name === 'Mean') {
-    statString = props.assignment.mean;
-  }
-  if (props.name === 'Median') {
-    statString = props.assignment.median;
-  }
-  return (
-    <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">
-      {`${props.name} ${statString}`}
-    </span>
-  );
-};
 
 const FileDrawer = (props: any) => {
   return (
