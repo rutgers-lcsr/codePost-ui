@@ -26,7 +26,6 @@ interface ICPAdminRubricProps {
 class CPAdminRubric extends React.Component<ICPAdminRubricProps, {}> {
   public render() {
     const subheaderLeft = [
-      <span key="breadcrumbs">{this.props.breadcrumbs}</span>,
       <span key="title" className="cp-label cp-label--large cp-label--bold">
         {this.props.title}
       </span>,
@@ -36,6 +35,7 @@ class CPAdminRubric extends React.Component<ICPAdminRubricProps, {}> {
       <Content className="layout--admin__detail--rubric">
         <Layout>
           <Header className="layout--admin__rubric__subheader">
+            <CPFlex left={[<div key="breadcrumbs">{this.props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
             <CPFlex left={subheaderLeft} right={this.props.actions} gutterSize={10} />
           </Header>
           <Content className="layout--admin__rubric__content">
