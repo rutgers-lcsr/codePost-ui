@@ -8,18 +8,21 @@ import Grade, { SubheaderInfo } from './Grade';
 import StandardConsoleHeader from './components/core/StandardConsoleHeader';
 import StandardConsoleLayout, { ConsoleType } from './components/core/StandardConsoleLayout';
 
-import { StudentCode } from './components/Code/Code';
+import { StudentCode } from './components/code-review/code-panel/Code';
 
-import { StudentComments } from './components/core/Comments';
+import { StudentComments } from './components/code-review/code-panel/Comments';
 
-import CPFileMenu from './components/core/CPFileMenu';
+import Loading from './components/core/Loading';
+
+import FileMenu from './components/code-review/FileMenu';
+
 import CPFlex from './components/core/CPFlex';
 
-import CPLayoutCodePanel from './components/core/CPLayoutCodePanel';
+import CodePanelLayout from './components/code-review/code-panel/CodePanelLayout';
 
 import SelectorSider from './components/core/SelectorSider';
 
-import { Drawer, Spin } from 'antd';
+import { Drawer } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from './types/common';
@@ -324,11 +327,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           </div>
         );
       case STATUS.SubmissionLoading:
-        return (
-          <div style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
-            <Spin />
-          </div>
-        );
+        return <Loading />;
       case STATUS.NoSubmission:
         if (this.state.currentAssignment) {
           return (
@@ -364,7 +363,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               user={this.props.email}
             />
           );
-          return <CPLayoutCodePanel comments={comments} code={code} file={this.state.currentFile} />;
+          return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;
         } else {
           return null;
         }
@@ -486,7 +485,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     let fileMenu;
     if (this.state.currentFile !== undefined) {
       fileMenu = (
-        <CPFileMenu
+        <FileMenu
           key={'file-menu'}
           files={this.state.files}
           selectedFile={this.state.currentFile}

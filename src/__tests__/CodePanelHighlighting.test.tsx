@@ -1,8 +1,8 @@
-import CodePanelUtils from '../components/Code/CodePanelUtils';
+import CodePanelHighlighting from '../components/code-review/code-panel/CodePanelHighlighting';
 import { CommentIO, CommentType } from '../infrastructure/comment';
 
-describe('CodePanelUtils', () => {
-  it('sortComments()', () => {
+describe('CodePanelHighlighting', () => {
+  it('sort comments', () => {
     const comments = [
       {
         id: 1,
@@ -86,7 +86,7 @@ describe('CodePanelUtils', () => {
 
     const sortedComments = comments.sort(CommentIO.compare);
 
-    const highlights = CodePanelUtils.getHighlights(sortedComments, 'Lorem ipsum dolor sit amet', 2);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, 'Lorem ipsum dolor sit amet', 2);
     expect(highlights).toEqual([]);
   });
 
@@ -108,7 +108,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const sortedComments = comments.sort(CommentIO.compare);
 
-    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[0, thetext.length, 1]]);
   });
 
@@ -130,7 +130,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const sortedComments = comments.sort(CommentIO.compare);
 
-    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[1, 4, 1]]);
   });
 
@@ -152,7 +152,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const sortedComments = comments.sort(CommentIO.compare);
 
-    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[1, thetext.length, 1]]);
   });
 
@@ -174,7 +174,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const sortedComments = comments.sort(CommentIO.compare);
 
-    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, 2);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, 2);
     expect(highlights).toEqual([[0, 4, 1]]);
   });
 
@@ -201,7 +201,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = thetext;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -212,7 +212,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong> ipsum dolor sit amet`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -223,7 +223,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `Lorem ipsum dolor sit <strong id=line-${line} class="highlight-${1}">amet</strong>`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -234,7 +234,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `Lorem <strong id=line-${line} class="highlight-${1}">ipsum</strong> dolor sit amet`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -245,7 +245,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong> ipsum <strong id=line-${line} class="highlight-${2}">dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -256,7 +256,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong><strong id=line-${line} class="highlight-${2}"> ipsum</strong> dolor sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
@@ -267,7 +267,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     // @ts-ignore
     const expected = `<strong id=line-${line} class="highlight-${1}">Lorem </strong><strong id=line-${line} class="highlight-${1} highlight-${2}">ipsum</strong><strong id=line-${line} class="highlight-${2}"> dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
@@ -279,7 +279,7 @@ describe('CodePanelUtils', () => {
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
-    const [HTMLString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     const expected = `<strong id=line-${line} class="highlight-${1}">Lorem </strong><strong id=line-${line} class="highlight-${1} highlight-${2}">ipsum</strong><strong id=line-${line} class="highlight-${1}"> dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({ 2: 1 });
@@ -288,7 +288,7 @@ describe('CodePanelUtils', () => {
   it('convertStringToJSX()', () => {
     const htmlString =
       "<strong id=line-2 class='highlight-1'>Lorem </strong><strong id=line-2 class='highlight-1 highlight-2'>ipsum</strong><strong id=line-2 class='highlight-2'> dolor</strong> sit amet"; // tslint:disable-line
-    const returnElements = CodePanelUtils.convertStringToJSX(htmlString, 2);
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, 2);
     expect(returnElements.length).toBe(7);
   });
 });

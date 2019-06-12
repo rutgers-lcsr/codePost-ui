@@ -4,16 +4,22 @@ import { Button, Dropdown, Icon } from 'antd';
 
 import { DropdownButtonProps } from 'antd/lib/dropdown';
 
+type ThemeType = 'light' | 'dark';
+
 interface ICPDropdownProps {
   value: string;
+  theme?: ThemeType;
 }
 
 class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps, {}> {
   public render() {
-    const { value, ...props } = this.props;
+    const { value, theme, ...props } = this.props;
+
+    const t = theme ? theme : 'light';
+
     return (
-      <Dropdown className="cp-dropdown" style={{}} {...props}>
-        <Button style={{ color: 'rgba(0, 0, 0, 0.25)', width: '100%' }}>
+      <Dropdown className={`cp-dropdown cp-dropdown--${t}`} {...props}>
+        <Button className="cp-dropdown__button">
           {value} <Icon type="down" />
         </Button>
       </Dropdown>

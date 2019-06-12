@@ -1,23 +1,20 @@
 import * as React from 'react';
 
-// import { Subtract } from 'utility-types';
+import Comment from './Comment';
 
-import CPComment from './CPComment';
-import Layout from './LayoutUtils';
+import CodePanelSizing from './CodePanelSizing';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { CommentType } from '../../../infrastructure/comment';
+import { FileType } from '../../../infrastructure/file';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import { ICommentToRubricCommentMap } from '../../types/common';
+import { ICommentToRubricCommentMap } from '../../../types/common';
 
-import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
-import * as Animation from '../../infrastructure/animation';
+import * as Animation from '../../../infrastructure/animation';
 
-import themeVars from '../../styles/abstracts/_theme.js';
-
-// interface ICommentsProps = ICommentsCoreProps & ICommentsEditProps & IWithWindowWatcherProps;
+import themeVars from '../../../styles/abstracts/_theme.js';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
@@ -77,7 +74,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public handleClickOutside = (event: any) => {
-    const rubricMenu = document.getElementById('cp-rubric-menu');
+    const rubricMenu = document.getElementById('rubric-menu');
     if (
       !this.props.readOnly &&
       this.wrapperRef &&
@@ -166,7 +163,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
-      const lineHeight = Layout.pixelsPerLine();
+      const lineHeight = CodePanelSizing.pixelsPerLine();
 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
@@ -187,7 +184,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         }
       }
 
-      const blockHeight = Layout.commentHeight(comment.id) + themeVars.grade.commentSpacing;
+      const blockHeight = CodePanelSizing.commentHeight(comment.id) + themeVars.grade.commentSpacing;
 
       const newBlock: BlockType = {
         startAt,
@@ -204,11 +201,11 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
-    const codeHeight = Layout.codeHeight(this.props.file.code);
+    const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
-      const lastBlockHeight = Layout.commentHeight(lastPlacement.commentID) + themeVars.grade.commentSpacing;
+      const lastBlockHeight = CodePanelSizing.commentHeight(lastPlacement.commentID) + themeVars.grade.commentSpacing;
 
       lowestCommentBottom = lastPlacement.placement + lastBlockHeight;
     }
@@ -254,7 +251,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         : undefined;
 
       return (
-        <CPComment
+        <Comment
           key={comment.id}
           commentType={commentType}
           comment={comment}

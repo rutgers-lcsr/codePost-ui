@@ -1,74 +1,68 @@
 import * as React from 'react';
 
-import { Button, Icon } from 'antd';
-
-const ButtonGroup = Button.Group;
-
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
-import { File, FileType } from '../../infrastructure/file';
+import { File, FileType } from '../../../infrastructure/file';
 
-import CPButton from '../core/CPButton';
-import Layout from '../core/LayoutUtils';
+import CodePanelSizing from './CodePanelSizing';
+import { Magnifier, Sizer } from './CodePanelWidgets';
 
-import * as Animation from '../../infrastructure/animation';
+import * as Animation from '../../../infrastructure/animation';
 
-import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
-interface ICPLayoutCodePanelProps extends IWithWindowWatcherProps {
+interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   code: React.ReactNode;
   comments: React.ReactNode;
 }
 
-interface ICPLayoutCodePanelState {
+interface ICodePanelLayoutState {
   zoom: number;
   adjustmentsVisible: boolean;
   splitBasis: number;
 }
 
-class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayoutCodePanelState> {
+class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
   public nextFrameActionId: number;
 
-  public state: Readonly<ICPLayoutCodePanelState> = {
+  public state: Readonly<ICodePanelLayoutState> = {
     zoom: 1,
     adjustmentsVisible: false,
     splitBasis: themeVars.grade.splitBasis,
   };
 
   public componentDidMount() {
-    console.log('didmount');
     this.resizeOnNextFrame();
 
-    const comments = document.getElementById('cp-code-panel--comments');
+    const comments = document.getElementById('code-panel--comments');
     if (comments !== null) {
       comments.addEventListener('scroll', this.scrollFromComments);
     }
 
-    const codeContainer = document.getElementById('cp-code-container');
+    const codeContainer = document.getElementById('code-container');
     if (codeContainer !== null) {
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
   }
 
   public componentWillUnmount() {
-    console.log('unmount');
-    const comments = document.getElementById('cp-code-panel--comments');
+    const comments = document.getElementById('code-panel--comments');
     if (comments !== null) {
       comments.removeEventListener('scroll', this.scrollFromComments);
     }
 
-    const codeContainer = document.getElementById('cp-code-container');
+    const codeContainer = document.getElementById('code-container');
     if (codeContainer !== null) {
       codeContainer.removeEventListener('wheel', this.scrollFromCodeContainer);
     }
   }
 
   public scrollFromCodeContainer = (e: WheelEvent) => {
-    const comments = document.getElementById('cp-code-panel--comments');
+    const comments = document.getElementById('code-panel--comments');
 
     // Scroll vertically
     if (comments !== null) {
@@ -85,7 +79,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public scrollFromComments = () => {
-    const comments = document.getElementById('cp-code-panel--comments');
+    const comments = document.getElementById('code-panel--comments');
     const codeUnderlay = document.getElementById('code-underlay');
     const codeSyntax = document.getElementById('code-syntax');
 
@@ -95,7 +89,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     }
   };
 
-  public componentDidUpdate(prevProps: ICPLayoutCodePanelProps) {
+  public componentDidUpdate(prevProps: ICodePanelLayoutProps) {
     if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
       this.resizeOnNextFrame();
     }
@@ -115,13 +109,13 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
 
   public resizeComponents = () => {
     if (this.props.windowheight !== 0) {
-      const codeContainer = document.getElementById('cp-code-container');
+      const codeContainer = document.getElementById('code-container');
       const codeUnderlay = document.getElementById('code-underlay');
       const codeSyntax = document.getElementById('code-syntax');
-      const commentsContainer = document.getElementById('cp-code-panel--comments');
+      const commentsContainer = document.getElementById('code-panel--comments');
       const comments = document.getElementById('comments');
 
-      const codeHeight = Layout.codeHeight(this.props.file.code);
+      const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
 
       if (
         codeContainer !== null &&
@@ -168,7 +162,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
   };
 
   public grow = () => {
-    const codeContainer = document.getElementById('cp-code-container');
+    const codeContainer = document.getElementById('code-container');
     if (codeContainer !== null) {
       const maxWidth = this.props.windowwidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
       const splitBasis = Math.min(maxWidth, this.state.splitBasis + 100);
@@ -215,10 +209,10 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     });
 
     return (
-      <div className="cp-code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
-        <div className="cp-code-panel">
+      <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
+        <div className="code-panel">
           <div
-            className="cp-code-panel--code"
+            className="code-panel--code"
             style={{
               margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
                 themeVars.grade.codeContainer.marginLeft
@@ -227,8 +221,8 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
             }}
           >
             <div
-              id="cp-code-container"
-              className="cp-code-container"
+              id="code-container"
+              className="code-container"
               style={{
                 padding: `${themeVars.grade.codeContainer.paddingTop}px ${
                   themeVars.grade.codeContainer.paddingRight
@@ -241,7 +235,7 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
               <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
               <SyntaxHighlighter
                 id="code-syntax"
-                className="cp-code"
+                className="code"
                 language={File.language(this.props.file)}
                 style={googlecode}
                 showLineNumbers={true}
@@ -250,12 +244,12 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
               >
                 {this.props.file.code}
               </SyntaxHighlighter>
-              <div id="code-underlay" className="cp-code" style={{ ...codeStyle, paddingLeft }}>
+              <div id="code-underlay" className="code" style={{ ...codeStyle, paddingLeft }}>
                 {this.props.code}
               </div>
             </div>
           </div>
-          <div id="cp-code-panel--comments" className="cp-code-panel--comments">
+          <div id="code-panel--comments" className="code-panel--comments">
             {this.props.comments}
           </div>
         </div>
@@ -263,57 +257,5 @@ class CPLayoutCodePanel extends React.Component<ICPLayoutCodePanelProps, ICPLayo
     );
   }
 }
-
-interface IMagnifierProps {
-  visible: boolean;
-  zoomIn: () => void;
-  zoomOut: () => void;
-}
-
-const Magnifier = (props: IMagnifierProps) => {
-  return (
-    <div
-      style={{
-        ...{ position: 'absolute', top: '5px', right: '5px' },
-        visibility: props.visible ? 'visible' : 'hidden',
-      }}
-    >
-      <ButtonGroup>
-        <CPButton id="zoom-out" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
-          <Icon type="zoom-out" />
-        </CPButton>
-        <CPButton id="zoom-in" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
-          <Icon type="zoom-in" />
-        </CPButton>
-      </ButtonGroup>
-    </div>
-  );
-};
-
-interface ISizerProps {
-  visible: boolean;
-  shrink: () => void;
-  grow: () => void;
-}
-
-const Sizer = (props: ISizerProps) => {
-  return (
-    <div
-      style={{
-        ...{ position: 'absolute', top: '5px', right: '68px' },
-        visibility: props.visible ? 'visible' : 'hidden',
-      }}
-    >
-      <ButtonGroup>
-        <CPButton id="shrink" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
-          <Icon type="double-left" />
-        </CPButton>
-        <CPButton id="grow" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
-          <Icon type="double-right" />
-        </CPButton>
-      </ButtonGroup>
-    </div>
-  );
-};
 
 export default withWindowWatcher(CPLayoutCodePanel);

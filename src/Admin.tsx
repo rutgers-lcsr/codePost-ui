@@ -17,6 +17,8 @@ import CPFlex from './components/core/CPFlex';
 import _ from 'lodash';
 import queryString from 'query-string';
 
+import CPMainNav from './components/core/CPMainNav';
+
 /* codePost imports */
 import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
 
@@ -1276,14 +1278,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       }
     }
 
-    return (
-      <CPLayoutAdmin
-        selectedPanel={this.state.currentPanel}
-        onClick={this.handleTabClick}
-        header={header}
-        detail={detail}
-      />
-    );
+    const navigation = <CPMainNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} />;
+
+    return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collabsible={true} />;
   }
 }
 

@@ -6,21 +6,21 @@ import { Badge, Input, message, Popover, Typography } from 'antd';
 const { TextArea } = Input;
 const { Paragraph } = Typography;
 
-import CPButton from './CPButton';
-import CPFlex from './CPFlex';
-import CPPointInput from './CPPointInput';
+import CPButton from '../../core/CPButton';
+import CPFlex from '../../core/CPFlex';
+import CPPointInput from '../../core/CPPointInput';
 
-import { CommentType, UiComment } from '../../infrastructure/comment';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { CommentType, UiComment } from '../../../infrastructure/comment';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
-export type CPCommentType = 'readonly' | 'active' | 'inactive';
+export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
-interface ICPCommentProps {
-  commentType: CPCommentType;
+interface ICommentProps {
+  commentType: UICommentType;
   comment: CommentType;
   rubricComment?: RubricCommentType;
 
@@ -37,14 +37,14 @@ interface ICPCommentProps {
   setCommentPlacements: () => void;
 }
 
-interface ICPCommentState {
+interface ICommentState {
   status: CommentStatus;
   text: string;
   points: number;
 }
 
-class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
-  public state: Readonly<ICPCommentState> = {
+class Comment extends React.Component<ICommentProps, ICommentState> {
+  public state: Readonly<ICommentState> = {
     status: 'idle',
     text: this.props.comment.text ? this.props.comment.text : '',
     points: UiComment.points(this.props.comment, this.props.rubricComment),
@@ -55,7 +55,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     this.props.setCommentPlacements();
   }
 
-  public componentDidUpdate(prevProps: ICPCommentProps) {
+  public componentDidUpdate(prevProps: ICommentProps) {
     if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
       this.props.setCommentPlacements();
@@ -212,7 +212,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   };
 
   public render() {
-    const className = `cp-comment cp-comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
+    const className = `comment comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
 
     const commentElements: { [key: string]: React.ReactNode } = {
       line: null,
@@ -284,7 +284,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       commentElements.comment = (
         <TextArea
           autosize
-          className="cp-comment__text-area"
+          className="comment__text-area"
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
@@ -307,7 +307,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       commentElements.points = badge;
       commentElements.comment = (
         <Paragraph
-          className="cp-comment__comment"
+          className="comment__comment"
           style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
           ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
         >
@@ -324,7 +324,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       commentElements.points = badge;
       commentElements.comment = (
         <Paragraph
-          className="cp-comment__comment"
+          className="comment__comment"
           style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
           ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
         >
@@ -334,16 +334,16 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
     }
 
     if (this.props.rubricComment) {
-      let rubricCommentClassName = 'cp-comment__rubric-comment';
+      let rubricCommentClassName = 'comment__rubric-comment';
       let pointsString = '';
       if (this.props.rubricComment.pointDelta > 0) {
-        rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--negative');
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--negative');
         pointsString = `${points * -1}`;
       } else if (this.props.rubricComment.pointDelta < 0) {
-        rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--positive');
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--positive');
         pointsString = `+${points * -1}`;
       } else {
-        rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--neutral');
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--neutral');
       }
 
       commentElements.rubricComment = (
@@ -395,4 +395,4 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
   }
 }
 
-export default CPComment;
+export default Comment;

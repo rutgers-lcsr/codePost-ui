@@ -6,9 +6,9 @@ export const useGradeResizer = () => {
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerHeight !== 0) {
-        const fileMenu = document.getElementById('cp-file-menu');
-        const rubricMenu = document.getElementById('cp-rubric-menu');
-        const rubricMenuTitle = document.getElementById('cp-rubric-menu-title');
+        const fileMenu = document.getElementById('file-menu');
+        const rubricMenu = document.getElementById('rubric-menu');
+        const rubricMenuTitle = document.getElementById('rubric-menu-title');
 
         if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null) {
           // Don't let the file menu take up more than half of the vertical space
@@ -25,6 +25,7 @@ export const useGradeResizer = () => {
       }
     };
 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);

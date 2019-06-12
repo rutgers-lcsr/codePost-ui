@@ -8,7 +8,7 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
-interface ICPFileMenuProps {
+interface IFileMenuProps {
   title?: string;
   files: FileType[];
   selectedFile?: FileType;
@@ -17,7 +17,7 @@ interface ICPFileMenuProps {
   getPointsInFile: (file: FileType) => number[];
 }
 
-class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
+class FileMenu extends React.Component<IFileMenuProps, {}> {
   public onSelect = (selectedParam: SelectParam) => {
     const fileID = +selectedParam.key.split('-')[1];
     this.props.changeSelectedFile(fileID);
@@ -106,7 +106,7 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
             className="sider-menu"
-            id="cp-file-menu"
+            id="file-menu"
           >
             {fileMenu}
           </Menu>
@@ -174,4 +174,4 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
   );
 };
 
-export default CPFileMenu;
+export default FileMenu;

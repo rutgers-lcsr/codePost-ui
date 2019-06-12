@@ -13,18 +13,18 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
-interface ICPRubricMenuProps {
+interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
 }
 
-interface ICPRubricMenuState {
+interface IRubricMenuState {
   searchTerm: string;
 }
 
-class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuState> {
-  public state: Readonly<ICPRubricMenuState> = {
+class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
+  public state: Readonly<IRubricMenuState> = {
     searchTerm: '',
   };
 
@@ -85,19 +85,13 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
     });
     return (
       <div>
-        <div style={{ padding: '18px 20px 20px 16px' }} id="cp-rubric-menu-title">
+        <div style={{ padding: '18px 20px 20px 16px' }} id="rubric-menu-title">
           <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Rubric
           </div>
           <Search placeholder="Search..." onChange={this.onSearch} value={this.state.searchTerm} />
         </div>
-        <Menu
-          defaultOpenKeys={rubricKeys}
-          selectedKeys={[]}
-          mode="inline"
-          className="cp-rubric-menu"
-          id="cp-rubric-menu"
-        >
+        <Menu defaultOpenKeys={rubricKeys} selectedKeys={[]} mode="inline" className="rubric-menu" id="rubric-menu">
           {rubricMenu}
         </Menu>
       </div>
@@ -105,4 +99,4 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
   }
 }
 
-export default CPRubricMenu;
+export default RubricMenu;

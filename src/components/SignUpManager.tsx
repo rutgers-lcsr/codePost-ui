@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
-import '../styles/index.scss';
+// import '../styles/index.scss';
 import { TopBarNoEmail } from './TopBar';
 
 enum SignUpType {

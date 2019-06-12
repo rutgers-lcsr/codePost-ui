@@ -1,14 +1,14 @@
 import * as React from 'react';
-import { CommentType } from '../../infrastructure/comment';
-import { POSITION } from '../../types/common';
+import { CommentType } from '../../../infrastructure/comment';
+import { POSITION } from '../../../types/common';
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
 type StyleType = {
   [highlightID: string]: number;
 };
 
-export default class CodePanelUtils {
+class CodePanelHighlighting {
   public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
@@ -143,9 +143,9 @@ export default class CodePanelUtils {
 
   // O(NM) where N is the number of highlights and M is the length of the line
   public static highlight = (sortedComments: CommentType[], thetext: string, line: number) => {
-    const highlights = CodePanelUtils.getHighlights(sortedComments, thetext, line);
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
 
-    const [htmlString, styles] = CodePanelUtils.buildHTMLString(highlights, thetext, line);
+    const [htmlString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
 
     // This code doesn't quite work yet
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
@@ -159,7 +159,7 @@ export default class CodePanelUtils {
       );
     }
 
-    const returnElements = CodePanelUtils.convertStringToJSX(htmlString, line);
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line);
 
     return returnElements;
   };
@@ -208,6 +208,10 @@ export default class CodePanelUtils {
       offset += nodeContent.length;
     }
 
-    return offset + CodePanelUtils.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
+    return (
+      offset + CodePanelHighlighting.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position)
+    );
   };
 }
+
+export default CodePanelHighlighting;

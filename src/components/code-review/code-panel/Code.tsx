@@ -1,15 +1,13 @@
 import * as React from 'react';
 
-import CodePanelUtils from './CodePanelUtils';
+import CodePanelHighlighting from './CodePanelHighlighting';
 
-import { POSITION } from '../../types/common';
+import { POSITION } from '../../../types/common';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
-// import { AnonymousSubmissionType } from '../../infrastructure/submission';
+import { CommentType } from '../../../infrastructure/comment';
+import { FileType } from '../../../infrastructure/file';
 
 interface ICodeCoreProps {
-  // submission: AnonymousSubmissionType;
   file: FileType;
   comments: CommentType[];
   readOnly: boolean;
@@ -45,12 +43,12 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
       endLine = temp1;
     }
 
-    let startChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+    let startChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
       document.querySelector(`div#line-${startLine}`),
       null,
       POSITION.Start,
     );
-    let endChar = CodePanelUtils.getSelectionOffsetRelativeToParent(
+    let endChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
       document.querySelector(`div#line-${endLine}`),
       null,
       POSITION.End,
@@ -86,7 +84,7 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
     return code.split('\n').map((item: string, i: number) => {
       return (
         <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
-          {item === '' ? ' ' : CodePanelUtils.highlight(comments, item, i)}
+          {item === '' ? ' ' : CodePanelHighlighting.highlight(comments, item, i)}
         </div>
       );
     });
@@ -109,5 +107,3 @@ const makeReadOnly = (Component: React.ComponentType<ICodeCoreProps & ICodeEditP
 
 export const GradeCode = Code;
 export const StudentCode = makeReadOnly(Code);
-
-export default Code;

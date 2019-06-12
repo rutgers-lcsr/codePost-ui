@@ -26,7 +26,6 @@ import {
 
 import { UserType } from './infrastructure/user';
 
-// import CPLayoutGrade from './components/core/CPLayoutGrade';
 import StandardConsoleHeader from './components/core/StandardConsoleHeader';
 import StandardConsoleLayout from './components/core/StandardConsoleLayout';
 
@@ -36,16 +35,20 @@ import { SelectParam } from 'antd/lib/menu';
 
 import CPButton from './components/core/CPButton';
 import CPDropdown from './components/core/CPDropdown';
-import CPFileMenu from './components/core/CPFileMenu';
+
 import CPFlex from './components/core/CPFlex';
-import CPLayoutCodePanel from './components/core/CPLayoutCodePanel';
-import CPRubricMenu from './components/core/CPRubricMenu';
+
+import CodePanelLayout from './components/code-review/code-panel/CodePanelLayout';
+
+import FileMenu from './components/code-review/FileMenu';
+
+import RubricMenu from './components/code-review/RubricMenu';
 
 import { FileType } from './infrastructure/file';
 
-import Code from './components/Code/Code';
+import { GradeCode } from './components/code-review/code-panel/Code';
 
-import { GradeComments } from './components/core/Comments';
+import { GradeComments } from './components/code-review/code-panel/Comments';
 
 import * as Immutable from './infrastructure/immutable';
 
@@ -619,7 +622,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     let content;
     if (this.state.selectedFile) {
       const code = (
-        <Code
+        <GradeCode
           file={this.state.selectedFile}
           comments={this.state.comments[this.state.selectedFile.id]}
           readOnly={this.state.submission.isFinalized}
@@ -644,7 +647,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         />
       );
 
-      content = <CPLayoutCodePanel comments={comments} code={code} file={this.state.selectedFile} />;
+      content = <CodePanelLayout comments={comments} code={code} file={this.state.selectedFile} />;
     }
 
     return (
@@ -653,7 +656,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         header={header}
         subheader={subheader}
         sider={[
-          <CPFileMenu
+          <FileMenu
             key={'file-menu'}
             title="Files"
             files={this.state.files}
@@ -662,7 +665,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             changeSelectedFile={this.changeSelectedFile}
             canChange={Object.keys(this.state.unsavedComments).length === 0}
           />,
-          <CPRubricMenu
+          <RubricMenu
             key={'rubric-menu'}
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}

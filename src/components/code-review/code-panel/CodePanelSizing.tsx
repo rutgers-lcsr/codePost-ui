@@ -1,4 +1,4 @@
-class Layout {
+class CodePanelLayout {
   public static pixelsPerLine = (): number => {
     let lineHeight = 20; // estimate until the lines are rendered
     const lineElement = document.getElementById('line-0');
@@ -9,7 +9,7 @@ class Layout {
   };
 
   public static codeHeight = (code: string): number => {
-    return code.split('\n').length * Layout.pixelsPerLine();
+    return code.split('\n').length * CodePanelLayout.pixelsPerLine();
   };
 
   public static commentHeight = (commentID: number): number => {
@@ -26,4 +26,4 @@ class Layout {
   };
 }
 
-export default Layout;
+export default CodePanelLayout;

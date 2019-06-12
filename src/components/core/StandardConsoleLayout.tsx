@@ -8,6 +8,8 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 import { useGradeResizer } from './useGradeResizer';
 
+import useFixedWindow from './useFixedWindow';
+
 export type ConsoleType = 'grade' | 'subheader';
 
 interface IStandardConsoleLayoutProps {
@@ -47,15 +49,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       </Layout>
     </Layout>
   );
-};
-
-const useFixedWindow = () => {
-  React.useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, []); // only run on mount, unmount
 };
 
 export default StandardConsoleLayout;
