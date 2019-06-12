@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Checkbox, Icon, Input, Progress, Radio, Switch, Tooltip, Typography } from 'antd';
+import { Alert, Checkbox, Divider, Icon, Input, Progress, Radio, Switch, Tooltip, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -237,9 +237,7 @@ class CreateSignup extends React.Component<{}, IState> {
               onChange={this.handleChange.bind(this, 'email')}
               prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
-            <div style={{ marginTop: 4 }}>
-              Don't forget to use your organization's <Typography.Text code>.edu</Typography.Text> address!
-            </div>
+            <br />
             <br />
             <Select
               placeholder={
@@ -280,6 +278,7 @@ class CreateSignup extends React.Component<{}, IState> {
             </CPButton>
             <br />
             <br />
+            <Divider />
             <span>
               Having trouble? Contact us at <b>team@codepost.io</b>.
               <br />
