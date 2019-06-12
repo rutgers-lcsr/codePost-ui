@@ -1,7 +1,22 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* ant imports */
+import { Typography } from 'antd';
+
+/* other library imports */
 import { Link } from 'react-router-dom';
+
+/* codePost */
 import PasswordResetForm from './PasswordResetForm';
-import { TopBarNoEmail } from './TopBar';
+
+import PreAuthLayout from './PreAuthLayout';
+
+/**********************************************************************************************************************/
 
 /****************************************************************
 This component works as follows:
@@ -78,14 +93,12 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
       });
   };
 
-  public handleReset = (e: any, data: any) => {
-    e.preventDefault();
-
+  public handleReset = (password: string) => {
     const payload = {
       token: this.props.match.params.token,
       uid: this.props.match.params.uid,
-      password1: data.password1,
-      password2: data.password2,
+      password1: password,
+      password2: password,
     };
 
     fetch(`${process.env.REACT_APP_API_URL}/registration/registerAndSetPassword/`, {
@@ -115,6 +128,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   public render() {
     const { loadState, formErrors } = this.state;
 
+    let content;
     switch (loadState) {
       case 'valid':
         const errorList = Object.keys(formErrors).map((el, i) => {
@@ -128,90 +142,103 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         let message;
         switch (this.props.message) {
           case 'forgot':
-            message = `Set a new password below for ${this.state.email}`;
+            message = 'Set a new password below';
             break;
           case 'activate':
-            message = `Set up a codePost password for ${this.state.email}`;
+            message = 'Set your codePost password below.';
             break;
           case 'upgrade':
-            message = `Set up a new codePost password to access your old account for ${this.state.email}`;
+            message = 'Set up a new codePost password to access your old account';
             break;
           default:
             message = '';
         }
 
-        return (
+        content = (
           <div>
-            <TopBarNoEmail />
-            <div className="passwordReset">
-              <div className="passwordReset__main-container">
-                <div className="passwordReset__title">{message}</div>
-                <PasswordResetForm handleSubmit={this.handleReset} />
-                <ul>{errorList}</ul>
-              </div>
-            </div>
+            <p>{message}</p>
+            <p>
+              Your codePost email address: <Typography.Text code>{this.state.email}</Typography.Text>
+            </p>
+            <PasswordResetForm handleSubmit={this.handleReset} />
+            <ul>{errorList}</ul>
           </div>
         );
         break;
       case 'invalidToken':
-        let newLinkDiv;
+        let newLinkMessage;
         switch (this.props.message) {
           case 'forgot':
-            newLinkDiv = (
-              <div className="passwordReset__subtitle">
-                Request a new password reset link <Link to="/forgot-password/">here</Link>
-              </div>
+            newLinkMessage = (
+              <span>
+                Request a new password reset link <Link to="/forgot-password/">here</Link>.
+              </span>
             );
             break;
           case 'activate':
-            newLinkDiv = (
-              <div className="passwordReset__subtitle">
-                Request a new account acvtiation link <Link to="/signup/student/">here</Link>
-              </div>
+            newLinkMessage = (
+              <span>
+                Request a new account acvtiation link <Link to="/signup/student/">here</Link>.
+              </span>
             );
             break;
           case 'upgrade':
-            newLinkDiv = (
-              <div className="passwordReset__subtitle">
-                Request a new account upgrade link <Link to="/upgrade/">here</Link>
-              </div>
+            newLinkMessage = (
+              <span>
+                Request a new account upgrade link <Link to="/upgrade/">here</Link>.
+              </span>
             );
             break;
           default:
-            newLinkDiv = '';
+            newLinkMessage = '';
         }
 
-        return (
+        content = (
           <div>
-            <TopBarNoEmail />
-            <div className="passwordReset">
-              <div className="passwordReset__main-container">
-                <div className="passwordReset__title">
-                  Whoops. there's something wrong with your link.
-                  {newLinkDiv}
-                </div>
-              </div>
-            </div>
+            <Typography.Title level={4}>Whoops. There's something wrong with your link.</Typography.Title>
+            <div>{newLinkMessage}</div>
           </div>
         );
+
         break;
       case 'success':
-        return (
+        content = (
           <div>
-            <TopBarNoEmail />
-            <div className="passwordReset">
-              <div className="passwordReset__main-container">
-                <div>
-                  Success! Try <Link to="/login">logging in</Link> now.
-                </div>
-              </div>
+            <Typography.Title level={4}>Success!</Typography.Title>
+            <div>
+              Try <Link to="/login">logging in</Link> now.
             </div>
           </div>
         );
+
         break;
       default:
-        return <p>Hang tight...validating your token</p>;
+        content = <p>Hang tight...validating your token</p>;
     }
+
+    let title = '';
+    switch (this.props.message) {
+      case 'forgot':
+        title = 'Reset your password';
+        break;
+      case 'activate':
+        title = 'Set your password';
+        break;
+      case 'upgrade':
+        title = 'Set your password';
+        break;
+    }
+
+    return (
+      <PreAuthLayout>
+        <div style={{ width: 500 }}>
+          <br />
+          <br />
+          <Typography.Title level={1}>{title}</Typography.Title>
+          {content}
+        </div>
+      </PreAuthLayout>
+    );
   }
 }
 

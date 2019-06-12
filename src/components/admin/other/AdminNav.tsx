@@ -8,10 +8,12 @@ const SubMenu = Menu.SubMenu;
 interface ICPMainNavProps {
   onClick: (e: ClickParam) => void;
   selectedPanel: number;
+  collapsed: boolean;
 }
 
 interface ICPMainNavState {
   openKeys: string[];
+  openKeysCollapsed: string[];
 }
 
 class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
@@ -19,6 +21,7 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
     super(props);
     this.state = {
       openKeys: [],
+      openKeysCollapsed: [],
     };
   }
 
@@ -57,7 +60,11 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
   };
 
   public onOpenChange = (openKeys: string[]) => {
-    this.setState({ openKeys });
+    if (this.props.collapsed) {
+      this.setState({ openKeysCollapsed: openKeys });
+    } else {
+      this.setState({ openKeys });
+    }
   };
 
   public render() {
@@ -66,7 +73,7 @@ class CPMainNav extends React.Component<ICPMainNavProps, ICPMainNavState> {
         onOpenChange={this.onOpenChange}
         onClick={this.props.onClick}
         theme="dark"
-        openKeys={this.state.openKeys}
+        openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
         selectedKeys={[this.props.selectedPanel.toString()]}
         mode="inline"
       >

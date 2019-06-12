@@ -25,7 +25,6 @@ interface ICPAdminDetailProps {
 class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
   public render() {
     const subheaderLeft = [
-      <span key="breadcrumbs">{this.props.breadcrumbs}</span>,
       <span key="title" className="cp-label cp-label--large cp-label--bold">
         {this.props.title}
       </span>,
@@ -41,6 +40,7 @@ class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
         <Layout>
           <Header className="layout--admin__subheader">
             {goBack}
+            <CPFlex left={[<div key="breadcrumbs">{this.props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
             <CPFlex left={subheaderLeft} right={this.props.actions} gutterSize={10} />
           </Header>
           <Content className="layout--admin__content">{this.props.content}</Content>

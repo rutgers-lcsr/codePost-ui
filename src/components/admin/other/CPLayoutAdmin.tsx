@@ -9,6 +9,9 @@ import * as React from 'react';
 import { Layout } from 'antd';
 const { Header, Sider } = Layout;
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';
 
@@ -38,7 +41,15 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
     <Layout id="Admin" className="layout--admin">
       <Sider collapsible={props.collabsible ? props.collabsible : false} collapsed={collapsed} onCollapse={onCollapse}>
         <Header className="layout--admin__sider__header">
-          {collapsed ? <CPLogo cpType="icon" /> : <CPLogo cpType="main" />}
+          {collapsed ? (
+            <Link to="/">
+              <CPLogo cpType="icon" />
+            </Link>
+          ) : (
+            <Link to="/">
+              <CPLogo cpType="main" />
+            </Link>
+          )}
         </Header>
         <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'scroll' }}>{props.navigation}</div>
       </Sider>
