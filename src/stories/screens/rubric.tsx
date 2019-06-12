@@ -7,6 +7,7 @@ import CPLayoutAdmin from '../../components/core/CPLayoutAdmin';
 import CPAdminRubric from '../../components/core/CPAdminRubric';
 
 import CPButton from '../../components/core/CPButton';
+import CPFlex from '../../components/core/CPFlex';
 import CPDropdown from '../../components/core/CPDropdown';
 import CPRubricCategory from '../../components/core/CPRubricCategory';
 
@@ -39,22 +40,15 @@ const createButton = (
   </CPButton>
 );
 
-const header = (
-  <div className="cp-flex--normal">
-    <div className="left">{dropdown}</div>
-    <div className="left">{createButton}</div>
-    <div className="gap" />
-    <div className="right">
-      <span className="cp-label cp-label--bold">Hello, hello@andreacg.com!</span>
-    </div>
-    <div className="right">
-      <CPButton cpType="secondary" icon="setting" size="small" />
-    </div>
-    <div className="right">
-      <CPButton cpType="secondary" icon="logout" size="small" />
-    </div>
-  </div>
-);
+const headerLeft = [dropdown, createButton];
+
+const headerRight = [
+  <span className="cp-label cp-label--bold">Hello, hello@andreacg.com!</span>,
+  <CPButton cpType="secondary" icon="setting" size="small" />,
+  <CPButton cpType="secondary" icon="logout" size="small" />,
+];
+
+const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
 export const Rubric = () => {
   const actions = [
@@ -73,7 +67,6 @@ export const Rubric = () => {
     </div>
   );
 
-  const onClick = (e: any) => null;
   const rubric = <CPAdminRubric goBack={'1'} title="Hello World (WIP)" actions={actions} content={content} />;
-  return <CPLayoutAdmin onClick={onClick} header={header} detail={rubric} isRubric={true} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={rubric} isRubric={true} />;
 };

@@ -22,6 +22,7 @@ declare module '@storybook/addon-actions';
 declare module '@storybook/addon-links';
 declare module '@storybook/react/demo';
 declare module '@storybook/addon-knobs';
+declare module 'react-highlight-words';
 
 declare module '*.scss' {
   const content: { [className: string]: string };

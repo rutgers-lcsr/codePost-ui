@@ -1,0 +1,29 @@
+.sider-menu {
+  // max-height set by javascript
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  border-right: 0px;
+
+  .ant-menu-item {
+    width: 100%; // undoes an Ant hack (calc(100% + 1px))
+
+    height: 44px;
+    line-height: 44px;
+
+    padding-left: 26px;
+    padding-right: 40px;
+
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.5);
+
+    &::after {
+      border-right: 5px solid $brandPrimary;
+    }
+  }
+
+  .ant-menu-item-selected {
+    color: $brandPrimary;
+  }
+}

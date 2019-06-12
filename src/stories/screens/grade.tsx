@@ -11,6 +11,7 @@ import CPButton from '../../components/core/CPButton';
 import CPComment from '../../components/core/CPComment';
 import CPDropdown from '../../components/core/CPDropdown';
 import CPFileMenu from '../../components/core/CPFileMenu';
+import CPFlex from '../../components/core/CPFlex';
 import CPLogo from '../../components/core/CPLogo';
 import CPRubricMenu from '../../components/core/CPRubricMenu';
 
@@ -42,20 +43,14 @@ const getPointsInFile = (file: FileType): number => {
 
 // ------------------------------ //
 
-const header = (
-  <div className="cp-flex--wide">
-    <div className="left">
-      <CPLogo cpType="main" />
-    </div>
-    <div className="gap" />
-    <div className="right">
-      <span className="cp-label cp-label--white cp-label--bold">hello@andreacg.com!</span>
-    </div>
-    <div className="right">
-      <CPButton cpType="dark">Log Out </CPButton>
-    </div>
-  </div>
-);
+const headerLeft = [<CPLogo cpType="main" />];
+
+const headerRight = [
+  <span className="cp-label cp-label--white cp-label--bold">hello@andreacg.com!</span>,
+  <CPButton cpType="dark">Log Out </CPButton>,
+];
+
+const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={20} />;
 
 const menu = (
   <Menu>
@@ -67,43 +62,33 @@ const menu = (
 
 const dropdown = <CPDropdown value="grader: vinay@princeton.edu" overlay={menu} />;
 
+const subHeaderLeftTop = [
+  <span className="cp-label cp-label--very-bold cp-label--large cp-label--title">Loops</span>,
+  <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">17/20</span>,
+  <CPButton cpType="highlight" size="small" icon="question" />,
+];
+
+const subHeaderRightTop = [
+  dropdown,
+  <CPButton cpType="secondary" fallback="undo">
+    Unfinalize
+  </CPButton>,
+];
+
+const subHeaderLeftBottom = [
+  <Tag color="red" style={{ marginRight: '0px' }}>
+    not finalized
+  </Tag>,
+  <Divider type="vertical" />,
+  <span className="cp-label">hello@andreacg.com</span>,
+];
+
+const subHeaderRightBottom = [<span className="cp-label cp-label--bold">Last Edited: May 01, 2019 6:09 PM</span>];
+
 const subheader = (
   <div>
-    <div className="cp-flex--tight">
-      <div className="left">
-        <span className="cp-label cp-label--very-bold cp-label--large cp-label--title">Loops</span>
-      </div>
-      <div className="left">
-        <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">17/20</span>
-      </div>
-      <div className="left">
-        <CPButton cpType="highlight" size="small" icon="question" />
-      </div>
-      <div className="gap" />
-      <div className="right">{dropdown}</div>
-      <div className="right">
-        <CPButton cpType="secondary" fallback="undo">
-          Unfinalize
-        </CPButton>
-      </div>
-    </div>
-    <div className="cp-flex--tight">
-      <div className="left">
-        <Tag color="red" style={{ marginRight: '0px' }}>
-          not finalized
-        </Tag>
-      </div>
-      <div className="left">
-        <Divider type="vertical" />
-      </div>
-      <div className="left">
-        <span className="cp-label">hello@andreacg.com</span>
-      </div>
-      <div className="gap" />
-      <div className="right">
-        <span className="cp-label cp-label--bold">Last Edited: May 01, 2019 6:09 PM</span>
-      </div>
-    </div>
+    <CPFlex left={subHeaderLeftTop} right={subHeaderRightTop} gutterSize={6} />
+    <CPFlex left={subHeaderLeftBottom} right={subHeaderRightBottom} gutterSize={6} />
   </div>
 );
 

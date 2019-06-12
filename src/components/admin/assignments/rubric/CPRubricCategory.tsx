@@ -14,6 +14,7 @@ import _ from 'lodash';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
+import CPFlex from '../../../core/CPFlex';
 
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -395,46 +396,49 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   public render() {
     const data = this.buildCommentTableData(this.props.rubricComments, this.state.rubricComments);
 
+    const titleLeft = [
+      <span key="title" className="cp-label cp-label--plus cp-label--bold">
+        Category: {this.props.rubricCategory.name}
+      </span>,
+    ];
+    const titleRight = [
+      <Popconfirm
+        key="delete"
+        title="Are you sure you want to delete this category?"
+        onConfirm={this.props.deleteCategory.bind(this, this.props.rubricCategory)}
+      >
+        <CPButton cpType="danger" fallback="delete">
+          Delete
+        </CPButton>
+      </Popconfirm>,
+    ];
+
+    const contentLeft = [
+      <div key="name">
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+          Category Name
+        </div>
+        <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} />
+      </div>,
+      <div key="points">
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+          Category Point Limit
+        </div>
+        <InputNumber
+          value={this.state.pointLimit ? this.state.pointLimit : 0}
+          onChange={this.setValue.bind(this, 'pointLimit')}
+          onBlur={this.saveCategory}
+        />
+      </div>,
+    ];
+
     return (
       <div className="cp-rubric-category">
         <div className="cp-rubric-category__title ">
-          <div className="cp-flex--normal">
-            <div className="left">
-              <span className="cp-label cp-label--plus cp-label--bold">Category: {this.props.rubricCategory.name}</span>
-            </div>
-            <div className="gap" />
-            <div className="right">
-              <Popconfirm
-                title="Are you sure you want to delete this category?"
-                onConfirm={this.props.deleteCategory.bind(this, this.props.rubricCategory)}
-              >
-                <CPButton cpType="danger" fallback="delete">
-                  Delete
-                </CPButton>
-              </Popconfirm>
-            </div>
-          </div>
+          <CPFlex left={titleLeft} right={titleRight} gutterSize={10} />
         </div>
         <div className="cp-rubric-category__content">
-          <div className="cp-flex--very-wide">
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-                Category Name
-              </div>
-              <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} />
-            </div>
-            <div className="left">
-              <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-                Category Point Limit
-              </div>
-              <InputNumber
-                value={this.state.pointLimit ? this.state.pointLimit : 0}
-                onChange={this.setValue.bind(this, 'pointLimit')}
-                onBlur={this.saveCategory}
-              />
-            </div>
-            <div className="gap" />
-          </div>
+          <CPFlex left={contentLeft} right={[]} gutterSize={60} />
           <div style={{ height: '40px' }} />
           <Table
             columns={commentTableColumns}

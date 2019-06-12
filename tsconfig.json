@@ -26,7 +26,8 @@
       {
         "allow-type-parameters": true
       }
-    ]
+    ],
+    "interface-over-type-literal": false
   },
   "exclude": [
     "node_modules/**",
@@ -39,6 +40,7 @@
     "venv",
     "coverage",
     "config",
-    "prettier.config.js"
+    "prettier.config.js",
+    "src/stories"
   ]
 }

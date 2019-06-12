@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { Input, Menu } from 'antd';
 
+import { ClickParam } from 'antd/lib/menu';
+
 const SubMenu = Menu.SubMenu;
 
 const Search = Input.Search;
@@ -14,6 +16,7 @@ import { RubricCommentType } from '../../infrastructure/rubricComment';
 interface ICPRubricMenuProps {
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
 }
 
 interface ICPRubricMenuState {
@@ -29,6 +32,18 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
     this.setState({ searchTerm: e.target.value });
   };
 
+  public onClick = (param: ClickParam) => {
+    const [categoryID, commentID] = param.key.split('-').slice(-2);
+
+    const rubricComment = this.props.rubricComments[+categoryID].find((comment: RubricCommentType) => {
+      return comment.id === +commentID;
+    });
+
+    if (rubricComment !== undefined) {
+      this.props.handleRubricCommentClick(rubricComment);
+    }
+  };
+
   public buildRubricMenu = (
     rubricCategories: RubricCategoryType[],
     rubricCommentMap: IRubricCategoryToRubricCommentsMap,
@@ -42,13 +57,13 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
         if (rubricComment.pointDelta > 0) {
           points = `-${rubricComment.pointDelta}`;
         } else if (rubricComment.pointDelta < 0) {
-          points = `+${rubricComment.pointDelta}`;
+          points = `+${rubricComment.pointDelta * -1}`;
         } else {
           points = `${rubricComment.pointDelta}`;
         }
 
         return (
-          <Menu.Item key={`rubric-comment-${rubricCategory.id}-${rubricComment.id}`}>
+          <Menu.Item key={`comment-${rubricCategory.id}-${rubricComment.id}`} onClick={this.onClick}>
             <span>{rubricComment.text}</span>
             <span style={{ position: 'absolute', right: '20px' }}>{points}</span>
           </Menu.Item>
@@ -76,7 +91,13 @@ class CPRubricMenu extends React.Component<ICPRubricMenuProps, ICPRubricMenuStat
           </div>
           <Search placeholder="Search..." onChange={this.onSearch} value={this.state.searchTerm} />
         </div>
-        <Menu defaultOpenKeys={rubricKeys} mode="inline" className="cp-rubric-menu" id="cp-rubric-menu">
+        <Menu
+          defaultOpenKeys={rubricKeys}
+          selectedKeys={[]}
+          mode="inline"
+          className="cp-rubric-menu"
+          id="cp-rubric-menu"
+        >
           {rubricMenu}
         </Menu>
       </div>
