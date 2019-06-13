@@ -15,7 +15,7 @@ import { IGraderSubmissionsDataTable } from '../../../types/common';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
-import TableDetail from '../other/TableDetail';
+import { TableDetail } from '../other/TableDetail';
 
 import GraderDetail from './graders/GraderDetail';
 

@@ -14,7 +14,7 @@ import { Badge, Breadcrumb, Dropdown, Icon, Menu } from 'antd';
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
-import TableDetail from '../../other/TableDetail';
+import { TableDetail } from '../../other/TableDetail';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 

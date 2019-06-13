@@ -15,7 +15,7 @@ import { IStudentSubmissionsDataTable } from '../../../types/common';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
-import TableDetail from '../other/TableDetail';
+import { TableDetail } from '../other/TableDetail';
 
 import StudentDetail from './students/StudentDetail';
 
@@ -106,7 +106,7 @@ class StudentData extends React.Component<IProps, IState> {
 
           const toRet = {
             expand: <Icon type="zoom-in" onClick={expandFn} />,
-            student: <span>{studentEmail}</span>,
+            student: studentEmail,
             key: studentEmail,
           };
           for (const assignment of this.props.assignments) {

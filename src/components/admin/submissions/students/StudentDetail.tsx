@@ -18,7 +18,7 @@ import { openSubmission } from '../../other/AdminUtils';
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
-import TableDetail from '../../other/TableDetail';
+import { TableDetail } from '../../other/TableDetail';
 
 import UploadSubmissionDialog from '../../assignments/assignments/UploadSubmissionDialog';
 

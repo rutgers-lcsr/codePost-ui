@@ -8,7 +8,9 @@ import * as React from 'react';
 /* style imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
 const confirm = Modal.confirm;
-import { ColumnProps } from 'antd/lib/table';
+
+/* other library imports */
+import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -21,7 +23,7 @@ import AddStudentDialog from './students/AddStudentDialog';
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
 
-import TableDetail from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 /**********************************************************************************************************************/
 
@@ -93,7 +95,7 @@ class ManageStudents extends React.Component<IProps, IState> {
 
   public render() {
     let actions: React.ReactNode[] = [];
-    let columns: Array<ColumnProps<any>> = [];
+    let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
     if (this.props.students.length > 0) {
@@ -131,6 +133,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       ];
 
       const aligner: 'left' | 'center' | 'right' = 'center';
+      const sections = this.props.sectionsByStudent;
       columns = [
         {
           title: 'Student',
@@ -144,6 +147,51 @@ class ManageStudents extends React.Component<IProps, IState> {
           key: 'section',
           align: aligner,
           sorter: (a: any, b: any) => a.sectionText.localeCompare(b.sectionText),
+          renderForSearch: (searchText: string) => {
+            return (text: string, record: any, index: number) => {
+              const student = record.student;
+              if (student === this.state.activeStudent) {
+                return (
+                  <div>
+                    <Select
+                      style={{ width: 150 }}
+                      onChange={this.updateStudentSection.bind(this, student)}
+                      defaultValue={sections[student] ? sections[student].id : 0}
+                    >
+                      {[
+                        ...this.props.sections
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((section) => {
+                            return (
+                              <Select.Option key={section.name} value={section.id}>
+                                {section.name}
+                              </Select.Option>
+                            );
+                          }),
+                        <Select.Option key={0} value={0}>
+                          No section
+                        </Select.Option>,
+                      ]}
+                    </Select>
+                    &nbsp; <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                  </div>
+                );
+              } else {
+                return (
+                  <div>
+                    <Highlighter
+                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      searchWords={[searchText]}
+                      autoEscape
+                      textToHighlight={sections[student] ? sections[student].name : 'No section'}
+                    />{' '}
+                    &nbsp;
+                    <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                  </div>
+                );
+              }
+            };
+          },
         },
         {
           title: 'Actions',
@@ -153,44 +201,7 @@ class ManageStudents extends React.Component<IProps, IState> {
         },
       ];
 
-      const sections = this.props.sectionsByStudent;
       data = this.props.students.map((student, i) => {
-        let sectionElement;
-        if (student === this.state.activeStudent) {
-          sectionElement = (
-            <div>
-              <Select
-                style={{ width: 150 }}
-                onChange={this.updateStudentSection.bind(this, student)}
-                defaultValue={sections[student] ? sections[student].id : 0}
-              >
-                {[
-                  ...this.props.sections
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((section) => {
-                      return (
-                        <Select.Option key={section.name} value={section.id}>
-                          {section.name}
-                        </Select.Option>
-                      );
-                    }),
-                  <Select.Option key={0} value={0}>
-                    No section
-                  </Select.Option>,
-                ]}
-              </Select>
-              &nbsp; <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
-            </div>
-          );
-        } else {
-          sectionElement = (
-            <div>
-              {sections[student] ? sections[student].name : 'No section'}&nbsp;
-              <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
-            </div>
-          );
-        }
-
         const menu = (
           <Menu>
             <Menu.Item key="1" onClick={this.removeStudent.bind(this, student)}>
@@ -203,8 +214,7 @@ class ManageStudents extends React.Component<IProps, IState> {
         return {
           key: student,
           student,
-          section: sectionElement,
-          sectionText: sections[student] ? sections[student].name : 'No section',
+          section: sections[student] ? sections[student].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />

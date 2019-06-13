@@ -9,7 +9,8 @@ import * as React from 'react';
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
 const confirm = Modal.confirm;
 
-import { ColumnProps } from 'antd/lib/table';
+/* other library imports */
+import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -22,7 +23,7 @@ import AddSectionDialog from './sections/AddSectionDialog';
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
 
-import TableDetail from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 /**********************************************************************************************************************/
 
@@ -87,7 +88,7 @@ class ManageSections extends React.Component<IProps, IState> {
 
   public render() {
     let actions: React.ReactNode[] = [];
-    let columns: Array<ColumnProps<any>> = [];
+    let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
     if (this.props.loadComplete) {
@@ -131,6 +132,41 @@ class ManageSections extends React.Component<IProps, IState> {
           dataIndex: 'leaders',
           key: 'leaders',
           align: aligner,
+          renderForSearch: (searchText: string) => {
+            return (text: string, record: any, index: number) => {
+              if (record.section === this.state.activeSection) {
+                return (
+                  <div>
+                    <Select
+                      mode="multiple"
+                      value={record.leaderData}
+                      onChange={this.changeLeaders.bind(this, record.key)}
+                      style={{ width: 400 }}
+                    >
+                      {this.props.graders.map((grader) => {
+                        return <Select.Option key={grader}>{grader}</Select.Option>;
+                      })}
+                    </Select>{' '}
+                    &nbsp;&nbsp;
+                    <Icon type="edit" onClick={this.setActiveSection.bind(this, '')} />
+                  </div>
+                );
+              } else {
+                return (
+                  <div>
+                    <Highlighter
+                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      searchWords={[searchText]}
+                      autoEscape
+                      textToHighlight={record.leaderData.join(', ')}
+                    />
+                    &nbsp;&nbsp;
+                    <Icon type="edit" onClick={this.setActiveSection.bind(this, record.section)} />
+                  </div>
+                );
+              }
+            };
+          },
         },
         {
           title: 'Actions',
@@ -141,38 +177,6 @@ class ManageSections extends React.Component<IProps, IState> {
       ];
 
       data = this.props.sections.map((section, i) => {
-        let leadersElement;
-        if (section.name === this.state.activeSection) {
-          leadersElement = (
-            <div>
-              <Select
-                mode="multiple"
-                value={section.leaders}
-                onChange={this.changeLeaders.bind(this, section.id)}
-                style={{ width: 400 }}
-              >
-                {this.props.graders.map((grader) => {
-                  return <Select.Option key={grader}>{grader}</Select.Option>;
-                })}
-              </Select>{' '}
-              &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveSection.bind(this, '')} />
-            </div>
-          );
-        } else {
-          leadersElement = (
-            <div>
-              <Select mode="multiple" value={section.leaders} style={{ width: 400 }} disabled={true}>
-                {this.props.graders.map((grader) => {
-                  return <Select.Option key={grader}>{grader}</Select.Option>;
-                })}
-              </Select>{' '}
-              &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveSection.bind(this, section.name)} />
-            </div>
-          );
-        }
-
         const menu = (
           <Menu>
             <Menu.Item key="1" onClick={this.deleteSection.bind(this, section.id)}>
@@ -183,9 +187,10 @@ class ManageSections extends React.Component<IProps, IState> {
         );
 
         return {
-          key: section.name,
+          key: section.id,
           section: section.name,
-          leaders: leadersElement,
+          leaderData: section.leaders, // for passing data to render function
+          leadersForSearch: section.leaders.join(', '), // to make leaders searchable
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />
