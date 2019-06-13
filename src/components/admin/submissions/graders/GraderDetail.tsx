@@ -18,6 +18,8 @@ import { TableDetail } from '../../other/TableDetail';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
+import { openSubmission } from '../../other/AdminUtils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -197,6 +199,12 @@ class GraderDetail extends React.Component<IProps, IState> {
     } else {
       const columns = [
         {
+          title: 'Open',
+          dataIndex: 'open',
+          key: 'open',
+          align: aligner,
+        },
+        {
           title: 'Assignment',
           dataIndex: 'assignment',
           key: 'assignment',
@@ -251,6 +259,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         }
 
         return {
+          open: <Icon type="code" onClick={openSubmission.bind(this, submission.id)} />,
           key: submission.id,
           assignment: selectedAssignment.name,
           status: this.getStatus(submission),
