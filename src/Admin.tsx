@@ -192,7 +192,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   }
 
   public componentDidMount() {
-    document.title = 'codePost - Admin';
+    document.title = 'codePost - Admin Console';
   }
 
   /***********************************************************************************
