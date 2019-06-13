@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import { Badge, Icon, Input, Table } from 'antd';
 
-import CPButton from '../../../components/core/CPButton';
-import CPFlex from '../../../components/core/CPFlex';
+import CPButton from '../../../../components/core/CPButton';
+import CPFlex from '../../../../components/core/CPFlex';
 
-import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 interface ICPRubricCategoryProps {
   rubricCategory: RubricCategoryType;

@@ -366,7 +366,7 @@ class CPComment extends React.Component<ICPCommentProps, ICPCommentState> {
       <div
         className={className}
         id={`comment-${this.props.comment.id}`}
-        style={{ top: `${this.props.placement}px`, cursor, minWidth: `${themeVars.grade.commentMinWidth}px` }}
+        style={{ top: `${this.props.placement}px`, cursor }}
         onClick={onClick}
         onMouseEnter={this.highlightRelatedComment}
         onMouseLeave={this.unhighlightRelatedComment}

@@ -3,7 +3,7 @@ import { Icon, Switch, Table } from 'antd';
 import React from 'react';
 import { animated, useSpring } from 'react-spring';
 
-import CPButton from '../../../components/core/CPButton';
+import CPButton from '../../../../components/core/CPButton';
 
 const SimpleAssignments = (props: { mouseOver: boolean }) => {
   const props1 = useSpring({

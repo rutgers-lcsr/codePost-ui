@@ -23,10 +23,6 @@ import Settings from './settings';
 
 import RouterLoading from './RouterLoading';
 
-import { AdminAnimation } from './components/LandingAnimations/Admin/AdminAnimation';
-import APIAnimation from './components/LandingAnimations/API/APIAnimation';
-import GradeAnimation from './components/LandingAnimations/Grade/GradeAnimation';
-
 import Loadable from 'react-loadable';
 
 /******************************************************************************
@@ -408,22 +404,6 @@ class App extends React.Component<{}, IState> {
             path={'/terms'}
             render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
           />
-          <Route
-            exact={true}
-            path={'/animations/api'}
-            render={(props: any) => <APIAnimation {...props} isAuthenticated={true} />}
-          />
-          <Route
-            exact={true}
-            path={'/animations/admin'}
-            render={(props: any) => <AdminAnimation {...props} isAuthenticated={true} />}
-          />
-          <Route
-            exact={true}
-            path={'/animations/grade'}
-            render={(props: any) => <GradeAnimation {...props} isAuthenticated={true} />}
-          />
-
           {pageSelector}
           {studentRoute}
           {graderRoute}

@@ -92,18 +92,20 @@ function AdminAnimation() {
   );
 
   return (
-    <div style={{ maxWidth: 800, maxHeight: 500, position: 'relative' }}>
-      <div onClick={togglePause} style={{ position: 'absolute', bottom: 15, right: 5, zIndex: 100 }}>
-        {pauseButton}
+    <div className="AdminAnimation">
+      <div style={{ maxWidth: 800, minWidth: 800, maxHeight: 500, position: 'relative' }}>
+        <div onClick={togglePause} style={{ position: 'absolute', bottom: 15, right: 5, zIndex: 100 }}>
+          {pauseButton}
+        </div>
+        <Layout>
+          <Sider width={160} className="Animation2__sider">
+            <SimpleMenu number={[calculateKeys(counter).select]} openKey={[calculateKeys(counter).open]} />
+          </Sider>
+          <Content>
+            <RenderContent screen={calculateKeys(counter).content} />
+          </Content>
+        </Layout>
       </div>
-      <Layout className="Animation2">
-        <Sider width={160} className="Animation2__sider">
-          <SimpleMenu number={[calculateKeys(counter).select]} openKey={[calculateKeys(counter).open]} />
-        </Sider>
-        <Content>
-          <RenderContent screen={calculateKeys(counter).content} />
-        </Content>
-      </Layout>
     </div>
   );
 }

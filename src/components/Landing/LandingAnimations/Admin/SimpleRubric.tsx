@@ -1,9 +1,9 @@
 import React from 'react';
 import { animated, useSpring } from 'react-spring';
 
-import CPButton from '../../../components/core/CPButton';
+import CPButton from '../../../../components/core/CPButton';
 
-import { RubricCommentMock } from '../../../infrastructure/rubricComment';
+import { RubricCommentMock } from '../../../../infrastructure/rubricComment';
 import SimpleRubricCategory from './SimpleRubricCategory';
 
 const SimpleRubric = () => {

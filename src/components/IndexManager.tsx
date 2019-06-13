@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import Landing from '../Landing';
+import LandingNew from '../LandingNew';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -28,7 +28,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
       <div>
         <BrowserRouter>
           <Switch>
-            <Route exact={true} path={'/'} component={Landing} />
+            <Route exact={true} path={'/'} component={LandingNew} />
 
             <Route
               exact={true}

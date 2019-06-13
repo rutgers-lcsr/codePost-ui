@@ -103,7 +103,6 @@ class CPFileMenu extends React.Component<ICPFileMenuProps, {}> {
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
             className="sider-menu"
-            id="cp-file-menu"
           >
             {fileMenu}
           </Menu>
