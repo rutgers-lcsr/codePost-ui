@@ -66,17 +66,32 @@ class TableDetail extends React.Component<IProps, IState> {
     } else if (column.renderForSearch !== undefined) {
       renderFunction = column.renderForSearch(this.state.searchText);
     } else {
-      renderFunction = (text: string, record: any, index: number) =>
-        typeof text === 'string' ? (
-          <Highlighter
-            highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
-            searchWords={[this.state.searchText]}
-            autoEscape
-            textToHighlight={text.toString()}
-          />
-        ) : (
-          text
-        );
+      renderFunction = (text: any, record: any, index: number) => {
+        switch (typeof text) {
+          case 'string':
+            return (
+              <Highlighter
+                highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                searchWords={[this.state.searchText]}
+                autoEscape
+                textToHighlight={text.toString()}
+              />
+            );
+            break;
+          case 'number':
+            return (
+              <Highlighter
+                highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                searchWords={[this.state.searchText]}
+                autoEscape
+                textToHighlight={text.toString()}
+              />
+            );
+            break;
+          default:
+            return text;
+        }
+      };
     }
 
     return {
@@ -127,7 +142,7 @@ class TableDetail extends React.Component<IProps, IState> {
                     }
                     break;
                   case 'number':
-                    if (el[key].toUpperCase().includes(this.state.searchText)) {
+                    if (el[key].toString().includes(this.state.searchText)) {
                       return true;
                     }
                     break;

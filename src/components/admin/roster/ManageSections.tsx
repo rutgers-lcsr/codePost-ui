@@ -125,7 +125,7 @@ class ManageSections extends React.Component<IProps, IState> {
           title: 'Sections',
           dataIndex: 'section',
           key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          sorter: (a: any, b: any) => a.section.localeCompare(b.section),
         },
         {
           title: 'Leaders',
