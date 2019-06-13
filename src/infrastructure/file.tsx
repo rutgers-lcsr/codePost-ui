@@ -34,6 +34,9 @@ const FileVPatch = t.intersection(
 
 type FileType = t.TypeOf<typeof FileV>;
 
+const MarkdownExtensions = ['ipynb', '.ipynb', 'md', '.md'];
+const JupyterExtensions = ['ipynb', '.ipynb'];
+
 class File {
   public static create = createObject(FileV, FileV, 'files');
   public static read = readObject(FileV, 'files');
@@ -44,6 +47,14 @@ class File {
     const extensionMatch = /^(?:\.?)(.*)/;
     const extension = extensionMatch.exec(file.extension)![1];
     return LangMap.languages(extension)[0];
+  };
+
+  public static isMarkdown = (file: FileType) => {
+    return MarkdownExtensions.includes(file.extension);
+  };
+
+  public static isJupyter = (file: FileType) => {
+    return JupyterExtensions.includes(file.extension);
   };
 }
 

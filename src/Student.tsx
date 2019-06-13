@@ -10,7 +10,7 @@ import StandardConsoleLayout, { ConsoleType } from './components/core/layouts/St
 
 import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from './components/code-review/Subheader';
 
-import { StudentCode } from './components/code-review/code-panel/Code';
+import { StudentCode } from './components/code-review/code-panel/CodeContent';
 
 import { StudentComments } from './components/code-review/code-panel/Comments';
 
@@ -358,12 +358,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               file={this.state.currentFile}
             />
           );
-          const code = (
+          const code = (codeStyle: React.CSSProperties) => (
             <StudentCode
-              file={this.state.currentFile}
-              comments={this.state.comments[this.state.currentFile.id]}
-              readOnly={this.state.currentSubmission.isFinalized}
+              file={this.state.currentFile!}
+              comments={this.state.comments[this.state.currentFile!.id]}
+              readOnly={this.state.currentSubmission!.isFinalized}
               user={this.props.email}
+              codeStyle={codeStyle}
             />
           );
           return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;

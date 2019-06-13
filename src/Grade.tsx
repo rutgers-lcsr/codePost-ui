@@ -45,7 +45,7 @@ import RubricMenu from './components/code-review/RubricMenu';
 
 import { FileType } from './infrastructure/file';
 
-import { GradeCode } from './components/code-review/code-panel/Code';
+import { GradeCode } from './components/code-review/code-panel/CodeContent';
 
 import { GradeComments } from './components/code-review/code-panel/Comments';
 
@@ -621,13 +621,14 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     let content;
     if (this.state.selectedFile) {
-      const code = (
+      const code = (codeStyle: React.CSSProperties) => (
         <GradeCode
-          file={this.state.selectedFile}
-          comments={this.state.comments[this.state.selectedFile.id]}
-          readOnly={this.state.submission.isFinalized}
+          file={this.state.selectedFile!}
+          comments={this.state.comments[this.state.selectedFile!.id]}
+          readOnly={this.state.submission!.isFinalized}
           addComment={this.addComment}
           user={this.props.user.email}
+          codeStyle={codeStyle}
         />
       );
 

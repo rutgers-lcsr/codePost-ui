@@ -75,6 +75,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     try {
       await this.props.onSave(comment, this.props.rubricComment);
       this.fadeSavedState();
+      this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error saving comment: ${JSON.stringify(error)}`);
     }
@@ -162,6 +163,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       e.preventDefault();
       e.stopPropagation();
       await this.props.onDelete(this.props.comment);
+      this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error deleting comment: ${JSON.stringify(error)}`);
     }

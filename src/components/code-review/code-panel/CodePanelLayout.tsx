@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+// import SyntaxHighlighter from 'react-syntax-highlighter';
+// import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
-import { File, FileType } from '../../../infrastructure/file';
+import { FileType } from '../../../infrastructure/file';
 
 import CodePanelSizing from './CodePanelSizing';
 import { Magnifier, Sizer } from './CodePanelWidgets';
@@ -16,7 +16,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
-  code: React.ReactNode;
+  code: (codeStyle: React.CSSProperties) => React.ReactNode;
   comments: React.ReactNode;
 }
 
@@ -83,9 +83,12 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     const codeUnderlay = document.getElementById('code-underlay');
     const codeSyntax = document.getElementById('code-syntax');
 
-    if (comments !== null && codeUnderlay !== null && codeSyntax !== null) {
+    if (comments !== null && codeUnderlay !== null) {
       codeUnderlay.scrollTop = comments.scrollTop;
-      codeSyntax.scrollTop = codeUnderlay.scrollTop;
+
+      if (codeSyntax !== null) {
+        codeSyntax.scrollTop = codeUnderlay.scrollTop;
+      }
     }
   };
 
@@ -117,13 +120,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
 
       const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
 
-      if (
-        codeContainer !== null &&
-        codeUnderlay !== null &&
-        codeSyntax !== null &&
-        commentsContainer !== null &&
-        comments !== null
-      ) {
+      if (codeContainer !== null && codeUnderlay !== null && commentsContainer !== null && comments !== null) {
         const codeContainerMaxHeight =
           this.props.windowheight -
           codeContainer.getBoundingClientRect().top -
@@ -140,14 +137,18 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
 
         codeContainer.style.setProperty('height', `${codeContainerHeight}px`);
         codeUnderlay.style.setProperty('height', `${codeUnderlayHeight}px`);
-        codeSyntax.style.setProperty('height', `${codeUnderlayHeight}px`);
+        if (codeSyntax !== null) {
+          codeSyntax.style.setProperty('height', `${codeUnderlayHeight}px`);
+        }
 
         const codeUnderlayWidth =
           codeContainer.offsetWidth -
           themeVars.grade.codeContainer.paddingLeft -
           themeVars.grade.codeContainer.paddingRight;
         codeUnderlay.style.setProperty('width', `${codeUnderlayWidth}px`);
-        codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
+        if (codeSyntax !== null) {
+          codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
+        }
 
         const commentsContainerHeight =
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
@@ -199,7 +200,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
   };
 
   public render() {
-    const { highlightHeight, paddingLeft, ...codeStyle } = this.getCodeStyle();
+    const { highlightHeight, ...codeStyle } = this.getCodeStyle();
 
     // FIXME: This only catches existing highlights.
     //        New highlights will start with the template height and adjust after render
@@ -233,20 +234,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
             >
               <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
               <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
-              <SyntaxHighlighter
-                id="code-syntax"
-                className="code"
-                language={File.language(this.props.file)}
-                style={googlecode}
-                showLineNumbers={true}
-                wrapLines={false}
-                customStyle={{ ...codeStyle, padding: '0px' }}
-              >
-                {this.props.file.code}
-              </SyntaxHighlighter>
-              <div id="code-underlay" className="code" style={{ ...codeStyle, paddingLeft }}>
-                {this.props.code}
-              </div>
+              {this.props.code(codeStyle)}
             </div>
           </div>
           <div id="code-panel--comments" className="code-panel--comments">
