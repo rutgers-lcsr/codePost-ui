@@ -6,7 +6,8 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, Tooltip } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal, Tooltip } from 'antd';
+const confirm = Modal.confirm;
 
 /* other library imports */
 import * as moment from 'moment';
@@ -45,6 +46,17 @@ class GraderDetail extends React.Component<IProps, IState> {
 
   public changeActiveAssignment = (assignment: AssignmentType | undefined) => {
     this.setState({ selectedAssignment: assignment });
+  };
+
+  public removeSubmission = (toRemove: SubmissionType) => {
+    confirm({
+      title: 'Are you sure you want to delete this submission?',
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
+      onOk: () => {
+        return this.props.deleteSubmission(toRemove);
+      },
+      okText: 'Remove',
+    });
   };
 
   public getStatus = (submission: SubmissionType | undefined) => {
@@ -291,7 +303,8 @@ class GraderDetail extends React.Component<IProps, IState> {
               <Icon type="code" />
               Open
             </Menu.Item>
-            <Menu.Item>
+            <Menu.Divider />
+            <Menu.Item style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
               <Icon type="delete" />
               Delete
             </Menu.Item>
