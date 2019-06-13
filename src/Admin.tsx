@@ -644,7 +644,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             const newCourses = this.state.courses;
             newCourses.push(course);
             this.setState({ courses: newCourses }, () => this.props.addCourse(course));
-            this.updateNewCourse(course);
+            return this.updateNewCourse(course);
           });
         });
       } else {
