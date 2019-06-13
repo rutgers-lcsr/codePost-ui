@@ -591,6 +591,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 </Menu.Item>
               </Menu>
             );
+
+            let publishToggleText = '';
+            if (assignment.isReleased) {
+              publishToggleText = 'Are you sure you want to un-publish this assignment?';
+            } else {
+              publishToggleText = 'Are you sure you want to publish this assignment?';
+            }
+
             return {
               key: assignment.id,
               assignment: <Text strong>{assignment.name}</Text>,
@@ -600,7 +608,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                     id: assignment.id,
                     isReleased: !assignment.isReleased,
                   })}
-                  title="Are you sure you want to publish this assignment?"
+                  title={publishToggleText}
                   icon={<Icon type="question-circle-o" />}
                 >
                   <Switch checked={assignment.isReleased} />
