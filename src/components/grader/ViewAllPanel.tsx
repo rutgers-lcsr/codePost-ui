@@ -16,7 +16,7 @@ import { Course, CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
-import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './graderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './GraderUtils';
 
 import { compare } from '../Utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';

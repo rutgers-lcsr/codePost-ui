@@ -11,11 +11,12 @@ const { Title } = Typography;
 const { Option } = Select;
 
 /* codePost imports */
+import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './GraderUtils';
+
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { StudentSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
-import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './graderUtils';
 
 import { compare } from '../Utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';

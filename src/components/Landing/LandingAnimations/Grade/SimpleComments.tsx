@@ -1,7 +1,7 @@
 import React from 'react';
 import { animated } from 'react-spring';
 
-import CPComment from '../../../../components/core/CPComment';
+import CPComment from '../../../../components/code-review/code-panel/Comment';
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
 const SimpleComment = (props: {

@@ -1,30 +1,30 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* other library imports */
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import { Snackbar } from 'react-md';
+import Loadable from 'react-loadable';
 
-import IndexManager from './components/IndexManager';
-import TermsOfService from './components/TermsAndPrivacy/TermsOfService';
-// import { TopBar } from './components/TopBar';
-
+/* codePost imports */
 import LogInAs from './LogInAs';
 
 import Home from './Home';
 
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
-import { IToast } from './types/common';
-
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
+
+import IndexManager from './components/pre-auth/IndexManager';
 
 import Settings from './settings';
 
 import RouterLoading from './RouterLoading';
-
-import Loadable from 'react-loadable';
-
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -56,9 +56,6 @@ interface IState {
   has_token: boolean;
   user?: UserType;
   toRedirect: boolean;
-  toasts: IToast[];
-  longToasts: IToast[];
-  errorToasts: IToast[];
   triedLoading: boolean;
 }
 
@@ -69,9 +66,6 @@ class App extends React.Component<{}, IState> {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
       toRedirect: false,
-      toasts: [],
-      longToasts: [],
-      errorToasts: [],
       triedLoading: false,
     };
   }
@@ -177,10 +171,9 @@ class App extends React.Component<{}, IState> {
       });
   };
 
-  public handleLogin = (e: any, data: any) => {
-    e.preventDefault();
+  public handleLogin = (username: string, password: string) => {
     fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
-      body: JSON.stringify(data),
+      body: JSON.stringify({ username, password }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -207,41 +200,6 @@ class App extends React.Component<{}, IState> {
         localStorage.removeItem('token');
         this.setState({ has_token: false, user: undefined, error: 'invalid' });
       });
-  };
-
-  // ------------------- Toast functions -------------------
-
-  public addToast = (text: string, action: string | undefined) => {
-    const toasts = this.state.toasts.slice();
-    toasts.push({ text, action });
-    this.setState({ toasts });
-  };
-
-  public addLongToast = (text: string, action: string | undefined) => {
-    const longToasts = this.state.longToasts.slice();
-    longToasts.push({ text, action });
-    this.setState({ longToasts });
-  };
-
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissToast = () => {
-    const [, ...toasts] = this.state.toasts;
-    this.setState({ toasts });
-  };
-
-  public dismissLongToast = () => {
-    const [, ...longToasts] = this.state.longToasts;
-    this.setState({ longToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
   };
 
   public render() {
@@ -335,14 +293,7 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADE}/:submissionId`}
-            render={(props: any) => (
-              <AsyncGrade
-                {...props}
-                user={this.state.user}
-                addToast={this.addToast}
-                addErrorToast={this.addErrorToast}
-              />
-            )}
+            render={(props: any) => <AsyncGrade {...props} user={this.state.user} />}
           />
         );
       }
@@ -368,22 +319,6 @@ class App extends React.Component<{}, IState> {
         );
       }
 
-      const snackBarStyle = {
-        width: '100%',
-        fontWeight: 500,
-        fontSize: 14,
-        backgroundColor: '#24b47e',
-        maxWidth: '100%',
-      };
-
-      const errorSnackBarStyle = {
-        width: '100%',
-        fontWeight: 500,
-        fontSize: 14,
-        backgroundColor: 'red',
-        maxWidth: '100%',
-      };
-
       // const isChromeBrowser = window.hasOwnProperty('chrome');
 
       return (
@@ -399,46 +334,13 @@ class App extends React.Component<{}, IState> {
             path={'/settings'}
             render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
           />
-          <Route
-            exact={true}
-            path={'/terms'}
-            render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
-          />
+
           {pageSelector}
           {studentRoute}
           {graderRoute}
           {adminRoute}
           {gradeRoute}
-          <Snackbar
-            id="short-snackbar"
-            className="short-snackbar"
-            toasts={this.state.toasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={2000}
-            onDismiss={this.dismissToast}
-            style={snackBarStyle}
-          />
-          <Snackbar
-            id="long-snackbar"
-            className="long-snackbar"
-            toasts={this.state.longToasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={4000}
-            onDismiss={this.dismissLongToast}
-            style={snackBarStyle}
-          />
-          <Snackbar
-            id="error-snackbar"
-            className="error-snackbar"
-            toasts={this.state.errorToasts}
-            autohide={true}
-            lastChild={true}
-            autohideTimeout={5000}
-            onDismiss={this.dismissErrorToast}
-            style={errorSnackBarStyle}
-          />
+          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={true} />
         </Switch>
       );
     }
@@ -446,7 +348,7 @@ class App extends React.Component<{}, IState> {
     if (this.state.triedLoading) {
       return (
         <div>
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
+          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={false} />
         </div>
       );
     } else {

@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch, Tooltip } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
 const confirm = Modal.confirm;
 
 /* codePost imports */
@@ -21,7 +20,7 @@ import RosterFileUpload from './other/RosterFileUpload';
 
 import AddGraderDialog from './graders/AddGraderDialog';
 
-import TableDetail from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 /**********************************************************************************************************************/
 
@@ -101,7 +100,7 @@ class ManageGraders extends React.Component<IProps, IState> {
 
   public render() {
     let actions: React.ReactNode[] = [];
-    let columns: Array<ColumnProps<any>> = [];
+    let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
     if (this.props.loadComplete) {

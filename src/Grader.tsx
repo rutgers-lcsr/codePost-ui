@@ -8,12 +8,14 @@ import * as React from 'react';
 /* other library imports */
 import { Redirect } from 'react-router-dom';
 
-import StudentAndGraderLayout from './components/core/layouts/StudentAndGraderLayout';
+import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
+
+import StandardManagementHeader from './components/core/layouts/StandardManagementHeader';
+
 import SelectorSider from './components/core/SelectorSider';
 
 import { Tabs } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-import { OptionProps } from 'antd/lib/select';
 
 /* codePost imports */
 import MySubmissionsPanel from './components/grader/MySubmissionsPanel';
@@ -81,6 +83,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public async componentDidMount() {
+    document.title = 'codePost - Grader';
     const assignments = await this.loadAssignments(this.state.courses);
     this.setState({ assignments });
 
@@ -170,7 +173,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     })[0];
 
     if (currentAssignment) {
-      this.setState({ isLoadingSubmissions: true });
+      this.setState({ isLoadingSubmissions: true, currentSubmissions: [] });
       const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
         grader: this.props.email,
       });
@@ -184,20 +187,24 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     }
   };
 
-  public handleCourseChange = async (newCourseID: string, option: React.ReactElement<OptionProps>) => {
-    const currentCourse = this.state.courses.filter((obj: CourseType) => {
-      return obj.id === Number(newCourseID);
-    })[0];
-
-    const currentSections = await loadIDList(currentCourse.sections, Section);
-
-    this.setState({
-      currentSections,
-      currentAssignment: undefined,
-      currentCourse,
-      currentSubmissions: [],
-      toLoadCourse: true,
+  public handleCourseChange = async (e: ClickParam) => {
+    const courseID = +e.key;
+    const currentCourses = this.state.courses.filter((course: CourseType) => {
+      return course.id === courseID;
     });
+
+    if (currentCourses.length > 0) {
+      const currentCourse = currentCourses[0];
+
+      const currentSections = await loadIDList(currentCourse.sections, Section);
+      this.setState({
+        currentSections,
+        currentAssignment: undefined,
+        currentCourse,
+        currentSubmissions: [],
+        toLoadCourse: true,
+      });
+    }
   };
 
   public selectorItemsFormatter = (courses: CourseType[]) => {
@@ -360,14 +367,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   ///////////////////////////////////////
 
   public render() {
-    const {
-      courses,
-      currentAssignment,
-      currentCourse,
-      currentSections,
-      currentSubmissions,
-      isLoadingSubmissions,
-    } = this.state;
+    const { currentAssignment, currentCourse, currentSections, currentSubmissions, isLoadingSubmissions } = this.state;
 
     if (this.state.toLoadCourse || this.state.toLoadAssignment) {
       if (currentCourse) {
@@ -388,10 +388,14 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
     // if not loaded yet, render a get started div
     if (!currentCourse) {
-      graderPanelContent = <div>Select a course to get started</div>;
+      graderPanelContent = (
+        <div style={{ padding: '40px', fontSize: 28 }}>
+          <div>Select course</div>
+        </div>
+      );
     } else if (!currentAssignment) {
       graderPanelContent = (
-        <div style={{ paddingTop: 40 }}>
+        <div style={{ padding: '40px', fontSize: 28 }}>
           <div>Select an assignment</div>
         </div>
       );
@@ -400,7 +404,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       const sectionPanel = this.getSectionsComponent();
 
       graderPanelContent = (
-        <div style={{ background: 'white', paddingTop: 25, paddingBottom: 25, paddingLeft: 50, paddingRight: 50 }}>
+        <div
+          style={{ margin: '20px 61px 0 61px', backgroundColor: '#fff', borderRadius: ' 5px', padding: '20px 35px' }}
+        >
           <Tabs defaultActiveKey="1" animated={false}>
             <TabPane key="1" tab="My Submissions" style={{ overflow: 'scroll' }}>
               <MySubmissionsPanel
@@ -423,27 +429,21 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       );
     }
 
-    const sider = (
-      // @ts-ignore
+    const sider = () => (
       <SelectorSider
-        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
         activeSelector={this.selectorCurrentFormatter(currentCourse)}
-        selectorItems={this.selectorItemsFormatter(courses)}
+        selectorItems={this.selectorItemsFormatter(this.props.initialCourses)}
+        onSelectorClick={this.handleCourseChange}
+        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
         menuItems={this.tabItemsFormatter(currentCourse)}
         onMenuClick={this.handleAssignmentChange}
-        onSelect={this.handleCourseChange}
-        theme="light"
+        theme="dark"
       />
     );
 
-    return (
-      <StudentAndGraderLayout
-        sider={sider}
-        email={this.props.email}
-        handleLogout={this.props.handleLogout}
-        content={graderPanelContent}
-      />
-    );
+    const header = <StandardManagementHeader email={this.props.email} handleLogout={this.props.handleLogout} />;
+
+    return <CPLayoutAdmin header={header} detail={graderPanelContent} navigation={sider} />;
   }
 }
 

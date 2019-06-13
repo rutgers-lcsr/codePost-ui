@@ -21,7 +21,7 @@ import RosterFileUpload from './other/RosterFileUpload';
 
 import AddAdminDialog from './admins/AddAdminDialog';
 
-import TableDetail from '../other/TableDetail';
+import { TableDetail } from '../other/TableDetail';
 
 /**********************************************************************************************************************/
 
