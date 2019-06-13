@@ -23,8 +23,8 @@ import useWindowSize from '../../core/useWindowSize';
 interface ICPLayoutAdminProps {
   header: React.ReactNode;
   detail: React.ReactNode;
-  navigation: React.ReactNode;
-  collabsible?: boolean;
+  navigation: (collapsed: boolean) => React.ReactNode;
+  collapsible?: boolean;
 }
 
 const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
@@ -39,7 +39,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
   // FIXME: Hardcoded height variables
   return (
     <Layout id="Admin" className="layout--admin">
-      <Sider collapsible={props.collabsible ? props.collabsible : false} collapsed={collapsed} onCollapse={onCollapse}>
+      <Sider collapsible={props.collapsible ? props.collapsible : false} collapsed={collapsed} onCollapse={onCollapse}>
         <Header className="layout--admin__sider__header">
           {collapsed ? (
             <Link to="/">
@@ -51,7 +51,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
             </Link>
           )}
         </Header>
-        <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'scroll' }}>{props.navigation}</div>
+        <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'scroll' }}>
+          {props.navigation(collapsed)}
+        </div>
       </Sider>
       <Layout>
         <Header className="layout--admin__header">{props.header}</Header>

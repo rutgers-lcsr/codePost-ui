@@ -1282,11 +1282,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       }
     }
 
-    const navigation = (
-      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={false} />
+    const navigation = (collapsed: boolean) => (
+      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
     );
 
-    return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collabsible={true} />;
+    return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collapsible={true} />;
   }
 }
 

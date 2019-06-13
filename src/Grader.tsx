@@ -429,7 +429,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       );
     }
 
-    const sider = (
+    const sider = () => (
       <SelectorSider
         activeSelector={this.selectorCurrentFormatter(currentCourse)}
         selectorItems={this.selectorItemsFormatter(this.props.initialCourses)}
