@@ -6,9 +6,10 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, Tooltip } from 'antd';
 
 /* other library imports */
+import * as moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -70,6 +71,48 @@ class GraderDetail extends React.Component<IProps, IState> {
         {cellText}
       </span>
     );
+  };
+
+  public getViewIcon = (submission: SubmissionType) => {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or unfinalized
+      return '--';
+    } else {
+      const viewed = this.props.viewsBySubmission[submission.id];
+
+      // case: submission has been viewed
+      if (Object.keys(viewed).length > 0) {
+        const tooltipText = submission.students
+          .map((student) => {
+            if (Object.keys(viewed).indexOf(student) > -1) {
+              return `${student}: ${moment(viewed[student]).format('llll')}`;
+            } else {
+              return `${student}: unviewed`;
+            }
+          })
+          .join('\n');
+        return (
+          <Tooltip title={tooltipText}>
+            <div>
+              <Icon type="eye" theme="filled" />
+            </div>
+          </Tooltip>
+        );
+      } else {
+        // case: submission has not been viewed
+        const tooltipText =
+          submission.students.length > 1
+            ? 'No students have viewed this submission yet'
+            : `${submission.students[0]} has not viewed this submission yet`;
+        return (
+          <Tooltip title={tooltipText}>
+            <div>
+              <Icon type="eye" />
+            </div>
+          </Tooltip>
+        );
+      }
+    }
   };
 
   public render() {
@@ -269,7 +312,7 @@ class GraderDetail extends React.Component<IProps, IState> {
           status: this.getStatus(submission),
           students: submission.students.join(', '),
           grade: gradeString,
-          viewed: 'BUMP',
+          viewed: this.getViewIcon(submission),
           actions: (
             <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
               <Icon type="menu" />
