@@ -12,8 +12,12 @@
   }
 }
 
-.bland-link {
+.internal-link {
   color: inherit;
+}
+
+.internal-link:hover {
+  color: #25be85;
 }
 
 #Admin {

@@ -1132,7 +1132,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      <Link class="bland-link" key="settings" to="/settings">
+      <Link class="internal-link" key="settings" to="/settings">
         <Icon type="setting" />
       </Link>,
       <Button key="header-logout" size="small" onClick={this.props.logout}>
