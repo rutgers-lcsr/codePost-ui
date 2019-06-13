@@ -244,6 +244,10 @@ class GraderDetail extends React.Component<IProps, IState> {
       const data = submissions.map((submission) => {
         const menu = (
           <Menu>
+            <Menu.Item onClick={openSubmission.bind(this, submission.id)}>
+              <Icon type="code" />
+              Open
+            </Menu.Item>
             <Menu.Item>
               <Icon type="delete" />
               Delete
