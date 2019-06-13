@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Empty, Menu } from 'antd';
+import { Button, Empty, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import CPButton from './components/core/CPButton';
@@ -17,7 +17,7 @@ import CPFlex from './components/core/CPFlex';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import AdminNav from './components/admin/other/AdminNav';
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
@@ -35,6 +35,8 @@ import ManageStudents from './components/admin/roster/ManageStudents';
 import CourseSettingsPanel from './components/admin/settings/CourseSettingsPanel';
 
 import NewCourseDialog from './components/admin/other/NewCourseDialog';
+
+import AdminNav from './components/admin/other/AdminNav';
 
 // import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
 
@@ -1130,7 +1132,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      <CPButton key="header-settings" cpType="secondary" icon="setting" size="small" href="/settings" />,
+      <Link class="bland-link" key="settings" to="/settings">
+        <Icon type="setting" />
+      </Link>,
       <Button key="header-logout" size="small" onClick={this.props.logout}>
         Logout
       </Button>,
