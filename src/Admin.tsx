@@ -15,8 +15,7 @@ import Select from 'react-select';
 import queryString from 'query-string';
 
 /* codePost imports */
-
-import { fsScript } from './Fullstory';
+import { runFSSetup } from './Fullstory';
 
 /* components */
 import CourseData from './components/admin/CourseData';
@@ -271,10 +270,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     // Setup Fullstory logging for admins
-    const script = document.createElement('script');
-    script.src = fsScript;
-    script.async = true;
-    document.body.appendChild(script);
+    runFSSetup();
 
     // load page
     this.setStateFromURL();
