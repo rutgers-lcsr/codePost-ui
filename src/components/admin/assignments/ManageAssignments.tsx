@@ -300,17 +300,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const getText = () => {
       switch (type) {
         case DRAWER_TYPE.Submitted:
-          return `Submissions (${newContent.length})`;
+          return `Total Submissions (${newContent.length})`;
         case DRAWER_TYPE.Graded:
-          return `Graded Submissions (${newContent.length})`;
+          return `Finalized Submissions (${newContent.length})`;
         case DRAWER_TYPE.Ungraded:
           return `Ungraded Submissions (${newContent.length})`;
         case DRAWER_TYPE.Unclaimed:
           return `Unclaimed Submissions (${newContent.length})`;
         case DRAWER_TYPE.Missing:
-          return `Students with missing submission (${newContent.length})`;
+          return `Students missing a submission (${newContent.length})`;
         case DRAWER_TYPE.Unviewed:
-          return `Students who haven't viewed their finalized submissions (${newContent.length})`;
+          return `Unviewed submissions (${newContent.length})`;
       }
     };
 
@@ -583,6 +583,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               publishToggleText = 'Are you sure you want to publish this assignment?';
             }
 
+            const hoverStyle = { cursor: 'pointer' };
+
             return {
               key: assignment.id,
               assignment: <Text strong>{assignment.name}</Text>,
@@ -599,27 +601,27 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 </Popconfirm>
               ),
               submissions: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)}>
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
                   {statsForRow.numSubmissions}
                 </span>
               ),
               finalized: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)}>
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
                   {statsForRow.numGraded}
                 </span>
               ),
               unclaimed: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unclaimed)}>
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unclaimed)} style={hoverStyle}>
                   {statsForRow.numUnclaimed}
                 </span>
               ),
               missing: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)}>
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
                   {statsForRow.numMissing}
                 </span>
               ),
               unviewed: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unviewed)}>
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unviewed)} style={hoverStyle}>
                   {statsForRow.numUnviewed}
                 </span>
               ),
@@ -719,18 +721,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           };
         });
 
-        const tableTitle = () => <div>{this.state.drawerContent.subtitle}</div>;
-
         const drawerComponent = (
           <Drawer
-            title={this.state.drawerContent.title}
+            title={`${this.state.drawerContent.title} | ${this.state.drawerContent.subtitle}`}
             placement="right"
             closable={true}
             onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
             visible={this.state.detailType === DETAIL_TYPE.Drawer}
             width={600}
           >
-            <Table title={tableTitle} columns={drawerColumns} dataSource={drawerData} pagination={false} />
+            <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
           </Drawer>
         );
 
