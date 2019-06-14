@@ -88,6 +88,7 @@ interface IAdminState {
   submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   submissionsbyUserLoadComplete: boolean;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  viewsBySubmissionLoadComplete: boolean;
 
   // Props for Enroll panels
   lockChanges: boolean;
@@ -159,6 +160,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     submissionsByInactiveGrader: {},
     submissionsbyUserLoadComplete: false,
     viewsBySubmission: {},
+    viewsBySubmissionLoadComplete: false,
 
     lockChanges: true,
 
@@ -341,6 +343,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         submissionsByInactiveStudent: {},
         submissionsByInactiveGrader: {},
         submissionsbyUserLoadComplete: false,
+        viewsBySubmission: {},
+        viewsBySubmissionLoadComplete: false,
 
         isLoading: false,
         loadingMessage: '',
@@ -537,33 +541,38 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
 
-    const viewsBySubmission = {};
     Promise.all(
       currentCourse.assignments.map((assignmentID) => {
         return Assignment.readSubmissionHistories(assignmentID).then((histories: SubmissionHistoryType[]) => {
+          const views = {};
           histories.forEach((history: SubmissionHistoryType) => {
             // History object has format of {submission: int, student: string, hasViewed: boolean}
             const { submission, student, hasViewed, dateViewed } = history;
-            if (!(submission in viewsBySubmission)) {
-              viewsBySubmission[submission] = {};
+            if (!(submission in views)) {
+              views[submission] = {};
             }
             if (hasViewed) {
-              viewsBySubmission[submission][student] = dateViewed;
+              views[submission][student] = dateViewed;
             }
           });
-          this.setState({ viewsBySubmission }, () => {
-            return;
-          });
+          return views;
         });
       }),
-    ).catch((errors) => {
-      Object.keys(errors).forEach((key) => {
-        errors[key].forEach((error: string) => {
-          this.props.addErrorToast(error, undefined);
+    )
+      .then((viewsArr: Array<{ [submissionID: number]: { [student: string]: string } }>) => {
+        const mergedViewsBySub = viewsArr.reduce((acc, val) => {
+          return { ...acc, ...val };
+        }, {});
+        this.setState({ viewsBySubmission: mergedViewsBySub, viewsBySubmissionLoadComplete: true });
+      })
+      .catch((errors) => {
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((error: string) => {
+            this.props.addErrorToast(error, undefined);
+          });
         });
+        return Promise.reject();
       });
-      return Promise.reject();
-    });
   };
 
   public loadRoster = () => {
@@ -1490,13 +1499,23 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         </div>
       );
     } else if (currentCourse && loadedPanel === 1) {
-      const { submissionsLoadComplete, assignmentsLoadComplete, submissionsbyUserLoadComplete } = this.state;
+      const {
+        submissionsLoadComplete,
+        assignmentsLoadComplete,
+        submissionsbyUserLoadComplete,
+        viewsBySubmissionLoadComplete,
+      } = this.state;
 
       courseManagementPanel = (
         <div>
           <ManageAssignments
             key={currentCourse.id}
-            loadComplete={submissionsLoadComplete && assignmentsLoadComplete && submissionsbyUserLoadComplete}
+            loadComplete={
+              submissionsLoadComplete &&
+              assignmentsLoadComplete &&
+              submissionsbyUserLoadComplete &&
+              viewsBySubmissionLoadComplete
+            }
             submissions={this.state.submissions}
             currentCourse={this.state.currentCourse}
             addToast={this.props.addToast}

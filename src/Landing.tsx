@@ -12,6 +12,10 @@ import LandingTopBar from './components/LandingTopBar';
 import { ModalCarousel } from './components/Utils/ModalCarousel';
 import Footer from './Footer';
 
+import ScrollableAnchor, { configureAnchors } from 'react-scrollable-anchor';
+
+configureAnchors({ offset: -80, scrollDuration: 1500 });
+
 interface IState {
   viewPanelIndex: number;
   apiTabIndex: number;
@@ -325,6 +329,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 0 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 0)}
+                  id="carousel-review"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -339,6 +344,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 1 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 1)}
+                  id="carousel-manage-course"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -353,6 +359,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 2 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 2)}
+                  id="carousel-manage-graders"
                 />
               </div>
               <div className="PanelViews__tabBox">
@@ -367,6 +374,7 @@ public boolean contains(int[] x, int y) {\n\n\
                 <div
                   className={`PanelViews__tabBox__button${viewPanelIndex === 3 ? '--active' : ''}`}
                   onClick={this.changePanelIndex.bind(this, 3)}
+                  id="carousel-student"
                 />
               </div>
             </div>
@@ -432,27 +440,103 @@ public boolean contains(int[] x, int y) {\n\n\
             </div>
           </div>
         </div>
-        <div className="Testimonial">
-          <div className="Testimonial__main-container">
-            <div className="Testimonial__top-box">
-              <div className="Testimonial__left-box">
-                <img className="Testimonial__left-box__image" src={require('./img/landing/bob_sedgewick.png')} />
+        <ScrollableAnchor id={'community'}>
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                flexWrap: 'wrap',
+                width: '100%',
+                padding: '40px 10px 40px 10px',
+                backgroundColor: '#f8f8f8',
+                zIndex: 10,
+              }}
+            >
+              <div className="Testimonial">
+                <div className="Testimonial__main-container">
+                  <div style={{ margin: 'auto' }}>
+                    <div className="Testimonial__top-box">
+                      <div className="Testimonial__left-box">
+                        <img className="Testimonial__left-box__image" src={require('./img/landing/adam_blank.jpg')} />
+                      </div>
+                      <div className="Testimonial__right-box">
+                        <div className="Testimonial__right-box__quote">
+                          "codePost has allowed my course staff to <b>efficiently grade student code</b> on its quality
+                          without sacrificing my high standard of feedback. Its <b>first-class API</b> makes it uniquely
+                          malleable to my different courses with very different requirements."
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="Testimonial__bottom-box">
+                    <div className="Testimonial__bottom-box__credibility">
+                      <div className="Testimonial__bottom-box__credibility__name">Adam Blank</div>
+                      <div className="Testimonial__bottom-box__credibility__title">
+                        California Institute of Technology
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="Testimonial__right-box">
-                <div className="Testimonial__right-box__quote">
-                  "codePost has been a <b>paradigm-shifting improvement</b> to how we teach computer science at
-                  Princeton."
+              <div className="Testimonial">
+                <div className="Testimonial__main-container">
+                  <div style={{ margin: 'auto' }}>
+                    <div className="Testimonial__top-box">
+                      <div className="Testimonial__left-box">
+                        <img
+                          className="Testimonial__left-box__image"
+                          src={require('./img/landing/bob_sedgewick.png')}
+                        />
+                      </div>
+                      <div className="Testimonial__right-box">
+                        <div className="Testimonial__right-box__quote">
+                          "codePost has been a <b>paradigm-shifting improvement</b> to how we teach computer science at
+                          Princeton."
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="Testimonial__bottom-box">
+                    <div className="Testimonial__bottom-box__credibility">
+                      <div className="Testimonial__bottom-box__credibility__name">Robert Sedgewick</div>
+                      <div className="Testimonial__bottom-box__credibility__title">Princeton University</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="Testimonial">
+                <div className="Testimonial__main-container">
+                  <div style={{ margin: 'auto' }}>
+                    <div className="Testimonial__top-box">
+                      <div className="Testimonial__left-box">
+                        <img
+                          className="Testimonial__left-box__image"
+                          src={require('./img/landing/eitan_mendelowitz.jpg')}
+                        />
+                      </div>
+                      <div className="Testimonial__right-box">
+                        <div className="Testimonial__right-box__quote">
+                          "codePost is the best way I have found to comment on and annotate students’ programming
+                          assignments. I find it{' '}
+                          <b>much easier to give programming feedback than any other system I have tried</b>
+                          ."
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="Testimonial__bottom-box">
+                    <div className="Testimonial__bottom-box__credibility">
+                      <div className="Testimonial__bottom-box__credibility__name">Eitan Mendelowitz</div>
+                      <div className="Testimonial__bottom-box__credibility__title">Mount Holyoke College</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="Testimonial__bottom-box">
-              <div className="Testimonial__bottom-box__credibility">
-                <div className="Testimonial__bottom-box__credibility__name">Robert Sedgewick</div>
-                <div className="Testimonial__bottom-box__credibility__title">Professor, Princeton University</div>
-              </div>
-            </div>
           </div>
-        </div>
+        </ScrollableAnchor>
         <div className="Numbers">
           <div className="stats">
             <div className="stats__text">

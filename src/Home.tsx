@@ -4,6 +4,10 @@ import { ADMIN, GRADER, STUDENT } from './routes';
 import { USER_APP } from './types/common';
 // import './styles/index.scss';
 
+// import { Button } from 'antd';
+
+// import CPButton from './components/core/CPButton';
+
 interface IAppState {
   redirect: USER_APP | null;
 }
@@ -80,6 +84,7 @@ class Home extends React.Component<IProps, IAppState> {
     return (
       <div className="App">
         <div className="App__splash-text">Select your role:</div>
+
         <div className="App__splash-buttonContainer">
           {studentBtn}
           {graderBtn}

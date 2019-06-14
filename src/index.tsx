@@ -7,10 +7,14 @@ import App from './App';
 import unregister from './registerServiceWorker';
 import './styles/main.scss';
 
+import ErrorBoundary from './ErrorBoundary';
+
 ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>,
+  <ErrorBoundary>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </ErrorBoundary>,
   document.getElementById('root') as HTMLElement,
 );
 unregister(); // remove any existing service workers
