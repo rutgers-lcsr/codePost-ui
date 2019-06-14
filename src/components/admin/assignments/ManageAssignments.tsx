@@ -6,20 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import {
-  Breadcrumb,
-  Drawer,
-  Dropdown,
-  Empty,
-  Icon,
-  List,
-  Menu,
-  message,
-  Popconfirm,
-  Switch,
-  Table,
-  Typography,
-} from 'antd';
+import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
@@ -109,6 +96,7 @@ interface IManageAssignmentsState {
   /* what is selected? */
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
+  drawerType?: DRAWER_TYPE;
   drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
   isDownloading: boolean;
 }
@@ -252,26 +240,26 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       switch (type) {
         case DRAWER_TYPE.Submitted:
           return subs.map((sub: SubmissionType) => {
-            return { email: sub.students.toString(), subID: sub.id };
+            return { email: sub.students.join(', '), subID: sub.id };
           });
         case DRAWER_TYPE.Graded:
           return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
             if (sub && sub.isFinalized) {
-              students.push({ email: sub.students.toString(), subID: sub.id });
+              students.push({ email: sub.students.join(', '), subID: sub.id });
             }
             return students;
           }, []);
         case DRAWER_TYPE.Ungraded:
           return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
             if (sub && !sub.isFinalized && sub.grader) {
-              students.push({ email: sub.students.toString(), subID: sub.id });
+              students.push({ email: sub.students.join(', '), subID: sub.id });
             }
             return students;
           }, []);
         case DRAWER_TYPE.Unclaimed:
           return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
             if (sub && !sub.isFinalized && !sub.grader) {
-              students.push({ email: sub.students.toString(), subID: sub.id });
+              students.push({ email: sub.students.join(', '), subID: sub.id });
             }
             return students;
           }, []);
@@ -330,6 +318,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       drawerContent: { title: assignment.name, subtitle: getText(), content: newContent },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
+      drawerType: type,
     });
   };
 
@@ -428,11 +417,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   /******************************************************************************
    * Render
    ******************************************************************************/
-
-  /* To-Do:
-   * (3) drawers
-   * (5) rubric view
-   */
 
   public render() {
     let content;
@@ -707,22 +691,36 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             break;
         }
 
-        const renderFunction = (item: { email: string; subID: number | null }) => {
-          return (
-            <List.Item
-              key={item.email}
-              actions={[
-                item.subID ? (
-                  <a key="0" onClick={openSubmission.bind(this, item.subID)}>
-                    open
-                  </a>
-                ) : null,
-              ]}
-            >
-              {item.email}
-            </List.Item>
-          );
-        };
+        const drawerColumns = [
+          {
+            title: 'Students',
+            dataIndex: 'students',
+            key: 'students',
+            align: 'left' as 'left' | 'center' | 'right' /* this is so ugly.. */,
+          },
+        ];
+        if (this.state.drawerType !== undefined && this.state.drawerType !== DRAWER_TYPE.Missing) {
+          drawerColumns.push({
+            title: 'Open',
+            dataIndex: 'open',
+            key: 'open',
+            align: aligner,
+          });
+        }
+
+        const drawerData = this.state.drawerContent.content.map((el) => {
+          return {
+            students: el.email,
+            open: el.subID ? (
+              <a onClick={openSubmission.bind(this, el.subID)} className="internal-link">
+                <Icon type="code" />
+              </a>
+            ) : null,
+          };
+        });
+
+        const tableTitle = () => <div>{this.state.drawerContent.subtitle}</div>;
+
         const drawerComponent = (
           <Drawer
             title={this.state.drawerContent.title}
@@ -730,14 +728,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             closable={true}
             onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
             visible={this.state.detailType === DETAIL_TYPE.Drawer}
-            width={450}
+            width={600}
           >
-            <List
-              header={<div>{this.state.drawerContent.subtitle}</div>}
-              bordered
-              dataSource={this.state.drawerContent.content}
-              renderItem={renderFunction}
-            />
+            <Table title={tableTitle} columns={drawerColumns} dataSource={drawerData} pagination={false} />
           </Drawer>
         );
 
