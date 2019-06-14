@@ -270,7 +270,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     // Setup Fullstory logging for admins
-    runFSSetup();
+    if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
+      runFSSetup(this.props.user.email);
+    }
 
     // load page
     this.setStateFromURL();
