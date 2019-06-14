@@ -16,6 +16,8 @@ import queryString from 'query-string';
 
 /* codePost imports */
 
+import { fsScript } from './Fullstory';
+
 /* components */
 import CourseData from './components/admin/CourseData';
 import CourseSettingsPanel from './components/admin/CourseSettingsPanel';
@@ -266,6 +268,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // ------------------- Permissions check functions -------------------
 
   public componentDidMount() {
+    // Setup Fullstory logging for admins
+    const script = document.createElement('script');
+    script.src = fsScript;
+    script.async = true;
+    document.body.appendChild(script);
+
+    // load page
     this.setStateFromURL();
     this.interval = setInterval(() => {
       if (this.state.currentCourse) {
