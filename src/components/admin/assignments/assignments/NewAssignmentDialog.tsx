@@ -88,6 +88,19 @@ interface IFormProps extends FormComponentProps {
 // FIXME: figure out how to type output of Form.create HOC
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
   class extends React.Component<IFormProps, {}> {
+    public validatePoints = (rule: any, value: any, callback: any) => {
+      // Test 1: are the points a non-negative integer? Note that we could prevent
+      // offending values from being input into this field using the precision prop
+      // of InputNumber, but it's nicer to alert the user explicitly if they
+      // try to enter a disallowed value.
+      if (!Number.isInteger(parseFloat(value))) {
+        callback('Points must be a non-negative integer.');
+      }
+
+      // Call callback with no arguments to signal that value passed validation
+      callback();
+    };
+
     public render() {
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
@@ -103,7 +116,12 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
             </Form.Item>
             <Form.Item label="Points">
               {getFieldDecorator('points', {
-                rules: [{ required: true }],
+                validateTrigger: 'onBlur',
+                validateFirst: true,
+                rules: [
+                  { required: true, message: 'Please specify a point value' },
+                  { validator: this.validatePoints },
+                ],
               })(<InputNumber min={0} />)}
             </Form.Item>
           </Form>
