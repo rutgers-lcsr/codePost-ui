@@ -22,12 +22,15 @@ import PrivacyPolicy from './PrivacyPolicy';
 import SignUpManager from './SignUpManager';
 import TermsOfService from './TermsOfService';
 
+import Logout from '../Logout';
+
 /**********************************************************************************************************************/
 
 interface IndexManagerProps {
   error: string;
   handleLogin: (email: string, password: string) => void;
-  isAuthenticated: boolean;
+  handleLogout: () => void;
+  isLoggedIn: boolean;
 }
 
 class IndexManager extends React.Component<IndexManagerProps, {}> {
@@ -38,6 +41,12 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
         <BrowserRouter>
           <Switch>
             <Route exact={true} path={'/'} component={LandingNew} />
+
+            <Route
+              exact={true}
+              path={'/logout'}
+              render={(props: any) => <Logout {...props} handleLogout={this.props.handleLogout} />}
+            />
 
             <Route
               exact={true}
@@ -53,29 +62,33 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={'/terms'}
-              render={(props: any) => <TermsOfService {...props} isAuthenticated={false} />}
+              render={(props: any) => <TermsOfService {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/pricing'}
-              render={(props: any) => <Pricing {...props} isAuthenticated={false} />}
+              render={(props: any) => <Pricing {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/privacy'}
-              render={(props: any) => <PrivacyPolicy {...props} isAuthenticated={false} />}
+              render={(props: any) => <PrivacyPolicy {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             <Route
               exact={true}
               path={'/password-reset/:uid/:token'}
-              render={(props: any) => <PasswordReset {...props} message={'forgot'} />}
+              render={(props: any) => (
+                <PasswordReset {...props} message={'forgot'} isLoggedIn={this.props.isLoggedIn} />
+              )}
             />
 
             <Route
               exact={true}
               path={'/activate/:uid/:token'}
-              render={(props: any) => <PasswordReset {...props} message={'activate'} />}
+              render={(props: any) => (
+                <PasswordReset {...props} message={'activate'} isLoggedIn={this.props.isLoggedIn} />
+              )}
             />
 
             {/* Reminder: we used to offer an "upgrade" path */}

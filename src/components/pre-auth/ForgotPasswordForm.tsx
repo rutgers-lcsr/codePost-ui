@@ -22,7 +22,11 @@ const initialState = {
 
 type State = Readonly<typeof initialState>;
 
-class ForgotPasswordForm extends React.Component<{}, State> {
+interface IProps {
+  isLoggedIn: boolean;
+}
+
+class ForgotPasswordForm extends React.Component<IProps, State> {
   public readonly state: State = initialState;
 
   public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +110,7 @@ class ForgotPasswordForm extends React.Component<{}, State> {
     }
 
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div style={{ width: 500 }}>
           <br />
           <br />

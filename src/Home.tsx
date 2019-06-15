@@ -1,12 +1,22 @@
-import * as React from 'react';
-import { Redirect } from 'react-router-dom';
-import { ADMIN, GRADER, STUDENT } from './routes';
-import { USER_APP } from './types/common';
-// import './styles/index.scss';
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
 
-interface IAppState {
-  redirect: USER_APP | null;
-}
+/* react imports */
+import * as React from 'react';
+
+/* antd imports */
+import { Typography } from 'antd';
+
+/* other library imports */
+import { Link } from 'react-router-dom';
+
+/* codePost imports */
+import PreAuthLayout from './components/pre-auth/PreAuthLayout';
+
+import CPButton from './components/core/CPButton';
+
+/**********************************************************************************************************************/
 
 interface IProps {
   isStudent: boolean;
@@ -14,78 +24,44 @@ interface IProps {
   isAdmin: boolean;
 }
 
-class Home extends React.Component<IProps, IAppState> {
-  public state: Readonly<IAppState> = {
-    redirect: null,
-  };
+const buttonStyle = {
+  margin: '10px 0',
+  fontSize: '17px',
+};
 
-  public constructor(props: any) {
-    super(props);
-    this.setState({ redirect: null });
-  }
-
-  public toggleRedirect(page: USER_APP) {
-    this.setState({ redirect: page });
-  }
-
+class Home extends React.Component<IProps, {}> {
   public render() {
-    switch (this.state.redirect) {
-      case USER_APP.Student:
-        console.log('redirecting');
-        return <Redirect push to={STUDENT} />;
-      case USER_APP.Grader:
-        return <Redirect push to={GRADER} />;
-      case USER_APP.CourseAdmin:
-        return <Redirect push to={ADMIN} />;
-    }
-
-    // If user hsa no courses:
-    if (!this.props.isStudent && !this.props.isGrader && !this.props.isAdmin) {
-      return (
-        <div className="App">
-          <div className="App__splash-text">You are not enrolled in any courses.</div>
-        </div>
-      );
-    }
-
     const studentBtn = this.props.isStudent ? (
-      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.Student)}>
-        <div className="App__splash-header">Student</div>
-        <div className="App__splash-divider" />
-        <img className="App__splashIcon" src={require('./img/splash-code.png')} />
-      </div>
-    ) : (
-      <div />
-    );
+      <Link to="/student">
+        <CPButton icon="idcard" block cpType="secondary" style={buttonStyle}>
+          Student Console
+        </CPButton>
+      </Link>
+    ) : null;
     const graderBtn = this.props.isGrader ? (
-      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.Grader)}>
-        <div className="App__splash-header">Grader</div>
-        <div className="App__splash-divider" />
-        <img className="App__splashIcon" src={require('./img/splash-speech-bubble.png')} />
-      </div>
-    ) : (
-      <div />
-    );
-
+      <Link to="/grader">
+        <CPButton icon="audit" block cpType="secondary" style={buttonStyle}>
+          Grader Console
+        </CPButton>
+      </Link>
+    ) : null;
     const adminBtn = this.props.isAdmin ? (
-      <div className="App__splashBtn" onClick={this.toggleRedirect.bind(this, USER_APP.CourseAdmin)}>
-        <div className="App__splash-header">Admin</div>
-        <div className="App__splash-divider" />
-        <img className="App__splashIcon" src={require('./img/splash-stats.png')} />
-      </div>
-    ) : (
-      <div />
-    );
+      <Link to="/course-admin">
+        <CPButton icon="sliders" block cpType="secondary" style={buttonStyle}>
+          Admin Console
+        </CPButton>
+      </Link>
+    ) : null;
 
     return (
-      <div className="App">
-        <div className="App__splash-text">Select your role:</div>
-        <div className="App__splash-buttonContainer">
+      <PreAuthLayout isLoggedIn={true}>
+        <div style={{ width: 600, margin: '0 auto' }}>
+          <Typography.Title level={3}>Select your role:</Typography.Title>
           {studentBtn}
           {graderBtn}
           {adminBtn}
         </div>
-      </div>
+      </PreAuthLayout>
     );
   }
 }

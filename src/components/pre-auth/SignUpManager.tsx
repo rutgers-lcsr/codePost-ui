@@ -21,7 +21,7 @@ const buttonStyle = { border: 'solid 1px #062a22', fontSize: 18, color: '#062a22
 class SignUpManager extends React.Component<{}, {}> {
   public render() {
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={false}>
         <div>
           <br />
           <br />

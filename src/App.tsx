@@ -25,6 +25,7 @@ import IndexManager from './components/pre-auth/IndexManager';
 import Settings from './settings';
 
 import RouterLoading from './RouterLoading';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -207,7 +208,6 @@ class App extends React.Component<{}, IState> {
       return <Redirect to={'/'} />;
     }
 
-    // Disabling this rule means we can use the render prop of Route to pass props to components
     if (typeof this.state.user !== 'undefined') {
       const { user } = this.state;
       const courseAdminCourses = user.courseadminCourses;
@@ -313,7 +313,7 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={HOME}
             render={(props: any) => (
-              <Home {...props} isAuthed={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+              <Home {...props} isLoggedIn={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
             )}
           />
         );
@@ -340,7 +340,12 @@ class App extends React.Component<{}, IState> {
           {graderRoute}
           {adminRoute}
           {gradeRoute}
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={true} />
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={true}
+            handleLogout={this.handleLogout}
+          />
         </Switch>
       );
     }
@@ -348,7 +353,12 @@ class App extends React.Component<{}, IState> {
     if (this.state.triedLoading) {
       return (
         <div>
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={false} />
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={false}
+            handleLogout={this.handleLogout}
+          />
         </div>
       );
     } else {
