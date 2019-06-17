@@ -69,49 +69,67 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
 
   public render() {
     return (
-      <Menu
-        onOpenChange={this.onOpenChange}
-        onClick={this.props.onClick}
-        theme="dark"
-        openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
-        selectedKeys={[this.props.selectedPanel.toString()]}
-        mode="inline"
-      >
-        <SubMenu
-          key="submissions"
-          title={
-            <span>
-              <Icon type="inbox" />
-              <span>Submissions</span>
-            </span>
-          }
+      <div>
+        <Menu
+          onOpenChange={this.onOpenChange}
+          onClick={this.props.onClick}
+          theme="dark"
+          openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
+          selectedKeys={[this.props.selectedPanel.toString()]}
+          mode="inline"
         >
-          <Menu.Item key="0">Students</Menu.Item>
-          <Menu.Item key="1">Graders</Menu.Item>
-        </SubMenu>
-        <Menu.Item key="2">
-          <Icon type="file-text" />
-          <span>Assignments</span>
-        </Menu.Item>
-        <SubMenu
-          key="roster"
-          title={
-            <span>
-              <Icon type="team" />
-              <span>Roster</span>
-            </span>
-          }
-        >
-          <Menu.Item key="3">Students</Menu.Item>
-          <Menu.Item key="4">Graders</Menu.Item>
-          <Menu.Item key="5">Admin</Menu.Item>
-          <Menu.Item key="6">Sections</Menu.Item>
-        </SubMenu>
-        <Menu.Item key="7">
-          <Icon type="setting" />
-          <span>Course Settings</span>
-        </Menu.Item>
-      </Menu>
+          <SubMenu
+            key="submissions"
+            title={
+              <span>
+                <Icon type="inbox" />
+                <span>Submissions</span>
+              </span>
+            }
+          >
+            <Menu.Item key="0">Students</Menu.Item>
+            <Menu.Item key="1">Graders</Menu.Item>
+          </SubMenu>
+          <Menu.Item key="2">
+            <Icon type="file-text" />
+            <span>Assignments</span>
+          </Menu.Item>
+          <SubMenu
+            key="roster"
+            title={
+              <span>
+                <Icon type="team" />
+                <span>Roster</span>
+              </span>
+            }
+          >
+            <Menu.Item key="3">Students</Menu.Item>
+            <Menu.Item key="4">Graders</Menu.Item>
+            <Menu.Item key="5">Admin</Menu.Item>
+            <Menu.Item key="6">Sections</Menu.Item>
+          </SubMenu>
+          <Menu.Item key="7">
+            <Icon type="setting" />
+            <span>Course Settings</span>
+          </Menu.Item>
+        </Menu>
+        <div style={{ height: '100%' }}>
+          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
+            <Menu.Item key="docs">
+              <Icon type="pushpin" />
+              <a href="https://help.codepost.io" target="_blank" style={{ display: 'inline' }}>
+                Docs
+              </a>
+            </Menu.Item>
+            <Menu.Item key="api-reference">
+              <Icon type="api" />
+              <a href="https://help.codepost.io/reference/" target="_blank" style={{ display: 'inline' }}>
+                API Reference
+              </a>
+            </Menu.Item>
+          </Menu>
+        </div>
+      </div>
     );
   }
 }
