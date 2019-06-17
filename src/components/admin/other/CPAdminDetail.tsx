@@ -20,6 +20,7 @@ interface ICPAdminDetailProps {
   content: React.ReactNode;
   breadcrumbs?: React.ReactNode;
   className?: string;
+  gutterSize?: number;
 }
 
 class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
@@ -41,7 +42,11 @@ class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
           <Header className="layout--admin__subheader">
             {goBack}
             <CPFlex left={[<div key="breadcrumbs">{this.props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
-            <CPFlex left={subheaderLeft} right={this.props.actions} gutterSize={10} />
+            <CPFlex
+              left={subheaderLeft}
+              right={this.props.actions}
+              gutterSize={this.props.gutterSize !== undefined ? this.props.gutterSize : 10}
+            />
           </Header>
           <Content className="layout--admin__content">{this.props.content}</Content>
         </Layout>
