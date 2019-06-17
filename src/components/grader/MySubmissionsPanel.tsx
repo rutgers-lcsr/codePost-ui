@@ -5,80 +5,216 @@
 /* react imports */
 import * as React from 'react';
 
-/* ant imports */
-import { Icon, Popconfirm, Select, Switch, Table } from 'antd';
+/* antd imports */
+import { Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
 const { Option } = Select;
 
 /* codePost imports */
+import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { BUTTON_STATE } from '../../types/common';
 import CPButton from '../core/CPButton';
 
-import { formatSub, ISubDataBasic, openSubmissionRow } from './GraderUtils';
+import { formatSub, ISubDataBasic } from './GraderUtils';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { SectionType } from '../../infrastructure/section';
-import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
+import { Section, SectionType } from '../../infrastructure/section';
+import { AnonymousSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
 import { compare } from '../Utils/SortUtils';
+
+import { loadIDList } from '../../infrastructure/generics';
 
 type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
-interface IGraderAssignmentPanelProps {
-  assignment: AssignmentType;
-  canViewSubmissionInfo: boolean;
-  sections: SectionType[];
-  submissions: AnonymousSubmissionType[];
-  isAnonymous: boolean;
-  isLoadingSubmissions: boolean;
-  claimSubmission: (
-    assignment: AssignmentType,
-    sections: SectionType[],
-  ) => Promise<AnonymousSubmissionType | undefined>;
-  releaseSubmission: (submission: SubmissionType) => Promise<AnonymousSubmissionType>;
-}
-
+/* for type checking functions that operate on table rows */
 interface ITableRow extends ISubDataBasic {
   key: number;
   student: string | number;
   releaseIcon?: React.ReactElement;
 }
 
-interface IGraderAssignmentPanelState {
-  buttonState: BUTTON_STATE;
+enum FILTER_TYPE {
+  NONE,
+  BY_SECTION,
+}
+
+interface IProps {
+  assignment: AssignmentType;
+  course: CourseType;
+  graderEmail: string;
+  isAnonymous: boolean;
+}
+
+interface IState {
+  /* data */
   currentSections: SectionType[];
-  ascending?: boolean;
+  sections: SectionType[];
+  submissions: AnonymousSubmissionType[];
+
+  /* UI control */
+  buttonState: BUTTON_STATE;
+  isLoadingSubmissions: boolean;
+  filterType: FILTER_TYPE;
+
+  /* Anonymous grading control */
+  canViewSubmissionInfo: boolean;
   showStudentEmails: boolean;
 }
 
-class MySubmissionsPanel extends React.Component<IGraderAssignmentPanelProps, IGraderAssignmentPanelState> {
-  public state: Readonly<IGraderAssignmentPanelState> = {
-    buttonState: BUTTON_STATE.Active,
-    currentSections: [],
-    ascending: undefined,
-    showStudentEmails: false,
+class MySubmissionsPanel extends React.Component<IProps, IState> {
+  public constructor(props: IProps) {
+    super(props);
+    this.state = {
+      currentSections: [],
+      sections: [],
+      submissions: [],
+
+      buttonState: BUTTON_STATE.Active,
+      isLoadingSubmissions: true,
+      filterType: FILTER_TYPE.NONE,
+
+      showStudentEmails: false,
+      canViewSubmissionInfo: false,
+    };
+  }
+
+  /***********************************************************************************
+  /* Lifecycle methods
+  /**********************************************************************************/
+
+  public componentDidMount() {
+    this.changeAssignment(this.props.assignment);
+  }
+
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.assignment !== this.props.assignment) {
+      this.changeAssignment(this.props.assignment);
+    }
+  }
+
+  public changeAssignment = (newAssignment: AssignmentType) => {
+    this.setState({ isLoadingSubmissions: true }, () => {
+      this.loadSubmissions(newAssignment, this.props.graderEmail).then((submissions) => {
+        this.setState({
+          submissions,
+          canViewSubmissionInfo: submissions.length > 0 ? typeof submissions[0].students !== 'undefined' : false,
+          isLoadingSubmissions: false,
+        });
+      });
+
+      this.loadSections(this.props.course).then((sections) => {
+        this.setState({ sections });
+      });
+    });
   };
 
-  public openGradePage = (submission: AnonymousSubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+  /***********************************************************************************
+  /* API operations methods
+  /**********************************************************************************/
+
+  public loadSections = (course: CourseType) => {
+    return loadIDList(course.sections, Section);
+  };
+
+  public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
+    return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
+      grader: user,
+    });
+  };
+
+  public fetchSubmission = async (
+    assignment: AssignmentType,
+    section?: SectionType,
+  ): Promise<SubmissionType | undefined> => {
+    const params = section ? `?section=${section.name}` : '';
+    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        return json;
+      });
+  };
+
+  public claimSubmission = async (
+    assignment: AssignmentType,
+    sections: SectionType[],
+  ): Promise<SubmissionType | undefined> => {
+    let submission;
+    const sectionParameters = this.getSectionParameters(sections);
+
+    // Note that calling fetchSubmission with section=undefined performs
+    // the fetchSubmission operation without a section filter
+    for (const section of sectionParameters) {
+      submission = await this.fetchSubmission(assignment, section);
+      if (submission) {
+        break;
+      }
+    }
+
+    if (submission) {
+      this.setState({
+        submissions: [...this.state.submissions, submission],
+      });
+    }
+
+    return submission;
+  };
+
+  public releaseSubmission = async (submission: SubmissionType): Promise<SubmissionType> => {
+    const payload = {
+      id: submission.id,
+      grader: '',
+      isFinalized: false,
+    };
+
+    const releasedSubmission = await Submission.update(payload);
+
+    this.setState({
+      submissions: this.state.submissions.filter((sub) => {
+        return sub.id !== releasedSubmission.id;
+      }),
+    });
+
+    return releasedSubmission;
   };
 
   public getAnotherSubmission = async () => {
     const { assignment } = this.props;
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-
-    const claimedSubmission = await this.props.claimSubmission(assignment, this.state.currentSections);
-
+    const claimedSubmission = await this.claimSubmission(assignment, this.state.currentSections);
     if (!claimedSubmission) {
       this.setState({ buttonState: BUTTON_STATE.Inactive });
     } else {
       this.setState({ buttonState: BUTTON_STATE.Active });
     }
   };
+
+  /***********************************************************************************
+  /* Utility functions
+  /**********************************************************************************/
+
+  public openGradePage = (submission: AnonymousSubmissionType) => {
+    window.open(`/grade/${submission.id}`);
+  };
+
+  public getSectionParameters = (sections: SectionType[]) => {
+    return sections.length === 0 ? [undefined] : sections;
+  };
+
   public handleSelect = (sectionID: string) => {
-    const match = this.props.sections.find((obj: SectionType) => {
+    const match = this.state.sections.find((obj: SectionType) => {
       return obj.id === Number(sectionID);
     });
     if (match) {
@@ -100,15 +236,33 @@ class MySubmissionsPanel extends React.Component<IGraderAssignmentPanelProps, IG
     this.setState({ currentSections: newSections, buttonState: BUTTON_STATE.Active });
   };
 
-  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: any) => {
-    let claimButton;
+  public setFilterType = (filterType: FILTER_TYPE) => {
+    this.setState({ filterType, currentSections: [] });
+  };
 
+  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: () => void) => {
+    /* build claim button based on state of submission queue */
+    let claimButton;
+    let refreshButton;
     switch (buttonState) {
+      case BUTTON_STATE.Active:
+        claimButton = (
+          <CPButton cpType="primary" key={2} icon="plus-circle" onClick={handleClick}>
+            Claim
+          </CPButton>
+        );
+        break;
       case BUTTON_STATE.Inactive:
         claimButton = (
           <CPButton cpType="disabled" key={2} icon="inbox">
             Queue empty
           </CPButton>
+        );
+        const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
+        refreshButton = (
+          <Button icon="cloud-sync" onClick={refreshFunction}>
+            Refresh
+          </Button>
         );
         break;
       case BUTTON_STATE.Loading:
@@ -118,23 +272,45 @@ class MySubmissionsPanel extends React.Component<IGraderAssignmentPanelProps, IG
           </CPButton>
         );
         break;
-      default:
-        claimButton = (
-          <CPButton cpType="primary" key={2} icon="plus-circle" onClick={handleClick}>
-            Claim
-          </CPButton>
+    }
+
+    /* build filter component */
+    let filterComponent;
+    switch (this.state.filterType) {
+      case FILTER_TYPE.NONE:
+        const filterMenu = (
+          <Menu>
+            <Menu.Item onClick={this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION)} key="by-section">
+              By section
+            </Menu.Item>
+          </Menu>
         );
+        filterComponent = (
+          <Dropdown overlay={filterMenu} trigger={['click']}>
+            <Button icon="filter">Filter</Button>
+          </Dropdown>
+        );
+        break;
+      case FILTER_TYPE.BY_SECTION:
+        filterComponent = (
+          <div style={{ display: 'inline-block' }}>
+            <SelectSection
+              sections={this.state.sections}
+              currentSections={this.state.currentSections}
+              onSelect={this.handleSelect}
+              onDeselect={this.handleDeselect}
+              disabled={this.state.isLoadingSubmissions}
+            />
+            &nbsp;
+            <Icon type="close-circle" onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
+          </div>
+        );
+        break;
     }
 
     return (
-      <div className="grader__get-another" style={{ display: 'inline-block' }}>
-        {claimButton}
-        <SelectSection
-          sections={this.props.sections}
-          currentSections={this.state.currentSections}
-          onSelect={this.handleSelect}
-          onDeselect={this.handleDeselect}
-        />
+      <div>
+        {claimButton} &nbsp; {refreshButton} &nbsp; {filterComponent}
       </div>
     );
   };
@@ -145,104 +321,131 @@ class MySubmissionsPanel extends React.Component<IGraderAssignmentPanelProps, IG
     });
   };
 
-  public releaseSubmission = (sub: SubmissionType) => {
-    this.props.releaseSubmission(sub).then(() => {
+  public onSubmissionRelease = (sub: SubmissionType) => {
+    this.releaseSubmission(sub).then(() => {
       this.setState({ buttonState: BUTTON_STATE.Active });
     });
   };
 
-  public render() {
-    const { isLoadingSubmissions } = this.props;
+  /***********************************************************************************
+  /* Utility functions
+  /**********************************************************************************/
 
+  public render() {
+    let content;
+    let actions: any[];
     const getAnotherSubmissionButton = this.getAnotherSubmissionButton(
       this.state.buttonState,
       this.getAnotherSubmission,
     );
+    if (this.state.submissions.length > 0 || this.state.isLoadingSubmissions) {
+      // If we're in anonymous grading mode, add a toggle to reveal student emails
+      let anonymousToggle;
+      if (this.props.isAnonymous && this.state.canViewSubmissionInfo) {
+        anonymousToggle = (
+          <div>
+            <div style={{ display: 'inline-block' }}>
+              Reveal students: &nbsp;
+              <Switch
+                defaultChecked={this.state.showStudentEmails}
+                onChange={this.toggleShowStudentEmails}
+                key="toggleShowStudents"
+                style={{ display: 'inline-block' }}
+              />
+            </div>
+            <Divider type="vertical" style={{ height: 25 }} />
+          </div>
+        );
+      }
 
-    // If we're in anonymous grading mode, add a toggle to reveal student emails
-    let anonymousToggle;
-    if (this.props.isAnonymous && this.props.canViewSubmissionInfo) {
-      anonymousToggle = (
-        <div style={{ display: 'inline-block', padding: '0px 20px' }}>
-          Reveal students:
-          <Switch
-            defaultChecked={this.state.showStudentEmails}
-            onChange={this.toggleShowStudentEmails}
-            key="toggleShowStudents"
-            style={{ display: 'inline-block' }}
-          />
-        </div>
+      const centerAlign: alignType = 'center';
+      const columns = [
+        {
+          title: 'Open',
+          dataIndex: 'open',
+          align: centerAlign,
+        },
+        {
+          title: 'Student',
+          dataIndex: 'student',
+          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+        },
+        {
+          title: 'Grade',
+          dataIndex: 'grade',
+          sorter: (a: ITableRow, b: ITableRow) => {
+            return a.gradeToSort - b.gradeToSort;
+          },
+          align: centerAlign,
+        },
+        {
+          title: 'Status',
+          dataIndex: 'status',
+          align: centerAlign,
+        },
+        {
+          title: 'Last Edited',
+          dataIndex: 'lastEdited',
+          align: centerAlign,
+        },
+        {
+          title: 'Release',
+          dataIndex: 'release',
+          align: centerAlign,
+        },
+      ];
+
+      const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
+
+      const data = this.state.submissions.map((sub) => {
+        const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
+        return {
+          ...formatSub(sub, this.props.assignment),
+          open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+          key: sub.id,
+          student: students,
+          release: (
+            <div>
+              <Popconfirm
+                title="Are you sure you want to release this submission?"
+                onConfirm={this.releaseSubmission.bind(this, sub)}
+                okText="Release"
+                cancelText="Cancel"
+                placement="left"
+              >
+                <Icon type="minus-circle" theme="twoTone" twoToneColor="#eb2f96" />
+              </Popconfirm>
+            </div>
+          ),
+        };
+      });
+
+      actions = [anonymousToggle, getAnotherSubmissionButton];
+      content = (
+        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoadingSubmissions} />
+      );
+    } else {
+      actions = [];
+      content = (
+        <Empty
+          imageStyle={{
+            height: 60,
+          }}
+          description="No submissions yet. Click claim to start grading!"
+        >
+          {getAnotherSubmissionButton}
+        </Empty>
       );
     }
 
-    const centerAlign: alignType = 'center';
-    const columns = [
-      {
-        title: 'Student',
-        dataIndex: 'student',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
-        onCell: openSubmissionRow,
-      },
-      {
-        title: 'Grade',
-        dataIndex: 'grade',
-        sorter: (a: ITableRow, b: ITableRow) => {
-          return compare(true, a.grade, b.grade);
-        },
-        align: centerAlign,
-        onCell: openSubmissionRow,
-      },
-      {
-        title: 'Finalized',
-        dataIndex: 'finalizeIcon',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.isFinalized, b.isFinalized),
-        align: centerAlign,
-        onCell: openSubmissionRow,
-      },
-      {
-        title: 'Last Edited',
-        dataIndex: 'dateEditedString',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.dateEdited, b.dateEdited),
-        align: centerAlign,
-        onCell: openSubmissionRow,
-      },
-      {
-        title: 'Released',
-        dataIndex: 'releaseIcon',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.releaseIcon, b.releaseIcon),
-        align: centerAlign,
-      },
-    ];
-
-    const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
-
-    const data = this.props.submissions.map((sub) => {
-      const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
-      return {
-        ...formatSub(sub),
-        key: sub.id,
-        student: students,
-        releaseIcon: (
-          <div>
-            <Popconfirm
-              title="Are you sure you want to release this submission??"
-              onConfirm={this.releaseSubmission.bind(this, sub)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Icon type="minus-circle" theme="twoTone" twoToneColor="#eb2f96" />
-            </Popconfirm>
-          </div>
-        ),
-      };
-    });
-
     return (
-      <div>
-        {getAnotherSubmissionButton}
-        {anonymousToggle}
-        <Table columns={columns} dataSource={data} pagination={false} loading={isLoadingSubmissions} />
-      </div>
+      <CPAdminDetail
+        goBack={null}
+        title={`My submissions: ${this.props.assignment.name}`}
+        actions={actions}
+        content={content}
+        gutterSize={0}
+      />
     );
   }
 }
@@ -252,6 +455,7 @@ interface ISelectSectionProps {
   currentSections: SectionType[];
   onSelect: any;
   onDeselect: any;
+  disabled: boolean;
 }
 
 export const SelectSection = (props: ISelectSectionProps) => {
@@ -266,11 +470,12 @@ export const SelectSection = (props: ISelectSectionProps) => {
   } else {
     return (
       <Select
-        placeholder="(Optional) Filter by section..."
+        placeholder="Filter by section"
         mode="multiple"
         onSelect={onSelect}
         onDeselect={onDeselect}
-        style={{ width: 500, marginBottom: 20, marginLeft: 10 }}
+        style={{ width: 250 }}
+        disabled={props.disabled}
       >
         {selectorItemsFormatter(sections)}
       </Select>

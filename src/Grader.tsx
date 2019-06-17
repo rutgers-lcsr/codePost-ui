@@ -5,17 +5,20 @@
 /* react imports */
 import * as React from 'react';
 
+/* antd imports */
+import { Button, Icon, Menu } from 'antd';
+import { ClickParam } from 'antd/lib/menu';
+
 /* other library imports */
-import { Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
 
-import StandardManagementHeader from './components/core/layouts/StandardManagementHeader';
+import CPDropdown from './components/core/CPDropdown';
 
-import SelectorSider from './components/core/SelectorSider';
+import CPFlex from './components/core/CPFlex';
 
-import { Tabs } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import _ from 'lodash';
 
 /* codePost imports */
 import MySubmissionsPanel from './components/grader/MySubmissionsPanel';
@@ -24,368 +27,280 @@ import ViewAllPanel from './components/grader/ViewAllPanel';
 
 import { ICourseToAssignmentMap } from './types/common';
 
-import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
+import { Assignment, AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
 import { loadIDList } from './infrastructure/generics';
-import { Section, SectionType } from './infrastructure/section';
-import { AnonymousSubmissionType, Submission, SubmissionType } from './infrastructure/submission';
+import { SectionType } from './infrastructure/section';
+import { UserType } from './infrastructure/user';
 
-const { TabPane } = Tabs;
+import GraderNav from './components/grader/GraderNav';
 
 /**********************************************************************************************************************/
 
+export enum PANELS {
+  MY_SUBMISSIONS,
+  MY_SECTIONS,
+  VIEW_ALL,
+}
+
+const panelStrings = ['my_submissions', 'my_sections', 'view_all'];
+
+const panels = {
+  [PANELS.MY_SUBMISSIONS]: panelStrings[PANELS.MY_SUBMISSIONS],
+  [PANELS.MY_SECTIONS]: panelStrings[PANELS.MY_SECTIONS],
+  [PANELS.VIEW_ALL]: panelStrings[PANELS.VIEW_ALL],
+};
+
 interface IGraderState {
-  courses: CourseType[];
+  /* UI control */
+  currentPanel: PANELS;
+
+  /* course data */
   assignments: ICourseToAssignmentMap;
   currentAssignment?: AssignmentType;
   currentCourse?: CourseType;
-  currentSections: SectionType[];
-  currentSubmissions: AnonymousSubmissionType[];
-
-  isLoggedIn: boolean;
-  redirect: boolean;
 
   // Loading variables
   isLoadingAssignments: boolean;
-  isLoadingSubmissions: boolean;
 
-  // URL variables
-  toLoadCourse: boolean;
-  toLoadAssignment: boolean;
+  /* tab data */
+  isSuperGrader: boolean;
+  sectionsLed: SectionType[];
 }
 
 export interface IGraderProps {
-  initialCourses: CourseType[];
-  email: string;
+  courses: CourseType[];
   match: any;
   history: any;
   superGraderCourses: CourseType[];
   sectionsLed: SectionType[];
-
-  // handleLogout
+  user: UserType;
   handleLogout: () => void;
 }
 
 class Grader extends React.Component<IGraderProps, IGraderState> {
-  public state: Readonly<IGraderState> = {
-    assignments: {},
-    courses: this.props.initialCourses,
-    currentAssignment: undefined,
-    currentCourse: undefined,
-    currentSections: [],
-    currentSubmissions: [],
-    isLoggedIn: localStorage.getItem('token') ? true : false,
-    redirect: false,
-    isLoadingAssignments: true,
-    isLoadingSubmissions: false,
-    toLoadCourse: false,
-    toLoadAssignment: false,
-  };
+  public constructor(props: IGraderProps) {
+    super(props);
+    document.title = 'codePost - Grader Console';
+
+    this.state = {
+      currentPanel: PANELS.MY_SUBMISSIONS,
+      assignments: {},
+      currentAssignment: undefined,
+      currentCourse: undefined,
+      isLoadingAssignments: true,
+      isSuperGrader: false,
+      sectionsLed: [],
+    };
+  }
+
+  /***********************************************************************************
+  /* Lifecycle methods
+  /**********************************************************************************/
 
   public async componentDidMount() {
-    document.title = 'codePost - Grader';
-    const assignments = await this.loadAssignments(this.state.courses);
-    this.setState({ assignments });
-
-    await this.setStateFromURL();
-  }
-
-  public componentDidUpdate(prevProps: IGraderProps, prevState: IGraderState) {
-    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
-      this.setState({ toLoadCourse: false, toLoadAssignment: false });
-    }
-  }
-
-  ///////////////////////////////////////
-  // URL handler methods
-  ///////////////////////////////////////
-
-  public setStateFromURL = async () => {
-    const { courseName, period, assignmentName } = this.props.match.params;
-
-    let currentCourse: CourseType | undefined;
-    let currentAssignment: AssignmentType | undefined;
-
-    if (courseName && period) {
-      currentCourse = this.state.courses.find((course: CourseType) => {
-        return course.name === courseName.replace(/_/g, ' ') && course.period === period.replace(/_/g, ' ');
+    this.loadAssignments(this.props.courses).then((assignments) => {
+      this.setState({ assignments, isLoadingAssignments: false }, () => {
+        const { course, assignment, panel } = this.setStateFromURL(this.props.courses, assignments);
+        if (course) {
+          this.setTabs(course);
+          this.changeURL(course, assignment, panel);
+          this.setState({ currentCourse: course, currentAssignment: assignment, currentPanel: panel });
+        }
       });
+    });
+  }
+
+  /***********************************************************************************
+  /* URL + UI handling methods
+  /**********************************************************************************/
+
+  public setTabs = (currentCourse: CourseType) => {
+    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, currentCourse);
+    const sectionsLed = this.sectionsLedInThisCourse(this.props.sectionsLed, currentCourse);
+    this.setState({ isSuperGrader, sectionsLed });
+  };
+
+  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse: CourseType): boolean => {
+    return superGraderCourses.some((course: CourseType) => {
+      return course.id === currentCourse.id;
+    });
+  };
+
+  public sectionsLedInThisCourse = (sectionsLed: SectionType[], currentCourse: CourseType) => {
+    const sections = sectionsLed.slice();
+    return sections.filter((section) => {
+      return currentCourse.sections.indexOf(section.id) !== -1;
+    });
+  };
+
+  public changeURL = (course: CourseType, assignment?: AssignmentType, panel?: number) => {
+    const courseName = course.name.replace(/ /g, '_');
+    const coursePeriod = course.period.replace(/ /g, '_');
+
+    if (assignment === undefined || panel === undefined) {
+      this.props.history.push(`/grader/${courseName}/${coursePeriod}`);
+    } else {
+      const assignmentName = assignment.name.replace(/ /g, '_');
+      this.props.history.push(`/grader/${courseName}/${coursePeriod}/${assignmentName}/${panels[panel]}`);
+    }
+  };
+
+  public panelFromString(name: string) {
+    const toRet = panelStrings.indexOf(name);
+    return toRet >= 0 ? toRet : 0;
+  }
+
+  public changePanel = (panelNum: number) => {
+    this.setState({ currentPanel: panelNum });
+    if (this.state.currentCourse) {
+      this.changeURL(this.state.currentCourse, this.state.currentAssignment, panelNum);
+    }
+  };
+
+  public handleTabClick = (e: ClickParam) => {
+    this.changePanel(parseInt(e.key, 10));
+  };
+
+  public setStateFromURL = (courses: CourseType[], assignments: ICourseToAssignmentMap) => {
+    const { courseName, period, assignmentName, panelName1 } = this.props.match.params;
+    if (courses.length === 0) {
+      return { course: undefined, panel: 0 };
+    } else {
+      // is the URL trying to set the course?
+      const tryingToSetCourse = courseName && period;
+      let currentCourse: CourseType | undefined;
+      let currentAssignment: AssignmentType | undefined;
+      let currentPanel = PANELS.MY_SUBMISSIONS;
+      if (tryingToSetCourse) {
+        const formattedCourseName = courseName.replace(/_/g, ' ');
+        const formattedPeriod = period.replace(/_/g, ' ');
+        currentCourse = courses.find((obj: CourseType) => {
+          return obj.name === formattedCourseName && obj.period === formattedPeriod;
+        });
+      }
 
       if (currentCourse) {
-        const currentSections = await loadIDList(currentCourse.sections, Section);
-        this.setState({ currentSections });
-      }
-
-      if (currentCourse && assignmentName) {
-        currentAssignment = this.state.assignments[currentCourse.id].find((assignment: AssignmentType) => {
-          return assignment.name === assignmentName.replace(/_/g, ' ');
-        });
-
-        if (currentAssignment) {
-          this.setState({ isLoadingSubmissions: true });
-          const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
-            grader: this.props.email,
+        // is the URL trying to set the assignment?
+        if (assignmentName) {
+          const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
+          const assignmentList = assignments[currentCourse.id];
+          currentAssignment = assignmentList.find((assignment) => {
+            return assignment.name === formattedAssignmentName;
           });
 
-          this.setState({
-            currentCourse,
-            currentAssignment,
-            currentSubmissions,
-            isLoadingSubmissions: false,
-          });
+          if (currentAssignment) {
+            // is the URL trying to set the panel?
+            currentPanel = this.panelFromString(panelName1);
+          }
         }
-      } else {
-        this.setState({ currentCourse });
       }
+
+      // By default open first course in course list
+      if (!currentCourse && courses.length > 0) {
+        currentCourse = courses[0];
+      }
+
+      console.log(currentCourse);
+      return { course: currentCourse, assignment: currentAssignment, panel: currentPanel };
     }
   };
 
-  ///////////////////////////////////////
-  // Loading methods
-  ///////////////////////////////////////
+  /***********************************************************************************
+  /* Data loading methods
+  /**********************************************************************************/
 
   public loadAssignments = async (courses: CourseType[]) => {
-    const assignments = {};
-
-    await Promise.all(
-      courses.map(async (course: CourseType) => {
-        assignments[course.id] = sortAssignments(await loadIDList(course.assignments, Assignment));
-        return;
+    return Promise.all(
+      courses.map((course: CourseType) => {
+        return loadIDList(course.assignments, Assignment);
       }),
-    );
-
-    return assignments;
+    ).then((assignments) => {
+      const toRet = {};
+      courses.forEach((course, i) => {
+        toRet[course.id] = assignments[i];
+      });
+      return toRet;
+    });
   };
 
-  ///////////////////////////////////////
-  // Handlers
-  ///////////////////////////////////////
+  /***********************************************************************************
+  /* Utility functions
+  /**********************************************************************************/
 
-  public handleAssignmentChange = async (newAssignment: ClickParam) => {
+  public handleAssignmentChange = (newAssignment: ClickParam) => {
     const { assignments, currentCourse } = this.state;
 
     if (!currentCourse) {
       return;
     }
 
-    const currentAssignment = assignments[currentCourse.id].filter((obj: AssignmentType) => {
+    const currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
       return obj.id === Number(newAssignment.key);
-    })[0];
+    });
 
-    if (currentAssignment) {
-      this.setState({ isLoadingSubmissions: true, currentSubmissions: [] });
-      const currentSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
-        grader: this.props.email,
-      });
-
-      this.setState({
-        currentAssignment,
-        currentSubmissions,
-        isLoadingSubmissions: false,
-        toLoadAssignment: true,
-      });
-    }
+    this.setState({ currentAssignment }, () => {
+      this.changeURL(currentCourse, currentAssignment, this.state.currentPanel);
+    });
   };
 
   public handleCourseChange = async (e: ClickParam) => {
     const courseID = +e.key;
-    const currentCourses = this.state.courses.filter((course: CourseType) => {
+    const thisCourse = this.props.courses.find((course: CourseType) => {
       return course.id === courseID;
     });
 
-    if (currentCourses.length > 0) {
-      const currentCourse = currentCourses[0];
-
-      const currentSections = await loadIDList(currentCourse.sections, Section);
+    if (thisCourse !== undefined) {
       this.setState({
-        currentSections,
         currentAssignment: undefined,
-        currentCourse,
-        currentSubmissions: [],
-        toLoadCourse: true,
+        currentCourse: thisCourse,
+        isSuperGrader: this.isSuperGrader(this.props.superGraderCourses, thisCourse),
+        sectionsLed: this.sectionsLedInThisCourse(this.props.sectionsLed, thisCourse),
       });
     }
   };
 
-  public selectorItemsFormatter = (courses: CourseType[]) => {
-    return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
+  public selectorItemsFormatter = (assignments: AssignmentType[]) => {
+    return assignments.map((assignment, i) => ({ value: assignment.id, label: assignment.name }));
   };
 
-  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
-    if (!currentCourse) {
+  public selectorCurrentFormatter = (assignment: AssignmentType | undefined) => {
+    if (assignment === undefined) {
       return undefined;
     }
-    return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
-  };
-
-  public tabItemsFormatter = (currentCourse: CourseType | undefined) => {
-    const { assignments } = this.state;
-    if (!currentCourse || !currentCourse.assignments || !assignments[currentCourse.id]) {
-      return [];
-    }
-
-    return assignments[currentCourse.id].map((assignment, i) => ({
-      label: assignment.name,
-      value: assignment.id,
-    }));
-  };
-
-  public getSectionParameters = (sections: SectionType[]) => {
-    return sections.length === 0 ? [undefined] : sections;
-  };
-
-  public claimSubmission = async (
-    assignment: AssignmentType,
-    sections: SectionType[],
-  ): Promise<SubmissionType | undefined> => {
-    let submission;
-    const sectionParameters = this.getSectionParameters(sections);
-
-    // Note that calling fetchSubmission with section=undefined performs
-    // the fetchSubmission operation without a section filter
-    for (const section of sectionParameters) {
-      submission = await this.fetchSubmission(assignment, section);
-      if (submission) {
-        break;
-      }
-    }
-
-    if (submission) {
-      this.setState({
-        currentSubmissions: [...this.state.currentSubmissions, submission],
-      });
-    }
-
-    return submission;
-  };
-
-  public fetchSubmission = async (
-    assignment: AssignmentType,
-    section?: SectionType,
-  ): Promise<SubmissionType | undefined> => {
-    const params = section ? `?section=${section.name}` : '';
-    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        if (res.status === 204) {
-          return undefined;
-        }
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
-
-  public releaseSubmission = async (submission: SubmissionType): Promise<SubmissionType> => {
-    const payload = {
-      id: submission.id,
-      grader: '',
-      isFinalized: false,
-    };
-
-    const releasedSubmission = await Submission.update(payload);
-
-    this.setState({
-      currentSubmissions: this.state.currentSubmissions.filter((sub) => {
-        return sub.id !== releasedSubmission.id;
-      }),
-    });
-
-    return releasedSubmission;
-  };
-
-  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse: CourseType): boolean => {
-    return superGraderCourses.find((course: CourseType) => {
-      return course.id === currentCourse.id;
-    })
-      ? true
-      : false;
-  };
-
-  public isCourseAdmin = (courseAdminCourses: CourseType[], currentCourse: CourseType): boolean => {
-    return courseAdminCourses.find((course: CourseType) => {
-      return course.id === currentCourse.id;
-    })
-      ? true
-      : false;
+    return { value: assignment.id, label: assignment.name };
   };
 
   public getViewAllComponent = () => {
-    if (!this.state.currentCourse || !this.state.currentAssignment) {
+    if (!this.state.currentCourse || !this.state.currentAssignment || !this.state.isSuperGrader) {
       return null;
     }
 
-    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, this.state.currentCourse);
-
-    if (!isSuperGrader) {
-      return null;
-    }
-
-    const viewAllPanel = (
-      <TabPane key="2" tab="View All">
-        <ViewAllPanel currentCourse={this.state.currentCourse} currentAssignment={this.state.currentAssignment} />
-      </TabPane>
-    );
-
-    return viewAllPanel;
+    return <ViewAllPanel currentCourse={this.state.currentCourse} currentAssignment={this.state.currentAssignment} />;
   };
 
   public getSectionsComponent = () => {
-    if (!this.state.currentCourse || !this.state.currentAssignment) {
+    if (!this.state.currentCourse || !this.state.currentAssignment || this.state.sectionsLed.length === 0) {
       return null;
     }
 
-    const sections = this.props.sectionsLed.slice();
-    const sectionsInThisCourse = sections.filter((section) => {
-      return this.state.currentCourse!.sections.indexOf(section.id) !== -1;
-    });
-    const hasSections = sectionsInThisCourse.length > 0;
-
-    if (!hasSections) {
-      return null;
-    }
-
-    const sectionsPanel = (
-      <TabPane key="3" tab="Sections">
-        <SectionPanel
-          sectionsLed={sectionsInThisCourse}
-          currentCourse={this.state.currentCourse}
-          currentAssignment={this.state.currentAssignment}
-        />
-      </TabPane>
+    return (
+      <SectionPanel
+        sectionsLed={this.state.sectionsLed}
+        currentCourse={this.state.currentCourse}
+        currentAssignment={this.state.currentAssignment}
+      />
     );
-
-    return sectionsPanel;
   };
 
-  ///////////////////////////////////////
-  // Main
-  ///////////////////////////////////////
+  /***********************************************************************************
+  /* Render
+  /**********************************************************************************/
 
   public render() {
-    const { currentAssignment, currentCourse, currentSections, currentSubmissions, isLoadingSubmissions } = this.state;
-
-    if (this.state.toLoadCourse || this.state.toLoadAssignment) {
-      if (currentCourse) {
-        const formattedCourseName = currentCourse.name.replace(/ /g, '_');
-        const formattedPeriod = currentCourse.period.replace(/ /g, '_');
-        if (this.state.toLoadAssignment && currentAssignment) {
-          const formattedAssignmentName = currentAssignment.name.replace(/ /g, '_');
-          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/${formattedAssignmentName}`} />;
-        } else {
-          return <Redirect to={`/grader/${formattedCourseName}/${formattedPeriod}/`} />;
-        }
-      } else {
-        return <Redirect to={'/grader'} />;
-      }
-    }
+    const { currentAssignment, currentCourse } = this.state;
 
     let graderPanelContent;
-
     // if not loaded yet, render a get started div
     if (!currentCourse) {
       graderPanelContent = (
@@ -400,50 +315,87 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         </div>
       );
     } else {
-      const viewAllPanel = this.getViewAllComponent();
-      const sectionPanel = this.getSectionsComponent();
-
-      graderPanelContent = (
-        <div
-          style={{ margin: '20px 61px 0 61px', backgroundColor: '#fff', borderRadius: ' 5px', padding: '20px 35px' }}
-        >
-          <Tabs defaultActiveKey="1" animated={false}>
-            <TabPane key="1" tab="My Submissions" style={{ overflow: 'scroll' }}>
-              <MySubmissionsPanel
-                claimSubmission={this.claimSubmission}
-                releaseSubmission={this.releaseSubmission}
-                assignment={currentAssignment}
-                submissions={currentSubmissions}
-                isAnonymous={this.state.currentAssignment ? this.state.currentAssignment.anonymousGrading : false}
-                isLoadingSubmissions={isLoadingSubmissions}
-                sections={currentSections}
-                canViewSubmissionInfo={
-                  currentSubmissions.length > 0 ? typeof currentSubmissions[0].students !== 'undefined' : false
-                }
-              />
-            </TabPane>
-            {viewAllPanel}
-            {sectionPanel}
-          </Tabs>
-        </div>
-      );
+      switch (this.state.currentPanel) {
+        case PANELS.MY_SUBMISSIONS:
+          graderPanelContent = (
+            <MySubmissionsPanel
+              assignment={currentAssignment}
+              course={currentCourse}
+              isAnonymous={currentAssignment.anonymousGrading}
+              graderEmail={this.props.user.email}
+            />
+          );
+          break;
+        case PANELS.MY_SECTIONS:
+          graderPanelContent = this.getSectionsComponent();
+          break;
+        case PANELS.VIEW_ALL:
+          graderPanelContent = this.getViewAllComponent();
+          break;
+      }
     }
 
-    const sider = () => (
-      <SelectorSider
-        activeSelector={this.selectorCurrentFormatter(currentCourse)}
-        selectorItems={this.selectorItemsFormatter(this.props.initialCourses)}
-        onSelectorClick={this.handleCourseChange}
-        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
-        menuItems={this.tabItemsFormatter(currentCourse)}
-        onMenuClick={this.handleAssignmentChange}
-        theme="dark"
+    /* Build header */
+    let courseSelectorText = 'Select a course';
+    if (this.state.currentCourse) {
+      courseSelectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
+    }
+    const courseMenu = (
+      <Menu onClick={this.handleCourseChange}>
+        {this.props.courses.map((course, i) => {
+          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
+        })}
+      </Menu>
+    );
+    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} />;
+
+    let assignmentSelectorText = 'Select an assignment';
+    if (this.state.currentAssignment) {
+      assignmentSelectorText = this.state.currentAssignment.name;
+    }
+    const assignmentMenu =
+      this.state.currentCourse && this.state.assignments[this.state.currentCourse.id] ? (
+        <Menu onClick={this.handleAssignmentChange}>
+          {this.state.assignments[this.state.currentCourse.id].map((assignment, i) => {
+            return <Menu.Item key={assignment.id}>{assignment.name}</Menu.Item>;
+          })}
+        </Menu>
+      ) : (
+        <Menu />
+      );
+    const assignmentDropdown = (
+      <CPDropdown
+        value={assignmentSelectorText}
+        overlay={assignmentMenu}
+        disabled={this.state.currentCourse === undefined}
       />
     );
 
-    const header = <StandardManagementHeader email={this.props.email} handleLogout={this.props.handleLogout} />;
+    const headerLeft = [courseDropdown, assignmentDropdown];
+    const headerRight = [
+      <span key="header-user" className="cp-label cp-label--bold">
+        {this.props.user.email}
+      </span>,
+      <Link className="internal-link" key="settings" to="/settings">
+        <Icon type="setting" />
+      </Link>,
+      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
+        Logout
+      </Button>,
+    ];
 
-    return <CPLayoutAdmin header={header} detail={graderPanelContent} navigation={sider} />;
+    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
+    const navigation = (collapsed: boolean) => (
+      <GraderNav
+        selectedPanel={this.state.currentPanel}
+        collapsed={collapsed}
+        onClick={this.handleTabClick}
+        isSuperGrader={this.state.isSuperGrader}
+        isSectionLeader={this.state.sectionsLed.length > 0}
+      />
+    );
+
+    return <CPLayoutAdmin header={header} detail={graderPanelContent} navigation={navigation} collapsible={true} />;
   }
 }
 

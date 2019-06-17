@@ -1,29 +1,34 @@
-import { Icon, Tooltip, Typography } from 'antd';
-import * as moment from 'moment';
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
-import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
-import { openSubmission } from '../admin/other/AdminUtils';
-
+/* antd imports */
+import { Icon, Tooltip, Typography } from 'antd';
 const { Text } = Typography;
 
-interface ISubDataBasic {
-  grade: number | null;
-  grader: string | null;
-  isFinalized: boolean | null;
-  finalizeIcon: React.ReactElement;
-  dateEdited: string | null;
-  dateEditedString: string;
-  gradeString: React.ReactElement;
-  submissionID: number | null;
-}
+/* other library imports */
+import * as moment from 'moment';
+
+/* codePost imports */
+import { AssignmentType } from '../../infrastructure/assignment';
+import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+
+/**********************************************************************************************************************/
 
 // Get the viewIcon for a submission
 const getViewIcon = (
-  submission: SubmissionType,
+  submission: SubmissionType | null,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   studentToLookup?: string,
 ) => {
+  // case: submission is null
+  if (submission === null) {
+    return '--';
+  }
+
   // case: submission not finalized, or before views were tracked
   if (!(submission.id in viewsBySubmission) || !submission.isFinalized) {
     return '--';
@@ -88,41 +93,49 @@ const getViewIcon = (
   }
 };
 
-// Get the basic data of a submission
-const formatSub = (sub: SubmissionType | AnonymousSubmissionType | undefined): ISubDataBasic => {
-  const finalizeIcon = sub && sub.isFinalized ? <Icon type="check-circle" /> : <div />;
+interface ISubDataBasic {
+  grade: number | string | React.ReactElement;
+  grader: string;
+  status: string | React.ReactElement;
+  lastEdited: string | React.ReactElement;
+  gradeToSort: number;
+}
 
-  const gradeText = sub ? (
-    sub.isFinalized ? (
-      <Text strong>{String(sub.grade)}</Text>
-    ) : (
-      <Text type="warning">Unfinalized</Text>
-    )
-  ) : (
-    <Text>--</Text>
-  );
+// Return submission data in form suitable for presenting in an antd table
+const formatSub = (
+  sub?: SubmissionType | AnonymousSubmissionType | null,
+  assignment?: AssignmentType,
+): ISubDataBasic => {
+  if (sub === undefined || sub === null) {
+    return {
+      grade: '--',
+      gradeToSort: -1,
+      grader: '--',
+      status: '--',
+      lastEdited: '--',
+    };
+  } else {
+    const finalizeIcon = sub.isFinalized ? <Icon type="check-circle" /> : <div />;
 
-  return {
-    gradeString: gradeText,
-    grader: sub ? sub.grader : '--',
-    finalizeIcon: <div>{finalizeIcon}</div>,
-    dateEditedString: sub ? moment(sub.dateEdited).format('llll') : '--',
-    dateEdited: sub ? sub.dateEdited : null,
-    grade: sub ? sub.grade : null,
-    isFinalized: sub ? sub.isFinalized : null,
-    submissionID: sub ? sub.id : null,
-  };
-};
-
-// Get the openSubmission function of a submission
-const openSubmissionRow = (record: ISubDataBasic) => {
-  return {
-    onClick: (e: Event) => {
-      if (record.submissionID) {
-        openSubmission(record.submissionID);
+    let gradeText;
+    if (sub.isFinalized) {
+      if (assignment !== undefined) {
+        gradeText = <Text>{`${sub.grade}/${assignment.points}`}</Text>;
+      } else {
+        gradeText = <Text>{`${sub.grade}`}</Text>;
       }
-    },
-  };
+    } else {
+      gradeText = <Text type="warning">Unfinalized</Text>;
+    }
+
+    return {
+      grade: gradeText,
+      gradeToSort: sub.grade ? sub.grade : -1,
+      grader: sub.grader ? sub.grader : '--',
+      status: <div>{finalizeIcon}</div>,
+      lastEdited: moment(sub.dateEdited).format('llll'),
+    };
+  }
 };
 
-export { getViewIcon, formatSub, ISubDataBasic, openSubmissionRow };
+export { getViewIcon, formatSub, ISubDataBasic };

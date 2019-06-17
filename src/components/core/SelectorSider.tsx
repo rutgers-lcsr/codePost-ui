@@ -46,7 +46,6 @@ const SelectorSider = (props: IProps) => {
     <div>
       <div style={{ padding: '18px 20px 22px 16px' }}>
         {title}
-        <div style={{ height: '13px' }} />
         <CPDropdown
           key="selector"
           value={props.activeSelector ? props.activeSelector.label : 'Select...'}

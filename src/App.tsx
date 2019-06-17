@@ -253,14 +253,14 @@ class App extends React.Component<{}, IState> {
         graderRoute = (
           <Route
             exact={true}
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
             render={(props: any) => (
               <AsyncGrader
                 {...props}
-                email={email}
+                user={this.state.user}
                 handleLogout={this.handleLogout}
                 superGraderCourses={superGraderCourses}
-                initialCourses={graderCourses}
+                courses={graderCourses}
                 sectionsLed={sectionsLed}
               />
             )}
