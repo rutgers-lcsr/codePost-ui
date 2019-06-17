@@ -20,8 +20,6 @@ import unregister from './registerServiceWorker';
 
 import ErrorBoundary from './ErrorBoundary';
 
-console.log('starting');
-
 ReactDOM.render(
   <ErrorBoundary>
     <BrowserRouter>
