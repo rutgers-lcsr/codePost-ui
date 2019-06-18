@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-/* react-md imports */
+/* antd imports */
 import { Button, Collapse, Icon, Modal, Spin, Steps, Typography, Upload } from 'antd';
 const { Step } = Steps;
 

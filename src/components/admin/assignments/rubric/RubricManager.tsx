@@ -5,7 +5,7 @@
 /* React imports */
 import * as React from 'react';
 
-/* react-md */
+/* antd imports */
 import { Breadcrumb, Empty, message, Spin } from 'antd';
 
 /* other library imports */
