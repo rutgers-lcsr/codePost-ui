@@ -1,6 +1,8 @@
 import * as t from 'io-ts';
 import { reporter } from 'io-ts-reporters';
 
+import { message } from 'antd';
+
 // Apply a validator and get the result in a Promise
 // Source: https://www.olioapps.com/blog/checking-types-real-world-typescript/
 function decodeToPromise<T, O, I>(validator: t.Type<T, O, I>, input: I): Promise<T> {
@@ -40,9 +42,11 @@ function createObject<T, Q, O, I>(
     if ((await res.status) === 201) {
       const data = await res.json();
       return await decodeToPromise(output, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-
-    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -61,9 +65,11 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number)
     if ((await res.status) === 200) {
       const data = await res.json();
       return await decodeToPromise(arg, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-
-    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -87,8 +93,11 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
     if ((await res.status) === 200) {
       const data = await res.json();
       return await decodeToPromise(output, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -107,9 +116,11 @@ function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number)
 
     if ((await res.status) === 204) {
       return Promise.resolve(); // no body on delete
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-
-    return Promise.reject(new Error(await res.json()));
   };
 
   return foo;
@@ -143,9 +154,11 @@ function readObjectDetail<T, O, I>(
     if ((await res.status) === 200) {
       const data = await res.json();
       return await decodeToPromise(arg, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-
-    return Promise.reject(await res.json());
   };
 
   return foo;
@@ -181,9 +194,11 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
     if ((await res.status) === 200) {
       const data = await res.json();
       return await decodeToPromise(output, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
     }
-
-    return Promise.reject(await res.json());
   };
 
   return foo;
