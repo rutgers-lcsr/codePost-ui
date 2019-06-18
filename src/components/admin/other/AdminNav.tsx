@@ -117,15 +117,19 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
             <Menu.Item key="docs">
               <Icon type="pushpin" />
-              <a href="https://help.codepost.io" target="_blank" style={{ display: 'inline' }}>
-                Docs
-              </a>
+              <span>
+                <a href="https://help.codepost.io" target="_blank" className="internal-link">
+                  Docs
+                </a>
+              </span>
             </Menu.Item>
             <Menu.Item key="api-reference">
               <Icon type="api" />
-              <a href="https://help.codepost.io/reference/" target="_blank" style={{ display: 'inline' }}>
-                API Reference
-              </a>
+              <span>
+                <a href="https://help.codepost.io" target="_blank" className="internal-link">
+                  API Reference
+                </a>
+              </span>
             </Menu.Item>
           </Menu>
         </div>
