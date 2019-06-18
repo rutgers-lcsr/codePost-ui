@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Empty, Icon, Menu } from 'antd';
+import { Button, Dropdown, Empty, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import CPButton from '../core/CPButton';
@@ -1112,7 +1112,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
-    /* build course selector */
+    /* build header */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         {this.props.user.courseadminCourses.map((course, i) => {
@@ -1128,10 +1128,40 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
 
     const headerLeft = [dropdown, createButton];
+    // add option to switch
+    let roleSwitcher;
+    if (this.props.user.studentCourses.length + this.props.user.graderCourses.length > 0) {
+      const roleMenu = (
+        <Menu>
+          {this.props.user.studentCourses.length > 0 ? (
+            <Menu.Item>
+              <Link to="/student">
+                <Icon type="idcard" />
+                &nbsp; Student
+              </Link>
+            </Menu.Item>
+          ) : null}
+          {this.props.user.graderCourses.length > 0 ? (
+            <Menu.Item>
+              <Link to="/grader">
+                <Icon type="audit" />
+                &nbsp; Grader
+              </Link>
+            </Menu.Item>
+          ) : null}
+        </Menu>
+      );
+      roleSwitcher = (
+        <Dropdown overlay={roleMenu}>
+          <Icon type="switcher" />
+        </Dropdown>
+      );
+    }
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
+      roleSwitcher,
       <Link className="internal-link" key="settings" to="/settings">
         <Icon type="setting" />
       </Link>,
