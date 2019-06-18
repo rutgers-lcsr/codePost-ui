@@ -21,7 +21,7 @@ import StudentDetail from './students/StudentDetail';
 
 import CPButton from '../../../components/core/CPButton';
 
-import { PANELS } from '../../../Admin';
+import { PANELS } from '../Admin';
 
 /**********************************************************************************************************************/
 

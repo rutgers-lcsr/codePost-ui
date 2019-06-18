@@ -1,30 +1,30 @@
 import * as React from 'react';
 
-import Loading from './components/core/Loading';
+import Loading from '../core/Loading';
 
 import {
   ICommentToRubricCommentMap,
   IdMapType,
   IFileToCommentsMap,
   IRubricCategoryToRubricCommentsMap,
-} from './types/common';
+} from '../../types/common';
 
-import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { CommentIO, CommentType, UiComment } from './infrastructure/comment';
-import { Course, CourseSettingsType, CourseType } from './infrastructure/course';
+import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
+import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
 
-import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from './infrastructure/rubricComment';
-import { AnonymousSubmissionType, Submission } from './infrastructure/submission';
+import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
+import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
 
-import { UserType } from './infrastructure/user';
+import { UserType } from '../../infrastructure/user';
 
-import StandardConsoleHeader from './components/core/layouts/StandardConsoleHeader';
-import StandardConsoleLayout from './components/core/layouts/StandardConsoleLayout';
+import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
+import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
 import { Divider, message } from 'antd';
 
-import CPFlex from './components/core/CPFlex';
+import CPFlex from '../core/CPFlex';
 
 import {
   FinalizeButton,
@@ -35,21 +35,21 @@ import {
   SubheaderGrader,
   SubheaderInfo,
   SubheaderTitle,
-} from './components/code-review/Subheader';
+} from './Subheader';
 
-import CodePanelLayout from './components/code-review/code-panel/CodePanelLayout';
+import CodePanelLayout from './code-panel/CodePanelLayout';
 
-import FileMenu from './components/code-review/FileMenu';
+import FileMenu from './FileMenu';
 
-import RubricMenu from './components/code-review/RubricMenu';
+import RubricMenu from './RubricMenu';
 
-import { FileType } from './infrastructure/file';
+import { FileType } from '../../infrastructure/file';
 
-import { GradeCode } from './components/code-review/code-panel/Code';
+import { GradeCode } from './code-panel/Code';
 
-import { GradeComments } from './components/code-review/code-panel/Comments';
+import { GradeComments } from './code-panel/Comments';
 
-import * as Immutable from './infrastructure/immutable';
+import * as Immutable from '../../infrastructure/immutable';
 
 interface IGradeState {
   isLoading: boolean;

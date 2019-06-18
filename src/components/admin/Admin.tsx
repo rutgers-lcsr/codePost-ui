@@ -9,9 +9,9 @@ import * as React from 'react';
 import { Button, Empty, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import CPButton from './components/core/CPButton';
-import CPDropdown from './components/core/CPDropdown';
-import CPFlex from './components/core/CPFlex';
+import CPButton from '../core/CPButton';
+import CPDropdown from '../core/CPDropdown';
+import CPFlex from '../core/CPFlex';
 
 /* other library imports */
 import _ from 'lodash';
@@ -20,23 +20,23 @@ import queryString from 'query-string';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
+import CPLayoutAdmin from './other/CPLayoutAdmin';
 
-import GraderData from './components/admin/submissions/GraderSubmissions';
-import StudentData from './components/admin/submissions/StudentSubmissions';
+import GraderData from './submissions/GraderSubmissions';
+import StudentData from './submissions/StudentSubmissions';
 
-import ManageAssignments from './components/admin/assignments/ManageAssignments';
+import ManageAssignments from './assignments/ManageAssignments';
 
-import ManageAdmins from './components/admin/roster/ManageAdmins';
-import ManageGraders from './components/admin/roster/ManageGraders';
-import ManageSections from './components/admin/roster/ManageSections';
-import ManageStudents from './components/admin/roster/ManageStudents';
+import ManageAdmins from './roster/ManageAdmins';
+import ManageGraders from './roster/ManageGraders';
+import ManageSections from './roster/ManageSections';
+import ManageStudents from './roster/ManageStudents';
 
-import CourseSettingsPanel from './components/admin/settings/CourseSettingsPanel';
+import CourseSettingsPanel from './settings/CourseSettingsPanel';
 
-import NewCourseDialog from './components/admin/other/NewCourseDialog';
+import NewCourseDialog from './other/NewCourseDialog';
 
-import AdminNav from './components/admin/other/AdminNav';
+import AdminNav from './other/AdminNav';
 
 // import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
 
@@ -46,19 +46,19 @@ import {
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
   USER_APP,
-} from './types/common';
+} from '../../types/common';
 
 /* API library */
-import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from './infrastructure/assignment';
-import { Course, CoursePatchType, CourseType, RosterType } from './infrastructure/course';
-import { File } from './infrastructure/file';
-import { RubricCategory } from './infrastructure/rubricCategory';
-import { RubricComment } from './infrastructure/rubricComment';
-import { Section, SectionType } from './infrastructure/section';
-import { Submission, SubmissionType } from './infrastructure/submission';
-import { SubmissionHistoryType } from './infrastructure/submissionHistory';
-import { UserType } from './infrastructure/user';
-import { addToPayload } from './infrastructure/utils';
+import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
+import { Course, CoursePatchType, CourseType, RosterType } from '../../infrastructure/course';
+import { File } from '../../infrastructure/file';
+import { RubricCategory } from '../../infrastructure/rubricCategory';
+import { RubricComment } from '../../infrastructure/rubricComment';
+import { Section, SectionType } from '../../infrastructure/section';
+import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
+import { UserType } from '../../infrastructure/user';
+import { addToPayload } from '../../infrastructure/utils';
 
 /**********************************************************************************************************************/
 

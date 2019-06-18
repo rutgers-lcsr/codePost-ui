@@ -18,7 +18,7 @@ import CPLayoutAdmin from './components/core/CPLayoutAdmin';
 import App from './App';
 import unregister from './registerServiceWorker';
 
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from './components/core/ErrorBoundary';
 
 ReactDOM.render(
   <ErrorBoundary>

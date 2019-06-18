@@ -9,11 +9,11 @@ import * as React from 'react';
 import { Icon, Input, Modal, Tooltip, Typography } from 'antd';
 
 /* codePost imports */
-import { UserType } from './infrastructure/user';
+import { UserType } from '../../infrastructure/user';
 
-import PreAuthLayout from './components/pre-auth/PreAuthLayout';
+import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
-import CPButton from './components/core/CPButton';
+import CPButton from '../core/CPButton';
 
 /**********************************************************************************************************************/
 

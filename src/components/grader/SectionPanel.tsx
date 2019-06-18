@@ -17,7 +17,7 @@ import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
-import { compare } from '../Utils/SortUtils';
+import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';

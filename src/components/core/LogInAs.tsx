@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { UserType } from './infrastructure/user';
+import { UserType } from '../../infrastructure/user';
 
 interface IState {
   errorMessage: string;

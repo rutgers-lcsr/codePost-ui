@@ -11,9 +11,9 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import Loadable from 'react-loadable';
 
 /* codePost imports */
-import LogInAs from './LogInAs';
+import LogInAs from './components/core/LogInAs';
 
-import Home from './Home';
+import Home from './components/core/Home';
 
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
@@ -22,31 +22,31 @@ import { UserType } from './infrastructure/user';
 
 import IndexManager from './components/pre-auth/IndexManager';
 
-import Settings from './settings';
+import Settings from './components/core/settings';
 
-import RouterLoading from './RouterLoading';
+import RouterLoading from './components/core/RouterLoading';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
 
 const AsyncStudent = Loadable({
-  loader: () => import('./Student'),
+  loader: () => import('./components/student/Student'),
   loading: RouterLoading,
 });
 
 const AsyncGrader = Loadable({
-  loader: () => import('./Grader'),
+  loader: () => import('./components/grader/Grader'),
   loading: RouterLoading,
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./Grade'),
+  loader: () => import('./components/code-review/Grade'),
   loading: RouterLoading,
 });
 
 const AsyncAdmin = Loadable({
-  loader: () => import('./Admin'),
+  loader: () => import('./components/admin/Admin'),
   loading: RouterLoading,
 });
 

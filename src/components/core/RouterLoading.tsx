@@ -1,7 +1,7 @@
 // From: https://serverless-stack.com/chapters/code-splitting-in-create-react-app.html
 import * as React from 'react';
 
-import Loading from './components/core/Loading';
+import Loading from '../core/Loading';
 
 const RouterLoading = (isLoading: any, error: any) => {
   // Handle the loading state

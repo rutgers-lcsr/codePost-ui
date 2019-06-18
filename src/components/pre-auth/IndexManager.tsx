@@ -8,7 +8,7 @@ import * as React from 'react';
 /* other library imports */
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import LandingNew from '../../LandingNew';
+import LandingNew from '../landing/LandingNew';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -22,7 +22,7 @@ import PrivacyPolicy from './PrivacyPolicy';
 import SignUpManager from './SignUpManager';
 import TermsOfService from './TermsOfService';
 
-import Logout from '../Logout';
+import Logout from '../core/Logout';
 
 /**********************************************************************************************************************/
 

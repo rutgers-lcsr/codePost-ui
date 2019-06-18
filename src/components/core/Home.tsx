@@ -12,9 +12,9 @@ import { Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import PreAuthLayout from './components/pre-auth/PreAuthLayout';
+import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
-import CPButton from './components/core/CPButton';
+import CPButton from '../core/CPButton';
 
 /**********************************************************************************************************************/
 

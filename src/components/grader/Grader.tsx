@@ -12,28 +12,28 @@ import { ClickParam } from 'antd/lib/menu';
 /* other library imports */
 import { Link } from 'react-router-dom';
 
-import CPLayoutAdmin from './components/admin/other/CPLayoutAdmin';
+import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
-import CPDropdown from './components/core/CPDropdown';
+import CPDropdown from '../core/CPDropdown';
 
-import CPFlex from './components/core/CPFlex';
+import CPFlex from '../core/CPFlex';
 
 import _ from 'lodash';
 
 /* codePost imports */
-import MySubmissionsPanel from './components/grader/MySubmissionsPanel';
-import SectionPanel from './components/grader/SectionPanel';
-import ViewAllPanel from './components/grader/ViewAllPanel';
+import MySubmissionsPanel from './MySubmissionsPanel';
+import SectionPanel from './SectionPanel';
+import ViewAllPanel from './ViewAllPanel';
 
-import { ICourseToAssignmentMap } from './types/common';
+import { ICourseToAssignmentMap } from '../../types/common';
 
-import { Assignment, AssignmentType } from './infrastructure/assignment';
-import { CourseType } from './infrastructure/course';
-import { loadIDList } from './infrastructure/generics';
-import { SectionType } from './infrastructure/section';
-import { UserType } from './infrastructure/user';
+import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
+import { loadIDList } from '../../infrastructure/generics';
+import { SectionType } from '../../infrastructure/section';
+import { UserType } from '../../infrastructure/user';
 
-import GraderNav from './components/grader/GraderNav';
+import GraderNav from './GraderNav';
 
 /**********************************************************************************************************************/
 

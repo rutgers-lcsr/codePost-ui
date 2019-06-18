@@ -18,7 +18,7 @@ import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic } from './GraderUtils';
 
-import { compare } from '../Utils/SortUtils';
+import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
@@ -29,6 +29,7 @@ interface IViewAllProps {
   currentCourse: CourseType;
   currentAssignment: AssignmentType;
 }
+
 interface IViewAllState {
   graders: string[];
   submissions: SubmissionType[];

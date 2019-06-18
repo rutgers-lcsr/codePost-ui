@@ -21,7 +21,7 @@ import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
 import { AnonymousSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
-import { compare } from '../Utils/SortUtils';
+import { compare } from '../utils/SortUtils';
 
 import { loadIDList } from '../../infrastructure/generics';
 
@@ -260,7 +260,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         );
         const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
         refreshButton = (
-          <Button icon="cloud-sync" onClick={refreshFunction}>
+          <Button icon="redo" onClick={refreshFunction}>
             Refresh
           </Button>
         );

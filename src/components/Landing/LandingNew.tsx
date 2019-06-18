@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { animateScroll as scroll } from 'react-scroll';
 
-import LandingHeader from './components/Landing/LandingHeader';
-import LandingLayout from './components/Landing/LandingLayout';
-import LandingPanel from './components/Landing/LandingPanel';
+import LandingHeader from './LandingHeader';
+import LandingLayout from './LandingLayout';
+import LandingPanel from './LandingPanel';
 
-import { AdminAnimation } from './components/Landing/LandingAnimations/Admin/AdminAnimation';
-import APIAnimation from './components/Landing/LandingAnimations/API/APIAnimation';
-import { GradeAnimationVideo } from './components/Landing/LandingAnimations/Grade/GradeAnimation';
+import { AdminAnimation } from './LandingAnimations/Admin/AdminAnimation';
+import APIAnimation from './LandingAnimations/API/APIAnimation';
+import { GradeAnimationVideo } from './LandingAnimations/Grade/GradeAnimation';
 
 import Footer from './Footer';
 
-import Testimonials from './components/Landing/Testimonial';
+import Testimonials from './Testimonial';
 
-import CPButton from './components/core/CPButton';
+import CPButton from '../core/CPButton';
 
 class LandingNew extends React.PureComponent<{}, {}> {
   public scrollToBottom = () => {

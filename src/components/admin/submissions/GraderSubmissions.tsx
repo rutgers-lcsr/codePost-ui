@@ -21,7 +21,7 @@ import GraderDetail from './graders/GraderDetail';
 
 import CPButton from '../../../components/core/CPButton';
 
-import { PANELS } from '../../../Admin';
+import { PANELS } from '../Admin';
 
 /**********************************************************************************************************************/
 

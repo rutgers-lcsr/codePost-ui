@@ -1,40 +1,40 @@
 import * as React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import themeVars from './styles/abstracts/_theme.js';
+import themeVars from '../../styles/abstracts/_theme.js';
 
-import Grade from './Grade';
+import Grade from '../code-review/Grade';
 
-import StandardConsoleHeader from './components/core/layouts/StandardConsoleHeader';
-import StandardConsoleLayout, { ConsoleType } from './components/core/layouts/StandardConsoleLayout';
+import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
+import StandardConsoleLayout, { ConsoleType } from '../core/layouts/StandardConsoleLayout';
 
-import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from './components/code-review/Subheader';
+import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from '../code-review/Subheader';
 
-import { StudentCode } from './components/code-review/code-panel/Code';
+import { StudentCode } from '../code-review/code-panel/Code';
 
-import { StudentComments } from './components/code-review/code-panel/Comments';
+import { StudentComments } from '../code-review/code-panel/Comments';
 
-import Loading from './components/core/Loading';
+import Loading from '../core/Loading';
 
-import FileMenu from './components/code-review/FileMenu';
+import FileMenu from '../code-review/FileMenu';
 
-import CPFlex from './components/core/CPFlex';
+import CPFlex from '../core/CPFlex';
 
-import CodePanelLayout from './components/code-review/code-panel/CodePanelLayout';
+import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
-import SelectorSider from './components/core/SelectorSider';
+import SelectorSider from '../core/SelectorSider';
 
 import { Drawer } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from './types/common';
+import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap } from '../../types/common';
 
-import { Assignment, AssignmentType, sortAssignments } from './infrastructure/assignment';
-import { CourseType } from './infrastructure/course';
-import { FileType } from './infrastructure/file';
-import { loadIDList } from './infrastructure/generics';
-import { RubricCategory, RubricCategoryType } from './infrastructure/rubricCategory';
-import { StudentSubmissionType, Submission } from './infrastructure/submission';
+import { Assignment, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
+import { FileType } from '../../infrastructure/file';
+import { loadIDList } from '../../infrastructure/generics';
+import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
 interface IStudentState {
   assignments: ICourseToAssignmentMap;
