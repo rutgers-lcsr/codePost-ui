@@ -46,7 +46,7 @@ class Home extends React.Component<IProps, {}> {
       </Link>
     ) : null;
     const adminBtn = this.props.isAdmin ? (
-      <Link to="/course-admin">
+      <Link to="/admin">
         <CPButton icon="sliders" block cpType="secondary" style={buttonStyle}>
           Admin Console
         </CPButton>

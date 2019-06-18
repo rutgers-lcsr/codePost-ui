@@ -306,7 +306,7 @@ class App extends React.Component<{}, IState> {
       } else if (!isStudent && isGrader && !isAdmin) {
         pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
       } else if (!isStudent && !isGrader && isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('admin')} />;
       } else {
         pageSelector = (
           <Route

@@ -308,7 +308,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public changeURL = (course: CourseType, panel: number) => {
     const formCourseName = course.name.replace(/ /g, '_');
     const formPeriod = course.period.replace(/ /g, '_');
-    this.props.history.push(`/course-admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
+    this.props.history.push(`/admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
   };
 
   public handleMenuClick = (e: ClickParam) => {
