@@ -564,7 +564,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <div>No Submission Found</div>;
     }
 
-    const header = <StandardConsoleHeader email={this.props.user.email} handleLogout={this.onEscKeyPress} />;
+    const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.onEscKeyPress} />;
 
     const subHeaderLeftTop = [
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
