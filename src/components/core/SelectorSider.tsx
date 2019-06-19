@@ -1,11 +1,22 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
-import CPDropdown from './CPDropdown';
-
-import { Menu } from 'antd';
+/* antd imports */
+import { Divider, Icon, Menu, Spin, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
+/* codePost imports */
+import CPDropdown from './CPDropdown';
+
+import { AssignmentType } from '../../infrastructure/assignment';
+
 import { IOption } from '../../types/common';
+
+/**********************************************************************************************************************/
 
 type ThemeType = 'light' | 'dark';
 
@@ -22,8 +33,9 @@ interface IProps {
   // active menu item - controlled
   activeMenuItem?: number;
   // menu items
-  menuItems: IOption[];
+  assignments: AssignmentType[];
   theme?: ThemeType;
+  isLoadingMenu?: boolean;
 }
 
 const SelectorSider = (props: IProps) => {
@@ -43,29 +55,48 @@ const SelectorSider = (props: IProps) => {
   }
 
   return (
-    <div>
-      <div style={{ padding: '18px 20px 22px 16px' }}>
-        {title}
-        <CPDropdown
-          key="selector"
-          value={props.activeSelector ? props.activeSelector.label : 'Select...'}
-          overlay={selectorOverlay}
-          overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
-          theme="dark"
-        />
-      </div>
-      <Menu
-        key="menu"
-        className={`sider-menu sider-menu-${theme}`}
-        onClick={props.onMenuClick}
-        selectedKeys={props.activeMenuItem ? [props.activeMenuItem.toString()] : []}
-        mode="inline"
-        theme="dark"
-      >
-        {props.menuItems.map((item: IOption) => {
-          return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
-        })}
-      </Menu>
+    <div style={{ padding: '18px 20px 0 16px' }}>
+      <CPDropdown
+        key="selector"
+        value={props.activeSelector ? props.activeSelector.label : 'Select...'}
+        overlay={selectorOverlay}
+        overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+        theme={theme}
+      />
+      <Divider style={{ margin: '20 0 20 0' }} />
+      {title}
+      {props.isLoadingMenu ? (
+        <Spin />
+      ) : (
+        <Menu
+          key="menu"
+          className={`sider-menu sider-menu-${theme}`}
+          onClick={props.onMenuClick}
+          selectedKeys={props.activeMenuItem ? [props.activeMenuItem.toString()] : []}
+          mode="inline"
+          theme={theme}
+          inlineIndent={12}
+          overflowedIndicator
+        >
+          {props.assignments.map((assignment) => {
+            if (assignment.isReleased) {
+              return (
+                <Menu.Item key={assignment.id}>
+                  <Icon type="right" /> {assignment.name}
+                </Menu.Item>
+              );
+            } else {
+              return (
+                <Menu.Item key={assignment.id} disabled>
+                  <Tooltip title="Not published yet" placement="right">
+                    <Icon type="right" /> {assignment.name}
+                  </Tooltip>
+                </Menu.Item>
+              );
+            }
+          })}
+        </Menu>
+      )}
     </div>
   );
 };

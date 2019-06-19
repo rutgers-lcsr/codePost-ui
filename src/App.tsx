@@ -214,7 +214,6 @@ class App extends React.Component<{}, IState> {
       const graderCourses = user.graderCourses;
       const studentCourses = user.studentCourses;
       const superGraderCourses = this.state.user.superGraderCourses;
-      const email = user.email;
       const sectionsLed = user.leaderSections;
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
@@ -242,7 +241,12 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
             render={(props: any) => (
-              <AsyncStudent {...props} email={email} handleLogout={this.handleLogout} initialCourses={studentCourses} />
+              <AsyncStudent
+                {...props}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
+                initialCourses={studentCourses}
+              />
             )}
           />
         );
