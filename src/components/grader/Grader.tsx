@@ -98,7 +98,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   /* Lifecycle methods
   /**********************************************************************************/
 
-  public async componentDidMount() {
+  public componentDidMount() {
     this.loadAssignments(this.props.courses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         const { course, assignment, panel } = this.setStateFromURL(this.props.courses, assignments);
@@ -201,7 +201,6 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         currentCourse = courses[0];
       }
 
-      console.log(currentCourse);
       return { course: currentCourse, assignment: currentAssignment, panel: currentPanel };
     }
   };

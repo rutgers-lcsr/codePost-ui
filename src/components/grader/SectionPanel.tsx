@@ -126,6 +126,10 @@ class SectionPanel extends React.Component<IProps, IState> {
     }
   };
 
+  public openGradePage = (submission: SubmissionType) => {
+    window.open(`/grade/${submission.id}`);
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -140,6 +144,11 @@ class SectionPanel extends React.Component<IProps, IState> {
       /* define table columns */
       const centerAlign: alignType = 'center';
       columns = [
+        {
+          title: 'Open',
+          dataIndex: 'open',
+          align: centerAlign,
+        },
         {
           title: 'Student',
           dataIndex: 'student',
@@ -158,19 +167,24 @@ class SectionPanel extends React.Component<IProps, IState> {
           },
           align: centerAlign,
         },
-        { title: 'Grader', dataIndex: 'grader', sorter: (a: any, b: any) => compare(true, a.grader, b.grader) },
         {
-          title: 'Finalized',
-          dataIndex: 'finalized',
+          title: 'Grader',
+          dataIndex: 'grader',
+          sorter: (a: any, b: any) => compare(true, a.grader, b.grader),
           align: centerAlign,
         },
         {
           title: 'Last Edited',
           dataIndex: 'lastEdited',
           align: centerAlign,
+          sorter: (a: ITableRow, b: ITableRow) => {
+            const date1 = new Date(a.lastEdited);
+            const date2 = new Date(b.lastEdited);
+            return date2.valueOf() - date1.valueOf();
+          },
         },
         {
-          title: 'Viewed by Student',
+          title: 'Viewed by Student(s)',
           dataIndex: 'viewed',
           align: centerAlign,
         },
@@ -179,29 +193,28 @@ class SectionPanel extends React.Component<IProps, IState> {
       /* define table row */
       const submissions = this.state.submissionsBySection[this.state.activeSection.id];
       if (submissions !== undefined) {
-        data = Object.keys(submissions).map(
-          (student): ITableRow => {
-            const submission = submissions[student];
-            const shownStudent = showingEmails ? student : '--';
+        data = Object.keys(submissions).map((student) => {
+          const submission = submissions[student];
+          const shownStudent = showingEmails ? student : '--';
 
-            let partners = '--';
-            if (showingEmails && submission) {
-              partners = submission.students
-                .filter((obj) => {
-                  return obj !== student;
-                })
-                .join(', ');
-            }
+          let partners = '--';
+          if (showingEmails && submission) {
+            partners = submission.students
+              .filter((obj) => {
+                return obj !== student;
+              })
+              .join(', ');
+          }
 
-            return {
-              ...formatSub(submission, this.props.currentAssignment),
-              key: student,
-              student: shownStudent,
-              partners,
-              viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
-            };
-          },
-        );
+          return {
+            ...formatSub(submission, this.props.currentAssignment),
+            key: student,
+            student: shownStudent,
+            partners,
+            viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
+            open: <Icon type="code" onClick={this.openGradePage.bind(this, submission)} />,
+          };
+        });
       }
     }
 

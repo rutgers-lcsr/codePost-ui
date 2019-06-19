@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Select, Switch, Table } from 'antd';
+import { Icon, Select, Switch, Table } from 'antd';
 const { Option } = Select;
 
 /* codePost imports */
@@ -98,6 +98,10 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     this.setState({ selectedGraders: newGraders });
   };
 
+  public openGradePage = (submission: SubmissionType) => {
+    window.open(`/grade/${submission.id}`);
+  };
+
   public render() {
     const { graders, submissions, selectedGraders } = this.state;
     const { currentAssignment } = this.props;
@@ -105,6 +109,11 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
 
     const centerAlign: alignType = 'center';
     const columns = [
+      {
+        title: 'Open',
+        dataIndex: 'open',
+        align: centerAlign,
+      },
       {
         title: 'Student(s)',
         dataIndex: 'student',
@@ -122,16 +131,17 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         title: 'Grader',
         dataIndex: 'grader',
         sorter: (a: ITableRow, b: ITableRow) => compare(true, a.grader, b.grader),
-      },
-      {
-        title: 'Finalized',
-        dataIndex: 'finalized',
         align: centerAlign,
       },
       {
         title: 'Last Edited',
         dataIndex: 'lastEdited',
         align: centerAlign,
+        sorter: (a: ITableRow, b: ITableRow) => {
+          const date1 = new Date(a.lastEdited);
+          const date2 = new Date(b.lastEdited);
+          return date2.valueOf() - date1.valueOf();
+        },
       },
       {
         title: 'Viewed by Student(s)',
@@ -151,12 +161,13 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     }
 
     const data = filteredSubs.map((sub) => {
-      const students = showingEmails ? sub.students.join() : String(sub.id);
+      const students = showingEmails ? sub.students.join(', ') : String(sub.id);
       return {
         ...formatSub(sub, this.props.currentAssignment),
         key: sub.id,
         student: students,
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
+        open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
       };
     });
 

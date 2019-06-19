@@ -95,9 +95,9 @@ const getViewIcon = (
 
 interface ISubDataBasic {
   grade: number | string | React.ReactElement;
-  grader: string;
+  grader: string | React.ReactElement;
   status: string | React.ReactElement;
-  lastEdited: string | React.ReactElement;
+  lastEdited: string;
   gradeToSort: number;
 }
 
@@ -131,9 +131,9 @@ const formatSub = (
     return {
       grade: gradeText,
       gradeToSort: sub.grade ? sub.grade : -1,
-      grader: sub.grader ? sub.grader : '--',
+      grader: sub.grader ? sub.grader : <Text type="warning">Unclaimed</Text>,
       status: <div>{finalizeIcon}</div>,
-      lastEdited: moment(sub.dateEdited).format('llll'),
+      lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(sub.dateEdited).format('LT')}`,
     };
   }
 };

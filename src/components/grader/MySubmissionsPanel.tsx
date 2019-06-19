@@ -379,14 +379,14 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
           align: centerAlign,
         },
         {
-          title: 'Status',
-          dataIndex: 'status',
-          align: centerAlign,
-        },
-        {
           title: 'Last Edited',
           dataIndex: 'lastEdited',
           align: centerAlign,
+          sorter: (a: ITableRow, b: ITableRow) => {
+            const date1 = new Date(a.lastEdited);
+            const date2 = new Date(b.lastEdited);
+            return date2.valueOf() - date1.valueOf();
+          },
         },
         {
           title: 'Release',
