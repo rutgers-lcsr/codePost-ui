@@ -16,7 +16,7 @@ class LandingLayout extends React.PureComponent<IProps, {}> {
 
   // Panel Background Colors
   private heroColor = '#F9F9F9';
-  private whyPanelColor = '#FFFFFF';
+  private whyPanelColor = '#F9F9F9';
   private panelOneColor = '#F9F9F9';
   private panelTwoColor = '#EBEBEB';
   private panelThreeColor = '#F9F9F9';

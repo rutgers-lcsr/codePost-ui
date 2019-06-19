@@ -20,7 +20,7 @@ class LandingPanel extends React.PureComponent<IProps, {}> {
   private textSize = this.props.textSize === 'big' ? 16 : 15;
 
   public render() {
-    const moduleDiv = <div style={{ maxWidth: 550 }}>{this.props.module}</div>;
+    const moduleDiv = <div style={{ maxWidth: 650 }}>{this.props.module}</div>;
     const textDiv = (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
         <div style={{ color: this.brandColor, fontSize: this.titleSize, paddingBottom: 20, fontWeight: 600 }}>
@@ -35,7 +35,7 @@ class LandingPanel extends React.PureComponent<IProps, {}> {
     return (
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div>{this.props.type === 'left' ? textDiv : moduleDiv}</div>
-        <div style={{ marginLeft: 25 }}>{this.props.type === 'left' ? moduleDiv : textDiv}</div>
+        <div style={{ marginLeft: 50 }}>{this.props.type === 'left' ? moduleDiv : textDiv}</div>
       </div>
     );
   }

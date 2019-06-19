@@ -1,19 +1,36 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
+
+/* antd imports */
+// import { Typography } from 'antd';
+
+/* other library imports */
 import { animateScroll as scroll } from 'react-scroll';
 
+/* codePost Imports */
+
+// Section components
 import LandingHeader from './LandingHeader';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 
+// Animations
 import { AdminAnimation } from './LandingAnimations/Admin/AdminAnimation';
 import APIAnimation from './LandingAnimations/API/APIAnimation';
 import { GradeAnimationVideo } from './LandingAnimations/Grade/GradeAnimation';
 
+// Other design elements
+import CPButton from '../core/CPButton';
 import Footer from './Footer';
-
 import Testimonials from './Testimonial';
 
-import CPButton from '../core/CPButton';
+import CodeReview from './LandingCodeReview';
+
+/**********************************************************************************************************************/
 
 class LandingNew extends React.PureComponent<{}, {}> {
   public scrollToBottom = () => {
@@ -24,7 +41,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
     const hero = (
       <div style={{ display: 'flex', justifyContent: 'flex-start', flexDirection: 'column' }}>
         <div style={{ fontSize: 28, lineHeight: 1.2, fontWeight: 600, color: '#4A4A4A' }}>
-          The easy, free code review platform for CS courses
+          <span>The easy, free code review platform for CS courses</span>
         </div>
         <div
           style={{
@@ -40,9 +57,21 @@ class LandingNew extends React.PureComponent<{}, {}> {
           Save time and give better feedback on coding assignments, while providing insights into how your students are
           doing.
         </div>
-        <div style={{ width: 150 }}>
-          <CPButton style={{ width: 140, height: 50, fontSize: 17 }} onClick={this.scrollToBottom} cpType="primary">
+        <div style={{ width: 350 }}>
+          <CPButton
+            style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }}
+            onClick={this.scrollToBottom}
+            cpType="primary"
+          >
             Sign Up
+          </CPButton>
+          &nbsp; &nbsp;
+          <CPButton
+            style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
+            onClick={this.scrollToBottom}
+            cpType="secondary"
+          >
+            Schedule demo
           </CPButton>
         </div>
       </div>
@@ -103,9 +132,9 @@ class LandingNew extends React.PureComponent<{}, {}> {
         text={whyText}
         title="Code Review = Better Feedback"
         subTitle=""
-        module={<div>module</div>}
+        module={<div>{<CodeReview />}</div>}
         type="left"
-        textSize="big"
+        textSize="normal"
       />
     );
     const panelOne = (
