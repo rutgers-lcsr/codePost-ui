@@ -1,3 +1,30 @@
+.codePost-highlight {
+  mark {
+    background-color: #d3f2e7 !important;
+  }
+}
+
+.bad-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, monospace;
+    font-weight: 500;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.08);
+    height: auto;
+    padding: 10px;
+    font-size: 11px;
+
+    &-gutters {
+      background-color: white;
+    }
+  }
+}
+
+.wide {
+  .CodeMirror {
+    width: 500px;
+  }
+}
+
 #PreAuth {
   .header a {
     color: grey;
@@ -133,4 +160,3 @@
 .ant-collapse tr {
   line-height: 5px;
 }
-
