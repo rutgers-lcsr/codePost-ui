@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -23,12 +23,16 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { STATUS, statusChange } from './RubricUtils';
 
+import { DIRECTION } from '../../../../types/common';
+
 /**********************************************************************************************************************/
 
 interface ICPRubricCategoryProps {
   // data
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
+  index: number;
+  numCategories: number;
 
   // saved data
   savedRubricCategory?: RubricCategoryType;
@@ -37,6 +41,7 @@ interface ICPRubricCategoryProps {
   // RubricCategory functions
   updateCategory: (rCategory: RubricCategoryType) => void;
   deleteCategory: (rCategory: RubricCategoryType) => void;
+  moveCategory: (rCategory: RubricCategoryType, direction: DIRECTION) => void;
 
   // RubricComment functions
   addComment: (rCategory: RubricCategoryType) => void;
@@ -405,6 +410,22 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const titleLeft = [
       <span key="title" className="cp-label cp-label--plus cp-label--bold">
         Category: {this.props.rubricCategory.name}
+      </span>,
+      <span key="buttons">
+        {this.props.index > 0 && this.props.numCategories > 1 ? (
+          <Button
+            icon="caret-up"
+            size="small"
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+          />
+        ) : null}
+        {this.props.index !== this.props.numCategories - 1 ? (
+          <Button
+            icon="caret-down"
+            size="small"
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
+          />
+        ) : null}
       </span>,
     ];
     const titleRight = [
