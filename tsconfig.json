@@ -26,7 +26,21 @@
       {
         "allow-type-parameters": true
       }
-    ]
+    ],
+    "interface-over-type-literal": false
   },
-  "exclude": ["node_modules/**", "build", "scripts", "acceptance-tests", "webpack", "jest", "src/setupTests.ts", "venv"]
+  "exclude": [
+    "node_modules/**",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "venv",
+    "coverage",
+    "config",
+    "prettier.config.js",
+    "src/stories"
+  ]
 }

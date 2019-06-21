@@ -16,6 +16,8 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
+const tsImportPluginFactory = require('ts-import-plugin')
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
 const publicPath = paths.servedPath;
@@ -149,6 +151,12 @@ module.exports = {
                 options: {
                   // disable type checker - we will use it in fork plugin
                   transpileOnly: true,
+                  getCustomTransformers: () => ({
+                    before: [ tsImportPluginFactory( { style: 'css' } ) ]
+                  }),
+                  compilerOptions: {
+                    module: 'es2015'
+                  },
                   configFile: paths.appTsProdConfig,
                 },
               },

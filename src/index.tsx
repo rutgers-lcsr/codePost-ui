@@ -1,13 +1,24 @@
 import * as React from 'react';
+
+// @ts-ignore
+import { Badge, Button, Dropdown, Icon, Input, InputNumber, Layout, Menu, Popover, Table, Tooltip } from 'antd';
+
+import './styles/main.scss';
+
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-import 'typeface-roboto';
+import 'typeface-muli';
+
+// @ts-ignore
+import CPLayoutGrade from './components/core/CPLayoutGrade';
+
+// @ts-ignore
+import CPLayoutAdmin from './components/core/CPLayoutAdmin';
 
 import App from './App';
 import unregister from './registerServiceWorker';
-import './styles/main.scss';
 
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from './components/core/ErrorBoundary';
 
 ReactDOM.render(
   <ErrorBoundary>

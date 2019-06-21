@@ -1,5 +1,7 @@
 import * as t from 'io-ts';
 
+import { RubricCommentType } from './rubricComment';
+
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 const CommentV = t.intersection(
@@ -17,6 +19,7 @@ const CommentV = t.intersection(
     }),
     t.partial({
       author: t.string,
+      isSaved: t.boolean,
     }),
   ],
   'Comment',
@@ -47,6 +50,75 @@ class CommentIO {
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
+
+  public static sortComments = (comments: CommentType[]): CommentType[] => {
+    return comments.sort((a: CommentType, b: CommentType) => {
+      if (a.startLine === b.startLine) {
+        if (a.startChar > b.startChar) {
+          return 1;
+        }
+        if (a.id < 0 && b.id < 0) {
+          return a.id + b.id;
+        } else if (a.id > 0 && b.id > 0) {
+          return a.id - b.id;
+        } else if (b.id < 0) {
+          return -1;
+        } else {
+          return 1;
+        }
+      }
+      if (a.startLine > b.startLine) {
+        return 1;
+      }
+      return -1;
+    });
+  };
+
+  public static compare = (a: CommentType, b: CommentType) => {
+    if (a.startLine === b.startLine) {
+      if (a.startChar === b.startChar) {
+        if (a.id > 0 && b.id > 0) {
+          return a.id - b.id;
+        } else if (a.id < 0 && b.id < 0) {
+          return a.id + b.id;
+        } else if (a.id < 0) {
+          return 1;
+        } else {
+          return -1;
+        }
+      }
+      return a.startChar - b.startChar;
+    }
+    return a.startLine - b.startLine;
+  };
 }
 
-export { CommentType, CommentIO };
+/* tslint:disable:max-classes-per-file */
+class UiComment {
+  public static isNew = (comment: CommentType) => {
+    return comment.id < 0;
+  };
+
+  public static points = (comment: CommentType, rubricComment?: RubricCommentType): number => {
+    if (rubricComment) {
+      return rubricComment.pointDelta ? rubricComment.pointDelta : 0;
+    } else {
+      return comment.pointDelta ? comment.pointDelta : 0;
+    }
+  };
+}
+
+const CommentMock: CommentType = {
+  id: 1,
+  text: 'This is a mocked comment',
+  pointDelta: null,
+  startChar: 1,
+  endChar: 3,
+  startLine: 0,
+  endLine: 0,
+  file: 1,
+  rubricComment: 1,
+  author: 'grader@myschool.edu',
+};
+
+export { CommentType, CommentIO, CommentMock, UiComment };

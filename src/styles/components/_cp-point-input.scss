@@ -1,0 +1,49 @@
+.cp-point-input {
+  .ant-input-number-handler-wrap {
+    visibility: hidden;
+    width: 0px;
+  }
+
+  .anticon {
+    color: $neutralSecondaryText;
+  }
+
+  .ant-btn {
+    &:active {
+      color: $neutralTitle;
+      background-color: #fafafa;
+      border-color: #d9d9d9;
+    }
+    &:focus {
+      color: $neutralMainText;
+      border-color: #d9d9d9;
+    }
+    &:hover {
+      color: $neutralMainText;
+      border-color: #d9d9d9;
+    }
+  }
+
+  &--default {
+  }
+
+  &--small {
+    .ant-input-number {
+      width: 42px;
+      font-size: 12px;
+    }
+
+    .ant-input-number-input {
+      padding: 0px 8px;
+    }
+
+    .anticon {
+      font-size: 9px;
+    }
+
+    .ant-btn {
+      padding: 0px 4px !important;
+      height: 24px;
+    }
+  }
+}

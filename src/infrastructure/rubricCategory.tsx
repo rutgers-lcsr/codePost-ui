@@ -63,6 +63,16 @@ class RubricCategory {
   };
 }
 
+const RubricCategoryMock: RubricCategoryType = {
+  id: 1,
+  name: 'Mocked Category',
+  helpText: 'mocked category help text',
+  rubricComments: [1],
+  assignment: 1,
+  pointLimit: 4,
+  sortKey: 0,
+};
+
 export {
   RubricCategoryType,
   RubricCategoryPatchType,
@@ -70,4 +80,5 @@ export {
   RubricCategoryV,
   RubricCategoryVPatch,
   RubricCategoryStudentType,
+  RubricCategoryMock,
 };

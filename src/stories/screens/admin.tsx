@@ -1,0 +1,207 @@
+import * as React from 'react';
+
+import { Icon, Input, Menu, Switch, Table } from 'antd';
+
+import CPLayoutAdmin from '../../components/admin/other/CPLayoutAdmin';
+
+import CPAdminDetail from '../../components/admin/other/CPAdminDetail';
+
+import CPButton from '../../components/core/CPButton';
+import CPDropdown from '../../components/core/CPDropdown';
+import CPFlex from '../../components/core/CPFlex';
+
+const Search = Input.Search;
+
+const menu = (
+  <Menu>
+    <Menu.Item key="1">1st menu item</Menu.Item>
+    <Menu.Item key="2">2nd menu item</Menu.Item>
+    <Menu.Item key="3">3rd item</Menu.Item>
+  </Menu>
+);
+
+const dropdown = <CPDropdown value="COS126 | Spring 2019" overlay={menu} />;
+
+const createButton = (
+  <CPButton cpType="secondary" fallback="plus">
+    Create Course
+  </CPButton>
+);
+
+const headerLeft = [dropdown, createButton];
+
+const headerRight = [
+  <span key={0} className="cp-label cp-label--bold">
+    Hello, hello@andreacg.com!
+  </span>,
+  <CPButton key={1} cpType="secondary" icon="setting" size="small" />,
+  <CPButton key={2} cpType="secondary" icon="logout" size="small" />,
+];
+
+const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
+
+const columns = [
+  {
+    title: 'Assignment',
+    dataIndex: 'assignment',
+    key: 'assignment',
+    render: (text: string) => <a href="javascript:;">{text}</a>,
+  },
+  {
+    title: 'Published',
+    dataIndex: 'published',
+    key: 'published',
+    render: (published: boolean) => <Switch defaultChecked={published} />,
+  },
+  {
+    title: 'Submissions',
+    dataIndex: 'submissions',
+    key: 'submissions',
+  },
+  {
+    title: 'Finalized',
+    dataIndex: 'finalized',
+    key: 'finalized',
+  },
+  {
+    title: 'In progress',
+    dataIndex: 'inProgress',
+    key: 'inProgress',
+  },
+  {
+    title: 'Unclaimed',
+    dataIndex: 'unclaimed',
+    key: 'submissiunclaimedons',
+  },
+  {
+    title: 'Missing',
+    dataIndex: 'missing',
+    key: 'missing',
+  },
+  {
+    title: 'Mean Grade',
+    dataIndex: 'mean',
+    key: 'mean',
+  },
+  {
+    title: 'Median Grade',
+    dataIndex: 'median',
+    key: 'median',
+  },
+  {
+    title: '',
+    key: 'action',
+    render: (text: string, record: any) => <Icon type="ellipsis" className="cp-label--highlight" />,
+  },
+];
+
+const data = [
+  {
+    key: '1',
+    assignment: 'Hello World',
+    published: true,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+  {
+    key: '2',
+    assignment: 'Loops',
+    published: true,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+  {
+    key: '3',
+    assignment: 'Nbody',
+    published: false,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+  {
+    key: '4',
+    assignment: 'Sierpinsky',
+    published: false,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+  {
+    key: '5',
+    assignment: 'Guitar Hero',
+    published: false,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+  {
+    key: '6',
+    assignment: 'Atomic',
+    published: false,
+    submissions: 20,
+    finalized: 15,
+    inProgress: 2,
+    unclaimed: 2,
+    missing: 1,
+    mean: 19.1,
+    median: 19,
+  },
+];
+
+const onRow = (record: any, rowIndex: number) => {
+  return {
+    style: { backgroundColor: '#fff' },
+  };
+};
+
+const content = <Table columns={columns} dataSource={data} pagination={false} onRow={onRow} />;
+
+export const Admin = (goback: any, title: string, actionsGroup: string) => {
+  let actions: React.ReactNode[] = [];
+  if (actionsGroup === 'assignments') {
+    actions = [
+      <CPButton key="action-1" cpType="primary" fallback="plus">
+        Create Assignment
+      </CPButton>,
+      <CPButton key="action-2" cpType="secondary" fallback="download">
+        Download All Grades
+      </CPButton>,
+    ];
+  } else if (actionsGroup === 'graders' || actionsGroup === 'students') {
+    actions = [<Search key="action-1" placeholder="Search..." />];
+  } else if (actionsGroup === 'detail') {
+    actions = [
+      <CPButton key="action-1" cpType="primary" fallback="upload">
+        Upload Submission
+      </CPButton>,
+    ];
+  } else {
+    actions = [];
+  }
+  const onClick = (e: any) => null;
+
+  const adminDetail = <CPAdminDetail goBack={goback} title={title} actions={actions} content={content} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} />;
+};

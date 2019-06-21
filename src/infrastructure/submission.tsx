@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { compare } from '../components/Utils/SortUtils';
+import { compare } from '../components/utils/SortUtils';
 import {
   createObject,
   deleteObject,
@@ -16,6 +16,8 @@ import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
+
+import { message } from 'antd';
 
 /*****************************************************************************/
 /* Type Definitions
@@ -121,6 +123,7 @@ class Submission {
     'history',
   );
 
+  // FIXME, duplicate
   public static loadData = async (
     submission: SubmissionType | StudentSubmissionType | AnonymousSubmissionType,
   ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
@@ -128,28 +131,32 @@ class Submission {
       return [[], {}, {}];
     }
 
-    const files = await loadIDList(submission.files, File);
-    const comments: IFileToCommentsMap = {};
-    await Promise.all(
-      files.map(async (file: FileType) => {
-        comments[file.id] = await loadIDList(file.comments, CommentIO);
-        return;
-      }),
-    );
-
-    const commentRubricComments: ICommentToRubricCommentMap = {};
-    await Promise.all(
-      Object.values(comments)
-        .flat()
-        .map(async (comment: CommentType) => {
-          if (comment.rubricComment) {
-            commentRubricComments[comment.id] = await RubricComment.read(comment.rubricComment);
-          }
+    try {
+      const files = await loadIDList(submission.files, File);
+      const comments: IFileToCommentsMap = {};
+      await Promise.all(
+        files.map(async (file: FileType) => {
+          comments[file.id] = (await loadIDList(file.comments, CommentIO)).sort(CommentIO.compare);
           return;
         }),
-    );
+      );
 
-    return [files, comments, commentRubricComments];
+      const commentRubricComments: ICommentToRubricCommentMap = {};
+      await Promise.all(
+        Object.values(comments)
+          .flat()
+          .map(async (comment: CommentType) => {
+            if (comment.rubricComment) {
+              commentRubricComments[comment.id] = await RubricComment.read(comment.rubricComment);
+            }
+            return;
+          }),
+      );
+      return [files, comments, commentRubricComments];
+    } catch (err) {
+      message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
+      return [[], {}, {}];
+    }
   };
 }
 

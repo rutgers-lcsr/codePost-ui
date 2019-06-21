@@ -1,157 +1,69 @@
 .comment {
-  position: absolute;
   width: 100%;
-  border-radius: 12px 0px 0px 12px;
-  background-color: white;
-  margin-bottom: 15px;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-style: solid;
-  border-color: $theme-grey;
-  border-width: 2px 0px 2px 2px;
-  box-shadow: 5px -2px 4px 1px hsla(0, 0%, 92%, 0.5);
 
-  &__body {
-    height: 100%;
-    padding-top: 5px;
+  .ant-popover-arrow {
+    top: 34px !important;
+  }
+
+  .ant-popover-title {
+    background-color: #fafafa !important;
+  }
+
+  .ant-popover-inner-content {
+    padding: 10px 16px 4px 16px;
+  }
+
+  &--inactive {
+    .ant-popover-arrow {
+      box-shadow: none !important;
+    }
+    .ant-popover-inner {
+      box-shadow: none;
+    }
+  }
+
+  &--readonly {
+    .ant-popover-arrow {
+      box-shadow: none !important;
+    }
+    .ant-popover-inner {
+      box-shadow: none;
+    }
   }
 
   &__rubric-comment {
-    margin: 5px 0px 5px 0px;
-    padding: 5px 0px 5px 5px;
-    border-left: 2px solid $brand-color;
-  }
-  &__text {
-    margin: 0px 0px 5px 0px;
-    overflow-wrap: break-word;
-    width: inherit;
+    padding: 0px 16px;
+    margin-bottom: 6px;
 
-    // Markdown styling
-    h1 {
-      font-size: $font-size-large;
-      font-weight: bold;
-      color: $dark-grey;
-      text-decoration: underline;
-    }
+    font-size: 12px;
+    line-height: 1.67;
 
-    h2 {
-      font-size: $font-size-medium;
-      font-weight: bold;
-    }
-
-    h3 {
-      font-size: $font-size-medium;
-      color: $mid-grey;
-    }
-
-    td,
-    th {
-      border: 1px solid $light-grey;
-      padding: 6px;
-    }
-
-    tr:nth-child(even) {
-      background-color: $very-light-green;
-    }
-
-    tr:hover {
-      background-color: $light-grey;
-    }
-
-    th {
-      padding-top: 8px;
-      padding-bottom: 8px;
-      text-align: left;
-      background-color: $brand-color;
-      color: white;
-    }
-  }
-  &__textarea {
-    width: 96%;
-    border-radius: 5px;
-    -webkit-transition: all 0.3s ease-in-out;
-    -moz-transition: all 0.3s ease-in-out;
-    -ms-transition: all 0.3s ease-in-out;
-    -o-transition: all 0.3s ease-in-out;
-    outline: none;
-    padding: 3px 0px 3px 3px;
-    margin: 5px 3px 3px 3px;
-    border: 1px solid $light-grey;
-
-    &:focus {
-      box-shadow: 0 0 5px $brand-color;
-      padding: 3px 0px 3px 3px;
-      margin: 5px 3px 3px 3px;
-      border-radius: 5px;
-      border: 1px solid $light-grey;
-    }
-  }
-
-  &__footer {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    min-height: 26px;
-
-    &__line {
-      font-style: italic;
-      color: $dark-grey;
-      align-self: flex-end;
-      margin-right: auto;
-    }
-    &__author {
-      font-style: italic;
-      color: $dark-grey;
-      min-width: 40px;
-      word-wrap: break-word;
-      align-self: flex-end;
-      margin-right: auto;
-    }
-  }
-
-  &__pointdelta-field {
-    min-width: 90px;
-    width: 40%;
-  }
-
-  &__pointdelta {
-    padding: 20px;
-    &--null {
-      display: none;
-    }
-    &--zero {
-      display: none;
-    }
     &--positive {
-      @include badgeFormat($brand-color, white);
-      position: absolute;
-      top: -11px;
-      left: -11px;
+      border-left: 3px solid $actionGreen;
+      color: $actionGreen;
     }
     &--negative {
-      @include badgeFormat($dark-red, white);
-      position: absolute;
-      top: -11px;
-      left: -11px;
+      border-left: 3px solid $actionRed;
+      color: $actionRed;
     }
-
-    &--small {
-      font-size: $font-size-small;
+    &--neutral {
+      border-left: 3px solid $neutralSecondaryText;
+      color: $neutralSecondaryText;
     }
   }
 
-  &--unsaved {
-    @extend .comment;
-    border: 2px solid red !important;
-
-    &:hover {
-      border: 2px solid red !important;
-    }
+  &__text-area {
+    border: 0px;
+    background-color: #fafafa;
+    resize: none;
+    font-size: 12px;
+    line-height: 1.83;
   }
 
-  &:hover {
-    border-top: 2px solid $dark-grey !important;
-    border-bottom: 2px solid $dark-grey !important;
-    border-left: 2px solid $dark-grey !important;
+  &__comment {
+    font-size: 12px;
+    line-height: 1.67;
+
+    padding: 4px 11px;
   }
 }

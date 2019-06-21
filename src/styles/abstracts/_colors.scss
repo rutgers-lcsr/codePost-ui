@@ -1,0 +1,96 @@
+// Colors
+
+// Brand Colors
+$brandPrimary: get('theme.brandPrimary');
+$brandLight: get('theme.brandLight');
+$brandVibrant: get('theme.brandVibrant');
+$brandDark: get('theme.brandDark');
+$brandAccent: get('theme.brandAccent');
+$brandBlack: get('theme.brandBlack');
+$brandBlackHighlight: get('theme.brandBlackHighlight');
+
+// Action Colors
+$actionBlue: get('theme.actionBlue');
+$actionBlueFade: get('theme.actionBlueFade');
+$actionGreen: get('theme.actionGreen');
+$actionGreenFade: get('theme.actionGreenFade');
+$actionYellow: get('theme.actionYellow');
+$actionYellowFade: get('theme.actionYellowFade');
+$actionRed: get('theme.actionRed');
+$actionRedFade: get('theme.actionRedFade');
+
+// Green Palette
+$green1: get('theme.green1');
+$green2: get('theme.green2');
+$green3: get('theme.green3');
+$green4: get('theme.green4');
+$green5: get('theme.green5');
+$green6: get('theme.green6');
+$green7: get('theme.green7');
+$green8: get('theme.green8');
+$green9: get('theme.green9');
+$green10: get('theme.green10');
+
+// Neutral Colors - Light Background
+$neutralTitle: get('theme.neutralTitle');
+$neutralMainText: get('theme.neutralMainText');
+$neutralSecondaryText: get('theme.neutralSecondaryText');
+$neutralDisable: get('theme.neutralDisable');
+$neutralBorder: get('theme.neutralBorder');
+$neutralDivider: get('theme.neutralDivider');
+$neutralBackground: get('theme.neutralBackground');
+
+// Neutral Colors - Dark Background
+$neutralDarkTitle: get('theme.neutralDarkTitle');
+$neutralDarkMainText: get('theme.neutralDarkMainText');
+$neutralDarkSecondaryText: get('theme.neutralDarkSecondaryText');
+$neutralDarkDisable: get('theme.neutralDarkDisable');
+$neutralDarkBorder: get('theme.neutralDarkBorder');
+$neutralDarkDivider: get('theme.neutralDarkDivider');
+$neutralDarkBackground: get('theme.neutralDarkBackground');
+
+// Export for tsx
+:export {
+  brandPrimary: $brandPrimary;
+  brandLight: $brandLight;
+  brandVibrant: $brandVibrant;
+  brandDark: $brandDark;
+  brandAccent: $brandAccent;
+  brandBlack: $brandBlack;
+  brandBlackHighlight: $brandBlackHighlight;
+
+  actionBlue: $actionBlue;
+  actionBlueFade: $actionBlueFade;
+  actionGreen: $actionGreen;
+  actionGreenFade: $actionGreenFade;
+  actionYellow: $actionYellow;
+  actionYellowFade: $actionYellowFade;
+  actionRed: $actionRed;
+  actionRedFade: $actionRedFade;
+
+  green1: $green1;
+  green2: $green2;
+  green3: $green3;
+  green4: $green4;
+  green5: $green5;
+  green6: $green6;
+  green7: $green7;
+  green8: $green8;
+  green9: $green9;
+  green10: $green10;
+
+  neutralTitle: $neutralTitle;
+  neutralMainText: $neutralMainText;
+  neutralSecondaryText: $neutralSecondaryText;
+  neutralDisable: $neutralDisable;
+  neutralBorder: $neutralBorder;
+  neutralDivider: $neutralDivider;
+  neutralBackground: $neutralBackground;
+
+  neutralDarkMainText: $neutralDarkMainText;
+  neutralDarkSecondaryText: $neutralDarkSecondaryText;
+  neutralDarkDisable: $neutralDarkDisable;
+  neutralDarkBorder: $neutralDarkBorder;
+  neutralDarkDivider: $neutralDarkDivider;
+  neutralDarkBackground: $neutralDarkBackground;
+}

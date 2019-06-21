@@ -13,6 +13,12 @@ const getClientEnvironment = require('./env');
 const paths = require('./paths');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
+const tsImportPluginFactory = require('ts-import-plugin')
+
+var sass = require("node-sass");
+const sassUtils = require("node-sass-utils")(sass);
+const themeVars = require('../src/styles/abstracts/_theme.js');
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
 const publicPath = '/';
@@ -22,6 +28,7 @@ const publicPath = '/';
 const publicUrl = '';
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
+
 
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
@@ -160,6 +167,12 @@ module.exports = {
                 options: {
                   // disable type checker - we will use it in fork plugin
                   transpileOnly: true,
+                  getCustomTransformers: () => ({
+                    before: [ tsImportPluginFactory( { style: true } ) ]
+                  }),
+                  compilerOptions: {
+                    module: 'es2015'
+                  }
                 },
               },
             ],
@@ -201,15 +214,53 @@ module.exports = {
               },
             ],
           },
+
+
+          //------------------- For Ant Theme Override -------------------//
+          // https://ant.design/docs/react/customize-theme
+          {
+            test: /\.less$/,
+            use: [{
+              loader: 'style-loader',
+            }, {
+              loader: 'css-loader', // translates CSS into CommonJS
+            }, {
+              loader: 'less-loader', // compiles Less to CSS
+              options: {
+                modifyVars: themeVars.ant,
+                javascriptEnabled: true,
+              },
+            }],
+          },
+
           //------------------- Add SCSS Loaders -------------------//
           // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
           {
-            test:/\.scss$/,
-            loaders: [
-              require.resolve('style-loader'),
-              require.resolve('css-loader'),
-              require.resolve('sass-loader')
-            ]
+            test: /\.scss/,
+            use: [{
+              loader: 'style-loader',
+            }, {
+              loader: 'css-loader',
+            }, {
+              loader: 'sass-loader',
+              // ------ Sharing variables between JS and SASS --------//
+              // https://itnext.io/sharing-variables-between-js-and-sass-using-webpack-sass-loader-713f51fa7fa0
+              options: {
+                functions: {
+                  "get($keys)": function(keys) {
+                    keys = keys.getValue().split(".");
+                    let result = themeVars;
+                    let i;
+                    for (i = 0; i < keys.length; i++) {
+                      result = result[keys[i]];
+                    }
+                    result = sassUtils.castToSass(result);
+                    return result;
+                  }
+                }
+              }
+
+            }],
           },
 
           // "file" loader makes sure those assets get served by WebpackDevServer.

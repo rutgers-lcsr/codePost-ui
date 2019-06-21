@@ -1,51 +1,52 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* other library imports */
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import { Snackbar } from 'react-md';
+import Loadable from 'react-loadable';
 
-import IndexManager from './components/IndexManager';
-import TermsOfService from './components/TermsAndPrivacy/TermsOfService';
-import { TopBar } from './components/TopBar';
+/* codePost imports */
+import LogInAs from './components/core/LogInAs';
 
-import LogInAs from './LogInAs';
-
-import Home from './Home';
+import Home from './components/core/Home';
 
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
-
-import { IToast } from './types/common';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
-import Settings from './settings';
+import IndexManager from './components/pre-auth/IndexManager';
 
-import RouterLoading from './RouterLoading';
+import Settings from './components/core/settings';
 
-import Loadable from 'react-loadable';
+import RouterLoading from './components/core/RouterLoading';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
 
 const AsyncStudent = Loadable({
-  loader: () => import('./Student'),
+  loader: () => import('./components/student/Student'),
   loading: RouterLoading,
 });
 
 const AsyncGrader = Loadable({
-  loader: () => import('./Grader'),
+  loader: () => import('./components/grader/Grader'),
   loading: RouterLoading,
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./Grade'),
+  loader: () => import('./components/code-review/Grade'),
   loading: RouterLoading,
 });
 
 const AsyncAdmin = Loadable({
-  loader: () => import('./Admin'),
+  loader: () => import('./components/admin/Admin'),
   loading: RouterLoading,
 });
 
@@ -56,9 +57,6 @@ interface IState {
   has_token: boolean;
   user?: UserType;
   toRedirect: boolean;
-  toasts: IToast[];
-  longToasts: IToast[];
-  errorToasts: IToast[];
   triedLoading: boolean;
 }
 
@@ -69,9 +67,6 @@ class App extends React.Component<{}, IState> {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
       toRedirect: false,
-      toasts: [],
-      longToasts: [],
-      errorToasts: [],
       triedLoading: false,
     };
   }
@@ -177,10 +172,9 @@ class App extends React.Component<{}, IState> {
       });
   };
 
-  public handleLogin = (e: any, data: any) => {
-    e.preventDefault();
+  public handleLogin = (username: string, password: string) => {
     fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
-      body: JSON.stringify(data),
+      body: JSON.stringify({ username, password }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -209,54 +203,17 @@ class App extends React.Component<{}, IState> {
       });
   };
 
-  // ------------------- Toast functions -------------------
-
-  public addToast = (text: string, action: string | undefined) => {
-    const toasts = this.state.toasts.slice();
-    toasts.push({ text, action });
-    this.setState({ toasts });
-  };
-
-  public addLongToast = (text: string, action: string | undefined) => {
-    const longToasts = this.state.longToasts.slice();
-    longToasts.push({ text, action });
-    this.setState({ longToasts });
-  };
-
-  public addErrorToast = (text: string, action: string | undefined) => {
-    const errorToasts = this.state.errorToasts.slice();
-    errorToasts.push({ text, action });
-    this.setState({ errorToasts });
-  };
-
-  public dismissToast = () => {
-    const [, ...toasts] = this.state.toasts;
-    this.setState({ toasts });
-  };
-
-  public dismissLongToast = () => {
-    const [, ...longToasts] = this.state.longToasts;
-    this.setState({ longToasts });
-  };
-
-  public dismissErrorToast = () => {
-    const [, ...errorToasts] = this.state.errorToasts;
-    this.setState({ errorToasts });
-  };
-
   public render() {
     if (this.state.toRedirect) {
       return <Redirect to={'/'} />;
     }
 
-    // Disabling this rule means we can use the render prop of Route to pass props to components
     if (typeof this.state.user !== 'undefined') {
       const { user } = this.state;
       const courseAdminCourses = user.courseadminCourses;
       const graderCourses = user.graderCourses;
       const studentCourses = user.studentCourses;
       const superGraderCourses = this.state.user.superGraderCourses;
-      const email = user.email;
       const sectionsLed = user.leaderSections;
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
@@ -283,7 +240,14 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => <AsyncStudent {...props} email={email} initialCourses={studentCourses} />}
+            render={(props: any) => (
+              <AsyncStudent
+                {...props}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
+                initialCourses={studentCourses}
+              />
+            )}
           />
         );
       }
@@ -293,13 +257,14 @@ class App extends React.Component<{}, IState> {
         graderRoute = (
           <Route
             exact={true}
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
             render={(props: any) => (
               <AsyncGrader
                 {...props}
-                email={email}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
                 superGraderCourses={superGraderCourses}
-                initialCourses={graderCourses}
+                courses={graderCourses}
                 sectionsLed={sectionsLed}
               />
             )}
@@ -312,16 +277,14 @@ class App extends React.Component<{}, IState> {
         adminRoute = (
           <Route
             exact={true}
-            path={`${ADMIN}/:courseName?/:period?/:panelName?/:panelArg?`}
+            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
             render={(props: any) => (
               <AsyncAdmin
                 {...props}
                 addCourse={this.addCourseToAdminList}
                 user={this.state.user}
                 initialCourses={courseAdminCourses}
-                addToast={this.addToast}
-                addLongToast={this.addLongToast}
-                addErrorToast={this.addErrorToast}
+                logout={this.handleLogout}
               />
             )}
           />
@@ -334,14 +297,7 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADE}/:submissionId`}
-            render={(props: any) => (
-              <AsyncGrade
-                {...props}
-                user={this.state.user}
-                addToast={this.addToast}
-                addErrorToast={this.addErrorToast}
-              />
-            )}
+            render={(props: any) => <AsyncGrade {...props} user={this.state.user} />}
           />
         );
       }
@@ -354,108 +310,59 @@ class App extends React.Component<{}, IState> {
       } else if (!isStudent && isGrader && !isAdmin) {
         pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
       } else if (!isStudent && !isGrader && isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('admin')} />;
       } else {
         pageSelector = (
           <Route
             exact={true}
             path={HOME}
             render={(props: any) => (
-              <Home {...props} isAuthed={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+              <Home {...props} isLoggedIn={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
             )}
           />
         );
       }
 
-      const snackBarStyle = {
-        width: '100%',
-        fontWeight: 500,
-        fontSize: 14,
-        backgroundColor: '#24b47e',
-        maxWidth: '100%',
-      };
-
-      const errorSnackBarStyle = {
-        width: '100%',
-        fontWeight: 500,
-        fontSize: 14,
-        backgroundColor: 'red',
-        maxWidth: '100%',
-      };
-
-      const isChromeBrowser = window.hasOwnProperty('chrome');
+      // const isChromeBrowser = window.hasOwnProperty('chrome');
 
       return (
-        <div>
-          <TopBar
-            email={this.state.user.email}
-            handleLogout={this.handleLogout}
-            showSettings={this.state.user.canCreateCourses}
-            isChromeBrowser={isChromeBrowser}
+        <Switch>
+          <Route
+            exact={true}
+            path={'/loginAs/:email'}
+            render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
           />
-          <div className="AppHome">
-            <Switch>
-              <Route
-                exact={true}
-                path={'/loginAs/:email'}
-                render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-              />
 
-              <Route
-                exact={true}
-                path={'/settings'}
-                render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
-              />
-              <Route
-                exact={true}
-                path={'/terms'}
-                render={(props: any) => <TermsOfService {...props} isAuthenticated={true} />}
-              />
+          <Route
+            exact={true}
+            path={'/settings'}
+            render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
+          />
 
-              {pageSelector}
-              {studentRoute}
-              {graderRoute}
-              {adminRoute}
-              {gradeRoute}
-            </Switch>
-            <Snackbar
-              id="short-snackbar"
-              className="short-snackbar"
-              toasts={this.state.toasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={2000}
-              onDismiss={this.dismissToast}
-              style={snackBarStyle}
-            />
-            <Snackbar
-              id="long-snackbar"
-              className="long-snackbar"
-              toasts={this.state.longToasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={4000}
-              onDismiss={this.dismissLongToast}
-              style={snackBarStyle}
-            />
-            <Snackbar
-              id="error-snackbar"
-              className="error-snackbar"
-              toasts={this.state.errorToasts}
-              autohide={true}
-              lastChild={true}
-              autohideTimeout={5000}
-              onDismiss={this.dismissErrorToast}
-              style={errorSnackBarStyle}
-            />
-          </div>
-        </div>
+          {pageSelector}
+          {studentRoute}
+          {graderRoute}
+          {adminRoute}
+          {gradeRoute}
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={true}
+            handleLogout={this.handleLogout}
+          />
+        </Switch>
       );
     }
+
     if (this.state.triedLoading) {
       return (
         <div>
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} />
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={false}
+            handleLogout={this.handleLogout}
+          />
         </div>
       );
     } else {

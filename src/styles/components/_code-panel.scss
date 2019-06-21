@@ -1,0 +1,38 @@
+.code-panel {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+
+  &--code {
+    // flex: 0 1 600px;
+  }
+
+  &--comments {
+    flex: 1 0 auto;
+    min-width: 250px;
+    position: relative;
+
+    overflow-y: scroll;
+    padding-right: 10px;
+
+    // /* width */
+    // &::-webkit-scrollbar {
+    //   width: 8px;
+    // }
+
+    // /* Track */
+    // &::-webkit-scrollbar-track {
+    //   background: #f2f2f2;
+    // }
+
+    // /* Handle */
+    // &::-webkit-scrollbar-thumb {
+    //   background: $actionGreenFade;
+    // }
+
+    // /* Handle on hover */
+    // &::-webkit-scrollbar-thumb:hover {
+    //   background: $actionGreen;
+    // }
+  }
+}

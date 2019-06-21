@@ -1,0 +1,36 @@
+.cp-dropdown {
+  width: 100%;
+
+  &--light {
+    color: black;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.7) !important;
+    }
+  }
+
+  // FIXME: Dark theme dropdown not perfect yet;
+  &--dark {
+    border: solid 1px #5e5e5e !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+
+  .cp-button {
+    &--light {
+      color: black;
+    }
+  }
+}
+
+.ant-dropdown-open {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.ant-dropdown {
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15) !important;
+}
