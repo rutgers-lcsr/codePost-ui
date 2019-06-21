@@ -3,7 +3,7 @@ import * as React from 'react';
 // import SyntaxHighlighter from 'react-syntax-highlighter';
 // import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
-import { FileType } from '../../../infrastructure/file';
+import { File, FileType } from '../../../infrastructure/file';
 
 import CodePanelSizing from './CodePanelSizing';
 import { Magnifier, Sizer } from './CodePanelWidgets';
@@ -69,25 +69,25 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       comments.scrollTop = comments.scrollTop + e.deltaY;
     }
 
-    const codeUnderlay = document.getElementById('code-underlay');
+    const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
 
     // Scroll horizontally
-    if (codeUnderlay !== null && codeSyntax !== null) {
-      codeSyntax.scrollLeft = codeUnderlay.scrollLeft;
+    if (codeMain !== null && codeSyntax !== null) {
+      codeSyntax.scrollLeft = codeMain.scrollLeft;
     }
   };
 
   public scrollFromComments = () => {
     const comments = document.getElementById('code-panel--comments');
-    const codeUnderlay = document.getElementById('code-underlay');
+    const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
 
-    if (comments !== null && codeUnderlay !== null) {
-      codeUnderlay.scrollTop = comments.scrollTop;
+    if (comments !== null && codeMain !== null) {
+      codeMain.scrollTop = comments.scrollTop;
 
       if (codeSyntax !== null) {
-        codeSyntax.scrollTop = codeUnderlay.scrollTop;
+        codeSyntax.scrollTop = codeMain.scrollTop;
       }
     }
   };
@@ -113,14 +113,14 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
   public resizeComponents = () => {
     if (this.props.windowheight !== 0) {
       const codeContainer = document.getElementById('code-container');
-      const codeUnderlay = document.getElementById('code-underlay');
+      const codeMain = document.getElementById('code-main');
       const codeSyntax = document.getElementById('code-syntax');
       const commentsContainer = document.getElementById('code-panel--comments');
       const comments = document.getElementById('comments');
 
       const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
 
-      if (codeContainer !== null && codeUnderlay !== null && commentsContainer !== null && comments !== null) {
+      if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
         const codeContainerMaxHeight =
           this.props.windowheight -
           codeContainer.getBoundingClientRect().top -
@@ -132,22 +132,22 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
           codeHeight + themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.paddingBottom,
         );
 
-        const codeUnderlayHeight =
+        const codeMainHeight =
           codeContainerHeight - themeVars.grade.codeContainer.paddingTop - themeVars.grade.codeContainer.paddingBottom;
 
         codeContainer.style.setProperty('height', `${codeContainerHeight}px`);
-        codeUnderlay.style.setProperty('height', `${codeUnderlayHeight}px`);
+        codeMain.style.setProperty('height', `${codeMainHeight}px`);
         if (codeSyntax !== null) {
-          codeSyntax.style.setProperty('height', `${codeUnderlayHeight}px`);
+          codeSyntax.style.setProperty('height', `${codeMainHeight}px`);
         }
 
-        const codeUnderlayWidth =
+        const codeMainWidth =
           codeContainer.offsetWidth -
           themeVars.grade.codeContainer.paddingLeft -
           themeVars.grade.codeContainer.paddingRight;
-        codeUnderlay.style.setProperty('width', `${codeUnderlayWidth}px`);
+        codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {
-          codeSyntax.style.setProperty('width', `${codeUnderlayWidth}px`);
+          codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
         }
 
         const commentsContainerHeight =
@@ -186,7 +186,9 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
       fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
       // FIXME: 10 on next line comes from SyntaxHighlighter styles
-      paddingLeft: `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+      paddingLeft: File.isMarkdown(this.props.file)
+        ? '0px'
+        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
       highlightHeight: `${themeVars.grade.highlightHeight * this.state.zoom}px`,
     };
   };
@@ -200,6 +202,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
   };
 
   public render() {
+    // @ts-ignore
     const { highlightHeight, ...codeStyle } = this.getCodeStyle();
 
     // FIXME: This only catches existing highlights.
@@ -208,6 +211,8 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     [].forEach.call(highlights, (highlight: any) => {
       highlight.style.setProperty('height', highlightHeight);
     });
+
+    console.log('codepanellayout render');
 
     return (
       <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>

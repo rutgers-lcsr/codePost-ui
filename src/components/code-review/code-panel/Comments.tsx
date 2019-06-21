@@ -202,6 +202,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
     const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
+    console.log('codeHeight', codeHeight);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
@@ -237,6 +238,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
+    console.log('comments render');
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;

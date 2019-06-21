@@ -294,6 +294,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [isLoading, setIsLoading] = React.useState(false);
 
   useOnClickOutside(ref, (e: any) => {
+    console.log('hello');
     const fileMenu = document.getElementById('file-menu');
     if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
       setNotice(true);

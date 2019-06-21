@@ -31,6 +31,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   }
 
   const onBlockElementClick = (e: any) => {
+    console.log('clicking');
     const index = e.currentTarget.getAttribute('index-number');
     if (index) {
       const newComment: CommentType = {
@@ -46,7 +47,11 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         author: props.user,
       };
 
+      console.log('clicked', newComment);
+
       props.addComment(newComment, props.file);
+
+      // props.addComment(newComment, props.file);
       // if (didAddComment) {
       //   e.currentTarget.className = 'markdown-code__block--commented';
       // }
@@ -62,49 +67,60 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   };
 
   const getClassName = (index: number): string => {
-    let className = 'markdown-code__block--empty';
+    let className = 'markdown-block markdown-block--empty active';
     if (blockContainsComment(index)) {
-      className = 'markdown-code__block--commented';
+      className = 'markdown-block markdown-block--commented active';
     }
     return className;
   };
 
   const renderers = useMarkdownRenderers(onBlockElementClick, getClassName);
-  console.log('renderers', renderers);
 
-  // <ReactMarkdown includeNodeIndex={true} sourcePos={true} renderers={renderers} escapeHtml={true}>
   return (
-    <div id="code-underlay" style={{ position: 'absolute', top: '25px', overflow: 'scroll' }}>
-      <ReactMarkdown includeNodeIndex={true} sourcePos={true} escapeHtml={true}>
-        {markdown}
-      </ReactMarkdown>
-    </div>
+    <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
+      {markdown}
+    </ReactMarkdown>
   );
 };
 
-const useMarkdownRenderers = (onClick: any, getClassName: (index: any) => string) => {
-  const headingRenderer = (props: any) => {
-    return React.createElement(
-      `h${props.level}`,
-      {
+const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => string) => {
+  // Hack to determine which block elements are nested
+  // topLevelChildren is initialized when the rootRenderer is called
+  let topLevelChildren: number | undefined;
+
+  const blockProps = (props: any) => {
+    let isNestedBlock = false;
+    if (topLevelChildren !== undefined && props.parentChildCount && topLevelChildren !== props.parentChildCount) {
+      isNestedBlock = true;
+    }
+
+    if (!isNestedBlock) {
+      return {
         className: getClassName(props.index),
         'index-number': props.index,
-        onClick,
-        style: {},
-      },
-      props.children,
+        onMouseUp,
+      };
+    }
+    return {};
+  };
+
+  const rootRenderer = (props: any) => {
+    topLevelChildren = props.children.length;
+    return (
+      <div id="code-markdown" className="markdown">
+        {props.children}
+      </div>
     );
   };
 
+  const headingRenderer = (props: any) => {
+    return React.createElement(`h${props.level}`, blockProps(props), props.children);
+  };
+
   const paragraphRenderer = (props: any) => {
-    if (props.index === 0) {
-      return <p>{props.children}</p>;
-    }
     return (
       <p
-        className={getClassName(props.index)}
-        index-number={props.index}
-        onClick={onClick}
+        {...blockProps(props)}
         // @ts-ignore
         style={{ paddingTop: '6px', paddingBottom: '6px' }}
       >
@@ -114,63 +130,54 @@ const useMarkdownRenderers = (onClick: any, getClassName: (index: any) => string
   };
 
   const listRenderer = (props: any) => {
-    return React.createElement(
-      props.ordered ? 'ol' : 'ul',
-      {
-        className: getClassName(props.index),
-        'index-number': props.index,
-        onClick,
-      },
-      props.children,
-    );
+    return React.createElement(props.ordered ? 'ol' : 'ul', blockProps(props), props.children);
   };
 
   const codeRenderer = (props: any) => {
-    const className = props.language && `language-${props.language}`;
-    let codeString = props.value ? props.value : ' ';
-    if (props.value && props.language && props.language !== 'output') {
-      codeString = (
+    if (props.language !== 'output') {
+      return (
         <SyntaxHighlighter
           language={props.language}
           style={googlecode}
-          customStyle={{ backgroundColor: 'transparent', borderWidth: '0px' }}
+          customStyle={{
+            backgroundColor: '#f2f2f2',
+            borderTop: '0px',
+            borderRight: '0px',
+            borderBottom: '0px',
+            margin: '0px 0px 12px 0px',
+          }}
           showLineNumbers={false}
           wrapLines={false}
+          {...blockProps(props)}
         >
-          {props.value}
+          {props.value ? props.value : ' '}
         </SyntaxHighlighter>
       );
+    } else {
+      // FIXME special case for output rendering
+      return <div {...blockProps(props)}>output!!!!!</div>;
     }
-    const code = React.createElement('code', className ? { className } : null, codeString);
-    return React.createElement(
-      'pre',
-      {
-        className: `${getClassName(props.index)} ipynb-code__${props.language}`,
-        'index-number': props.index,
-        onClick,
-      },
-      code,
-    );
   };
 
   const thematicBreakRenderer = (props: any) => {
-    return (
-      <hr className={getClassName(props.index)} index-number={props.index} onClick={onClick}>
-        {props.children}
-      </hr>
-    );
+    return <hr {...blockProps(props)}>{props.children}</hr>;
   };
 
+  // @ts-ignore
   const blockQuoteRenderer = (props: any) => {
     return (
-      <blockquote className={getClassName(props.index)} index-number={props.index} onClick={onClick}>
-        {props.children}
-      </blockquote>
+      <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
+        <blockquote style={{ marginBottom: '0px' }}>{props.children}</blockquote>
+      </div>
     );
   };
 
   const tableRenderer = (props: any) => {
-    return <table style={{ margin: '10px 0px 10px 60px' }}>{props.children}</table>;
+    return (
+      <div {...blockProps(props)} style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
+        <table className="markdown-table">{props.children}</table>
+      </div>
+    );
   };
 
   // Parse html encountered to markdown
@@ -178,13 +185,14 @@ const useMarkdownRenderers = (onClick: any, getClassName: (index: any) => string
   // but some html might be put in a 'markdown' cell type. This function converts that to markdown
   const parsedHtmlRenderer = (props: any) => {
     return (
-      <div onClick={onClick} className={getClassName(props.index)} index-number={props.index}>
+      <div {...blockProps(props)}>
         <ReactMarkdown>{turndown.turndown(props.value)}</ReactMarkdown>
       </div>
     );
   };
 
   return {
+    root: rootRenderer,
     paragraph: paragraphRenderer,
     heading: headingRenderer,
     list: listRenderer,

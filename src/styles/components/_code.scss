@@ -13,7 +13,6 @@
     top: 25px;
 
     // FIXME: get rid of all these !importants
-    font-family: $fontCode !important;
 
     border: 0px !important;
     overflow-x: scroll;
@@ -35,6 +34,23 @@
       white-space: pre;
     }
 
+    &--underlay {
+      font-family: $fontCode !important;
+      color: transparent;
+    }
+
+    &--syntax {
+      font-family: $fontCode !important;
+
+      // We can hide code-syntax scrollbar while showing code-main scrollbar
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &--markdown {
+    }
+
     .highlight {
       display: inline-block;
       background-color: get('theme.highlight');
@@ -52,17 +68,6 @@
         color: transparent; /* Gecko Browsers */
         background: transparent;
       }
-    }
-  }
-
-  #code-underlay.code {
-    color: transparent;
-  }
-
-  #code-syntax {
-    // We can hide code-syntax scrollbar while showing code-underlay scrollbar
-    &::-webkit-scrollbar {
-      display: none;
     }
   }
 }

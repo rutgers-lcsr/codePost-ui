@@ -14,35 +14,42 @@ export interface ICodeContentCoreProps {
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle: React.CSSProperties;
+  codeStyle?: React.CSSProperties;
 }
 
 export interface ICodeContentEditProps {
   addComment: (comment: CommentType, file: FileType) => void;
 }
 
-const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
+const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
+
+  // console.log('props', props);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
     props.addComment(comment, file);
   };
 
-  const { addComment, ...codeProps } = { ...props };
-
   if (File.isMarkdown(props.file)) {
+    const { addComment, codeStyle, ...codeProps } = { ...props };
     console.log('markdown');
-    return <Markdown {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />;
+    return (
+      <div id="code-main" className="code code--markdown" style={codeStyle}>
+        <Markdown {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />
+      </div>
+    );
   } else {
     console.log('code');
+    const { addComment, ...codeProps } = { ...props };
+    // @ts-ignore
     const { paddingLeft, ...codeStyle } = props.codeStyle;
 
     return (
       <div>
         <SyntaxHighlighter
           id="code-syntax"
-          className="code"
+          className="code code--syntax"
           language={File.language(props.file)}
           style={googlecode}
           showLineNumbers={true}
@@ -51,13 +58,13 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           {props.file.code}
         </SyntaxHighlighter>
-        <div id="code-underlay" className="code transparent" style={props.codeStyle}>
+        <div id="code-main" className="code code--underlay" style={props.codeStyle}>
           <Code {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />;
         </div>
       </div>
     );
   }
-};
+});
 
 const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICodeContentEditProps>) => {
   return class WrappedComponent extends React.Component<ICodeContentCoreProps, {}> {
