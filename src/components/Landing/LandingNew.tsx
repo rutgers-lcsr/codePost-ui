@@ -162,7 +162,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
     );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        <div style={{ marginBottom: 75, scrollSnapAlign: 'center' }}>
+        <div style={{ marginBottom: 75 }}>
           <LandingPanel
             text={panelThreeText}
             title="3. SIMPLIFY YOUR INFRASTRUCTURE "
@@ -173,7 +173,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
             textSize="normal"
           />
         </div>
-        <div style={{ scrollSnapAlign: 'center', maxWidth: 900, width: '100%' }}>
+        <div style={{ maxWidth: 900, width: '100%' }}>
           <APIExample />
         </div>
       </div>

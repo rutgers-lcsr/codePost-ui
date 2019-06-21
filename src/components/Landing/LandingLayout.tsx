@@ -56,19 +56,15 @@ class LandingLayout extends React.PureComponent<IProps, {}> {
           height: '100vh',
           overflowX: 'hidden',
           position: 'relative',
-          scrollSnapType: 'y mandatory',
-          overflowY: 'scroll',
-          display: 'flex',
-          flexDirection: 'column',
         }}
         id="LandingLayout"
       >
-        <div style={{ ...this.sectionStyle, background: this.heroColor, scrollSnapAlign: 'start' }}>
+        <div style={{ ...this.sectionStyle, background: this.heroColor }}>
           <div style={{ maxWidth: this.maxWidth + 50, width: '100%', paddingTop: 70, paddingBottom: 70 }}>
             {this.props.topBar}
           </div>
         </div>
-        <div style={{ scrollSnapAlign: 'center' }}>
+        <div>
           <div style={{ ...this.sectionStyle, background: this.heroColor, paddingLeft: 75, paddingRight: 75 }}>
             <div style={{ maxWidth: this.maxWidth, paddingTop: 50, display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ maxWidth: 500 }}>{this.props.hero}</div>
@@ -96,21 +92,21 @@ class LandingLayout extends React.PureComponent<IProps, {}> {
             </div>
           </div>
         </div>
-        <div style={{ ...this.sectionStyle, background: this.whyPanelColor, scrollSnapAlign: 'center' }}>
+        <div style={{ ...this.sectionStyle, background: this.whyPanelColor }}>
           <img
             src={require('../../img/landing/backgrounds/whyPanel_background.png')}
             style={{ ...this.backgroundImageStyle, paddingTop: 175 }}
           />
           <div style={{ ...this.panelStyle, maxWidth: this.maxWidth + 150 }}>{this.props.whyPanel}</div>
         </div>
-        <div style={{ ...this.sectionStyle, background: this.panelOneColor, scrollSnapAlign: 'center' }}>
+        <div style={{ ...this.sectionStyle, background: this.panelOneColor }}>
           <img
             src={require('../../img/landing/backgrounds/panelOne_background.png')}
             style={{ ...this.backgroundImageStyle, paddingTop: 100 }}
           />
           <div style={this.panelStyle}>{this.props.panelOne}</div>
         </div>
-        <div style={{ ...this.sectionStyle, background: this.panelTwoColor, scrollSnapAlign: 'center' }}>
+        <div style={{ ...this.sectionStyle, background: this.panelTwoColor }}>
           <img
             src={require('../../img/landing/backgrounds/panelTwo_background.png')}
             style={{ ...this.backgroundImageStyle, paddingTop: 300 }}
@@ -124,7 +120,7 @@ class LandingLayout extends React.PureComponent<IProps, {}> {
           />
           <div style={{ ...this.panelStyle, paddingBottom: 25 }}>{this.props.panelThree}</div>
         </div>
-        <div style={{ scrollSnapAlign: 'start' }}>
+        <div>
           <Divider />
           <div style={{ ...this.sectionStyle, background: this.GetStartedColor }}>
             <div style={{ maxWidth: this.maxWidth, width: '100%', paddingTop: 50, paddingBottom: 50 }}>
