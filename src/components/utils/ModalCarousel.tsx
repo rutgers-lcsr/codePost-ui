@@ -1,0 +1,271 @@
+import * as React from 'react';
+import { Button } from 'react-md';
+import { Link } from 'react-router-dom';
+import { createDemoCourse } from './DemoCourse';
+
+import { CourseType } from '../../infrastructure/course';
+
+interface ISlide {
+  imgLink: string;
+  text: string | any;
+}
+
+interface IProps {
+  content: ISlide[];
+  defaultIndex: number;
+  isVisible: boolean;
+  closeModal: () => void;
+  isModal: boolean;
+  className: string;
+  onlyImage: boolean;
+  userEmail?: string;
+  demoCreated: boolean;
+  onDemoCreate?: (course: CourseType) => void;
+}
+
+interface IState {
+  index: number;
+  creatingDemoCourse: boolean;
+}
+
+class ModalCarousel extends React.Component<IProps, IState> {
+  public state: Readonly<IState> = {
+    index: this.props.defaultIndex,
+    creatingDemoCourse: false,
+  };
+
+  public componentDidMount() {
+    window.addEventListener('keydown', this.keyDown.bind(this));
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown.bind(this));
+  }
+
+  public keyDown = (event: any) => {
+    switch (event.keyCode) {
+      // Left arrow
+      case 37:
+        this.slideLeft();
+        break;
+      // Right arrow
+      case 39:
+        this.slideRight();
+        break;
+      // Escape
+      case 27:
+        this.close();
+        break;
+    }
+  };
+
+  public slideRight = () => {
+    const oldIndex = this.state.index;
+    const newIndex = oldIndex < this.props.content.length - 1 ? oldIndex + 1 : oldIndex;
+    this.setState({ index: newIndex });
+  };
+
+  public slideLeft = () => {
+    const oldIndex = this.state.index;
+    const newIndex = oldIndex > 0 ? oldIndex - 1 : oldIndex;
+    if (oldIndex > 0) {
+      this.setState({ index: newIndex });
+    }
+  };
+
+  public close = () => {
+    this.props.closeModal();
+  };
+
+  public demoCourseHandler = (name: string, org: string) => {
+    this.setState({ creatingDemoCourse: true }, () => {
+      createDemoCourse(name, org).then((course) => {
+        if (typeof this.props.onDemoCreate !== 'undefined') {
+          this.props.onDemoCreate(course);
+        } else {
+          window.location.reload();
+        }
+      });
+    });
+  };
+
+  public render() {
+    const { content, className, onlyImage } = this.props;
+    const { index } = this.state;
+
+    const navDot = <div className={`${className}__navDots__navDot`} />;
+
+    const navDots = Array(content.length)
+      .fill(navDot)
+      .map((elem, i) => {
+        if (i === index) {
+          return <div className={`${className}__navDots__navDot--active`} />;
+        }
+        return elem;
+      });
+
+    const thisSlide = content[index];
+
+    let slideContent;
+    if (!onlyImage) {
+      slideContent = (
+        <div className={`${className}__content`}>
+          <div>
+            <img className={`${className}__content__image`} src={thisSlide.imgLink} />
+          </div>
+          <div className={`${className}__content__text`}>{thisSlide.text}</div>
+        </div>
+      );
+    } else {
+      slideContent = (
+        <div className={`${className}__content--onlyimg`}>
+          <img className={`${className}__content--onlyimg__image`} src={thisSlide.imgLink} />
+          <div className={`${className}__content--onlyimg__text`}>{thisSlide.text}</div>
+        </div>
+      );
+    }
+
+    let demoCourse = null;
+    if (typeof this.props.userEmail !== 'undefined' && !this.props.demoCreated) {
+      if (this.state.creatingDemoCourse) {
+        demoCourse = (
+          <div className={`${className}__demo`}>
+            <Button className={`${className}__demo__button`} disabled raised>
+              Creating your demo course...
+            </Button>
+          </div>
+        );
+      } else {
+        demoCourse = (
+          <div className={`${className}__demo`}>
+            <Button
+              className={`${className}__demo__button`}
+              raised
+              onClick={this.demoCourseHandler.bind(
+                this,
+                `${this.props.userEmail.split('@')[0]}'s course`,
+                this.props.userEmail.split('@')[1],
+              )}
+            >
+              Click here to set up a demo course
+            </Button>
+          </div>
+        );
+      }
+    }
+
+    if (this.props.isVisible) {
+      return (
+        <div className={className}>
+          {this.props.isModal ? <div className={`${className}__close`} onClick={this.close} /> : <div />}
+          <div className={`${className}__box`}>
+            <Button
+              raised
+              onClick={this.slideLeft}
+              flat={true}
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={32}
+              className={`${className}__leftBtn${this.state.index === 0 ? '--hidden' : ''}`}
+            >
+              keyboard_arrow_left
+            </Button>
+            {slideContent}
+            <Button
+              raised
+              onClick={this.slideRight}
+              flat={true}
+              icon={true}
+              forceIconFontSize={true}
+              forceIconSize={32}
+              className={`${className}__rightBtn${
+                this.state.index === this.props.content.length - 1 ? '--hidden' : ''
+              }`}
+            >
+              keyboard_arrow_right
+            </Button>
+          </div>
+          <div className={`${className}__navDots`}>{navDots}</div>
+          {demoCourse}
+        </div>
+      );
+    } else {
+      return <div />;
+    }
+  }
+}
+
+const adminCarouselContent = [
+  {
+    imgLink: require('../../img/Admin-onboarding/0-CreateCourse.png'),
+    text: 'Get started by creating a course.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/1-UploadRoster.png'),
+    text:
+      'Upload your roster to create student, grader, and admin profiles. \
+      Add yourself as a grader if you’d like to review submissions yourself.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/2-AddAssignment.png'),
+    text: 'Create your first assignment.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/3-AddRubric.png'),
+    text:
+      'Write a rubric. Graders will use the rubric to make structured comments and deductions on student work. \
+      You can use this view to track rubric comment frequency, as well!',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/4-UploadSubmission.png'),
+    text:
+      'Upload submissions by (1) using the interface shown above \
+      or (2) using the codePost API. Once uploaded, submissions become available for grading.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/5-Grade.png'),
+    text: 'Review submissions in the editor.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/6-ReviewSubmissions.png'),
+    text: 'Manage an overview of submissions by student and grader.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/7-MonitorAssignments.png'),
+    text:
+      'Keep track of all assignments and monitor submission data in real-time \
+      (e.g., # of graded submissions, mean of grades).',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/8-LinkedComments.png'),
+    text:
+      'View rubric comments usage in the Assignment rubric panel. Make rubric \
+      edits after grading and propagate changes to all submisisons.',
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/9-APIDocs.png'),
+    text: (
+      <div>
+        Check out the{' '}
+        <a href="http://docs.codepost.io" target="_blank">
+          codePost API{' '}
+        </a>
+        to start building powerful scripts and integrations. Your unique API key can be generated from your{' '}
+        <Link to={'/settings'}>settings</Link> page
+      </div>
+    ),
+  },
+  {
+    imgLink: require('../../img/Admin-onboarding/10-logo.png'),
+    text: (
+      <div>
+        Need help getting started? Schedule a setup walkthrough with us{' '}
+        <a href="https://calendly.com/codepost/demo" target="_blank">
+          here
+        </a>
+        .
+      </div>
+    ),
+  },
+];
+export { ModalCarousel, adminCarouselContent };
