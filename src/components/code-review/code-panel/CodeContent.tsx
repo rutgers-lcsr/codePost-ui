@@ -31,7 +31,7 @@ const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditP
     props.addComment(comment, file);
   };
 
-  if (File.isMarkdown(props.file)) {
+  if (File.codeType(props.file) === ('markdown' || 'jupyter')) {
     const { addComment, codeStyle, ...codeProps } = { ...props };
     console.log('markdown');
     return (

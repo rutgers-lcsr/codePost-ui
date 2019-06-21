@@ -24,7 +24,7 @@ interface IMarkdownProps {
 
 const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
   let markdown;
-  if (File.isJupyter(props.file)) {
+  if (File.codeType(props.file) === 'jupyter') {
     markdown = jupyterToMarkdown(props.file.code);
   } else {
     markdown = props.file.code;
@@ -119,11 +119,7 @@ const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => stri
 
   const paragraphRenderer = (props: any) => {
     return (
-      <p
-        {...blockProps(props)}
-        // @ts-ignore
-        style={{ paddingTop: '6px', paddingBottom: '6px' }}
-      >
+      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px' }}>
         {props.children}
       </p>
     );

@@ -11,6 +11,7 @@ import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
+import { File, FileType } from '../../../infrastructure/file';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { wait } from '../../../infrastructure/animation';
@@ -24,6 +25,7 @@ export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 interface ICommentProps {
   commentType: UICommentType;
   comment: CommentType;
+  file: FileType;
   rubricComment?: RubricCommentType;
 
   placement: number;
@@ -240,9 +242,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     let onClick;
     let cursor = 'auto';
 
-    commentElements.line = (
-      <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine + 1}</span>
-    );
+    if (File.codeType(this.props.file) === ('markdown' || 'jupyter')) {
+      commentElements.line = (
+        <span className="cp-label--mid-bold cp-label--italic">Block {this.props.comment.startLine + 1}</span>
+      );
+    } else {
+      commentElements.line = (
+        <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine + 1}</span>
+      );
+    }
 
     if (this.props.comment.author) {
       commentElements.author = (

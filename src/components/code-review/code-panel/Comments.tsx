@@ -262,6 +262,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           key={key}
           commentType={commentType}
           comment={comment}
+          file={this.props.file}
           rubricComment={rubricComment}
           placement={placement}
           changeActive={this.changeActive}

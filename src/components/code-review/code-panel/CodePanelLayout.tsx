@@ -186,9 +186,10 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
       fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
       // FIXME: 10 on next line comes from SyntaxHighlighter styles
-      paddingLeft: File.isMarkdown(this.props.file)
-        ? '0px'
-        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+      paddingLeft:
+        File.codeType(this.props.file) === ('markdown' || 'jupyter')
+          ? '0px'
+          : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
       highlightHeight: `${themeVars.grade.highlightHeight * this.state.zoom}px`,
     };
   };
