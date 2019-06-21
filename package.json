@@ -130,7 +130,7 @@
     "react-highlight-words": "^0.16.0",
     "react-spring": "^8.0.22",
     "sass-loader": "^7.1.0",
-    "ts-import-plugin": "^1.5.5",
+    "ts-import-plugin": "^1.6.1",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-plugin-prettier": "^2.0.1",
