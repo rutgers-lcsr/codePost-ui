@@ -69,6 +69,8 @@ interface IGradeState {
   activeCommentID?: number;
   unsavedComments: IdMapType;
 
+  oldCommentIDs: { [currentID: number]: number };
+
   selectedFile: FileType | undefined;
 }
 
@@ -282,6 +284,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     selectedFile: undefined,
     unsavedComments: {},
+    oldCommentIDs: {},
   };
 
   public async componentDidMount() {
@@ -401,9 +404,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public saveComment = async (comment: CommentType) => {
     let savedComment;
+    let oldCommentIDs = this.state.oldCommentIDs;
 
     if (comment.id < 0) {
       savedComment = await CommentIO.create(comment);
+      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
     } else {
       savedComment = await CommentIO.update(comment);
     }
@@ -411,9 +416,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     let unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
     unsavedComments = Grade.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
-    this.updateComment(comment.id, savedComment);
+    this.setState({ unsavedComments, oldCommentIDs, activeCommentID: undefined });
 
-    this.setState({ unsavedComments, activeCommentID: undefined });
+    this.updateComment(comment.id, savedComment);
   };
 
   public deleteComment = async (comment: CommentType) => {
@@ -645,6 +650,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           addUnsaved={this.addUnsaved}
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
+          oldCommentIDs={this.state.oldCommentIDs}
         />
       );
 

@@ -13,6 +13,8 @@ import CPPointInput from '../../core/CPPointInput';
 import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
+import { wait } from '../../../infrastructure/animation';
+
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -53,6 +55,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public componentDidMount() {
     console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
+  }
+
+  public componentWillUnmount() {
+    console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -169,9 +175,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
-  public fadeSavedState = () => {
+  public fadeSavedState = async () => {
     this.setState({ status: 'saved' });
-    window.setTimeout(() => this.setState({ status: 'idle' }), 1000);
+    await wait(1000);
+    this.setState({ status: 'idle' });
   };
 
   // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>

@@ -32,6 +32,8 @@ interface ICommentsEditProps {
   addUnsaved: any;
   removeUnsaved: any;
   removeRubricComment: any;
+
+  oldCommentIDs: any;
 }
 
 interface ICommentPlacement {
@@ -116,10 +118,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   //          The downside is that it now looks choppy
   //          The correct way to do this is to figure out how to
   //          order the animation frames.
-  public manualWait = () => {
-    window.setTimeout(() => {
-      this.placeCommentsOnNextFrame();
-    }, 5);
+  public manualWait = async () => {
+    await Animation.wait(5);
+    this.placeCommentsOnNextFrame();
   };
 
   public componentWillUnmount() {
@@ -238,7 +239,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
-    console.log('comments render');
+    console.log('comments render', this.props.oldCommentIDs);
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;
@@ -252,9 +253,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         ? this.props.rubricComments[comment.id]
         : undefined;
 
+      const key = this.props.oldCommentIDs.hasOwnProperty(comment.id)
+        ? this.props.oldCommentIDs[comment.id]
+        : comment.id;
+
       return (
         <Comment
-          key={comment.id}
+          key={key}
           commentType={commentType}
           comment={comment}
           rubricComment={rubricComment}
@@ -318,6 +323,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           addUnsaved={this.addUnsaved}
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
+          oldCommentIDs={{}}
         />
       );
     }
