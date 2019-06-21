@@ -8,6 +8,8 @@ import CPFlex from '../../../../components/core/CPFlex';
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
+type alignType = 'left' | 'right' | 'center';
+
 interface ICPRubricCategoryProps {
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
@@ -17,7 +19,7 @@ interface ICPRubricCategoryProps {
   // addComment: () => ;
   // deleteComment: () => ;
 }
-
+const centerAlign: alignType = 'center';
 const commentTableColumns = [
   {
     title: 'Comment Text',
@@ -28,11 +30,13 @@ const commentTableColumns = [
     title: 'Deduction',
     dataIndex: 'deduction',
     key: 'deduction',
+    align: centerAlign,
   },
   {
     title: 'Usage Frequency',
     key: 'linked',
     dataIndex: 'linked',
+    align: centerAlign,
     render: (count: number, record: any) => (
       <Badge count={count} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
     ),
@@ -41,6 +45,7 @@ const commentTableColumns = [
     title: '',
     dataIndex: 'delete',
     key: 'delete',
+    align: centerAlign,
     render: (record: any) => <Icon type="delete" />,
   },
 ];

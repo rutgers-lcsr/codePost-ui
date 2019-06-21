@@ -1,9 +1,10 @@
-import { Button, Icon, Input, Switch, Table } from 'antd';
+import { Button, Icon, Input, Table } from 'antd';
 
 import React from 'react';
 import { animated, useSpring } from 'react-spring';
 
 const Search = Input.Search;
+type alignType = 'left' | 'right' | 'center';
 
 const SimpleGraderRoster = () => {
   const props1 = useSpring({
@@ -17,6 +18,7 @@ const SimpleGraderRoster = () => {
     config: { duration: 100 },
   });
 
+  const centerAlign: alignType = 'center';
   const columns = [
     {
       title: 'Grader',
@@ -24,22 +26,17 @@ const SimpleGraderRoster = () => {
       key: 'grader',
     },
     {
-      title: 'Supergrader Status',
-      dataIndex: 'Supergrader',
-      key: 'supergrader',
-      render: (supergrader: boolean) => <Switch defaultChecked={supergrader} />,
-    },
-    {
       title: 'Action',
       dataIndex: 'actions',
       key: 'actions',
+      align: centerAlign,
     },
   ];
   const data = [
-    { grader: 'Jill', supergrader: true, actions: <Icon type="menu" /> },
-    { grader: 'Jack', supergrader: false, actions: <Icon type="menu" /> },
-    { grader: 'Martha', supergrader: false, actions: <Icon type="menu" /> },
-    { grader: 'Ravi', supergrader: false, actions: <Icon type="menu" /> },
+    { grader: 'Jill', actions: <Icon type="menu" /> },
+    { grader: 'Jack', actions: <Icon type="menu" /> },
+    { grader: 'Martha', actions: <Icon type="menu" /> },
+    { grader: 'Ravi', actions: <Icon type="menu" /> },
   ];
 
   const content = <Table columns={columns} dataSource={data} pagination={false} />;

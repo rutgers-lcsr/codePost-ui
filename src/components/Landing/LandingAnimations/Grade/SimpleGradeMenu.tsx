@@ -1,6 +1,7 @@
 import { Badge, Menu } from 'antd';
 import React from 'react';
 import { animated } from 'react-spring';
+const SubMenu = Menu.SubMenu;
 
 function getFileItem(name: string, points: number) {
   let pointsBadge;
@@ -24,7 +25,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
   const AnimatedMenu = animated(Menu);
   const AnimatedItem = animated(Menu.Item);
   return (
-    <div className="SimpleGradeMenu">
+    <div className="SimpleGradeMenu" style={{ height: 530 }}>
       <div style={{ padding: '13px 20px 0px 16px' }}>
         <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
           Files
@@ -32,7 +33,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
       </div>
       <AnimatedMenu
         theme="light"
-        style={{ width: 150, maxWidth: 150, minWidth: 150, height: 500, borderRadius: 5 }}
+        style={{ width: 150, maxWidth: 150, minWidth: 150, borderRadius: 5 }}
         selectedKeys={props.selectedKeys}
         mode="inline"
         className="sider-menu"
@@ -45,6 +46,29 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
         </AnimatedItem>
         <Menu.Item key="3">{getFileItem('file3.ipynb', 1)}</Menu.Item>
       </AnimatedMenu>
+      <div style={{ padding: '40px 20px 0px 16px' }}>
+        <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
+          Rubric
+        </div>
+      </div>
+      <Menu defaultOpenKeys={['1', '2']} selectedKeys={[]} mode="inline" className="rubric-menu" id="rubric-menu">
+        <SubMenu key="1" title={<span>Category 1 - General</span>}>
+          <Menu.Item key="A">
+            <span>Readme is incomplete</span>
+            <span style={{ position: 'absolute', right: '20px' }}>{-1}</span>
+          </Menu.Item>
+          <Menu.Item key="B">
+            <span>File doesn't compile</span>
+            <span style={{ position: 'absolute', right: '20px' }}>{-2}</span>
+          </Menu.Item>
+        </SubMenu>
+        <SubMenu key="2" title={<span>Category 2 - Algorithms</span>}>
+          <Menu.Item key="C">
+            <span>File2 runs in O(N^2) time </span>
+            <span style={{ position: 'absolute', right: '20px' }}>{-1}</span>
+          </Menu.Item>
+        </SubMenu>
+      </Menu>
     </div>
   );
 };

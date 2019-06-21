@@ -3,7 +3,7 @@ import { Layout } from 'antd';
 import React, { useRef, useState } from 'react';
 import { animated, config, useChain, useSpring } from 'react-spring';
 
-import { exampleCode1, exampleCode2, SimpleCodeBox, SimpleCodeHighlight } from './SimpleCodeBox';
+import { exampleCode1, SimpleCodeBox, SimpleCodeHighlight } from './SimpleCodeBox';
 import { SimpleComment } from './SimpleComments';
 
 import { SimpleGradeHeader } from './SimpleGradeHeader';
@@ -18,26 +18,20 @@ function textAnimation(text: string, indexFloat: number) {
 }
 
 function GradeAnimation() {
-  const fileRef = useRef(null);
   const commentRef = useRef(null);
+  const commentBoxRef = useRef(null);
   const textRef = useRef(null);
   const savedCommentRef = useRef(null);
-  const commentBoxRef = useRef(null);
+  const deleteCommentRef = useRef(null);
   // const delayRef = useRef(null);
 
-  const [refs] = useState([fileRef, commentRef, commentBoxRef, textRef, savedCommentRef]);
+  const [refs] = useState([commentRef, commentBoxRef, textRef, savedCommentRef, deleteCommentRef]);
   // const [counter, setCounter] = useState(0);
-
-  const { index } = useSpring({
-    index: 2,
-    from: { index: 1 },
-    config: { duration: 3000 },
-    ref: fileRef,
-  });
   // Comment growth toggle
   const commentSpring = useSpring({
     width: 110,
     from: { width: 0 },
+    delay: 2000,
     ref: commentRef,
   });
   // Comment creation
@@ -61,6 +55,14 @@ function GradeAnimation() {
     from: { index: 0 },
     config: config.slow,
     ref: savedCommentRef,
+  });
+  // Spring to delete comment
+  const deleteCommentSpring = useSpring({
+    index: 1,
+    from: { index: 0 },
+    config: config.slow,
+    delay: 1000,
+    ref: deleteCommentRef,
   });
 
   // Attempts at restarting animation -------
@@ -123,7 +125,8 @@ function GradeAnimation() {
   useChain(refs);
 
   const AnimatedComment = animated(SimpleComment);
-  const saveHighlight = (
+  // A shadow to show the user that the save button is being clicked on
+  const saveShadow = (
     <animated.div
       style={{
         width: 32,
@@ -139,14 +142,29 @@ function GradeAnimation() {
     />
   );
 
+  // A shadow to show the user that the save button is being clicked on
+  const deleteShadow = (
+    <animated.div
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        top: 285,
+        left: 198,
+        zIndex: 2,
+        background: 'red',
+        position: 'absolute',
+        opacity: deleteCommentSpring.index.interpolate({ range: [0.0, 0.25, 0.5, 1], output: [0.0, 0.25, 0.0, 0.0] }),
+      }}
+    />
+  );
+
   return (
     <div>
       <Layout style={{ maxWidth: 840 }}>
         <Sider theme="light" width={150} style={{ background: '#FFFFFF' }}>
           <SimpleGradeMenu
-            selectedKeys={index.interpolate((i) => {
-              return [Math.round(i).toString()];
-            })}
+            selectedKeys={['2']}
             secondFileDeduction={saveCommentSpring.index.interpolate((x) => {
               return Math.round(x) * -1;
             })}
@@ -162,10 +180,10 @@ function GradeAnimation() {
           </Header>
           <Layout style={{ padding: 20 }}>
             <Content>
-              <SimpleCodeHighlight top={320} left={275} width={commentSpring.width} />
+              <SimpleCodeHighlight top={325} left={275} width={commentSpring.width} />
               <animated.div
                 style={{
-                  top: 320,
+                  top: 325,
                   left: commentSpring.width.interpolate((x) => {
                     return Number(x) + 275;
                   }),
@@ -177,48 +195,11 @@ function GradeAnimation() {
               >
                 <img src={require('./cursor.png')} style={{ width: 24 }} />
               </animated.div>
-              <animated.div
-                style={{
-                  display: index.interpolate((i) => {
-                    return Math.round(i) === 1 ? 'inline' : 'none';
-                  }),
-                }}
-              >
-                <SimpleCodeHighlight top={290} left={350} width={70} />
-                <SimpleCodeBox code={exampleCode2} />;
-              </animated.div>
-              <animated.div
-                style={{
-                  display: index.interpolate((i) => {
-                    return Math.round(i) === 1 ? 'none' : 'inline';
-                  }),
-                }}
-              >
-                <SimpleCodeBox code={exampleCode1} />;
-              </animated.div>
+              <SimpleCodeBox code={exampleCode1} />;
             </Content>
             <Sider width={250} style={{ background: 'rgba(0,0,0,0)' }}>
-              <animated.div
-                style={{
-                  display: index.interpolate((i) => {
-                    return Math.round(i) === 1 ? '' : 'none';
-                  }),
-                  minWidth: 250,
-                  minHeight: 250,
-                  width: 250,
-                  top: 175,
-                  position: 'relative',
-                }}
-              >
-                <SimpleComment
-                  text="This should be Integer.MIN_VALUE"
-                  line={11}
-                  points={1}
-                  top={0}
-                  classType="inactive"
-                />
-              </animated.div>
-              {saveHighlight}
+              {saveShadow}
+              {deleteShadow}
               <div style={{ position: 'absolute', top: 210 }}>
                 <animated.div
                   id="animation"
@@ -261,9 +242,9 @@ function GradeAnimation() {
 
 const GradeAnimationVideo = (props: { width: number; height: number }) => {
   return (
-    <div className="GradeAnimation" style={{ maxWidth: props.width, maxHeight: props.height }}>
+    <div className="animation--grade" style={{ maxWidth: props.width, maxHeight: props.height }}>
       <video width={props.width} height={props.height} autoPlay muted loop>
-        <source src={require('./gradeAnimation--Final.mp4')} type="video/mp4" />
+        <source src={require('./gradeAnimation-v2.mp4')} type="video/mp4" />
       </video>
     </div>
   );

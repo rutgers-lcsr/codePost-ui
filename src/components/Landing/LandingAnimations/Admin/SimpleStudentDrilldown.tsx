@@ -5,6 +5,8 @@ import { animated, useSpring } from 'react-spring';
 
 const Search = Input.Search;
 
+type alignType = 'left' | 'right' | 'center';
+
 const SimpleStudentDrilldown = (props: { student: string }) => {
   const props1 = useSpring({
     height: 500,
@@ -16,7 +18,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
     delay: 100,
     config: { duration: 100 },
   });
-
+  const centerAlign: alignType = 'center';
   const columns = [
     {
       title: 'Name',
@@ -29,34 +31,40 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
       dataIndex: 'partners',
       key: 'partners',
       width: 50,
+      align: centerAlign,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       width: 110,
+      align: centerAlign,
     },
     {
       title: 'Grade',
       dataIndex: 'grade',
       key: 'grade',
+      align: centerAlign,
     },
     {
       title: 'Grader',
       dataIndex: 'grader',
       key: 'grader',
+      align: centerAlign,
     },
     {
       title: 'Viewed',
       dataIndex: 'viewed',
       key: 'viewed',
       width: 70,
+      align: centerAlign,
     },
     {
       title: '',
       dataIndex: 'actions',
       key: 'actions',
       width: 40,
+      align: centerAlign,
     },
   ];
 
@@ -70,7 +78,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
           Graded
         </div>
       ),
-      partners: '',
+      partners: '--',
       grade: '50/50',
       grader: 'Jack',
       viewed: <Icon type="eye" theme="filled" />,
@@ -100,10 +108,10 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
           Missing
         </div>
       ),
-      partners: '',
-      grade: '',
-      grader: '',
-      viewed: '',
+      partners: '--',
+      grade: '--',
+      grader: '--',
+      viewed: '--',
       actions: <Icon type="menu" />,
     },
   ];

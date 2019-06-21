@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Typography } from 'antd';
+import { Button, Divider, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -18,30 +18,40 @@ import PreAuthLayout from './PreAuthLayout';
 
 const buttonStyle = { border: 'solid 1px #062a22', fontSize: 18, color: '#062a22' };
 
-class SignUpManager extends React.Component<{}, {}> {
-  public render() {
-    return (
-      <PreAuthLayout isLoggedIn={false}>
-        <div>
-          <br />
-          <br />
-          <Typography.Title level={1}>Join codePost</Typography.Title>
-          <br />
-          <Link to="/signup/staff/join">
-            <Button icon="team" style={buttonStyle}>
-              Join an existing course
-            </Button>
-          </Link>
-          &nbsp; &nbsp;
-          <Link to="/signup/staff/create">
-            <Button icon="usergroup-add" style={buttonStyle}>
-              Create a new course
-            </Button>
-          </Link>
+const SignUpManager = () => {
+  return (
+    <PreAuthLayout isLoggedIn={false}>
+      <div>
+        <br />
+        <br />
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400, alignItems: 'center' }}>
+            <Typography.Title level={1}>Create a Course</Typography.Title>
+            <span style={{ fontSize: 14, textAlign: 'center' }}>
+              For course leaders (e.g. TAs, teaching faculty) interested in setting up codePost for their course.
+            </span>
+            <Link to="/signup/create" style={{ marginTop: 25 }}>
+              <Button icon="user-add" style={buttonStyle}>
+                Sign Up
+              </Button>
+            </Link>
+          </div>
+          <Divider type="vertical" style={{ fontSize: 250, marginLeft: 15, marginRight: 15 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400, alignItems: 'center' }}>
+            <Typography.Title level={1}>Join a Course</Typography.Title>
+            <span style={{ fontSize: 14, textAlign: 'center' }}>
+              For staff and students who have been added to a course on codePost.
+            </span>
+            <Link to="/signup/join" style={{ marginTop: 25 }}>
+              <Button icon="team" style={buttonStyle}>
+                Join
+              </Button>
+            </Link>
+          </div>
         </div>
-      </PreAuthLayout>
-    );
-  }
-}
+      </div>
+    </PreAuthLayout>
+  );
+};
 
-export default SignUpManager;
+export { SignUpManager };

@@ -8,7 +8,7 @@ const Testimonials = () => {
   const bobImg = require('./../../img/landing/bob_sedgewick.png');
 
   const adamText = (
-    <span>
+    <span style={{ fontStyle: 'italic' }}>
       codePost has allowed me to{' '}
       <Typography.Text mark className="codePost-highlight">
         efficiently grade student code
@@ -21,7 +21,7 @@ const Testimonials = () => {
     </span>
   );
   const eitanText = (
-    <span>
+    <span style={{ fontStyle: 'italic' }}>
       codePost is the best way I have found to comment on and annotate students’ programming assignments. I find it{' '}
       <Typography.Text mark className="codePost-highlight">
         much easier to give programming feedback than any other system I have tried.
@@ -30,7 +30,7 @@ const Testimonials = () => {
   );
 
   const bobText = (
-    <span>
+    <span style={{ fontStyle: 'italic' }}>
       codePost has been a{' '}
       <Typography.Text mark className="codePost-highlight">
         paradigm shifting improvement
@@ -42,7 +42,12 @@ const Testimonials = () => {
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
       <Testimonial text={<div>{adamText}</div>} name="Adam Blank" thumbnail={adamImg} school="Caltech" />
-      <Testimonial text={<div>{bobText}</div>} name="Bob Sedgewick" thumbnail={bobImg} school="Princeton University" />
+      <Testimonial
+        text={<div>{bobText}</div>}
+        name="Robert Sedgewick"
+        thumbnail={bobImg}
+        school="Princeton University"
+      />
       <Testimonial
         text={<div>{eitanText}</div>}
         name="Eitan Mendelowitz"
@@ -62,11 +67,9 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         display: 'flex',
         flexDirection: 'column',
         maxWidth: 300,
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
       }}
     >
-      {props.text}
-      <br />
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
         <img src={props.thumbnail} style={{ width: 40, borderRadius: 20, marginRight: 15 }} />
         <div style={{ display: 'flex', flexDirection: 'column', fontSize: 17, lineHeight: 1.18 }}>
@@ -74,6 +77,8 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
           <div>{props.school}</div>
         </div>
       </div>
+      <br />
+      {props.text}
     </div>
   );
 };
