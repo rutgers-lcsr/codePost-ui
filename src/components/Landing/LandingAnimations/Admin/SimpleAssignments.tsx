@@ -5,6 +5,8 @@ import { animated, useSpring } from 'react-spring';
 
 import CPButton from '../../../../components/core/CPButton';
 
+type alignType = 'left' | 'right' | 'center';
+
 const SimpleAssignments = (props: { mouseOver: boolean }) => {
   const props1 = useSpring({
     height: 500,
@@ -16,6 +18,7 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
     delay: 100,
     config: { duration: 100 },
   });
+  const centerAlign: alignType = 'center';
   const columns = [
     {
       title: 'Assignment',
@@ -28,26 +31,31 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
       dataIndex: 'published',
       key: 'published',
       render: (published: boolean) => <Switch defaultChecked={published} />,
+      align: centerAlign,
     },
     {
-      title: 'Done',
+      title: 'Finalized',
       dataIndex: 'finalized',
       key: 'finalized',
+      align: centerAlign,
     },
     {
       title: 'In progress',
       dataIndex: 'inProgress',
       key: 'inProgress',
+      align: centerAlign,
     },
     {
       title: 'Missing',
       dataIndex: 'missing',
       key: 'missing',
+      align: centerAlign,
     },
     {
-      title: '...',
-      key: 'action',
-      render: (text: string, record: any) => <Icon type="ellipsis" className="cp-label--highlight" />,
+      title: 'Actions',
+      key: 'actions',
+      dataIndex: 'actions',
+      align: centerAlign,
     },
   ];
 
@@ -63,6 +71,7 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
       missing: 1,
       mean: 19.1,
       median: 19,
+      actions: <Icon type="menu" />,
     },
     {
       key: '2',
@@ -75,6 +84,7 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
       missing: 1,
       mean: 19.1,
       median: 19,
+      actions: <Icon type="menu" />,
     },
     {
       key: '3',
@@ -87,6 +97,7 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
       missing: 1,
       mean: 19.1,
       median: 19,
+      actions: <Icon type="menu" />,
     },
   ];
   const rowClassName = (record: any, index: number) => {

@@ -4,6 +4,7 @@ import React from 'react';
 import { animated, useSpring } from 'react-spring';
 
 const Search = Input.Search;
+type alignType = 'left' | 'right' | 'center';
 
 const SimpleStudentSubmissions = (props: { mouseOver: boolean }) => {
   const props1 = useSpring({
@@ -16,12 +17,14 @@ const SimpleStudentSubmissions = (props: { mouseOver: boolean }) => {
     delay: 100,
     config: { duration: 100 },
   });
+  const centerAlign: alignType = 'center';
   const columns = [
     {
       title: 'Expand',
       dataIndex: 'expand',
       key: 'expand',
       render: (text: string) => <div>{text}</div>,
+      align: centerAlign,
     },
     {
       title: 'Student',
@@ -32,16 +35,19 @@ const SimpleStudentSubmissions = (props: { mouseOver: boolean }) => {
       title: 'Hello World',
       dataIndex: 'helloWorld',
       key: 'helloWorld',
+      align: centerAlign,
     },
     {
       title: 'Loops',
       dataIndex: 'loops',
       key: 'loops',
+      align: centerAlign,
     },
     {
       title: 'TCP/IP',
       dataIndex: 'tcp',
       key: 'tcp',
+      align: centerAlign,
     },
   ];
 

@@ -1,4 +1,5 @@
-.AdminAnimation {
+/* Landing page modules CSS for bevel/perspective */
+.animation--admin {
   transform: scale(0.7) translateY(0) perspective(2000px) rotateY(-19deg) rotateX(1deg) rotate(1deg);
   box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
     10px 25px 20px 0 rgba(0, 0, 0, 0.05);
@@ -8,8 +9,8 @@
   }
 }
 
-.GradeAnimation {
-  transform: scale(0.9) translateX(0px) translateY(0) perspective(2000px) rotateY(20deg) rotateX(-1deg) rotate(-1deg);
+.animation--grade {
+  transform: scale(0.9) perspective(2000px) rotateY(20deg) rotateX(-1deg) rotate(-2deg);
   box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
     10px 25px 20px 0 rgba(0, 0, 0, 0.05);
   border-radius: 5px;
@@ -18,16 +19,83 @@
   }
 }
 
+.module--codeReview {
+  transform: translateY(0) perspective(4000px) rotateY(-5deg);
+}
+
+/* Animation CSS helpers */
+// Highlighted active rows in in admin tables
 .animation-row-active {
   background-color: rgba(46, 205, 133, 0.2) !important;
 }
-
+// Sert grade border to none
 .simpleCodeBox {
   border: 0px !important;
 }
-
+// Add a box shadow to grade menu
 .SimpleGradeMenu {
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+}
+
+/* Landing page CSS */
+// Testimonial highlights
+.codePost-highlight {
+  mark {
+    background-color: #d3f2e7 !important;
+    border-radius: 3px !important;
+    padding: 2px 5px 1px 5px !important;
+  }
+}
+
+// Hero "code review" highlight
+.codePost-title-highlight {
+  font-family: PTMono-Regular;
+  font-weight: 400;
+  mark {
+    background-color: #d3f2e7 !important;
+    border-radius: 4px !important;
+    padding: 3px 8px 2px 8px !important;
+    color: #24be85;
+  }
+}
+
+// Why Panel codeMirror
+.bad-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, mono;
+    line-height: 1.8;
+    font-weight: 500;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.08);
+    // need to fix the height because adding a perspective elongates the codebox
+    height: 550px;
+    overflow-y: hidden;
+    padding: 10px;
+    font-size: 11px;
+
+    &-gutters {
+      background-color: white;
+    }
+  }
+  .CodeMirror-scroll {
+    overflow-y: hidden !important;
+  }
+}
+
+// API Panel codeMirror
+.api-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, mono;
+    line-height: 1.8;
+    font-weight: 500;
+    height: auto;
+    padding: 10px;
+    font-size: 11px;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  }
+}
+
+#APIExample .ant-collapse-header {
+  color: white;
 }
 
 .Footer {

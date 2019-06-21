@@ -45,9 +45,9 @@ const iconMap = [
   { key: 'github', item: <img src={require('./GitHub.png')} style={{ width: 20, zIndex: 30 }} />, top: 300, left: 295 },
   {
     key: 'jupyter',
-    item: <img src={require('./jupyter.png')} style={{ width: 65, zIndex: 30 }} />,
-    top: 335,
-    left: 160,
+    item: <img src={require('./Jupyter.png')} style={{ width: 30, zIndex: 30 }} />,
+    top: 350,
+    left: 175,
   },
   {
     key: 'moss',

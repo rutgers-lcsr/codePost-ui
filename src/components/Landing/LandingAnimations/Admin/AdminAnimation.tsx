@@ -42,7 +42,7 @@ function AdminAnimation() {
         } else {
           clearInterval(interval);
         }
-      }, 1500);
+      }, 2000);
 
       return () => {
         clearInterval(interval);
@@ -92,9 +92,12 @@ function AdminAnimation() {
   );
 
   return (
-    <div className="AdminAnimation">
+    <div className="animation--admin">
       <div style={{ maxWidth: 800, minWidth: 800, maxHeight: 500, position: 'relative' }}>
-        <div onClick={togglePause} style={{ position: 'absolute', bottom: 15, right: 5, zIndex: 100 }}>
+        <div
+          onClick={togglePause}
+          style={{ cursor: 'pointer', position: 'absolute', bottom: 15, right: 10, zIndex: 99999 }}
+        >
           {pauseButton}
         </div>
         <Layout>

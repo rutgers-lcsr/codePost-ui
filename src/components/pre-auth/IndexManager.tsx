@@ -19,7 +19,7 @@ import CreateSignup from './CreateSignup';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
 import PrivacyPolicy from './PrivacyPolicy';
-import SignUpManager from './SignUpManager';
+import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
 
 import Logout from '../core/Logout';
@@ -55,10 +55,9 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             />
 
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
-            <Route exact={true} path={'/signup/student'} component={JoinSignup} />
-            <Route exact={true} path={'/signup/staff/join'} component={JoinSignup} />
-            <Route exact={true} path={'/signup/staff/create'} component={CreateSignup} />
-            <Route exact={true} path={'/signup/staff'} component={SignUpManager} />
+            <Route exact={true} path={'/signup/join'} component={JoinSignup} />
+            <Route exact={true} path={'/signup/create'} component={CreateSignup} />
+            <Route exact={true} path={'/signup'} component={SignUpManager} />
             <Route
               exact={true}
               path={'/terms'}

@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import CPButton from '../core/CPButton';
 
-import * as CodeMirror from 'react-codemirror';
+// import * as CodeMirror from 'react-codemirror';
+
+import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import 'codemirror/mode/javascript/javascript';
 
@@ -10,10 +12,20 @@ import Comment from '../code-review/code-panel/Comment';
 
 import { CommentType } from '../../infrastructure/comment';
 
-const badCodeMirror = (classModifier?: string) => (
+const dummyFunction = () => {
+  return;
+};
+let instance: CodeMirror.Editor | null = null;
+const setEditor = (editor: CodeMirror.Editor) => {
+  instance = editor;
+};
+
+const badCodeMirror = (
   <CodeMirror
     key={'bad code'}
-    className={`bad-codemirror ${classModifier}`}
+    className="bad-codemirror"
+    editorDidMount={setEditor}
+    onBeforeChange={dummyFunction}
     value={
       '// Student: james@myschool.edu \n\
       \n\
@@ -32,12 +44,12 @@ public boolean some(int[] x, int y) {\n\n\
     return false;\n\
   }\n\
 }\n\n\
-/*************************************/\n\
+/********************************************/\n\
 // Passed 1/2 Tests.\n\
 // Test 1: array = [1, 2, 3], target = 2\n\
 // PASSED\n\
 // Test 2: array = [1, 2, 2], target = 2\n\
-// FAILED\n'
+// FAILED'
     }
     options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'javascript' }}
   />
@@ -47,9 +59,9 @@ const comment1: CommentType = {
   id: -1,
   startChar: 1,
   endChar: 5,
-  startLine: 2,
-  endLine: 2,
-  pointDelta: 1,
+  startLine: 3,
+  endLine: 3,
+  pointDelta: 0,
   text: 'What about arr and el instead of x and y?',
   file: -1,
   rubricComment: null,
@@ -59,8 +71,8 @@ const comment2: CommentType = {
   id: -2,
   startChar: 1,
   endChar: 5,
-  startLine: 7,
-  endLine: 7,
+  startLine: 8,
+  endLine: 8,
   pointDelta: 1,
   text: "This is why you're failing test 2. You can stop looking through the array once you've found the target!",
   file: -1,
@@ -72,16 +84,14 @@ const comment3: CommentType = {
   startChar: 1,
   endChar: 5,
   startLine: 13,
-  endLine: 19,
-  pointDelta: 1,
+  endLine: 13,
+  pointDelta: 0,
   text: 'You can just return foundItem (in fact, you can return it from within the for loop).',
   file: -1,
   rubricComment: null,
 };
 
-const dummyFunction = () => {
-  return;
-};
+const commentStyle = { boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.11)', minWidth: 350, marginLeft: 10 };
 
 interface IState {
   showComments: boolean;
@@ -99,61 +109,134 @@ class CodeReview extends React.Component<{}, IState> {
     this.setState({ showComments: toChange });
   };
 
+  public setMarkings = (codeMirrorInstance: CodeMirror.Editor | null) => {
+    if (codeMirrorInstance) {
+      const css = this.state.showComments
+        ? 'background: rgba(211,242,231, 1); padding: 3px 0px 3px 0px;'
+        : 'background: rgba(211,242,231, 0)';
+      const markings = [
+        { startLine: 3, startCh: 20, endLine: 3, endCh: 34 },
+        { startLine: 8, startCh: 5, endLine: 8, endCh: 28 },
+        { startLine: 13, startCh: 2, endLine: 13, endCh: 18 },
+      ];
+      markings.forEach((marking: any) => {
+        codeMirrorInstance.getDoc().markText(
+          {
+            line: marking.startLine,
+            ch: marking.startCh,
+          },
+          {
+            line: marking.endLine,
+            ch: marking.endCh,
+          },
+          {
+            css,
+          },
+        );
+      });
+    }
+  };
+
+  public componentDidMount() {
+    this.setMarkings(instance);
+  }
+
   public render() {
+    this.setMarkings(instance);
     return (
-      <div style={{ width: 625 }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 15 }}>
-          <CPButton cpType="primary" onClick={this.changeStatus.bind(this, true)}>
+      <div
+        className="module--codeReview"
+        style={{ width: 725, display: 'flex', flexDirection: 'column', paddingTop: 50 }}
+      >
+        <div>
+          <div style={{ float: 'left', marginBottom: 35, width: 375, maxHeight: 550 }}>{badCodeMirror}</div>
+          <div style={{ width: 350, position: 'relative', float: 'right' }}>
+            <div style={{ position: 'absolute', top: 40 }}>
+              <div
+                style={{
+                  ...commentStyle,
+                  opacity: this.state.showComments ? 1 : 0,
+                  transition: 'opacity .3s ease',
+                  minHeight: 74,
+                }}
+              >
+                <Comment
+                  commentType="readonly"
+                  comment={comment1}
+                  placement={0}
+                  changeActive={dummyFunction}
+                  onSave={dummyFunction}
+                  onDelete={dummyFunction}
+                  addUnsaved={dummyFunction}
+                  removeUnsaved={dummyFunction}
+                  removeRubricComment={dummyFunction}
+                  setCommentPlacements={dummyFunction}
+                />
+              </div>
+            </div>
+            <div style={{ position: 'absolute', top: 135 }}>
+              <div
+                style={{
+                  ...commentStyle,
+                  opacity: this.state.showComments ? 1 : 0,
+                  transition: 'opacity .3s ease',
+                  minHeight: 94,
+                }}
+              >
+                <Comment
+                  commentType="readonly"
+                  comment={comment2}
+                  placement={0}
+                  changeActive={dummyFunction}
+                  onSave={dummyFunction}
+                  onDelete={dummyFunction}
+                  addUnsaved={dummyFunction}
+                  removeUnsaved={dummyFunction}
+                  removeRubricComment={dummyFunction}
+                  setCommentPlacements={dummyFunction}
+                />
+              </div>
+            </div>
+            <div style={{ position: 'absolute', top: 240 }}>
+              <div
+                style={{
+                  ...commentStyle,
+                  opacity: this.state.showComments ? 1 : 0,
+                  transition: 'opacity .3s ease',
+                  minHeight: 94,
+                }}
+              >
+                <Comment
+                  commentType="readonly"
+                  comment={comment3}
+                  placement={0}
+                  changeActive={dummyFunction}
+                  onSave={dummyFunction}
+                  onDelete={dummyFunction}
+                  addUnsaved={dummyFunction}
+                  removeUnsaved={dummyFunction}
+                  removeRubricComment={dummyFunction}
+                  setCommentPlacements={dummyFunction}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 35 }}>
+          <CPButton
+            cpType={this.state.showComments ? 'primary' : 'secondary'}
+            onClick={this.changeStatus.bind(this, true)}
+          >
             With code review
           </CPButton>
           &nbsp; &nbsp;
-          <CPButton cpType="secondary" onClick={this.changeStatus.bind(this, false)}>
+          <CPButton
+            cpType={this.state.showComments ? 'secondary' : 'primary'}
+            onClick={this.changeStatus.bind(this, false)}
+          >
             No code review
           </CPButton>
         </div>
-        <div style={{ float: 'left', marginBottom: 12, width: 325 }}>
-          {badCodeMirror(this.state.showComments ? 'thin' : 'wide')}
-        </div>
-        {this.state.showComments ? (
-          <div style={{ width: 300, position: 'relative', float: 'right' }}>
-            <Comment
-              commentType="readonly"
-              comment={comment1}
-              placement={30}
-              changeActive={dummyFunction}
-              onSave={dummyFunction}
-              onDelete={dummyFunction}
-              addUnsaved={dummyFunction}
-              removeUnsaved={dummyFunction}
-              removeRubricComment={dummyFunction}
-              setCommentPlacements={dummyFunction}
-            />
-            <Comment
-              commentType="readonly"
-              comment={comment2}
-              placement={115}
-              changeActive={dummyFunction}
-              onSave={dummyFunction}
-              onDelete={dummyFunction}
-              addUnsaved={dummyFunction}
-              removeUnsaved={dummyFunction}
-              removeRubricComment={dummyFunction}
-              setCommentPlacements={dummyFunction}
-            />
-            <Comment
-              commentType="readonly"
-              comment={comment3}
-              placement={260}
-              changeActive={dummyFunction}
-              onSave={dummyFunction}
-              onDelete={dummyFunction}
-              addUnsaved={dummyFunction}
-              removeUnsaved={dummyFunction}
-              removeRubricComment={dummyFunction}
-              setCommentPlacements={dummyFunction}
-            />
-          </div>
-        ) : null}
       </div>
     );
   }
