@@ -106,7 +106,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   // Ant type bug https://cl.ly/c5094e2c4526
   public onChangePointInput = (value: any) => {
     const parsed = parseFloat(value);
-    const points = parsed ? parsed : this.state.points;
+    const points = isNaN(parsed) ? this.state.points : parsed;
 
     if (points !== UiComment.points(this.props.comment, this.props.rubricComment)) {
       this.edited();

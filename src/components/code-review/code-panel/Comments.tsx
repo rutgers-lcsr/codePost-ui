@@ -207,7 +207,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
     const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
-    console.log('bottom codeheight', codeHeight);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {

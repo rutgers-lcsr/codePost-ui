@@ -131,7 +131,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
         // We need to wait until after updating the width to calculate the height
         // This is mostly for Markdown files which will have wrapping text (height dependent on width)
         const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
-        console.log('resize height', codeHeight);
 
         const codeContainerMaxHeight =
           this.props.windowheight -
