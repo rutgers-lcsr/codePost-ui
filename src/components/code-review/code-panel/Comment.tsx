@@ -11,7 +11,10 @@ import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
+import { File, FileType } from '../../../infrastructure/file';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
+
+import { wait } from '../../../infrastructure/animation';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
@@ -22,6 +25,7 @@ export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 interface ICommentProps {
   commentType: UICommentType;
   comment: CommentType;
+  file: FileType;
   rubricComment?: RubricCommentType;
 
   placement: number;
@@ -55,9 +59,17 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     this.props.setCommentPlacements();
   }
 
+  public componentWillUnmount() {
+    console.log(`Unmounting: ${this.props.comment.id}`);
+  }
+
   public componentDidUpdate(prevProps: ICommentProps) {
-    if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
+    if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
+      this.props.setCommentPlacements();
+    }
+
+    if (this.props.commentType !== prevProps.commentType) {
       this.props.setCommentPlacements();
     }
   }
@@ -75,6 +87,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     try {
       await this.props.onSave(comment, this.props.rubricComment);
       this.fadeSavedState();
+      this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error saving comment: ${JSON.stringify(error)}`);
     }
@@ -162,14 +175,16 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       e.preventDefault();
       e.stopPropagation();
       await this.props.onDelete(this.props.comment);
+      this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error deleting comment: ${JSON.stringify(error)}`);
     }
   };
 
-  public fadeSavedState = () => {
+  public fadeSavedState = async () => {
     this.setState({ status: 'saved' });
-    window.setTimeout(() => this.setState({ status: 'idle' }), 1000);
+    await wait(1000);
+    this.setState({ status: 'idle' });
   };
 
   // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
@@ -188,11 +203,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     });
 
     // For handling markdown
-    // const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
-    // if (blockElement) {
-    //   blockElement.className = 'markdown-code__block--focused';
-    //   // blockElement.style.setProperty('border-left', '5px solid #f9ff91');
-    // }
+    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    if (blockElement) {
+      blockElement.className = `markdown-block markdown-block--focused ${
+        this.props.commentType === 'readonly' ? 'readonly' : 'active'
+      }`;
+    }
   };
 
   public unhighlightRelatedComment = (event?: any) => {
@@ -204,11 +220,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     });
 
     // For handling markdown
-    // const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
-    // if (blockElement) {
-    //   blockElement.className = 'markdown-code__block--commented';
-    //   // blockElement.style.setProperty('border-left', '5px solid #24b47e');
-    // }
+    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    if (blockElement) {
+      blockElement.className = `markdown-block markdown-block--commented ${
+        this.props.commentType === 'readonly' ? 'readonly' : 'active'
+      }`;
+    }
   };
 
   public render() {
@@ -229,9 +246,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     let onClick;
     let cursor = 'auto';
 
-    commentElements.line = (
-      <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine + 1}</span>
-    );
+    if (['markdown', 'jupyter'].includes(File.codeType(this.props.file))) {
+      commentElements.line = (
+        <span className="cp-label--mid-bold cp-label--italic">Block {this.props.comment.startLine + 1}</span>
+      );
+    } else {
+      commentElements.line = (
+        <span className="cp-label--mid-bold cp-label--italic">Line {this.props.comment.startLine + 1}</span>
+      );
+    }
 
     if (this.props.comment.author) {
       commentElements.author = (

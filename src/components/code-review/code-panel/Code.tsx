@@ -1,27 +1,19 @@
 import * as React from 'react';
 
+import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
+
 import CodePanelHighlighting from './CodePanelHighlighting';
+
+import { CommentType } from '../../../infrastructure/comment';
 
 import { POSITION } from '../../../types/common';
 
-import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
-
-interface ICodeCoreProps {
-  file: FileType;
-  comments: CommentType[];
-  readOnly: boolean;
-  user: string;
+interface ICodeProps {
+  commentCounter: number;
 }
 
-interface ICodeEditProps {
-  addComment: (comment: CommentType, file: FileType) => void;
-}
-
-const Code = (props: ICodeCoreProps & ICodeEditProps) => {
-  const [commentCounter, setCommentCounter] = React.useState(-1);
-
-  const onMouseUp = (event: any) => {
+const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
+  const onMouseUp = (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
@@ -63,7 +55,7 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
     }
 
     const newComment: CommentType = {
-      id: commentCounter,
+      id: props.commentCounter,
       endChar,
       endLine,
       file: props.file.id,
@@ -74,8 +66,6 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
       rubricComment: null,
       author: props.user,
     };
-
-    setCommentCounter(commentCounter - 1);
 
     props.addComment(newComment, props.file);
   };
@@ -89,21 +79,7 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
       );
     });
   };
-
   return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
 };
 
-const makeReadOnly = (Component: React.ComponentType<ICodeCoreProps & ICodeEditProps>) => {
-  return class WrappedComponent extends React.Component<ICodeCoreProps, {}> {
-    public addComment = (comment: CommentType, file: FileType) => {
-      return;
-    };
-
-    public render() {
-      return <Component {...this.props as ICodeCoreProps} addComment={this.addComment} />;
-    }
-  };
-};
-
-export const GradeCode = Code;
-export const StudentCode = makeReadOnly(Code);
+export default Code;

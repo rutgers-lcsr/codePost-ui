@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import * as moment from 'moment';
 
-import Grade from './Grade';
+import Grade from '../grade/Grade';
 
 import useOnClickOutside from '../core/useOnClickOutside';
 
@@ -10,6 +10,8 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType, SubmissionType } from '../../infrastructure/submission';
+
+import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -293,11 +295,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [notice, setNotice] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  useOnClickOutside(ref, (e: any) => {
+  useOnClickOutside(ref, async (e: any) => {
     const fileMenu = document.getElementById('file-menu');
     if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
       setNotice(true);
-      window.setTimeout(() => setNotice(false), 250);
+      await wait(250);
+      setNotice(false);
     }
   });
 

@@ -1,7 +1,9 @@
 import React from 'react';
 import { animated } from 'react-spring';
 
-import CPComment from '../../../../components/code-review/code-panel/Comment';
+import { FileMock } from '../../../../infrastructure/file';
+
+import Comment from '../../../../components/code-review/code-panel/Comment';
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
 const SimpleComment = (props: {
@@ -27,7 +29,7 @@ const SimpleComment = (props: {
   const empty = () => {
     return;
   };
-  const AnimatedComment = animated(CPComment);
+  const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
       commentType={props.classType}
@@ -41,6 +43,7 @@ const SimpleComment = (props: {
       setCommentPlacements={empty}
       removeRubricComment={empty}
       placement={1}
+      file={FileMock}
     />
   );
 };

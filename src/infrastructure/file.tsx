@@ -34,6 +34,11 @@ const FileVPatch = t.intersection(
 
 type FileType = t.TypeOf<typeof FileV>;
 
+const MarkdownExtensions = ['md', '.md'];
+const JupyterExtensions = ['ipynb', '.ipynb'];
+
+type CodeType = 'code' | 'markdown' | 'jupyter';
+
 class File {
   public static create = createObject(FileV, FileV, 'files');
   public static read = readObject(FileV, 'files');
@@ -44,6 +49,14 @@ class File {
     const extensionMatch = /^(?:\.?)(.*)/;
     const extension = extensionMatch.exec(file.extension)![1];
     return LangMap.languages(extension)[0];
+  };
+
+  public static codeType = (file: FileType): CodeType => {
+    return JupyterExtensions.includes(file.extension)
+      ? 'jupyter'
+      : MarkdownExtensions.includes(file.extension)
+      ? 'markdown'
+      : 'code';
   };
 }
 
@@ -76,4 +89,4 @@ const FileMock: FileType = {
   submission: 1,
 };
 
-export { FileType, File, FileMock };
+export { CodeType, FileType, File, FileMock };
