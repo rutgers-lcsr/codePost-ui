@@ -174,7 +174,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
       if (blockElement) {
-        startAt = blockElement.offsetTop;
+        startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }
 
       // If a comment starts in the range of another block, then push it down until it fits
@@ -203,7 +203,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
     const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
-    console.log('codeHeight', codeHeight);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
@@ -239,7 +238,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
-    console.log('comments render', this.props.oldCommentIDs);
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;

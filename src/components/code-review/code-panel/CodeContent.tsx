@@ -24,8 +24,6 @@ export interface ICodeContentEditProps {
 const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
 
-  // console.log('props', props);
-
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
     props.addComment(comment, file);
@@ -33,15 +31,15 @@ const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditP
 
   if (File.codeType(props.file) === ('markdown' || 'jupyter')) {
     const { addComment, codeStyle, ...codeProps } = { ...props };
-    console.log('markdown');
     return (
       <div id="code-main" className="code code--markdown" style={codeStyle}>
         <Markdown {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />
       </div>
     );
   } else {
-    console.log('code');
     const { addComment, ...codeProps } = { ...props };
+    // FIXME: This custom style passing is confusing.
+    //        Should have a much cleaner way of passing this stuff through
     // @ts-ignore
     const { paddingLeft, ...codeStyle } = props.codeStyle;
 

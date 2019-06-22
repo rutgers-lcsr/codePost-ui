@@ -64,8 +64,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
-    if (this.props.commentType !== prevProps.commentType || this.props.rubricComment !== prevProps.rubricComment) {
+    if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
+      this.props.setCommentPlacements();
+    }
+
+    if (this.props.commentType !== prevProps.commentType) {
       this.props.setCommentPlacements();
     }
   }

@@ -213,8 +213,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       highlight.style.setProperty('height', highlightHeight);
     });
 
-    console.log('codepanellayout render');
-
     return (
       <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
         <div className="code-panel">

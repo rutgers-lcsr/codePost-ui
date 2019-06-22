@@ -31,7 +31,6 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   }
 
   const onBlockElementClick = (e: any) => {
-    console.log('clicking');
     const index = e.currentTarget.getAttribute('index-number');
     if (index) {
       const newComment: CommentType = {
@@ -47,14 +46,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         author: props.user,
       };
 
-      console.log('clicked', newComment);
-
       props.addComment(newComment, props.file);
-
-      // props.addComment(newComment, props.file);
-      // if (didAddComment) {
-      //   e.currentTarget.className = 'markdown-code__block--commented';
-      // }
     }
   };
 
@@ -67,14 +59,15 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   };
 
   const getClassName = (index: number): string => {
-    let className = 'markdown-block markdown-block--empty active';
+    const editable = props.readOnly ? 'readonly' : 'active';
+    let className = `markdown-block markdown-block--empty ${editable}`;
     if (blockContainsComment(index)) {
-      className = 'markdown-block markdown-block--commented active';
+      className = `markdown-block markdown-block--commented ${editable}`;
     }
     return className;
   };
 
-  const renderers = useMarkdownRenderers(onBlockElementClick, getClassName);
+  const renderers = useMarkdownRenderers(props.readOnly ? null : onBlockElementClick, getClassName);
 
   return (
     <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
