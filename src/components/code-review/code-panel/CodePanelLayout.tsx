@@ -1,8 +1,5 @@
 import * as React from 'react';
 
-// import SyntaxHighlighter from 'react-syntax-highlighter';
-// import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
-
 import { File, FileType } from '../../../infrastructure/file';
 
 import CodePanelSizing from './CodePanelSizing';

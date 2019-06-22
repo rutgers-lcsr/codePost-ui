@@ -13,7 +13,7 @@ interface ICodeProps {
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
-  const onMouseUp = (event: any) => {
+  const onMouseUp = (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {

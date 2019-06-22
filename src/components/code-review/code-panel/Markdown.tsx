@@ -30,7 +30,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     markdown = props.file.code;
   }
 
-  const onBlockElementClick = (e: any) => {
+  const onBlockElementClick = (e: React.MouseEvent) => {
     const index = e.currentTarget.getAttribute('index-number');
     if (index) {
       const newComment: CommentType = {
@@ -67,7 +67,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     return className;
   };
 
-  const renderers = useMarkdownRenderers(props.readOnly ? null : onBlockElementClick, getClassName);
+  const renderers = useMarkdownRenderers(getClassName, props.readOnly ? undefined : onBlockElementClick);
 
   return (
     <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
@@ -76,7 +76,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   );
 };
 
-const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => string) => {
+const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp?: (e: React.MouseEvent) => void) => {
   // Hack to determine which block elements are nested
   // topLevelChildren is initialized when the rootRenderer is called
   let topLevelChildren: number | undefined;
@@ -112,7 +112,7 @@ const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => stri
 
   const paragraphRenderer = (props: any) => {
     return (
-      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px' }}>
+      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'scroll' }}>
         {props.children}
       </p>
     );
@@ -187,6 +187,14 @@ const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => stri
   // but some html might be put in a 'markdown' cell type. This function converts that to markdown
   const parsedHtmlRenderer = (props: any) => {
     const rootRend = (propz: any) => {
+      let isNestedBlock = false;
+      if (topLevelChildren !== undefined && props.parentChildCount && topLevelChildren !== props.parentChildCount) {
+        isNestedBlock = true;
+      }
+
+      if (!isNestedBlock) {
+        return <div {...blockProps(props)}>{propz.children}</div>;
+      }
       return propz.children;
     };
 
