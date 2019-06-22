@@ -302,6 +302,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
+          onKeyDown={this.handleShiftEnter}
         />
       );
       commentElements.comment = (
