@@ -4,8 +4,7 @@
   $gutter-radius: 4px;
 
   padding-left: $root-padding + 0px;
-  border-bottom-left-radius: $gutter-radius;
-  border-top-left-radius: $gutter-radius;
+  border-radius: $gutter-radius;
 
   @at-root ul#{&} {
     padding-left: $root-padding + 40 + 0px;

@@ -14,6 +14,8 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
+import ErrorBoundary from '../../../ErrorBoundary';
+
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   code: (codeStyle: React.CSSProperties) => React.ReactNode;
@@ -92,15 +94,16 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     }
   };
 
-  public componentDidUpdate(prevProps: ICodePanelLayoutProps) {
+  public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
     if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
       this.resizeOnNextFrame();
     }
 
     if (this.props.file !== prevProps.file) {
+      // await Animation.wait(1000);
       this.resizeOnNextFrame();
     }
-  }
+  };
 
   // Browser optimization to facilitate smoother animations
   public resizeOnNextFrame = () => {
@@ -110,7 +113,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     this.nextFrameActionId = Animation.onNextFrame(this.resizeComponents);
   };
 
-  public resizeComponents = () => {
+  public resizeComponents = async () => {
     if (this.props.windowheight !== 0) {
       const codeContainer = document.getElementById('code-container');
       const codeMain = document.getElementById('code-main');
@@ -118,9 +121,21 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       const commentsContainer = document.getElementById('code-panel--comments');
       const comments = document.getElementById('comments');
 
-      const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
-
       if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
+        const codeMainWidth =
+          codeContainer.offsetWidth -
+          themeVars.grade.codeContainer.paddingLeft -
+          themeVars.grade.codeContainer.paddingRight;
+        codeMain.style.setProperty('width', `${codeMainWidth}px`);
+        if (codeSyntax !== null) {
+          codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
+        }
+
+        // We need to wait until after updating the width to calculate the height
+        // This is mostly for Markdown files which will have wrapping text (height dependent on width)
+        const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
+        console.log('resize height', codeHeight);
+
         const codeContainerMaxHeight =
           this.props.windowheight -
           codeContainer.getBoundingClientRect().top -
@@ -139,15 +154,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
         codeMain.style.setProperty('height', `${codeMainHeight}px`);
         if (codeSyntax !== null) {
           codeSyntax.style.setProperty('height', `${codeMainHeight}px`);
-        }
-
-        const codeMainWidth =
-          codeContainer.offsetWidth -
-          themeVars.grade.codeContainer.paddingLeft -
-          themeVars.grade.codeContainer.paddingRight;
-        codeMain.style.setProperty('width', `${codeMainWidth}px`);
-        if (codeSyntax !== null) {
-          codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
         }
 
         const commentsContainerHeight =
@@ -186,10 +192,9 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
       fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
       // FIXME: 10 on next line comes from SyntaxHighlighter styles
-      paddingLeft:
-        File.codeType(this.props.file) === ('markdown' || 'jupyter')
-          ? '0px'
-          : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+      paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
+        ? '0px'
+        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
       highlightHeight: `${themeVars.grade.highlightHeight * this.state.zoom}px`,
     };
   };
@@ -214,38 +219,40 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     });
 
     return (
-      <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
-        <div className="code-panel">
-          <div
-            className="code-panel--code"
-            style={{
-              margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
-                themeVars.grade.codeContainer.marginLeft
-              }px`,
-              flex: `0 1 ${this.state.splitBasis}px`,
-            }}
-          >
+      <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
+        <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
+          <div className="code-panel">
             <div
-              id="code-container"
-              className="code-container"
+              className="code-panel--code"
               style={{
-                padding: `${themeVars.grade.codeContainer.paddingTop}px ${
-                  themeVars.grade.codeContainer.paddingRight
-                }px ${themeVars.grade.codeContainer.paddingBottom}px ${themeVars.grade.codeContainer.paddingLeft}px`,
+                margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
+                  themeVars.grade.codeContainer.marginLeft
+                }px`,
+                flex: `0 1 ${this.state.splitBasis}px`,
               }}
-              onMouseEnter={this.onMouseEnter}
-              onMouseLeave={this.onMouseLeave}
             >
-              <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
-              <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
-              {this.props.code(codeStyle)}
+              <div
+                id="code-container"
+                className="code-container"
+                style={{
+                  padding: `${themeVars.grade.codeContainer.paddingTop}px ${
+                    themeVars.grade.codeContainer.paddingRight
+                  }px ${themeVars.grade.codeContainer.paddingBottom}px ${themeVars.grade.codeContainer.paddingLeft}px`,
+                }}
+                onMouseEnter={this.onMouseEnter}
+                onMouseLeave={this.onMouseLeave}
+              >
+                <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
+                <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
+                {this.props.code(codeStyle)}
+              </div>
+            </div>
+            <div id="code-panel--comments" className="code-panel--comments">
+              {this.props.comments}
             </div>
           </div>
-          <div id="code-panel--comments" className="code-panel--comments">
-            {this.props.comments}
-          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 }

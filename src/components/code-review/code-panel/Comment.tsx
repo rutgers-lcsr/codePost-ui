@@ -246,7 +246,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     let onClick;
     let cursor = 'auto';
 
-    if (File.codeType(this.props.file) === ('markdown' || 'jupyter')) {
+    if (['markdown', 'jupyter'].includes(File.codeType(this.props.file))) {
       commentElements.line = (
         <span className="cp-label--mid-bold cp-label--italic">Block {this.props.comment.startLine + 1}</span>
       );

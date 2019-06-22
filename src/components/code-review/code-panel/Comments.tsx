@@ -142,11 +142,15 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   }
 
-  public componentDidUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps) {
+  public componentDidUpdate = async (prevProps: ICommentsCoreProps & ICommentsEditProps) => {
     if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
-  }
+
+    if (this.props.file.id !== prevProps.file.id) {
+      this.manualWait();
+    }
+  };
 
   public placeCommentsOnNextFrame = () => {
     if (this.nextFrameActionId) {
@@ -203,6 +207,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public setBottomOfCommentBox = (lastPlacement: ICommentPlacement) => {
     const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
+    console.log('bottom codeheight', codeHeight);
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {

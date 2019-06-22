@@ -21,7 +21,7 @@ export interface ICodeContentEditProps {
   addComment: (comment: CommentType, file: FileType) => void;
 }
 
-const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditProps) => {
+const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
@@ -29,11 +29,16 @@ const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditP
     props.addComment(comment, file);
   };
 
-  if (File.codeType(props.file) === ('markdown' || 'jupyter')) {
+  if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
     const { addComment, codeStyle, ...codeProps } = { ...props };
     return (
       <div id="code-main" className="code code--markdown" style={codeStyle}>
-        <Markdown {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />
+        <Markdown
+          key={props.file.id}
+          {...codeProps}
+          commentCounter={commentCounter}
+          addComment={addCommentAndIncrement}
+        />
       </div>
     );
   } else {
@@ -62,7 +67,7 @@ const CodeContent = React.memo((props: ICodeContentCoreProps & ICodeContentEditP
       </div>
     );
   }
-});
+};
 
 const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICodeContentEditProps>) => {
   return class WrappedComponent extends React.Component<ICodeContentCoreProps, {}> {

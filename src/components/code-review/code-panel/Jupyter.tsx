@@ -47,7 +47,7 @@ export const jupyterToMarkdown = (content: string) => {
               .map((line: string) => {
                 return line.replace(']', ']\n').trim();
               })
-              .join('');
+              .join('\n');
             markdown += '\n```\n';
           }
         }

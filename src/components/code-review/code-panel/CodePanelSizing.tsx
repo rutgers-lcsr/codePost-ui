@@ -14,7 +14,7 @@ class CodePanelLayout {
       // FIXME: This will sometimes give the wrong height if an image
       //        takes a long time to load.
       //        Refreshing usually solves (faster load time).
-      return codeMarkdown.offsetHeight;
+      return codeMarkdown.getBoundingClientRect().height;
     }
     return code.split('\n').length * CodePanelLayout.pixelsPerLine();
   };

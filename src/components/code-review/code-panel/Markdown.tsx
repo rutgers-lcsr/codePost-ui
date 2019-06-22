@@ -143,8 +143,21 @@ const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => stri
         </SyntaxHighlighter>
       );
     } else {
-      // FIXME special case for output rendering
-      return <div {...blockProps(props)}>output!!!!!</div>;
+      return (
+        <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
+          <div
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid black',
+              borderRadius: '4px',
+              fontFamily: 'monospace',
+              padding: '4px',
+            }}
+          >
+            {props.value ? props.value : ' '}
+          </div>
+        </div>
+      );
     }
   };
 
@@ -173,11 +186,22 @@ const useMarkdownRenderers = (onMouseUp: any, getClassName: (index: any) => stri
   // We convert all html in an input/html cell to markdown in CodePanel,
   // but some html might be put in a 'markdown' cell type. This function converts that to markdown
   const parsedHtmlRenderer = (props: any) => {
-    return (
-      <div {...blockProps(props)}>
-        <ReactMarkdown>{turndown.turndown(props.value)}</ReactMarkdown>
-      </div>
-    );
+    const rootRend = (propz: any) => {
+      return propz.children;
+    };
+
+    const paragraphRend = (propz: any) => {
+      return <span>{propz.children}</span>;
+    };
+
+    // These renderers prevent console warnings about
+    // nesting block level elements (like <p> and <div>)
+    const renderers = {
+      root: rootRend,
+      paragraph: paragraphRend,
+    };
+
+    return <ReactMarkdown renderers={renderers}>{turndown.turndown(props.value)}</ReactMarkdown>;
   };
 
   return {

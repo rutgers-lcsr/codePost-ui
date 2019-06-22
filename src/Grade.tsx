@@ -628,6 +628,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     if (this.state.selectedFile) {
       const code = (codeStyle: React.CSSProperties) => (
         <GradeCode
+          key={this.state.selectedFile!.id}
           file={this.state.selectedFile!}
           comments={this.state.comments[this.state.selectedFile!.id]}
           readOnly={this.state.submission!.isFinalized}
