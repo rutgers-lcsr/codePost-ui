@@ -203,16 +203,22 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     this.setState({ adjustmentsVisible: false });
   };
 
-  public render() {
-    // @ts-ignore
-    const { highlightHeight, ...codeStyle } = this.getCodeStyle();
-
-    // FIXME: This only catches existing highlights.
-    //        New highlights will start with the template height and adjust after render
+  public resizeHighlights = () => {
     const highlights = document.getElementsByClassName('highlight');
+    const highlightHeight = `${themeVars.grade.highlightHeight * this.state.zoom}px`;
     [].forEach.call(highlights, (highlight: any) => {
       highlight.style.setProperty('height', highlightHeight);
     });
+  };
+
+  public render() {
+    // @ts-ignore
+    // const { highlightHeight, ...codeStyle } = this.getCodeStyle();
+    const codeStyle = this.getCodeStyle();
+    // FIXME: This only catches existing highlights.
+    //        New highlights will start with the template height and adjust after render
+    // UPDATE: Imperfect solution by trigerring a resize after adding a new comment
+    this.resizeHighlights();
 
     return (
       <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>

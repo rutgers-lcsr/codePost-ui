@@ -48,11 +48,19 @@ interface ICommentState {
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
-  public state: Readonly<ICommentState> = {
-    status: 'idle',
-    text: this.props.comment.text ? this.props.comment.text : '',
-    points: UiComment.points(this.props.comment, this.props.rubricComment),
-  };
+  public constructor(props: ICommentProps) {
+    super(props);
+
+    const text = this.props.comment.text ? this.props.comment.text : '';
+    const points = UiComment.points(this.props.comment, this.props.rubricComment);
+    const status = text === '' && points === 0 ? 'edited' : 'idle';
+
+    this.state = {
+      status,
+      text,
+      points,
+    };
+  }
 
   public componentDidMount() {
     console.log(`Mounted: ${this.props.comment.id}`);

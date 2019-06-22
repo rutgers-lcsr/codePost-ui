@@ -8,12 +8,15 @@ import { CommentType } from '../../../infrastructure/comment';
 
 import { POSITION } from '../../../types/common';
 
+import { wait } from '../../../infrastructure/animation';
+
 interface ICodeProps {
   commentCounter: number;
+  highlightHeight: string;
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
-  const onMouseUp = (event: React.MouseEvent) => {
+  const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
@@ -68,6 +71,14 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     };
 
     props.addComment(newComment, props.file);
+
+    // FIXME: we can come up with a better solution
+    await wait(5);
+
+    const highlights = document.getElementsByClassName('highlight');
+    [].forEach.call(highlights, (highlight: any) => {
+      highlight.style.setProperty('height', props.highlightHeight);
+    });
   };
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {

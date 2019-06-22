@@ -14,7 +14,7 @@ export interface ICodeContentCoreProps {
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle?: React.CSSProperties;
+  codeStyle?: any;
 }
 
 export interface ICodeContentEditProps {
@@ -30,7 +30,8 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   };
 
   if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
-    const { addComment, codeStyle, ...codeProps } = { ...props };
+    const { addComment, ...codeProps } = { ...props };
+    const { highlightHeight, ...codeStyle } = props.codeStyle;
     return (
       <div id="code-main" className="code code--markdown" style={codeStyle}>
         <Markdown
@@ -46,7 +47,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     // FIXME: This custom style passing is confusing.
     //        Should have a much cleaner way of passing this stuff through
     // @ts-ignore
-    const { paddingLeft, ...codeStyle } = props.codeStyle;
+    const { paddingLeft, highlightHeight, ...codeStyle } = props.codeStyle;
 
     return (
       <div>
@@ -62,7 +63,12 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           {props.file.code}
         </SyntaxHighlighter>
         <div id="code-main" className="code code--underlay" style={props.codeStyle}>
-          <Code {...codeProps} commentCounter={commentCounter} addComment={addCommentAndIncrement} />;
+          <Code
+            {...codeProps}
+            commentCounter={commentCounter}
+            addComment={addCommentAndIncrement}
+            highlightHeight={highlightHeight}
+          />
         </div>
       </div>
     );
