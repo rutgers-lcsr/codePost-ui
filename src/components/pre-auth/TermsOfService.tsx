@@ -17,7 +17,7 @@ import PreAuthLayout from './PreAuthLayout';
 /**********************************************************************************************************************/
 
 interface IProps {
-  isAuthenticated: boolean;
+  isLoggedIn: boolean;
 }
 
 class TermsOfService extends React.Component<IProps, {}> {
@@ -27,7 +27,7 @@ class TermsOfService extends React.Component<IProps, {}> {
 
   public render() {
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div>
           <Typography.Title level={3}>Terms of Service</Typography.Title>
           <Typography.Paragraph>

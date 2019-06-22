@@ -11,7 +11,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
-import ErrorBoundary from '../../../ErrorBoundary';
+import ErrorBoundary from '../../core/ErrorBoundary';
 
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;

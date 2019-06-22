@@ -5,7 +5,7 @@
 /* React imports */
 import * as React from 'react';
 
-/* react-md */
+/* antd imports */
 import { Breadcrumb, Empty, message, Spin } from 'antd';
 
 /* other library imports */
@@ -831,6 +831,9 @@ class RubricManager extends React.Component<IProps, IState> {
               onCommentUndo={this.onCommentUndo}
               activateCommentExplorer={this.activateCommentExplorer}
               onCommentDragEnd={this.onCommentDragEnd}
+              moveCategory={this.moveCategory}
+              index={catIndex}
+              numCategories={this.state.savedRubricCategories.length}
             />
           );
         });

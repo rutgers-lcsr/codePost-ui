@@ -19,7 +19,7 @@ import PreAuthLayout from './PreAuthLayout';
 /**********************************************************************************************************************/
 
 interface IProps {
-  isAuthenticated: boolean;
+  isLoggedIn: boolean;
 }
 
 const textStyle = {
@@ -75,7 +75,7 @@ const premiumButtonStyle = {
 class Pricing extends React.Component<IProps, {}> {
   public render() {
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div>
           <div style={{ textAlign: 'center' }}>
             <p style={textStyle}>codePost is free for all the courses and people you need.</p>

@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-/* react-md imports */
+/* antd imports */
 import { Button, Collapse, Icon, Modal, Spin, Steps, Typography, Upload } from 'antd';
 const { Step } = Steps;
 
@@ -284,7 +284,8 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           "rubricComments" : [{ \n\
             "text" : "this is a new comment",\n\
             "pointDelta" : 0,\n\
-          ]},\n\
+          }],\n\
+        }\n\
         ...\n\
       ]';
 
@@ -297,7 +298,10 @@ class RubricFileUpload extends React.Component<IProps, IState> {
               </div>
               <br />
               <Collapse defaultActiveKey={['json']}>
-                <Collapse.Panel header="Requried JSON format" key="json">
+                <Collapse.Panel header="Required JSON format" key="json">
+                  <Icon type="warning" /> One common mistake: don't use trailing commas (e.g.{' '}
+                  <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
+                  <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
                   <ReactMarkdown source={exampleText} />
                 </Collapse.Panel>
               </Collapse>

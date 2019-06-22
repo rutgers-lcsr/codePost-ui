@@ -11,47 +11,42 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import Loadable from 'react-loadable';
 
 /* codePost imports */
-import LogInAs from './LogInAs';
+import LogInAs from './components/core/LogInAs';
 
-import Home from './Home';
+import Home from './components/core/Home';
 
 import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
-import Settings from './settings';
-
-import RouterLoading from './RouterLoading';
-
-import { AdminAnimation } from './components/LandingAnimations/Admin/AdminAnimation';
-import APIAnimation from './components/LandingAnimations/API/APIAnimation';
-
 import IndexManager from './components/pre-auth/IndexManager';
 
-/**********************************************************************************************************************/
+import Settings from './components/core/settings';
+
+import RouterLoading from './components/core/RouterLoading';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
 
 const AsyncStudent = Loadable({
-  loader: () => import('./Student'),
+  loader: () => import('./components/student/Student'),
   loading: RouterLoading,
 });
 
 const AsyncGrader = Loadable({
-  loader: () => import('./Grader'),
+  loader: () => import('./components/grader/Grader'),
   loading: RouterLoading,
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./Grade'),
+  loader: () => import('./components/grade/Grade'),
   loading: RouterLoading,
 });
 
 const AsyncAdmin = Loadable({
-  loader: () => import('./Admin'),
+  loader: () => import('./components/admin/Admin'),
   loading: RouterLoading,
 });
 
@@ -213,14 +208,12 @@ class App extends React.Component<{}, IState> {
       return <Redirect to={'/'} />;
     }
 
-    // Disabling this rule means we can use the render prop of Route to pass props to components
     if (typeof this.state.user !== 'undefined') {
       const { user } = this.state;
       const courseAdminCourses = user.courseadminCourses;
       const graderCourses = user.graderCourses;
       const studentCourses = user.studentCourses;
       const superGraderCourses = this.state.user.superGraderCourses;
-      const email = user.email;
       const sectionsLed = user.leaderSections;
 
       const isStudent = user ? user.studentCourses.length > 0 : false;
@@ -248,7 +241,12 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
             render={(props: any) => (
-              <AsyncStudent {...props} email={email} handleLogout={this.handleLogout} initialCourses={studentCourses} />
+              <AsyncStudent
+                {...props}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
+                initialCourses={studentCourses}
+              />
             )}
           />
         );
@@ -259,14 +257,14 @@ class App extends React.Component<{}, IState> {
         graderRoute = (
           <Route
             exact={true}
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?`}
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
             render={(props: any) => (
               <AsyncGrader
                 {...props}
-                email={email}
+                user={this.state.user}
                 handleLogout={this.handleLogout}
                 superGraderCourses={superGraderCourses}
-                initialCourses={graderCourses}
+                courses={graderCourses}
                 sectionsLed={sectionsLed}
               />
             )}
@@ -312,14 +310,14 @@ class App extends React.Component<{}, IState> {
       } else if (!isStudent && isGrader && !isAdmin) {
         pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
       } else if (!isStudent && !isGrader && isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('course-admin')} />;
+        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('admin')} />;
       } else {
         pageSelector = (
           <Route
             exact={true}
             path={HOME}
             render={(props: any) => (
-              <Home {...props} isAuthed={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+              <Home {...props} isLoggedIn={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
             )}
           />
         );
@@ -340,23 +338,18 @@ class App extends React.Component<{}, IState> {
             path={'/settings'}
             render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
           />
-          <Route
-            exact={true}
-            path={'/animations/api'}
-            render={(props: any) => <APIAnimation {...props} isAuthenticated={true} />}
-          />
-          <Route
-            exact={true}
-            path={'/animations/admin'}
-            render={(props: any) => <AdminAnimation {...props} isAuthenticated={true} />}
-          />
 
           {pageSelector}
           {studentRoute}
           {graderRoute}
           {adminRoute}
           {gradeRoute}
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={true} />
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={true}
+            handleLogout={this.handleLogout}
+          />
         </Switch>
       );
     }
@@ -364,7 +357,12 @@ class App extends React.Component<{}, IState> {
     if (this.state.triedLoading) {
       return (
         <div>
-          <IndexManager handleLogin={this.handleLogin} error={this.state.error} isAuthenticated={false} />
+          <IndexManager
+            handleLogin={this.handleLogin}
+            error={this.state.error}
+            isLoggedIn={false}
+            handleLogout={this.handleLogout}
+          />
         </div>
       );
     } else {

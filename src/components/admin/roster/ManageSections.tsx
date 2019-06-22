@@ -125,7 +125,7 @@ class ManageSections extends React.Component<IProps, IState> {
           title: 'Sections',
           dataIndex: 'section',
           key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          sorter: (a: any, b: any) => a.section.localeCompare(b.section),
         },
         {
           title: 'Leaders',
@@ -158,7 +158,7 @@ class ManageSections extends React.Component<IProps, IState> {
                       highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
                       searchWords={[searchText]}
                       autoEscape
-                      textToHighlight={record.leaderData.join(', ')}
+                      textToHighlight={record.leaderData.length === 0 ? 'No leaders' : record.leaderData.join(', ')}
                     />
                     &nbsp;&nbsp;
                     <Icon type="edit" onClick={this.setActiveSection.bind(this, record.section)} />

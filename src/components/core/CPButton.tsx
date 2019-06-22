@@ -6,7 +6,7 @@ import { ButtonProps } from 'antd/lib/button';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
-export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled';
+export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
 
 interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
@@ -20,7 +20,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, {}> {
     const customProps = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;
 
-    if (['primary', 'danger', 'disabled', 'secondary'].includes(cpType)) {
+    if (['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)) {
       customProps['type'] = cpType;
     }
 

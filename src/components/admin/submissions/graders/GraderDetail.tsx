@@ -6,9 +6,11 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal, Tooltip } from 'antd';
+const confirm = Modal.confirm;
 
 /* other library imports */
+import * as moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -17,6 +19,8 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { TableDetail } from '../../other/TableDetail';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
+
+import { openSubmission } from '../../other/AdminUtils';
 
 /**********************************************************************************************************************/
 
@@ -44,6 +48,17 @@ class GraderDetail extends React.Component<IProps, IState> {
     this.setState({ selectedAssignment: assignment });
   };
 
+  public removeSubmission = (toRemove: SubmissionType) => {
+    confirm({
+      title: 'Are you sure you want to delete this submission?',
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
+      onOk: () => {
+        return this.props.deleteSubmission(toRemove);
+      },
+      okText: 'Remove',
+    });
+  };
+
   public getStatus = (submission: SubmissionType | undefined) => {
     let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
@@ -68,6 +83,48 @@ class GraderDetail extends React.Component<IProps, IState> {
         {cellText}
       </span>
     );
+  };
+
+  public getViewIcon = (submission: SubmissionType) => {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or unfinalized
+      return '--';
+    } else {
+      const viewed = this.props.viewsBySubmission[submission.id];
+
+      // case: submission has been viewed
+      if (Object.keys(viewed).length > 0) {
+        const tooltipText = submission.students
+          .map((student) => {
+            if (Object.keys(viewed).indexOf(student) > -1) {
+              return `${student}: ${moment(viewed[student]).format('llll')}`;
+            } else {
+              return `${student}: unviewed`;
+            }
+          })
+          .join('\n');
+        return (
+          <Tooltip title={tooltipText}>
+            <div>
+              <Icon type="eye" theme="filled" />
+            </div>
+          </Tooltip>
+        );
+      } else {
+        // case: submission has not been viewed
+        const tooltipText =
+          submission.students.length > 1
+            ? 'No students have viewed this submission yet'
+            : `${submission.students[0]} has not viewed this submission yet`;
+        return (
+          <Tooltip title={tooltipText}>
+            <div>
+              <Icon type="eye" />
+            </div>
+          </Tooltip>
+        );
+      }
+    }
   };
 
   public render() {
@@ -197,6 +254,12 @@ class GraderDetail extends React.Component<IProps, IState> {
     } else {
       const columns = [
         {
+          title: 'Open',
+          dataIndex: 'open',
+          key: 'open',
+          align: aligner,
+        },
+        {
           title: 'Assignment',
           dataIndex: 'assignment',
           key: 'assignment',
@@ -236,7 +299,12 @@ class GraderDetail extends React.Component<IProps, IState> {
       const data = submissions.map((submission) => {
         const menu = (
           <Menu>
-            <Menu.Item>
+            <Menu.Item onClick={openSubmission.bind(this, submission.id)}>
+              <Icon type="code" />
+              Open
+            </Menu.Item>
+            <Menu.Divider />
+            <Menu.Item style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
               <Icon type="delete" />
               Delete
             </Menu.Item>
@@ -251,12 +319,13 @@ class GraderDetail extends React.Component<IProps, IState> {
         }
 
         return {
+          open: <Icon type="code" onClick={openSubmission.bind(this, submission.id)} />,
           key: submission.id,
           assignment: selectedAssignment.name,
           status: this.getStatus(submission),
           students: submission.students.join(', '),
           grade: gradeString,
-          viewed: 'BUMP',
+          viewed: this.getViewIcon(submission),
           actions: (
             <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
               <Icon type="menu" />

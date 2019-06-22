@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { compare } from '../components/Utils/SortUtils';
+import { compare } from '../components/utils/SortUtils';
 import {
   createObject,
   deleteObject,

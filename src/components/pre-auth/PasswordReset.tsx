@@ -45,6 +45,7 @@ present error message.
 interface IPasswordResetProps {
   match: any;
   message: string;
+  isLoggedIn: boolean;
 }
 
 interface IPasswordResetState {
@@ -230,7 +231,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     }
 
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div style={{ width: 500 }}>
           <br />
           <br />

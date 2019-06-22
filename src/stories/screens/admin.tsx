@@ -1,10 +1,10 @@
-import React from 'react';
+import * as React from 'react';
 
 import { Icon, Input, Menu, Switch, Table } from 'antd';
 
-import CPLayoutAdmin from '../../components/core/CPLayoutAdmin';
+import CPLayoutAdmin from '../../components/admin/other/CPLayoutAdmin';
 
-import CPAdminDetail from '../../components/core/CPAdminDetail';
+import CPAdminDetail from '../../components/admin/other/CPAdminDetail';
 
 import CPButton from '../../components/core/CPButton';
 import CPDropdown from '../../components/core/CPDropdown';
@@ -31,9 +31,11 @@ const createButton = (
 const headerLeft = [dropdown, createButton];
 
 const headerRight = [
-  <span className="cp-label cp-label--bold">Hello, hello@andreacg.com!</span>,
-  <CPButton cpType="secondary" icon="setting" size="small" />,
-  <CPButton cpType="secondary" icon="logout" size="small" />,
+  <span key={0} className="cp-label cp-label--bold">
+    Hello, hello@andreacg.com!
+  </span>,
+  <CPButton key={1} cpType="secondary" icon="setting" size="small" />,
+  <CPButton key={2} cpType="secondary" icon="logout" size="small" />,
 ];
 
 const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
@@ -198,8 +200,8 @@ export const Admin = (goback: any, title: string, actionsGroup: string) => {
   } else {
     actions = [];
   }
+  const onClick = (e: any) => null;
 
   const adminDetail = <CPAdminDetail goBack={goback} title={title} actions={actions} content={content} />;
-
-  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} isRubric={false} />;
+  return <CPLayoutAdmin onClick={onClick} selectedPanel={0} header={header} detail={adminDetail} />;
 };

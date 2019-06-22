@@ -1,0 +1,148 @@
+/* Landing page modules CSS for bevel/perspective */
+.animation--admin {
+  transform: scale(0.7) translateY(0) perspective(2000px) rotateY(-19deg) rotateX(1deg) rotate(1deg);
+  box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
+    10px 25px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+  &__sider {
+    border-radius: 5px 0px 0px 5px;
+  }
+}
+
+.animation--grade {
+  transform: scale(0.9) perspective(2000px) rotateY(20deg) rotateX(-1deg) rotate(-2deg);
+  box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
+    10px 25px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+  &__sider {
+    border-radius: 5px 0px 0px 5px;
+  }
+}
+
+.module--codeReview {
+  transform: translateY(0) perspective(4000px) rotateY(-5deg);
+}
+
+/* Animation CSS helpers */
+// Highlighted active rows in in admin tables
+.animation-row-active {
+  background-color: rgba(46, 205, 133, 0.2) !important;
+}
+// Sert grade border to none
+.simpleCodeBox {
+  border: 0px !important;
+}
+// Add a box shadow to grade menu
+.SimpleGradeMenu {
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+}
+
+/* Landing page CSS */
+// Testimonial highlights
+.codePost-highlight {
+  mark {
+    background-color: #d3f2e7 !important;
+    border-radius: 3px !important;
+    padding: 2px 5px 1px 5px !important;
+  }
+}
+
+// Hero "code review" highlight
+.codePost-title-highlight {
+  font-family: PTMono-Regular;
+  font-weight: 400;
+  mark {
+    background-color: #d3f2e7 !important;
+    border-radius: 4px !important;
+    padding: 3px 8px 2px 8px !important;
+    color: #24be85;
+  }
+}
+
+// Why Panel codeMirror
+.bad-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, mono;
+    line-height: 1.8;
+    font-weight: 500;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.08);
+    // need to fix the height because adding a perspective elongates the codebox
+    height: 550px;
+    overflow-y: hidden;
+    padding: 10px;
+    font-size: 11px;
+
+    &-gutters {
+      background-color: white;
+    }
+  }
+  .CodeMirror-scroll {
+    overflow-y: hidden !important;
+  }
+}
+
+// API Panel codeMirror
+.api-codemirror {
+  .CodeMirror {
+    font-family: monaco, Consolas, Lucida Console, mono;
+    line-height: 1.8;
+    font-weight: 500;
+    height: auto;
+    padding: 10px;
+    font-size: 11px;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  }
+}
+
+#APIExample .ant-collapse-header {
+  color: white;
+}
+
+.Footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 40px 80px 30px 80px;
+  align-items: center;
+  @media only screen and (max-width: 750px) {
+    flex-direction: column;
+  }
+  &__copyright {
+    color: #aab7c4;
+    font-size: 14pxs;
+    margin-bottom: 10px;
+  }
+  &__rightBox {
+    display: flex;
+
+    @media only screen and (max-width: 750px) {
+      flex-direction: column;
+    }
+    &__item {
+      margin-left: 40px;
+      margin-bottom: 10px;
+      @media only screen and (max-width: 750px) {
+        margin-left: 0px;
+      }
+      font-size: 14px;
+      color: #9b9b9b;
+      font-weight: 600;
+      a {
+        color: #9b9b9b;
+        cursor: pointer;
+      }
+      a:hover {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:active {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+      a:focus {
+        text-decoration: none;
+        color: #9b9b9b;
+      }
+    }
+  }
+}

@@ -20,10 +20,7 @@
 @import 'layout/layout', 'layout/cp-flex';
 
 // 6. Page-specific styles
-@import 'pages/animation';
-// @import 'pages/student', 'pages/grader', 'pages/grade', 'pages/admin', 'pages/app', 'pages/login', 'pages/admin-rubric',
-//   'pages/admin-roster', 'pages/settings', 'pages/signUp', 'pages/password-reset', 'pages/errorPage', 'pages/landing',
-// 'pages/TOS', 'pages/footer', 'pages/admin-submissions', 'pages/pricing';
+@import 'pages/landingNew';
 
 // 7. Themes
 @import 'themes/default';

@@ -109,7 +109,7 @@ class JoinSignup extends React.Component<{}, IState> {
     }
 
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={false}>
         <div style={{ width: 500 }}>
           <br />
           <br />

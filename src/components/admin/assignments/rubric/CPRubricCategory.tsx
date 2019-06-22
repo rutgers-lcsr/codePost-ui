@@ -6,11 +6,13 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Icon, Input, InputNumber, Popconfirm, Table } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
 import _ from 'lodash';
+
+// import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -21,12 +23,16 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { STATUS, statusChange } from './RubricUtils';
 
+import { DIRECTION } from '../../../../types/common';
+
 /**********************************************************************************************************************/
 
 interface ICPRubricCategoryProps {
   // data
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
+  index: number;
+  numCategories: number;
 
   // saved data
   savedRubricCategory?: RubricCategoryType;
@@ -35,6 +41,7 @@ interface ICPRubricCategoryProps {
   // RubricCategory functions
   updateCategory: (rCategory: RubricCategoryType) => void;
   deleteCategory: (rCategory: RubricCategoryType) => void;
+  moveCategory: (rCategory: RubricCategoryType, direction: DIRECTION) => void;
 
   // RubricComment functions
   addComment: (rCategory: RubricCategoryType) => void;
@@ -239,6 +246,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     this.setValue('name', event.target.value);
   };
 
+  public changeHelpText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setValue('helpText', event.target.value);
+  };
+
   /****************************************************************************
    Comment-level functions
   *****************************************************************************/
@@ -400,6 +411,22 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       <span key="title" className="cp-label cp-label--plus cp-label--bold">
         Category: {this.props.rubricCategory.name}
       </span>,
+      <span key="buttons">
+        {this.props.index > 0 && this.props.numCategories > 1 ? (
+          <Button
+            icon="caret-up"
+            size="small"
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+          />
+        ) : null}
+        {this.props.index !== this.props.numCategories - 1 ? (
+          <Button
+            icon="caret-down"
+            size="small"
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
+          />
+        ) : null}
+      </span>,
     ];
     const titleRight = [
       <Popconfirm
@@ -430,7 +457,30 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           onBlur={this.saveCategory}
         />
       </div>,
+      <div key="help-text">
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+          Category Help Text{' '}
+          <Tooltip
+            title={`Use this text to explain the rubric category to graders.
+           It will appear alongside the rubric category in the Code Review console.`}
+          >
+            <Icon type="question-circle" />
+          </Tooltip>
+        </div>
+        <Input.TextArea
+          style={{ width: 350 }}
+          value={this.state.helpText}
+          onChange={this.changeHelpText}
+          onBlur={this.saveCategory}
+        />
+      </div>,
     ];
+
+    // const components = {
+    //   body: {
+    //     row: DragableBodyRow,
+    //   },
+    // };
 
     return (
       <div className="cp-rubric-category">
@@ -457,5 +507,77 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     );
   }
 }
+
+/**********************************************************************************************************************/
+
+// let draggingIndex = -1;
+
+// interface IRowProps {
+//   index: number;
+//   style: any;
+//   className: string;
+//   isOver: boolean;
+//   connectDragSource: any;
+//   connectDropTarget: any;
+//   moveRow: any;
+// }
+
+// class BodyRow extends React.Component<IRowProps, {}> {
+//   render() {
+//     const { isOver, connectDragSource, connectDropTarget, moveRow, ...restProps } = this.props;
+//     const style = { ...restProps.style, cursor: 'move' };
+
+//     let className = restProps.className;
+//     if (isOver) {
+//       if (restProps.index > draggingIndex) {
+//         className += ' drop-over-downward';
+//       }
+//       if (restProps.index < draggingIndex) {
+//         className += ' drop-over-upward';
+//       }
+//     }
+
+//     return connectDragSource(connectDropTarget(<tr {...restProps} className={className} style={style} />));
+//   }
+// }
+
+// const rowSource = {
+//   beginDrag(props: IRowProps) {
+//     draggingIndex = props.index;
+//     return {
+//       index: props.index,
+//     };
+//   },
+// };
+
+// const rowTarget = {
+//   drop(props: IRowProps, monitor: any) {
+//     const dragIndex = monitor.getItem().index;
+//     const hoverIndex = props.index;
+
+//     // Don't replace items with themselves
+//     if (dragIndex === hoverIndex) {
+//       return;
+//     }
+
+//     // Time to actually perform the action
+//     props.moveRow(dragIndex, hoverIndex);
+
+//     // Note: we're mutating the monitor item here!
+//     // Generally it's better to avoid mutations,
+//     // but it's good here for the sake of performance
+//     // to avoid expensive index searches.
+//     monitor.getItem().index = hoverIndex;
+//   },
+// };
+
+// const DragableBodyRow = DropTarget('row', rowTarget, (connect: any, monitor: any) => ({
+//   connectDropTarget: connect.dropTarget(),
+//   isOver: monitor.isOver(),
+// }))(
+//   DragSource('row', rowSource, (connect: any) => ({
+//     connectDragSource: connect.dragSource(),
+//   }))(BodyRow),
+// );
 
 export default CPRubricCategory;

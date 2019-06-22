@@ -1,5 +1,5 @@
 // This is the actual url endpoints defined
-export const ADMIN = '/course-admin';
+export const ADMIN = '/admin';
 export const HOME = '/';
 export const GRADE = '/grade';
 export const GRADER = '/grader';

@@ -12,6 +12,14 @@
   }
 }
 
+.internal-link {
+  color: inherit;
+}
+
+.internal-link:hover {
+  color: #25be85;
+}
+
 #Admin {
   height: 100%;
 }
@@ -125,4 +133,3 @@
 .ant-collapse tr {
   line-height: 5px;
 }
-

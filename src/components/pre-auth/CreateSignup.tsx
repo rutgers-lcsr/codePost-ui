@@ -57,6 +57,10 @@ interface IState {
   progress: number;
 }
 
+interface IProps {
+  isLoggedIn: boolean;
+}
+
 const PROGRESS_INCREMENT_TIME = 100;
 const USER_VALIDATION_INTERVAL = 5000;
 
@@ -74,7 +78,7 @@ class CreateSignup extends React.Component<{}, IState> {
   private interval: any;
   private progressInterval: any;
 
-  public componentDidUpdate(oldProps: {}, oldState: IState) {
+  public componentDidUpdate(oldProps: IProps, oldState: IState) {
     if (!oldState.createNewOrg && this.state.createNewOrg) {
       console.log('bump');
       this.setState({ selectedOrg: { label: '', value: '' } });
@@ -391,7 +395,7 @@ class CreateSignup extends React.Component<{}, IState> {
     }
 
     return (
-      <PreAuthLayout>
+      <PreAuthLayout isLoggedIn={false}>
         <div>
           <br />
           <br />

@@ -146,7 +146,18 @@ class ManageStudents extends React.Component<IProps, IState> {
           dataIndex: 'section',
           key: 'section',
           align: aligner,
-          sorter: (a: any, b: any) => a.sectionText.localeCompare(b.sectionText),
+          sorter: (a: any, b: any) => {
+            if (a === b) {
+              return 0;
+            } else if (a.section === 'No section') {
+              return 1;
+            } else if (b.section === 'No section') {
+              return -1;
+            } else {
+              // save most expensive operation for last
+              return a.section.localeCompare(b.section);
+            }
+          },
           renderForSearch: (searchText: string) => {
             return (text: string, record: any, index: number) => {
               const student = record.student;

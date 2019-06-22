@@ -17,6 +17,7 @@ const { Header, Content, Footer } = Layout;
 
 interface IProps {
   children: React.ReactChild;
+  isLoggedIn: boolean;
 }
 
 class PreAuthLayout extends React.Component<IProps, {}> {
@@ -59,30 +60,38 @@ class PreAuthLayout extends React.Component<IProps, {}> {
             className="header"
           >
             <span style={{ float: 'right', marginTop: '3px' }}>
-              <Link to="/login">Login</Link> &nbsp; &nbsp;
-              <Link to="/signup/staff/create">
-                <Button
-                  style={{
-                    borderRadius: 5,
-                    backgroundColor: '#24be85',
-                    color: '#fff',
-                    fontSize: 17,
-                    padding: '0 20px',
-                  }}
-                >
-                  Sign up
-                </Button>
-              </Link>
+              {this.props.isLoggedIn ? (
+                <Link to="/logout">Logout</Link>
+              ) : (
+                <span>
+                  <Link to="/login">Login</Link> &nbsp; &nbsp;
+                  <Link to="/signup/staff/create">
+                    <Button
+                      style={{
+                        borderRadius: 5,
+                        backgroundColor: '#24be85',
+                        color: '#fff',
+                        fontSize: 17,
+                        padding: '0 20px',
+                      }}
+                    >
+                      Sign up
+                    </Button>
+                  </Link>
+                </span>
+              )}
             </span>
             <span>
               <Link to="/">
                 <span style={{ fontSize: 30, color: '#062a22' }}>codePost</span>
               </Link>
-              <span>
-                &nbsp; &nbsp; &nbsp; <a href="https://help.codepost.io">Docs</a> &nbsp; &nbsp;{' '}
-                <a href="/pricing#faqs">FAQs</a> &nbsp; &nbsp;
-                <Link to="/pricing">Pricing</Link>
-              </span>
+              {this.props.isLoggedIn ? null : (
+                <span>
+                  &nbsp; &nbsp; &nbsp; <a href="https://help.codepost.io">Docs</a> &nbsp; &nbsp;{' '}
+                  <a href="/pricing#faqs">FAQs</a> &nbsp; &nbsp;
+                  <Link to="/pricing">Pricing</Link>
+                </span>
+              )}
             </span>
           </div>
         </Header>

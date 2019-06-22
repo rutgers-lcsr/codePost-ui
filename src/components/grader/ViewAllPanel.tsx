@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Select, Switch, Table } from 'antd';
+import { Icon, Select, Switch, Table } from 'antd';
 const { Option } = Select;
 
 /* codePost imports */
@@ -16,10 +16,12 @@ import { Course, CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
-import { formatSub, getViewIcon, ISubDataBasic, openSubmissionRow } from './GraderUtils';
+import { formatSub, getViewIcon, ISubDataBasic } from './GraderUtils';
 
-import { compare } from '../Utils/SortUtils';
+import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
+
+import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 /**********************************************************************************************************************/
 
@@ -27,6 +29,7 @@ interface IViewAllProps {
   currentCourse: CourseType;
   currentAssignment: AssignmentType;
 }
+
 interface IViewAllState {
   graders: string[];
   submissions: SubmissionType[];
@@ -58,8 +61,6 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.currentCourse.id),
     ]);
-
-    // submissions.sort(this.sort.bind(this));
 
     this.setState({ graders: roster.graders, viewsBySubmission, submissions, isLoading: false });
   }
@@ -97,6 +98,10 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     this.setState({ selectedGraders: newGraders });
   };
 
+  public openGradePage = (submission: SubmissionType) => {
+    window.open(`/grade/${submission.id}`);
+  };
+
   public render() {
     const { graders, submissions, selectedGraders } = this.state;
     const { currentAssignment } = this.props;
@@ -105,17 +110,20 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     const centerAlign: alignType = 'center';
     const columns = [
       {
+        title: 'Open',
+        dataIndex: 'open',
+        align: centerAlign,
+      },
+      {
         title: 'Student(s)',
         dataIndex: 'student',
         sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
       },
       {
         title: 'Grade',
-        dataIndex: 'gradeString',
+        dataIndex: 'grade',
         sorter: (a: ITableRow, b: ITableRow) => {
-          if (a.isFinalized && !b.isFinalized) return 1;
-          else if (!a.isFinalized && b.isFinalized) return -1;
-          else return compare(true, a.grade, b.grade);
+          return a.gradeToSort - b.gradeToSort;
         },
         align: centerAlign,
       },
@@ -123,23 +131,21 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         title: 'Grader',
         dataIndex: 'grader',
         sorter: (a: ITableRow, b: ITableRow) => compare(true, a.grader, b.grader),
-      },
-      {
-        title: 'Finalized',
-        dataIndex: 'finalizeIcon',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.isFinalized, b.isFinalized),
         align: centerAlign,
       },
       {
         title: 'Last Edited',
-        dataIndex: 'dateEditedString',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.dateEdited, b.dateEdited),
+        dataIndex: 'lastEdited',
         align: centerAlign,
+        sorter: (a: ITableRow, b: ITableRow) => {
+          const date1 = new Date(a.lastEdited);
+          const date2 = new Date(b.lastEdited);
+          return date2.valueOf() - date1.valueOf();
+        },
       },
       {
         title: 'Viewed by Student(s)',
-        dataIndex: 'viewIcon',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.viewIcon, b.viewIcon),
+        dataIndex: 'viewed',
         align: centerAlign,
       },
     ];
@@ -155,19 +161,20 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     }
 
     const data = filteredSubs.map((sub) => {
-      const students = showingEmails ? sub.students.join() : String(sub.id);
+      const students = showingEmails ? sub.students.join(', ') : String(sub.id);
       return {
-        ...formatSub(sub),
+        ...formatSub(sub, this.props.currentAssignment),
         key: sub.id,
         student: students,
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
+        open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
       };
     });
 
     // If we're in anonymous grading mode, add a toggle to reveal student emails
     const anonymousToggle = currentAssignment.anonymousGrading ? (
       <div style={{ display: 'inline-block', padding: '0px 20px' }}>
-        Reveal students:
+        Reveal students: &nbsp;
         <Switch
           defaultChecked={showingEmails}
           onChange={this.toggleShowStudentEmails}
@@ -179,28 +186,34 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       <div />
     );
 
-    return (
-      <div className="grader__view-all">
-        {anonymousToggle}
-        <Select
-          placeholder="Select Graders..."
-          mode="multiple"
-          onSelect={this.handleSelect}
-          onDeselect={this.handleDeselect}
-          style={{ width: 500, marginBottom: 20 }}
-        >
-          {graders.map((grader) => {
-            return <Option key={grader}>{grader}</Option>;
-          })}
-        </Select>
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={false}
-          loading={this.state.isLoading}
-          onRow={openSubmissionRow}
-        />
+    const graderSelect = (
+      <Select
+        placeholder="Select Graders..."
+        mode="multiple"
+        onSelect={this.handleSelect}
+        onDeselect={this.handleDeselect}
+        style={{ width: 500, marginBottom: 20 }}
+      >
+        {graders.map((grader) => {
+          return <Option key={grader}>{grader}</Option>;
+        })}
+      </Select>
+    );
+
+    const content = (
+      <div>
+        {graderSelect}
+        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
       </div>
+    );
+
+    return (
+      <CPAdminDetail
+        goBack={null}
+        title={`All submissions: ${this.props.currentAssignment.name}`}
+        actions={[anonymousToggle]}
+        content={content}
+      />
     );
   }
 }

@@ -22,6 +22,7 @@ interface IProps {
 
 interface IState {
   dialogVisible: boolean;
+  loading: boolean;
 }
 
 class NewCourseDialog extends React.Component<IProps, IState> {
@@ -31,6 +32,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       dialogVisible: false,
+      loading: false,
     };
   }
 
@@ -48,8 +50,12 @@ class NewCourseDialog extends React.Component<IProps, IState> {
     });
 
     if (!cloneID || cloneCourse) {
-      this.props.createCourse(name, period, cloneCourse);
-      this.toggleDialog();
+      this.setState({ loading: true }, () => {
+        this.props.createCourse(name, period, cloneCourse).then(() => {
+          this.setState({ loading: false });
+          this.toggleDialog();
+        });
+      });
     }
   };
 
@@ -62,8 +68,6 @@ class NewCourseDialog extends React.Component<IProps, IState> {
       }
 
       this.createNewCourse(values.name, values.period, parseInt(values.cloneID, 10));
-      form.resetFields();
-      this.setState({ dialogVisible: false });
     });
   };
 
@@ -83,6 +87,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
           onCancel={this.toggleDialog}
           onCreate={this.handleCreate}
           courses={this.props.courses}
+          loading={this.state.loading}
         />
       </div>
     );
@@ -95,6 +100,7 @@ interface ISubProps {
   onCreate: any;
   onCancel: any;
   courses: CourseType[];
+  loading: boolean;
 }
 
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
@@ -109,7 +115,14 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Create a course" okText="Create" onCancel={onCancel} onOk={onCreate}>
+        <Modal
+          visible={visible}
+          title="Create a course"
+          okText="Create"
+          onCancel={onCancel}
+          onOk={onCreate}
+          confirmLoading={this.props.loading}
+        >
           <Form layout="vertical">
             <Form.Item label="Course name">
               {getFieldDecorator('name', {

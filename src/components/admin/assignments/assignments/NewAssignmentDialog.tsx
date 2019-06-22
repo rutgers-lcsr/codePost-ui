@@ -73,6 +73,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
           visible={this.state.dialogVisible}
           onCancel={this.toggleDialog}
           onCreate={this.handleCreate}
+          assignments={this.props.assignments}
         />
       </div>
     );
@@ -83,11 +84,38 @@ interface IFormProps extends FormComponentProps {
   visible: boolean;
   onCreate: () => void;
   onCancel: () => void;
+  assignments: AssignmentType[];
 }
 
 // FIXME: figure out how to type output of Form.create HOC
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
   class extends React.Component<IFormProps, {}> {
+    public validateName = (rule: any, value: string, callback: any) => {
+      if (
+        this.props.assignments.some((el) => {
+          return el.name === value;
+        })
+      ) {
+        callback('An assignment with this name already exists in this course.');
+      }
+
+      // Call callback with no arguments to signal that value passed validation
+      callback();
+    };
+
+    public validatePoints = (rule: any, value: any, callback: any) => {
+      // Test 1: are the points a non-negative integer? Note that we could prevent
+      // offending values from being input into this field using the precision prop
+      // of InputNumber, but it's nicer to alert the user explicitly if they
+      // try to enter a disallowed value.
+      if (parseFloat(value) < 0 || !Number.isInteger(parseFloat(value))) {
+        callback('Points must be a non-negative integer.');
+      }
+
+      // Call callback with no arguments to signal that value passed validation
+      callback();
+    };
+
     public render() {
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
@@ -96,14 +124,24 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
           <Form layout="vertical">
             <Form.Item label="Name">
               {getFieldDecorator('name', {
+                validateFirst: true,
                 rules: [
-                  { required: true, message: 'Please input an assignment name with at least 4 characters', min: 4 },
+                  {
+                    required: true,
+                    message: 'Please input an assignment name with at least 4 characters',
+                    min: 4,
+                  },
+                  { validator: this.validateName },
                 ],
               })(<Input />)}
             </Form.Item>
             <Form.Item label="Points">
               {getFieldDecorator('points', {
-                rules: [{ required: true }],
+                validateFirst: true,
+                rules: [
+                  { required: true, message: 'Please specify a point value' },
+                  { validator: this.validatePoints },
+                ],
               })(<InputNumber min={0} />)}
             </Form.Item>
           </Form>

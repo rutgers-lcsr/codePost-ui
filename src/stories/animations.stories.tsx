@@ -11,7 +11,11 @@ import { SimpleRubric } from './../components/LandingAnimations/Admin/SimpleRubr
 import { SimpleStudentDrilldown } from './../components/LandingAnimations/Admin/SimpleStudentDrilldown';
 import { SimpleStudentSubmissions } from './../components/LandingAnimations/Admin/SimpleStudentSubmissions';
 
-storiesOf('Animations', module)
+import { SimpleCodeBox } from './../components/LandingAnimations/Grade/SimpleCodeBox';
+import { SimpleGradeHeader } from './../components/LandingAnimations/Grade/SimpleGradeHeader';
+import { SimpleGradeMenu } from './../components/LandingAnimations/Grade/SimpleGradeMenu';
+
+storiesOf('Animations-Admin', module)
   .addDecorator(withKnobs)
   .add('Admin-Assignments', () => <SimpleAssignments mouseOver={false} />)
   .add('Admin-Rubric', () => <SimpleRubric />)
@@ -19,3 +23,9 @@ storiesOf('Animations', module)
   .add('Admin-StudentDrilldown', () => <SimpleStudentDrilldown student="student0" />)
   .add('Admin-GraderRoster', () => <SimpleGraderRoster />)
   .add('Admin-Menu', () => <SimpleMenu number={['1']} openKey={['1']} />);
+
+storiesOf('Animations-Grade', module)
+  .addDecorator(withKnobs)
+  .add('Grade-CodeBox', () => <SimpleCodeBox />)
+  .add('Grade-Header', () => <SimpleGradeHeader grade="17/20" />)
+  .add('Grade-Menu', () => <SimpleGradeMenu selectedKeys={['1']} />);

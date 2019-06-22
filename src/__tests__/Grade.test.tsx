@@ -2,10 +2,7 @@ import * as React from 'react';
 
 import { shallow } from 'enzyme';
 
-import Grade, { IGradeProps } from '../Grade';
-
-// @ts-ignore
-import { loadIDList } from '../infrastructure/generics';
+import Grade, { IGradeProps } from '../components/grade/Grade';
 
 import { Submission } from '../infrastructure/submission';
 
