@@ -83,7 +83,12 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
 
   const blockProps = (props: any) => {
     let isNestedBlock = false;
-    if (topLevelChildren !== undefined && props.parentChildCount && topLevelChildren !== props.parentChildCount) {
+    if (
+      topLevelChildren !== undefined &&
+      props.parentChildCount &&
+      topLevelChildren !== 1 &&
+      topLevelChildren !== props.parentChildCount
+    ) {
       isNestedBlock = true;
     }
 
@@ -188,7 +193,12 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   const parsedHtmlRenderer = (props: any) => {
     const rootRend = (propz: any) => {
       let isNestedBlock = false;
-      if (topLevelChildren !== undefined && props.parentChildCount && topLevelChildren !== props.parentChildCount) {
+      if (
+        topLevelChildren !== undefined &&
+        props.parentChildCount &&
+        topLevelChildren !== 1 &&
+        topLevelChildren !== props.parentChildCount
+      ) {
         isNestedBlock = true;
       }
 
