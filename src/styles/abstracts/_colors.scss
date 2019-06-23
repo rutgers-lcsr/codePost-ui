@@ -49,6 +49,9 @@ $neutralDarkBorder: get('theme.neutralDarkBorder');
 $neutralDarkDivider: get('theme.neutralDarkDivider');
 $neutralDarkBackground: get('theme.neutralDarkBackground');
 
+$highlight: get('theme.highlight');
+$highlightActive: get('theme.highlightActive');
+
 // Export for tsx
 :export {
   brandPrimary: $brandPrimary;

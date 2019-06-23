@@ -2,6 +2,9 @@ import { Collapse, Icon } from 'antd';
 const Panel = Collapse.Panel;
 
 import * as React from 'react';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+
+import landingVars from './_landingVars';
 
 // import * as CodeMirror from 'react-codemirror';
 
@@ -73,8 +76,8 @@ const setEditor = (editor: CodeMirror.Editor) => {
   instance = editor;
 };
 
-class APIExample extends React.PureComponent<{}, IState> {
-  public constructor(props: {}) {
+class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
+  public constructor(props: IWithWindowWatcherProps) {
     super(props);
     this.state = {
       exampleIndex: 0,
@@ -117,7 +120,7 @@ class APIExample extends React.PureComponent<{}, IState> {
     const selectedStyle = {
       zIndex: 3,
       color: 'rgb(38, 50, 56)',
-      fontSize: 17,
+      fontSize: 15,
       transition: 'color .3s',
       border: 'none',
       height: 38,
@@ -125,7 +128,7 @@ class APIExample extends React.PureComponent<{}, IState> {
     const unSelectedStyle = {
       zIndex: 3,
       color: 'white',
-      fontSize: 17,
+      fontSize: 15,
       transition: 'color .3s',
       border: 'none',
       height: 38,
@@ -135,9 +138,31 @@ class APIExample extends React.PureComponent<{}, IState> {
       <div id="APIExample" style={{ width: '100%' }}>
         <Collapse bordered={false}>
           <Panel header="See the codePost API in action" key="1" style={customPanelStyle}>
-            <div style={{ fontSize: 12, display: 'flex' }}>
-              <div style={{ maxWidth: 600 }}>{codeMirror}</div>
-              <div style={{ maxWidth: 300, margin: 30, position: 'relative' }}>
+            <div
+              style={{
+                fontSize: 12,
+                display: 'flex',
+                flexDirection: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row',
+                alignItems: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start',
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: 600,
+                  width: '100%',
+                  minHeight: this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
+                }}
+              >
+                {codeMirror}
+              </div>
+              <div
+                style={{
+                  maxWidth: 300,
+                  marginLeft: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 0 : 30,
+                  marginTop: this.props.windowwidth < landingVars.breakpoints.mobile ? 20 : 0,
+                  position: 'relative',
+                }}
+              >
                 <span
                   style={{
                     position: 'absolute',
@@ -196,4 +221,4 @@ class APIExample extends React.PureComponent<{}, IState> {
   }
 }
 
-export default APIExample;
+export default withWindowWatcher(APIExample);

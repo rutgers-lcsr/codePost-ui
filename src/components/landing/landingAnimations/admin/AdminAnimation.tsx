@@ -92,7 +92,7 @@ function AdminAnimation() {
   );
 
   return (
-    <div className="animation--admin">
+    <div style={{ transform: 'scale(0.77)' }}>
       <div style={{ maxWidth: 800, minWidth: 800, maxHeight: 500, position: 'relative' }}>
         <div
           onClick={togglePause}

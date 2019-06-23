@@ -12,14 +12,14 @@ import { ClickParam } from 'antd/lib/menu';
 /* codePost imports */
 import themeVars from '../../styles/abstracts/_theme.js';
 
-import Grade from '../code-review/Grade';
+import Grade from '../grade/Grade';
 
 import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
 import StandardConsoleLayout, { ConsoleType } from '../core/layouts/StandardConsoleLayout';
 
 import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from '../code-review/Subheader';
 
-import { StudentCode } from '../code-review/code-panel/Code';
+import { StudentCode } from '../code-review/code-panel/CodeContent';
 
 import { StudentComments } from '../code-review/code-panel/Comments';
 
@@ -373,12 +373,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               file={this.state.currentFile}
             />
           );
-          const code = (
+          const code = (codeStyle: React.CSSProperties) => (
             <StudentCode
-              file={this.state.currentFile}
-              comments={this.state.comments[this.state.currentFile.id]}
-              readOnly={this.state.currentSubmission.isFinalized}
+              key={this.state.currentFile!.id}
+              file={this.state.currentFile!}
+              comments={this.state.comments[this.state.currentFile!.id]}
+              readOnly={this.state.currentSubmission!.isFinalized}
               user={this.props.user.email}
+              codeStyle={codeStyle}
             />
           );
           return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;

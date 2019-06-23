@@ -5,6 +5,8 @@ const InputGroup = Input.Group;
 
 export type CPPointInputType = 'small' | 'default';
 
+// FIXME: these are only optional to prevent breaking the rest of the site.
+//         We can generalize this much more elegantly.
 interface ICPPointInputProps {
   value: number;
   size: CPPointInputType;
@@ -12,16 +14,10 @@ interface ICPPointInputProps {
   onPlus?: any;
   onMinus?: any;
   disabled?: boolean;
+  onKeyDown?: any;
 }
 
 class CPPointInput extends React.Component<ICPPointInputProps, {}> {
-  // parser
-  // value
-  //
-  // public parser = (value: string): number => {
-  //   return parseFloat(value) ? parseFloat(value) : this.props.value;
-  // };
-
   public render() {
     let className = 'cp-point-input';
     if (this.props.size === 'default') {
@@ -38,6 +34,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
           size={this.props.size}
           onChange={this.props.onChange}
           disabled={this.props.disabled}
+          onKeyDown={this.props.onKeyDown}
         />
         <Button icon="plus" onClick={this.props.onPlus} disabled={this.props.disabled} />
         <Button icon="minus" onClick={this.props.onMinus} disabled={this.props.disabled} />

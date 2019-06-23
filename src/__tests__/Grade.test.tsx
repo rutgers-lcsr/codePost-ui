@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { shallow } from 'enzyme';
 
-import Grade, { IGradeProps } from '../components/code-review/Grade';
+import Grade, { IGradeProps } from '../components/grade/Grade';
 
 import { Submission } from '../infrastructure/submission';
 

@@ -13,3 +13,9 @@ export const clearNextFrameAction = (nextFrameId: number) => {
     window.clearTimeout(nextFrameId);
   }
 };
+
+export async function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

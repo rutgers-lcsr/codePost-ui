@@ -1,5 +1,9 @@
 import * as React from 'react';
 
+import useWindowSize from '../core/useWindowSize';
+
+import landingVars from './_landingVars';
+
 import { Typography } from 'antd';
 
 const Testimonials = () => {
@@ -29,6 +33,8 @@ const Testimonials = () => {
     </span>
   );
 
+  const windowSize = useWindowSize();
+
   const bobText = (
     <span style={{ fontStyle: 'italic' }}>
       codePost has been a{' '}
@@ -40,7 +46,15 @@ const Testimonials = () => {
   );
 
   return (
-    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row',
+        alignItems: windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start',
+      }}
+    >
       <Testimonial text={<div>{adamText}</div>} name="Adam Blank" thumbnail={adamImg} school="Caltech" />
       <Testimonial
         text={<div>{bobText}</div>}
@@ -59,6 +73,8 @@ const Testimonials = () => {
 };
 
 const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name: string; school: string }) => {
+  const windowSize = useWindowSize();
+
   return (
     <div
       style={{
@@ -66,8 +82,11 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         lineHeight: 1.57,
         display: 'flex',
         flexDirection: 'column',
-        maxWidth: 300,
+        maxWidth: windowSize.width < landingVars.breakpoints.testimonial ? 600 : 300,
         justifyContent: 'flex-start',
+        marginLeft: 15,
+        marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
+        marginTop: windowSize.width < landingVars.breakpoints.testimonial ? 20 : 0,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
@@ -77,7 +96,7 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
           <div>{props.school}</div>
         </div>
       </div>
-      <br />
+      <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 22 }} />
       {props.text}
     </div>
   );
