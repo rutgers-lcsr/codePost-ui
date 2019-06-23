@@ -15,9 +15,9 @@ import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 
 // Animations
-import { AdminAnimation } from './LandingAnimations/Admin/AdminAnimation';
-import APIAnimation from './LandingAnimations/API/APIAnimation';
-import { GradeAnimationVideo } from './LandingAnimations/Grade/GradeAnimation';
+import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
+import APIAnimation from './landingAnimations/api/APIAnimation';
+import { GradeAnimationVideo } from './landingAnimations/grade/GradeAnimation';
 
 // Other design elements
 import CPButton from '../core/CPButton';

@@ -18,6 +18,10 @@ const CompressionPlugin = require('compression-webpack-plugin');
 
 const tsImportPluginFactory = require('ts-import-plugin')
 
+var sass = require("node-sass");
+const sassUtils = require("node-sass-utils")(sass);
+const themeVars = require('../src/styles/abstracts/_theme.js');
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
 const publicPath = paths.servedPath;
@@ -152,7 +156,7 @@ module.exports = {
                   // disable type checker - we will use it in fork plugin
                   transpileOnly: true,
                   getCustomTransformers: () => ({
-                    before: [ tsImportPluginFactory( { style: 'css' } ) ]
+                    before: [ tsImportPluginFactory( { style: true } ) ]
                   }),
                   compilerOptions: {
                     module: 'es2015'
@@ -161,12 +165,6 @@ module.exports = {
                 },
               },
             ],
-          },
-          //------------------- Add SCSS Loaders -------------------//
-          // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
-          {
-            test: /\.scss$/,
-            loaders: [require.resolve('style-loader'), require.resolve('css-loader'), require.resolve('sass-loader')],
           },
           // The notation here is somewhat confusing.
           // "postcss" loader applies autoprefixer to our CSS.
@@ -227,6 +225,53 @@ module.exports = {
             ),
             // Note: this won't work without `new ExtractTextPlugin()` in `plugins`.
           },
+
+          //------------------- For Ant Theme Override -------------------//
+          // https://ant.design/docs/react/customize-theme
+          {
+            test: /\.less$/,
+            use: [{
+              loader: 'style-loader',
+            }, {
+              loader: 'css-loader', // translates CSS into CommonJS
+            }, {
+              loader: 'less-loader', // compiles Less to CSS
+              options: {
+                modifyVars: themeVars.ant,
+                javascriptEnabled: true,
+              },
+            }],
+          },
+          //------------------- Add SCSS Loaders -------------------//
+          // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
+          {
+            test: /\.scss/,
+            use: [{
+              loader: 'style-loader',
+            }, {
+              loader: 'css-loader',
+            }, {
+              loader: 'sass-loader',
+              // ------ Sharing variables between JS and SASS --------//
+              // https://itnext.io/sharing-variables-between-js-and-sass-using-webpack-sass-loader-713f51fa7fa0
+              options: {
+                functions: {
+                  "get($keys)": function(keys) {
+                    keys = keys.getValue().split(".");
+                    let result = themeVars;
+                    let i;
+                    for (i = 0; i < keys.length; i++) {
+                      result = result[keys[i]];
+                    }
+                    result = sassUtils.castToSass(result);
+                    return result;
+                  }
+                }
+              }
+
+            }],
+          },
+
           // "file" loader makes sure assets end up in the `build` folder.
           // When you `import` an asset, you get its filename.
           // This loader doesn't use a "test" so it will catch all modules

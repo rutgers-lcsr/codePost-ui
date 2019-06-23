@@ -1,27 +1,22 @@
 import * as React from 'react';
 
+import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
+
 import CodePanelHighlighting from './CodePanelHighlighting';
+
+import { CommentType } from '../../../infrastructure/comment';
 
 import { POSITION } from '../../../types/common';
 
-import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
+import { wait } from '../../../infrastructure/animation';
 
-interface ICodeCoreProps {
-  file: FileType;
-  comments: CommentType[];
-  readOnly: boolean;
-  user: string;
+interface ICodeProps {
+  commentCounter: number;
+  highlightHeight: string;
 }
 
-interface ICodeEditProps {
-  addComment: (comment: CommentType, file: FileType) => void;
-}
-
-const Code = (props: ICodeCoreProps & ICodeEditProps) => {
-  const [commentCounter, setCommentCounter] = React.useState(-1);
-
-  const onMouseUp = (event: any) => {
+const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
+  const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
     if (selection.toString() === '') {
@@ -63,7 +58,7 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
     }
 
     const newComment: CommentType = {
-      id: commentCounter,
+      id: props.commentCounter,
       endChar,
       endLine,
       file: props.file.id,
@@ -75,9 +70,15 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
       author: props.user,
     };
 
-    setCommentCounter(commentCounter - 1);
-
     props.addComment(newComment, props.file);
+
+    // FIXME: we can come up with a better solution
+    await wait(5);
+
+    const highlights = document.getElementsByClassName('highlight');
+    [].forEach.call(highlights, (highlight: any) => {
+      highlight.style.setProperty('height', props.highlightHeight);
+    });
   };
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
@@ -89,21 +90,7 @@ const Code = (props: ICodeCoreProps & ICodeEditProps) => {
       );
     });
   };
-
   return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
 };
 
-const makeReadOnly = (Component: React.ComponentType<ICodeCoreProps & ICodeEditProps>) => {
-  return class WrappedComponent extends React.Component<ICodeCoreProps, {}> {
-    public addComment = (comment: CommentType, file: FileType) => {
-      return;
-    };
-
-    public render() {
-      return <Component {...this.props as ICodeCoreProps} addComment={this.addComment} />;
-    }
-  };
-};
-
-export const GradeCode = Code;
-export const StudentCode = makeReadOnly(Code);
+export default Code;

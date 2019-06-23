@@ -13,10 +13,10 @@ const getClientEnvironment = require('./env');
 const paths = require('./paths');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
-const tsImportPluginFactory = require('ts-import-plugin')
+const tsImportPluginFactory = require('ts-import-plugin');
 
-var sass = require("node-sass");
-const sassUtils = require("node-sass-utils")(sass);
+var sass = require('node-sass');
+const sassUtils = require('node-sass-utils')(sass);
 const themeVars = require('../src/styles/abstracts/_theme.js');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
@@ -28,7 +28,6 @@ const publicPath = '/';
 const publicUrl = '';
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
-
 
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
@@ -72,8 +71,7 @@ module.exports = {
     // This is the URL that app is served from. We use "/" in development.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
-    devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+    devtoolModuleFilenameTemplate: (info) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
   },
   resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
@@ -82,7 +80,7 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/253
     modules: ['node_modules', paths.appNodeModules].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
-      process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
+      process.env.NODE_PATH.split(path.delimiter).filter(Boolean),
     ),
     // These are the reasonable defaults supported by the Node ecosystem.
     // We also include JSX as a common component filename extension to support
@@ -90,20 +88,8 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
-    extensions: [
-      '.mjs',
-      '.web.ts',
-      '.ts',
-      '.web.tsx',
-      '.tsx',
-      '.web.js',
-      '.js',
-      '.json',
-      '.web.jsx',
-      '.jsx',
-    ],
+    extensions: ['.mjs', '.web.ts', '.ts', '.web.tsx', '.tsx', '.web.js', '.js', '.json', '.web.jsx', '.jsx'],
     alias: {
-
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web',
@@ -152,7 +138,6 @@ module.exports = {
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
-
               compact: true,
             },
           },
@@ -168,11 +153,11 @@ module.exports = {
                   // disable type checker - we will use it in fork plugin
                   transpileOnly: true,
                   getCustomTransformers: () => ({
-                    before: [ tsImportPluginFactory( { style: true } ) ]
+                    before: [tsImportPluginFactory({ style: true })],
                   }),
                   compilerOptions: {
-                    module: 'es2015'
-                  }
+                    module: 'es2015',
+                  },
                 },
               },
             ],
@@ -215,52 +200,58 @@ module.exports = {
             ],
           },
 
-
           //------------------- For Ant Theme Override -------------------//
           // https://ant.design/docs/react/customize-theme
           {
             test: /\.less$/,
-            use: [{
-              loader: 'style-loader',
-            }, {
-              loader: 'css-loader', // translates CSS into CommonJS
-            }, {
-              loader: 'less-loader', // compiles Less to CSS
-              options: {
-                modifyVars: themeVars.ant,
-                javascriptEnabled: true,
+            use: [
+              {
+                loader: 'style-loader',
               },
-            }],
+              {
+                loader: 'css-loader', // translates CSS into CommonJS
+              },
+              {
+                loader: 'less-loader', // compiles Less to CSS
+                options: {
+                  modifyVars: themeVars.ant,
+                  javascriptEnabled: true,
+                },
+              },
+            ],
           },
 
           //------------------- Add SCSS Loaders -------------------//
           // https://medium.com/@oreofeolurin/configuring-scss-with-react-create-react-app-1f563f862724
           {
             test: /\.scss/,
-            use: [{
-              loader: 'style-loader',
-            }, {
-              loader: 'css-loader',
-            }, {
-              loader: 'sass-loader',
-              // ------ Sharing variables between JS and SASS --------//
-              // https://itnext.io/sharing-variables-between-js-and-sass-using-webpack-sass-loader-713f51fa7fa0
-              options: {
-                functions: {
-                  "get($keys)": function(keys) {
-                    keys = keys.getValue().split(".");
-                    let result = themeVars;
-                    let i;
-                    for (i = 0; i < keys.length; i++) {
-                      result = result[keys[i]];
-                    }
-                    result = sassUtils.castToSass(result);
-                    return result;
-                  }
-                }
-              }
-
-            }],
+            use: [
+              {
+                loader: 'style-loader',
+              },
+              {
+                loader: 'css-loader',
+              },
+              {
+                loader: 'sass-loader',
+                // ------ Sharing variables between JS and SASS --------//
+                // https://itnext.io/sharing-variables-between-js-and-sass-using-webpack-sass-loader-713f51fa7fa0
+                options: {
+                  functions: {
+                    'get($keys)': function(keys) {
+                      keys = keys.getValue().split('.');
+                      let result = themeVars;
+                      let i;
+                      for (i = 0; i < keys.length; i++) {
+                        result = result[keys[i]];
+                      }
+                      result = sassUtils.castToSass(result);
+                      return result;
+                    },
+                  },
+                },
+              },
+            ],
           },
 
           // "file" loader makes sure those assets get served by WebpackDevServer.

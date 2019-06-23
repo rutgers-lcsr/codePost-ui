@@ -32,6 +32,8 @@ interface ICommentsEditProps {
   addUnsaved: any;
   removeUnsaved: any;
   removeRubricComment: any;
+
+  oldCommentIDs: any;
 }
 
 interface ICommentPlacement {
@@ -116,10 +118,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   //          The downside is that it now looks choppy
   //          The correct way to do this is to figure out how to
   //          order the animation frames.
-  public manualWait = () => {
-    window.setTimeout(() => {
-      this.placeCommentsOnNextFrame();
-    }, 5);
+  public manualWait = async () => {
+    await Animation.wait(5);
+    this.placeCommentsOnNextFrame();
   };
 
   public componentWillUnmount() {
@@ -141,11 +142,15 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   }
 
-  public componentDidUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps) {
+  public componentDidUpdate = async (prevProps: ICommentsCoreProps & ICommentsEditProps) => {
     if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
-  }
+
+    if (this.props.file.id !== prevProps.file.id) {
+      this.manualWait();
+    }
+  };
 
   public placeCommentsOnNextFrame = () => {
     if (this.nextFrameActionId) {
@@ -173,7 +178,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
       if (blockElement) {
-        startAt = blockElement.offsetTop;
+        startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }
 
       // If a comment starts in the range of another block, then push it down until it fits
@@ -250,11 +255,16 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         ? this.props.rubricComments[comment.id]
         : undefined;
 
+      const key = this.props.oldCommentIDs.hasOwnProperty(comment.id)
+        ? this.props.oldCommentIDs[comment.id]
+        : comment.id;
+
       return (
         <Comment
-          key={comment.id}
+          key={key}
           commentType={commentType}
           comment={comment}
+          file={this.props.file}
           rubricComment={rubricComment}
           placement={placement}
           changeActive={this.changeActive}
@@ -316,6 +326,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           addUnsaved={this.addUnsaved}
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
+          oldCommentIDs={{}}
         />
       );
     }
