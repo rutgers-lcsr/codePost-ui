@@ -8,6 +8,8 @@ import * as React from 'react';
 /* other library imports */
 import { Link } from 'react-router-dom';
 
+import PreAuthFooter from './PreAuthFooter';
+
 /* ant imports */
 import { Button, Layout } from 'antd';
 
@@ -112,21 +114,11 @@ class PreAuthLayout extends React.Component<IProps, {}> {
           style={{
             background: 'rgb(234,234,234)',
             width: '100%',
-            padding: '25px 0',
+            padding: 0,
             marginTop: 50,
-            fontSize: 17,
-            minWidth: 690,
           }}
         >
-          <div style={{ margin: '0 auto', maxWidth: 1100, padding: '0 50px' }} className="footer">
-            <span style={{ fontSize: 24, fontStyle: 'bold' }}>codePost</span>
-            <span style={{ float: 'right', marginTop: 6 }}>
-              <a href="https://help.codepost.io">Docs</a> &nbsp; &nbsp;{' '}
-              <a href="https://updates.codepost.io">Updates</a> &nbsp; &nbsp; <a id="calendly-button">Demo</a> &nbsp;
-              &nbsp;
-              <Link to="/privacy">Privacy</Link> &nbsp; &nbsp; <Link to="/terms">Terms</Link>
-            </span>
-          </div>
+          <PreAuthFooter />
         </Footer>
       </Layout>
     );

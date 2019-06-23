@@ -7,6 +7,7 @@ const heroBreakPoint = 850; // point at which hero switches to vertical
 const verticalPanelsBreakpoint = 1000; // point at which horizontal panels change to vertical
 const removeModuleBreakpoint = 600; // point at which modules specified for removal on small screens are removed
 const testimonialBreakPoint = 900;
+const getStartedBreakpoint = 625;
 
 // Maximum Widths
 const panelMaxWidth = 1100; // Maximum width for the panels to keep narrow look
@@ -61,6 +62,7 @@ module.exports = {
     verticalPanels: verticalPanelsBreakpoint,
     removeModule: removeModuleBreakpoint,
     testimonial: testimonialBreakPoint,
+    getStarted: getStartedBreakpoint,
   },
   backgrounds: {
     hero: heroColor,

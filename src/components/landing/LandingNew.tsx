@@ -9,6 +9,7 @@ import * as React from 'react';
 import landingVars from './_landingVars';
 
 // Section components
+import LandingGetStarted from './LandingGetStarted';
 import LandingHeader from './LandingHeader';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
@@ -20,8 +21,7 @@ import APIAnimation from './landingAnimations/api/APIAnimation';
 import { GradeAnimationVideo } from './landingAnimations/grade/GradeAnimation';
 
 // Other design elements
-import CPButton from '../core/CPButton';
-import Footer from './Footer';
+import PreAuthFooter from '../pre-auth/PreAuthFooter';
 import Testimonials from './Testimonial';
 
 import APIExample from './LandingAPIExample';
@@ -120,7 +120,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
         text={panelOneText}
         title="1. ANNOTATE STUDENT CODE"
         subTitle="Effortlessly annotate and grade programming assignments."
-        module={<GradeAnimationVideo width={610} height={390} />}
+        module={<GradeAnimationVideo width={610} height={390} controls={500} />}
         type="right"
         moduleMaxWidth={610}
         moduleMaxHeight={380}
@@ -164,21 +164,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
         </div>
       </div>
     );
-    const getStarted = (
-      <div
-        style={{ display: 'flex', width: '100%', justifyContent: 'space-between', paddingLeft: 25, paddingRight: 25 }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: 30, color: '#707070', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
-          <div style={{ fontSize: 24, color: '#A3A3A3' }}>Get started using codePost in minutes.</div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <CPButton href="/signup" cpType="primary" style={{ width: 230, height: 40, fontSize: 17, lineHeight: 2.2 }}>
-            Sign up
-          </CPButton>
-        </div>
-      </div>
-    );
+
     return (
       <LandingLayout
         topBar={<LandingHeader />}
@@ -188,8 +174,12 @@ class LandingNew extends React.PureComponent<{}, {}> {
         panelOne={panelOne}
         panelTwo={panelTwo}
         panelThree={panelThree}
-        getStarted={getStarted}
-        footer={<Footer />}
+        getStarted={<LandingGetStarted />}
+        footer={
+          <div id="PreAuth">
+            <PreAuthFooter />
+          </div>
+        }
       />
     );
   }
