@@ -4,15 +4,13 @@
 
 /* react imports */
 import * as React from 'react';
-import { Link } from 'react-router-dom';
-
-/* antd imports */
-import { Typography } from 'antd';
 
 /* codePost Imports */
+import landingVars from './_landingVars';
 
 // Section components
 import LandingHeader from './LandingHeader';
+import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 
@@ -32,55 +30,31 @@ import CodeReview from './LandingCodeReview';
 /**********************************************************************************************************************/
 
 class LandingNew extends React.PureComponent<{}, {}> {
-  public render() {
-    const hero = (
-      <div style={{ display: 'flex', justifyContent: 'flex-start', flexDirection: 'column' }}>
-        <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
-          <span>
-            The easy, free{' '}
-            <Typography.Text mark className="codePost-title-highlight">
-              code review
-            </Typography.Text>{' '}
-            platform for CS courses
-          </span>
-        </div>
-        <div
-          style={{
-            fontSize: 18,
-            lineHeight: 1.67,
-            maxWidth: 450,
-            fontWeight: 400,
-            color: '#606060',
-            paddingTop: 35,
-            paddingBottom: 60,
-          }}
-        >
-          Save time and give better feedback on coding assignments, while providing insights into how your students are
-          doing.
-        </div>
-        <div style={{ width: 350 }}>
-          <Link to="/signup" style={{ marginTop: 25 }}>
-            <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
-              Sign Up
-            </CPButton>
-          </Link>
-          &nbsp; &nbsp;
-          <a href="https://calendly.com/codepost">
-            <CPButton style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }} cpType="secondary">
-              Schedule demo
-            </CPButton>
-          </a>
-        </div>
-      </div>
-    );
+  public componentDidMount() {
+    // Calendly widget setup
+    const head = document.querySelector('head');
+    const script = document.createElement('script');
+    script.setAttribute('src', 'https://assets.calendly.com/assets/external/widget.js');
+    const link = document.createElement('link');
+    link.setAttribute('href', 'https://assets.calendly.com/assets/external/widget.css');
+    link.setAttribute('rel', 'stylesheet');
+    head!.appendChild(script);
+    head!.appendChild(link);
 
+    const calendlyDiv = document.getElementById('calendly-button');
+    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+  }
+
+  public render() {
     const whyText = (
       <div>
         Autograding can tell your students whether their code is correct, but
-        <ul>
-          <li> Autograder output without context is confusing</li>
-          <li> Bad code can still pass correctness tests</li>
-        </ul>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <ul style={{ maxWidth: 400, textAlign: 'start' }}>
+            <li> Autograder output without context is confusing</li>
+            <li> Bad code can still pass correctness tests</li>
+          </ul>
+        </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
           codePost integrates with your existing tools to make it easy to do code review, so you can give students
           better feedback without the hassle.
@@ -135,7 +109,10 @@ class LandingNew extends React.PureComponent<{}, {}> {
         module={<div>{<CodeReview />}</div>}
         type="left"
         moduleMaxWidth={725}
+        moduleMaxHeight={1000}
         textSize="big"
+        removeModelSmallScreen={true}
+        bevel={false}
       />
     );
     const panelOne = (
@@ -146,7 +123,10 @@ class LandingNew extends React.PureComponent<{}, {}> {
         module={<GradeAnimationVideo width={610} height={390} />}
         type="right"
         moduleMaxWidth={610}
+        moduleMaxHeight={380}
         textSize="normal"
+        removeModelSmallScreen={false}
+        bevel={true}
       />
     );
     const panelTwo = (
@@ -156,13 +136,16 @@ class LandingNew extends React.PureComponent<{}, {}> {
         subTitle="Audit grading and simplifiy administrative workload. "
         module={<AdminAnimation />}
         type="left"
-        moduleMaxWidth={600}
+        moduleMaxWidth={610}
+        moduleMaxHeight={375}
         textSize="normal"
+        removeModelSmallScreen={false}
+        bevel={true}
       />
     );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        <div style={{ marginBottom: 75 }}>
+        <div style={{ marginBottom: 75, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
             title="3. SIMPLIFY YOUR INFRASTRUCTURE "
@@ -170,16 +153,21 @@ class LandingNew extends React.PureComponent<{}, {}> {
             module={<APIAnimation />}
             type="right"
             moduleMaxWidth={600}
+            moduleMaxHeight={500}
             textSize="normal"
+            removeModelSmallScreen={false}
+            bevel={false}
           />
         </div>
-        <div style={{ maxWidth: 900, width: '100%' }}>
+        <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
           <APIExample />
         </div>
       </div>
     );
     const getStarted = (
-      <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
+      <div
+        style={{ display: 'flex', width: '100%', justifyContent: 'space-between', paddingLeft: 25, paddingRight: 25 }}
+      >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{ fontSize: 30, color: '#707070', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
           <div style={{ fontSize: 24, color: '#A3A3A3' }}>Get started using codePost in minutes.</div>
@@ -194,7 +182,7 @@ class LandingNew extends React.PureComponent<{}, {}> {
     return (
       <LandingLayout
         topBar={<LandingHeader />}
-        hero={hero}
+        hero={<LandingHero />}
         testimonial={<Testimonials />}
         whyPanel={whyPanel}
         panelOne={panelOne}
