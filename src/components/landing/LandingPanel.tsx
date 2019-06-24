@@ -90,7 +90,8 @@ const LandingPanel = (props: IProps) => {
   );
 
   if (windowSize.width < landingVars.breakpoints.verticalPanels) {
-    const transform = windowSize.width > props.moduleMaxWidth ? 1 : windowSize.width / props.moduleMaxWidth;
+    // We add an amount to the maxWidth for the scaling in order to make sure the animations have padding
+    const transform = windowSize.width > props.moduleMaxWidth + 20 ? 1 : windowSize.width / (props.moduleMaxWidth + 20);
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ marginBottom: 25 }}>{textDiv}</div>

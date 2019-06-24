@@ -77,6 +77,7 @@ const LandingLayout = (props: IProps) => {
         height: '100vh',
         overflowX: 'hidden',
         position: 'relative',
+        WebkitOverflowScrolling: 'touch',
       }}
       id="LandingLayout"
     >
