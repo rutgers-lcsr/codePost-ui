@@ -38,9 +38,9 @@ interface IProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  updateStudentSection: (student: string, section: number) => Promise<void>;
+  updateSection: (section: SectionType) => Promise<void>;
   updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
-  createSection: (sectionName: string) => Promise<void>;
+  createSection: (sectionName: string) => Promise<SectionType>;
 }
 
 interface IState {
@@ -94,7 +94,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
           sectionsByStudent={this.props.sectionsByStudent}
           changeRoster={this.props.updateRoster}
           isDisabled={false}
-          updateStudentSection={this.props.updateStudentSection}
+          updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
         />,
