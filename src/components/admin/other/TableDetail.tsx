@@ -31,6 +31,7 @@ interface IProps {
   columns: ITableDetailColumn[];
   data: any[];
   tableProps?: any;
+  drawer?: React.ReactNode;
 }
 
 interface IState {
@@ -164,6 +165,7 @@ class TableDetail extends React.Component<IProps, IState> {
               pagination={{ showSizeChanger: true, pageSizeOptions: ['10', '50', '100'] }}
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
             />
+            {this.props.drawer}
           </div>
         );
 

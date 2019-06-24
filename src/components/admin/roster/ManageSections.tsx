@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
+import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table } from 'antd';
 const confirm = Modal.confirm;
 
 /* other library imports */
@@ -48,6 +48,8 @@ interface IProps {
 
 interface IState {
   activeSection: string;
+  openSection?: SectionType;
+  drawerOpen: boolean;
 }
 
 class ManageSections extends React.Component<IProps, IState> {
@@ -55,6 +57,7 @@ class ManageSections extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       activeSection: '',
+      drawerOpen: false,
     };
   }
 
@@ -82,6 +85,20 @@ class ManageSections extends React.Component<IProps, IState> {
       this.props.updateSection(updated).then(() => {
         message.success('Leaders updated');
       });
+    }
+  };
+
+  public setOpenSection = (section: SectionType | undefined) => {
+    if (section === undefined) {
+      this.setState({ drawerOpen: false }, () => {
+        // don't replace state.openSection until we've unmounted the drawer (otherwise, drawer state
+        // changes during the unmounting slide)
+        setTimeout(() => {
+          this.setState({ openSection: undefined });
+        }, 500);
+      });
+    } else {
+      this.setState({ openSection: section, drawerOpen: true });
     }
   };
 
@@ -125,6 +142,12 @@ class ManageSections extends React.Component<IProps, IState> {
           dataIndex: 'section',
           key: 'primary',
           sorter: (a: any, b: any) => a.section.localeCompare(b.section),
+        },
+        {
+          title: 'Students',
+          dataIndex: 'students',
+          key: 'students',
+          align: aligner,
         },
         {
           title: 'Leaders',
@@ -175,6 +198,7 @@ class ManageSections extends React.Component<IProps, IState> {
         },
       ];
 
+      const hoverStyle = { cursor: 'pointer' };
       data = this.props.sections.map((section, i) => {
         const menu = (
           <Menu>
@@ -188,6 +212,11 @@ class ManageSections extends React.Component<IProps, IState> {
         return {
           key: section.id,
           section: section.name,
+          students: (
+            <span onClick={this.setOpenSection.bind(this, section)} style={hoverStyle}>
+              {section.students.length}
+            </span>
+          ),
           leaderData: section.leaders, // for passing data to render function
           leadersForSearch: section.leaders.join(', '), // to make leaders searchable
           actions: (
@@ -199,9 +228,43 @@ class ManageSections extends React.Component<IProps, IState> {
       });
     }
 
+    const drawerColumns = [
+      {
+        title: 'Student',
+        dataIndex: 'student',
+        key: 'student',
+        align: 'left' as 'left' | 'center' | 'right' /* this is so ugly.. */,
+      },
+    ];
+
+    // tslint:disable
+    const drawerData =
+      this.state.openSection === undefined
+        ? []
+        : this.state.openSection.students.map((el) => {
+            return {
+              student: el,
+            };
+          });
+    // tslint:enable
+
+    const drawerComponent = (
+      <Drawer
+        title={this.state.openSection ? `${this.state.openSection!.name}: students` : ''}
+        placement="right"
+        closable={true}
+        onClose={this.setOpenSection.bind(this.props, undefined)}
+        visible={this.state.drawerOpen}
+        width={600}
+      >
+        <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
+      </Drawer>
+    );
+
     return (
       <TableDetail
         title={'Sections'}
+        drawer={drawerComponent}
         loadComplete={this.props.loadComplete}
         isEmpty={this.props.sections.length === 0}
         emptyNode={
