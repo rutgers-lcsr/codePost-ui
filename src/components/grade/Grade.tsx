@@ -626,7 +626,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     let content;
     if (this.state.selectedFile) {
-      const code = (codeStyle: React.CSSProperties) => (
+      const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
         <GradeCode
           key={this.state.selectedFile!.id}
           file={this.state.selectedFile!}
@@ -635,15 +635,17 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           addComment={this.addComment}
           user={this.props.user.email}
           codeStyle={codeStyle}
+          highlightHeight={highlightHeight}
+          onHighlightClick={onHighlightClick}
         />
       );
 
-      const comments = (
+      const comments = (verticalOffset: number) => (
         <GradeComments
-          comments={this.state.comments[this.state.selectedFile.id]}
+          comments={this.state.comments[this.state.selectedFile!.id]}
           rubricComments={this.state.commentRubricComments}
-          readOnly={this.state.submission.isFinalized}
-          file={this.state.selectedFile}
+          readOnly={this.state.submission!.isFinalized}
+          file={this.state.selectedFile!}
           activeCommentID={this.state.activeCommentID}
           changeActive={this.changeActiveComment}
           deleteComment={this.deleteComment}
@@ -652,6 +654,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
           oldCommentIDs={this.state.oldCommentIDs}
+          verticalOffset={verticalOffset}
         />
       );
 

@@ -366,14 +366,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         );
       case STATUS.ShowSubmission:
         if (this.state.currentSubmission !== undefined && this.state.currentFile !== undefined) {
-          const comments = (
+          const comments = (verticalOffset: number) => (
             <StudentComments
-              comments={this.state.comments[this.state.currentFile.id]}
+              comments={this.state.comments[this.state.currentFile!.id]}
               rubricComments={this.state.commentRubricComments}
-              file={this.state.currentFile}
+              file={this.state.currentFile!}
+              verticalOffset={verticalOffset}
             />
           );
-          const code = (codeStyle: React.CSSProperties) => (
+          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
             <StudentCode
               key={this.state.currentFile!.id}
               file={this.state.currentFile!}
@@ -381,6 +382,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               readOnly={this.state.currentSubmission!.isFinalized}
               user={this.props.user.email}
               codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
             />
           );
           return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;

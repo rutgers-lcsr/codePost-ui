@@ -14,6 +14,8 @@ import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
+import CodePanelHighlighting from './CodePanelHighlighting';
+
 import { wait } from '../../../infrastructure/animation';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
@@ -204,11 +206,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public highlightRelatedComment = (event?: any) => {
-    const className = `highlight-${this.props.comment.id}`;
-    const elems = document.getElementsByClassName(className);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', themeVars.theme.highlightActive, 'important');
-    });
+    CodePanelHighlighting.brightenHighlight(this.props.comment.id);
 
     // For handling markdown
     const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
@@ -220,12 +218,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public unhighlightRelatedComment = (event?: any) => {
-    const className = `highlight-${this.props.comment.id}`;
-    const elems = document.getElementsByClassName(className);
-    [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', themeVars.theme.highlight, 'important');
-      // elem.style.setProperty('opacity', '0.2', 'important');
-    });
+    CodePanelHighlighting.darkenHighlight(this.props.comment.id);
 
     // For handling markdown
     const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);

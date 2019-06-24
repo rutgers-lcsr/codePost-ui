@@ -2,6 +2,8 @@ import * as React from 'react';
 import { CommentType } from '../../../infrastructure/comment';
 import { POSITION } from '../../../types/common';
 
+import Highlight from './Highlight';
+
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 type StyleType = {
@@ -113,25 +115,28 @@ class CodePanelHighlighting {
     return [elements.join(''), styles];
   };
 
-  public static convertStringToJSX = (htmlString: string, line: number) => {
+  public static convertStringToJSX = (htmlString: string, line: number, readOnly: boolean, onHighlightClick: any) => {
     const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
+        let commentID = 0;
         if (className !== '') {
           className = className.split('=')[1];
           className = className.substring(1, className.length - 1);
+          commentID = +className.split('-')[1];
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
-        // return (
-        //   <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
-        //     {text}
-        //   </strong>
-        // );
         return (
-          <span key={`${line}-${i}`} id={`line-${line}-${i}`} className={`highlight ${className}`}>
-            {text}
-          </span>
+          <Highlight
+            key={`${line}-${commentID}`}
+            commentID={commentID}
+            line={line}
+            className={className}
+            text={text}
+            readOnly={readOnly}
+            onHighlightClick={onHighlightClick}
+          />
         );
       } else {
         return html;
@@ -142,7 +147,13 @@ class CodePanelHighlighting {
   };
 
   // O(NM) where N is the number of highlights and M is the length of the line
-  public static highlight = (sortedComments: CommentType[], thetext: string, line: number) => {
+  public static highlight = (
+    sortedComments: CommentType[],
+    thetext: string,
+    line: number,
+    readOnly: boolean,
+    onHighlightClick: any,
+  ) => {
     const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
 
     const [htmlString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
@@ -159,7 +170,7 @@ class CodePanelHighlighting {
       );
     }
 
-    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line);
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
 
     return returnElements;
   };
@@ -211,6 +222,22 @@ class CodePanelHighlighting {
     return (
       offset + CodePanelHighlighting.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position)
     );
+  };
+
+  public static brightenHighlight = (commentID: number) => {
+    const className = `highlight-${commentID}`;
+    const elems = document.getElementsByClassName(className);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.setProperty('background-color', themeVars.theme.highlightActive, 'important');
+    });
+  };
+
+  public static darkenHighlight = (commentID: number) => {
+    const className = `highlight-${commentID}`;
+    const elems = document.getElementsByClassName(className);
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.setProperty('background-color', themeVars.theme.highlight, 'important');
+    });
   };
 }
 

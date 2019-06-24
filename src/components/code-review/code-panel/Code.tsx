@@ -85,7 +85,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     return code.split('\n').map((item: string, i: number) => {
       return (
         <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
-          {item === '' ? ' ' : CodePanelHighlighting.highlight(comments, item, i)}
+          {item === '' ? ' ' : CodePanelHighlighting.highlight(comments, item, i, readOnly, props.onHighlightClick)}
         </div>
       );
     });

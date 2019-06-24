@@ -14,7 +14,9 @@ export interface ICodeContentCoreProps {
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle?: any;
+  codeStyle: any;
+  highlightHeight: string;
+  onHighlightClick: any;
 }
 
 export interface ICodeContentEditProps {
@@ -31,9 +33,8 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
     const { addComment, ...codeProps } = { ...props };
-    const { highlightHeight, ...codeStyle } = props.codeStyle;
     return (
-      <div id="code-main" className="code code--markdown" style={codeStyle}>
+      <div id="code-main" className="code code--markdown" style={props.codeStyle}>
         <Markdown
           key={props.file.id}
           {...codeProps}
@@ -44,10 +45,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     );
   } else {
     const { addComment, ...codeProps } = { ...props };
-    // FIXME: This custom style passing is confusing.
-    //        Should have a much cleaner way of passing this stuff through
-    // @ts-ignore
-    const { paddingLeft, highlightHeight, ...codeStyle } = props.codeStyle;
+    const { paddingLeft, ...codeStyle } = props.codeStyle;
 
     return (
       <div>
@@ -67,7 +65,8 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             {...codeProps}
             commentCounter={commentCounter}
             addComment={addCommentAndIncrement}
-            highlightHeight={highlightHeight}
+            highlightHeight={props.highlightHeight}
+            onHighlightClick={props.onHighlightClick}
           />
         </div>
       </div>

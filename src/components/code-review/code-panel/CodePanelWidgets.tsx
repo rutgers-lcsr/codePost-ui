@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Button, Icon } from 'antd';
+import { Button, Icon, Tooltip } from 'antd';
 
 const ButtonGroup = Button.Group;
 
@@ -54,6 +54,30 @@ export const Sizer = (props: ISizerProps) => {
           <Icon type="double-right" />
         </CPButton>
       </ButtonGroup>
+    </div>
+  );
+};
+
+interface IResetProps {
+  visible: boolean;
+  reset: any;
+}
+
+export const Reset = (props: IResetProps) => {
+  return (
+    <div
+      style={{
+        ...{ position: 'absolute', top: '5px', right: '131px' },
+        visibility: props.visible ? 'visible' : 'hidden',
+      }}
+    >
+      <Tooltip placement="top" title={'reset comment alignments [⌘+click highlights]'}>
+        <ButtonGroup>
+          <CPButton id="reset" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.reset}>
+            <Icon type="redo" />
+          </CPButton>
+        </ButtonGroup>
+      </Tooltip>
     </div>
   );
 };

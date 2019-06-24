@@ -20,6 +20,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
+  verticalOffset: number;
 }
 
 interface ICommentsEditProps {
@@ -150,6 +151,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     if (this.props.file.id !== prevProps.file.id) {
       this.manualWait();
     }
+
+    if (this.props.verticalOffset !== prevProps.verticalOffset) {
+      this.placeCommentsOnNextFrame();
+    }
   };
 
   public placeCommentsOnNextFrame = () => {
@@ -172,9 +177,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
-      let startAt = comment.startLine * lineHeight - themeVars.grade.arrowDisplacement + containerDifference;
+      let startAt =
+        comment.startLine * lineHeight -
+        themeVars.grade.arrowDisplacement +
+        containerDifference -
+        this.props.verticalOffset;
 
-      // MISSING
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
       if (blockElement) {
