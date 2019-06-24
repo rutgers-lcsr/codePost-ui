@@ -32,7 +32,7 @@ const LandingHeader = () => {
               code<b>Post</b>
             </Link>
           }
-          style={{ paddingBottom: 5 }}
+          style={{ paddingBottom: 5, paddingTop: 5 }}
           key="1"
         >
           <div

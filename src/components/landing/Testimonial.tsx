@@ -102,4 +102,4 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
   );
 };
 
-export default Testimonials;
+export { Testimonials, Testimonial };

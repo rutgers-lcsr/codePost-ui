@@ -22,7 +22,7 @@ import { GradeAnimationVideo } from './landingAnimations/grade/GradeAnimation';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
-import Testimonials from './Testimonial';
+import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
 import CodeReview from './LandingCodeReview';

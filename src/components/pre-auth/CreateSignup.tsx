@@ -18,9 +18,10 @@ import { IOption } from '../../types/common';
 
 import universities from './universities';
 
-import PreAuthLayout from './PreAuthLayout';
+import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
+import { Testimonial } from '../landing/Testimonial';
 
 /**********************************************************************************************************************/
 
@@ -287,9 +288,8 @@ class CreateSignup extends React.Component<{}, IState> {
               Having trouble? Contact us at <b>team@codepost.io</b>.
               <br />
               <br />
-              <Link to="/signup/staff/join">Want to join a course instead?</Link>
+              <Link to="/signup/join">Want to join a course instead?</Link>
               <br />
-              <Link to="/signup/student">Are you a student?</Link>
             </span>
           </div>
         );
@@ -394,15 +394,34 @@ class CreateSignup extends React.Component<{}, IState> {
         content = <span>Something went wrong...</span>;
     }
 
+    const bobText = (
+      <span style={{ fontStyle: 'italic' }}>
+        codePost has been a{' '}
+        <Typography.Text mark className="codePost-highlight">
+          paradigm shifting improvement
+        </Typography.Text>{' '}
+        to how we grade computer science at Princeton.
+      </span>
+    );
+    const bobImg = require('./../../img/landing/bob_sedgewick.png');
+
     return (
-      <PreAuthLayout isLoggedIn={false}>
-        <div>
-          <br />
-          <br />
-          <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
-          <div style={{ width: 600 }}>{content}</div>
+      <PreAuthSignupLayout step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 40 }}>
+          <div>
+            <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
+            <div style={{ width: 600 }}>{content}</div>
+          </div>
+          <div style={{ paddingLeft: 20 }}>
+            <Testimonial
+              text={<div>{bobText}</div>}
+              name="Robert Sedgewick"
+              thumbnail={bobImg}
+              school="Princeton University"
+            />
+          </div>
         </div>
-      </PreAuthLayout>
+      </PreAuthSignupLayout>
     );
   }
 }
