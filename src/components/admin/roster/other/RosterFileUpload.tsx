@@ -306,13 +306,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               }
             }
 
-            // At this point, sectionMap.keys contains only sections with >0
-            // students in the new roster. This ignores a corner case: sections which had
-            // students in the old roster, but have 0 students in the new roster.
+            // At this point, sectionMap.keys contains only sections with > 0
+            // students, as defined by the uploaded roster.
+            // This ignores a corner case: sections which had students in the old roster,
+            // but have 0 students in the new roster.
+
             // Example:
             // SectionA.students = [student1, student2]
             // Then in the new roster, student1.section = null and student2.section = null
-            // Add sections with empty student lists to the section map
+            // So far, these students won't be removed from SectionA, since SectionA won't
+            // be updated with new students
+
+            // To solve this, add sections with empty student lists to the section map
             for (const oldSection of this.props.sections) {
               if (sectionMap[oldSection.name] === undefined) {
                 sectionMap[oldSection.name] = [];
