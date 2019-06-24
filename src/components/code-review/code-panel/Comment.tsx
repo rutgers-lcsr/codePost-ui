@@ -20,6 +20,8 @@ import { wait } from '../../../infrastructure/animation';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
+import ReactMarkdown from 'react-markdown';
+
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
@@ -334,9 +336,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <Paragraph
           className="comment__comment"
           style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
-          ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
+          ellipsis={{ rows: 2, expandable: false, onExpand: this.props.setCommentPlacements }}
         >
-          {this.state.text}
+          <ReactMarkdown source={this.state.text} />
         </Paragraph>
       );
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
@@ -351,9 +353,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <Paragraph
           className="comment__comment"
           style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
-          ellipsis={{ rows: 2, expandable: true, onExpand: this.props.setCommentPlacements }}
+          ellipsis={{ rows: 2, expandable: false, onExpand: this.props.setCommentPlacements }}
         >
-          {this.state.text}
+          <ReactMarkdown source={this.state.text} />
         </Paragraph>
       );
     }
