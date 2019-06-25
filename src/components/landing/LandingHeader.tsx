@@ -74,6 +74,8 @@ const LandingHeader = () => {
           alignItems: 'flex-end',
           paddingRight: 40,
           paddingLeft: 40,
+          paddingTop: 20,
+          paddingBottom: 20,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-end' }}>

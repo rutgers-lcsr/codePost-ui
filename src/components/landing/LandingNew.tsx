@@ -18,7 +18,7 @@ import LandingPanel from './LandingPanel';
 // Animations
 import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
 import APIAnimation from './landingAnimations/api/APIAnimation';
-import { GradeAnimationVideo } from './landingAnimations/grade/GradeAnimation';
+import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';

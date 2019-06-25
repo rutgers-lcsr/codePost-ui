@@ -33,7 +33,7 @@ const footerColor = '#EBEBEB';
 // Vertical Padding
 const panelVPaddingNormal = 50;
 const panelVPaddingSmallScreen = 25;
-const headerVPaddingNormal = 70;
+const headerVPaddingNormal = 50;
 const headerVPaddingSmallScreen = 20;
 const getStartedVPaddingNormal = 50;
 

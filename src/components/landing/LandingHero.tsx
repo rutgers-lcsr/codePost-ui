@@ -85,7 +85,7 @@ const LandingHero = () => {
               : landingVars.maxWidths.heroImgNormal,
         }}
       >
-        <img style={{ maxWidth: '100%' }} src={require('./landing_illustration.png')} />
+        <img style={{ maxWidth: '100%' }} src={require('../../img/landing/compressed/landing_illustration.jpg')} />
       </div>
     </div>
   );

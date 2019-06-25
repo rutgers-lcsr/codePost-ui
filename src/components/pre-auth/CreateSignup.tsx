@@ -403,7 +403,7 @@ class CreateSignup extends React.Component<{}, IState> {
         to how we grade computer science at Princeton.
       </span>
     );
-    const bobImg = require('./../../img/landing/bob_sedgewick.png');
+    const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
 
     return (
       <PreAuthSignupLayout step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
