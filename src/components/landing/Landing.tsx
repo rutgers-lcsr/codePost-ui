@@ -29,7 +29,7 @@ import CodeReview from './LandingCodeReview';
 
 /**********************************************************************************************************************/
 
-class LandingNew extends React.PureComponent<{}, {}> {
+class Landing extends React.PureComponent<{}, {}> {
   public componentDidMount() {
     // Calendly widget setup
     const head = document.querySelector('head');
@@ -185,4 +185,4 @@ class LandingNew extends React.PureComponent<{}, {}> {
   }
 }
 
-export default LandingNew;
+export default Landing;

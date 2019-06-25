@@ -30,7 +30,7 @@ import RouterLoading from '../core/RouterLoading';
 /**********************************************************************************************************************/
 
 const AsyncLanding = Loadable({
-  loader: () => import('../landing/LandingNew'),
+  loader: () => import('../landing/Landing'),
   loading: RouterLoading,
 });
 

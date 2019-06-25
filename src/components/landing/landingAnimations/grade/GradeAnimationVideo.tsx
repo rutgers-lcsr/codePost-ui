@@ -14,7 +14,7 @@ const GradeAnimationVideo = (props: { width: number; height: number; controls: n
         loop
         controls={windowSize.width < props.controls ? true : false}
       >
-        <source src={require('./gradeAnimation-v2.mp4')} type="video/mp4" />
+        <source src={require('./gradeAnimation.mp4')} type="video/mp4" />
       </video>
     </div>
   );
