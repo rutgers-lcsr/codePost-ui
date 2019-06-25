@@ -321,6 +321,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
+          autoFocus
         />
       );
 
