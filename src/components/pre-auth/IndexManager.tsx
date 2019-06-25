@@ -8,7 +8,7 @@ import * as React from 'react';
 /* other library imports */
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import LandingNew from '../landing/LandingNew';
+import Loadable from 'react-loadable';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -25,7 +25,14 @@ import TermsOfService from './TermsOfService';
 
 import Logout from '../core/Logout';
 
+import RouterLoading from '../core/RouterLoading';
+
 /**********************************************************************************************************************/
+
+const AsyncLanding = Loadable({
+  loader: () => import('../landing/LandingNew'),
+  loading: RouterLoading,
+});
 
 interface IndexManagerProps {
   error: string;
@@ -41,7 +48,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
       <div>
         <BrowserRouter>
           <Switch>
-            <Route exact={true} path={'/'} component={LandingNew} />
+            <Route exact={true} path={'/'} render={(props: any) => <AsyncLanding />} />
 
             <Route
               exact={true}
