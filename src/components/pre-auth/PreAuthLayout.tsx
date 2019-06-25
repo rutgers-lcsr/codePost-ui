@@ -48,7 +48,6 @@ class PreAuthLayout extends React.Component<IProps, {}> {
               background: '#fff',
               padding: '25px 50px',
               maxWidth: 1200,
-              minWidth: 690,
               margin: '0 auto',
             }}
           >

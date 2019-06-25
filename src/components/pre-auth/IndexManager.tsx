@@ -16,6 +16,7 @@ import NoMatch from './NoMatch';
 import PasswordReset from './PasswordReset';
 
 import CreateSignup from './CreateSignup';
+import FAQs from './FAQs';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -67,6 +68,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/pricing'}
               render={(props: any) => <Pricing {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/faqs'}
+              render={(props: any) => <FAQs {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}

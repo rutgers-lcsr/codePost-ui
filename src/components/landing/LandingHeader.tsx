@@ -49,7 +49,7 @@ const LandingHeader = () => {
             <Link style={{ ...linkStyle }} to="/pricing">
               Pricing
             </Link>
-            <Link style={{ ...linkStyle }} to="/pricing#faqs">
+            <Link style={{ ...linkStyle }} to="/faqs">
               FAQs
             </Link>
             <Link style={{ ...linkStyle }} to="/login">
@@ -63,7 +63,14 @@ const LandingHeader = () => {
       </Collapse>
     );
   } else {
-    const linkStyle = { fontSize: 18, fontWeight: 600, color: '#313131', paddingBottom: 10, marginLeft: 40 };
+    const linkStyle = {
+      fontSize: 18,
+      fontWeight: 600,
+      color: '#313131',
+      paddingBottom: 10,
+      marginLeft: 40,
+      cursor: 'pointer',
+    };
     return (
       <div
         style={{
@@ -90,7 +97,7 @@ const LandingHeader = () => {
           <Link style={{ ...linkStyle }} to="/pricing">
             Pricing
           </Link>
-          <Link style={{ ...linkStyle }} to="/pricing#faqs">
+          <Link style={{ ...linkStyle }} to="/faqs">
             FAQs
           </Link>
         </div>

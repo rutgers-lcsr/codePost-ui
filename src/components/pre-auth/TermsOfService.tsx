@@ -337,7 +337,7 @@ class TermsOfService extends React.Component<IProps, {}> {
           </Typography.Paragraph>
           <Typography.Title level={4}>12. Contact Information</Typography.Title>
           <Typography.Paragraph>
-            If you have any questions about these Terms or the Services please contact
+            If you have any questions about these Terms or the Services please contact{' '}
             <a href="mailto:team@codepost.io">team@codepost.io</a>
           </Typography.Paragraph>
         </div>
