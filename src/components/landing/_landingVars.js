@@ -39,7 +39,8 @@ const getStartedVPaddingNormal = 50;
 
 // horizontal padding
 const testimonialHPadding = 25;
-const panelHPadding = 50;
+const panelHPaddingNormal = 50;
+const panelHPaddingMobile = 25;
 
 // Background Image offsets -- These are the vertical offsets for the background images,
 // in number of pixels relative to the start of their respective panel
@@ -94,7 +95,8 @@ module.exports = {
   },
   Hpadding: {
     testimonial: testimonialHPadding,
-    panel: panelHPadding,
+    panelNormal: panelHPaddingNormal,
+    panelMobile: panelHPaddingMobile,
   },
   backgroundOffsets: {
     testimonial: testimonialImgOffset,

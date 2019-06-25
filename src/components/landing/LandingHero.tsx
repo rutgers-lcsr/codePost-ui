@@ -18,7 +18,7 @@ const LandingHero = () => {
         textAlign: windowSize.width < landingVars.breakpoints.hero ? 'center' : 'start',
         flexDirection: 'column',
         paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 40 : 0,
-        paddingRight: windowSize.width < landingVars.breakpoints.hero ? 0 : landingVars.Hpadding.panel,
+        paddingRight: windowSize.width < landingVars.breakpoints.hero ? 0 : landingVars.Hpadding.panelNormal,
       }}
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
