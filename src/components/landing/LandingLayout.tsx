@@ -59,16 +59,16 @@ const LandingLayout = (props: IProps) => {
         : landingVars.maxWidths.backgroundImageNormal,
   };
 
-  const testimonialBackground = require('../../img/landing/backgrounds/testimonial_background.png');
-  const testimonialBackgroundMobile = require('../../img/landing/backgrounds/testimonial_background-MOBILE.png');
-  const whyPanelBackground = require('../../img/landing/backgrounds/whyPanel_background.png');
-  const whyPanelBackgroundMobile = require('../../img/landing/backgrounds/whyPanel_background-MOBILE.png');
-  const panelOneBackground = require('../../img/landing/backgrounds/panelOne_background.png');
-  const panelOneBackgroundMobile = require('../../img/landing/backgrounds/panelOne_background-MOBILE.png');
-  const panelTwoBackground = require('../../img/landing/backgrounds/panelTwo_background.png');
-  const panelTwoBackgroundMobile = require('../../img/landing/backgrounds/panelTwo_background-MOBILE.png');
-  const panelThreeBackground = require('../../img/landing/backgrounds/panelThree_background.png');
-  const panelThreeBackgroundMobile = require('../../img/landing/backgrounds/panelThree_background-MOBILE.png');
+  const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.jpg');
+  const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
+  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/whyPanel.jpg');
+  const whyPanelBackgroundMobile = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
+  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.jpg');
+  const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
+  const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
+  const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
+  const panelThreeBackground = require('../../img/landing/compressed/backgrounds/panelThree.jpg');
+  const panelThreeBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelThree-MOBILE.jpg');
 
   return (
     <div

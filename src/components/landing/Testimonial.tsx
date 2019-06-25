@@ -7,9 +7,9 @@ import landingVars from './_landingVars';
 import { Typography } from 'antd';
 
 const Testimonials = () => {
-  const adamImg = require('./../../img/landing/adam_blank.jpeg');
-  const eitanImg = require('./../../img/landing/eitan_mendelowitz.jpg');
-  const bobImg = require('./../../img/landing/bob_sedgewick.png');
+  const adamImg = require('./../../img/landing/compressed/adam_blank.jpeg');
+  const eitanImg = require('./../../img/landing/compressed/eitan_mendelowitz.jpg');
+  const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
 
   const adamText = (
     <span style={{ fontStyle: 'italic' }}>
