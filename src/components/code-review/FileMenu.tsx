@@ -17,7 +17,7 @@ interface IFileMenuProps {
   comments?: IFileToCommentsMap;
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
-  canChange: boolean;
+  canChange: () => boolean;
   getPointsInFile: (file: FileType) => number[];
 }
 
@@ -129,7 +129,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
 interface IUnsavedCommentsPopconfirmProps {
   changeSelectedFile: (fileID: number) => void;
-  canChange: boolean;
+  canChange: () => boolean;
   children: any;
 }
 
@@ -156,13 +156,14 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
   };
 
   React.useEffect(() => {
-    if (selectedParam && props.canChange) {
+    if (selectedParam && props.canChange()) {
       confirm();
-    } else if (selectedParam && !props.canChange) {
+    } else if (selectedParam && !props.canChange()) {
       setVisible(true);
     }
   });
 
+  // FIXME: React.cloneElement possibly very slow
   return (
     <Popconfirm
       title={

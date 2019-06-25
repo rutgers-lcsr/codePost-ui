@@ -430,6 +430,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentSubmission,
     );
 
+    const canAlwaysChange = () => {
+      return true;
+    };
+
     let content;
     let subheader;
     let consoleTypes: ConsoleType[] = [];
@@ -491,7 +495,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             selectedFile={this.state.currentFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeCurrentFile}
-            canChange={true}
+            canChange={canAlwaysChange}
           />
         );
       }

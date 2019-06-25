@@ -54,16 +54,7 @@ interface ICommentState {
 class Comment extends React.Component<ICommentProps, ICommentState> {
   public constructor(props: ICommentProps) {
     super(props);
-
-    const text = this.props.comment.text ? this.props.comment.text : '';
-    const points = UiComment.points(this.props.comment, this.props.rubricComment);
-    const status = text === '' && points === 0 ? 'edited' : 'idle';
-
-    this.state = {
-      status,
-      text,
-      points,
-    };
+    this.state = this.init();
   }
 
   public componentDidMount() {
@@ -76,6 +67,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
+    // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
       this.props.setCommentPlacements();
@@ -84,7 +76,20 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (this.props.commentType !== prevProps.commentType) {
       this.props.setCommentPlacements();
     }
+
+    // If a comment is finalized, then reset the state
+    if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
+      this.setState(this.init());
+    }
   }
+
+  public init = () => {
+    const text: string = this.props.comment.text ? this.props.comment.text : '';
+    const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
+    const status: CommentStatus = text === '' && points === 0 ? 'edited' : 'idle';
+
+    return { text, points, status };
+  };
 
   public save = async () => {
     this.unhighlightRelatedComment();
@@ -106,12 +111,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public edited = () => {
-    this.props.addUnsaved(this.props.comment.id);
+    // this.props.addUnsaved(this.props.comment.id);
     this.setState({ status: 'edited' });
   };
 
   public idle = () => {
-    this.props.removeUnsaved(this.props.comment.id);
+    // this.props.removeUnsaved(this.props.comment.id);
     this.setState({ status: 'idle' });
   };
 
@@ -398,6 +403,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         onClick={onClick}
         onMouseEnter={this.highlightRelatedComment}
         onMouseLeave={this.unhighlightRelatedComment}
+        data-status={this.state.status}
       >
         <div className="ant-popover-content">
           <div className="ant-popover-arrow" />

@@ -285,7 +285,7 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
 
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
-  canToggle: boolean;
+  canToggle: () => boolean;
   toggleFinalized: () => void;
 }
 
@@ -306,7 +306,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const onClick = async () => {
     setIsLoading(true);
-    if (!props.submission.isFinalized && !props.canToggle) {
+    if (!props.submission.isFinalized && !props.canToggle()) {
       setPopconfirmVisible(true);
     } else {
       await props.toggleFinalized();

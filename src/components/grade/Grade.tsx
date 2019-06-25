@@ -374,14 +374,34 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return file.id === fileID;
     });
 
-    this.setState({ selectedFile, unsavedComments: {} });
+    // this.setState({ unsavedComments: {} });
+    this.setState({ selectedFile });
+  };
+
+  // Comment Elements have a data-status attribute
+  // We use plain javascript to decipher whether there are unsaved comments
+  public containsUnsavedComments = (): boolean => {
+    if (this.state.selectedFile) {
+      if (this.state.comments.hasOwnProperty(this.state.selectedFile.id)) {
+        for (const comment of this.state.comments[this.state.selectedFile.id]) {
+          const commentElement = document.getElementById(`comment-${comment.id}`);
+          if (commentElement !== null) {
+            if (commentElement.dataset.status === 'edited') {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   };
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = Grade.addCommentToState(this.state.comments, comment, file);
-    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
-    this.setState({ comments, unsavedComments, activeCommentID: comment.id });
+    // const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
+    // this.setState({unsavedComments});
+    this.setState({ comments, activeCommentID: comment.id });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -472,9 +492,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       this.state.activeCommentID,
       rubricComment,
     );
-    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentID);
+    // const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentID);
+    // this.setState({unsavedComments});
 
-    this.setState({ comments, commentRubricComments, unsavedComments });
+    this.setState({ comments, commentRubricComments });
   };
 
   public calculateGradeFromState = (): number | undefined => {
@@ -599,7 +620,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       <FinalizeButton
         key="subheader-finalize"
         submission={this.state.submission}
-        canToggle={Object.keys(this.state.unsavedComments).length === 0}
+        canToggle={this.containsUnsavedComments}
         toggleFinalized={this.toggleFinalized}
       />,
     ];
@@ -674,7 +695,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             selectedFile={this.state.selectedFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
-            canChange={Object.keys(this.state.unsavedComments).length === 0}
+            canChange={this.containsUnsavedComments}
           />,
           <RubricMenu
             key={'rubric-menu'}
