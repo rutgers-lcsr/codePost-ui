@@ -1289,6 +1289,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               sectionsByStudent={this.state.sectionsByStudent}
               updateSection={this.updateSection}
               createSection={this.createSection}
+              me={this.props.user.email}
             />
           );
           break;
