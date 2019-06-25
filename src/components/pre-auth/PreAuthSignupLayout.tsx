@@ -25,6 +25,8 @@ const SignupHeader = (props: { step: SignupStep }) => {
   const windowSize = useWindowSize();
   const breakpoint = 850;
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
+  const stepDirection = windowSize.width < breakpoint ? 'vertical' : 'horizontal';
+  const padding = windowSize.width < breakpoint ? 15 : 0;
   return (
     <div
       style={{
@@ -35,7 +37,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
         paddingRight: 40,
         paddingLeft: 40,
         paddingTop: 20,
-        paddingBottom: 20,
+        paddingBottom: windowSize.width < breakpoint ? 0 : 20,
       }}
     >
       <div
@@ -53,8 +55,8 @@ const SignupHeader = (props: { step: SignupStep }) => {
             code<b>Post</b>
           </Link>
         </div>
-        <div>
-          <Steps current={props.step}>
+        <div style={{ paddingTop: padding }}>
+          <Steps current={props.step} direction={stepDirection}>
             <Step title="1. Choose role" />
             <Step title="2. Create Account" />
             <Step title="3. Start using codePost!" />
@@ -73,7 +75,7 @@ const PreAuthSignupLayout = (props: { step: SignupStep; children: React.ReactChi
         <div
           style={{
             background: '#fff',
-            padding: '25px 50px',
+            padding: '40px 50px 25px 50px',
             maxWidth: 1100,
             margin: '0 auto',
           }}

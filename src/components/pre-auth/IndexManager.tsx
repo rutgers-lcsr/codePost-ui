@@ -8,7 +8,7 @@ import * as React from 'react';
 /* other library imports */
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import LandingNew from '../landing/LandingNew';
+import Loadable from 'react-loadable';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -16,6 +16,7 @@ import NoMatch from './NoMatch';
 import PasswordReset from './PasswordReset';
 
 import CreateSignup from './CreateSignup';
+import FAQs from './FAQs';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -24,7 +25,14 @@ import TermsOfService from './TermsOfService';
 
 import Logout from '../core/Logout';
 
+import RouterLoading from '../core/RouterLoading';
+
 /**********************************************************************************************************************/
+
+const AsyncLanding = Loadable({
+  loader: () => import('../landing/Landing'),
+  loading: RouterLoading,
+});
 
 interface IndexManagerProps {
   error: string;
@@ -40,7 +48,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
       <div>
         <BrowserRouter>
           <Switch>
-            <Route exact={true} path={'/'} component={LandingNew} />
+            <Route exact={true} path={'/'} render={(props: any) => <AsyncLanding />} />
 
             <Route
               exact={true}
@@ -67,6 +75,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/pricing'}
               render={(props: any) => <Pricing {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/faqs'}
+              render={(props: any) => <FAQs {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}

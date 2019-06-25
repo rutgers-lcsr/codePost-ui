@@ -44,8 +44,14 @@ const LandingLayout = (props: IProps) => {
     maxWidth: landingVars.maxWidths.panel,
     paddingTop: verticalPaddingPanel,
     paddingBottom: verticalPaddingPanel,
-    paddingLeft: landingVars.Hpadding.panel,
-    paddingRight: landingVars.Hpadding.panel,
+    paddingLeft:
+      windowSize.width < landingVars.breakpoints.mobile
+        ? landingVars.Hpadding.panelMobile
+        : landingVars.Hpadding.panelNormal,
+    paddingRight:
+      windowSize.width < landingVars.breakpoints.mobile
+        ? landingVars.Hpadding.panelMobile
+        : landingVars.Hpadding.panelNormal,
     width: '100%',
   };
 

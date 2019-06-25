@@ -1,4 +1,4 @@
-import { Collapse, Icon } from 'antd';
+import { Collapse, Divider, Icon } from 'antd';
 const Panel = Collapse.Panel;
 
 import * as React from 'react';
@@ -113,8 +113,8 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
       fontSize: 20,
       paddingTop: 10,
       paddingBottom: 10,
-      paddingRight: 20,
-      paddingLeft: 20,
+      paddingRight: this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
+      paddingLeft: this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
     };
 
     const selectedStyle = {
@@ -201,6 +201,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
                 >
                   {apiCodeExamples[2].title}
                 </CPButton>
+                <Divider type="horizontal" style={{ margin: '16px 0px' }} />
                 <CPButton
                   key="APIDocs"
                   href="http://help.codepost.io/reference"

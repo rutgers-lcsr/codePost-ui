@@ -21,6 +21,8 @@ import universities from './universities';
 import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+
 import { Testimonial } from '../landing/Testimonial';
 
 /**********************************************************************************************************************/
@@ -58,14 +60,14 @@ interface IState {
   progress: number;
 }
 
-interface IProps {
+interface IProps extends IWithWindowWatcherProps {
   isLoggedIn: boolean;
 }
 
 const PROGRESS_INCREMENT_TIME = 100;
 const USER_VALIDATION_INTERVAL = 5000;
 
-class CreateSignup extends React.Component<{}, IState> {
+class CreateSignup extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     email: '',
     check1: false,
@@ -207,6 +209,7 @@ class CreateSignup extends React.Component<{}, IState> {
    */
   public render() {
     const { selectedOrg } = this.state;
+    const spacing = <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 40 }} />;
 
     let content;
     switch (this.state.status) {
@@ -234,8 +237,7 @@ class CreateSignup extends React.Component<{}, IState> {
             >
               <Icon type="question-circle" />
             </Tooltip>
-            <br />
-            <br />
+            {spacing}
             <Input
               placeholder={'Your email'}
               value={this.state.email}
@@ -265,29 +267,27 @@ class CreateSignup extends React.Component<{}, IState> {
                 <Input placeholder="Your organization" onChange={this.handleChange.bind(this, 'newOrg')} />
               </div>
             ) : null}
-            <br />
-            <br />
-            <Link to="/signup/staff">
-              <CPButton cpType="secondary">Back</CPButton>
-            </Link>
-            &nbsp; &nbsp; &nbsp; &nbsp;
-            <CPButton
-              cpType="primary"
-              onClick={this.changeStatus.bind(this, STATUS.CONFIRM_AUTHORITY)}
-              disabled={
-                !(this.state.selectedOrg || this.state.newOrg) ||
-                (!this.state.newOrg && this.state.selectedOrg!.label === '')
-              }
-            >
-              Continue
-            </CPButton>
-            <br />
-            <br />
+            {spacing}
+            <div style={{ display: 'flex' }}>
+              <Link to="/signup/staff">
+                <CPButton cpType="secondary">Back</CPButton>
+              </Link>
+              &nbsp; &nbsp; &nbsp; &nbsp;
+              <CPButton
+                cpType="primary"
+                onClick={this.changeStatus.bind(this, STATUS.CONFIRM_AUTHORITY)}
+                disabled={
+                  !(this.state.selectedOrg || this.state.newOrg) ||
+                  (!this.state.newOrg && this.state.selectedOrg!.label === '')
+                }
+              >
+                Continue
+              </CPButton>
+            </div>
+            {spacing}
             <Divider />
             <span>
-              Having trouble? Contact us at <b>team@codepost.io</b>.
-              <br />
-              <br />
+              Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
               <Link to="/signup/join">Want to join a course instead?</Link>
               <br />
             </span>
@@ -404,15 +404,28 @@ class CreateSignup extends React.Component<{}, IState> {
       </span>
     );
     const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
+    const flexDirection = this.props.windowwidth < 700 ? 'column' : 'row';
 
     return (
       <PreAuthSignupLayout step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 40 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexDirection,
+          }}
+        >
           <div>
             <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
-            <div style={{ width: 600 }}>{content}</div>
+            <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
-          <div style={{ paddingLeft: 20 }}>
+          <div
+            style={{
+              paddingLeft: this.props.windowwidth < 700 ? 0 : 20,
+              paddingTop: this.props.windowwidth < 700 ? 40 : 0,
+            }}
+          >
             <Testimonial
               text={<div>{bobText}</div>}
               name="Robert Sedgewick"
@@ -426,4 +439,4 @@ class CreateSignup extends React.Component<{}, IState> {
   }
 }
 
-export default CreateSignup;
+export default withWindowWatcher(CreateSignup);

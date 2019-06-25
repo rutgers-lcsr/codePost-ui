@@ -20,7 +20,7 @@ import useWindowSize from '../core/useWindowSize';
 
 /**********************************************************************************************************************/
 
-const buttonStyle = { border: 'solid 1px #062a22', fontSize: 18, color: '#062a22' };
+const buttonStyle = { fontSize: 18 };
 
 const SignUpManager = () => {
   const windowSize = useWindowSize();
@@ -48,7 +48,7 @@ const SignUpManager = () => {
               For course leaders (e.g. TAs, teaching faculty) interested in setting up codePost for their course.
             </span>
             <Link to="/signup/create" style={{ marginTop: 25 }}>
-              <Button icon="user-add" style={buttonStyle}>
+              <Button icon="user-add" type="primary" style={buttonStyle}>
                 Sign Up
               </Button>
             </Link>
@@ -63,8 +63,10 @@ const SignUpManager = () => {
               paddingBottom: 30,
             }}
           >
-            <Typography.Title level={titleFontLevel}>Join a Course</Typography.Title>
-            <span style={{ fontSize: 14, textAlign: 'center' }}>
+            <Typography.Title style={{ color: 'rgba(0,0,0,0.6)' }} level={titleFontLevel}>
+              Join a Course
+            </Typography.Title>
+            <span style={{ fontSize: 14, textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>
               For staff and students who have been added to a course on codePost.
             </span>
             <Link to="/signup/join" style={{ marginTop: 25 }}>

@@ -86,7 +86,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   public render() {
     return (
       <PreAuthLayout isLoggedIn={false}>
-        <div style={{ width: 500 }}>
+        <div style={{ maxWidth: 500 }}>
           <br />
           <br />
           <Typography.Title level={1}>Login</Typography.Title>
