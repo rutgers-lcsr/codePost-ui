@@ -78,8 +78,7 @@ export interface IGradeProps {
   match: any;
   history: any;
   user: UserType;
-  addToast: any;
-  addErrorToast: (text: string, action: string | undefined) => void;
+  handleLogout: () => void;
 }
 
 class Grade extends React.Component<IGradeProps, IGradeState> {
@@ -569,7 +568,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <div>No Submission Found</div>;
     }
 
-    const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.onEscKeyPress} />;
+    const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
 
     const subHeaderLeftTop = [
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
@@ -671,6 +670,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             key={'file-menu'}
             title="Files"
             files={this.state.files}
+            comments={this.state.comments}
             selectedFile={this.state.selectedFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}

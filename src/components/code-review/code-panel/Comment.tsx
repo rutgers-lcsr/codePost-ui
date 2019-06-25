@@ -35,12 +35,12 @@ interface ICommentProps {
   placement: number;
 
   changeActive: (id: number | undefined) => void;
-  onSave: any;
+  onSave: (comment: CommentType) => void;
   onDelete: (comment: CommentType) => void;
 
-  addUnsaved: any;
-  removeUnsaved: any;
-  removeRubricComment: any;
+  addUnsaved: (commentID: number) => void;
+  removeUnsaved: (commentID: number) => void;
+  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   setCommentPlacements: () => void;
 }
@@ -97,7 +97,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     };
 
     try {
-      await this.props.onSave(comment, this.props.rubricComment);
+      await this.props.onSave(comment);
       this.fadeSavedState();
       this.props.setCommentPlacements();
     } catch (error) {
@@ -147,8 +147,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     this.onChangePointInput(points);
   };
 
-  public onCommentClick = (e: any) => {
-    if (e.target.textContent === 'expand') {
+  public onCommentClick = (e: React.MouseEvent) => {
+    // FIXME:
+    if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
       e.stopPropagation();
     } else {
       this.activate();

@@ -115,7 +115,12 @@ class CodePanelHighlighting {
     return [elements.join(''), styles];
   };
 
-  public static convertStringToJSX = (htmlString: string, line: number, readOnly: boolean, onHighlightClick: any) => {
+  public static convertStringToJSX = (
+    htmlString: string,
+    line: number,
+    readOnly: boolean,
+    onHighlightClick: (e: React.MouseEvent) => void,
+  ) => {
     const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
@@ -152,7 +157,7 @@ class CodePanelHighlighting {
     thetext: string,
     line: number,
     readOnly: boolean,
-    onHighlightClick: any,
+    onHighlightClick: (e: React.MouseEvent) => void,
   ) => {
     const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
 

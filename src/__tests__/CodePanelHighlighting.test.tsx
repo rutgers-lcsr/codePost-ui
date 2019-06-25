@@ -288,6 +288,7 @@ describe('CodePanelHighlighting', () => {
   it('convertStringToJSX()', () => {
     const htmlString =
       "<strong id=line-2 class='highlight-1'>Lorem </strong><strong id=line-2 class='highlight-1 highlight-2'>ipsum</strong><strong id=line-2 class='highlight-2'> dolor</strong> sit amet"; // tslint:disable-line
+    // @ts-ignore
     const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, 2, false, undefined);
     expect(returnElements.length).toBe(7);
   });

@@ -10,7 +10,7 @@ interface IHighlightProps {
   line: number;
   className: string;
   text: string;
-  onHighlightClick: any;
+  onHighlightClick: (e: React.MouseEvent) => void;
 }
 
 const Highlight = (props: IHighlightProps) => {
@@ -22,8 +22,8 @@ const Highlight = (props: IHighlightProps) => {
   let onClick;
   if (commandPressed) {
     style = { cursor: 'pointer' };
-    onMouseEnter = (e: any) => CodePanelHighlighting.brightenHighlight(props.commentID);
-    onMouseLeave = (e: any) => CodePanelHighlighting.darkenHighlight(props.commentID);
+    onMouseEnter = (e: React.MouseEvent) => CodePanelHighlighting.brightenHighlight(props.commentID);
+    onMouseLeave = (e: React.MouseEvent) => CodePanelHighlighting.darkenHighlight(props.commentID);
     onClick = props.onHighlightClick;
   } else {
     style = { cursor: 'auto' };

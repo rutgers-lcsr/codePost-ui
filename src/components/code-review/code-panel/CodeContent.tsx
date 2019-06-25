@@ -14,9 +14,9 @@ export interface ICodeContentCoreProps {
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle: any;
+  codeStyle: React.CSSProperties;
   highlightHeight: string;
-  onHighlightClick: any;
+  onHighlightClick: (e: React.MouseEvent) => void;
 }
 
 export interface ICodeContentEditProps {

@@ -19,7 +19,11 @@ interface IStandardConsoleHeaderProps {
 }
 
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
-  const headerLeft = [<CPLogo key="header-0" cpType="main" />];
+  const headerLeft = [
+    <Link key="header-0" to="/">
+      <CPLogo cpType="main" />
+    </Link>,
+  ];
 
   let roleSwitch;
   if (props.thisApp !== undefined) {

@@ -15,7 +15,11 @@ import ErrorBoundary from '../../core/ErrorBoundary';
 
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
-  code: (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => React.ReactNode;
+  code: (
+    codeStyle: React.CSSProperties,
+    highlightHeight: string,
+    onHighlightClick: (e: React.MouseEvent) => void,
+  ) => React.ReactNode;
   comments: (verticalOffset: number) => React.ReactNode;
 }
 
@@ -243,6 +247,9 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     //        New highlights will start with the template height and adjust after render
     // UPDATE: Imperfect solution by trigerring a resize after adding a new comment
     this.resizeHighlights();
+    const padding = `${themeVars.grade.codeContainer.paddingTop}px ${themeVars.grade.codeContainer.paddingRight}px ${
+      themeVars.grade.codeContainer.paddingBottom
+    }px ${themeVars.grade.codeContainer.paddingLeft}px`;
 
     return (
       <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
@@ -260,11 +267,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
               <div
                 id="code-container"
                 className="code-container"
-                style={{
-                  padding: `${themeVars.grade.codeContainer.paddingTop}px ${
-                    themeVars.grade.codeContainer.paddingRight
-                  }px ${themeVars.grade.codeContainer.paddingBottom}px ${themeVars.grade.codeContainer.paddingLeft}px`,
-                }}
+                style={{ padding }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
               >

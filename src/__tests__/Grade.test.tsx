@@ -9,6 +9,7 @@ import { Submission } from '../infrastructure/submission';
 describe('Grade', () => {
   const setup = (propOverrides?: Partial<IGradeProps>) => {
     // default props
+    const logout = () => null;
     const props = Object.assign(
       {
         match: {
@@ -32,6 +33,7 @@ describe('Grade', () => {
         addErrorToast: (text: string, action: string | undefined) => {
           return;
         },
+        handleLogout: logout,
       },
       propOverrides,
     );

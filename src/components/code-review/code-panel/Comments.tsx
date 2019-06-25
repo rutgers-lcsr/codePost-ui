@@ -27,14 +27,14 @@ interface ICommentsEditProps {
   readOnly: boolean;
   activeCommentID?: number;
   changeActive: (id: number | undefined) => void;
-  saveComment: any;
+  saveComment: (comment: CommentType) => void;
   deleteComment: (comment: CommentType) => void;
 
-  addUnsaved: any;
-  removeUnsaved: any;
-  removeRubricComment: any;
+  addUnsaved: (commentID: number) => void;
+  removeUnsaved: (commentID: number) => void;
+  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
-  oldCommentIDs: any;
+  oldCommentIDs: { [currentID: number]: number };
 }
 
 interface ICommentPlacement {
