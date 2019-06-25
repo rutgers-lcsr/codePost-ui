@@ -221,11 +221,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         <div>
           <b>{message}</b>
           {data.map((elem, index) => {
-            return (
-              <div className="uploadChangesText" key={index}>
-                {elem}
-              </div>
-            );
+            return <div key={index}>{elem}</div>;
           })}
           <br />
         </div>

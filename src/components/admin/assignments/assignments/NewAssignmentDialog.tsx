@@ -131,6 +131,10 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     message: 'Please input an assignment name with at least 4 characters',
                     min: 4,
                   },
+                  {
+                    message: 'Assignment name cannot exceed 32 characters',
+                    max: 32,
+                  },
                   { validator: this.validateName },
                 ],
               })(<Input />)}

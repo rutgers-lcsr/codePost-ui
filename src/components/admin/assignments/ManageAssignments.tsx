@@ -643,6 +643,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
                 onSave={this.saveSettings}
                 currentAssignment={this.state.activeAssignment!}
+                assignments={this.props.assignments}
               />
             );
             break;

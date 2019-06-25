@@ -719,6 +719,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             . You can view information about the submissions you are about to upload below. If you want to make changes,
             just hit "Start over" to re-upload.
             <br />
+            <br />
             {hasCollisions ? (
               <div>
                 <br />
@@ -754,7 +755,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         }, 0);
         content = (
           <div>
-            Reading files: &nbsp; <Progress percent={readFiles / this.state.numFiles} size="small" />
+            Reading files: &nbsp;{' '}
+            <Progress percent={parseFloat(((readFiles / this.state.numFiles) * 100).toFixed(0))} size="small" />
             Uploading submissions: &nbsp; <Progress percent={0} size="small" />
           </div>
         );
@@ -764,7 +766,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           <div>
             Reading files: &nbsp; <Progress percent={100} size="small" />
             Uploading submissions: &nbsp;{' '}
-            <Progress percent={this.state.numUploaded / this.state.protoSubmissions.length} size="small" />
+            <Progress
+              percent={parseFloat(((this.state.numUploaded / this.state.protoSubmissions.length) * 100).toFixed(0))}
+              size="small"
+            />
           </div>
         );
         break;
@@ -803,7 +808,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               break;
           }
           return {
-            students: protoSubmission.students,
+            students: protoSubmission.students.join(', '),
             status,
           };
         });

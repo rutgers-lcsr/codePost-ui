@@ -704,12 +704,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       <div>
         {diffItems.map((diffItem, i) => {
           if (diffItem.items.length === 0) {
-            return (
-              <div key={i}>
-                <br />
-                <h5>{diffItem.title}</h5>
-              </div>
-            );
+            return null;
           }
 
           const columns = [

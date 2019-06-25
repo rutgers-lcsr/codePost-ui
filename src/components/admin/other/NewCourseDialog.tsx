@@ -132,10 +132,11 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     trigger: 'onBlur',
                     rules: [
                       { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
+                      { message: 'Course name cannot exceed 36 characters', max: 36 },
                     ],
                   },
                 ],
-              })(<Input />)}
+              })(<Input placeholder="CS 101" />)}
             </Form.Item>
             <Form.Item label="Course period">
               {getFieldDecorator('period', {
@@ -143,10 +144,13 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 validate: [
                   {
                     trigger: 'onBlur',
-                    rules: [{ required: true, message: 'Please enter a course period.' }],
+                    rules: [
+                      { required: true, message: 'Please enter a course period.' },
+                      { message: 'Course period cannot exceed 32 characters', max: 32 },
+                    ],
                   },
                 ],
-              })(<Input />)}
+              })(<Input placeholder="Fall 2019" />)}
             </Form.Item>
             {this.props.courses.length > 0 ? (
               <div>
