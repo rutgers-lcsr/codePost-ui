@@ -55,7 +55,7 @@ class Home extends React.Component<IProps, {}> {
 
     return (
       <PreAuthLayout isLoggedIn={true}>
-        <div style={{ width: 600, margin: '0 auto' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <Typography.Title level={3}>Select your role:</Typography.Title>
           {studentBtn}
           {graderBtn}
