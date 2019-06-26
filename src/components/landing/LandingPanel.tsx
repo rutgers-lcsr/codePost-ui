@@ -29,7 +29,7 @@ const leftBevelStyle = {
 };
 
 const rightBevelStyle = {
-  transform: 'scale(0.9) translateX(40px) perspective(2000px) rotateY(-19deg) rotateX(1deg) rotate(1deg)',
+  transform: 'scale(0.9) translateX(40px) perspective(2000px) rotateY(-20deg) rotateX(1deg) rotate(2deg)',
   boxShadow:
     '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
   borderRadius: 5,

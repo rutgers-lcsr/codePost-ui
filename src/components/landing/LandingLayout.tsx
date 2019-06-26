@@ -192,7 +192,7 @@ const LandingLayout = (props: IProps) => {
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
       <div>
-        <Divider />
+        <Divider style={{ margin: 0 }} />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }}>
           <div
             style={{

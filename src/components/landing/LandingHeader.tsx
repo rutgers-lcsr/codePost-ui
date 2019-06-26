@@ -29,7 +29,7 @@ const LandingHeader = () => {
         <Panel
           header={
             <Link style={{ fontSize: 24, color: 'black', paddingLeft: 10 }} to={'/'}>
-              code<b style={{ color: '#24be85' }}>Post</b>
+              code<b>Post</b>
             </Link>
           }
           style={{ paddingBottom: 5, paddingTop: 5 }}
@@ -90,7 +90,7 @@ const LandingHeader = () => {
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
             <div>
               <Link style={{ fontSize: 34, color: 'black', marginRight: 5 }} to={'/'}>
-                code<b style={{ color: '#24be85' }}>Post</b>
+                code<b>Post</b>
               </Link>
             </div>
             <a style={{ ...linkStyle }} href="https://help.codepost.io/docs">
