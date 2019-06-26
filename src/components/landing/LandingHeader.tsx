@@ -29,7 +29,7 @@ const LandingHeader = () => {
         <Panel
           header={
             <Link style={{ fontSize: 24, color: 'black', paddingLeft: 10 }} to={'/'}>
-              code<b>Post</b>
+              code<b style={{ color: '#24be85' }}>Post</b>
             </Link>
           }
           style={{ paddingBottom: 5, paddingTop: 5 }}
@@ -72,44 +72,47 @@ const LandingHeader = () => {
       cursor: 'pointer',
     };
     return (
-      <div
-        style={{
-          background: 'none',
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          paddingRight: 40,
-          paddingLeft: 40,
-          paddingTop: 20,
-          paddingBottom: 20,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-          <div>
-            <Link style={{ fontSize: 34, color: 'black', marginRight: 5 }} to={'/'}>
-              code<b>Post</b>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{
+            background: 'none',
+            display: 'flex',
+            maxWidth: landingVars.maxWidths.header,
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            paddingRight: 40,
+            paddingLeft: 40,
+            paddingTop: 35,
+            paddingBottom: 35,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <div>
+              <Link style={{ fontSize: 34, color: 'black', marginRight: 5 }} to={'/'}>
+                code<b style={{ color: '#24be85' }}>Post</b>
+              </Link>
+            </div>
+            <a style={{ ...linkStyle }} href="https://help.codepost.io/docs">
+              Docs
+            </a>
+            <Link style={{ ...linkStyle }} to="/pricing">
+              Pricing
+            </Link>
+            <Link style={{ ...linkStyle }} to="/faqs">
+              FAQs
             </Link>
           </div>
-          <a style={{ ...linkStyle }} href="https://help.codepost.io/docs">
-            Docs
-          </a>
-          <Link style={{ ...linkStyle }} to="/pricing">
-            Pricing
-          </Link>
-          <Link style={{ ...linkStyle }} to="/faqs">
-            FAQs
-          </Link>
-        </div>
-        <div style={{ paddingBottom: 4 }}>
-          <a style={{ ...linkStyle, marginRight: 25 }} href="/login">
-            Login
-          </a>
-          <Link to="/signup">
-            <CPButton style={{ width: 120, height: 40, fontSize: 17, marginLeft: 20 }} cpType="primary" key="SignUp">
-              Sign Up
-            </CPButton>
-          </Link>
+          <div style={{ paddingBottom: 4 }}>
+            <a style={{ ...linkStyle, marginRight: 25 }} href="/login">
+              Login
+            </a>
+            <Link to="/signup">
+              <CPButton style={{ width: 120, height: 40, fontSize: 17, marginLeft: 20 }} cpType="primary" key="SignUp">
+                Sign Up
+              </CPButton>
+            </Link>
+          </div>
         </div>
       </div>
     );

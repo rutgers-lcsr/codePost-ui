@@ -145,7 +145,7 @@ class Landing extends React.PureComponent<{}, {}> {
     );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        <div style={{ marginBottom: 75, width: '100%' }}>
+        <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
             title="3. SIMPLIFY YOUR INFRASTRUCTURE "
@@ -155,7 +155,7 @@ class Landing extends React.PureComponent<{}, {}> {
             moduleMaxWidth={600}
             moduleMaxHeight={500}
             textSize="normal"
-            removeModelSmallScreen={false}
+            removeModelSmallScreen={true}
             bevel={false}
           />
         </div>

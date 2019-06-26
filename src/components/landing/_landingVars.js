@@ -11,7 +11,7 @@ const getStartedBreakpoint = 625;
 
 // Maximum Widths
 const panelMaxWidth = 1100; // Maximum width for the panels to keep narrow look
-const headerMaxWidth = 1150; // Maximum width for the header
+const headerMaxWidth = 1200; // Maximum width for the header
 const whyPanelMaxWidth = 1250; // The why panel is a bit larger and needs more space than other panels
 const footerMaxWidth = 1200;
 const backgroundImageWidthNormal = 1750; // This is the width of the images normally
@@ -33,7 +33,7 @@ const footerColor = '#EBEBEB';
 // Vertical Padding
 const panelVPaddingNormal = 50;
 const panelVPaddingSmallScreen = 25;
-const headerVPaddingNormal = 50;
+const headerVPaddingNormal = 35;
 const headerVPaddingSmallScreen = 20;
 const getStartedVPaddingNormal = 50;
 

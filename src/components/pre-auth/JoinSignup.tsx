@@ -98,7 +98,7 @@ class JoinSignup extends React.Component<{}, IState> {
           </div>
           <br />
           <div style={{ display: 'flex' }}>
-            <Link to="/signup/staff">
+            <Link to="/signup">
               <CPButton cpType="secondary">Back</CPButton>
             </Link>
             &nbsp; &nbsp; &nbsp; &nbsp;

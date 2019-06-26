@@ -101,7 +101,7 @@ function AdminAnimation() {
           {pauseButton}
         </div>
         <Layout>
-          <Sider width={160} className="Animation2__sider">
+          <Sider width={160} className="Animation2__sider" style={{ paddingTop: 15 }}>
             <SimpleMenu number={[calculateKeys(counter).select]} openKey={[calculateKeys(counter).open]} />
           </Sider>
           <Content>

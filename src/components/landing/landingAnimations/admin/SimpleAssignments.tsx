@@ -40,7 +40,7 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
       align: centerAlign,
     },
     {
-      title: 'In progress',
+      title: 'Pending',
       dataIndex: 'inProgress',
       key: 'inProgress',
       align: centerAlign,
@@ -108,10 +108,10 @@ const SimpleAssignments = (props: { mouseOver: boolean }) => {
 
   const content = <Table columns={columns} rowClassName={rowClassName} dataSource={data} pagination={false} />;
   const actions = [
-    <CPButton key="action-1" cpType="primary" style={{ marginRight: 15 }}>
+    <CPButton key="action-1" cpType="primary" icon="plus-circle" style={{ marginRight: 15 }}>
       Create Assignment
     </CPButton>,
-    <CPButton key="action-2" cpType="secondary">
+    <CPButton key="action-2" cpType="secondary" icon="download">
       Download All Grades
     </CPButton>,
   ];

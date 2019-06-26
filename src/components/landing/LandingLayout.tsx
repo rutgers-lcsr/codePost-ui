@@ -90,7 +90,6 @@ const LandingLayout = (props: IProps) => {
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }}>
         <div
           style={{
-            maxWidth: landingVars.maxWidths.header,
             width: '100%',
             paddingTop: verticalPadddingHeader,
             paddingBottom: verticalPadddingHeader,
