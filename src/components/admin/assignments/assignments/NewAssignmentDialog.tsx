@@ -137,7 +137,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                   },
                   { validator: this.validateName },
                 ],
-              })(<Input />)}
+              })(<Input placeholder="Hello World" />)}
             </Form.Item>
             <Form.Item label="Points">
               {getFieldDecorator('points', {
