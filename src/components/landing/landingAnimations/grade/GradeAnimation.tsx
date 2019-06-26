@@ -29,7 +29,7 @@ function GradeAnimation() {
   // const [counter, setCounter] = useState(0);
   // Comment growth toggle
   const commentSpring = useSpring({
-    width: 110,
+    width: 80,
     from: { width: 0 },
     delay: 2000,
     ref: commentRef,
@@ -132,7 +132,7 @@ function GradeAnimation() {
         width: 32,
         height: 32,
         borderRadius: 16,
-        top: 290,
+        top: 335,
         left: 156,
         zIndex: 2,
         background: 'grey',
@@ -149,7 +149,7 @@ function GradeAnimation() {
         width: 32,
         height: 32,
         borderRadius: 16,
-        top: 285,
+        top: 330,
         left: 198,
         zIndex: 2,
         background: 'red',
@@ -180,27 +180,27 @@ function GradeAnimation() {
           </Header>
           <Layout style={{ padding: 20 }}>
             <Content>
-              <SimpleCodeHighlight top={325} left={275} width={commentSpring.width} />
+              <SimpleCodeHighlight top={365} left={305} width={commentSpring.width} />
               <animated.div
                 style={{
-                  top: 325,
+                  top: 364,
                   left: commentSpring.width.interpolate((x) => {
-                    return Number(x) + 275;
+                    return Number(x) + 300;
                   }),
                   opacity: commentSpring.width.interpolate((x) => {
-                    return x === 0 || x === 110 ? 0 : 1;
+                    return x === 0 || x === 80 ? 0 : 1;
                   }),
                   position: 'absolute',
                 }}
               >
                 <img src={require('./cursor.png')} style={{ width: 24 }} />
               </animated.div>
-              <SimpleCodeBox code={exampleCode1} />;
+              <SimpleCodeBox code={exampleCode1} />
             </Content>
             <Sider width={250} style={{ background: 'rgba(0,0,0,0)' }}>
               {saveShadow}
               {deleteShadow}
-              <div style={{ position: 'absolute', top: 210 }}>
+              <div style={{ position: 'absolute', top: 255 }}>
                 <animated.div
                   id="animation"
                   style={{
@@ -240,14 +240,4 @@ function GradeAnimation() {
   );
 }
 
-const GradeAnimationVideo = (props: { width: number; height: number }) => {
-  return (
-    <div className="animation--grade" style={{ maxWidth: props.width, maxHeight: props.height }}>
-      <video width={props.width} height={props.height} autoPlay muted loop>
-        <source src={require('./gradeAnimation-v2.mp4')} type="video/mp4" />
-      </video>
-    </div>
-  );
-};
-
-export { GradeAnimation, GradeAnimationVideo };
+export default GradeAnimation;

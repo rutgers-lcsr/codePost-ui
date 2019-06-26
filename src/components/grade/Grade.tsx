@@ -35,19 +35,19 @@ import {
   SubheaderGrader,
   SubheaderInfo,
   SubheaderTitle,
-} from './Subheader';
+} from '../code-review/Subheader';
 
-import CodePanelLayout from './code-panel/CodePanelLayout';
+import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
-import FileMenu from './FileMenu';
+import FileMenu from '../code-review/FileMenu';
 
-import RubricMenu from './RubricMenu';
+import RubricMenu from '../code-review/RubricMenu';
 
 import { FileType } from '../../infrastructure/file';
 
-import { GradeCode } from './code-panel/Code';
+import { GradeCode } from '../code-review/code-panel/CodeContent';
 
-import { GradeComments } from './code-panel/Comments';
+import { GradeComments } from '../code-review/code-panel/Comments';
 
 import * as Immutable from '../../infrastructure/immutable';
 
@@ -68,6 +68,8 @@ interface IGradeState {
 
   activeCommentID?: number;
   unsavedComments: IdMapType;
+
+  oldCommentIDs: { [currentID: number]: number };
 
   selectedFile: FileType | undefined;
 }
@@ -282,6 +284,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     selectedFile: undefined,
     unsavedComments: {},
+    oldCommentIDs: {},
   };
 
   public async componentDidMount() {
@@ -401,9 +404,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public saveComment = async (comment: CommentType) => {
     let savedComment;
+    let oldCommentIDs = this.state.oldCommentIDs;
 
     if (comment.id < 0) {
       savedComment = await CommentIO.create(comment);
+      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
     } else {
       savedComment = await CommentIO.update(comment);
     }
@@ -411,9 +416,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     let unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
     unsavedComments = Grade.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
-    this.updateComment(comment.id, savedComment);
+    this.setState({ unsavedComments, oldCommentIDs, activeCommentID: undefined });
 
-    this.setState({ unsavedComments, activeCommentID: undefined });
+    this.updateComment(comment.id, savedComment);
   };
 
   public deleteComment = async (comment: CommentType) => {
@@ -621,13 +626,15 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     let content;
     if (this.state.selectedFile) {
-      const code = (
+      const code = (codeStyle: React.CSSProperties) => (
         <GradeCode
-          file={this.state.selectedFile}
-          comments={this.state.comments[this.state.selectedFile.id]}
-          readOnly={this.state.submission.isFinalized}
+          key={this.state.selectedFile!.id}
+          file={this.state.selectedFile!}
+          comments={this.state.comments[this.state.selectedFile!.id]}
+          readOnly={this.state.submission!.isFinalized}
           addComment={this.addComment}
           user={this.props.user.email}
+          codeStyle={codeStyle}
         />
       );
 
@@ -644,6 +651,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           addUnsaved={this.addUnsaved}
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
+          oldCommentIDs={this.state.oldCommentIDs}
         />
       );
 

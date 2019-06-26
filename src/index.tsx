@@ -21,7 +21,7 @@ import unregister from './registerServiceWorker';
 import ErrorBoundary from './components/core/ErrorBoundary';
 
 ReactDOM.render(
-  <ErrorBoundary>
+  <ErrorBoundary type="app">
     <BrowserRouter>
       <App />
     </BrowserRouter>

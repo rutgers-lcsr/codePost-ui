@@ -12,7 +12,7 @@ import { Alert, Input, Spin, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import PreAuthLayout from './PreAuthLayout';
+import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
 
@@ -97,26 +97,28 @@ class JoinSignup extends React.Component<{}, IState> {
             Don't forget to use your organization's <Typography.Text code>.edu</Typography.Text> address!
           </div>
           <br />
-          <Link to="/signup/staff">
-            <CPButton cpType="secondary">Back</CPButton>
-          </Link>
-          &nbsp; &nbsp; &nbsp; &nbsp;
-          <CPButton cpType="primary" onClick={this.handleSignup}>
-            Continue
-          </CPButton>
+          <div style={{ display: 'flex' }}>
+            <Link to="/signup/staff">
+              <CPButton cpType="secondary">Back</CPButton>
+            </Link>
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            <CPButton cpType="primary" onClick={this.handleSignup}>
+              Continue
+            </CPButton>
+          </div>
         </div>
       );
     }
 
     return (
-      <PreAuthLayout isLoggedIn={false}>
-        <div style={{ width: 500 }}>
+      <PreAuthSignupLayout step={1}>
+        <div style={{ maxWidth: 500 }}>
           <br />
           <br />
           <Typography.Title level={1}>Join a course on codePost</Typography.Title>
           {content}
         </div>
-      </PreAuthLayout>
+      </PreAuthSignupLayout>
     );
   }
 }

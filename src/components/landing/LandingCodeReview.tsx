@@ -12,6 +12,8 @@ import Comment from '../code-review/code-panel/Comment';
 
 import { CommentType } from '../../infrastructure/comment';
 
+import { FileMock } from '../../infrastructure/file';
+
 const dummyFunction = () => {
   return;
 };
@@ -171,6 +173,7 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
+                  file={FileMock}
                 />
               </div>
             </div>
@@ -194,6 +197,7 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
+                  file={FileMock}
                 />
               </div>
             </div>
@@ -217,6 +221,7 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
+                  file={FileMock}
                 />
               </div>
             </div>
