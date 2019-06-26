@@ -3,7 +3,7 @@ import { Divider } from 'antd';
 import * as React from 'react';
 import useWindowSize from '../core/useWindowSize';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 interface IProps {
   topBar: React.ReactNode;

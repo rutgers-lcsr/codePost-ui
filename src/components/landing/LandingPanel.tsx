@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useWindowSize from '../core/useWindowSize';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 type TextOrientation = 'right' | 'left';
 type TextSize = 'big' | 'normal';

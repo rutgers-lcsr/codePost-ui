@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Collapse, Icon } from 'antd';
 const Panel = Collapse.Panel;
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';

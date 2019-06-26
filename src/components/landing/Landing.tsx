@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* codePost Imports */
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 // Section components
 import LandingGetStarted from './LandingGetStarted';

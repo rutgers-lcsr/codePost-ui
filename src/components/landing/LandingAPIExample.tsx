@@ -4,7 +4,7 @@ const Panel = Collapse.Panel;
 import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 // import * as CodeMirror from 'react-codemirror';
 

@@ -6,7 +6,7 @@ import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();

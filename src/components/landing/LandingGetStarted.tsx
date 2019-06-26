@@ -5,7 +5,7 @@ import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';
 
 /* codePost Imports */
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 const LandingGetStarted = () => {
   const windowSize = useWindowSize();

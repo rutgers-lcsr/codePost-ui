@@ -681,6 +681,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           />,
         ]}
         content={content}
+        removeSiderOnMobile={false}
       />
     );
   }

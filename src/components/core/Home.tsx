@@ -16,6 +16,8 @@ import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
 import CPButton from '../core/CPButton';
 
+import layoutVars from '../../styles/layout/_layoutVars';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -55,7 +57,7 @@ class Home extends React.Component<IProps, {}> {
 
     return (
       <PreAuthLayout isLoggedIn={true}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+        <div style={{ maxWidth: layoutVars.maxWidths.home, margin: '0 auto' }}>
           <Typography.Title level={3}>Select your role:</Typography.Title>
           {studentBtn}
           {graderBtn}
