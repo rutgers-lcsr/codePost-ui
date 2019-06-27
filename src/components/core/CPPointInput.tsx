@@ -28,6 +28,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
       className = className.concat(' ', 'cp-point-input--small');
     }
 
+    // tslint:disable
     const style = this.props.disabled
       ? {
           backgroundColor: this.context.consoleTheme.buttonDisabledBg,
@@ -39,6 +40,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
           color: this.context.consoleTheme.text,
           border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
         };
+    // tslint:enable
 
     return (
       <InputGroup compact className={className}>
