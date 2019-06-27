@@ -79,12 +79,12 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     // FIXME: we can come up with a better solution
     await wait(5);
 
+    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
+
     const highlights = document.getElementsByClassName('highlight');
     [].forEach.call(highlights, (highlight: any) => {
       highlight.style.setProperty('height', props.highlightHeight);
     });
-
-    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlight);
   };
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {

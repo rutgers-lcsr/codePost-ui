@@ -143,7 +143,29 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   }
 
-  public componentDidUpdate = async (prevProps: ICommentsCoreProps & ICommentsEditProps) => {
+  public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
+    if (prevProps.comments.length < this.props.comments.length) {
+      const comments = document.getElementById('code-panel--comments');
+      if (comments !== null) {
+        return comments.scrollTop;
+      }
+    }
+
+    return null;
+  }
+
+  public componentDidUpdate = async (
+    prevProps: ICommentsCoreProps & ICommentsEditProps,
+    prevState: ICommentsState,
+    snapshot: any,
+  ) => {
+    if (snapshot !== null) {
+      const comments = document.getElementById('code-panel--comments');
+      if (comments !== null) {
+        comments.scrollTop = snapshot;
+      }
+    }
+
     if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
