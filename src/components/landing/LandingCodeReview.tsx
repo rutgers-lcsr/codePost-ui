@@ -8,11 +8,9 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import 'codemirror/mode/javascript/javascript';
 
-import Comment from '../code-review/code-panel/Comment';
+import Comment from './landingAnimations/grade/SimpleComment';
 
 import { CommentType } from '../../infrastructure/comment';
-
-import { FileMock } from '../../infrastructure/file';
 
 const dummyFunction = () => {
   return;
@@ -173,7 +171,6 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
-                  file={FileMock}
                 />
               </div>
             </div>
@@ -197,7 +194,6 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
-                  file={FileMock}
                 />
               </div>
             </div>
@@ -221,7 +217,6 @@ class CodeReview extends React.Component<{}, IState> {
                   removeUnsaved={dummyFunction}
                   removeRubricComment={dummyFunction}
                   setCommentPlacements={dummyFunction}
-                  file={FileMock}
                 />
               </div>
             </div>
