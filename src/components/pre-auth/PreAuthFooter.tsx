@@ -13,7 +13,7 @@ const PreAuthFooter = () => {
   const horizontalPadding = windowSize.width < breakpoint ? 0 : 75; // For mobile view we want less horizontal padding
 
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
-  const bottomPadding = windowSize.width < breakpoint ? 50 : 0;
+  const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
 
   const linkStyle = { fontSize: 17, paddingLeft: 8, paddingRight: 8 };
 
@@ -51,11 +51,11 @@ const PreAuthFooter = () => {
           <a style={linkStyle} id="calendly-button">
             Demo
           </a>{' '}
-          <Link style={linkStyle} to="/privacy">
-            Privacy
-          </Link>{' '}
           <Link style={linkStyle} to="/terms">
             Terms
+          </Link>{' '}
+          <Link style={linkStyle} to="/privacy">
+            Privacy
           </Link>
         </span>
       </div>

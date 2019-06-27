@@ -174,7 +174,13 @@ class MergeRubricCommentsDialog extends React.Component<
 
     return (
       <div>
-        <CPButton onClick={this.openDialog} disabled={this.props.isDisabled} cpType="secondary" icon="branches">
+        <CPButton
+          onClick={this.openDialog}
+          disabled={this.props.isDisabled}
+          cpType="secondary"
+          icon="branches"
+          fallback="branches"
+        >
           Merge Comments
         </CPButton>
         <Modal

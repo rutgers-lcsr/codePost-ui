@@ -72,7 +72,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
       {props.user.email}
     </span>,
     roleSwitch,
-    <CPButton key="header-logout" cpType="dark" onClick={props.handleLogout}>
+    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
       Log Out
     </CPButton>,
   ];

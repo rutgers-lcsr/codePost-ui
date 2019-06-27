@@ -48,7 +48,7 @@ const SimpleRubric = () => {
     <div key="title" className="cp-label cp-label--large cp-label--bold">
       Hello World Rubric
     </div>,
-    <CPButton key="action-1" cpType="primary">
+    <CPButton key="action-1" cpType="primary" icon="vertical-align-middle">
       Upload/Download
     </CPButton>,
   ];

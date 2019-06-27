@@ -6,7 +6,7 @@ import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
@@ -50,6 +50,7 @@ const LandingHero = () => {
           justifyContent: windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start',
           alignItems: 'center',
         }}
+        className="landing__heroButtons"
       >
         <Link to="/signup">
           <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
@@ -84,6 +85,7 @@ const LandingHero = () => {
               ? landingVars.maxWidths.heroImgSmallScreen
               : landingVars.maxWidths.heroImgNormal,
         }}
+        className="landing__heroImg"
       >
         <img style={{ maxWidth: '100%' }} src={require('../../img/landing/compressed/landing_illustration.jpg')} />
       </div>

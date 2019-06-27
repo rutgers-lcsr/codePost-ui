@@ -862,7 +862,14 @@ class RubricManager extends React.Component<IProps, IState> {
           assignment={this.props.assignment}
           reloadRubric={this.loadAssignmentRubric}
         />,
-        <CPButton key="0" onClick={this.resetRubric} cpType="secondary" disabled={!changesMade} icon="undo">
+        <CPButton
+          key="0"
+          onClick={this.resetRubric}
+          cpType="secondary"
+          disabled={!changesMade}
+          icon="undo"
+          fallback="undo"
+        >
           Undo changes
         </CPButton>,
         <CPButton
@@ -871,6 +878,7 @@ class RubricManager extends React.Component<IProps, IState> {
           disabled={!changesMade}
           cpType="primary"
           icon="save"
+          fallback="save"
           loading={this.state.isSaving}
         >
           Save

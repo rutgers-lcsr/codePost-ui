@@ -269,7 +269,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             ) : null}
             {spacing}
             <div style={{ display: 'flex' }}>
-              <Link to="/signup/staff">
+              <Link to="/signup">
                 <CPButton cpType="secondary">Back</CPButton>
               </Link>
               &nbsp; &nbsp; &nbsp; &nbsp;
@@ -404,7 +404,7 @@ class CreateSignup extends React.Component<IProps, IState> {
       </span>
     );
     const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
-    const flexDirection = this.props.windowwidth < 700 ? 'column' : 'row';
+    const flexDirection = this.props.windowwidth < 750 ? 'column' : 'row';
 
     return (
       <PreAuthSignupLayout step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
@@ -422,8 +422,11 @@ class CreateSignup extends React.Component<IProps, IState> {
           </div>
           <div
             style={{
-              paddingLeft: this.props.windowwidth < 700 ? 0 : 20,
-              paddingTop: this.props.windowwidth < 700 ? 40 : 0,
+              marginLeft: this.props.windowwidth < 750 ? 0 : 40,
+              marginTop: this.props.windowwidth < 750 ? 40 : 0,
+              padding: '25px 15px',
+              boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+              borderRadius: 8,
             }}
           >
             <Testimonial

@@ -64,7 +64,13 @@ class RubricFileDownload extends React.Component<IProps, {}> {
 
   public render() {
     return (
-      <CPButton cpType="secondary" onClick={this.downloadRubric} disabled={this.props.isDisabled} icon="download">
+      <CPButton
+        cpType="secondary"
+        onClick={this.downloadRubric}
+        disabled={this.props.isDisabled}
+        icon="download"
+        fallback="download"
+      >
         Download Rubric
       </CPButton>
     );

@@ -19,6 +19,7 @@ interface IFileMenuProps {
   changeSelectedFile: (fileID: number) => void;
   canChange: () => boolean;
   getPointsInFile: (file: FileType) => number[];
+  hidePoints?: boolean;
 }
 
 class FileMenu extends React.Component<IFileMenuProps, {}> {
@@ -93,9 +94,11 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           >
             {file.name}
           </span>
-          <span style={{ position: 'absolute', right: '95px' }}>{bonusBadge}</span>
-          <span style={{ position: 'absolute', right: '55px' }}>{deductionBadge}</span>
-          <span style={{ position: 'absolute', right: '15px' }}>{commentCountBadge}</span>
+          <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
+          <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
+          <span style={{ position: 'absolute', right: '15px' }}>
+            {this.props.hidePoints ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
+          </span>
         </Menu.Item>
       );
     });
