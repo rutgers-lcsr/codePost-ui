@@ -169,7 +169,11 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingLayout
         topBar={<LandingHeader />}
         hero={<LandingHero />}
-        testimonial={<Testimonials />}
+        testimonial={
+          <div className="landing__testimonials">
+            <Testimonials />
+          </div>
+        }
         whyPanel={whyPanel}
         panelOne={panelOne}
         panelTwo={panelTwo}

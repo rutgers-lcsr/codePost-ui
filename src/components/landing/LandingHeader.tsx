@@ -55,7 +55,7 @@ const LandingHeader = () => {
             <Link style={{ ...linkStyle }} to="/login">
               Login
             </Link>
-            <Link style={{ ...linkStyle, background: '#24be85', color: 'white' }} to="/signup">
+            <Link style={{ ...linkStyle, background: '#24be85', color: 'white' }} className="link--header" to="/signup">
               Sign Up
             </Link>
           </div>
@@ -89,22 +89,22 @@ const LandingHeader = () => {
         >
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
             <div>
-              <Link style={{ fontSize: 34, color: 'black', marginRight: 5 }} to={'/'}>
+              <Link style={{ fontSize: 34, color: 'black', marginRight: 5 }} className="link--header" to={'/'}>
                 code<b>Post</b>
               </Link>
             </div>
-            <a style={{ ...linkStyle }} href="https://help.codepost.io/docs">
+            <a style={{ ...linkStyle }} className="link--header" href="https://help.codepost.io/docs">
               Docs
             </a>
-            <Link style={{ ...linkStyle }} to="/pricing">
+            <Link style={{ ...linkStyle }} className="link--header" to="/pricing">
               Pricing
             </Link>
-            <Link style={{ ...linkStyle }} to="/faqs">
+            <Link style={{ ...linkStyle }} className="link--header" to="/faqs">
               FAQs
             </Link>
           </div>
           <div style={{ paddingBottom: 4 }}>
-            <a style={{ ...linkStyle, marginRight: 25 }} href="/login">
+            <a style={{ ...linkStyle, marginRight: 25 }} className="link--header" href="/login">
               Login
             </a>
             <Link to="/signup">

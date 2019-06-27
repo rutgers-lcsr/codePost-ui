@@ -83,7 +83,7 @@ const FAQs = (props: IProps) => {
               <b>Who uses codePost?</b>
               <br />
               <span>
-                Anyone who teaches CS. Most of our users are lecturers or professors teaching CS to undergraduates.
+                Anyone who teaches CS. Most codePost users are lecturers or professors teaching CS to undergraduates.
               </span>
             </div>
             <br />

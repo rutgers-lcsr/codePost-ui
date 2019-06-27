@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 /* other library imports */
 import PreAuthFooter from './PreAuthFooter';
 
+import landingVars from '../../styles/pages/_landingVars';
 import useWindowSize from '../core/useWindowSize';
 
 /* ant imports */
@@ -26,7 +27,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
   const breakpoint = 850;
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
   const stepDirection = windowSize.width < breakpoint ? 'vertical' : 'horizontal';
-  const padding = windowSize.width < breakpoint ? 15 : 0;
+  const paddingTopSteps = windowSize.width < breakpoint ? 40 : 0;
   return (
     <div
       style={{
@@ -36,8 +37,9 @@ const SignupHeader = (props: { step: SignupStep }) => {
         justifyContent: 'center',
         paddingRight: 40,
         paddingLeft: 40,
-        paddingTop: 20,
-        paddingBottom: windowSize.width < breakpoint ? 0 : 20,
+        paddingTop:
+          windowSize.width < breakpoint ? landingVars.Vpadding.headerSmallScreen : landingVars.Vpadding.headerNormal,
+        paddingBottom: windowSize.width < breakpoint ? 0 : landingVars.Vpadding.headerNormal,
       }}
     >
       <div
@@ -55,7 +57,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
             code<b>Post</b>
           </Link>
         </div>
-        <div style={{ paddingTop: padding }}>
+        <div style={{ paddingTop: paddingTopSteps }}>
           <Steps current={props.step} direction={stepDirection}>
             <Step title="1. Choose role" />
             <Step title="2. Create Account" />

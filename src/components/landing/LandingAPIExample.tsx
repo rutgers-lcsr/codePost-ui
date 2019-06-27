@@ -153,7 +153,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
     const buttons = (
       <div
         style={{
-          maxWidth: 600,
+          maxWidth: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 600 : 300,
           marginLeft: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 0 : 30,
           marginTop: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
           marginBottom: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
@@ -182,6 +182,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 0)}
           style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 0 ? '' : 'link--api-example'}
           cpType="link"
           icon="export"
           ghost={true}
@@ -191,6 +192,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 1)}
           style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 1 ? '' : 'link--api-example'}
           cpType="link"
           icon="team"
           ghost={true}
@@ -200,6 +202,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 2)}
           style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 2 ? '' : 'link--api-example'}
           cpType="link"
           icon="bar-chart"
           ghost={true}
@@ -225,7 +228,15 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
     return (
       <div id="APIExample" style={{ width: '100%' }}>
         <Collapse bordered={false}>
-          <Panel header="See the codePost API in action" key="1" style={customPanelStyle}>
+          <Panel
+            header={
+              <div>
+                See the API in action <Icon type="api" />{' '}
+              </div>
+            }
+            key="1"
+            style={customPanelStyle}
+          >
             <div
               style={{
                 fontSize: 12,

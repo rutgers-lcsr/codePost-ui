@@ -86,17 +86,18 @@ function AdminAnimation() {
     setPause(!pause);
   };
   const pauseButton = pause ? (
-    <Icon type="play-circle" style={{ fontSize: 40 }} />
+    <Icon type="play-circle" style={{ fontSize: 40, zIndex: 99 }} />
   ) : (
-    <Icon type="pause-circle" style={{ fontSize: 40 }} />
+    <Icon type="pause-circle" style={{ fontSize: 40, zIndex: 99 }} />
   );
 
   return (
     <div style={{ transform: 'scale(0.77)' }}>
       <div style={{ maxWidth: 800, minWidth: 800, maxHeight: 500, position: 'relative' }}>
         <div
+          id="landing-pause"
           onClick={togglePause}
-          style={{ cursor: 'pointer', position: 'absolute', bottom: 15, right: 10, zIndex: 99999 }}
+          style={{ cursor: 'pointer', position: 'absolute', bottom: 15, right: 10, zIndex: 99 }}
         >
           {pauseButton}
         </div>
