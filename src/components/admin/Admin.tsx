@@ -9,7 +9,6 @@ import * as React from 'react';
 import { Button, Dropdown, Empty, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import CPButton from '../core/CPButton';
 import CPDropdown from '../core/CPDropdown';
 import CPFlex from '../core/CPFlex';
 
@@ -1180,12 +1179,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (this.state.courses.length === 0) {
       detail = (
         <Empty
+          style={{ marginTop: 60 }}
           imageStyle={{
             height: 60,
           }}
           description={<span>Get started by creating a course!</span>}
         >
-          <CPButton cpType="primary">Create a course</CPButton>
+          {createButton}
         </Empty>
       );
     } else if (this.state.currentCourse) {
