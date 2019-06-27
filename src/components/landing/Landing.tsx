@@ -65,22 +65,22 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelOneText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Use codePost to read and evaluate code in a slick and seamless interface. It allows you to use structured
-          rubrics, as well as provide custom feedback.
+          Use codePost to annotate code effortlessly, with easy-to-read comments that don't clutter code. You and your
+          course staff can provide custom feedback, as well as apply standardized rubrics.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Grade anywhere, better and in half the time.</div>
+        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality feedback, in the browser.</div>
       </div>
     );
 
     const panelTwoText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          You’ve got enough to do already, so let codePost handle your course management. Create and re-use grading
-          rubrics to structure grading. Keep track of assignments to make sure that every submission gets graded
-          correctly. Manage your roster, and make updates easily.
+          Don't let course management take time away from teaching. Manage rosters, create assignments, and make sure
+          everything gets graded within a lightweight, intuitive interface. And when you want, dive into your course
+          data to audit grading, mine for pedagogical insights, and more.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          We know the administrative burdens that instructors face, so we designed codePost to eliminate them.
+          Easy course management that so you can spend more time teaching.
         </div>
       </div>
     );
@@ -133,7 +133,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
-        subTitle="Audit grading and simplifiy administrative workload. "
+        subTitle="Data at your fingertips, when you want it."
         module={<AdminAnimation />}
         type="left"
         moduleMaxWidth={610}

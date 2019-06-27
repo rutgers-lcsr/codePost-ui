@@ -40,8 +40,8 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Save time and give better feedback on coding assignments, while providing insights into how your students are
-        doing.
+        Give better feedback on programming assignments, without the hassle, so you can teach CS better and train better
+        programmers.
       </div>
       <div
         style={{
