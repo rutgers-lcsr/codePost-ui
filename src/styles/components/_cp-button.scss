@@ -5,13 +5,22 @@
   &--primary {
   }
   &--secondary {
+    &:hover {
+      color: $brandPrimary !important;
+    }
   }
   &--dark {
     border: solid 1px #5e5e5e !important;
     background-color: rgba(255, 255, 255, 0.05) !important;
     color: rgba(255, 255, 255, 0.5) !important;
+    &:hover {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
   }
   &--danger {
+    &:hover {
+      background-color: #ff7375 !important;
+    }
   }
   &--highlight {
     border: solid 1px $brandAccent !important;

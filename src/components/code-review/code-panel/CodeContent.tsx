@@ -4,7 +4,8 @@ import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import Code from './Code';
 import Markdown from './Markdown';
@@ -25,6 +26,7 @@ export interface ICodeContentEditProps {
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
@@ -53,10 +55,10 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           id="code-syntax"
           className="code code--syntax"
           language={File.language(props.file)}
-          style={googlecode}
+          style={consoleTheme.codeTheme}
           showLineNumbers={true}
           wrapLines={false}
-          customStyle={{ ...codeStyle, padding: '0px' }}
+          customStyle={{ ...codeStyle, padding: '0px', backgroundColor: consoleTheme.codeBg }}
         >
           {props.file.code}
         </SyntaxHighlighter>

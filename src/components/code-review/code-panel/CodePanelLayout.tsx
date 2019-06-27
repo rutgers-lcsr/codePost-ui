@@ -13,6 +13,8 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import ErrorBoundary from '../../core/ErrorBoundary';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   code: (
@@ -30,7 +32,7 @@ interface ICodePanelLayoutState {
   verticalOffset: number;
 }
 
-class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
+class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
   public nextFrameActionId: number;
 
   public state: Readonly<ICodePanelLayoutState> = {
@@ -242,6 +244,7 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
   public render() {
     const codeStyle = this.getCodeStyle();
     const highlightHeight = `${themeVars.grade.highlightHeight * this.state.zoom}px`;
+    const consoleTheme = this.context.consoleTheme;
 
     // FIXME: This only catches existing highlights.
     //        New highlights will start with the template height and adjust after render
@@ -267,7 +270,11 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
               <div
                 id="code-container"
                 className="code-container"
-                style={{ padding }}
+                style={{
+                  backgroundColor: consoleTheme.codeBg,
+                  border: `1px solid ${consoleTheme.codeBorder}`,
+                  padding,
+                }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
               >
@@ -286,5 +293,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     );
   }
 }
+LayoutCodePanel.contextType = ConsoleThemeContext;
 
-export default withWindowWatcher(CPLayoutCodePanel);
+export default withWindowWatcher(LayoutCodePanel);

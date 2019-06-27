@@ -4,8 +4,6 @@ import { POSITION } from '../../../types/common';
 
 import Highlight from './Highlight';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
-
 type StyleType = {
   [highlightID: string]: number;
 };
@@ -157,6 +155,7 @@ class CodePanelHighlighting {
     thetext: string,
     line: number,
     readOnly: boolean,
+    color: string,
     onHighlightClick: (e: React.MouseEvent) => void,
   ) => {
     const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
@@ -169,9 +168,7 @@ class CodePanelHighlighting {
     for (const [highlight, level] of Object.entries(styles)) {
       const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: ${
-          themeVars.theme.highlight
-        } !important; opacity: ${tint} !important;}`,
+        `.highlight-${highlight} {background-color: ${color} !important; opacity: ${tint} !important;}`,
       );
     }
 
@@ -229,19 +226,21 @@ class CodePanelHighlighting {
     );
   };
 
-  public static brightenHighlight = (commentID: number) => {
+  public static brightenHighlight = (commentID: number, color: string) => {
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
+
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', themeVars.theme.highlightActive, 'important');
+      elem.style.setProperty('background-color', color, 'important');
     });
   };
 
-  public static darkenHighlight = (commentID: number) => {
+  public static darkenHighlight = (commentID: number, color: string) => {
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
+
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', themeVars.theme.highlight, 'important');
+      elem.style.setProperty('background-color', color, 'important');
     });
   };
 }

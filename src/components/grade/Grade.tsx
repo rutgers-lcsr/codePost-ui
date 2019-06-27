@@ -26,6 +26,8 @@ import { Divider, message } from 'antd';
 
 import CPFlex from '../core/CPFlex';
 
+import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+
 import {
   FinalizeButton,
   LastEdited,
@@ -288,7 +290,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public async componentDidMount() {
     this.setState({ isLoading: true });
-
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `Submission - ${submissionID}`;
     const submission = await Submission.readAnonymous(submissionID);
@@ -590,7 +591,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
 
     const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
-
     const subHeaderLeftTop = [
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
       <SubheaderGrade
@@ -709,5 +709,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     );
   }
 }
+Grade.contextType = ConsoleThemeContext;
 
 export default Grade;

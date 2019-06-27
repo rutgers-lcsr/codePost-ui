@@ -31,7 +31,7 @@
   }
 
   &--commented {
-    border-left: $gutter-width solid $highlight;
+    border-left: $gutter-width solid $actionGreenFade;
 
     &.active {
       cursor: pointer;
@@ -43,7 +43,7 @@
   }
 
   &--focused {
-    border-left: $gutter-width solid $highlightActive;
+    border-left: $gutter-width solid $actionGreen;
 
     &.active {
       cursor: pointer;

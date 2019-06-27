@@ -4,6 +4,8 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 import { CommentType } from '../../../infrastructure/comment';
 
 import { POSITION } from '../../../types/common';
@@ -16,6 +18,8 @@ interface ICodeProps {
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
@@ -85,7 +89,16 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     return code.split('\n').map((item: string, i: number) => {
       return (
         <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
-          {item === '' ? ' ' : CodePanelHighlighting.highlight(comments, item, i, readOnly, props.onHighlightClick)}
+          {item === ''
+            ? ' '
+            : CodePanelHighlighting.highlight(
+                comments,
+                item,
+                i,
+                readOnly,
+                consoleTheme.highlight,
+                props.onHighlightClick,
+              )}
         </div>
       );
     });

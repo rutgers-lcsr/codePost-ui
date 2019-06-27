@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import useKeyPress from '../../core/useKeyPress';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 import CodePanelHighlighting from './CodePanelHighlighting';
 
 interface IHighlightProps {
@@ -14,6 +16,8 @@ interface IHighlightProps {
 }
 
 const Highlight = (props: IHighlightProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
   const commandPressed = useKeyPress('Meta');
 
   let style: React.CSSProperties = {};
@@ -22,12 +26,14 @@ const Highlight = (props: IHighlightProps) => {
   let onClick;
   if (commandPressed) {
     style = { cursor: 'pointer' };
-    onMouseEnter = (e: React.MouseEvent) => CodePanelHighlighting.brightenHighlight(props.commentID);
-    onMouseLeave = (e: React.MouseEvent) => CodePanelHighlighting.darkenHighlight(props.commentID);
+    onMouseEnter = (e: React.MouseEvent) =>
+      CodePanelHighlighting.brightenHighlight(props.commentID, consoleTheme.highlightActive);
+    onMouseLeave = (e: React.MouseEvent) =>
+      CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
     onClick = props.onHighlightClick;
   } else {
     style = { cursor: 'auto' };
-    CodePanelHighlighting.darkenHighlight(props.commentID);
+    CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
   }
   return (
     <span

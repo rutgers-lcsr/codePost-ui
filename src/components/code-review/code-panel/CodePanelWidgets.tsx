@@ -6,6 +6,8 @@ const ButtonGroup = Button.Group;
 
 import CPButton from '../../core/CPButton';
 
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
 interface IMagnifierProps {
   visible: boolean;
   zoomIn: () => void;
@@ -13,6 +15,9 @@ interface IMagnifierProps {
 }
 
 export const Magnifier = (props: IMagnifierProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
   return (
     <div
       style={{
@@ -21,10 +26,10 @@ export const Magnifier = (props: IMagnifierProps) => {
       }}
     >
       <ButtonGroup>
-        <CPButton id="zoom-out" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
+        <CPButton id="zoom-out" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
           <Icon type="zoom-out" />
         </CPButton>
-        <CPButton id="zoom-in" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
+        <CPButton id="zoom-in" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
           <Icon type="zoom-in" />
         </CPButton>
       </ButtonGroup>
@@ -39,6 +44,9 @@ interface ISizerProps {
 }
 
 export const Sizer = (props: ISizerProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
   return (
     <div
       style={{
@@ -47,10 +55,10 @@ export const Sizer = (props: ISizerProps) => {
       }}
     >
       <ButtonGroup>
-        <CPButton id="shrink" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
+        <CPButton id="shrink" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
           <Icon type="double-left" />
         </CPButton>
-        <CPButton id="grow" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
+        <CPButton id="grow" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
           <Icon type="double-right" />
         </CPButton>
       </ButtonGroup>
@@ -64,6 +72,9 @@ interface IResetProps {
 }
 
 export const Reset = (props: IResetProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
   return (
     <div
       style={{
@@ -71,9 +82,18 @@ export const Reset = (props: IResetProps) => {
         visibility: props.visible ? 'visible' : 'hidden',
       }}
     >
-      <Tooltip placement="top" title={'reset comment alignments [⌘+click highlights]'}>
+      <Tooltip
+        placement="top"
+        title={
+          <div>
+            reset comment alignments
+            <br />
+            [⌘+click highlights]
+          </div>
+        }
+      >
         <ButtonGroup>
-          <CPButton id="reset" cpType="secondary" size="small" style={{ minWidth: '20px' }} onClick={props.reset}>
+          <CPButton id="reset" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.reset}>
             <Icon type="redo" />
           </CPButton>
         </ButtonGroup>

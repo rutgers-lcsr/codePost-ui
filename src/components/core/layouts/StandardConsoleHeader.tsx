@@ -12,6 +12,8 @@ import { UserType } from '../../../infrastructure/user';
 
 import { USER_TYPE } from '../../../types/common';
 
+import ThemeToggle from '../ThemeToggle';
+
 interface IStandardConsoleHeaderProps {
   user: UserType;
   handleLogout: any;
@@ -23,6 +25,8 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     <Link key="header-0" to="/">
       <CPLogo cpType="main" />
     </Link>,
+    <div key="space" style={{ width: '90px' }} />,
+    <ThemeToggle key="theme-toggle" />,
   ];
 
   let roleSwitch;
