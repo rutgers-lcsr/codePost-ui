@@ -271,6 +271,18 @@ module.exports = {
 
             }],
           },
+          {
+            test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+            issuer: {
+              test: /\.tsx?$/
+            },
+            use: ['ts-loader', '@svgr/webpack', 'url-loader']
+          },
+          {
+            test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+            loader: 'url-loader'
+          },
+
 
           // "file" loader makes sure assets end up in the `build` folder.
           // When you `import` an asset, you get its filename.
