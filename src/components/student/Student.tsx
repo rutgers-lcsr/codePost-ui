@@ -37,7 +37,7 @@ import MultiSelectorSider from '../core/MultiSelectorSider';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, USER_TYPE } from '../../types/common';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { loadIDList } from '../../infrastructure/generics';
@@ -181,7 +181,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadAssignments = async (courses: CourseType[]) => {
     return Promise.all(
       courses.map((course: CourseType) => {
-        return loadIDList(course.assignments, Assignment);
+        return loadIDList(course.assignments, AssignmentStudent);
       }),
     ).then((assignments) => {
       const toRet = {};
@@ -196,7 +196,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!assignment.isReleased) {
       return undefined;
     }
-    return (await Assignment.readSubmissionsStudent(assignment.id, { student: this.props.user.email }))[0];
+    return (await AssignmentStudent.readSubmissions(assignment.id, { student: this.props.user.email }))[0];
   };
 
   public loadRubricCategories = async (assignment: AssignmentType) => {
@@ -408,14 +408,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         );
       case STATUS.ShowSubmission:
         if (this.state.currentSubmission !== undefined && this.state.currentFile !== undefined) {
-          const comments = (
+          const comments = (verticalOffset: number) => (
             <StudentComments
-              comments={this.state.comments[this.state.currentFile.id]}
+              comments={this.state.comments[this.state.currentFile!.id]}
               rubricComments={this.state.commentRubricComments}
-              file={this.state.currentFile}
+              file={this.state.currentFile!}
+              verticalOffset={verticalOffset}
             />
           );
-          const code = (codeStyle: React.CSSProperties) => (
+          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
             <StudentCode
               key={this.state.currentFile!.id}
               file={this.state.currentFile!}
@@ -423,6 +424,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               readOnly={this.state.currentSubmission!.isFinalized}
               user={this.props.user.email}
               codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
             />
           );
           return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;
@@ -465,6 +468,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.state.isLoadingSubmission,
       currentSubmission,
     );
+
+    const 
+    
+ Change = () => {
+      return true;
+    };
 
     let content;
     let subheader;
@@ -538,7 +547,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             selectedFile={this.state.currentFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeCurrentFile}
-            canChange={true}
+            canChange={canAlwaysChange}
             title="Files"
           />
         );

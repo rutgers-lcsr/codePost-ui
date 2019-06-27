@@ -751,6 +751,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       newSections.push(section);
       updatedCourse.sections.push(section.id);
       this.setState({ sections: newSections, currentCourse: updatedCourse });
+      return section;
     });
   };
 
@@ -845,10 +846,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     // the new one, so only update the old one if no new one exists
     if (newSection) {
       const updatedSection = _.cloneDeep(newSection);
-      updatedSection.students.push(studentEmail); // Assume that student is not a member of this section
+      // Assume that student is not a member of this section
+      updatedSection.students = [...updatedSection.students, studentEmail];
       promises.push(this.updateSection(updatedSection));
     } else if (oldSection) {
-      const updatedSection = { ...oldSection };
+      const updatedSection = _.cloneDeep(oldSection);
       updatedSection.students = updatedSection.students.filter((el) => {
         return el !== studentEmail;
       });
@@ -856,6 +858,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     return Promise.all(promises).then(() => {
+      // coerce into a single promise
       return;
     });
   };
@@ -1250,8 +1253,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               currentCourse={this.state.currentCourse}
               updateRoster={this.updateRoster}
               sectionsByStudent={this.state.sectionsByStudent}
-              updateStudentSection={this.updateStudentSection}
+              updateSection={this.updateSection}
               createSection={this.createSection}
+              updateStudentSection={this.updateStudentSection}
             />
           );
           break;
@@ -1267,7 +1271,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               currentCourse={this.state.currentCourse}
               updateRoster={this.updateRoster}
               sectionsByStudent={this.state.sectionsByStudent}
-              updateStudentSection={this.updateStudentSection}
+              updateSection={this.updateSection}
               createSection={this.createSection}
             />
           );
@@ -1283,8 +1287,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               currentCourse={this.state.currentCourse}
               updateRoster={this.updateRoster}
               sectionsByStudent={this.state.sectionsByStudent}
-              updateStudentSection={this.updateStudentSection}
+              updateSection={this.updateSection}
               createSection={this.createSection}
+              me={this.props.user.email}
             />
           );
           break;
@@ -1299,7 +1304,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               currentCourse={this.state.currentCourse}
               updateRoster={this.updateRoster}
               sectionsByStudent={this.state.sectionsByStudent}
-              updateStudentSection={this.updateStudentSection}
               deleteSection={this.deleteSection}
               updateSection={this.updateSection}
               createSection={this.createSection}

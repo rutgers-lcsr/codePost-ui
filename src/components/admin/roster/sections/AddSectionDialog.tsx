@@ -17,7 +17,7 @@ import { SectionType } from '../../../../infrastructure/section';
 
 interface IProps {
   sections: SectionType[];
-  addSection: (sectionName: string) => Promise<void>;
+  addSection: (sectionName: string) => Promise<SectionType>;
 }
 
 interface IState {

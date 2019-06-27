@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
+import { Breadcrumb, Dropdown, Icon, Menu, Modal, Tooltip } from 'antd';
 const confirm = Modal.confirm;
 import { ColumnProps } from 'antd/lib/table';
 
@@ -38,9 +38,12 @@ interface IProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  updateStudentSection: (student: string, section: number) => Promise<void>;
+  updateSection: (section: SectionType) => Promise<void>;
   updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
-  createSection: (sectionName: string) => Promise<void>;
+  createSection: (sectionName: string) => Promise<SectionType>;
+
+  /* misc */
+  me: string;
 }
 
 interface IState {
@@ -94,7 +97,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
           sectionsByStudent={this.props.sectionsByStudent}
           changeRoster={this.props.updateRoster}
           isDisabled={false}
-          updateStudentSection={this.props.updateStudentSection}
+          updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
         />,
@@ -119,14 +122,23 @@ class ManageAdmins extends React.Component<IProps, IState> {
       ];
 
       data = this.props.admins.map((admin) => {
-        const menu = (
-          <Menu>
-            <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
-              <Icon type="user-delete" />
-              Unenroll
-            </Menu.Item>
-          </Menu>
-        );
+        const menu =
+          admin === this.props.me ? (
+            <Menu>
+              <Menu.Item key="1" disabled={true}>
+                <Tooltip title="You cannot remove yourself as an admin.">
+                  <Icon type="user-delete" /> &nbsp; Unenroll
+                </Tooltip>
+              </Menu.Item>
+            </Menu>
+          ) : (
+            <Menu>
+              <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
+                <Icon type="user-delete" />
+                Unenroll
+              </Menu.Item>
+            </Menu>
+          );
 
         return {
           key: admin,

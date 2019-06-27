@@ -14,6 +14,10 @@ import useWindowSize from '../useWindowSize';
 
 export type ConsoleType = 'grade' | 'subheader';
 
+type ConsoleTheme = 'light' | 'dark';
+
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
 interface IStandardConsoleLayoutProps {
   consoleTypes?: ConsoleType[];
   header: React.ReactNode;
@@ -29,38 +33,47 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   const windowSize = useWindowSize();
   const smallScreen = windowSize.width < layoutVars.breakpoints.mobile.student;
   const subheaderStyle = smallScreen ? { background: 'transparent' } : {};
+  const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
+  const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
+    toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
+  };
 
+  useFixedWindow();
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();
   }
+
   if (smallScreen && props.removeSiderOnMobile) {
     return (
-      <Layout className="layout--standard-console">
-        <Header className="layout--standard-console__header">{props.header}</Header>
-        {props.sider.map((siderNode: React.ReactNode) => {
-          return siderNode;
-        })}
-        {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
-          <div
-            style={{
-              ...subheaderStyle,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              paddingLeft: 15,
-              paddingRight: 15,
-              paddingBottom: 20,
-            }}
-          >
-            {props.subheader}
-          </div>
-        ) : null}
-        <Content className="layout--standard-console__content">{props.content}</Content>
-        {props.children}
-      </Layout>
+      <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
+        <Layout className="layout--standard-console">
+          <Header className="layout--standard-console__header">{props.header}</Header>
+          {props.sider.map((siderNode: React.ReactNode) => {
+            return siderNode;
+          })}
+          {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
+            <div
+              style={{
+                ...subheaderStyle,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingLeft: 15,
+                paddingRight: 15,
+                paddingBottom: 20,
+              }}
+            >
+              {props.subheader}
+            </div>
+          ) : null}
+          <Content className="layout--standard-console__content">{props.content}</Content>
+          {props.children}
+        </Layout>
+       </ConsoleThemeContext.Provider>
     );
   } else {
-    return (
+  return (
+    <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
       <Layout className="layout--standard-console">
         <Header className="layout--standard-console__header">{props.header}</Header>
         <Layout>
@@ -69,7 +82,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               return siderNode;
             })}
           </Sider>
-          <Layout>
+          <Layout style={{ backgroundColor: consoleTheme.mainBg }}>
             {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
               <Header
                 className="layout--standard-console__subheader"
@@ -83,8 +96,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           </Layout>
         </Layout>
       </Layout>
-    );
-  }
+    </ConsoleThemeContext.Provider>
+  );
 };
 
 export default StandardConsoleLayout;

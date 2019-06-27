@@ -4,7 +4,8 @@ import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import Code from './Code';
 import Markdown from './Markdown';
@@ -14,7 +15,9 @@ export interface ICodeContentCoreProps {
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle?: any;
+  codeStyle: React.CSSProperties;
+  highlightHeight: string;
+  onHighlightClick: (e: React.MouseEvent) => void;
 }
 
 export interface ICodeContentEditProps {
@@ -23,6 +26,7 @@ export interface ICodeContentEditProps {
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
@@ -31,9 +35,8 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
     const { addComment, ...codeProps } = { ...props };
-    const { highlightHeight, ...codeStyle } = props.codeStyle;
     return (
-      <div id="code-main" className="code code--markdown" style={codeStyle}>
+      <div id="code-main" className="code code--markdown" style={props.codeStyle}>
         <Markdown
           key={props.file.id}
           {...codeProps}
@@ -44,10 +47,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     );
   } else {
     const { addComment, ...codeProps } = { ...props };
-    // FIXME: This custom style passing is confusing.
-    //        Should have a much cleaner way of passing this stuff through
-    // @ts-ignore
-    const { paddingLeft, highlightHeight, ...codeStyle } = props.codeStyle;
+    const { paddingLeft, ...codeStyle } = props.codeStyle;
 
     return (
       <div>
@@ -55,10 +55,10 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           id="code-syntax"
           className="code code--syntax"
           language={File.language(props.file)}
-          style={googlecode}
+          style={consoleTheme.codeTheme}
           showLineNumbers={true}
           wrapLines={false}
-          customStyle={{ ...codeStyle, padding: '0px' }}
+          customStyle={{ ...codeStyle, padding: '0px', backgroundColor: consoleTheme.codeBg }}
         >
           {props.file.code}
         </SyntaxHighlighter>
@@ -67,7 +67,8 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             {...codeProps}
             commentCounter={commentCounter}
             addComment={addCommentAndIncrement}
-            highlightHeight={highlightHeight}
+            highlightHeight={props.highlightHeight}
+            onHighlightClick={props.onHighlightClick}
           />
         </div>
       </div>

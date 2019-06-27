@@ -2,18 +2,22 @@ import * as React from 'react';
 
 import { Badge, Menu, Popconfirm } from 'antd';
 
+import { CommentType } from '../../infrastructure/comment';
 import { FileType } from '../../infrastructure/file';
 
 import themeVars from '../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
+import { IFileToCommentsMap } from '../../types/common';
+
 interface IFileMenuProps {
   title?: string;
   files: FileType[];
+  comments?: IFileToCommentsMap;
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
-  canChange: boolean;
+  canChange: () => boolean;
   getPointsInFile: (file: FileType) => number[];
   hidePoints?: boolean;
 }
@@ -33,12 +37,20 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
         opacity = 1;
       }
+      let commentCount = 0;
+      if (this.props.comments === undefined) {
+        commentCount = file.comments.length;
+      } else {
+        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+          return comment.id > 0;
+        }).length;
+      }
 
       let commentCountBadge = null;
-      if (file.comments.length > 0) {
+      if (commentCount > 0) {
         commentCountBadge = (
           <Badge
-            count={file.comments.length}
+            count={commentCount}
             className="cp-badge"
             style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
           />
@@ -120,7 +132,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
 interface IUnsavedCommentsPopconfirmProps {
   changeSelectedFile: (fileID: number) => void;
-  canChange: boolean;
+  canChange: () => boolean;
   children: any;
 }
 
@@ -147,13 +159,14 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
   };
 
   React.useEffect(() => {
-    if (selectedParam && props.canChange) {
+    if (selectedParam && props.canChange()) {
       confirm();
-    } else if (selectedParam && !props.canChange) {
+    } else if (selectedParam && !props.canChange()) {
       setVisible(true);
     }
   });
 
+  // FIXME: React.cloneElement possibly very slow
   return (
     <Popconfirm
       title={

@@ -103,8 +103,8 @@ interface IProps {
 
   /* object level REST operations */
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
-  updateStudentSection: (student: string, section: number) => Promise<void>;
-  createSection: (sectionName: string) => Promise<void>;
+  updateSection: (section: SectionType) => Promise<void>;
+  createSection: (sectionName: string) => Promise<SectionType>;
 }
 
 interface IState {
@@ -264,6 +264,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     const { students, graders, admins } = this.props;
 
     this.setState({ updatingRoster: true, status: UPLOAD_STATUS.SAVE }, () => {
+      // we don't want to declare success until all the work below completes
+      const promises: Array<Promise<any>> = [];
+
       if ('students' in diff) {
         /* remove and add users */
         const newStudents = [
@@ -272,35 +275,81 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           }),
           ...Object.keys(diff.students.added),
         ];
-        this.props.changeRoster(newStudents, USER_APP.Student);
 
-        /* Set sections of added students */
-        for (const addedStudent of Object.keys(diff.students.added)) {
-          const newSectionName = diff.students.added[addedStudent]['section'].name;
-          if (newSectionName !== this.props.sectionsByStudent[addedStudent]) {
-            const sectionID = this.getSectionIDFromName(newSectionName);
-            if (sectionID) {
-              this.props.updateStudentSection(addedStudent, sectionID);
-            } else {
-              this.props.createSection(newSectionName).then(() => {
-                this.props.updateStudentSection(addedStudent, this.getSectionIDFromName(newSectionName)!);
-              });
+        promises.push(
+          this.props.changeRoster(newStudents, USER_APP.Student).then(() => {
+            // build new sections
+            const sectionMap = {};
+            const innerPromises: Array<Promise<any>> = [];
+
+            // Pull information from added students
+            for (const student of Object.keys(diff.students.added)) {
+              const sectionValue = diff.students.added[student]['section'];
+              if (sectionValue !== null) {
+                if (sectionMap[sectionValue] === undefined) {
+                  sectionMap[sectionValue] = [student];
+                } else {
+                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+                }
+              }
             }
-          }
-        }
 
-        /* update sections of changed students */
-        for (const changedStudent of Object.keys(diff.students.changed)) {
-          const newSectionName: string = diff.students.changed[changedStudent].new['section'];
-          const sectionID = this.getSectionIDFromName(newSectionName);
-          if (sectionID) {
-            this.props.updateStudentSection(changedStudent, sectionID);
-          } else {
-            this.props.createSection(newSectionName).then(() => {
-              this.props.updateStudentSection(changedStudent, this.getSectionIDFromName(newSectionName)!);
-            });
-          }
-        }
+            // Pull information from changed students
+            for (const student of Object.keys(diff.students.changed)) {
+              const sectionValue = diff.students.changed[student].new['section'];
+              if (sectionValue !== null) {
+                if (sectionMap[sectionValue] === undefined) {
+                  sectionMap[sectionValue] = [student];
+                } else {
+                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+                }
+              }
+            }
+
+            // At this point, sectionMap.keys contains only sections with > 0
+            // students, as defined by the uploaded roster.
+            // This ignores a corner case: sections which had students in the old roster,
+            // but have 0 students in the new roster.
+
+            // Example:
+            // SectionA.students = [student1, student2]
+            // Then in the new roster, student1.section = null and student2.section = null
+            // So far, these students won't be removed from SectionA, since SectionA won't
+            // be updated with new students
+
+            // To solve this, add sections with empty student lists to the section map
+            for (const oldSection of this.props.sections) {
+              if (sectionMap[oldSection.name] === undefined) {
+                sectionMap[oldSection.name] = [];
+              }
+            }
+
+            // Set section lists (for sections with students)
+            for (const sectionName of Object.keys(sectionMap)) {
+              const sectionObj = this.props.sections.find((el) => {
+                return el.name === sectionName;
+              });
+
+              if (sectionObj !== undefined) {
+                // If section exists, set students to list we just created
+                const toClone = { ...sectionObj };
+                toClone.students = [...sectionMap[sectionName]];
+                innerPromises.push(this.props.updateSection(toClone));
+              } else {
+                // Otherwise, create section before settings its student list
+                innerPromises.push(
+                  this.props.createSection(sectionName).then((newSection) => {
+                    const toClone = { ...newSection };
+                    toClone.students = [...sectionMap[sectionName]];
+                    return this.props.updateSection(toClone);
+                  }),
+                );
+              }
+            }
+
+            return Promise.all(innerPromises);
+          }),
+        );
       }
 
       if ('graders' in diff) {
@@ -310,7 +359,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           }),
           ...Object.keys(diff.graders.added),
         ];
-        this.props.changeRoster(newGraders, USER_APP.Grader);
+        promises.push(this.props.changeRoster(newGraders, USER_APP.Grader));
       }
 
       if ('admins' in diff) {
@@ -320,11 +369,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           }),
           ...Object.keys(diff.admins.added),
         ];
-        this.props.changeRoster(newAdmins, USER_APP.CourseAdmin);
+        promises.push(this.props.changeRoster(newAdmins, USER_APP.CourseAdmin));
       }
 
       /* update status */
-      this.setState({ updatingRoster: false });
+      Promise.all(promises).then(() => {
+        this.setState({ updatingRoster: false });
+      });
     });
   };
 
@@ -653,12 +704,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       <div>
         {diffItems.map((diffItem, i) => {
           if (diffItem.items.length === 0) {
-            return (
-              <div key={i}>
-                <br />
-                <h5>{diffItem.title}</h5>
-              </div>
-            );
+            return null;
           }
 
           const columns = [
@@ -766,9 +812,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           content = (
             <div>
-              <Divider orientation="left">Status</Divider>
               <Alert message="Your roster was parsed successfully!" type="success" />
               <br />
+              <Divider orientation="left">Status</Divider>
               <b>Uploaded file:</b> <em>{this.state.fileName}</em>
               <br />
               <b>Users parsed in uploaded file:</b>
@@ -859,7 +905,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             </div>
           );
         } else {
-          content = <div>Your rosted was successfully updated!</div>;
+          content = <div>Your roster was successfully updated!</div>;
         }
         break;
     }
@@ -883,7 +929,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         break;
       case UPLOAD_STATUS.SAVE:
         goBackButton = (
-          <Button key="back" type="primary" onClick={this.toggleDialog}>
+          <Button key="back" type="primary" onClick={this.toggleDialog} disabled={this.state.updatingRoster}>
             Close
           </Button>
         );

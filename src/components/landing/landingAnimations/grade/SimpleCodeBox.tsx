@@ -3,7 +3,8 @@ import React from 'react';
 import { animated } from 'react-spring';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
-import themeVars from '../../../../styles/abstracts/_theme.js';
+
+import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
 const exampleCode1 = `/*************************************
 * Student: student@myschool.edu
@@ -79,7 +80,9 @@ const SimpleCodeBox = (props: { code: string }) => {
 const SimpleCodeHighlight = (props: { top: number; left: number; width: any }) => {
   return (
     <div style={{ position: 'absolute', top: props.top, left: props.left }}>
-      <animated.div style={{ height: 20, width: props.width, background: themeVars.theme.highlight, opacity: 0.5 }} />
+      <animated.div
+        style={{ height: 20, width: props.width, background: consoleThemes.light.highlight, opacity: 0.5 }}
+      />
     </div>
   );
 };

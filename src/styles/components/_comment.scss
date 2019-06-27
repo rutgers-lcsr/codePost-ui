@@ -6,7 +6,8 @@
   }
 
   .ant-popover-title {
-    background-color: #fafafa !important;
+    // background-color: #fafafa !important;
+    // padding: 5px 16px 2px 16px;
   }
 
   .ant-popover-inner-content {
@@ -47,23 +48,20 @@
       color: $actionRed;
     }
     &--neutral {
-      border-left: 3px solid $neutralSecondaryText;
-      color: $neutralSecondaryText;
     }
   }
 
   &__text-area {
     border: 0px;
-    background-color: #fafafa;
     resize: none;
     font-size: 12px;
     line-height: 1.83;
   }
 
   &__comment {
-    font-size: 12px;
-    line-height: 1.67;
+    font-size: 12px !important;
+    line-height: 1.67 !important;
 
-    padding: 4px 11px;
+    padding: 4px 11px !important;
   }
 }

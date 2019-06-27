@@ -26,6 +26,8 @@ import Settings from './components/core/settings';
 
 import RouterLoading from './components/core/RouterLoading';
 
+// import { ConsoleThemeContext, consoleThemes } from './styles/abstracts/_console-theme-context';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -58,6 +60,7 @@ interface IState {
   user?: UserType;
   toRedirect: boolean;
   triedLoading: boolean;
+  // theme: {[key: string]: string}
 }
 
 class App extends React.Component<{}, IState> {
@@ -297,7 +300,7 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADE}/:submissionId`}
-            render={(props: any) => <AsyncGrade {...props} user={this.state.user} />}
+            render={(props: any) => <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />}
           />
         );
       }
@@ -325,7 +328,16 @@ class App extends React.Component<{}, IState> {
 
       // const isChromeBrowser = window.hasOwnProperty('chrome');
 
+      // @ts-ignore
+      // const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
+      // const toggleConsoleTheme = () => {
+      //   console.log('toggling!', consoleTheme);
+      //   // consoleTheme === consoleThemes.dark ?
+      // setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
+      // };
+
       return (
+        // <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
         <Switch>
           <Route
             exact={true}
@@ -351,6 +363,7 @@ class App extends React.Component<{}, IState> {
             handleLogout={this.handleLogout}
           />
         </Switch>
+        // </ConsoleThemeContext.Provider>
       );
     }
 
