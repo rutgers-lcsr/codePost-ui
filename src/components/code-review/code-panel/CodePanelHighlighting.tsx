@@ -127,7 +127,7 @@ class CodePanelHighlighting {
         if (className !== '') {
           className = className.split('=')[1];
           className = className.substring(1, className.length - 1);
-          commentID = +className.split('-')[1];
+          commentID = +className.substr(10);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
