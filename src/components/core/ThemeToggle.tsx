@@ -24,10 +24,10 @@ const ThemeToggle = (props: any) => {
   };
 
   const Moon = () => {
-    return <MoonSvg style={{ height: '18px', fill: 'white' }} />;
+    return <MoonSvg style={{ height: '16px', fill: 'white' }} />;
   };
   const Sun = () => {
-    return <SunSvg key="sun" style={{ height: '18px', fill: '#e5dc8d' }} />;
+    return <SunSvg key="sun" style={{ height: '16px', fill: '#e5dc8d' }} />;
   };
 
   const icon = checked ? (
@@ -61,13 +61,13 @@ const ThemeToggle = (props: any) => {
           base: 'rgb(220, 220, 220)',
         },
       }}
-      trackStyle={{ width: '35px', height: '15px' }}
-      thumbStyle={{ width: '30px', height: '30px', border, boxShadow: 'rgba(0, 0, 0, 0.0) 0px 0px 0px 1px' }}
-      thumbAnimateRange={[-20, 20]}
+      trackStyle={{ width: '30px', height: '12px' }}
+      thumbStyle={{ width: '25px', height: '25px', border, boxShadow: 'rgba(0, 0, 0, 0.0) 0px 0px 0px 1px' }}
+      thumbAnimateRange={[-12, 16]}
       thumbIcon={icon}
       value={checked}
       onToggle={onChange}
-      containerStyle={{ width: '35px' }}
+      containerStyle={{ width: '30px' }}
     />
   );
 };

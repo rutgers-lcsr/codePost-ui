@@ -25,7 +25,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     <Link key="header-0" to="/">
       <CPLogo cpType="main" />
     </Link>,
-    <div key="space" style={{ width: '90px' }} />,
+    <div key="space" style={{ width: '100px' }} />,
     <ThemeToggle key="theme-toggle" />,
   ];
 
