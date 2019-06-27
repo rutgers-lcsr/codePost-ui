@@ -6,7 +6,7 @@ import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
@@ -40,8 +40,8 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Save time and give better feedback on coding assignments, while providing insights into how your students are
-        doing.
+        Give better feedback on programming assignments, without the hassle, so you can teach CS better and train better
+        programmers.
       </div>
       <div
         style={{
@@ -50,6 +50,7 @@ const LandingHero = () => {
           justifyContent: windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start',
           alignItems: 'center',
         }}
+        className="landing__heroButtons"
       >
         <Link to="/signup">
           <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
@@ -84,6 +85,7 @@ const LandingHero = () => {
               ? landingVars.maxWidths.heroImgSmallScreen
               : landingVars.maxWidths.heroImgNormal,
         }}
+        className="landing__heroImg"
       >
         <img style={{ maxWidth: '100%' }} src={require('../../img/landing/compressed/landing_illustration.jpg')} />
       </div>

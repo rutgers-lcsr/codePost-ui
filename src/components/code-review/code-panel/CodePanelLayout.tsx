@@ -3,7 +3,7 @@ import * as React from 'react';
 import { File, FileType } from '../../../infrastructure/file';
 
 import CodePanelSizing from './CodePanelSizing';
-import { Magnifier, Sizer } from './CodePanelWidgets';
+import { Magnifier, Reset, Sizer } from './CodePanelWidgets';
 
 import * as Animation from '../../../infrastructure/animation';
 
@@ -13,25 +13,33 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import ErrorBoundary from '../../core/ErrorBoundary';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
-  code: (codeStyle: React.CSSProperties) => React.ReactNode;
-  comments: React.ReactNode;
+  code: (
+    codeStyle: React.CSSProperties,
+    highlightHeight: string,
+    onHighlightClick: (e: React.MouseEvent) => void,
+  ) => React.ReactNode;
+  comments: (verticalOffset: number) => React.ReactNode;
 }
 
 interface ICodePanelLayoutState {
   zoom: number;
   adjustmentsVisible: boolean;
   splitBasis: number;
+  verticalOffset: number;
 }
 
-class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
+class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
   public nextFrameActionId: number;
 
   public state: Readonly<ICodePanelLayoutState> = {
     zoom: 1,
     adjustmentsVisible: false,
     splitBasis: themeVars.grade.splitBasis,
+    verticalOffset: 0,
   };
 
   public componentDidMount() {
@@ -191,7 +199,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
       paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
         ? '0px'
         : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
-      highlightHeight: `${themeVars.grade.highlightHeight * this.state.zoom}px`,
     };
   };
 
@@ -211,14 +218,41 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     });
   };
 
+  public resetVerticalOffset = () => {
+    this.setState({ verticalOffset: 0 });
+  };
+
+  public onHighlightClick = (e: React.MouseEvent) => {
+    let commentID;
+    if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
+      commentID = e.currentTarget.id.split('-')[2];
+    }
+
+    const codeMain = document.getElementById('code-main');
+    if (codeMain !== null && commentID !== undefined) {
+      if (e.currentTarget instanceof HTMLElement) {
+        const comment = document.getElementById(`comment-${commentID}`);
+        if (comment !== null && comment.style.top !== null) {
+          const commentTop = parseInt(comment.style.top, 10);
+          const verticalOffset = commentTop - e.currentTarget.offsetTop + this.state.verticalOffset + -18;
+          this.setState({ verticalOffset });
+        }
+      }
+    }
+  };
+
   public render() {
-    // @ts-ignore
-    // const { highlightHeight, ...codeStyle } = this.getCodeStyle();
     const codeStyle = this.getCodeStyle();
+    const highlightHeight = `${themeVars.grade.highlightHeight * this.state.zoom}px`;
+    const consoleTheme = this.context.consoleTheme;
+
     // FIXME: This only catches existing highlights.
     //        New highlights will start with the template height and adjust after render
     // UPDATE: Imperfect solution by trigerring a resize after adding a new comment
     this.resizeHighlights();
+    const padding = `${themeVars.grade.codeContainer.paddingTop}px ${themeVars.grade.codeContainer.paddingRight}px ${
+      themeVars.grade.codeContainer.paddingBottom
+    }px ${themeVars.grade.codeContainer.paddingLeft}px`;
 
     return (
       <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
@@ -237,20 +271,21 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
                 id="code-container"
                 className="code-container"
                 style={{
-                  padding: `${themeVars.grade.codeContainer.paddingTop}px ${
-                    themeVars.grade.codeContainer.paddingRight
-                  }px ${themeVars.grade.codeContainer.paddingBottom}px ${themeVars.grade.codeContainer.paddingLeft}px`,
+                  backgroundColor: consoleTheme.codeBg,
+                  border: `1px solid ${consoleTheme.codeBorder}`,
+                  padding,
                 }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
               >
+                <Reset reset={this.resetVerticalOffset} visible={this.state.adjustmentsVisible} />
                 <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
                 <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
-                {this.props.code(codeStyle)}
+                {this.props.code(codeStyle, highlightHeight, this.onHighlightClick)}
               </div>
             </div>
             <div id="code-panel--comments" className="code-panel--comments">
-              {this.props.comments}
+              {this.props.comments(this.state.verticalOffset)}
             </div>
           </div>
         </div>
@@ -258,5 +293,6 @@ class CPLayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePane
     );
   }
 }
+LayoutCodePanel.contextType = ConsoleThemeContext;
 
-export default withWindowWatcher(CPLayoutCodePanel);
+export default withWindowWatcher(LayoutCodePanel);

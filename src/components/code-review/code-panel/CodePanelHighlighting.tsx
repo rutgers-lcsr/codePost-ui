@@ -2,7 +2,7 @@ import * as React from 'react';
 import { CommentType } from '../../../infrastructure/comment';
 import { POSITION } from '../../../types/common';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
+import Highlight from './Highlight';
 
 type StyleType = {
   [highlightID: string]: number;
@@ -113,25 +113,33 @@ class CodePanelHighlighting {
     return [elements.join(''), styles];
   };
 
-  public static convertStringToJSX = (htmlString: string, line: number) => {
+  public static convertStringToJSX = (
+    htmlString: string,
+    line: number,
+    readOnly: boolean,
+    onHighlightClick: (e: React.MouseEvent) => void,
+  ) => {
     const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
+        let commentID = 0;
         if (className !== '') {
           className = className.split('=')[1];
           className = className.substring(1, className.length - 1);
+          commentID = +className.substr(10);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
-        // return (
-        //   <strong key={`${line}-${i}`} id={`line-${line}`} className={className}>
-        //     {text}
-        //   </strong>
-        // );
         return (
-          <span key={`${line}-${i}`} id={`line-${line}-${i}`} className={`highlight ${className}`}>
-            {text}
-          </span>
+          <Highlight
+            key={`${line}-${commentID}`}
+            commentID={commentID}
+            line={line}
+            className={className}
+            text={text}
+            readOnly={readOnly}
+            onHighlightClick={onHighlightClick}
+          />
         );
       } else {
         return html;
@@ -142,7 +150,14 @@ class CodePanelHighlighting {
   };
 
   // O(NM) where N is the number of highlights and M is the length of the line
-  public static highlight = (sortedComments: CommentType[], thetext: string, line: number) => {
+  public static highlight = (
+    sortedComments: CommentType[],
+    thetext: string,
+    line: number,
+    readOnly: boolean,
+    color: string,
+    onHighlightClick: (e: React.MouseEvent) => void,
+  ) => {
     const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
 
     const [htmlString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
@@ -153,13 +168,11 @@ class CodePanelHighlighting {
     for (const [highlight, level] of Object.entries(styles)) {
       const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: ${
-          themeVars.theme.highlight
-        } !important; opacity: ${tint} !important;}`,
+        `.highlight-${highlight} {background-color: ${color} !important; opacity: ${tint} !important;}`,
       );
     }
 
-    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line);
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
 
     return returnElements;
   };
@@ -211,6 +224,24 @@ class CodePanelHighlighting {
     return (
       offset + CodePanelHighlighting.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position)
     );
+  };
+
+  public static brightenHighlight = (commentID: number, color: string) => {
+    const className = `highlight-${commentID}`;
+    const elems = document.getElementsByClassName(className);
+
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.setProperty('background-color', color, 'important');
+    });
+  };
+
+  public static darkenHighlight = (commentID: number, color: string) => {
+    const className = `highlight-${commentID}`;
+    const elems = document.getElementsByClassName(className);
+
+    [].forEach.call(elems, (elem: any) => {
+      elem.style.setProperty('background-color', color, 'important');
+    });
   };
 }
 

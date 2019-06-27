@@ -6,35 +6,27 @@ import { Badge, Input, message, Popover, Typography } from 'antd';
 const { TextArea } = Input;
 const { Paragraph } = Typography;
 
-import CPButton from '../../core/CPButton';
-import CPFlex from '../../core/CPFlex';
-import CPPointInput from '../../core/CPPointInput';
+import CPButton from '../../../core/CPButton';
+import CPFlex from '../../../core/CPFlex';
+import CPPointInput from '../../../core/CPPointInput';
 
-import { CommentType, UiComment } from '../../../infrastructure/comment';
-import { File, FileType } from '../../../infrastructure/file';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { CommentType, UiComment } from '../../../../infrastructure/comment';
+import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
-import CodePanelHighlighting from './CodePanelHighlighting';
+import { wait } from '../../../../infrastructure/animation';
 
-import { wait } from '../../../infrastructure/animation';
-
-import themeVars from '../../../styles/abstracts/_theme.js';
-
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import themeVars from '../../../../styles/abstracts/_theme.js';
 
 import ReactMarkdown from 'react-markdown';
+import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-// import { tomorrowNight } from 'react-syntax-highlighter/dist/styles/hljs';
-
-interface ICommentProps {
+interface ISimpleCommentProps {
   commentType: UICommentType;
   comment: CommentType;
-  file: FileType;
   rubricComment?: RubricCommentType;
 
   placement: number;
@@ -50,14 +42,14 @@ interface ICommentProps {
   setCommentPlacements: () => void;
 }
 
-interface ICommentState {
+interface ISimpleCommentState {
   status: CommentStatus;
   text: string;
   points: number;
 }
 
-class Comment extends React.Component<ICommentProps, ICommentState> {
-  public constructor(props: ICommentProps, context: any) {
+class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
+  public constructor(props: ISimpleCommentProps, context: any) {
     super(props, context);
     this.state = this.init();
   }
@@ -71,7 +63,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
-  public componentDidUpdate(prevProps: ICommentProps) {
+  public componentDidUpdate(prevProps: ISimpleCommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
@@ -97,8 +89,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public save = async () => {
-    this.unhighlightRelatedComment();
-
     const comment = {
       ...this.props.comment,
       text: this.state.text,
@@ -218,42 +208,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
-  public highlightRelatedComment = (event?: any) => {
-    CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
-
-    // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
-    if (blockElement) {
-      blockElement.className = `markdown-block markdown-block--focused ${
-        this.props.commentType === 'readonly' ? 'readonly' : 'active'
-      }`;
-    }
-  };
-
-  public unhighlightRelatedComment = (event?: any) => {
-    CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
-
-    // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
-    if (blockElement) {
-      blockElement.className = `markdown-block markdown-block--commented ${
-        this.props.commentType === 'readonly' ? 'readonly' : 'active'
-      }`;
-    }
-  };
-
   public markdownRenderers = () => {
     const blockProps = () => {
       return {
         style: {
-          color: this.context.consoleTheme.text,
+          color: consoleThemes.light.text,
         },
       };
     };
 
     const rootRenderer = (props: any) => {
       return (
-        <div className="comment__comment" style={{ color: this.context.consoleTheme.text }}>
+        <div className="comment__comment" style={{ color: consoleThemes.light.text }}>
           {props.children}
         </div>
       );
@@ -263,18 +229,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       return React.createElement(`h${props.level}`, blockProps(), props.children);
     };
 
-    const codeRenderer = (props: any) => {
-      return (
-        <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
-          {props.value}
-        </SyntaxHighlighter>
-      );
-    };
-
     const inlineCodeRenderer = (props: any) => {
       const style = {
-        backgroundColor: this.context.consoleTheme.commentTitle,
-        color: this.context.consoleTheme.text,
+        backgroundColor: consoleThemes.light.commentTitle,
+        color: consoleThemes.light.text,
       };
 
       return <code style={style}>{props.children}</code>;
@@ -288,7 +246,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       root: rootRenderer,
       heading: headingRenderer,
       inlineCode: inlineCodeRenderer,
-      code: codeRenderer,
       thematicBreak: thematicBreakRenderer,
     };
   };
@@ -316,25 +273,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // -------------------------- codeType ['code', 'markdown'] --------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    if (['markdown', 'jupyter'].includes(File.codeType(this.props.file))) {
-      commentElements.line = (
-        <span
-          className="cp-label--mid-bold cp-label--italic"
-          style={{ color: this.context.consoleTheme.commentTitleText }}
-        >
-          Block {this.props.comment.startLine + 1}
-        </span>
-      );
-    } else {
-      commentElements.line = (
-        <span
-          className="cp-label--mid-bold cp-label--italic"
-          style={{ color: this.context.consoleTheme.commentTitleText }}
-        >
-          Line {this.props.comment.startLine + 1}
-        </span>
-      );
-    }
+    commentElements.line = (
+      <span className="cp-label--mid-bold cp-label--italic" style={{ color: consoleThemes.light.commentTitleText }}>
+        Line {this.props.comment.startLine + 1}
+      </span>
+    );
 
     const points: number = this.state.points;
 
@@ -361,10 +304,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.comment.author) {
       commentElements.author = (
-        <span
-          className="cp-label--italic cp-label--very-small"
-          style={{ color: this.context.consoleTheme.commentAuthor }}
-        >
+        <span className="cp-label--italic cp-label--very-small" style={{ color: consoleThemes.light.commentAuthor }}>
           Author: {this.props.comment.author}
         </span>
       );
@@ -377,10 +317,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     switch (this.state.status) {
       case 'edited':
         commentElements.status = (
-          <span
-            className="cp-label--small cp-label--italic"
-            style={{ color: this.context.consoleTheme.commentTitleText }}
-          >
+          <span className="cp-label--small cp-label--italic" style={{ color: consoleThemes.light.commentTitleText }}>
             Draft
           </span>
         );
@@ -416,7 +353,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
-          style={{ backgroundColor: this.context.consoleTheme.commentTextArea, color: this.context.consoleTheme.text }}
+          style={{ backgroundColor: consoleThemes.light.commentTextArea, color: consoleThemes.light.text }}
           autoFocus
         />
       );
@@ -432,7 +369,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         );
       }
 
-      shadow = { boxShadow: this.context.consoleTheme.commentShadow };
+      shadow = { boxShadow: consoleThemes.light.commentShadow };
     }
 
     const markdownRenderers = this.markdownRenderers();
@@ -446,7 +383,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       //       whiteSpace: 'pre-wrap',
       //       wordWrap: 'break-word',
       //       marginBottom: '0px',
-      //       color: this.context.consoleTheme.text,
+      //       color: consoleThemes.light.text,
       //     }}
       //   >
       //     <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
@@ -489,8 +426,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       } else {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--neutral');
         style = {
-          color: this.context.consoleTheme.commentRubricCommentNeutral,
-          borderLeft: `3px solid ${this.context.consoleTheme.commentRubricCommentNeutral}`,
+          color: consoleThemes.light.commentRubricCommentNeutral,
+          borderLeft: `3px solid ${consoleThemes.light.commentRubricCommentNeutral}`,
         };
       }
 
@@ -520,19 +457,17 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         id={`comment-${this.props.comment.id}`}
         style={{ top: `${this.props.placement}px`, cursor }}
         onClick={onClick}
-        onMouseEnter={this.highlightRelatedComment}
-        onMouseLeave={this.unhighlightRelatedComment}
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
-          <div className="ant-popover-arrow" style={{ borderColor: this.context.consoleTheme.commentBody }} />
+          <div className="ant-popover-arrow" style={{ borderColor: consoleThemes.light.commentBody }} />
           <div className="ant-popover-inner" style={shadow}>
-            <div style={{ backgroundColor: this.context.consoleTheme.commentBody }}>
+            <div style={{ backgroundColor: consoleThemes.light.commentBody }}>
               <div
                 className="ant-popover-title"
                 style={{
-                  backgroundColor: this.context.consoleTheme.commentTitle,
-                  borderBottom: `1px solid ${this.context.consoleTheme.commentTitleBorder}`,
+                  backgroundColor: consoleThemes.light.commentTitle,
+                  borderBottom: `1px solid ${consoleThemes.light.commentTitleBorder}`,
                 }}
               >
                 <CPFlex left={titleLeft} right={titleRight} gutterSize={14} />
@@ -559,6 +494,5 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     );
   }
 }
-Comment.contextType = ConsoleThemeContext;
 
-export default Comment;
+export default SimpleComment;

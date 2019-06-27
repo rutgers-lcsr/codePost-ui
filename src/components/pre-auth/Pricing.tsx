@@ -95,7 +95,7 @@ const Pricing = (props: IProps) => {
                 <li>Full API access: up to 1000 requests/day</li>
                 <li>&lt;48 hour support response time</li>
               </ul>
-              <Link to="/signup/staff/create">
+              <Link to="/signup/create">
                 <Button style={freeButtonStyle}>
                   Get started <Icon type="arrow-right" />
                 </Button>

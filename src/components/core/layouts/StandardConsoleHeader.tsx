@@ -12,6 +12,8 @@ import { UserType } from '../../../infrastructure/user';
 
 import { USER_TYPE } from '../../../types/common';
 
+import ThemeToggle from '../ThemeToggle';
+
 interface IStandardConsoleHeaderProps {
   user: UserType;
   handleLogout: any;
@@ -19,7 +21,13 @@ interface IStandardConsoleHeaderProps {
 }
 
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
-  const headerLeft = [<CPLogo key="header-0" cpType="main" />];
+  const headerLeft = [
+    <Link key="header-0" to="/">
+      <CPLogo cpType="main" />
+    </Link>,
+    <div key="space" style={{ width: '100px' }} />,
+    <ThemeToggle key="theme-toggle" />,
+  ];
 
   let roleSwitch;
   if (props.thisApp !== undefined) {
@@ -64,7 +72,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
       {props.user.email}
     </span>,
     roleSwitch,
-    <CPButton key="header-logout" cpType="dark" onClick={props.handleLogout}>
+    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
       Log Out
     </CPButton>,
   ];

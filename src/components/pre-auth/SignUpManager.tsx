@@ -16,8 +16,6 @@ import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import useWindowSize from '../core/useWindowSize';
 
-// import landingVars from '../landing/_landingVars';
-
 /**********************************************************************************************************************/
 
 const buttonStyle = { fontSize: 18 };

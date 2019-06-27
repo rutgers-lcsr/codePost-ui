@@ -20,20 +20,21 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
+  verticalOffset: number;
 }
 
 interface ICommentsEditProps {
   readOnly: boolean;
   activeCommentID?: number;
   changeActive: (id: number | undefined) => void;
-  saveComment: any;
+  saveComment: (comment: CommentType) => void;
   deleteComment: (comment: CommentType) => void;
 
-  addUnsaved: any;
-  removeUnsaved: any;
-  removeRubricComment: any;
+  addUnsaved: (commentID: number) => void;
+  removeUnsaved: (commentID: number) => void;
+  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
-  oldCommentIDs: any;
+  oldCommentIDs: { [currentID: number]: number };
 }
 
 interface ICommentPlacement {
@@ -142,13 +143,39 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   }
 
-  public componentDidUpdate = async (prevProps: ICommentsCoreProps & ICommentsEditProps) => {
+  public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
+    if (prevProps.comments.length < this.props.comments.length) {
+      const comments = document.getElementById('code-panel--comments');
+      if (comments !== null) {
+        return comments.scrollTop;
+      }
+    }
+
+    return null;
+  }
+
+  public componentDidUpdate = async (
+    prevProps: ICommentsCoreProps & ICommentsEditProps,
+    prevState: ICommentsState,
+    snapshot: any,
+  ) => {
+    if (snapshot !== null) {
+      const comments = document.getElementById('code-panel--comments');
+      if (comments !== null) {
+        comments.scrollTop = snapshot;
+      }
+    }
+
     if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
       this.placeCommentsOnNextFrame();
     }
 
     if (this.props.file.id !== prevProps.file.id) {
       this.manualWait();
+    }
+
+    if (this.props.verticalOffset !== prevProps.verticalOffset) {
+      this.placeCommentsOnNextFrame();
     }
   };
 
@@ -172,9 +199,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
-      let startAt = comment.startLine * lineHeight - themeVars.grade.arrowDisplacement + containerDifference;
+      let startAt =
+        comment.startLine * lineHeight -
+        themeVars.grade.arrowDisplacement +
+        containerDifference -
+        this.props.verticalOffset;
 
-      // MISSING
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
       if (blockElement) {

@@ -221,11 +221,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         <div>
           <b>{message}</b>
           {data.map((elem, index) => {
-            return (
-              <div className="uploadChangesText" key={index}>
-                {elem}
-              </div>
-            );
+            return <div key={index}>{elem}</div>;
           })}
           <br />
         </div>
@@ -378,7 +374,13 @@ class RubricFileUpload extends React.Component<IProps, IState> {
 
     return (
       <div className="admin-rubric__FileDialog">
-        <CPButton cpType="secondary" onClick={this.toggleStatus} disabled={this.props.isDisabled} icon="upload">
+        <CPButton
+          cpType="secondary"
+          onClick={this.toggleStatus}
+          disabled={this.props.isDisabled}
+          icon="upload"
+          fallback="upload"
+        >
           Upload Rubric
         </CPButton>
 

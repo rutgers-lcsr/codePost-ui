@@ -4,7 +4,7 @@ const Panel = Collapse.Panel;
 import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 // import * as CodeMirror from 'react-codemirror';
 
@@ -124,6 +124,8 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
       transition: 'color .3s',
       border: 'none',
       height: 38,
+      marginTop: 5,
+      marginBottom: 5,
     };
     const unSelectedStyle = {
       zIndex: 3,
@@ -132,12 +134,109 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
       transition: 'color .3s',
       border: 'none',
       height: 38,
+      marginTop: 5,
+      marginBottom: 5,
     };
+
+    const codebox = (
+      <div
+        style={{
+          maxWidth: 600,
+          width: '100%',
+          minHeight: this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
+        }}
+      >
+        {codeMirror}
+      </div>
+    );
+
+    const buttons = (
+      <div
+        style={{
+          maxWidth: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 600 : 300,
+          marginLeft: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 0 : 30,
+          marginTop: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
+          marginBottom: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          alignItems: 'flex-start',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: 38,
+            top: 5,
+            background: 'white',
+            zIndex: 0,
+            borderRadius: 10,
+            transition: '.3s',
+            transform: `translateY(${
+              exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
+            })`,
+          }}
+        />
+        <CPButton
+          onClick={this.changeAPITabIndex.bind(this, 0)}
+          style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 0 ? '' : 'link--api-example'}
+          cpType="link"
+          icon="export"
+          ghost={true}
+        >
+          {apiCodeExamples[0].title}
+        </CPButton>
+        <CPButton
+          onClick={this.changeAPITabIndex.bind(this, 1)}
+          style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 1 ? '' : 'link--api-example'}
+          cpType="link"
+          icon="team"
+          ghost={true}
+        >
+          {apiCodeExamples[1].title}
+        </CPButton>
+        <CPButton
+          onClick={this.changeAPITabIndex.bind(this, 2)}
+          style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
+          className={exampleIndex === 2 ? '' : 'link--api-example'}
+          cpType="link"
+          icon="bar-chart"
+          ghost={true}
+        >
+          {apiCodeExamples[2].title}
+        </CPButton>
+        <Divider type="horizontal" style={{ margin: '16px 0px' }} />
+        <CPButton
+          key="APIDocs"
+          href="http://help.codepost.io/reference"
+          target="_blank"
+          cpType="link"
+          ghost={true}
+          style={{ fontWeight: 600, fontSize: 18 }}
+          className="link--api-docs"
+        >
+          Full API reference
+          <Icon type="arrow-right" className="link--api-docs__arrow" />
+        </CPButton>
+      </div>
+    );
 
     return (
       <div id="APIExample" style={{ width: '100%' }}>
         <Collapse bordered={false}>
-          <Panel header="See the codePost API in action" key="1" style={customPanelStyle}>
+          <Panel
+            header={
+              <div>
+                See the API in action <Icon type="api" />{' '}
+              </div>
+            }
+            key="1"
+            style={customPanelStyle}
+          >
             <div
               style={{
                 fontSize: 12,
@@ -146,74 +245,8 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
                 alignItems: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start',
               }}
             >
-              <div
-                style={{
-                  maxWidth: 600,
-                  width: '100%',
-                  minHeight: this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
-                }}
-              >
-                {codeMirror}
-              </div>
-              <div
-                style={{
-                  maxWidth: 300,
-                  marginLeft: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 0 : 30,
-                  marginTop: this.props.windowwidth < landingVars.breakpoints.mobile ? 20 : 0,
-                  position: 'relative',
-                }}
-              >
-                <span
-                  style={{
-                    position: 'absolute',
-                    width: 300,
-                    height: 38,
-                    background: 'white',
-                    zIndex: 0,
-                    transition: '.3s',
-                    transform: `translateY(${exampleIndex === 1 ? '100%' : exampleIndex === 2 ? '200%' : '0%'})`,
-                  }}
-                />
-                <CPButton
-                  onClick={this.changeAPITabIndex.bind(this, 0)}
-                  style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
-                  cpType="link"
-                  icon="export"
-                  ghost={true}
-                >
-                  {apiCodeExamples[0].title}
-                </CPButton>
-                <CPButton
-                  onClick={this.changeAPITabIndex.bind(this, 1)}
-                  style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
-                  cpType="link"
-                  icon="team"
-                  ghost={true}
-                >
-                  {apiCodeExamples[1].title}
-                </CPButton>
-                <CPButton
-                  onClick={this.changeAPITabIndex.bind(this, 2)}
-                  style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
-                  cpType="link"
-                  icon="bar-chart"
-                  ghost={true}
-                >
-                  {apiCodeExamples[2].title}
-                </CPButton>
-                <Divider type="horizontal" style={{ margin: '16px 0px' }} />
-                <CPButton
-                  key="APIDocs"
-                  href="http://help.codepost.io/reference"
-                  target="_blank"
-                  cpType="link"
-                  ghost={true}
-                  style={{ fontWeight: 600, fontSize: 18 }}
-                >
-                  Full API reference
-                  <Icon type="arrow-right" />
-                </CPButton>
-              </div>
+              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
+              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}
             </div>
           </Panel>
         </Collapse>

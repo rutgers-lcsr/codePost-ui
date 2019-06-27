@@ -6,8 +6,9 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Col, Input, message, Row, Select, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
 const { Text, Title } = Typography;
+import { FormComponentProps } from 'antd/lib/form';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -26,246 +27,113 @@ interface IProps {
   updateSettings: (newCourse: CoursePatchType) => Promise<CourseType>;
 }
 
-/* local copies of all course settings we want to expose in this page */
 interface IState {
-  name: string;
-  period: string;
-  sendReleasedSubmissionsToBack: boolean;
-  showStudentsStatistics: boolean;
-  timezone: string;
-  emailNewUsers: boolean;
-  anonymousGradingDefault: boolean;
   isLoading: boolean;
+  isDirty: boolean;
 }
 
 class CourseSettingsPanel extends React.Component<IProps, IState> {
+  private formRef: React.RefObject<FormComponentProps> = React.createRef();
+
   public constructor(props: IProps) {
     super(props);
-    const currentCourse = this.props.currentCourse;
     this.state = {
-      name: currentCourse.name,
-      period: currentCourse.period,
-      sendReleasedSubmissionsToBack: currentCourse.sendReleasedSubmissionsToBack,
-      showStudentsStatistics: currentCourse.showStudentsStatistics,
-      timezone: currentCourse.timezone,
-      emailNewUsers: currentCourse.emailNewUsers,
-      anonymousGradingDefault: currentCourse.anonymousGradingDefault,
       isLoading: false,
+      isDirty: false,
     };
   }
 
   public componentDidUpdate(oldProps: IProps) {
     if (oldProps.currentCourse.id !== this.props.currentCourse.id) {
-      const currentCourse = this.props.currentCourse;
       this.setState({
-        name: currentCourse.name,
-        period: currentCourse.period,
-        sendReleasedSubmissionsToBack: currentCourse.sendReleasedSubmissionsToBack,
-        showStudentsStatistics: currentCourse.showStudentsStatistics,
-        timezone: currentCourse.timezone,
-        emailNewUsers: currentCourse.emailNewUsers,
-        anonymousGradingDefault: currentCourse.anonymousGradingDefault,
         isLoading: false,
+        isDirty: false,
       });
+
+      const formRefCast: any = this.formRef;
+      const form = formRefCast.props.form;
+      form.resetFields();
     }
   }
 
-  public changesMade = () => {
-    const original = this.props.currentCourse;
-    return (
-      original.sendReleasedSubmissionsToBack !== this.state.sendReleasedSubmissionsToBack ||
-      original.showStudentsStatistics !== this.state.showStudentsStatistics ||
-      original.timezone !== this.state.timezone ||
-      original.emailNewUsers !== this.state.emailNewUsers ||
-      original.anonymousGradingDefault !== this.state.anonymousGradingDefault ||
-      original.name !== this.state.name ||
-      original.period !== this.state.period
-    );
+  public saveFormRef = (formRef: React.RefObject<FormComponentProps>) => {
+    this.formRef = formRef;
   };
 
-  /* for binary state variables only */
-  public toggleValue = (label: string) => {
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[label] = !this.state[label];
-      return newState;
+  public resetForm = () => {
+    const formRefCast: any = this.formRef;
+    const form = formRefCast.props.form;
+    form.resetFields();
+    this.setState({ isDirty: false });
+  };
+
+  public handleSave = () => {
+    const formRefCast: any = this.formRef;
+    const form = formRefCast.props.form;
+    form.validateFields((err: any, values: any) => {
+      if (err) {
+        return;
+      }
+
+      this.updateSettings(values);
     });
   };
 
-  public updateInput = (label: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[label] = newValue;
-      return newState;
-    });
-  };
-
-  public handleChange = (label: string, selected: string) => {
-    const value = selected;
-    this.setState((prevstate) => {
-      const newState = { ...prevstate };
-      newState[label] = value;
-      return newState;
-    });
-  };
-
-  public updateSettings = (e: any) => {
+  public updateSettings = (values: any) => {
     this.setState({ isLoading: true }, () => {
-      e.preventDefault();
       const { currentCourse } = this.props;
       const payload = {
         id: currentCourse.id, // codePost convention
-        name: this.state.name,
-        period: this.state.period,
-        sendReleasedSubmissionsToBack: this.state.sendReleasedSubmissionsToBack,
-        showStudentsStatistics: this.state.showStudentsStatistics,
-        timezone: this.state.timezone,
-        emailNewUsers: this.state.emailNewUsers,
-        allowGradersToEditRubric: currentCourse.allowGradersToEditRubric,
+        name: values.name,
+        period: values.period,
+        sendReleasedSubmissionsToBack: values.sendReleasedSubmissionsToBack,
+        showStudentsStatistics: values.showStudentsStatistics,
+        timezone: values.timezone,
+        emailNewUsers: values.emailNewUsers,
+        allowGradersToEditRubric: values.allowGradersToEditRubric,
+        anonymousGradingDefault: values.anonymousGradingDefault,
         assignments: [], // ignored by API
         sections: [], // ignored by API
-        anonymousGradingDefault: this.state.anonymousGradingDefault,
       };
 
-      this.props
-        .updateSettings(payload)
-        .then(() => {
-          message.success('Your settings were saved!');
-        })
-        .catch((reason) => {
-          console.log(reason); /* FIXME: render error response to user */
-        });
-      this.setState({ isLoading: false });
+      console.log(payload);
+
+      this.props.updateSettings(payload).then(() => {
+        message.success('Your settings were saved!');
+        this.setState({ isLoading: false, isDirty: false });
+      });
     });
   };
 
+  public makeDirty = () => {
+    this.setState({ isDirty: true });
+  };
+
   public render() {
-    /* create misc. settings table */
-    const aligner: alignType = 'center';
-    const columns = [
-      {
-        title: 'Setting',
-        dataIndex: 'setting',
-        key: 'setting',
-      },
-      {
-        title: 'Description',
-        dataIndex: 'description',
-        key: 'description',
-      },
-      {
-        title: 'Action',
-        dataIndex: 'action',
-        key: 'action',
-        align: aligner,
-      },
-    ];
-
-    /* UPDATE TABLE HERE */
-    const data = [
-      {
-        key: '1',
-        setting: <Text strong>Show statistics to students</Text>,
-        description: 'Selecting will show assignment mean and median to students when the assignment is released.',
-        action: (
-          <Switch
-            checked={this.state.showStudentsStatistics}
-            onChange={this.toggleValue.bind(this.props, 'showStudentsStatistics')}
-          />
-        ),
-      },
-      {
-        key: '2',
-        setting: <Text strong>Send released submissions to back of grader queue</Text>,
-        description: `Selecting will move released assignments to the back of the course queue, preventing
-         situations in which a grader reclaims a submission that was just released. For more information see our
-         docs.`,
-        action: (
-          <Switch
-            checked={this.state.sendReleasedSubmissionsToBack}
-            onChange={this.toggleValue.bind(this.props, 'sendReleasedSubmissionsToBack')}
-          />
-        ),
-      },
-      {
-        key: '3',
-        setting: <Text strong>Email users when added to roster</Text>,
-        description: `If selected, emails will be sent to users notifying them that they have been added
-         to this course's roster. New codePost users will be prompted to create an account.`,
-        action: (
-          <Switch checked={this.state.emailNewUsers} onChange={this.toggleValue.bind(this.props, 'emailNewUsers')} />
-        ),
-      },
-      {
-        key: '4',
-        setting: <Text strong>Default to Anonymous Grading Mode</Text>,
-        description: `If selected, new Assignments will default to Anonymous Grading Mode. You can
-          toggle this setting at the assignment level from Assignment settings.`,
-        action: (
-          <Switch
-            checked={this.state.anonymousGradingDefault}
-            onChange={this.toggleValue.bind(this.props, 'anonymousGradingDefault')}
-          />
-        ),
-      },
-      {
-        key: '5',
-        setting: <Text strong>Course timezone</Text>,
-        description: 'Timezone in which all time fields for this course (for all users) will appear.',
-        action: (
-          <Select
-            value={this.state.timezone}
-            onChange={this.handleChange.bind(this, 'timezone')}
-            style={{ width: 200 }}
-          >
-            {timezones.map((tz, i) => {
-              return (
-                <Select.Option key={i} value={tz}>
-                  {tz}
-                </Select.Option>
-              );
-            })}
-          </Select>
-        ),
-      },
-    ];
-
-    const tableTitle = () => <Title level={4}>Misc. settings</Title>;
-
     const content = (
-      <div>
-        <Row>
-          <Col span={10}>
-            <Input
-              addonBefore={'Course name:'}
-              onChange={this.updateInput.bind(this, 'name')}
-              value={this.state.name}
-            />
-          </Col>
-        </Row>
-        <br />
-        <Row>
-          <Col span={10}>
-            <Input
-              addonBefore={'Course period:'}
-              onChange={this.updateInput.bind(this, 'period')}
-              defaultValue={this.state.period}
-            />
-          </Col>
-        </Row>
-        <br />
-        <br />
-        <Table title={tableTitle} pagination={false} columns={columns} dataSource={data} />
-      </div>
+      <SettingsForm
+        thisCourse={this.props.currentCourse}
+        wrappedComponentRef={this.saveFormRef}
+        makeDirty={this.makeDirty}
+      />
     );
 
     const actions = [
       <CPButton
+        key={0}
+        disabled={!this.state.isDirty || this.state.isLoading}
+        icon="redo"
+        cpType="secondary"
+        onClick={this.resetForm}
+      >
+        Undo
+      </CPButton>,
+      <CPButton
         key={1}
         loading={this.state.isLoading}
-        cpType={this.changesMade() ? 'primary' : 'disabled'}
-        onClick={this.updateSettings}
+        cpType="primary"
+        onClick={this.handleSave}
+        disabled={!this.state.isDirty}
       >
         Save changes
       </CPButton>,
@@ -286,4 +154,152 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     );
   }
 }
+
+/***********************************************************************************/
+/* Form component
+/***********************************************************************************/
+
+interface IFormProps extends FormComponentProps {
+  thisCourse: CourseType;
+  makeDirty: () => void;
+}
+
+const SettingsForm: any = Form.create()(
+  class extends React.Component<IFormProps, {}> {
+    public render() {
+      const { getFieldDecorator } = this.props.form;
+      /* create misc. settings table */
+      const aligner: alignType = 'center';
+      const columns = [
+        {
+          title: 'Setting',
+          dataIndex: 'setting',
+          key: 'setting',
+        },
+        {
+          title: 'Description',
+          dataIndex: 'description',
+          key: 'description',
+        },
+        {
+          title: 'Action',
+          dataIndex: 'action',
+          key: 'action',
+          align: aligner,
+        },
+      ];
+
+      /* UPDATE TABLE HERE */
+      const data = [
+        {
+          key: '1',
+          setting: <Text strong>Show statistics to students</Text>,
+          description: 'Selecting will show assignment mean and median to students when the assignment is released.',
+          action: (
+            <Form.Item>
+              {getFieldDecorator('showStudentsStatistics', {
+                initialValue: this.props.thisCourse.showStudentsStatistics,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '2',
+          setting: <Text strong>Send released submissions to back of grader queue</Text>,
+          description: `Selecting will move released assignments to the back of the course queue, preventing
+         situations in which a grader reclaims a submission that was just released. For more information see our
+         docs.`,
+          action: (
+            <Form.Item>
+              {getFieldDecorator('sendReleasedSubmissionsToBack', {
+                initialValue: this.props.thisCourse.sendReleasedSubmissionsToBack,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '3',
+          setting: <Text strong>Email users when added to roster</Text>,
+          description: `If selected, emails will be sent to users notifying them that they have been added
+         to this course's roster. New codePost users will be prompted to create an account.`,
+          action: (
+            <Form.Item>
+              {getFieldDecorator('emailNewUsers', {
+                initialValue: this.props.thisCourse.emailNewUsers,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '4',
+          setting: <Text strong>Default to Anonymous Grading Mode</Text>,
+          description: `If selected, new Assignments will default to Anonymous Grading Mode. You can
+          toggle this setting at the assignment level from Assignment settings.`,
+          action: (
+            <Form.Item>
+              {getFieldDecorator('anonymousGradingDefault', {
+                initialValue: this.props.thisCourse.anonymousGradingDefault,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '5',
+          setting: <Text strong>Course timezone</Text>,
+          description: 'Timezone in which all time fields for this course (for all users) will appear.',
+          action: (
+            <Form.Item>
+              {getFieldDecorator('timezone', {
+                initialValue: this.props.thisCourse.timezone,
+              })(
+                <Select style={{ width: 200 }} onChange={this.props.makeDirty}>
+                  {timezones.map((tz, i) => {
+                    return (
+                      <Select.Option key={i} value={tz}>
+                        {tz}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>,
+              )}
+            </Form.Item>
+          ),
+        },
+      ];
+
+      const tableTitle = () => <Title level={4}>Misc. settings</Title>;
+
+      return (
+        <Form layout="horizontal" hideRequiredMark={true} onChange={this.props.makeDirty}>
+          <div style={{ width: 500 }}>
+            <Form.Item>
+              {getFieldDecorator('name', {
+                initialValue: this.props.thisCourse.name,
+                rules: [
+                  { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
+                  { message: 'Course name cannot exceed 36 characters', max: 36 },
+                ],
+              })(<Input addonBefore="Course name" />)}
+            </Form.Item>
+            <Form.Item>
+              {getFieldDecorator('period', {
+                initialValue: this.props.thisCourse.period,
+                rules: [
+                  { required: true, message: 'Please enter a course period.' },
+                  { message: 'Course period cannot exceed 32 characters', max: 32 },
+                ],
+              })(<Input addonBefore="Course period" />)}
+            </Form.Item>
+          </div>
+          <Table title={tableTitle} pagination={false} columns={columns} dataSource={data} />
+        </Form>
+      );
+    }
+  },
+);
+
 export default CourseSettingsPanel;

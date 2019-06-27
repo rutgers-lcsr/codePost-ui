@@ -1,8 +1,6 @@
 .code-container {
   position: relative;
 
-  background-color: #fff;
-  border: 1px solid #e3e3e3;
   border-radius: 5px;
 
   overflow-y: hidden;
@@ -36,7 +34,7 @@
 
     &--underlay {
       font-family: $fontCode !important;
-      color: blue;
+      color: transparent;
     }
 
     &--syntax {

@@ -23,8 +23,17 @@ declare module '@storybook/addon-links';
 declare module '@storybook/react/demo';
 declare module '@storybook/addon-knobs';
 declare module 'react-highlight-words';
+declare module 'react-toggle-button';
+declare module 'react-addons-css-transition-group';
 
 declare module '*.scss' {
   const content: { [className: string]: string };
   export = content;
+}
+
+declare module '*.svg' {
+  import React = require('react');
+  export const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>;
+  const src: string;
+  export default src;
 }

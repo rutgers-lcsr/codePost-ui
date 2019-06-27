@@ -3,7 +3,7 @@ import { Divider } from 'antd';
 import * as React from 'react';
 import useWindowSize from '../core/useWindowSize';
 
-import landingVars from './_landingVars';
+import landingVars from '../../styles/pages/_landingVars';
 
 interface IProps {
   topBar: React.ReactNode;
@@ -90,7 +90,6 @@ const LandingLayout = (props: IProps) => {
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }}>
         <div
           style={{
-            maxWidth: landingVars.maxWidths.header,
             width: '100%',
             paddingTop: verticalPadddingHeader,
             paddingBottom: verticalPadddingHeader,
@@ -193,7 +192,7 @@ const LandingLayout = (props: IProps) => {
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
       <div>
-        <Divider />
+        <Divider style={{ margin: 0 }} />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }}>
           <div
             style={{

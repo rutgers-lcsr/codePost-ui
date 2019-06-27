@@ -70,13 +70,13 @@ const SimpleGraderRoster = () => {
             Roster: Graders
           </div>
           <div>
-            <Button key="action-1" type="ghost" style={{ marginRight: 5 }}>
+            <Button key="action-1" type="ghost" icon="download" style={{ marginRight: 5 }}>
               Download
             </Button>
-            <Button key="action-2" type="ghost" style={{ marginRight: 10 }}>
+            <Button key="action-2" type="ghost" icon="upload" style={{ marginRight: 10 }}>
               Upload
             </Button>
-            <Button key="action-3" type="primary" style={{}}>
+            <Button key="action-3" type="primary" icon="plus-circle" style={{}}>
               Add
             </Button>
           </div>

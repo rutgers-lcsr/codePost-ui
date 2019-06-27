@@ -25,13 +25,11 @@ import TermsOfService from './TermsOfService';
 
 import Logout from '../core/Logout';
 
-import RouterLoading from '../core/RouterLoading';
-
 /**********************************************************************************************************************/
 
 const AsyncLanding = Loadable({
   loader: () => import('../landing/Landing'),
-  loading: RouterLoading,
+  loading: () => <div />,
 });
 
 interface IndexManagerProps {

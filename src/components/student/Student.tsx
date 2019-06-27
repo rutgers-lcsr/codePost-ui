@@ -6,11 +6,13 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Drawer, Empty } from 'antd';
+import { Empty } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost imports */
-import themeVars from '../../styles/abstracts/_theme.js';
+
+import layoutVars from '../../styles/layout/_layoutVars';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import Grade from '../grade/Grade';
 
@@ -31,11 +33,11 @@ import CPFlex from '../core/CPFlex';
 
 import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
-import SelectorSider from '../core/SelectorSider';
+import MultiSelectorSider from '../core/MultiSelectorSider';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, USER_TYPE } from '../../types/common';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { loadIDList } from '../../infrastructure/generics';
@@ -63,7 +65,7 @@ interface IStudentState {
   isLoadingSubmission: boolean;
 }
 
-export interface IStudentProps {
+export interface IStudentProps extends IWithWindowWatcherProps {
   initialCourses: CourseType[];
   user: UserType;
   match: any;
@@ -179,7 +181,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadAssignments = async (courses: CourseType[]) => {
     return Promise.all(
       courses.map((course: CourseType) => {
-        return loadIDList(course.assignments, Assignment);
+        return loadIDList(course.assignments, AssignmentStudent);
       }),
     ).then((assignments) => {
       const toRet = {};
@@ -194,7 +196,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!assignment.isReleased) {
       return undefined;
     }
-    return (await Assignment.readSubmissionsStudent(assignment.id, { student: this.props.user.email }))[0];
+    return (await AssignmentStudent.readSubmissions(assignment.id, { student: this.props.user.email }))[0];
   };
 
   public loadRubricCategories = async (assignment: AssignmentType) => {
@@ -225,17 +227,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!currentCourse) {
       return;
     }
+    this.setState({
+      currentAssignment: undefined,
+      currentSubmission: undefined,
+      files: [],
+      comments: {},
+      rubricCategories: [],
+      commentRubricComments: {},
+      currentFile: undefined,
+    });
 
     if (assignmentID === undefined) {
-      this.setState({
-        currentAssignment: undefined,
-        currentSubmission: undefined,
-        files: [],
-        comments: {},
-        rubricCategories: [],
-        commentRubricComments: {},
-        currentFile: undefined,
-      });
       this.changeURL(currentCourse, undefined);
     } else {
       const currentAssignment = assignments[currentCourse.id].find((assignment: AssignmentType) => {
@@ -285,6 +287,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           currentAssignment: undefined,
           currentCourse,
           currentSubmission: undefined,
+          files: [],
+          comments: {},
+          rubricCategories: [],
+          commentRubricComments: {},
+          currentFile: undefined,
         },
         () => {
           this.changeURL(currentCourse, undefined);
@@ -293,15 +300,50 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
   };
 
-  public selectorItemsFormatter = (courses: CourseType[]) => {
-    return courses.map((course, i) => ({ value: course.id, label: `${course.name} | ${course.period}` }));
-  };
+  public selectorItemsFormatter<T>(
+    items: T[],
+    getValue: (item: T) => number,
+    getName: (item: T) => string,
+    getDisabled: (item: T) => boolean,
+  ) {
+    return items.map((item: T) => ({
+      value: getValue(item),
+      label: getName(item),
+      isDisabled: getDisabled(item),
+    }));
+  }
 
-  public selectorCurrentFormatter = (currentCourse: CourseType | undefined) => {
+  // Course Selector
+  public getCourseName = (course: CourseType) => `${course.name} | ${course.period}`;
+  public getCourseValue = (course: CourseType) => course.id;
+  public getCourseDisabled = (course: CourseType) => false;
+  public courseSelectorItems = (courses: CourseType[]) => {
+    return this.selectorItemsFormatter(courses, this.getCourseValue, this.getCourseName, this.getCourseDisabled);
+  };
+  public courseActiveSelector = (currentCourse: CourseType | undefined) => {
     if (!currentCourse) {
       return undefined;
     }
-    return { value: currentCourse.id, label: `${currentCourse.name} | ${currentCourse.period}` };
+    return { value: this.getCourseValue(currentCourse), label: this.getCourseName(currentCourse) };
+  };
+
+  // Assignment Selector
+  public getAssignmentName = (assignment: AssignmentType) => assignment.name;
+  public getAssignmentValue = (assignment: AssignmentType) => assignment.id;
+  public getAssignmentDisabled = (assignment: AssignmentType) => !assignment.isReleased;
+  public assignmentSelectorItems = (assignments: AssignmentType[]) => {
+    return this.selectorItemsFormatter(
+      assignments,
+      this.getAssignmentValue,
+      this.getAssignmentName,
+      this.getAssignmentDisabled,
+    );
+  };
+  public assignmentActiveSelector = (currentAssignment: AssignmentType | undefined) => {
+    if (!currentAssignment) {
+      return undefined;
+    }
+    return { value: this.getAssignmentValue(currentAssignment), label: this.getAssignmentName(currentAssignment) };
   };
 
   public getStatus = (
@@ -366,14 +408,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         );
       case STATUS.ShowSubmission:
         if (this.state.currentSubmission !== undefined && this.state.currentFile !== undefined) {
-          const comments = (
+          const comments = (verticalOffset: number) => (
             <StudentComments
-              comments={this.state.comments[this.state.currentFile.id]}
+              comments={this.state.comments[this.state.currentFile!.id]}
               rubricComments={this.state.commentRubricComments}
-              file={this.state.currentFile}
+              file={this.state.currentFile!}
+              verticalOffset={verticalOffset}
             />
           );
-          const code = (codeStyle: React.CSSProperties) => (
+          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
             <StudentCode
               key={this.state.currentFile!.id}
               file={this.state.currentFile!}
@@ -381,6 +424,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               readOnly={this.state.currentSubmission!.isFinalized}
               user={this.props.user.email}
               codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
             />
           );
           return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;
@@ -388,10 +433,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           return null;
         }
     }
-  };
-
-  public goBackToAssignments = () => {
-    this.handleAssignmentChange(undefined);
   };
 
   public getPointsInFile = (file: FileType): number[] => {
@@ -412,6 +453,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public render() {
     const { assignments, currentAssignment, currentCourse, currentSubmission, isLoadingAssignments } = this.state;
+    const mobile = this.props.windowwidth < layoutVars.breakpoints.mobile.student;
 
     const hasAssignments =
       currentCourse !== undefined &&
@@ -426,6 +468,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.state.isLoadingSubmission,
       currentSubmission,
     );
+
+    const canAlwaysChange = () => {
+      return true;
+    };
 
     let content;
     let subheader;
@@ -481,14 +527,26 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       }
 
       if (this.state.currentFile !== undefined) {
-        fileMenu = (
+        fileMenu = mobile ? (
+          // Mobile File menu hides points
+          <FileMenu
+            key={'file-menu'}
+            files={this.state.files}
+            getPointsInFile={this.getPointsInFile}
+            changeSelectedFile={this.changeCurrentFile}
+            canChange={canAlwaysChange}
+            title="Files"
+            hidePoints={true}
+          />
+        ) : (
           <FileMenu
             key={'file-menu'}
             files={this.state.files}
             selectedFile={this.state.currentFile}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeCurrentFile}
-            canChange={true}
+            canChange={canAlwaysChange}
+            title="Files"
           />
         );
       }
@@ -503,23 +561,42 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     );
 
     const sider = (
-      <SelectorSider
-        title="Assignments"
+      <MultiSelectorSider
+        title1="Courses"
+        title2="Assignments"
         theme="light"
         key="sider"
-        activeSelector={this.selectorCurrentFormatter(currentCourse)}
-        selectorItems={this.selectorItemsFormatter(this.props.initialCourses)}
-        onSelectorClick={this.handleCourseChange}
-        activeMenuItem={currentAssignment ? currentAssignment.id : undefined}
-        assignments={
+        activeFirstSelector={this.courseActiveSelector(currentCourse)}
+        firstSelectorItems={this.courseSelectorItems(this.props.initialCourses)}
+        onFirstSelectorClick={this.handleCourseChange}
+        activeSecondSelector={this.assignmentActiveSelector(currentAssignment)}
+        secondSelectorItems={
           this.state.currentCourse && !this.state.isLoadingAssignments
-            ? this.state.assignments[this.state.currentCourse.id]
+            ? this.assignmentSelectorItems(this.state.assignments[this.state.currentCourse.id])
             : []
         }
-        onMenuClick={this.onAssignmentChange}
+        onSecondSelectorClick={this.onAssignmentChange}
         isLoadingMenu={this.state.isLoadingAssignments}
+        children={mobile ? <div /> : fileMenu}
       />
     );
+    if (mobile) {
+      return (
+        // Mobile layout with no code panel, and removing of sider
+        <StandardConsoleLayout
+          consoleTypes={consoleTypes}
+          header={header}
+          subheader={
+            <div style={{ textAlign: 'center', paddingTop: 20 }}>
+              This submission has been graded. Please log into codePost on a desktop to see your feedback!
+            </div>
+          }
+          sider={[sider]}
+          content={status !== STATUS.ShowSubmission ? content : fileMenu}
+          removeSiderOnMobile={true}
+        />
+      );
+    }
 
     return (
       <StandardConsoleLayout
@@ -528,38 +605,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         subheader={subheader}
         sider={[sider]}
         content={content}
-      >
-        <FileDrawer
-          key="file-drawer"
-          visible={status === STATUS.ShowSubmission}
-          onClose={this.goBackToAssignments}
-          fileMenu={fileMenu}
-        />
-      </StandardConsoleLayout>
+        removeSiderOnMobile={true}
+      />
     );
   }
 }
 
-/**********************************************************************************************************************/
-
-const FileDrawer = (props: any) => {
-  return (
-    <Drawer
-      title="Files"
-      placement={'left'}
-      closable={true}
-      mask={false}
-      width={300}
-      onClose={props.onClose}
-      visible={props.visible}
-      style={{ top: `${themeVars.theme.headerHeight}px` }}
-      bodyStyle={{ padding: '0px' }}
-      destroyOnClose={false}
-      className="file-drawer"
-    >
-      {props.fileMenu}
-    </Drawer>
-  );
-};
-
-export default Student;
+export default withWindowWatcher(Student);

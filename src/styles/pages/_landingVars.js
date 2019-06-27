@@ -7,11 +7,11 @@ const heroBreakPoint = 850; // point at which hero switches to vertical
 const verticalPanelsBreakpoint = 1000; // point at which horizontal panels change to vertical
 const removeModuleBreakpoint = 600; // point at which modules specified for removal on small screens are removed
 const testimonialBreakPoint = 900;
-const getStartedBreakpoint = 625;
+const getStartedBreakpoint = 625; //point at which buttons and text become a column
 
 // Maximum Widths
 const panelMaxWidth = 1100; // Maximum width for the panels to keep narrow look
-const headerMaxWidth = 1150; // Maximum width for the header
+const headerMaxWidth = 1200; // Maximum width for the header
 const whyPanelMaxWidth = 1250; // The why panel is a bit larger and needs more space than other panels
 const footerMaxWidth = 1200;
 const backgroundImageWidthNormal = 1750; // This is the width of the images normally
@@ -33,9 +33,9 @@ const footerColor = '#EBEBEB';
 // Vertical Padding
 const panelVPaddingNormal = 50;
 const panelVPaddingSmallScreen = 25;
-const headerVPaddingNormal = 50;
+const headerVPaddingNormal = 35;
 const headerVPaddingSmallScreen = 20;
-const getStartedVPaddingNormal = 50;
+const getStartedVPaddingNormal = 70;
 
 // horizontal padding
 const testimonialHPadding = 25;

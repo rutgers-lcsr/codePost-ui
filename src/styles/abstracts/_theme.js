@@ -75,7 +75,6 @@ const codeFontSize = 12; // px
 const lineNumberPadding = 14.41; // px
 const highlightHeight = 16; // px
 
-// Highlighting
 const highlight = '#ffbf00';
 const highlightActive = '#c0ff00';
 
@@ -187,9 +186,9 @@ module.exports = {
 
     headerHeight: headerHeight,
 
+    highlightHeight: highlightHeight,
     highlight: highlight,
     highlightActive: highlightActive,
-    highlightHeight: highlightHeight,
   },
   grade: {
     headerHeight: headerHeight,
@@ -210,9 +209,6 @@ module.exports = {
       paddingRight: codeContainerPaddingRight,
       paddingLeft: codeContainerPaddingLeft,
     },
-
-    highlight: highlight,
-    highlightActive: highlightActive,
 
     arrowDisplacement: arrowDisplacement,
     commentSpacing: commentSpacing,
