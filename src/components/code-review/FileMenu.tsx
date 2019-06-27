@@ -97,7 +97,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
           <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
           <span style={{ position: 'absolute', right: '15px' }}>
-            {this.props.hidePoints ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
+            {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
           </span>
         </Menu.Item>
       );
