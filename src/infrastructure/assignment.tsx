@@ -25,6 +25,27 @@ const AssignmentV = t.intersection(
   'Assignment',
 );
 
+const AssignmentVStudent = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      name: t.string,
+      isReleased: t.boolean,
+      rubricCategories: t.array(t.number),
+      course: t.number,
+    }),
+    t.partial({
+      hideGrades: t.boolean,
+      sortKey: t.number,
+      anonymousGrading: t.boolean,
+      mean: t.union([t.number, t.null, t.undefined]),
+      median: t.union([t.number, t.null, t.undefined]),
+      points: t.number,
+    }),
+  ],
+  'Assignment',
+);
+
 const AssignmentVPost = t.intersection(
   [
     GenericObject,
@@ -97,6 +118,12 @@ class Assignment {
   );
 }
 
+// tslint:disable
+class AssignmentStudent {
+  public static read = readObject(AssignmentVStudent, 'assignments');
+  public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+}
+
 const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
@@ -110,4 +137,4 @@ const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   return assignments.sort(compareAssignments);
 };
 
-export { AssignmentType, AssignmentPatchType, Assignment, sortAssignments, RubricType };
+export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };

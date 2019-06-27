@@ -35,7 +35,7 @@ import SelectorSider from '../core/SelectorSider';
 
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, USER_TYPE } from '../../types/common';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { loadIDList } from '../../infrastructure/generics';
@@ -179,7 +179,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadAssignments = async (courses: CourseType[]) => {
     return Promise.all(
       courses.map((course: CourseType) => {
-        return loadIDList(course.assignments, Assignment);
+        return loadIDList(course.assignments, AssignmentStudent);
       }),
     ).then((assignments) => {
       const toRet = {};
@@ -194,7 +194,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!assignment.isReleased) {
       return undefined;
     }
-    return (await Assignment.readSubmissionsStudent(assignment.id, { student: this.props.user.email }))[0];
+    return (await AssignmentStudent.readSubmissions(assignment.id, { student: this.props.user.email }))[0];
   };
 
   public loadRubricCategories = async (assignment: AssignmentType) => {
