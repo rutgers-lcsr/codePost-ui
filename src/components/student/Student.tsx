@@ -469,9 +469,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentSubmission,
     );
 
-    const 
-    
- Change = () => {
+    const canAlwaysChange = () => {
       return true;
     };
 
@@ -536,7 +534,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             files={this.state.files}
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeCurrentFile}
-            canChange={true}
+            canChange={canAlwaysChange}
             title="Files"
             hidePoints={true}
           />

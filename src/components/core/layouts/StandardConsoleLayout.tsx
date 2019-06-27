@@ -69,35 +69,36 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           <Content className="layout--standard-console__content">{props.content}</Content>
           {props.children}
         </Layout>
-       </ConsoleThemeContext.Provider>
+      </ConsoleThemeContext.Provider>
     );
   } else {
-  return (
-    <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
-      <Layout className="layout--standard-console">
-        <Header className="layout--standard-console__header">{props.header}</Header>
-        <Layout>
-          <Sider width={300} className="layout--standard-console__sider">
-            {props.sider.map((siderNode: React.ReactNode) => {
-              return siderNode;
-            })}
-          </Sider>
-          <Layout style={{ backgroundColor: consoleTheme.mainBg }}>
-            {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
-              <Header
-                className="layout--standard-console__subheader"
-                style={{ height: themeVars.grade.subheaderHeight }}
-              >
-                {props.subheader}
-              </Header>
-            ) : null}
-            <Content className="layout--standard-console__content">{props.content}</Content>
-            {props.children}
+    return (
+      <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
+        <Layout className="layout--standard-console">
+          <Header className="layout--standard-console__header">{props.header}</Header>
+          <Layout>
+            <Sider width={300} className="layout--standard-console__sider">
+              {props.sider.map((siderNode: React.ReactNode) => {
+                return siderNode;
+              })}
+            </Sider>
+            <Layout style={{ backgroundColor: consoleTheme.mainBg }}>
+              {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
+                <Header
+                  className="layout--standard-console__subheader"
+                  style={{ height: themeVars.grade.subheaderHeight }}
+                >
+                  {props.subheader}
+                </Header>
+              ) : null}
+              <Content className="layout--standard-console__content">{props.content}</Content>
+              {props.children}
+            </Layout>
           </Layout>
         </Layout>
-      </Layout>
-    </ConsoleThemeContext.Provider>
-  );
+      </ConsoleThemeContext.Provider>
+    );
+  }
 };
 
 export default StandardConsoleLayout;
