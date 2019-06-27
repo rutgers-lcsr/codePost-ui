@@ -65,6 +65,6 @@ function togglePlaceholder(toTheme) {
 }
 
 export const ConsoleThemeContext = React.createContext({
-  consoleTheme: consoleThemes.dark, // default value
+  consoleTheme: consoleThemes.light, // default value
   toggleConsoleTheme: togglePlaceholder,
 });
