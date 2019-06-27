@@ -24,7 +24,7 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
-interface ICommentProps {
+interface ISimpleCommentProps {
   commentType: UICommentType;
   comment: CommentType;
   rubricComment?: RubricCommentType;
@@ -42,14 +42,14 @@ interface ICommentProps {
   setCommentPlacements: () => void;
 }
 
-interface ICommentState {
+interface ISimpleCommentState {
   status: CommentStatus;
   text: string;
   points: number;
 }
 
-class Comment extends React.Component<ICommentProps, ICommentState> {
-  public constructor(props: ICommentProps, context: any) {
+class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
+  public constructor(props: ISimpleCommentProps, context: any) {
     super(props, context);
     this.state = this.init();
   }
@@ -63,7 +63,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
-  public componentDidUpdate(prevProps: ICommentProps) {
+  public componentDidUpdate(prevProps: ISimpleCommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
@@ -495,4 +495,4 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 }
 
-export default Comment;
+export default SimpleComment;
