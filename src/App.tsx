@@ -320,7 +320,15 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={HOME}
             render={(props: any) => (
-              <Home {...props} isLoggedIn={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+              <Home
+                {...props}
+                isLoggedIn={true}
+                isStudent={isStudent}
+                isGrader={isGrader}
+                isAdmin={isAdmin}
+                handleLogout={this.handleLogout}
+                user={this.state.user}
+              />
             )}
           />
         );
@@ -348,7 +356,14 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={'/settings'}
-            render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
+            render={(props: any) => (
+              <Settings
+                {...props}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
+                replaceUser={this.replaceUser}
+              />
+            )}
           />
 
           {pageSelector}
