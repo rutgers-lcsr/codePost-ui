@@ -25,8 +25,6 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     <Link key="header-0" to="/">
       <CPLogo cpType="main" />
     </Link>,
-    <div key="space" style={{ width: '100px' }} />,
-    <ThemeToggle key="theme-toggle" />,
   ];
 
   let roleSwitch;
@@ -68,6 +66,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
   }
 
   const headerRight = [
+    <ThemeToggle key="theme-toggle" />,
     <span key="header-user" className="cp-label cp-label--white cp-label--bold">
       {props.user.email}
     </span>,

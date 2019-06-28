@@ -14,18 +14,25 @@
 
 .internal-link {
   color: inherit;
+
+  &:hover {
+    color: #25be85;
+  }
 }
 
-.internal-link:hover {
-  color: #25be85;
+// this is a link within an ant menu, so we want to turn off additional link styling and let the
+// menu styling show
+.internal-link--menu {
+  color: inherit;
+  transition: 0s;
+
+  &:hover {
+    color: inherit;
+  }
 }
 
 #Admin {
   height: 100%;
-}
-
-#Admin .student-table {
-  padding: 12px 5px;
 }
 
 #Admin .layout--admin {
@@ -63,10 +70,8 @@
   }
 
   &__detail {
-    margin: 20px 61px 0 61px;
     background-color: #fff;
     border-radius: 5px;
-    padding: 20px 35px;
     overflow: inherit;
 
     // On smaller screens, decrease the left-right margin
@@ -137,4 +142,8 @@
 
 .ant-collapse tr {
   line-height: 5px;
+}
+
+#Admin .ant-table-tbody td {
+  padding: 10px 8px;
 }

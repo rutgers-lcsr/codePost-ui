@@ -45,7 +45,7 @@ class GraderNav extends React.Component<IProps, {}> {
             <Menu.Item key="docs">
               <Icon type="pushpin" />
               <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link">
+                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
                   Docs
                 </a>
               </span>

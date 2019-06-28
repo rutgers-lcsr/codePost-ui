@@ -9,7 +9,11 @@ import * as React from 'react';
 import { Layout } from 'antd';
 const { Header, Content } = Layout;
 
+import layoutVars from '../../../styles/layout/_layoutVars';
+
 import CPFlex from './../../core/CPFlex';
+
+import useWindowSize from '../../core/useWindowSize';
 
 /**********************************************************************************************************************/
 
@@ -23,36 +27,43 @@ interface ICPAdminDetailProps {
   gutterSize?: number;
 }
 
-class CPAdminDetail extends React.Component<ICPAdminDetailProps, {}> {
-  public render() {
-    const subheaderLeft = [
-      <span key="title" className="cp-label cp-label--large cp-label--bold">
-        {this.props.title}
-      </span>,
-    ];
+const CPAdminDetail = (props: ICPAdminDetailProps) => {
+  const windowSize = useWindowSize();
+  const smallScreen = windowSize.width < layoutVars.breakpoints.smallScreen.admin;
 
-    let goBack = null;
-    if (this.props.goBack !== null) {
-      goBack = <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
-    }
+  const contentMargin = smallScreen ? '20px 15px' : '20px 60px';
+  const contentPadding = smallScreen ? '20px 15px' : '20px 35px';
 
-    return (
-      <Content className={`layout--admin__detail${this.props.className ? `--${this.props.className}` : ''}`}>
-        <Layout>
-          <Header className="layout--admin__subheader">
-            {goBack}
-            <CPFlex left={[<div key="breadcrumbs">{this.props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
-            <CPFlex
-              left={subheaderLeft}
-              right={this.props.actions}
-              gutterSize={this.props.gutterSize !== undefined ? this.props.gutterSize : 10}
-            />
-          </Header>
-          <Content className="layout--admin__content">{this.props.content}</Content>
-        </Layout>
-      </Content>
-    );
+  const subheaderLeft = [
+    <span key="title" className="cp-label cp-label--large cp-label--bold">
+      {props.title}
+    </span>,
+  ];
+
+  let goBack = null;
+  if (props.goBack !== null) {
+    goBack = <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
   }
-}
+
+  return (
+    <Content
+      className={`layout--admin__detail${props.className ? `--${props.className}` : ''}`}
+      style={{ padding: contentPadding, margin: contentMargin, transition: '0.3s' }}
+    >
+      <Layout>
+        <Header className="layout--admin__subheader">
+          {goBack}
+          <CPFlex left={[<div key="breadcrumbs">{props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
+          <CPFlex
+            left={subheaderLeft}
+            right={props.actions}
+            gutterSize={props.gutterSize !== undefined ? props.gutterSize : 10}
+          />
+        </Header>
+        <Content className="layout--admin__content">{props.content}</Content>
+      </Layout>
+    </Content>
+  );
+};
 
 export default CPAdminDetail;
