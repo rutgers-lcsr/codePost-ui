@@ -11,7 +11,7 @@ import { Icon, Input, message, Modal, Tooltip, Typography } from 'antd';
 /* codePost imports */
 import { UserType } from '../../infrastructure/user';
 
-import PreAuthLayout from '../pre-auth/PreAuthLayout';
+import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
 import CPButton from '../core/CPButton';
 
@@ -27,6 +27,7 @@ interface IProps {
   user: UserType;
   match: any;
   history: any;
+  handleLogout: () => void;
   replaceUser: (newUser: UserType, redirect: boolean) => void;
 }
 
@@ -147,12 +148,12 @@ class Settings extends React.Component<IProps, IState> {
     );
 
     return (
-      <PreAuthLayout isLoggedIn={true}>
+      <PeripheralPageLayout user={this.props.user} handleLogout={this.props.handleLogout}>
         <div id="Settings" style={{ maxWidth: 600, margin: '0 auto' }}>
           <Typography.Title level={3}>Your settings:</Typography.Title>
           {settingsContent}
         </div>
-      </PreAuthLayout>
+      </PeripheralPageLayout>
     );
   }
 }

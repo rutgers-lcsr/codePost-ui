@@ -2,6 +2,7 @@
 
 // Breakpoints
 const studentMobileBreakpoint = 500;
+const genericMobileBreakpoint = 500;
 const gradeSmallScreenBreakpoint = 1000;
 const adminSmallScreenBreakpoint = 1000;
 
@@ -21,6 +22,7 @@ module.exports = {
   breakpoints: {
     mobile: {
       student: studentMobileBreakpoint,
+      generic: genericMobileBreakpoint,
     },
     smallScreen: {
       grade: gradeSmallScreenBreakpoint,
