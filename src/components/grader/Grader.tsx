@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Dropdown, Icon, Menu } from 'antd';
+import { Button, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -25,7 +25,7 @@ import MySubmissionsPanel from './MySubmissionsPanel';
 import SectionPanel from './SectionPanel';
 import ViewAllPanel from './ViewAllPanel';
 
-import { ICourseToAssignmentMap } from '../../types/common';
+import { ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -34,6 +34,8 @@ import { SectionType } from '../../infrastructure/section';
 import { UserType } from '../../infrastructure/user';
 
 import GraderNav from './GraderNav';
+
+import RoleMenu from '../core/RoleMenu';
 
 /**********************************************************************************************************************/
 
@@ -371,39 +373,12 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
 
     const headerLeft = [courseDropdown, assignmentDropdown];
-    let roleSwitcher;
-    if (this.props.user.studentCourses.length + this.props.user.courseadminCourses.length > 0) {
-      const roleMenu = (
-        <Menu>
-          {this.props.user.studentCourses.length > 0 ? (
-            <Menu.Item>
-              <Link to="/student">
-                <Icon type="idcard" />
-                &nbsp; Student
-              </Link>
-            </Menu.Item>
-          ) : null}
-          {this.props.user.graderCourses.length > 0 ? (
-            <Menu.Item>
-              <Link to="/admin">
-                <Icon type="sliders" />
-                &nbsp; Admin
-              </Link>
-            </Menu.Item>
-          ) : null}
-        </Menu>
-      );
-      roleSwitcher = (
-        <Dropdown overlay={roleMenu}>
-          <Icon type="switcher" />
-        </Dropdown>
-      );
-    }
+
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      roleSwitcher,
+      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
       <Link className="internal-link" key="settings" to="/settings">
         <Icon type="setting" />
       </Link>,

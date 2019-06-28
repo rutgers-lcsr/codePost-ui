@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Dropdown, Empty, Icon, Menu } from 'antd';
+import { Button, Empty, Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import CPDropdown from '../core/CPDropdown';
@@ -31,6 +31,8 @@ import ManageGraders from './roster/ManageGraders';
 import ManageSections from './roster/ManageSections';
 import ManageStudents from './roster/ManageStudents';
 
+import RoleMenu from '../core/RoleMenu';
+
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
 
 import NewCourseDialog from './other/NewCourseDialog';
@@ -45,6 +47,7 @@ import {
   IGraderSubmissionsDataTable,
   IStudentSubmissionsDataTable,
   USER_APP,
+  USER_TYPE,
 } from '../../types/common';
 
 /* API library */
@@ -1131,39 +1134,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     const headerLeft = [dropdown, createButton];
     // add option to switch
-    let roleSwitcher;
-    if (this.props.user.studentCourses.length + this.props.user.graderCourses.length > 0) {
-      const roleMenu = (
-        <Menu>
-          {this.props.user.studentCourses.length > 0 ? (
-            <Menu.Item>
-              <Link to="/student">
-                <Icon type="idcard" />
-                &nbsp; Student
-              </Link>
-            </Menu.Item>
-          ) : null}
-          {this.props.user.graderCourses.length > 0 ? (
-            <Menu.Item>
-              <Link to="/grader">
-                <Icon type="audit" />
-                &nbsp; Grader
-              </Link>
-            </Menu.Item>
-          ) : null}
-        </Menu>
-      );
-      roleSwitcher = (
-        <Dropdown overlay={roleMenu}>
-          <Icon type="switcher" />
-        </Dropdown>
-      );
-    }
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      roleSwitcher,
+      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
       <Link className="internal-link" key="settings" to="/settings">
         <Icon type="setting" />
       </Link>,
