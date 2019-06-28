@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Icon, Input, Modal, Tooltip, Typography } from 'antd';
+import { Icon, Input, message, Modal, Tooltip, Typography } from 'antd';
 
 /* codePost imports */
 import { UserType } from '../../infrastructure/user';
@@ -62,6 +62,19 @@ class Settings extends React.Component<IProps, IState> {
     });
   };
 
+  public copyKeyToClipboard = () => {
+    const copyText = document.getElementById('api-key') as HTMLInputElement;
+    if (copyText) {
+      const element = document.createElement('textarea');
+      element.value = copyText.value;
+      document.body.appendChild(element);
+      element.select();
+      document.execCommand('copy');
+      document.body.removeChild(element);
+      message.info('API key copied to clipboard.');
+    }
+  };
+
   public toggleResetStatus = () => {
     this.setState({ askedToReset: !this.state.askedToReset });
   };
@@ -75,7 +88,11 @@ class Settings extends React.Component<IProps, IState> {
         inputComponent = (
           <Input.Password
             addonBefore="Your API key"
+            className="input--disabled-normal"
+            id="api-key"
             value={user.api_token}
+            prefix={<Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />}
+            disabled={true}
             addonAfter={
               <Tooltip title="Reset key">
                 <Icon type="redo" onClick={this.toggleResetStatus} />
@@ -95,7 +112,7 @@ class Settings extends React.Component<IProps, IState> {
     const settingsContent = (
       <div>
         <Typography.Title level={4}>User info</Typography.Title>
-        <Input addonBefore="Email" value={user.email} />
+        <Input addonBefore="Email" className="input--disabled-normal" disabled={true} value={user.email} />
         <br />
         <br />
         <Typography.Title level={4}>Organization info</Typography.Title>
@@ -131,7 +148,7 @@ class Settings extends React.Component<IProps, IState> {
 
     return (
       <PreAuthLayout isLoggedIn={true}>
-        <div style={{ width: 600, margin: '0 auto' }}>
+        <div id="Settings" style={{ maxWidth: 600, margin: '0 auto' }}>
           <Typography.Title level={3}>Your settings:</Typography.Title>
           {settingsContent}
         </div>
