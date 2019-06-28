@@ -18,7 +18,7 @@ interface IProps {
 
 const PeripheralPageHeader = (props: IProps) => {
   const windowSize = useWindowSize();
-  const mobile = windowSize.width < layoutVars.breakpoints.mobile.generic;
+  const mobile = windowSize.width < layoutVars.breakpoints.mobile.peripheral;
 
   const logo = (
     <Link style={{ fontSize: 34, color: 'black', paddingLeft: 10 }} className="link--header" to={'/'}>
