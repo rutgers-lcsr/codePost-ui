@@ -5,36 +5,44 @@
 
   border-right: 0px !important;
 
+  .ant-menu-sub {
+    background-color: transparent;
+  }
+
   .ant-menu-submenu-title {
     width: 100%; // undoes an Ant hack
 
-    height: 32px !important;
+    height: 33px !important;
     line-height: 32px !important;
-
-    background-color: #fafafa;
-    border-bottom: 1px solid #e8e8e8;
 
     font-weight: 500;
     font-size: 12px;
 
-    padding-left: 26px !important;
-    padding-right: 40px;
+    padding-left: 0px !important;
+
+    position: relative;
   }
 
   .ant-menu-item {
     width: 100%; // undoes an Ant hack
 
-    height: 32px !important;
-    line-height: 32px !important;
+    // height: 32px !important;
+    height: auto !important;
+    line-height: 12px !important;
 
-    padding-left: 26px !important;
-    padding-right: 40px;
+    // padding-left: 26px !important;
+    // padding-right: 40px;
+
+    padding: 4px 40px 4px 26px !important;
 
     font-size: 12px;
-    color: rgba(0, 0, 0, 0.65);
+
+    // text-overflow: clip;
+    overflow: visible;
+    white-space: pre-wrap;
 
     &:hover {
-      color: $brandPrimary;
+      color: $brandPrimary !important;
     }
   }
 }

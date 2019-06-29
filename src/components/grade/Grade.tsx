@@ -627,7 +627,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const subHeaderLeftBottom = [
       <StatusTags key="subheader-status-tags" assignment={this.state.assignment} submission={this.state.submission} />,
-      <Divider key="subheader-divider" type="vertical" />,
+      <Divider key="subheader-divider" type="vertical" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }} />,
       <Students
         key="subheader-students"
         submission={this.state.submission}

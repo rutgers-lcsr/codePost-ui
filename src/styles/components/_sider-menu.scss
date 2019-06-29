@@ -23,15 +23,16 @@
   }
 
   &--light {
-    .ant-menu-item {
-      color: rgba(0, 0, 0, 0.5);
-    }
-
     .ant-menu-item-selected {
+      background-color: #f0fff7 !important;
       color: $brandPrimary;
     }
   }
 
   &--dark {
+    .ant-menu-item-selected {
+      background-color: #323435 !important;
+      color: $brandPrimary;
+    }
   }
 }

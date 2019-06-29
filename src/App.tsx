@@ -26,8 +26,6 @@ import Settings from './components/core/settings';
 
 import RouterLoading from './components/core/RouterLoading';
 
-// import { ConsoleThemeContext, consoleThemes } from './styles/abstracts/_console-theme-context';
-
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -337,16 +335,7 @@ class App extends React.Component<{}, IState> {
 
       // const isChromeBrowser = window.hasOwnProperty('chrome');
 
-      // @ts-ignore
-      // const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
-      // const toggleConsoleTheme = () => {
-      //   console.log('toggling!', consoleTheme);
-      //   // consoleTheme === consoleThemes.dark ?
-      // setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
-      // };
-
       return (
-        // <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
         <Switch>
           <Route
             exact={true}
@@ -379,7 +368,6 @@ class App extends React.Component<{}, IState> {
             handleLogout={this.handleLogout}
           />
         </Switch>
-        // </ConsoleThemeContext.Provider>
       );
     }
 
