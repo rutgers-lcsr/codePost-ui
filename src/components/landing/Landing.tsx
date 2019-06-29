@@ -68,7 +68,7 @@ class Landing extends React.PureComponent<{}, {}> {
           Use codePost to annotate code effortlessly, with easy-to-read comments that don't clutter code. You and your
           course staff can provide custom feedback, as well as apply standardized rubrics.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality feedback, in the browser.</div>
+        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser.</div>
       </div>
     );
 
