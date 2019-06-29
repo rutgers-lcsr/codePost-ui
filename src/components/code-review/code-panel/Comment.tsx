@@ -263,15 +263,23 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const codeRenderer = (props: any) => {
       return (
-        <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
-          {props.value}
-        </SyntaxHighlighter>
+        <div
+          style={{
+            border: `1px solid ${this.context.consoleTheme.commentTitleBorder}`,
+            borderRadius: '4px',
+            backgroundColor: this.context.consoleTheme.commentCode,
+          }}
+        >
+          <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
+            {props.value}
+          </SyntaxHighlighter>
+        </div>
       );
     };
 
     const inlineCodeRenderer = (props: any) => {
       const style = {
-        backgroundColor: this.context.consoleTheme.commentTitle,
+        backgroundColor: this.context.consoleTheme.commentCode,
         color: this.context.consoleTheme.text,
       };
 
