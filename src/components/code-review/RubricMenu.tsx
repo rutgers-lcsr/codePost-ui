@@ -72,7 +72,9 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
             }}
           >
             <span>{rubricComment.text}</span>
-            <span style={{ position: 'absolute', right: '20px' }}>{points}</span>
+            <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
+              {points}
+            </span>
           </Menu.Item>
         );
       });
