@@ -148,7 +148,7 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
-            title="3. SIMPLIFY YOUR INFRASTRUCTURE "
+            title="3. CUSTOMIZE AND AUTOMATE"
             subTitle="Run your course with codePost’s API."
             module={<APIAnimation />}
             type="right"
