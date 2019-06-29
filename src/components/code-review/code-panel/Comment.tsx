@@ -2,9 +2,8 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Badge, Input, message, Popover, Typography } from 'antd';
+import { Badge, Input, message, Popover } from 'antd';
 const { TextArea } = Input;
-const { Paragraph } = Typography;
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -29,7 +28,6 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
-// import { tomorrowNight } from 'react-syntax-highlighter/dist/styles/hljs';
 
 interface ICommentProps {
   commentType: UICommentType;
@@ -158,7 +156,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public onCommentClick = (e: React.MouseEvent) => {
-    // FIXME:
+    // FIXME: No longer use 'expand' due to markdown issues
     if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
       e.stopPropagation();
     } else {
@@ -461,15 +459,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
-      commentElements.comment = (
-        <Paragraph
-          className="comment__comment"
-          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
-          ellipsis={{ rows: 2, expandable: false, onExpand: this.props.setCommentPlacements }}
-        >
-          <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
-        </Paragraph>
-      );
+      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////

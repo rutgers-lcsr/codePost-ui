@@ -11,6 +11,8 @@ import { SelectParam } from 'antd/lib/menu';
 
 import { IFileToCommentsMap } from '../../types/common';
 
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+
 interface IFileMenuProps {
   title?: string;
   files: FileType[];
@@ -106,6 +108,9 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
   public render() {
     const fileMenu = this.buildFileMenu(this.props.files);
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+
+    const className = theme === 'light' ? 'sider-menu sider-menu--light' : 'sider-menu sider-menu--dark';
 
     return (
       <div id="file-menu">
@@ -120,7 +125,11 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
-            className="sider-menu"
+            className={className}
+            style={{
+              backgroundColor: this.context.consoleTheme.siderBg,
+              color: this.context.consoleTheme.siderMenuItemColor,
+            }}
           >
             {fileMenu}
           </Menu>
@@ -188,5 +197,6 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
     </Popconfirm>
   );
 };
+FileMenu.contextType = ConsoleThemeContext;
 
 export default FileMenu;
