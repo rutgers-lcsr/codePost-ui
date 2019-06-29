@@ -34,7 +34,7 @@ const AsyncLanding = Loadable({
 
 interface IndexManagerProps {
   error: string;
-  handleLogin: (email: string, password: string) => void;
+  handleLogin: (email: string, password: string) => Promise<void>;
   handleLogout: () => void;
   isLoggedIn: boolean;
 }

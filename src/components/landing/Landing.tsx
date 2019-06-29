@@ -68,7 +68,7 @@ class Landing extends React.PureComponent<{}, {}> {
           Use codePost to annotate code effortlessly, with easy-to-read comments that don't clutter code. You and your
           course staff can provide custom feedback, as well as apply standardized rubrics.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality feedback, in the browser.</div>
+        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser.</div>
       </div>
     );
 
@@ -148,7 +148,7 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
-            title="3. SIMPLIFY YOUR INFRASTRUCTURE "
+            title="3. CUSTOMIZE AND AUTOMATE"
             subTitle="Run your course with codePost’s API."
             module={<APIAnimation />}
             type="right"

@@ -19,13 +19,14 @@ import CPButton from '../core/CPButton';
 /**********************************************************************************************************************/
 
 interface ILoginFormProps {
-  handleLogin: (email: string, password: string) => void;
+  handleLogin: (email: string, password: string) => Promise<void>;
   error: string;
 }
 
 const initialState = {
   email: '',
   password: '',
+  loading: false,
 };
 
 type State = Readonly<typeof initialState>;
@@ -43,7 +44,10 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   };
 
   public handleLogin = () => {
-    return this.props.handleLogin(this.state.email, this.state.password);
+    this.setState({ loading: true });
+    this.props.handleLogin(this.state.email, this.state.password).then(() => {
+      this.setState({ password: '', loading: false });
+    });
   };
 
   public handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -109,7 +113,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           {this.renderError(this.props.error)}
           <br />
           <br />
-          <CPButton onClick={this.handleLogin} cpType="primary">
+          <CPButton onClick={this.handleLogin} cpType="primary" loading={this.state.loading}>
             Continue
           </CPButton>
           <br />
