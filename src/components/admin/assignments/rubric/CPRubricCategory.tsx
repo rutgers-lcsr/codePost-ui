@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tag, Tooltip } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -39,7 +39,7 @@ interface ICPRubricCategoryProps {
   savedRubricComments?: RubricCommentType[];
 
   // RubricCategory functions
-  updateCategory: (rCategory: RubricCategoryType) => void;
+  updateCategory: (rCategory: RubricCategoryType, hasError?: boolean) => void;
   deleteCategory: (rCategory: RubricCategoryType) => void;
   moveCategory: (rCategory: RubricCategoryType, direction: DIRECTION) => void;
 
@@ -55,6 +55,7 @@ interface ICPRubricCategoryProps {
   onCommentEdit: (obj: RubricCommentType) => void;
   onCommentUndo: (obj: RubricCommentType) => void;
   onCommentDragEnd: any;
+  otherCategories: RubricCategoryType[];
 }
 
 interface IState {
@@ -67,6 +68,12 @@ interface IState {
   /* local rubric comment data */
   rubricComments: { [id: number]: RubricCommentType };
   rubricCommentStatus: { [id: number]: STATUS };
+
+  /* validation status */
+  hasError: boolean;
+  errorMessage: string;
+  hasCommentError: boolean;
+  commentErrorMessage: string;
 }
 
 const aligner: 'left' | 'center' | 'right' = 'center';
@@ -110,6 +117,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
+      hasError: false,
+      errorMessage: '',
+      hasCommentError: false,
+      commentErrorMessage: '',
     };
   }
 
@@ -223,22 +234,74 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     );
   };
 
+  public validateCategory = (name: string, helpText: string, pointLimit: number | null) => {
+    if (name.length < 4) {
+      return {
+        valid: false,
+        message: 'Category name must be at least 4 characters',
+      };
+    }
+
+    if (name.length > 32) {
+      return {
+        valid: false,
+        message: 'Category name cannot exceed 32 characters',
+      };
+    }
+
+    if (helpText.length > 500) {
+      return {
+        valid: false,
+        message: 'Helptext cannot exceed 500 characters',
+      };
+    }
+
+    if (pointLimit !== null && (!Number.isInteger(pointLimit) || pointLimit < 0)) {
+      return {
+        valid: false,
+        message: 'pointLimit must be a positive integer.',
+      };
+    }
+
+    if (name !== this.props.rubricCategory.name) {
+      if (
+        this.props.otherCategories.some((el) => {
+          return el.name === name;
+        })
+      ) {
+        return {
+          valid: false,
+          message: 'Another category already has this name',
+        };
+      }
+    }
+
+    return {
+      valid: true,
+      message: '',
+    };
+  };
+
   public saveCategory = () => {
     const { rubricCategory } = this.props;
     const { name, pointLimit, helpText } = this.state;
-    console.log('bump');
-    console.log(pointLimit);
 
     if (
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
       helpText !== rubricCategory.helpText
     ) {
+      const { valid, message } = this.validateCategory(name, helpText, pointLimit);
       const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
       payload.helpText = this.state.helpText;
-      this.props.updateCategory(payload);
+
+      // have to take into account the possibility of a comment error here
+      this.props.updateCategory(payload, !valid || this.state.hasCommentError);
+      this.setState({ hasError: !valid, errorMessage: message });
+    } else {
+      this.setState({ hasError: false });
     }
   };
 
@@ -262,6 +325,37 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     this.props.deleteComment(rubricComment);
   };
 
+  public validateComments = (newComment: RubricCommentType) => {
+    const newCommentList = Object.values(this.state.rubricComments).map((el) => {
+      if (el.id === newComment.id) {
+        return newComment;
+      } else {
+        return el;
+      }
+    });
+
+    // Test 1: no two comments can have identical text
+    const commentText = newCommentList
+      .map((el) => {
+        return el.text;
+      })
+      .sort();
+
+    for (let i = 0; i < commentText.length - 1; i = i + 1) {
+      if (commentText[i + 1] === commentText[i]) {
+        return {
+          valid: false,
+          message: 'Two comments cannot have identical text',
+        };
+      }
+    }
+
+    return {
+      valid: true,
+      message: '',
+    };
+  };
+
   public saveComment = (rubricCommentID: number) => {
     const { rubricComments } = this.props;
     const rubricComment = this.state.rubricComments[rubricCommentID];
@@ -271,7 +365,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     });
 
     if (match) {
-      let pointDelta = rubricComment.pointDelta;
+      let pointDelta = parseFloat(rubricComment.pointDelta.toFixed(1));
       const text = rubricComment.text;
 
       if (isNaN(rubricComment.pointDelta) || rubricComment.pointDelta === null) {
@@ -279,10 +373,25 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         pointDelta = 0;
       }
 
+      const { valid, message } = this.validateComments(rubricComment);
+      const payload: RubricCommentType = { ...rubricComment };
+      this.props.updateComment(payload);
+
       if (text !== match.text || pointDelta !== match.pointDelta) {
-        const payload: RubricCommentType = { ...rubricComment };
-        this.props.updateComment(payload);
+        const hasCurrentError = this.state.hasError || this.state.hasCommentError;
+        if (hasCurrentError && !this.state.hasError && valid) {
+          // moving from error state to safe state
+          this.props.updateCategory(this.props.rubricCategory, false);
+        } else if (!hasCurrentError && !valid) {
+          // moving from safe state to error state
+          this.props.updateCategory(this.props.rubricCategory, true);
+        }
       }
+
+      // we need to set state outside of the preceding if block
+      // this handles the situation in which moving from an edited state
+      // to a non-edited state clears or introduces an error
+      this.setState({ hasCommentError: !valid, commentErrorMessage: message });
     }
   };
 
@@ -427,6 +536,15 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           />
         ) : null}
       </span>,
+      this.state.hasError ? (
+        <Tag color="volcano" key="warning">
+          Error: {this.state.errorMessage}
+        </Tag>
+      ) : this.state.hasCommentError ? (
+        <Tag color="volcano" key="warning">
+          Error: {this.state.commentErrorMessage}
+        </Tag>
+      ) : null,
     ];
     const titleRight = [
       <Popconfirm

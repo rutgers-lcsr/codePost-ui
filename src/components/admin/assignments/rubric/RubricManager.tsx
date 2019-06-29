@@ -58,6 +58,7 @@ export interface IState {
   loadComplete: boolean;
   changeLock: boolean;
   isSaving: boolean;
+  errorObjects: number[];
 
   // rubric editing
   unsavedComments: RubricCommentType[];
@@ -96,6 +97,7 @@ class RubricManager extends React.Component<IProps, IState> {
       loadComplete: false,
       changeLock: true,
       isSaving: false,
+      errorObjects: [],
 
       unsavedComments: [],
       deletedComments: [],
@@ -418,6 +420,11 @@ class RubricManager extends React.Component<IProps, IState> {
       confirmedPropagation,
     } = this.state;
 
+    if (this.state.errorObjects.length > 0) {
+      message.error('Fix all errors before saving.');
+      return;
+    }
+
     this.setState({ isSaving: true }, () => {
       const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
 
@@ -524,7 +531,7 @@ class RubricManager extends React.Component<IProps, IState> {
   /* RubricCategory wrappers
   /***********************************************************************/
 
-  public updateRubricCategory = (rubricCategory: RubricCategoryType) => {
+  public updateRubricCategory = (rubricCategory: RubricCategoryType, hasError?: boolean) => {
     const { rubricCategories } = this.state;
     const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === rubricCategory.id);
 
@@ -532,6 +539,17 @@ class RubricManager extends React.Component<IProps, IState> {
       const newCategories: RubricCategoryType[] = [...rubricCategories];
       newCategories[index] = rubricCategory;
       this.setState({ rubricCategories: newCategories });
+      if (hasError !== undefined) {
+        if (hasError) {
+          this.setState({ errorObjects: [...this.state.errorObjects, rubricCategory.id] });
+        } else {
+          this.setState({
+            errorObjects: this.state.errorObjects.filter((el) => {
+              return el !== rubricCategory.id;
+            }),
+          });
+        }
+      }
     }
   };
 
@@ -833,7 +851,8 @@ class RubricManager extends React.Component<IProps, IState> {
               onCommentDragEnd={this.onCommentDragEnd}
               moveCategory={this.moveCategory}
               index={catIndex}
-              numCategories={this.state.savedRubricCategories.length}
+              numCategories={this.state.rubricCategories.length}
+              otherCategories={this.state.rubricCategories}
             />
           );
         });
