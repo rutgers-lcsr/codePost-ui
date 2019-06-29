@@ -176,7 +176,8 @@ class App extends React.Component<{}, IState> {
   };
 
   public handleLogin = (username: string, password: string) => {
-    fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
+    this.setState({ error: '' });
+    return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
       body: JSON.stringify({ username, password }),
       headers: {
         'Content-Type': 'application/json',
