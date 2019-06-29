@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Input, Menu } from 'antd';
+import { Input, Menu, Tooltip } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
 
@@ -79,6 +79,10 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         );
       });
 
+      const helpText = rubricCategory.helpText ? (
+        <div style={{ whiteSpace: 'pre-wrap' }}>{rubricCategory.helpText}</div>
+      ) : null;
+
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
       // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
@@ -96,9 +100,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <div style={{ paddingRight: '40px' }}>
-                <span>{rubricCategory.name}</span>
-              </div>
+              <Tooltip placement="right" title={helpText}>
+                <div style={{ paddingRight: '40px' }}>
+                  <span>{rubricCategory.name}</span>
+                </div>
+              </Tooltip>
             </div>
           }
         >
