@@ -136,7 +136,7 @@ class CodePanelHighlighting {
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
           <Highlight
-            key={`${line}-${commentID}`}
+            key={`${line}-${commentID}-${i}`}
             commentID={commentID}
             line={line}
             className={className}
