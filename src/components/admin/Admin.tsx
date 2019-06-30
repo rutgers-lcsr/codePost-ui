@@ -968,7 +968,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       /* if old grader has been removed, update her mapping */
       const newGraderMap = { ...submissionsByGrader };
-      if (oldSubmission.grader !== null) {
+      if (oldSubmission.grader !== null && oldSubmission.grader !== undefined) {
         if (oldSubmission.grader !== updated.grader) {
           const newSubs = newGraderMap[oldSubmission.grader][assignmentID].filter((s) => {
             return s.id !== updated.id;
@@ -981,7 +981,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       // By following the previous statement with this statement, this function can handle calls
       // which "reassign" the same grader to a submission. In this case, the submission will be
       // removed and then added from the grader's graded list.
-      if (updated.grader !== null) {
+      if (updated.grader !== null && updated.grader !== undefined) {
         const newSubs = [
           ...newGraderMap[updated.grader][assignmentID].filter((s) => {
             return s.id !== updated.id;

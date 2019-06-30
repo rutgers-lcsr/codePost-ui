@@ -238,7 +238,7 @@ class StudentDetail extends React.Component<IProps, IState> {
                       </Select.Option>
                     );
                   }),
-                <Select.Option key={0} value={0}>
+                <Select.Option key={0} value={undefined}>
                   No grader
                 </Select.Option>,
               ]}
