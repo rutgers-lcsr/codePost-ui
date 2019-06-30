@@ -15,7 +15,7 @@ import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import { Descriptions, Divider, Icon, Menu, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
+import { Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
@@ -276,12 +276,14 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
 
   menuItems.unshift(<Menu.Item key={'unassign'}>** unassign **</Menu.Item>);
 
-  const onClick = (param: SelectParam) => {
+  const onClick = async (param: SelectParam) => {
     const selectedGrader = param.key;
     if (selectedGrader === 'unassign') {
-      props.updateGrader(props.submission, '');
+      await props.updateGrader(props.submission, '');
+      message.success('Successfully unassigned grader');
     } else {
-      props.updateGrader(props.submission, selectedGrader);
+      await props.updateGrader(props.submission, selectedGrader);
+      message.success(`Successfully assigned to ${selectedGrader}`);
     }
   };
 
