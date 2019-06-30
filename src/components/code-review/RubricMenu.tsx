@@ -1,17 +1,17 @@
 import * as React from 'react';
 
-import { Input, Menu } from 'antd';
+import { Divider, Input, Menu, Tooltip } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
 
 const SubMenu = Menu.SubMenu;
 
-const Search = Input.Search;
-
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
+
+import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
@@ -63,15 +63,63 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         }
 
         return (
-          <Menu.Item key={`comment-${rubricCategory.id}-${rubricComment.id}`} onClick={this.onClick}>
+          <Menu.Item
+            key={`comment-${rubricCategory.id}-${rubricComment.id}`}
+            onClick={this.onClick}
+            style={{
+              backgroundColor: this.context.consoleTheme.siderBg,
+              color: this.context.consoleTheme.siderMenuItemColor,
+            }}
+          >
             <span>{rubricComment.text}</span>
-            <span style={{ position: 'absolute', right: '20px' }}>{points}</span>
+            <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
+              {points}
+            </span>
           </Menu.Item>
         );
       });
 
+      const info = (
+        <div>
+          <div>
+            <b>Point Limit: </b>
+            {rubricCategory.pointLimit === 0 ? 'n/a' : rubricCategory.pointLimit}
+          </div>
+          <Divider style={{ margin: '10px 0px' }} />
+          {rubricCategory.helpText ? (
+            <div style={{ whiteSpace: 'pre-wrap' }}>
+              <b>Details: </b>
+              {rubricCategory.helpText}
+            </div>
+          ) : null}
+        </div>
+      );
+
+      // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
+      // So we can't update the styles with inline js (only css selectors)
+      // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
       return (
-        <SubMenu key={`category-${rubricCategory.id}`} title={<span>{rubricCategory.name}</span>}>
+        <SubMenu
+          key={`category-${rubricCategory.id}`}
+          title={
+            <div
+              style={{
+                position: 'absolute',
+                width: '100%',
+                paddingLeft: '26px',
+                backgroundColor: this.context.consoleTheme.siderSubmenuTitleBg,
+                color: this.context.consoleTheme.siderSubmenuTitleColor,
+                borderBottom: this.context.consoleTheme.siderSubmenuBorder,
+              }}
+            >
+              <Tooltip placement="right" title={info}>
+                <div style={{ paddingRight: '40px' }}>
+                  <span>{rubricCategory.name}</span>
+                </div>
+              </Tooltip>
+            </div>
+          }
+        >
           {rows}
         </SubMenu>
       );
@@ -89,14 +137,31 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
           <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
             Rubric
           </div>
-          <Search placeholder="Search..." onChange={this.onSearch} value={this.state.searchTerm} />
+          <Input
+            placeholder="Search..."
+            onChange={this.onSearch}
+            value={this.state.searchTerm}
+            style={{
+              backgroundColor: this.context.consoleTheme.siderBg,
+              border: this.context.consoleTheme.buttonSecondaryBorder,
+              color: this.context.consoleTheme.buttonSecondaryColor,
+            }}
+          />
         </div>
-        <Menu defaultOpenKeys={rubricKeys} selectedKeys={[]} mode="inline" className="rubric-menu" id="rubric-menu">
+        <Menu
+          defaultOpenKeys={rubricKeys}
+          selectedKeys={[]}
+          mode="inline"
+          className="rubric-menu"
+          id="rubric-menu"
+          style={{ backgroundColor: this.context.consoleTheme.siderBg }}
+        >
           {rubricMenu}
         </Menu>
       </div>
     );
   }
 }
+RubricMenu.contextType = ConsoleThemeContext;
 
 export default RubricMenu;

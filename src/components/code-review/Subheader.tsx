@@ -17,6 +17,8 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import { Descriptions, Divider, Icon, Menu, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
 
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+
 import { SelectParam } from 'antd/lib/menu';
 
 import CPButton from '../core/CPButton';
@@ -27,7 +29,12 @@ interface ISubheaderTitleProps {
 }
 
 export const SubheaderTitle = (props: ISubheaderTitleProps) => {
-  return <span className=" cp-label cp-label--very-bold cp-label--large cp-label--title">{props.assignment.name}</span>;
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  return (
+    <span className=" cp-label cp-label--very-bold cp-label--large" style={{ color: consoleTheme.subheaderTitle }}>
+      {props.assignment.name}
+    </span>
+  );
 };
 
 type StatisticType = 'Grade' | 'Mean' | 'Median';
@@ -40,6 +47,7 @@ interface ISubheaderStatisticProps {
 }
 
 export const SubheaderStatistic = (props: ISubheaderStatisticProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   if (props.course === undefined || props.assignment === undefined || props.submission === undefined) {
     return null;
   }
@@ -65,7 +73,7 @@ export const SubheaderStatistic = (props: ISubheaderStatisticProps) => {
     statString = props.assignment.median;
   }
   return (
-    <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">
+    <span className="cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderGrade }}>
       {`${props.name} ${statString}`}
     </span>
   );
@@ -84,6 +92,8 @@ interface ISubheaderInfoProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const SubheaderInfo = (props: ISubheaderInfoProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
   let content = <Skeleton active />;
   const title = 'How was this calculated?';
 
@@ -220,7 +230,13 @@ export const SubheaderInfo = (props: ISubheaderInfoProps) => {
 
   return (
     <Popover content={content} title={title} placement="rightTop">
-      <CPButton key="subheader-info" cpType="highlight" size="small" icon="question" style={{ cursor: 'help' }} />
+      <CPButton
+        key="subheader-info"
+        cpType="highlight"
+        size="small"
+        icon="question"
+        style={{ cursor: 'help', backgroundColor: consoleTheme.subheaderBg }}
+      />
     </Popover>
   );
 };
@@ -232,11 +248,16 @@ interface ISubheaderGradeProps {
 }
 
 export const SubheaderGrade = (props: ISubheaderGradeProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const gradeString = props.submission.isFinalized
     ? `${props.submission.grade} / ${props.assignment.points}`
     : `${props.calculateGrade()} / ${props.assignment.points}`;
 
-  return <span className="cp-label cp-label--very-bold cp-label--medium cp-label--subtitle">{gradeString}</span>;
+  return (
+    <span className="cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderGrade }}>
+      {gradeString}
+    </span>
+  );
 };
 
 interface ISubheaderGraderProps {
@@ -250,6 +271,8 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const menuItems = props.graders.map((grader: string, index: number) => {
     return <Menu.Item key={grader}>{grader}</Menu.Item>;
   });
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
   menuItems.unshift(<Menu.Item key={'unassign'}>** unassign **</Menu.Item>);
 
@@ -272,6 +295,7 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
       value={currentGraderString}
       overlay={overlay}
       overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+      theme={theme}
     />
   );
 
@@ -367,6 +391,9 @@ interface IStatusTagsProps {
 type StatusTagType = 0 | 1 | 2 | 3;
 
 export const StatusTags = (props: IStatusTagsProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
   const subStatus = (finalized: boolean, published: boolean): StatusTagType => {
     if (!finalized && !published) {
       return 0;
@@ -390,27 +417,28 @@ export const StatusTags = (props: IStatusTagsProps) => {
 
   const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.isReleased);
 
+  // @ts-ignore
   let tagColor;
   let tagText;
   let tooltipText;
   switch (statusTagType) {
     case 0:
-      tagColor = 'blue';
+      tagColor = theme === 'light' ? 'blue' : '#1890ff';
       tagText = 'not finalized and not published';
       tooltipText = 'student cannot view';
       break;
     case 1:
-      tagColor = 'orange';
+      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
       tagText = 'finalized but not published';
       tooltipText = 'student cannot view';
       break;
     case 2:
-      tagColor = 'red';
+      tagColor = theme === 'light' ? 'red' : '#f5222d';
       tagText = 'published but not finalized';
       tooltipText = 'student cannot view';
       break;
     case 3:
-      tagColor = 'gold';
+      tagColor = theme === 'light' ? 'gold' : '#faad14';
       tagText = 'finalized and published';
       tooltipText = 'student can view';
       break;
@@ -418,7 +446,13 @@ export const StatusTags = (props: IStatusTagsProps) => {
 
   return (
     <Tooltip title={tooltipText} placement="bottom">
-      <Tag color={tagColor} style={{ marginRight: '0px', cursor: 'help' }}>
+      <Tag
+        color={tagColor}
+        style={{
+          marginRight: '0px',
+          cursor: 'help',
+        }}
+      >
         {tagText}
       </Tag>
     </Tooltip>
@@ -426,8 +460,9 @@ export const StatusTags = (props: IStatusTagsProps) => {
 };
 
 export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
-    <span className="cp-label cp-label--bold">
+    <span className="cp-label cp-label--bold" style={{ color: consoleTheme.subheaderDate }}>
       Last Edited: {props.submission.dateEdited ? moment(props.submission.dateEdited).format('lll') : '--'}
     </span>
   );
@@ -435,6 +470,7 @@ export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
 
 export const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boolean }) => {
   const [showStudents, setShowStudents] = React.useState(false);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const reveal = () => {
     setShowStudents(true);
@@ -458,7 +494,9 @@ export const Students = (props: { submission: AnonymousSubmissionType; isAnonymo
   }
   return (
     <span>
-      <span className="cp-label">{studentString} </span>
+      <span className="cp-label" style={{ color: consoleTheme.subheaderStudents }}>
+        {studentString}{' '}
+      </span>
       {revealButton}
     </span>
   );
