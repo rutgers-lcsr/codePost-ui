@@ -86,7 +86,7 @@ const codeContainerMarginLeft = 29; // px
 
 const codeContainerPaddingTop = 25; // px
 const codeContainerPaddingBottom = 20; // px
-const codeContainerPaddingRight = 40; // px
+const codeContainerPaddingRight = 0; // px
 const codeContainerPaddingLeft = 20; // px
 
 // Comments
