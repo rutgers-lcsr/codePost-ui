@@ -55,7 +55,10 @@ export interface IManageAssignmentsProps {
   createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
+
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  updateSubmission: (submission: SubmissionType) => Promise<void>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -670,6 +673,8 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 students={this.props.students}
                 uploadSubmission={this.props.uploadSubmission}
+                updateSubmission={this.props.updateSubmission}
+                deleteSubmission={this.props.deleteSubmission}
               />
             );
             break;

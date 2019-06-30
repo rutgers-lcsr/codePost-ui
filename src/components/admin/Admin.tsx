@@ -954,7 +954,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Submission handling methods
   /***********************************************************************/
 
-  public deleteSubmission = (sub: SubmissionType) => {
+  /* Relevant data structures */
+  // submissions (map: assignment id => submission list)
+  // submissionsByStudent (map: student email => {assignment id => submission})
+  // submissionsByGrader (map: grader email => {assignment id => submission list})
+  // submissionsByInactiveStudent (map: student email => {assignment id => submission})
+  // submissionsByInactiveGrader (map: grader email => {assignment id => submission list})
+
+  // FIXME: combine submissionsByStudent and submissionsByInactiveGrader
+  public updateSubmission = (toUpdate: SubmissionType) => {
     const {
       submissions,
       submissionsByStudent,
@@ -962,7 +970,114 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissionsByInactiveStudent,
       submissionsByInactiveGrader,
     } = this.state;
-    const assignmentID = sub.assignment;
+
+    /* Make sure we are acting on a submission linked to this course */
+    const assignmentID = toUpdate.assignment;
+    const oldSubmission = submissions[assignmentID].find((el) => {
+      return el.id === toUpdate.id;
+    });
+
+    if (oldSubmission === undefined) {
+      return Promise.reject('Submission does not exist');
+    }
+
+    return Submission.update(toUpdate).then((updated) => {
+      /* use return value to replace existing submission */
+      submissions[assignmentID] = [
+        ...submissions[assignmentID].filter((s) => {
+          return s.id !== updated.id;
+        }),
+        updated,
+      ];
+
+      /* update student mappings */
+
+      /* remove students who used to be associated with this submission but no longer are */
+      const removedStudents = oldSubmission.students.filter((student) => {
+        return updated.students.indexOf(student) < 0;
+      });
+
+      removedStudents.forEach((student) => {
+        if (student in submissionsByStudent) {
+          delete submissionsByStudent[student][assignmentID];
+        }
+        if (student in submissionsByInactiveStudent) {
+          delete submissionsByInactiveStudent[student][assignmentID];
+        }
+      });
+
+      /* add students who have been added to the submission */
+      const addedStudents = updated.students.filter((student) => {
+        return oldSubmission.students.indexOf(student) < 0;
+      });
+
+      addedStudents.forEach((student) => {
+        if (student in submissionsByStudent) {
+          submissionsByStudent[student][assignmentID] = updated;
+        }
+        if (student in submissionsByInactiveStudent) {
+          submissionsByInactiveStudent[student][assignmentID] = updated;
+        }
+      });
+
+      /* if old grader has been removed, update her mapping */
+      if (oldSubmission.grader !== null) {
+        if (oldSubmission.grader !== updated.grader) {
+          if (oldSubmission.grader in submissionsByGrader) {
+            const newSubs = submissionsByGrader[oldSubmission.grader][assignmentID].filter((s) => {
+              return s.id !== updated.id;
+            });
+            submissionsByGrader[oldSubmission.grader][assignmentID] = newSubs;
+          } else {
+            const newSubs = submissionsByInactiveGrader[oldSubmission.grader][assignmentID].filter((s) => {
+              return s.id !== updated.id;
+            });
+            submissionsByInactiveGrader[oldSubmission.grader][assignmentID] = newSubs;
+          }
+        }
+      }
+
+      /* if new grader has been added, update her mapping */
+      if (updated.grader !== null) {
+        if (updated.grader !== oldSubmission.grader) {
+          if (updated.grader in submissionsByGrader) {
+            const newSubs = [...submissionsByGrader[updated.grader][assignmentID], updated];
+            submissionsByGrader[updated.grader][assignmentID] = newSubs;
+          } else {
+            const newSubs = [...submissionsByInactiveGrader[updated.grader][assignmentID], updated];
+            submissionsByInactiveGrader[updated.grader][assignmentID] = newSubs;
+          }
+        }
+      }
+
+      this.setState({
+        submissions,
+        submissionsByStudent,
+        submissionsByGrader,
+        submissionsByInactiveStudent,
+        submissionsByInactiveGrader,
+      });
+    });
+  };
+
+  public deleteSubmission = (toDelete: SubmissionType) => {
+    const {
+      submissions,
+      submissionsByStudent,
+      submissionsByGrader,
+      submissionsByInactiveStudent,
+      submissionsByInactiveGrader,
+    } = this.state;
+
+    const assignmentID = toDelete.assignment;
+    const sub = submissions[assignmentID].find((el) => {
+      return el.id === toDelete.id;
+    });
+
+    if (sub === undefined) {
+      return Promise.reject('Submission does not exist');
+    }
+
     return Submission.delete(sub.id).then(() => {
       submissions[assignmentID] = submissions[assignmentID].filter((s) => {
         return s.id !== sub.id;
@@ -1213,6 +1328,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               submissionsByStudent={this.state.submissionsByStudent}
               students={this.state.students}
               uploadSubmission={this.uploadSubmission}
+              deleteSubmission={this.deleteSubmission}
+              updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
             />
           );
