@@ -23,16 +23,43 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
 
-    if (selection.toString() === '') {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
+    // selection.isCollapsed
+    if (selection === null || selection.toString() === '') {
       return;
     }
 
-    // Hack to avoid messing with Node type checking
-    const anchorParent: any = selection.anchorNode.parentNode;
-    let startLine = +anchorParent.id.split('-')[1];
+    let startLine;
+    if (
+      // This selection ended on top of the code but outside of a text highlight
+      // The Node is an HTMLElement
+      selection.anchorNode.nodeName === 'DIV' &&
+      selection.anchorNode &&
+      // @ts-ignore
+      selection.anchorNode.id.includes('line')
+    ) {
+      // @ts-ignore
+      startLine = selection.anchorNode.id.split('-')[1];
+    } else {
+      const anchorParent: any = selection.anchorNode.parentNode;
+      startLine = +anchorParent.id.split('-')[1];
+    }
 
-    const extentParent: any = selection.extentNode.parentNode;
-    let endLine = +extentParent.id.split('-')[1];
+    let endLine;
+    if (
+      // This selection ended on top of the code but outside of a text highlight
+      // The Node is an HTMLElement
+      selection.focusNode.nodeName === 'DIV' &&
+      selection.focusNode &&
+      // @ts-ignore
+      selection.focusNode.id.includes('line')
+    ) {
+      // @ts-ignore
+      endLine = selection.focusNode.id.split('-')[1];
+    } else {
+      const focusParent: any = selection.focusNode.parentNode;
+      endLine = +focusParent.id.split('-')[1];
+    }
 
     // Check to see if the comment was made backwards
     if (startLine !== null && endLine != null && startLine > endLine) {
@@ -88,14 +115,14 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   };
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
-    return code.split('\n').map((item: string, i: number) => {
+    return code.split('\n').map((text: string, i: number) => {
       return (
         <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
-          {item === ''
+          {text === ''
             ? ' '
             : CodePanelHighlighting.highlight(
                 comments,
-                item,
+                text,
                 i,
                 readOnly,
                 consoleTheme.highlight,
