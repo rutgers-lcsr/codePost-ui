@@ -84,7 +84,7 @@ class CodePanelHighlighting {
 
       // We've reached the end of the line, and there are highlights that need closing
       if (i === thetext.length && remIDs.length >= 1) {
-        element = '</strong>';
+        element = '</strong> ';
       } else {
         const className = updatedIDs
           .map((id) => {
