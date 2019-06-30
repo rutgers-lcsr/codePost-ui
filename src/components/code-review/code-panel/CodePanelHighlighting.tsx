@@ -29,13 +29,14 @@ class CodePanelHighlighting {
         if (highlight.endLine === highlight.startLine) {
           highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
         } else {
-          highlights.push([highlight.startChar, thetext.length, highlight.id]);
+          highlights.push([highlight.startChar - 1, thetext.length, highlight.id]);
         }
       } else if (highlight.endLine === line) {
         highlights.push([0, highlight.endChar, highlight.id]);
       }
       // otherwise, the highlight ends before our line starts
     }
+    console.log('highlights', highlights);
 
     return highlights;
   };
