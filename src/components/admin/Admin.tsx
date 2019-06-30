@@ -130,8 +130,6 @@ interface IAdminState {
   submissions: IAssignmentToSubmissionsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
-  submissionsByInactiveStudent: IStudentSubmissionsDataTable;
-  submissionsByInactiveGrader: IGraderSubmissionsDataTable;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
@@ -188,8 +186,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissionsLoadComplete: false,
       submissionsByStudent: {},
       submissionsByGrader: {},
-      submissionsByInactiveStudent: {},
-      submissionsByInactiveGrader: {},
       submissionsbyUserLoadComplete: false,
       viewsBySubmission: {},
     };
@@ -267,8 +263,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         submissionsByStudent: {},
         submissionsByGrader: {},
-        submissionsByInactiveStudent: {},
-        submissionsByInactiveGrader: {},
         submissionsbyUserLoadComplete: false,
       },
       () => {
@@ -490,8 +484,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       {
         submissionsByStudent: subsByUser.subsByStudent,
         submissionsByGrader: subsByUser.subsByGrader,
-        submissionsByInactiveStudent: subsByUser.subsByInactiveStudent,
-        submissionsByInactiveGrader: subsByUser.subsByInactiveGrader,
         submissionsbyUserLoadComplete: true,
       },
       () => {
@@ -509,28 +501,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   ) => {
     const subsByStudent: IStudentSubmissionsDataTable = {};
     const subsByGrader: IGraderSubmissionsDataTable = {};
-    const subsByInactiveStudent: IStudentSubmissionsDataTable = {};
-    const subsByInactiveGrader: IGraderSubmissionsDataTable = {};
 
-    roster.students.forEach((student) => {
+    const mixedStudentList = roster.students.concat(roster.inactive_students);
+    mixedStudentList.forEach((student) => {
       subsByStudent[student] = {};
     });
 
-    roster.inactive_students.forEach((inactiveStudent) => {
-      subsByInactiveStudent[inactiveStudent] = {};
-    });
-
-    roster.graders.forEach((grader) => {
+    const mixedGraderList = roster.graders.concat(roster.inactive_graders);
+    mixedGraderList.forEach((grader) => {
       subsByGrader[grader] = {};
       assignments.forEach((assignment) => {
         subsByGrader[grader][assignment.id] = [];
-      });
-    });
-
-    roster.inactive_students.forEach((inactiveGrader) => {
-      subsByInactiveGrader[inactiveGrader] = {};
-      assignments.forEach((assignment) => {
-        subsByInactiveGrader[inactiveGrader][assignment.id] = [];
       });
     });
 
@@ -539,22 +520,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       assignmentSubs.forEach((submission: SubmissionType) => {
         // NOTE: students in submission.students might be inactive
         submission.students.forEach((student: string) => {
-          if (subsByStudent[student]) {
-            subsByStudent[student][assignment.id] = submission;
-          } else if (subsByInactiveStudent[student]) {
-            subsByInactiveStudent[student][assignment.id] = submission;
-          }
+          subsByStudent[student][assignment.id] = submission;
         });
 
         // NOTE: graders in submission.students might be inactive
         if (submission.grader) {
-          if (submission.grader in subsByGrader) {
-            subsByGrader[submission.grader][assignment.id].push(submission);
-          } else if (submission.grader in subsByInactiveGrader) {
-            if (subsByInactiveGrader[submission.grader][assignment.id]) {
-              subsByInactiveGrader[submission.grader][assignment.id].push(submission);
-            }
-          }
+          subsByGrader[submission.grader][assignment.id].push(submission);
         }
       });
     });
@@ -562,8 +533,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return {
       subsByStudent,
       subsByGrader,
-      subsByInactiveStudent,
-      subsByInactiveGrader,
     };
   };
 
@@ -958,18 +927,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   // submissions (map: assignment id => submission list)
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
-  // submissionsByInactiveStudent (map: student email => {assignment id => submission})
-  // submissionsByInactiveGrader (map: grader email => {assignment id => submission list})
 
-  // FIXME: combine submissionsByStudent and submissionsByInactiveGrader
   public updateSubmission = (toUpdate: SubmissionType) => {
-    const {
-      submissions,
-      submissionsByStudent,
-      submissionsByGrader,
-      submissionsByInactiveStudent,
-      submissionsByInactiveGrader,
-    } = this.state;
+    const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     /* Make sure we are acting on a submission linked to this course */
     const assignmentID = toUpdate.assignment;
@@ -998,12 +958,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
 
       removedStudents.forEach((student) => {
-        if (student in submissionsByStudent) {
-          delete submissionsByStudent[student][assignmentID];
-        }
-        if (student in submissionsByInactiveStudent) {
-          delete submissionsByInactiveStudent[student][assignmentID];
-        }
+        delete submissionsByStudent[student][assignmentID];
       });
 
       /* add students who have been added to the submission */
@@ -1012,41 +967,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
 
       addedStudents.forEach((student) => {
-        if (student in submissionsByStudent) {
-          submissionsByStudent[student][assignmentID] = updated;
-        }
-        if (student in submissionsByInactiveStudent) {
-          submissionsByInactiveStudent[student][assignmentID] = updated;
-        }
+        submissionsByStudent[student][assignmentID] = updated;
       });
 
       /* if old grader has been removed, update her mapping */
       if (oldSubmission.grader !== null) {
         if (oldSubmission.grader !== updated.grader) {
-          if (oldSubmission.grader in submissionsByGrader) {
-            const newSubs = submissionsByGrader[oldSubmission.grader][assignmentID].filter((s) => {
-              return s.id !== updated.id;
-            });
-            submissionsByGrader[oldSubmission.grader][assignmentID] = newSubs;
-          } else {
-            const newSubs = submissionsByInactiveGrader[oldSubmission.grader][assignmentID].filter((s) => {
-              return s.id !== updated.id;
-            });
-            submissionsByInactiveGrader[oldSubmission.grader][assignmentID] = newSubs;
-          }
+          const newSubs = submissionsByGrader[oldSubmission.grader][assignmentID].filter((s) => {
+            return s.id !== updated.id;
+          });
+          submissionsByGrader[oldSubmission.grader][assignmentID] = newSubs;
         }
       }
 
       /* if new grader has been added, update her mapping */
       if (updated.grader !== null) {
         if (updated.grader !== oldSubmission.grader) {
-          if (updated.grader in submissionsByGrader) {
-            const newSubs = [...submissionsByGrader[updated.grader][assignmentID], updated];
-            submissionsByGrader[updated.grader][assignmentID] = newSubs;
-          } else {
-            const newSubs = [...submissionsByInactiveGrader[updated.grader][assignmentID], updated];
-            submissionsByInactiveGrader[updated.grader][assignmentID] = newSubs;
-          }
+          const newSubs = [...submissionsByGrader[updated.grader][assignmentID], updated];
+          submissionsByGrader[updated.grader][assignmentID] = newSubs;
         }
       }
 
@@ -1054,20 +992,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         submissions,
         submissionsByStudent,
         submissionsByGrader,
-        submissionsByInactiveStudent,
-        submissionsByInactiveGrader,
       });
     });
   };
 
   public deleteSubmission = (toDelete: SubmissionType) => {
-    const {
-      submissions,
-      submissionsByStudent,
-      submissionsByGrader,
-      submissionsByInactiveStudent,
-      submissionsByInactiveGrader,
-    } = this.state;
+    const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     const assignmentID = toDelete.assignment;
     const sub = submissions[assignmentID].find((el) => {
@@ -1082,31 +1012,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissions[assignmentID] = submissions[assignmentID].filter((s) => {
         return s.id !== sub.id;
       });
-      this.setState({ submissions });
       sub.students.forEach((student) => {
-        if (student in submissionsByStudent) {
-          delete submissionsByStudent[student][assignmentID];
-          this.setState({ submissionsByStudent });
-        }
-        if (student in submissionsByInactiveStudent) {
-          delete submissionsByInactiveStudent[student][assignmentID];
-          this.setState({ submissionsByInactiveStudent });
-        }
+        delete submissionsByStudent[student][assignmentID];
       });
-      if (sub.grader && sub.grader in submissionsByGrader) {
+      if (sub.grader) {
         const newSubs = submissionsByGrader[sub.grader][assignmentID].filter((s) => {
           return s.id !== sub.id;
         });
         submissionsByGrader[sub.grader][assignmentID] = newSubs;
-        this.setState({ submissionsByGrader });
       }
-      if (sub.grader && sub.grader in submissionsByInactiveGrader) {
-        const newSubs = submissionsByInactiveGrader[sub.grader][assignmentID].filter((s) => {
-          return s.id !== sub.id;
-        });
-        submissionsByInactiveGrader[sub.grader][assignmentID] = newSubs;
-        this.setState({ submissionsByInactiveGrader });
-      }
+
+      this.setState({ submissions, submissionsByStudent, submissionsByGrader });
     });
   };
 
@@ -1170,14 +1086,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       grader,
     };
 
-    const {
-      students,
-      graders,
-      submissionsByStudent,
-      submissionsByInactiveStudent,
-      submissionsByGrader,
-      submissionsByInactiveGrader,
-    } = this.state;
+    const { submissionsByStudent, submissionsByGrader } = this.state;
 
     const oldGrader = sub.grader;
 
@@ -1187,44 +1096,28 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       const subGrader = submission.grader;
 
       subStudents.forEach((student) => {
-        if (students.includes(student)) {
-          submissionsByStudent[student][submission.assignment] = submission;
-        } else {
-          // Account for partner, who might be inactive
-          submissionsByInactiveStudent[student][submission.assignment] = submission;
-        }
+        submissionsByStudent[student][submission.assignment] = submission;
       });
 
-      // Shouldn't be assigning this submission to an inactive grader
-      if (typeof subGrader === 'string' && graders.includes(subGrader)) {
-        if (submissionsByGrader[subGrader][submission.assignment]) {
-          submissionsByGrader[subGrader][submission.assignment].push(submission);
-        } else {
-          submissionsByGrader[subGrader][submission.assignment] = [submission];
-        }
+      // Unassign old grader, if she exists
+      if (oldGrader !== null) {
+        const oldList = [...submissionsByGrader[oldGrader][submission.assignment]];
+        submissionsByGrader[oldGrader][submission.assignment] = oldList.filter((el) => {
+          return el.id !== submission.id;
+        });
       }
 
-      // Unassign old grader, if she exists
-      if (typeof oldGrader === 'string') {
-        if (graders.includes(oldGrader)) {
-          submissionsByGrader[oldGrader][submission.assignment].filter((el) => {
-            return el.id !== submission.id;
-          });
-        } else {
-          submissionsByInactiveGrader[oldGrader][submission.assignment].filter((el) => {
-            return el.id !== submission.id;
-          });
-        }
+      // By following the previous statement with this statement, this function can handle calls
+      // which "reassign" the same grader to a submission. In this case, the submission will be
+      // removed and then added from the grader's graded list.
+      if (subGrader !== null) {
+        submissionsByGrader[subGrader][submission.assignment].push(submission);
       }
 
       this.setState({
         submissionsByStudent,
-        submissionsByInactiveStudent,
         submissionsByGrader,
-        submissionsByInactiveGrader,
       });
-
-      return;
     });
   };
 
@@ -1292,6 +1185,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               uploadSubmission={this.uploadSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               changeTab={this.changeTab}
+              students={this.state.students}
+              inactiveStudents={this.state.inactiveStudents}
             />
           );
           break;
@@ -1307,6 +1202,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               uploadSubmission={this.uploadSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               changeTab={this.changeTab}
+              inactiveGraders={this.state.inactiveGraders}
             />
           );
           break;
