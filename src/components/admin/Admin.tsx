@@ -39,8 +39,6 @@ import NewCourseDialog from './other/NewCourseDialog';
 
 import AdminNav from './other/AdminNav';
 
-// import { adminCarouselContent, ModalCarousel } from './components/Utils/ModalCarousel';
-
 /* types */
 import {
   IAssignmentToSubmissionsMap,
@@ -943,7 +941,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     return Submission.update(toUpdate).then((updated) => {
       /* use return value to replace existing submission */
-      submissions[assignmentID] = [
+      const newSubmissions = { ...submissions };
+      newSubmissions[assignmentID] = [
         ...submissions[assignmentID].filter((s) => {
           return s.id !== updated.id;
         }),
@@ -953,47 +952,57 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       /* update student mappings */
 
       /* remove students who used to be associated with this submission but no longer are */
+      const newSubmissionsByStudent = { ...submissionsByStudent };
       const removedStudents = oldSubmission.students.filter((student) => {
         return updated.students.indexOf(student) < 0;
       });
 
       removedStudents.forEach((student) => {
-        delete submissionsByStudent[student][assignmentID];
+        delete newSubmissionsByStudent[student][assignmentID];
       });
 
-      /* add students who have been added to the submission */
-      const addedStudents = updated.students.filter((student) => {
-        return oldSubmission.students.indexOf(student) < 0;
-      });
-
-      addedStudents.forEach((student) => {
-        submissionsByStudent[student][assignmentID] = updated;
+      /* update submission for students currently associated with submission */
+      updated.students.forEach((student) => {
+        newSubmissionsByStudent[student][assignmentID] = updated;
       });
 
       /* if old grader has been removed, update her mapping */
+      const newGraderMap = { ...submissionsByGrader };
       if (oldSubmission.grader !== null) {
         if (oldSubmission.grader !== updated.grader) {
-          const newSubs = submissionsByGrader[oldSubmission.grader][assignmentID].filter((s) => {
+          const newSubs = newGraderMap[oldSubmission.grader][assignmentID].filter((s) => {
             return s.id !== updated.id;
           });
-          submissionsByGrader[oldSubmission.grader][assignmentID] = newSubs;
+          newGraderMap[oldSubmission.grader][assignmentID] = newSubs;
         }
       }
 
-      /* if new grader has been added, update her mapping */
+      /* update grader's mapping, if she exists */
+      // By following the previous statement with this statement, this function can handle calls
+      // which "reassign" the same grader to a submission. In this case, the submission will be
+      // removed and then added from the grader's graded list.
       if (updated.grader !== null) {
-        if (updated.grader !== oldSubmission.grader) {
-          const newSubs = [...submissionsByGrader[updated.grader][assignmentID], updated];
-          submissionsByGrader[updated.grader][assignmentID] = newSubs;
-        }
+        const newSubs = [
+          ...newGraderMap[updated.grader][assignmentID].filter((s) => {
+            return s.id !== updated.id;
+          }),
+          updated,
+        ];
+        newGraderMap[updated.grader][assignmentID] = newSubs;
       }
 
       this.setState({
-        submissions,
-        submissionsByStudent,
+        submissions: newSubmissions,
+        submissionsByStudent: newSubmissionsByStudent,
         submissionsByGrader,
       });
     });
+  };
+
+  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
+    const newSub = { ...sub };
+    newSub.grader = grader === undefined ? null : grader;
+    return this.updateSubmission(newSub);
   };
 
   public deleteSubmission = (toDelete: SubmissionType) => {
@@ -1080,47 +1089,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     return submissionPromise;
   };
 
-  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
-    const payload = {
-      id: sub.id,
-      grader,
-    };
-
-    const { submissionsByStudent, submissionsByGrader } = this.state;
-
-    const oldGrader = sub.grader;
-
-    return Submission.update(payload).then((submission) => {
-      // Add submission to appropriate student and grader entries in cached data structures
-      const subStudents = submission.students;
-      const subGrader = submission.grader;
-
-      subStudents.forEach((student) => {
-        submissionsByStudent[student][submission.assignment] = submission;
-      });
-
-      // Unassign old grader, if she exists
-      if (oldGrader !== null) {
-        const oldList = [...submissionsByGrader[oldGrader][submission.assignment]];
-        submissionsByGrader[oldGrader][submission.assignment] = oldList.filter((el) => {
-          return el.id !== submission.id;
-        });
-      }
-
-      // By following the previous statement with this statement, this function can handle calls
-      // which "reassign" the same grader to a submission. In this case, the submission will be
-      // removed and then added from the grader's graded list.
-      if (subGrader !== null) {
-        submissionsByGrader[subGrader][submission.assignment].push(submission);
-      }
-
-      this.setState({
-        submissionsByStudent,
-        submissionsByGrader,
-      });
-    });
-  };
-
   /************************************************************************************
   /* Render
   /************************************************************************************/
@@ -1198,7 +1166,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               submissionsByGrader={this.state.submissionsByGrader}
               deleteSubmission={this.deleteSubmission}
               graders={this.state.graders}
-              changeSubmissionGrader={this.changeSubmissionGrader}
               uploadSubmission={this.uploadSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               changeTab={this.changeTab}

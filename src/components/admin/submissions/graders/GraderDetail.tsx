@@ -32,7 +32,6 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
 }
 
 interface IState {
