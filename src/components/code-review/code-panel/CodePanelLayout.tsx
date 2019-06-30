@@ -54,6 +54,11 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
     if (codeContainer !== null) {
       codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
     }
+
+    const codeMain = document.getElementById('code-main');
+    if (codeMain !== null) {
+      codeMain.addEventListener('scroll', this.horizontalCodeScroll);
+    }
   }
 
   public componentWillUnmount() {
@@ -66,6 +71,11 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
     if (codeContainer !== null) {
       codeContainer.removeEventListener('wheel', this.scrollFromCodeContainer);
     }
+
+    const codeMain = document.getElementById('code-main');
+    if (codeMain !== null) {
+      codeMain.removeEventListener('scroll', this.horizontalCodeScroll);
+    }
   }
 
   public scrollFromCodeContainer = (e: WheelEvent) => {
@@ -76,6 +86,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       comments.scrollTop = comments.scrollTop + e.deltaY;
     }
 
+    this.horizontalCodeScroll();
+  };
+
+  public horizontalCodeScroll = () => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
 

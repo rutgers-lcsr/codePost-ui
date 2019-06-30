@@ -88,14 +88,14 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   };
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
-    return code.split('\n').map((item: string, i: number) => {
+    return code.split('\n').map((text: string, i: number) => {
       return (
         <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
-          {item === ''
+          {text === ''
             ? ' '
             : CodePanelHighlighting.highlight(
                 comments,
-                item,
+                text,
                 i,
                 readOnly,
                 consoleTheme.highlight,
