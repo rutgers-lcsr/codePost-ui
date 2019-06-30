@@ -29,14 +29,17 @@ class CodePanelHighlighting {
         if (highlight.endLine === highlight.startLine) {
           highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
         } else {
-          highlights.push([highlight.startChar - 1, thetext.length, highlight.id]);
+          // Avoid starting and stopping a highlight on the same char
+          const start = highlight.startChar === thetext.length ? highlight.startChar - 1 : highlight.startChar;
+          highlights.push([start, thetext.length, highlight.id]);
         }
       } else if (highlight.endLine === line) {
-        highlights.push([0, highlight.endChar, highlight.id]);
+        // Avoid starting and stopping a highlight on the same char
+        const end = highlight.endChar === 0 ? 1 : highlight.endChar;
+        highlights.push([0, end, highlight.id]);
       }
       // otherwise, the highlight ends before our line starts
     }
-    console.log('highlights', highlights);
 
     return highlights;
   };

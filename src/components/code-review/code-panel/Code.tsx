@@ -25,19 +25,30 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
-    if (selection.toString() === '') {
+    if (selection === null || selection.toString() === '') {
       return;
     }
 
-    // console.log('selection', selection);
-
-    // Hack to avoid messing with Node type checking
-    const anchorParent: any = selection.anchorNode.parentNode;
-    let startLine = +anchorParent.id.split('-')[1];
+    let startLine;
+    if (
+      // This selection ended on top of the code but outside of a text highlight
+      // The Node is an HTMLElement
+      selection.anchorNode.nodeName === 'DIV' &&
+      selection.anchorNode &&
+      // @ts-ignore
+      selection.anchorNode.id.includes('line')
+    ) {
+      // @ts-ignore
+      startLine = selection.anchorNode.id.split('-')[1];
+    } else {
+      const anchorParent: any = selection.anchorNode.parentNode;
+      startLine = +anchorParent.id.split('-')[1];
+    }
 
     let endLine;
-    // This selection ended on top of the code but outside of a text highlight
     if (
+      // This selection ended on top of the code but outside of a text highlight
+      // The Node is an HTMLElement
       selection.focusNode.nodeName === 'DIV' &&
       selection.focusNode &&
       // @ts-ignore
@@ -68,11 +79,6 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       null,
       POSITION.End,
     );
-
-    // console.log('startLine', startLine);
-    // console.log('endLine', endLine);
-    // console.log('startChar', startChar);
-    // console.log('endChar', endChar);
 
     if (startLine === endLine) {
       // Handle reverse highlight in a single line
