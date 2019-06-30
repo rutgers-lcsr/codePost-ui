@@ -26,6 +26,8 @@ import Settings from './components/core/settings';
 
 import RouterLoading from './components/core/RouterLoading';
 
+import ForbiddenManager from './components/pre-auth/ForbiddenManager';
+
 // import { ConsoleThemeContext, consoleThemes } from './styles/abstracts/_console-theme-context';
 
 /******************************************************************************
@@ -175,7 +177,7 @@ class App extends React.Component<{}, IState> {
       });
   };
 
-  public handleLogin = (username: string, password: string) => {
+  public handleLogin = (username: string, password: string, toRedirect: boolean) => {
     this.setState({ error: '' });
     return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
       body: JSON.stringify({ username, password }),
@@ -196,7 +198,7 @@ class App extends React.Component<{}, IState> {
           error: '',
           has_token: true,
           user: json.user,
-          toRedirect: true,
+          toRedirect,
         });
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
@@ -386,6 +388,7 @@ class App extends React.Component<{}, IState> {
     if (this.state.triedLoading) {
       return (
         <div>
+          <ForbiddenManager handleLogin={this.handleLogin} error={this.state.error} />
           <IndexManager
             handleLogin={this.handleLogin}
             error={this.state.error}
