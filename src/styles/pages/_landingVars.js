@@ -8,6 +8,7 @@ const verticalPanelsBreakpoint = 1000; // point at which horizontal panels chang
 const removeModuleBreakpoint = 600; // point at which modules specified for removal on small screens are removed
 const testimonialBreakPoint = 900;
 const getStartedBreakpoint = 625; //point at which buttons and text become a column
+const faqBreakpoint = 700; // point at which FAQ turns into one column
 
 // Maximum Widths
 const panelMaxWidth = 1100; // Maximum width for the panels to keep narrow look
@@ -64,6 +65,7 @@ module.exports = {
     removeModule: removeModuleBreakpoint,
     testimonial: testimonialBreakPoint,
     getStarted: getStartedBreakpoint,
+    faq: faqBreakpoint,
   },
   backgrounds: {
     hero: heroColor,
