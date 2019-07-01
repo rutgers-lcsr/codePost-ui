@@ -27,7 +27,7 @@ class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps,
 
     return (
       <Dropdown className={`cp-dropdown cp-dropdown--${t}`} {...props}>
-        <ButtonGroup>
+        <ButtonGroup style={{ display: 'flex', width: '100%' }}>
           {props.label !== undefined ? (
             <Button
               disabled={true}
@@ -39,7 +39,7 @@ class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps,
               {props.label}
             </Button>
           ) : null}
-          <Button>
+          <Button style={{ flexGrow: 1 }}>
             <div style={{ display: 'flex', justifyContent: justifyType, alignItems: 'center' }}>
               {value} <Icon type="down" />
             </div>
