@@ -115,10 +115,6 @@ class CodePanelHighlighting {
       elements.push(element);
     }
 
-    if (line === 7) {
-      console.log('elements', elements);
-    }
-
     return [elements.join(''), styles];
   };
 
