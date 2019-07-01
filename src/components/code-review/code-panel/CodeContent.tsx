@@ -58,7 +58,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           style={consoleTheme.codeTheme}
           showLineNumbers={true}
           wrapLines={false}
-          customStyle={{ ...codeStyle, padding: '0px', backgroundColor: consoleTheme.codeBg }}
+          customStyle={{ ...codeStyle, padding: '0px 0px 0px 20px', backgroundColor: consoleTheme.codeBg }}
         >
           {props.file.code}
         </SyntaxHighlighter>

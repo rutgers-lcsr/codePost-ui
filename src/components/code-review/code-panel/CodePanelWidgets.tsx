@@ -21,7 +21,7 @@ export const Magnifier = (props: IMagnifierProps) => {
   return (
     <div
       style={{
-        ...{ position: 'absolute', top: '5px', right: '5px' },
+        ...{ position: 'absolute', top: '2px', right: '5px' },
         visibility: props.visible ? 'visible' : 'hidden',
       }}
     >
@@ -50,7 +50,7 @@ export const Sizer = (props: ISizerProps) => {
   return (
     <div
       style={{
-        ...{ position: 'absolute', top: '5px', right: '68px' },
+        ...{ position: 'absolute', top: '2px', right: '68px' },
         visibility: props.visible ? 'visible' : 'hidden',
       }}
     >
@@ -78,7 +78,7 @@ export const Reset = (props: IResetProps) => {
   return (
     <div
       style={{
-        ...{ position: 'absolute', top: '5px', right: '131px' },
+        ...{ position: 'absolute', top: '2px', right: '131px' },
         visibility: props.visible ? 'visible' : 'hidden',
       }}
     >

@@ -211,8 +211,8 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
       // FIXME: 10 on next line comes from SyntaxHighlighter styles
       paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
-        ? '0px'
-        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+        ? '20px'
+        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10 + 20}px`,
     };
   };
 
@@ -285,7 +285,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
                 id="code-container"
                 className="code-container"
                 style={{
-                  backgroundColor: consoleTheme.codeBg,
+                  backgroundColor: consoleTheme.codeHeaderBg,
                   border: `1px solid ${consoleTheme.codeBorder}`,
                   padding,
                 }}
