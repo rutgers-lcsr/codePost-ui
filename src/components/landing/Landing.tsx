@@ -97,6 +97,10 @@ class Landing extends React.PureComponent<{}, {}> {
           <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or homegrown solutions),
           and <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data.
         </div>
+        <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
+          Our current users have used the codePost API to integrate with tools such as Github, JupyterHub, MOSS,
+          Blackboard, Canvas, Moodle and many others!
+        </div>
         It's also easy to use - you can start building powerful scripts in less than 10 minutes!
       </div>
     );
