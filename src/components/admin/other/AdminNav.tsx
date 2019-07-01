@@ -46,6 +46,14 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
         this.setState({ openKeys: [...this.state.openKeys, selectedPanelKey] });
       }
     }
+
+    if (this.props.collapsed !== oldProps.collapsed) {
+      /* re-mount Headway widget */
+      (window as any).Headway.init({
+        selector: '.version', // CSS selector where to inject the badge
+        account: '7v3mQJ',
+      });
+    }
   }
 
   public calculateOpenKey = (defaultPanel: number) => {
@@ -139,8 +147,8 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
             </Menu.Item>
           </Menu>
         </div>
-        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 25 }}>
-          v{process.env.REACT_APP_VERSION}
+        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 24 }}>
+          {this.props.collapsed ? null : `v${process.env.REACT_APP_VERSION}`}
         </div>
       </div>
     );

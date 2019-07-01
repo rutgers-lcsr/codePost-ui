@@ -515,17 +515,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     assignments.forEach((assignment) => {
       const assignmentSubs = submissions[assignment.id];
-      assignmentSubs.forEach((submission: SubmissionType) => {
-        // NOTE: students in submission.students might be inactive
-        submission.students.forEach((student: string) => {
-          subsByStudent[student][assignment.id] = submission;
-        });
+      if (assignmentSubs !== undefined) {
+        assignmentSubs.forEach((submission: SubmissionType) => {
+          // NOTE: students in submission.students might be inactive
+          submission.students.forEach((student: string) => {
+            subsByStudent[student][assignment.id] = submission;
+          });
 
-        // NOTE: graders in submission.students might be inactive
-        if (submission.grader) {
-          subsByGrader[submission.grader][assignment.id].push(submission);
-        }
-      });
+          // NOTE: graders in submission.students might be inactive
+          if (submission.grader) {
+            subsByGrader[submission.grader][assignment.id].push(submission);
+          }
+        });
+      }
     });
 
     return {
