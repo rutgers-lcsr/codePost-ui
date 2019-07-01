@@ -61,12 +61,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
-    console.log(`Mounted: ${this.props.comment.id}`);
+    // console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
   }
 
   public componentWillUnmount() {
-    console.log(`Unmounting: ${this.props.comment.id}`);
+    // console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
