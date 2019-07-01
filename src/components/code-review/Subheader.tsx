@@ -15,7 +15,9 @@ import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import { Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
+import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
+
+const ButtonGroup = Button.Group;
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
@@ -290,21 +292,33 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const overlay = <Menu onClick={onClick}>{menuItems}</Menu>;
 
   const currentGrader = props.submission.grader ? props.submission.grader : 'unassigned';
-  const currentGraderString = `grader: ${currentGrader}`;
 
   const dropdown = (
     <CPDropdown
-      value={currentGraderString}
+      value={currentGrader}
       overlay={overlay}
       overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
       theme={theme}
+      label="grader:"
     />
   );
 
   if (props.isCourseAdmin) {
     return dropdown;
   } else {
-    return <span className="cp-label cp-label--bold">{currentGraderString}</span>;
+    return (
+      <ButtonGroup>
+        <Button
+          disabled={true}
+          style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.buttonDisabledColor }}
+        >
+          grader:
+        </Button>
+        <Button style={{ cursor: 'default', backgroundColor: consoleTheme.subheaderBg, color: consoleTheme.text }}>
+          {currentGrader}
+        </Button>
+      </ButtonGroup>
+    );
   }
   return dropdown;
 };

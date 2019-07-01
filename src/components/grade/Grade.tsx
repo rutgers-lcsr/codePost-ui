@@ -117,6 +117,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
+    // tslint:disable
     return comments.hasOwnProperty(file.id)
       ? {
           ...comments,
@@ -126,6 +127,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         }
       : comments;
   };
+  // tslint:enable
 
   // --- Linked Rubric Comments
   public static addToCommentRubricCommentsState = (
