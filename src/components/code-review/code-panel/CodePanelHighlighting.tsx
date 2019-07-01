@@ -30,8 +30,9 @@ class CodePanelHighlighting {
           highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
         } else {
           // Avoid starting and stopping a highlight on the same char
-          const start = highlight.startChar === thetext.length ? highlight.startChar - 1 : highlight.startChar;
-          highlights.push([start, thetext.length, highlight.id]);
+          const end = thetext[thetext.length - 1] === '\r' ? thetext.length - 1 : thetext.length;
+          const start = highlight.startChar === thetext.length ? end - 1 : highlight.startChar;
+          highlights.push([start, end, highlight.id]);
         }
       } else if (highlight.endLine === line) {
         // Avoid starting and stopping a highlight on the same char
@@ -112,6 +113,10 @@ class CodePanelHighlighting {
       }
       prevIDs = updatedIDs;
       elements.push(element);
+    }
+
+    if (line === 7) {
+      console.log('elements', elements);
     }
 
     return [elements.join(''), styles];

@@ -28,6 +28,8 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
+import { runFSSetup } from './components/utils/Fullstory';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -77,6 +79,13 @@ class App extends React.Component<{}, IState> {
   public componentDidUpdate(prevProps: any, prevState: IState) {
     if (this.state.toRedirect) {
       this.setState({ toRedirect: false });
+    }
+
+    // On login, initiate fullstory logging
+    if (prevState.user !== this.state.user && this.state.user !== undefined) {
+      if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
+        runFSSetup(this.state.user.email);
+      }
     }
   }
 
