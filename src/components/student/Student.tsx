@@ -584,6 +584,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         onSecondSelectorClick={this.onAssignmentChange}
         isLoadingMenu={this.state.isLoadingAssignments}
         children={mobile ? <div /> : fileMenu}
+        disabledMessage={'Not published yet'}
       />
     );
     if (mobile) {
