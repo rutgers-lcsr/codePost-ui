@@ -1,3 +1,11 @@
+#HW_badge_cont {
+  display: inline-block !important;
+}
+
+#HW_badge {
+  top: 18px !important;
+}
+
 #PreAuth {
   .header a {
     color: grey;
@@ -25,6 +33,7 @@
 .internal-link--menu {
   color: inherit;
   transition: 0s;
+  padding: 0;
 
   &:hover {
     color: inherit;

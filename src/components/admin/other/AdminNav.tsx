@@ -28,6 +28,12 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   public componentDidMount() {
     const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
     this.setState({ openKeys: [selectedPanelKey] });
+
+    /* set up Headway widget */
+    (window as any).Headway.init({
+      selector: '.version', // CSS selector where to inject the badge
+      account: '7v3mQJ',
+    });
   }
 
   public componentDidUpdate(oldProps: IAdminNavProps) {
@@ -114,7 +120,7 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
           </Menu.Item>
         </Menu>
         <div style={{ height: '100%' }}>
-          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
+          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
             <Menu.Item key="docs">
               <Icon type="pushpin" />
               <span>
@@ -132,6 +138,9 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
               </span>
             </Menu.Item>
           </Menu>
+        </div>
+        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 25 }}>
+          v2.41.4
         </div>
       </div>
     );
