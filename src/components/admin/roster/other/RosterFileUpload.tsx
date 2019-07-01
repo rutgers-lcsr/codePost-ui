@@ -769,6 +769,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             review any changes before they are made after uploading your file.
             <br />
             <br />
+            If you exclude a user group(s), the excluded group(s) will be left unchanged. For example, if you upload a
+            roster that includes only students (with no graders or admins), the graders and admins won't be changed.
+            <br />
+            <br />
             <Collapse bordered={true} accordion={true}>
               <Collapse.Panel header="JSON" key="1">
                 <ReactMarkdown source={this.exampleJSON} />
