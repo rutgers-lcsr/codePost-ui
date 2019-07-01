@@ -31,6 +31,18 @@ class CodePanelLayout {
 
     return heightOfComment;
   };
+
+  public static lineNumberPadding = (code: string): number => {
+    const codeSyntax = document.getElementById('code-syntax');
+    if (codeSyntax !== null) {
+      const lineNumbers = codeSyntax.firstChild;
+      if (lineNumbers !== null) {
+        // @ts-ignore
+        return lineNumbers.offsetWidth;
+      }
+    }
+    return code.split('\n').length.toString().length * 7.205;
+  };
 }
 
 export default CodePanelLayout;
