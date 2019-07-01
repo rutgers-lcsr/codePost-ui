@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Modal, Table, Typography } from 'antd';
+import { Button, Icon, Modal, Table, Tooltip, Typography } from 'antd';
 
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
@@ -111,6 +111,12 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         align: aligner,
       },
       {
+        title: 'Text',
+        dataIndex: 'text',
+        key: 'text',
+        align: aligner,
+      },
+      {
         title: 'Open',
         dataIndex: 'open',
         key: 'open',
@@ -124,6 +130,14 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         students: commentToSubMap[comment.id].students.join(', '),
         file: commentToSubMap[comment.id].fileName,
         author: comment.author,
+        text:
+          comment.text === null || comment.text.length === 0 ? (
+            <Icon type="pushpin" />
+          ) : (
+            <Tooltip title={comment.text}>
+              <Icon type="pushpin" theme="filled" />
+            </Tooltip>
+          ),
         open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
       };
     });
