@@ -140,7 +140,7 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
           </Menu>
         </div>
         <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 25 }}>
-          v2.41.4
+          v{process.env.REACT_APP_VERSION}
         </div>
       </div>
     );
