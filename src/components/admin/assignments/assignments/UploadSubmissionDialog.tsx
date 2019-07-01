@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, Modal, Tooltip, Upload } from 'antd';
+import { Alert, Button, Icon, Modal, Progress, Tooltip, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -180,9 +180,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     let content;
     switch (status) {
       case STATUS.COMPLETE:
-        content = <p>Submission upload complete!</p>;
+        content = (
+          <div>
+            Uploading submissions: &nbsp; <Progress percent={100} size="small" />
+            <br />
+            <br />
+            Upload complete!
+          </div>
+        );
         break;
       case STATUS.SAVING:
+        content = (
+          <div>
+            Uploading submissions: &nbsp; <Progress percent={0} size="small" />
+          </div>
+        );
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
@@ -258,10 +270,55 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             {/*  FIXME: we should prevent users from uploading image files here */}
             <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={this.onChangeFiles}>
               <Button>
-                <Icon type="upload" /> Upload
+                <Icon type="upload" /> Upload files
               </Button>
             </Upload>
           </div>
+        );
+        break;
+    }
+
+    // modal's back button
+    let goBackButton;
+    switch (this.state.status) {
+      case STATUS.NONE:
+        goBackButton = (
+          <Button key="back" onClick={this.cancel}>
+            Cancel
+          </Button>
+        );
+        break;
+      case STATUS.SAVING:
+        goBackButton = (
+          <Button key="back" disabled={true}>
+            Cancel
+          </Button>
+        );
+        break;
+    }
+
+    // modal's forward button
+    let goForwardButton = null;
+    switch (this.state.status) {
+      case STATUS.NONE:
+        goForwardButton = (
+          <Button key="submit" type="primary" disabled={disableUpload} onClick={this.upload}>
+            Upload
+          </Button>
+        );
+        break;
+      case STATUS.SAVING:
+        goForwardButton = (
+          <Button key="submit" type="primary" disabled={disableUpload} loading={true}>
+            Upload
+          </Button>
+        );
+        break;
+      case STATUS.COMPLETE:
+        goForwardButton = (
+          <Button key="submit" type="primary" onClick={this.cancel}>
+            Close
+          </Button>
         );
         break;
     }
@@ -272,20 +329,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         title="Upload Submissions"
         onCancel={this.props.onCancel}
         width={700}
-        footer={[
-          <Button key="back" onClick={this.props.onCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={this.state.status === STATUS.SAVING}
-            disabled={disableUpload}
-            onClick={this.upload}
-          >
-            Upload
-          </Button>,
-        ]}
+        footer={[goBackButton, goForwardButton]}
       >
         {content}
       </Modal>
