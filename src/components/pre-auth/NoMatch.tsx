@@ -42,7 +42,36 @@ class NoMatch extends React.Component<IProps, IState> {
     };
   }
 
+  public logMessage = (message: string) => {
+    const payload = {
+      message,
+      url: window.location.href,
+    };
+
+    // Logs to server
+    fetch(`${process.env.REACT_APP_API_URL}/logs/logHappiness/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        } else {
+          return Promise.reject(res.status);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   public like = () => {
+    const message = `:+1: ${this.state.quote.author}`;
+    this.logMessage(message);
     this.setState({
       likes: 1,
       dislikes: 0,
@@ -51,6 +80,8 @@ class NoMatch extends React.Component<IProps, IState> {
   };
 
   public dislike = () => {
+    const message = `:-1: ${this.state.quote.author}`;
+    this.logMessage(message);
     this.setState({
       likes: 0,
       dislikes: 1,
