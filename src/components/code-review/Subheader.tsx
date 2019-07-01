@@ -300,6 +300,7 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
       overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
       theme={theme}
       label="grader:"
+      disabled={props.submission.isFinalized}
     />
   );
 
