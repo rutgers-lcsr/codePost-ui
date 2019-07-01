@@ -288,6 +288,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
                   backgroundColor: consoleTheme.codeHeaderBg,
                   border: `1px solid ${consoleTheme.codeBorder}`,
                   padding,
+                  overflowX: 'hidden',
                 }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
