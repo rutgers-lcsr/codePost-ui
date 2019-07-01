@@ -28,6 +28,28 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  React.useEffect(() => {
+    const codeMain = document.getElementById('code-main');
+    const codeSyntax = document.getElementById('code-syntax');
+
+    const horizontalCodeScroll = () => {
+      // Scroll horizontally
+      if (codeMain !== null && codeSyntax !== null) {
+        codeSyntax.scrollLeft = codeMain.scrollLeft;
+      }
+    };
+
+    if (codeMain !== null) {
+      codeMain.addEventListener('scroll', horizontalCodeScroll);
+    }
+
+    return () => {
+      if (codeMain !== null) {
+        codeMain.removeEventListener('scroll', horizontalCodeScroll);
+      }
+    };
+  }, []);
+
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
     props.addComment(comment, file);
