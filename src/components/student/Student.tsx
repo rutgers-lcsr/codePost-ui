@@ -112,10 +112,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         const { course, assignment } = this.setStateFromURL(this.props.initialCourses, assignments);
         if (course) {
-          this.changeURL(course, assignment);
-          this.setState({ currentCourse: course }, () => {
-            this.handleAssignmentChange(assignment ? assignment.id : undefined);
-          });
+          // Take assignment out of URL if it doesn't exist or isn't released
+          if (assignment === undefined || !assignment.isReleased) {
+            this.changeURL(course, undefined);
+            this.setState({ currentCourse: course });
+          } else {
+            this.changeURL(course, assignment);
+            this.setState({ currentCourse: course }, () => {
+              this.handleAssignmentChange(assignment ? assignment.id : undefined);
+            });
+          }
         }
       });
     });
@@ -227,24 +233,24 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!currentCourse) {
       return;
     }
-    this.setState({
-      currentAssignment: undefined,
-      currentSubmission: undefined,
-      files: [],
-      comments: {},
-      rubricCategories: [],
-      commentRubricComments: {},
-      currentFile: undefined,
-    });
 
     if (assignmentID === undefined) {
       this.changeURL(currentCourse, undefined);
+      this.setState({
+        currentAssignment: undefined,
+        currentSubmission: undefined,
+        files: [],
+        comments: {},
+        rubricCategories: [],
+        commentRubricComments: {},
+        currentFile: undefined,
+      });
     } else {
       const currentAssignment = assignments[currentCourse.id].find((assignment: AssignmentType) => {
         return assignment.id === assignmentID;
       });
 
-      if (currentAssignment) {
+      if (currentAssignment !== undefined) {
         this.setState({ currentAssignment, isLoadingSubmission: true, currentSubmission: undefined }, async () => {
           const rubricCategories = await this.loadRubricCategories(currentAssignment);
           const currentSubmission = await this.loadSubmission(currentAssignment);
@@ -357,7 +363,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!hasAssignments) return STATUS.NoAssignments;
     if (!currentAssignment) return STATUS.SelectAssignment;
     if (isLoadingSubmission) return STATUS.SubmissionLoading;
-    if (!currentSubmission) return STATUS.NoSubmission;
+    if (currentSubmission === undefined || !currentSubmission.isFinalized) return STATUS.NoSubmission;
     else return STATUS.ShowSubmission;
   };
 

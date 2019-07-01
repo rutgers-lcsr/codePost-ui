@@ -95,6 +95,7 @@ const MultiSelectorSider = (props: IProps) => {
           placement="bottomLeft"
           theme={theme}
           justifyContent="space-between"
+          disabled={props.activeFirstSelector === undefined}
         />
       )}
       <Divider style={{ margin: '10 0 10 0' }} />
