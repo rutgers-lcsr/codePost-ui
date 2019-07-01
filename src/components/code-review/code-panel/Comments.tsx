@@ -191,7 +191,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
-    console.log('!! Calculating Placements !!');
+    // console.log('!! Calculating Placements !!');
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
@@ -265,7 +265,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     this.setBottomOfCommentBox(placements[placements.length - 1]);
 
-    console.table(placements);
+    // console.table(placements);
     // // tslint:disable-next-line
     // debugger;
     this.setState({ placements });
