@@ -375,8 +375,16 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       </div>
     );
   } else {
-    return (
-      <CPButton cpType="primary" fallback="lock" onClick={onClick} loading={isLoading}>
+    const isDisabled = props.submission.grader === null;
+    const buttonToReturn = (
+      <CPButton
+        cpType="primary"
+        fallback="lock"
+        onClick={onClick}
+        loading={isLoading}
+        disabled={isDisabled}
+        style={isDisabled ? { pointerEvents: 'none' } : undefined}
+      >
         <Popconfirm
           title={
             <div>
@@ -397,6 +405,15 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         </Popconfirm>
       </CPButton>
     );
+    if (isDisabled) {
+      return (
+        <Tooltip title="Assign a grader before finalizing." placement="bottom">
+          <span>{buttonToReturn}</span>
+        </Tooltip>
+      );
+    } else {
+      return buttonToReturn;
+    }
   }
 };
 
