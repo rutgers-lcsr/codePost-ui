@@ -140,7 +140,7 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
             <Menu.Item key="api-reference">
               <Icon type="api" />
               <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
+                <a href="https://help.codepost.io/reference" target="_blank" className="internal-link--menu">
                   API Reference
                 </a>
               </span>

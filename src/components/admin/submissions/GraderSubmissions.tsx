@@ -192,7 +192,7 @@ class GraderData extends React.Component<IProps, IState> {
       return (
         <TableDetail
           loadComplete={this.props.loadComplete}
-          title={'Graded Submissions'}
+          title={'Grader Submissions'}
           isEmpty={numGraders === 0 || this.props.assignments.length === 0}
           emptyNode={
             <Empty
