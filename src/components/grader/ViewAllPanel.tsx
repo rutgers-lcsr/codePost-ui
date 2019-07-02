@@ -16,7 +16,7 @@ import { Course, CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
-import { formatSub, getViewIcon, ISubDataBasic } from './GraderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
@@ -121,9 +121,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       },
       {
         title: 'Grade',
-        dataIndex: 'grade',
+        dataIndex: 'gradeText',
         sorter: (a: ITableRow, b: ITableRow) => {
-          return a.gradeToSort - b.gradeToSort;
+          return sortByGrade(
+            { grade: a.grade, isFinalized: a.isFinalized },
+            { grade: b.grade, isFinalized: b.isFinalized },
+          );
         },
         align: centerAlign,
       },

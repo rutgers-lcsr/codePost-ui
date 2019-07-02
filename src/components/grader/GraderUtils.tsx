@@ -93,12 +93,23 @@ const getViewIcon = (
   }
 };
 
+const sortByGrade = (
+  a: { grade: number | null; isFinalized: boolean },
+  b: { grade: number | null; isFinalized: boolean },
+) => {
+  if (a.grade === null) return -1;
+  if (b.grade === null) return 1;
+  if (!a.isFinalized) return -1;
+  if (!b.isFinalized) return 1;
+  return a.grade - b.grade;
+};
+
 interface ISubDataBasic {
-  grade: number | string | React.ReactElement;
+  gradeText: string | React.ReactElement;
   grader: string | React.ReactElement;
-  status: string | React.ReactElement;
   lastEdited: string;
-  gradeToSort: number;
+  grade: number | null;
+  isFinalized: boolean;
 }
 
 // Return submission data in form suitable for presenting in an antd table
@@ -108,15 +119,13 @@ const formatSub = (
 ): ISubDataBasic => {
   if (sub === undefined || sub === null) {
     return {
-      grade: '--',
-      gradeToSort: -1,
+      gradeText: '--',
+      grade: null,
+      isFinalized: false,
       grader: '--',
-      status: '--',
       lastEdited: '--',
     };
   } else {
-    const finalizeIcon = sub.isFinalized ? <Icon type="check-circle" /> : <div />;
-
     let gradeText;
     if (sub.isFinalized) {
       if (assignment !== undefined) {
@@ -129,13 +138,13 @@ const formatSub = (
     }
 
     return {
-      grade: gradeText,
-      gradeToSort: sub.grade ? sub.grade : -1,
+      gradeText,
+      grade: sub.grade,
+      isFinalized: sub.isFinalized,
       grader: sub.grader ? sub.grader : <Text type="warning">Unclaimed</Text>,
-      status: <div>{finalizeIcon}</div>,
       lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(sub.dateEdited).format('LT')}`,
     };
   }
 };
 
-export { getViewIcon, formatSub, ISubDataBasic };
+export { getViewIcon, formatSub, sortByGrade, ISubDataBasic };

@@ -27,7 +27,7 @@ const LandingHero = () => {
           <Typography.Text mark className="codePost-title-highlight">
             code review
           </Typography.Text>{' '}
-          platform for CS courses
+          tool for CS courses
         </span>
       </div>
       <div
@@ -40,8 +40,7 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Give better feedback on programming assignments, without the hassle, so you can teach CS better and train better
-        programmers.
+        Give better feedback on programming assignments, so you can teach CS better and train good programmers.
       </div>
       <div
         style={{

@@ -41,22 +41,6 @@ const circleMap = [
   },
 ];
 
-const iconMap = [
-  { key: 'github', item: <img src={require('./GitHub.png')} style={{ width: 20, zIndex: 30 }} />, top: 300, left: 295 },
-  {
-    key: 'jupyter',
-    item: <img src={require('./Jupyter.png')} style={{ width: 30, zIndex: 30 }} />,
-    top: 350,
-    left: 175,
-  },
-  {
-    key: 'moss',
-    item: <div style={{ fontStyle: 'italic', fontWeight: 500, color: 'green' }}>MOSS</div>,
-    top: 230,
-    left: 45,
-  },
-];
-
 export default function APIAnimation() {
   // Creating the perpetual spring for the motion of the dashed paths
   const f: any = async (next: any) => {
@@ -86,13 +70,6 @@ export default function APIAnimation() {
   // Then draw the animated paths
   return (
     <div style={{ width: 500, height: 400, marginTop: 30, position: 'relative' }}>
-      {iconMap.map((logo) => {
-        return (
-          <div key={logo.key} style={{ position: 'absolute', top: logo.top, left: logo.left }}>
-            {logo.item}
-          </div>
-        );
-      })}
       <AbsoluteCircle x={250} y={200} radius={40} boxWidth={500} boxHeight={400} item={cPCircle} />
       {circleMap.map((row) => {
         const icon = (

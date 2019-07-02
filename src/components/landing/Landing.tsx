@@ -48,6 +48,10 @@ class Landing extends React.PureComponent<{}, {}> {
   public render() {
     const whyText = (
       <div>
+        <div style={{ paddingBottom: 15 }}>
+          codePost integrates with your existing tools to make it easy to do code review, so you can give students
+          better feedback without the hassle.
+        </div>
         Autograding can tell your students whether their code is correct, but
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <ul style={{ maxWidth: 400, textAlign: 'start' }}>
@@ -56,8 +60,9 @@ class Landing extends React.PureComponent<{}, {}> {
           </ul>
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          codePost integrates with your existing tools to make it easy to do code review, so you can give students
-          better feedback without the hassle.
+          With codePost, you can supplement your autograder with feedback on everything an autograder can’t evaluate --
+          like style, structure, algorithm selection -- as well as provide context on correctness errors for better
+          comprehension.
         </div>
       </div>
     );
@@ -65,8 +70,9 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelOneText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Use codePost to annotate code effortlessly, with easy-to-read comments that don't clutter code. You and your
-          course staff can provide custom feedback, as well as apply standardized rubrics.
+          Use codePost to annotate programming assignments with easy-to-read comments that don't clutter code. You and
+          your course staff can provide custom feedback, as well as apply standardized rubrics. And we support iPython
+          notebooks too!
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser.</div>
       </div>
@@ -75,12 +81,12 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelTwoText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Don't let course management take time away from teaching. Manage rosters, create assignments, and make sure
-          everything gets graded within a lightweight, intuitive interface. And when you want, dive into your course
-          data to audit grading, mine for pedagogical insights, and more.
+          Don't let course management take time away from teaching. Manage your course and make sure everything gets
+          graded within a lightweight, intuitive interface. Dive into your course data anytime to understand how your
+          students are doing, audit grading, and mine for pedagogical insights.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          Easy course management that so you can spend more time teaching.
+          Easy course management so that you can spend more time teaching.
         </div>
       </div>
     );
@@ -88,16 +94,18 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelThreeText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          We know that each CS course has its own unique requirements, tools, and processes. We also think the best run
-          courses are managed with code. In that spirit, we've built the codePost API.
+          We know that every CS course has unique requirements, tools, and processes. We also think the best run courses
+          are managed with code. In that spirit, we've built the codePost API. It allows you to{' '}
+          <span style={{ fontWeight: 600 }}>automate common tasks</span>
+          {''} (like syncing rosters with your registrar),{' '}
+          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or autograder), and{' '}
+          <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data. It's also easy to use - you
+          can start building powerful scripts in less than 10 minutes (actually).
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          It's expressive and composable, and allows you to{' '}
-          <span style={{ fontWeight: 600 }}>manage your course programmatically</span>,{' '}
-          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or homegrown solutions),
-          and <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data.
+          Our current users have used the codePost API to integrate with tools such as Github, JupyterHub, MOSS,
+          Blackboard, Canvas, Moodle and many others!
         </div>
-        It's also easy to use - you can start building powerful scripts in less than 10 minutes!
       </div>
     );
 
@@ -133,7 +141,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
-        subTitle="Data at your fingertips, when you want it."
+        subTitle="Less time configuring software, more time teaching."
         module={<AdminAnimation />}
         type="left"
         moduleMaxWidth={610}
@@ -148,7 +156,7 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
-            title="3. CUSTOMIZE AND AUTOMATE"
+            title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
             subTitle="Run your course with codePost’s API."
             module={<APIAnimation />}
             type="right"
