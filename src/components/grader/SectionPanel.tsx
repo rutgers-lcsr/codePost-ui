@@ -158,6 +158,7 @@ class SectionPanel extends React.Component<IProps, IState> {
           title: 'Partner(s)',
           dataIndex: 'partners',
           sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
+          align: centerAlign,
         },
         {
           title: 'Grade',
