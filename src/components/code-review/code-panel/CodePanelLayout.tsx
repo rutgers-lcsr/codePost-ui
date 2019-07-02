@@ -30,6 +30,7 @@ interface ICodePanelLayoutState {
   adjustmentsVisible: boolean;
   splitBasis: number;
   verticalOffset: number;
+  lineNumberPadding: number;
 }
 
 class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
@@ -40,6 +41,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
     adjustmentsVisible: false,
     splitBasis: themeVars.grade.splitBasis,
     verticalOffset: 0,
+    lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code),
   };
 
   public componentDidMount() {
@@ -76,6 +78,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       comments.scrollTop = comments.scrollTop + e.deltaY;
     }
 
+    this.horizontalCodeScroll();
+  };
+
+  public horizontalCodeScroll = () => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
 
@@ -164,6 +170,8 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
+
+      this.setState({ lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code) });
     }
   };
 
@@ -195,10 +203,9 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
     return {
       lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
       fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
-      // FIXME: 10 on next line comes from SyntaxHighlighter styles
       paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
-        ? '0px'
-        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+        ? '20px'
+        : `${this.state.lineNumberPadding + 20}px`,
     };
   };
 
@@ -271,9 +278,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
                 id="code-container"
                 className="code-container"
                 style={{
-                  backgroundColor: consoleTheme.codeBg,
+                  backgroundColor: consoleTheme.codeHeaderBg,
                   border: `1px solid ${consoleTheme.codeBorder}`,
                   padding,
+                  overflowX: 'hidden',
                 }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}

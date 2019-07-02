@@ -12,7 +12,9 @@ import { Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import PreAuthLayout from '../pre-auth/PreAuthLayout';
+import PeripheralPageLayout from './layouts/PeripheralPageLayout';
+
+import { UserType } from '../../infrastructure/user';
 
 import CPButton from '../core/CPButton';
 
@@ -24,6 +26,8 @@ interface IProps {
   isStudent: boolean;
   isGrader: boolean;
   isAdmin: boolean;
+  user: UserType;
+  handleLogout: () => void;
 }
 
 const buttonStyle = {
@@ -56,14 +60,14 @@ class Home extends React.Component<IProps, {}> {
     ) : null;
 
     return (
-      <PreAuthLayout isLoggedIn={true}>
+      <PeripheralPageLayout user={this.props.user} handleLogout={this.props.handleLogout}>
         <div style={{ maxWidth: layoutVars.maxWidths.home, margin: '0 auto' }}>
           <Typography.Title level={3}>Select your role:</Typography.Title>
           {studentBtn}
           {graderBtn}
           {adminBtn}
         </div>
-      </PreAuthLayout>
+      </PeripheralPageLayout>
     );
   }
 }

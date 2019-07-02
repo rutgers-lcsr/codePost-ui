@@ -26,7 +26,9 @@ import Settings from './components/core/settings';
 
 import RouterLoading from './components/core/RouterLoading';
 
-// import { ConsoleThemeContext, consoleThemes } from './styles/abstracts/_console-theme-context';
+import ForbiddenManager from './components/pre-auth/ForbiddenManager';
+
+import { runFSSetup } from './components/utils/Fullstory';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
@@ -77,6 +79,13 @@ class App extends React.Component<{}, IState> {
   public componentDidUpdate(prevProps: any, prevState: IState) {
     if (this.state.toRedirect) {
       this.setState({ toRedirect: false });
+    }
+
+    // On login, initiate fullstory logging
+    if (prevState.user !== this.state.user && this.state.user !== undefined) {
+      if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
+        runFSSetup(this.state.user.email);
+      }
     }
   }
 
@@ -175,8 +184,9 @@ class App extends React.Component<{}, IState> {
       });
   };
 
-  public handleLogin = (username: string, password: string) => {
-    fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
+  public handleLogin = (username: string, password: string, toRedirect: boolean) => {
+    this.setState({ error: '' });
+    return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
       body: JSON.stringify({ username, password }),
       headers: {
         'Content-Type': 'application/json',
@@ -195,7 +205,7 @@ class App extends React.Component<{}, IState> {
           error: '',
           has_token: true,
           user: json.user,
-          toRedirect: true,
+          toRedirect,
         });
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
@@ -320,7 +330,15 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={HOME}
             render={(props: any) => (
-              <Home {...props} isLoggedIn={true} isStudent={isStudent} isGrader={isGrader} isAdmin={isAdmin} />
+              <Home
+                {...props}
+                isLoggedIn={true}
+                isStudent={isStudent}
+                isGrader={isGrader}
+                isAdmin={isAdmin}
+                handleLogout={this.handleLogout}
+                user={this.state.user}
+              />
             )}
           />
         );
@@ -328,16 +346,7 @@ class App extends React.Component<{}, IState> {
 
       // const isChromeBrowser = window.hasOwnProperty('chrome');
 
-      // @ts-ignore
-      // const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
-      // const toggleConsoleTheme = () => {
-      //   console.log('toggling!', consoleTheme);
-      //   // consoleTheme === consoleThemes.dark ?
-      // setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
-      // };
-
       return (
-        // <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
         <Switch>
           <Route
             exact={true}
@@ -348,7 +357,14 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={'/settings'}
-            render={(props: any) => <Settings {...props} user={this.state.user} replaceUser={this.replaceUser} />}
+            render={(props: any) => (
+              <Settings
+                {...props}
+                user={this.state.user}
+                handleLogout={this.handleLogout}
+                replaceUser={this.replaceUser}
+              />
+            )}
           />
 
           {pageSelector}
@@ -363,13 +379,13 @@ class App extends React.Component<{}, IState> {
             handleLogout={this.handleLogout}
           />
         </Switch>
-        // </ConsoleThemeContext.Provider>
       );
     }
 
     if (this.state.triedLoading) {
       return (
         <div>
+          <ForbiddenManager handleLogin={this.handleLogin} error={this.state.error} />
           <IndexManager
             handleLogin={this.handleLogin}
             error={this.state.error}

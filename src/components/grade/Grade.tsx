@@ -116,6 +116,19 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     return restOfUnsavedComments;
   };
 
+  public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
+    // tslint:disable
+    return comments.hasOwnProperty(file.id)
+      ? {
+          ...comments,
+          [file.id]: comments[file.id].filter((comment: CommentType) => {
+            return comment.id > 0;
+          }),
+        }
+      : comments;
+  };
+  // tslint:enable
+
   // --- Linked Rubric Comments
   public static addToCommentRubricCommentsState = (
     commentRubricComments: ICommentToRubricCommentMap,
@@ -371,12 +384,17 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public changeSelectedFile = (fileID: number): void => {
+    const comments =
+      this.state.selectedFile !== undefined
+        ? Grade.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+        : this.state.comments;
+
     const selectedFile = this.state.files.find((file: FileType) => {
       return file.id === fileID;
     });
 
     // this.setState({ unsavedComments: {} });
-    this.setState({ selectedFile });
+    this.setState({ selectedFile, comments });
   };
 
   // Comment Elements have a data-status attribute
@@ -540,7 +558,17 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     try {
       const submission = await Submission.update(payload);
-      this.setState({ submission });
+      let comments = this.state.comments;
+
+      if (!this.state.submission.isFinalized) {
+        comments =
+          this.state.selectedFile !== undefined
+            ? Grade.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+            : this.state.comments;
+        message.success('Successfully finalized submission');
+      }
+
+      this.setState({ submission, comments });
     } catch (error) {
       message.error(`Error updating submission: ${JSON.stringify(error)}`);
     }
@@ -627,7 +655,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const subHeaderLeftBottom = [
       <StatusTags key="subheader-status-tags" assignment={this.state.assignment} submission={this.state.submission} />,
-      <Divider key="subheader-divider" type="vertical" />,
+      <Divider key="subheader-divider" type="vertical" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }} />,
       <Students
         key="subheader-students"
         submission={this.state.submission}

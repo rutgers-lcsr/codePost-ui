@@ -15,7 +15,7 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 import { BUTTON_STATE } from '../../types/common';
 import CPButton from '../core/CPButton';
 
-import { formatSub, ISubDataBasic } from './GraderUtils';
+import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -372,9 +372,12 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         },
         {
           title: 'Grade',
-          dataIndex: 'grade',
+          dataIndex: 'gradeText',
           sorter: (a: ITableRow, b: ITableRow) => {
-            return a.gradeToSort - b.gradeToSort;
+            return sortByGrade(
+              { grade: a.grade, isFinalized: a.isFinalized },
+              { grade: b.grade, isFinalized: b.isFinalized },
+            );
           },
           align: centerAlign,
         },

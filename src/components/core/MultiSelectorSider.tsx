@@ -10,7 +10,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Divider, Menu, Spin } from 'antd';
+import { Divider, Menu, Spin, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost imports */
@@ -39,21 +39,28 @@ interface IProps {
   onSecondSelectorClick: (e: ClickParam) => void; // callback when the first selector is clicked
   activeSecondSelector?: IOption; // active first selector item - controlled
   secondSelectorItems: IOptionWithDisabled[];
+  disabledMessage: string;
 
   theme?: ThemeType;
   isLoadingMenu?: boolean;
   children?: React.ReactNode;
 }
 
-const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => void) => {
+const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => void, disabledMessage: string) => {
   return (
     <Menu onClick={onClick}>
       {items.map((item: IOptionWithDisabled, index: number) => {
-        return (
-          <Menu.Item key={item.value} disabled={item.isDisabled}>
-            {item.label}
-          </Menu.Item>
-        );
+        if (item.isDisabled) {
+          return (
+            <Menu.Item key={item.value} disabled={item.isDisabled}>
+              <Tooltip title={disabledMessage} placement={'right'}>
+                {item.label}
+              </Tooltip>
+            </Menu.Item>
+          );
+        } else {
+          return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
+        }
       })}
     </Menu>
   );
@@ -61,8 +68,12 @@ const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => vo
 
 const MultiSelectorSider = (props: IProps) => {
   const theme = props.theme ? props.theme : 'light';
-  const firstSelectorOverlay = getOverlay(props.firstSelectorItems, props.onFirstSelectorClick);
-  const secondSelectorOverlay = getOverlay(props.secondSelectorItems, props.onSecondSelectorClick);
+  const firstSelectorOverlay = getOverlay(props.firstSelectorItems, props.onFirstSelectorClick, '');
+  const secondSelectorOverlay = getOverlay(
+    props.secondSelectorItems,
+    props.onSecondSelectorClick,
+    props.disabledMessage,
+  );
 
   return (
     <div style={{ padding: '18px 20px 0 16px' }}>
@@ -95,6 +106,7 @@ const MultiSelectorSider = (props: IProps) => {
           placement="bottomLeft"
           theme={theme}
           justifyContent="space-between"
+          disabled={props.activeFirstSelector === undefined}
         />
       )}
       <Divider style={{ margin: '10 0 10 0' }} />

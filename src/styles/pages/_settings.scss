@@ -1,0 +1,6 @@
+// This is to make an ant input be viewable (not greyed out) and also disabled
+#Settings .input--disabled-normal .ant-input-disabled {
+  background-color: transparent;
+  color: black;
+  cursor: default;
+}

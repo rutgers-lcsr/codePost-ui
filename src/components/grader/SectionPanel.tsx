@@ -10,7 +10,7 @@ import { Divider, Icon, Select, Spin, Switch, Table } from 'antd';
 const { Option } = Select;
 
 /* codePost imports */
-import { formatSub, getViewIcon, ISubDataBasic } from './GraderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -161,9 +161,12 @@ class SectionPanel extends React.Component<IProps, IState> {
         },
         {
           title: 'Grade',
-          dataIndex: 'grade',
+          dataIndex: 'gradeText',
           sorter: (a: ITableRow, b: ITableRow) => {
-            return a.gradeToSort - b.gradeToSort;
+            return sortByGrade(
+              { grade: a.grade, isFinalized: a.isFinalized },
+              { grade: b.grade, isFinalized: b.isFinalized },
+            );
           },
           align: centerAlign,
         },

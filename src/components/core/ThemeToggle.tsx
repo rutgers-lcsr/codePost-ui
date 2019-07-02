@@ -1,7 +1,5 @@
 import * as React from 'react';
 
-import { Icon } from 'antd';
-
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
 import { ReactComponent as MoonSvg } from '../../img/icons/moon.svg';
@@ -13,6 +11,11 @@ const ThemeToggle = (props: any) => {
   const { toggleConsoleTheme } = React.useContext(ConsoleThemeContext);
   const [checked, setChecked] = React.useState(false);
 
+  const onClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange();
+  };
+
   const onChange = () => {
     if (checked) {
       setChecked(false);
@@ -23,24 +26,37 @@ const ThemeToggle = (props: any) => {
     }
   };
 
-  const Moon = () => {
-    return <MoonSvg style={{ height: '16px', fill: 'white' }} />;
-  };
-  const Sun = () => {
-    return <SunSvg key="sun" style={{ height: '16px', fill: '#e5dc8d' }} />;
-  };
-
-  const icon = checked ? (
-    <Icon
-      component={Moon}
-      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-    />
-  ) : (
-    <Icon
-      component={Sun}
-      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+  // @ts-ignore
+  const Moon = (
+    <MoonSvg
+      onClick={onClick}
+      style={{
+        height: '16px',
+        fill: 'white',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      }}
     />
   );
+
+  const Sun = (
+    <SunSvg
+      onClick={onClick}
+      key="sun"
+      style={{
+        height: '16px',
+        fill: '#e5dc8d',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      }}
+    />
+  );
+
+  const icon = checked ? Moon : Sun;
 
   const border = checked ? '1px solid #494d4f' : '1px solid rgb(220, 220, 220)';
   return (

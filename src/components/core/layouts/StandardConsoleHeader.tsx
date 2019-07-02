@@ -1,7 +1,5 @@
 import * as React from 'react';
 
-import { Dropdown, Icon, Menu } from 'antd';
-
 import { Link } from 'react-router-dom';
 
 import CPButton from '../CPButton';
@@ -11,6 +9,7 @@ import CPLogo from '../CPLogo';
 import { UserType } from '../../../infrastructure/user';
 
 import { USER_TYPE } from '../../../types/common';
+import RoleMenu from '../RoleMenu';
 
 import ThemeToggle from '../ThemeToggle';
 
@@ -25,53 +24,14 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     <Link key="header-0" to="/">
       <CPLogo cpType="main" />
     </Link>,
-    <div key="space" style={{ width: '100px' }} />,
-    <ThemeToggle key="theme-toggle" />,
   ];
 
-  let roleSwitch;
-  if (props.thisApp !== undefined) {
-    // const isStudent = props.user.studentCourses.length > 0;
-    const isGrader = props.user.graderCourses.length > 0;
-    const isAdmin = props.user.courseadminCourses.length > 0;
-    switch (props.thisApp) {
-      case USER_TYPE.STUDENT:
-        if (isGrader || isAdmin) {
-          const roleMenu = (
-            <Menu>
-              {isGrader ? (
-                <Menu.Item>
-                  <Link to="/grader">
-                    <Icon type="audit" />
-                    &nbsp; Grader
-                  </Link>
-                </Menu.Item>
-              ) : null}
-              {isAdmin ? (
-                <Menu.Item>
-                  <Link to="/admin">
-                    <Icon type="sliders" />
-                    &nbsp; Admin
-                  </Link>
-                </Menu.Item>
-              ) : null}
-            </Menu>
-          );
-          roleSwitch = (
-            <Dropdown overlay={roleMenu}>
-              <Icon type="switcher" style={{ color: 'white' }} />
-            </Dropdown>
-          );
-        }
-        break;
-    }
-  }
-
   const headerRight = [
+    <ThemeToggle key="theme-toggle" />,
     <span key="header-user" className="cp-label cp-label--white cp-label--bold">
       {props.user.email}
     </span>,
-    roleSwitch,
+    <RoleMenu key="header-roles" user={props.user} theme="dark" />,
     <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
       Log Out
     </CPButton>,

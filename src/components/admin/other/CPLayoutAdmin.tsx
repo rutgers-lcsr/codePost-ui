@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';
 
+import layoutVars from '../../../styles/layout/_layoutVars';
 import useFixedWindow from '../../core/useFixedWindow';
 import useWindowSize from '../../core/useWindowSize';
 
@@ -36,10 +37,20 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
     setCollapsed(c);
   };
 
+  const siderWidth =
+    windowSize.width < layoutVars.breakpoints.smallScreen.admin
+      ? layoutVars.maxWidths.siderSmallScreen
+      : layoutVars.maxWidths.siderNormal;
+
   // FIXME: Hardcoded height variables
   return (
-    <Layout id="Admin" className="layout--admin">
-      <Sider collapsible={props.collapsible ? props.collapsible : false} collapsed={collapsed} onCollapse={onCollapse}>
+    <Layout id="Admin" className="layout--admin" style={{ overflowX: 'scroll' }}>
+      <Sider
+        collapsible={props.collapsible ? props.collapsible : false}
+        width={siderWidth}
+        collapsed={collapsed}
+        onCollapse={onCollapse}
+      >
         <Header className="layout--admin__sider__header">
           {collapsed ? (
             <Link to="/">
@@ -55,7 +66,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           {props.navigation(collapsed)}
         </div>
       </Sider>
-      <Layout>
+      <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
         <Header className="layout--admin__header">{props.header}</Header>
         {props.detail}
       </Layout>

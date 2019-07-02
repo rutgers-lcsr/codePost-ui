@@ -29,10 +29,15 @@ class CodePanelHighlighting {
         if (highlight.endLine === highlight.startLine) {
           highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
         } else {
-          highlights.push([highlight.startChar, thetext.length, highlight.id]);
+          // Avoid starting and stopping a highlight on the same char
+          const end = thetext[thetext.length - 1] === '\r' ? thetext.length - 1 : thetext.length;
+          const start = highlight.startChar === thetext.length ? end - 1 : highlight.startChar;
+          highlights.push([start, end, highlight.id]);
         }
       } else if (highlight.endLine === line) {
-        highlights.push([0, highlight.endChar, highlight.id]);
+        // Avoid starting and stopping a highlight on the same char
+        const end = highlight.endChar === 0 ? 1 : highlight.endChar;
+        highlights.push([0, end, highlight.id]);
       }
       // otherwise, the highlight ends before our line starts
     }
@@ -84,7 +89,7 @@ class CodePanelHighlighting {
 
       // We've reached the end of the line, and there are highlights that need closing
       if (i === thetext.length && remIDs.length >= 1) {
-        element = '</strong>';
+        element = '</strong> ';
       } else {
         const className = updatedIDs
           .map((id) => {
@@ -132,7 +137,7 @@ class CodePanelHighlighting {
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
           <Highlight
-            key={`${line}-${commentID}`}
+            key={`${line}-${commentID}-${i}`}
             commentID={commentID}
             line={line}
             className={className}

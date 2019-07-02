@@ -28,6 +28,28 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  React.useEffect(() => {
+    const codeMain = document.getElementById('code-main');
+    const codeSyntax = document.getElementById('code-syntax');
+
+    const horizontalCodeScroll = () => {
+      // Scroll horizontally
+      if (codeMain !== null && codeSyntax !== null) {
+        codeSyntax.scrollLeft = codeMain.scrollLeft;
+      }
+    };
+
+    if (codeMain !== null) {
+      codeMain.addEventListener('scroll', horizontalCodeScroll);
+    }
+
+    return () => {
+      if (codeMain !== null) {
+        codeMain.removeEventListener('scroll', horizontalCodeScroll);
+      }
+    };
+  }, []);
+
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
     setCommentCounter(commentCounter - 1);
     props.addComment(comment, file);
@@ -58,7 +80,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           style={consoleTheme.codeTheme}
           showLineNumbers={true}
           wrapLines={false}
-          customStyle={{ ...codeStyle, padding: '0px', backgroundColor: consoleTheme.codeBg }}
+          customStyle={{ ...codeStyle, padding: '0px 0px 0px 20px', backgroundColor: consoleTheme.codeBg }}
         >
           {props.file.code}
         </SyntaxHighlighter>

@@ -28,6 +28,12 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   public componentDidMount() {
     const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
     this.setState({ openKeys: [selectedPanelKey] });
+
+    /* set up Headway widget */
+    (window as any).Headway.init({
+      selector: '.version', // CSS selector where to inject the badge
+      account: '7v3mQJ',
+    });
   }
 
   public componentDidUpdate(oldProps: IAdminNavProps) {
@@ -39,6 +45,14 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
       if (this.state.openKeys.indexOf(selectedPanelKey) < 0 && selectedPanelKey !== '') {
         this.setState({ openKeys: [...this.state.openKeys, selectedPanelKey] });
       }
+    }
+
+    if (this.props.collapsed !== oldProps.collapsed) {
+      /* re-mount Headway widget */
+      (window as any).Headway.init({
+        selector: '.version', // CSS selector where to inject the badge
+        account: '7v3mQJ',
+      });
     }
   }
 
@@ -114,11 +128,11 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
           </Menu.Item>
         </Menu>
         <div style={{ height: '100%' }}>
-          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
+          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
             <Menu.Item key="docs">
               <Icon type="pushpin" />
               <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link">
+                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
                   Docs
                 </a>
               </span>
@@ -126,12 +140,15 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
             <Menu.Item key="api-reference">
               <Icon type="api" />
               <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link">
+                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
                   API Reference
                 </a>
               </span>
             </Menu.Item>
           </Menu>
+        </div>
+        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 24 }}>
+          {this.props.collapsed ? null : `v${process.env.REACT_APP_VERSION}`}
         </div>
       </div>
     );

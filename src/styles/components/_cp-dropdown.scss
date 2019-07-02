@@ -2,7 +2,7 @@
   width: 100%;
 
   &--light {
-    color: black;
+    color: $neutralDisable;
 
     &:hover {
       color: rgba(0, 0, 0, 0.7) !important;
@@ -11,8 +11,17 @@
 
   // FIXME: Dark theme dropdown not perfect yet;
   &--dark {
-    border: solid 1px #5e5e5e !important;
-    background-color: rgba(255, 255, 255, 0.05) !important;
+    .ant-btn {
+      // border: solid 1px #5e5e5e !important;
+      background-color: #323435 !important;
+      color: rgba(255, 255, 255, 0.5) !important;
+
+      &:hover {
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+    }
+    // border: solid 1px #5e5e5e !important;
+    background-color: #323435 !important;
     color: rgba(255, 255, 255, 0.5) !important;
 
     &:hover {
@@ -20,15 +29,17 @@
     }
   }
 
-  .cp-button {
-    &--light {
-      color: black;
+  &--dark.ant-dropdown-open {
+    .ant-btn {
+      color: rgba(255, 255, 255, 0.8) !important;
     }
   }
-}
 
-.ant-dropdown-open {
-  color: rgba(0, 0, 0, 0.7) !important;
+  .cp-button {
+    &--light {
+      color: $neutralDisable;
+    }
+  }
 }
 
 .ant-dropdown {

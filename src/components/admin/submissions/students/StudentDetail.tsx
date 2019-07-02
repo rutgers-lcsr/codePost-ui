@@ -45,6 +45,8 @@ interface IProps {
 interface IState {
   uploadSubmissionVisible: boolean;
   selectedSubmission: string /* stores the name of the assignment associated with the submission */;
+
+  assignmentToUpload?: AssignmentType;
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
@@ -53,8 +55,17 @@ class StudentDetail extends React.Component<IProps, IState> {
     selectedSubmission: '',
   };
 
-  public toggleUploadSubmissionVisible = () => {
-    this.setState({ uploadSubmissionVisible: !this.state.uploadSubmissionVisible });
+  public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
+    if (assignmentToUpload === undefined) {
+      this.setState({ uploadSubmissionVisible: false });
+    } else {
+      const toUpload = this.props.assignments.find((el) => {
+        return el.id === assignmentToUpload;
+      });
+      if (toUpload !== undefined) {
+        this.setState({ uploadSubmissionVisible: true, assignmentToUpload: toUpload });
+      }
+    }
   };
 
   public changeActiveSubmission = (assignment: string) => {
@@ -212,7 +223,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       ) : (
         <Menu>
           <Menu.Item key="0">
-            <span onClick={this.toggleUploadSubmissionVisible}>
+            <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
               <Icon type="upload" /> Upload submission
             </span>
           </Menu.Item>
@@ -225,7 +236,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           <div>
             <Select
               style={{ width: 200 }}
-              defaultValue={submission.grader ? submission.grader : 0}
+              defaultValue={submission.grader ? submission.grader : undefined}
               onChange={this.changeGrader.bind(this, submission)}
             >
               {[
@@ -238,7 +249,7 @@ class StudentDetail extends React.Component<IProps, IState> {
                       </Select.Option>
                     );
                   }),
-                <Select.Option key={0} value={0}>
+                <Select.Option key={0} value={undefined}>
                   No grader
                 </Select.Option>,
               ]}
@@ -306,12 +317,13 @@ class StudentDetail extends React.Component<IProps, IState> {
         <UploadSubmissionDialog
           key={'0'}
           isVisible={this.state.uploadSubmissionVisible}
-          onCancel={this.toggleUploadSubmissionVisible}
+          onCancel={this.toggleUploadSubmissionVisible.bind(this, undefined)}
           assignments={this.props.assignments}
           selectedStudents={[this.props.student]}
           students={this.props.students}
           submissions={this.props.submissions}
           uploadSubmission={this.props.uploadSubmission}
+          selectedAssignment={this.state.assignmentToUpload}
         />
       </div>
     );

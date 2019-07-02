@@ -6,8 +6,10 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Empty, Icon } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
+import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
+
+/* other library imports */
+import Highlighter from 'react-highlight-words';
 
 /* codePost imports  */
 import { IStudentSubmissionsDataTable } from '../../../types/common';
@@ -15,7 +17,7 @@ import { IStudentSubmissionsDataTable } from '../../../types/common';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
-import { TableDetail } from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 import StudentDetail from './students/StudentDetail';
 
@@ -26,23 +28,37 @@ import { PANELS } from '../Admin';
 /**********************************************************************************************************************/
 
 interface IProps {
+  /* UI control */
   loadComplete: boolean;
+  changeTab: (panel: PANELS) => void;
+
+  /* submissions data */
   assignments: AssignmentType[];
   submissionsByStudent: IStudentSubmissionsDataTable;
+  students: string[];
+  inactiveStudents: string[];
+
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
-  changeTab: (panel: PANELS) => void;
 }
 
 interface IState {
+  showActive: boolean;
+  showInactive: boolean;
   activeStudent?: string;
 }
 
 class StudentData extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {};
+  public constructor(props: IProps) {
+    super(props);
+    this.state = {
+      showActive: true,
+      showInactive: false,
+    };
+  }
 
   public componentDidUpdate(oldProps: IProps, oldState: IState) {
     if (oldProps.loadComplete && !this.props.loadComplete) {
@@ -70,12 +86,36 @@ class StudentData extends React.Component<IProps, IState> {
     return 0;
   };
 
+  public toggleValue = (value: string) => {
+    this.setState((prevState: IState) => {
+      const newState = { ...prevState };
+      newState[value] = !newState[value];
+      return newState;
+    });
+  };
+
   public render() {
+    let toggleInactiveStudents;
+
     if (!this.state.activeStudent) {
-      let columns: Array<ColumnProps<any>> = [];
+      let columns: ITableDetailColumn[] = [];
       let data: any[] = [];
 
       if (this.props.loadComplete) {
+        const hasInactiveStudents = this.props.inactiveStudents.length > 0;
+        if (hasInactiveStudents) {
+          toggleInactiveStudents = (
+            <div>
+              <Checkbox defaultChecked={this.state.showActive} onChange={this.toggleValue.bind(this, 'showActive')}>
+                Active students
+              </Checkbox>
+              <Checkbox defaultChecked={this.state.showInactive} onChange={this.toggleValue.bind(this, 'showInactive')}>
+                Inactive students
+              </Checkbox>
+            </div>
+          );
+        }
+
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
           { title: 'Expand', dataIndex: 'expand', key: 'expand', align: aligner },
@@ -84,6 +124,32 @@ class StudentData extends React.Component<IProps, IState> {
             dataIndex: 'student',
             key: 'primary',
             sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+            renderForSearch: (searchText: string) => {
+              return (text: string, record: any, index: number) => {
+                const student = record.student;
+                if (this.props.students.indexOf(student) > -1) {
+                  return (
+                    <Highlighter
+                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      searchWords={[searchText]}
+                      autoEscape
+                      textToHighlight={student}
+                    />
+                  );
+                } else {
+                  return (
+                    <span style={{ color: '#ccc' }}>
+                      <Highlighter
+                        highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                        searchWords={[searchText]}
+                        autoEscape
+                        textToHighlight={student}
+                      />
+                    </span>
+                  );
+                }
+              };
+            },
           },
           ...this.props.assignments.map((assignment) => {
             return {
@@ -99,7 +165,17 @@ class StudentData extends React.Component<IProps, IState> {
           }),
         ];
 
-        data = Object.keys(this.props.submissionsByStudent).map((studentEmail) => {
+        // Figure out which set of students to show in table rows
+        let rowValues: string[] = [];
+        if (this.state.showActive && this.state.showInactive) {
+          rowValues = Object.keys(this.props.submissionsByStudent);
+        } else if (this.state.showInactive) {
+          rowValues = this.props.inactiveStudents;
+        } else if (this.state.showActive) {
+          rowValues = this.props.students;
+        }
+
+        data = rowValues.map((studentEmail) => {
           const expandFn = () => {
             this.setState({ activeStudent: studentEmail });
           };
@@ -173,7 +249,7 @@ class StudentData extends React.Component<IProps, IState> {
           }
           columns={columns}
           data={data}
-          actions={[]}
+          actions={[toggleInactiveStudents]}
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item>Submissions</Breadcrumb.Item>
