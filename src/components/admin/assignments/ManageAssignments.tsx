@@ -525,7 +525,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
         data = this.props.assignments
           .sort((a, b) => {
-            return b.sortKey - a.sortKey;
+            if (a.sortKey === b.sortKey) {
+              return a.id - b.id;
+            } else {
+              return a.sortKey - b.sortKey;
+            }
           })
           .map((assignment, i) => {
             const statsForRow = assignmentStats[assignment.id];
