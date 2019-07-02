@@ -133,8 +133,10 @@ const formatSub = (
       } else {
         gradeText = <Text>{`${sub.grade}`}</Text>;
       }
-    } else {
+    } else if (sub.grader) {
       gradeText = <Text type="warning">Unfinalized</Text>;
+    } else {
+      gradeText = <Text type="warning">Unclaimed</Text>;
     }
 
     return {
