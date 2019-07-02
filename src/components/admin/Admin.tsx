@@ -224,7 +224,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       }
 
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses[0];
+        currentCourse = courses.sort((a, b) => {
+          return b.id - a.id;
+        })[0];
       }
 
       return { course: currentCourse, panel: currentPanel };
