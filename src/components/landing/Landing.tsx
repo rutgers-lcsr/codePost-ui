@@ -55,7 +55,7 @@ class Landing extends React.PureComponent<{}, {}> {
         Autograding can tell your students whether their code is correct, but
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <ul style={{ maxWidth: 400, textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
-            <li> 👎 Autograder output without context is confusing</li>
+            <li> 🧐 Autograder output without context is confusing</li>
             <li> 👎 Bad code can still pass correctness tests</li>
           </ul>
         </div>
