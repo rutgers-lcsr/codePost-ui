@@ -526,9 +526,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         data = this.props.assignments
           .sort((a, b) => {
             if (a.sortKey === b.sortKey) {
-              return a.id - b.id;
+              return a.id - b.id; // lower ids first
             } else {
-              return a.sortKey - b.sortKey;
+              return a.sortKey - b.sortKey; // lower sortKeys first
             }
           })
           .map((assignment, i) => {
