@@ -242,6 +242,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       {
         currentCourse: newCourse,
 
+        /**** Roster data ****/
         students: [],
         inactiveStudents: [],
         graders: [],
@@ -250,20 +251,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         superGraders: [],
         rosterLoadComplete: false,
 
+        /**** Sections data ****/
         sections: [],
         sectionsLoadComplete: false,
-
         sectionsByStudent: {},
 
-        submissions: {},
-        submissionsLoadComplete: false,
-
+        /**** Assignments data ****/
         assignments: [],
         assignmentsLoadComplete: false,
 
+        /**** Submissions data ****/
+        submissions: {},
+        submissionsLoadComplete: false,
         submissionsByStudent: {},
         submissionsByGrader: {},
         submissionsbyUserLoadComplete: false,
+        viewsBySubmission: {},
       },
       () => {
         this.changeURL(newCourse, this.state.currentPanel);
@@ -329,6 +332,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /**********************************************************************************/
   public loadAllCourseData = (course: CourseType) => {
     this.loadAssignments(course).then((assignments) => {
+      // use currentCourse as a nonce to see if this request is still desired
+      if (this.state.currentCourse !== course) {
+        return;
+      }
       if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
         this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
           this.setState({ assignments, assignmentsLoadComplete: true });
@@ -339,6 +346,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadSubmissions(course).then((submissionList) => {
+      // use currentCourse as a nonce to see if this request is still desired
+      if (this.state.currentCourse !== course) {
+        return;
+      }
       const submissionMap = {};
       submissionList.forEach((submissionObj) => {
         submissionMap[submissionObj.assignment] = submissionObj.submissions;
@@ -353,6 +364,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadRoster(course).then((roster) => {
+      if (this.state.currentCourse !== course) {
+        return;
+      }
       if (this.state.assignmentsLoadComplete && this.state.submissionsLoadComplete) {
         this.updateSubmissionsByUser(roster, undefined, undefined, () => {
           this.setState({
@@ -379,6 +393,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadSections(course).then((sections) => {
+      if (this.state.currentCourse !== course) {
+        return;
+      }
       const sectionsByStudent = this.generateSectionsByStudent(sections);
       this.setState({
         sections,
@@ -388,6 +405,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadViewsBySubmission(course).then((viewHistoryLists) => {
+      if (this.state.currentCourse !== course) {
+        return;
+      }
       const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
       this.setState({ viewsBySubmission });
     });
@@ -465,8 +485,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     assignments?: AssignmentType[],
     callback?: () => void,
   ) => {
-    const submissionsToUse = submissions ? submissions : this.state.submissions;
-    const assignmentsToUse = assignments ? assignments : this.state.assignments;
+    const submissionsToUse = submissions !== undefined ? submissions : this.state.submissions;
+    const assignmentsToUse = assignments !== undefined ? assignments : this.state.assignments;
     let rosterToUse;
     if (roster) {
       rosterToUse = roster;
@@ -517,19 +537,17 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     assignments.forEach((assignment) => {
       const assignmentSubs = submissions[assignment.id];
-      if (assignmentSubs !== undefined) {
-        assignmentSubs.forEach((submission: SubmissionType) => {
-          // NOTE: students in submission.students might be inactive
-          submission.students.forEach((student: string) => {
-            subsByStudent[student][assignment.id] = submission;
-          });
-
-          // NOTE: graders in submission.students might be inactive
-          if (submission.grader) {
-            subsByGrader[submission.grader][assignment.id].push(submission);
-          }
+      assignmentSubs.forEach((submission: SubmissionType) => {
+        // NOTE: students in submission.students might be inactive
+        submission.students.forEach((student: string) => {
+          subsByStudent[student][assignment.id] = submission;
         });
-      }
+
+        // NOTE: graders in submission.students might be inactive
+        if (submission.grader) {
+          subsByGrader[submission.grader][assignment.id].push(submission);
+        }
+      });
     });
 
     return {
