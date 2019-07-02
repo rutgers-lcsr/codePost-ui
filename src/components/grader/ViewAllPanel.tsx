@@ -148,7 +148,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       },
       {
         title: 'Viewed by Student(s)',
-        dataIndex: 'viewed',
+        dataIndex: 'viewIcon',
         align: centerAlign,
       },
     ];

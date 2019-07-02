@@ -188,7 +188,7 @@ class SectionPanel extends React.Component<IProps, IState> {
         },
         {
           title: 'Viewed by Student(s)',
-          dataIndex: 'viewed',
+          dataIndex: 'viewIcon',
           align: centerAlign,
         },
       ];
