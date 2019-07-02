@@ -375,6 +375,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       </div>
     );
   } else {
+    // uses solution to antd tooltip bug propsoed here:
+    // https://github.com/react-component/tooltip/issues/18
     const isDisabled = props.submission.grader === null;
     const buttonToReturn = (
       <CPButton

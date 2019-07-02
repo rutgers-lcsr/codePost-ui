@@ -200,7 +200,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
       // By default open first course in course list
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses[0];
+        currentCourse = courses.sort((a, b) => {
+          return b.id - a.id;
+        })[0];
       }
 
       return { course: currentCourse, assignment: currentAssignment, panel: currentPanel };
