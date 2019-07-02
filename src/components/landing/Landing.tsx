@@ -54,15 +54,14 @@ class Landing extends React.PureComponent<{}, {}> {
         </div>
         Autograding can tell your students whether their code is correct, but
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ul style={{ maxWidth: 400, textAlign: 'start' }}>
-            <li> Autograder output without context is confusing</li>
-            <li> Bad code can still pass correctness tests</li>
+          <ul style={{ maxWidth: 400, textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
+            <li> 🧐 Autograder output without context is confusing</li>
+            <li> 👎 Bad code can still pass correctness tests</li>
           </ul>
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          With codePost, you can supplement your autograder with feedback on everything an autograder can’t evaluate --
-          like style, structure, algorithm selection -- as well as provide context on correctness errors for better
-          comprehension.
+          With codePost, you can explain autograder output so your students learn more, &amp; give feedback on
+          everything an autograder can’t evaluate.
         </div>
       </div>
     );
@@ -72,9 +71,9 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ paddingBottom: 15 }}>
           Use codePost to annotate programming assignments with easy-to-read comments that don't clutter code. You and
           your course staff can provide custom feedback, as well as apply standardized rubrics. And we support iPython
-          notebooks too!
+          notebooks too.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser.</div>
+        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser</div>
       </div>
     );
 
@@ -86,7 +85,7 @@ class Landing extends React.PureComponent<{}, {}> {
           students are doing, audit grading, and mine for pedagogical insights.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          Easy course management so that you can spend more time teaching.
+          Easy course management, so you can spend more time teaching
         </div>
       </div>
     );
@@ -103,8 +102,9 @@ class Landing extends React.PureComponent<{}, {}> {
           can start building powerful scripts in less than 10 minutes (actually).
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our current users have used the codePost API to integrate with tools such as Github, JupyterHub, MOSS,
-          Blackboard, Canvas, Moodle and many others!
+          Our users have integrated with tools such as{' '}
+          <span style={{ fontWeight: 600 }}>Github, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span> and more using
+          the codePost API!
         </div>
       </div>
     );
@@ -127,7 +127,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelOneText}
         title="1. ANNOTATE STUDENT CODE"
-        subTitle="Effortlessly annotate and grade programming assignments."
+        subTitle="Effortlessly annotate and grade programming assignments"
         module={<GradeAnimationVideo width={610} height={390} controls={500} />}
         type="right"
         moduleMaxWidth={610}
@@ -141,7 +141,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
-        subTitle="Less time configuring software, more time teaching."
+        subTitle="Less time configuring software, more time teaching"
         module={<AdminAnimation />}
         type="left"
         moduleMaxWidth={610}
@@ -157,7 +157,7 @@ class Landing extends React.PureComponent<{}, {}> {
           <LandingPanel
             text={panelThreeText}
             title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
-            subTitle="Run your course with codePost’s API."
+            subTitle="Run your course with codePost’s API"
             module={<APIAnimation />}
             type="right"
             moduleMaxWidth={600}
