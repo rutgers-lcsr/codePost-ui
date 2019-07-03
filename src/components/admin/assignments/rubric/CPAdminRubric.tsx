@@ -9,8 +9,8 @@ import * as React from 'react';
 import { Layout } from 'antd';
 const { Header, Content } = Layout;
 
-import CPFlex from './../../../core/CPFlex';
-
+import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
 /**********************************************************************************************************************/
 
 interface ICPAdminRubricProps {
@@ -21,30 +21,34 @@ interface ICPAdminRubricProps {
   breadcrumbs?: React.ReactNode;
   isEmpty: boolean;
   emptyNode?: React.ReactNode;
+  titleInfo?: string | React.ReactNode;
 }
 
-class CPAdminRubric extends React.Component<ICPAdminRubricProps, {}> {
-  public render() {
-    const subheaderLeft = [
-      <span key="title" className="cp-label cp-label--large cp-label--bold">
-        {this.props.title}
-      </span>,
-    ];
+const CPAdminRubric = (props: ICPAdminRubricProps) => {
+  const titleTooltip = props.titleInfo ? (
+    <CPTooltip title={props.titleInfo} placement="right" type="info" iconStyle={{ paddingLeft: 10 }} />
+  ) : (
+    <div />
+  );
 
-    return (
-      <Content className="layout--admin__detail--rubric">
-        <Layout>
-          <Header className="layout--admin__rubric__subheader">
-            <CPFlex left={[<div key="breadcrumbs">{this.props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
-            <CPFlex left={subheaderLeft} right={this.props.actions} gutterSize={10} />
-          </Header>
-          <Content className="layout--admin__rubric__content">
-            {this.props.isEmpty ? this.props.emptyNode : this.props.content}
-          </Content>
-        </Layout>
-      </Content>
-    );
-  }
-}
+  const subheaderLeft = [
+    <span key="title" className="cp-label cp-label--large cp-label--bold">
+      {props.title}
+    </span>,
+    titleTooltip,
+  ];
+
+  return (
+    <Content className="layout--admin__detail--rubric">
+      <Layout>
+        <Header className="layout--admin__rubric__subheader">
+          <CPFlex left={[<div key="breadcrumbs">{props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
+          <CPFlex left={subheaderLeft} right={props.actions} gutterSize={10} />
+        </Header>
+        <Content className="layout--admin__rubric__content">{props.isEmpty ? props.emptyNode : props.content}</Content>
+      </Layout>
+    </Content>
+  );
+};
 
 export default CPAdminRubric;

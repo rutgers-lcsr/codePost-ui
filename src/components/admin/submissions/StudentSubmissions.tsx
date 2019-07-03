@@ -22,6 +22,8 @@ import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import StudentDetail from './students/StudentDetail';
 
 import CPButton from '../../../components/core/CPButton';
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
 
 import { PANELS } from '../Admin';
 
@@ -109,9 +111,14 @@ class StudentData extends React.Component<IProps, IState> {
               <Checkbox defaultChecked={this.state.showActive} onChange={this.toggleValue.bind(this, 'showActive')}>
                 Active students
               </Checkbox>
-              <Checkbox defaultChecked={this.state.showInactive} onChange={this.toggleValue.bind(this, 'showInactive')}>
-                Inactive students
-              </Checkbox>
+              <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+                <Checkbox
+                  defaultChecked={this.state.showInactive}
+                  onChange={this.toggleValue.bind(this, 'showInactive')}
+                >
+                  Inactive students
+                </Checkbox>
+              </CPTooltip>
             </div>
           );
         }
@@ -256,6 +263,7 @@ class StudentData extends React.Component<IProps, IState> {
               <Breadcrumb.Item>Students</Breadcrumb.Item>
             </Breadcrumb>
           }
+          titleInfo={tooltips.admin.studentSubmissions.title}
         />
       );
     } else {

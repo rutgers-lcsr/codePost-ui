@@ -6,10 +6,12 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Form, Icon, Input, Modal, Radio, Select, Tooltip } from 'antd';
+import { Form, Input, Modal, Radio, Select } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../core/CPButton';
+import CPTooltip from '../../core/CPTooltip';
+import { tooltips } from '../../core/tooltips';
 
 import { CourseType } from '../../../infrastructure/course';
 
@@ -163,13 +165,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                       <Radio value="private">Clone existing course</Radio>
                     </Radio.Group>,
                   )}
-                  <Tooltip
-                    title="Cloning a course will copy all assignments (including rubrics) and course settings
-                     from the old course into your new course. All other information (including rosters) won't
-                      be copied."
-                  >
-                    <Icon type="info-circle" />
-                  </Tooltip>
+                  <CPTooltip title={tooltips.admin.newCourse.clone} type="info" />
                 </Form.Item>
                 <Form.Item label="Course to clone">
                   {getFieldDecorator('cloneID')(

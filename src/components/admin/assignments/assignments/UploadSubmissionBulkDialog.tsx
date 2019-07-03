@@ -18,7 +18,6 @@ import {
   Switch,
   Table,
   Tag,
-  Tooltip,
   Typography,
   Upload,
 } from 'antd';
@@ -28,6 +27,8 @@ const { Step } = Steps;
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
 
 import _ from 'lodash';
 
@@ -656,11 +657,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                      uploaded aleady has a submission uploaded for this assignment.`;
                 }
                 status = (
-                  <Tooltip title={tooltipText}>
+                  <CPTooltip title={tooltipText}>
                     <Tag color="volcano" key={el}>
                       CONFLICT
                     </Tag>
-                  </Tooltip>
+                  </CPTooltip>
                 );
               }
             } else {

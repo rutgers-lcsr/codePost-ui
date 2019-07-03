@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch, Tooltip } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
 const confirm = Modal.confirm;
 
 /* codePost imports */
@@ -17,6 +17,9 @@ import { SectionType } from '../../../infrastructure/section';
 
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
+
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
 
 import AddGraderDialog from './graders/AddGraderDialog';
 
@@ -143,15 +146,7 @@ class ManageGraders extends React.Component<IProps, IState> {
           title: (
             <div>
               Supergrader Status{' '}
-              <Tooltip
-                title={
-                  <div>
-                    Supergraders have elevated privileges. Read more abuot them in <a>our docs</a>.
-                  </div>
-                }
-              >
-                <Icon type="question-circle" />
-              </Tooltip>
+              <CPTooltip title={tooltips.admin.graderRoster.supergrader} type="question" hideThisOnHideTips={true} />
             </div>
           ),
           dataIndex: 'status',
@@ -254,6 +249,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             </Breadcrumb.Item>
           </Breadcrumb>
         }
+        titleInfo={tooltips.admin.studentRoster.title}
       />
     );
   }

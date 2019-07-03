@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select, Tooltip } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
 const confirm = Modal.confirm;
 
 /* other library imports */
@@ -21,6 +21,9 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { TableDetail } from '../../other/TableDetail';
 
 import UploadSubmissionDialog from '../../assignments/assignments/UploadSubmissionDialog';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
@@ -96,11 +99,11 @@ class StudentDetail extends React.Component<IProps, IState> {
     } else if (student in this.props.viewsBySubmission[submission.id]) {
       // case: submission has been viewed
       return (
-        <Tooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
+        <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
           <div>
             <Icon type="eye" theme="filled" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
     } else {
       // case: submission has not been viewed
@@ -179,9 +182,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         title: (
           <div>
             Viewed &nbsp;
-            <Tooltip title={<div>Information about student's interaction with his/her published feedback.</div>}>
-              <Icon type="question-circle" />
-            </Tooltip>
+            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} type="question" hideThisOnHideTips={true} />
           </div>
         ),
         dataIndex: 'viewed',

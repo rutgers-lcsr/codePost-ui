@@ -13,6 +13,9 @@ import { IFileToCommentsMap } from '../../types/common';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
+
 interface IFileMenuProps {
   title?: string;
   files: FileType[];
@@ -51,11 +54,13 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       let commentCountBadge = null;
       if (commentCount > 0) {
         commentCountBadge = (
-          <Badge
-            count={commentCount}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
-          />
+          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+            <Badge
+              count={commentCount}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
+            />
+          </CPTooltip>
         );
       }
 
@@ -64,21 +69,25 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
       if (deductions > 0) {
         deductionBadge = (
-          <Badge
-            count={deductions * -1}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
-          />
+          <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+            <Badge
+              count={deductions * -1}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
+            />
+          </CPTooltip>
         );
       }
 
       if (bonuses > 0) {
         bonusBadge = (
-          <Badge
-            count={`+${bonuses}`}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
-          />
+          <CPTooltip title={tooltips.console.fileMenu.additions} hideThisOnHideTips={true}>
+            <Badge
+              count={`+${bonuses}`}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
+            />
+          </CPTooltip>
         );
       }
 

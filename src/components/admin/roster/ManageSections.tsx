@@ -20,6 +20,8 @@ import { SectionType } from '../../../infrastructure/section';
 
 import AddSectionDialog from './sections/AddSectionDialog';
 
+import { tooltips } from '../../../components/core/tooltips';
+
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
 
@@ -303,6 +305,7 @@ class ManageSections extends React.Component<IProps, IState> {
             </Breadcrumb.Item>
           </Breadcrumb>
         }
+        titleInfo={tooltips.admin.studentRoster.title}
       />
     );
   }

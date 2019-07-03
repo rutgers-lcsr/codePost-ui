@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu, Modal, Tooltip } from 'antd';
+import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
 const confirm = Modal.confirm;
 import { ColumnProps } from 'antd/lib/table';
 
@@ -18,6 +18,9 @@ import { SectionType } from '../../../infrastructure/section';
 
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
+
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
 
 import AddAdminDialog from './admins/AddAdminDialog';
 
@@ -126,9 +129,9 @@ class ManageAdmins extends React.Component<IProps, IState> {
           admin === this.props.me ? (
             <Menu>
               <Menu.Item key="1" disabled={true}>
-                <Tooltip title="You cannot remove yourself as an admin.">
+                <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
                   <Icon type="user-delete" /> &nbsp; Unenroll
-                </Tooltip>
+                </CPTooltip>
               </Menu.Item>
             </Menu>
           ) : (
@@ -169,6 +172,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
             </Breadcrumb.Item>
           </Breadcrumb>
         }
+        titleInfo={tooltips.admin.studentRoster.title}
       />
     );
   }

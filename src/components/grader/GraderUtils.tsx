@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Icon, Tooltip, Typography } from 'antd';
+import { Icon, Typography } from 'antd';
 const { Text } = Typography;
 
 /* other library imports */
@@ -15,6 +15,8 @@ import * as moment from 'moment';
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+
+import CPTooltip from '../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -39,11 +41,11 @@ const getViewIcon = (
   // case: looking up a single student, and student has viewed the submission
   if (studentToLookup && studentToLookup in views) {
     return (
-      <Tooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
+      <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
         <div>
           <Icon type="eye" theme="filled" />
         </div>
-      </Tooltip>
+      </CPTooltip>
     );
   }
 
@@ -76,19 +78,19 @@ const getViewIcon = (
     // case: all students have viewed
     case submission.students.length:
       return (
-        <Tooltip title={getTooltipLabel()}>
+        <CPTooltip title={getTooltipLabel()}>
           <div>
             <Icon type="eye" theme="filled" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
     default:
       return (
-        <Tooltip title={getTooltipLabel()}>
+        <CPTooltip title={getTooltipLabel()}>
           <div>
             <Icon type="eye" theme="twoTone" twoToneColor="#646464" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
   }
 };

@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -17,6 +17,8 @@ import _ from 'lodash';
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
+import { tooltips } from '../../../core/tooltips';
 
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -460,12 +462,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       <div key="help-text">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Help Text{' '}
-          <Tooltip
-            title={`Use this text to explain the rubric category to graders.
-           It will appear alongside the rubric category in the Code Review console.`}
-          >
-            <Icon type="question-circle" />
-          </Tooltip>
+          <CPTooltip title={tooltips.admin.rubric.categoryHelpText} type="question" hideThisOnHideTips={true} />
         </div>
         <Input.TextArea
           style={{ width: 350 }}

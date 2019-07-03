@@ -15,7 +15,7 @@ import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
+import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag } from 'antd';
 
 const ButtonGroup = Button.Group;
 
@@ -25,6 +25,9 @@ import { SelectParam } from 'antd/lib/menu';
 
 import CPButton from '../core/CPButton';
 import CPDropdown from '../core/CPDropdown';
+
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 interface ISubheaderTitleProps {
   assignment: AssignmentType;
@@ -294,14 +297,17 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const currentGrader = props.submission.grader ? props.submission.grader : 'unassigned';
 
   const dropdown = (
-    <CPDropdown
-      value={currentGrader}
-      overlay={overlay}
-      overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
-      theme={theme}
-      label="grader:"
-      disabled={props.submission.isFinalized}
-    />
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <CPDropdown
+        value={currentGrader}
+        overlay={overlay}
+        overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+        theme={theme}
+        label="grader:"
+        disabled={props.submission.isFinalized}
+      />
+      <CPTooltip title={tooltips.grade.subheader.assignGrader} type="info" hideThisOnHideTips={true} />
+    </div>
   );
 
   if (props.isCourseAdmin) {
@@ -321,7 +327,6 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
       </ButtonGroup>
     );
   }
-  return dropdown;
 };
 
 interface IFinalizeButtonProps {
@@ -409,9 +414,9 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     );
     if (isDisabled) {
       return (
-        <Tooltip title="Assign a grader before finalizing." placement="bottom">
+        <CPTooltip title="Assign a grader before finalizing." placement="bottom">
           <span>{buttonToReturn}</span>
-        </Tooltip>
+        </CPTooltip>
       );
     } else {
       return buttonToReturn;
@@ -481,7 +486,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
   }
 
   return (
-    <Tooltip title={tooltipText} placement="bottom">
+    <CPTooltip title={tooltipText} placement="bottom">
       <Tag
         color={tagColor}
         style={{
@@ -491,7 +496,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
       >
         {tagText}
       </Tag>
-    </Tooltip>
+    </CPTooltip>
   );
 };
 
