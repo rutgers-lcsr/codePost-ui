@@ -68,8 +68,8 @@ const ADMIN_RUBRIC_DEDUCTION =
   'The deduction associated with this comment.\
  Reminder: Deductions are negative by default! So a deduction of 1 => -1 points.';
 const ADMIN_RUBRIC_INSTANCES = 'The places where this rubric comment is used.';
-const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up.';
-const ADMIN_RUBRIC_CATEGORYDOWN = 'Move this category down.';
+const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up';
+const ADMIN_RUBRIC_CATEGORYDOWN = 'Move this category down';
 const ADMIN_RUBRIC_TITLE =
   "Each assignment has a rubric associated with it.\
    In the grade console, you'll be able to reference and add rubric items to each submission.";

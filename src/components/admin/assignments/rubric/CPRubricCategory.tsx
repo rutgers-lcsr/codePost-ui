@@ -79,13 +79,33 @@ const commentTableColumns = [
     key: 'text',
   },
   {
-    title: 'Deduction',
+    title: (
+      <div>
+        Deduction
+        <CPTooltip
+          title={tooltips.admin.rubric.deduction}
+          type="question"
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     dataIndex: 'deduction',
     key: 'deduction',
     align: aligner,
   },
   {
-    title: 'Instances',
+    title: (
+      <div>
+        Instances
+        <CPTooltip
+          title={tooltips.admin.rubric.instances}
+          type="question"
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     key: 'linked',
     dataIndex: 'linked',
     align: aligner,
@@ -375,7 +395,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               />
             </span>
           ),
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       } else {
         return {
@@ -396,7 +420,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           linked: null,
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       }
     });
@@ -415,18 +443,22 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </span>,
       <span key="buttons">
         {this.props.index > 0 && this.props.numCategories > 1 ? (
-          <Button
-            icon="caret-up"
-            size="small"
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
-          />
+          <CPTooltip title={tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
+            <Button
+              icon="caret-up"
+              size="small"
+              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+            />
+          </CPTooltip>
         ) : null}
         {this.props.index !== this.props.numCategories - 1 ? (
-          <Button
-            icon="caret-down"
-            size="small"
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
-          />
+          <CPTooltip title={tooltips.admin.rubric.categoryDown} hideThisOnHideTips={true}>
+            <Button
+              icon="caret-down"
+              size="small"
+              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
+            />
+          </CPTooltip>
         ) : null}
       </span>,
     ];

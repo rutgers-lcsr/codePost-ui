@@ -249,7 +249,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             </Breadcrumb.Item>
           </Breadcrumb>
         }
-        titleInfo={tooltips.admin.studentRoster.title}
+        titleInfo={tooltips.admin.graderRoster.title}
       />
     );
   }

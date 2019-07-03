@@ -26,7 +26,13 @@ interface ICPAdminRubricProps {
 
 const CPAdminRubric = (props: ICPAdminRubricProps) => {
   const titleTooltip = props.titleInfo ? (
-    <CPTooltip title={props.titleInfo} placement="right" type="info" iconStyle={{ paddingLeft: 10 }} />
+    <CPTooltip
+      title={props.titleInfo}
+      placement="right"
+      type="info"
+      hideThisOnHideTips={true}
+      iconStyle={{ paddingLeft: 10 }}
+    />
   ) : (
     <div />
   );
