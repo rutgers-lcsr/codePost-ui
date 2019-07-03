@@ -149,12 +149,17 @@ class Settings extends React.Component<IProps, IState> {
         Member of: <Typography.Text strong>{user.organization}</Typography.Text>
         <br />
         <br />
-        Enable help text and tooltips in the site:
         <br />
-        If you're a codePost veteran and don't want to see help text and tips across the site, then you can turn this
-        setting off.
-        <br />
-        <Switch checked={user.showProductTips} onChange={this.updateShowProductTips} />
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+          <div style={{ flexGrow: 1 }}>
+            <Typography.Title level={4}>Enable tips</Typography.Title>
+            If you're a codePost veteran and don't want to see help text and tips across the site, then you can turn
+            this setting off.
+          </div>
+          <div style={{ paddingLeft: 40 }}>
+            <Switch checked={user.showProductTips} onChange={this.updateShowProductTips} />
+          </div>
+        </div>
         <br />
         <br />
         {user.canModifyRosters ? (
