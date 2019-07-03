@@ -585,8 +585,6 @@ class RubricManager extends React.Component<IProps, IState> {
       helpText: '',
     };
 
-    console.log(payload);
-
     newComments[payload.id] = [];
 
     this.setState({

@@ -85,7 +85,6 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public componentDidUpdate(oldProps: IProps, oldState: IState) {
     if (!oldState.createNewOrg && this.state.createNewOrg) {
-      console.log('bump');
       this.setState({ selectedOrg: { label: '', value: '' } });
     }
   }

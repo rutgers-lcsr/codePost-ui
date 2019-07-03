@@ -248,8 +248,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   public saveCategory = () => {
     const { rubricCategory } = this.props;
     const { name, pointLimit, helpText } = this.state;
-    console.log('bump');
-    console.log(pointLimit);
 
     if (
       name !== rubricCategory.name ||

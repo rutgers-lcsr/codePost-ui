@@ -346,8 +346,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       }
     });
 
-    console.log(toChange);
-
     // loop through changed submissions
     const promises: Array<Promise<any>> = toChange.map((submission) => {
       if (submission.students.length === 0) {

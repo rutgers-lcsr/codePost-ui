@@ -38,7 +38,6 @@ const getTooltipState = (
 const CPTooltip = (props: IProps) => {
   const { children, type, title, iconStyle, hideThisOnHideTips, hideChildrenOnHideTips, ...antprops } = props;
   const showTooltips = useContext(ShowTooltipContext);
-  console.log(showTooltips);
 
   let icon;
   if (type !== undefined) {
