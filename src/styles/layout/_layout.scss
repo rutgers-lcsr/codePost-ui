@@ -1,6 +1,7 @@
 #Grade {
   header button {
     font-size: 12px !important;
+    padding: 0 10px !important;
   }
 
   .layout--standard-console {
@@ -8,8 +9,12 @@
       background: white;
       border-bottom: 1px solid gray;
       height: 50px;
-      padding: 0 15px;
     }
+  }
+
+  .dropdown {
+    font-size: 12;
+    width: 200px;
   }
 }
 

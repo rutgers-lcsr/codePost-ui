@@ -6,8 +6,19 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
-import { SelectParam } from 'antd/lib/menu';
+import {
+  Button,
+  Descriptions,
+  Divider,
+  Icon,
+  message,
+  Popconfirm,
+  Popover,
+  Select,
+  Skeleton,
+  Tag,
+  Tooltip,
+} from 'antd';
 const ButtonGroup = Button.Group;
 
 /* other library imports */
@@ -16,21 +27,20 @@ import * as moment from 'moment';
 /* codePost imports */
 import Grade from '../grade/Grade';
 
-import useOnClickOutside from '../core/useOnClickOutside';
+// import useOnClickOutside from '../core/useOnClickOutside';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
-import { wait } from '../../infrastructure/animation';
+// import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import CPButton from '../core/CPButton';
-import CPDropdown from '../core/CPDropdown';
 
 /**********************************************************************************************************************/
 
@@ -285,48 +295,55 @@ interface ISubheaderGraderProps {
 
 export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const menuItems = props.graders.map((grader: string, index: number) => {
-    return <Menu.Item key={grader}>{grader}</Menu.Item>;
+    return (
+      <Select.Option key={grader} style={{ fontSize: 12 }}>
+        {grader}
+      </Select.Option>
+    );
   });
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+  // const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  // const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
-  menuItems.unshift(<Menu.Item key={'unassign'}>** unassign **</Menu.Item>);
+  function handleChange(grader: string) {
+    props.updateGrader(props.submission, grader).then(() => {
+      message.success(`Successfully assigned to ${grader}`);
+    });
+  }
 
-  const onClick = async (param: SelectParam) => {
-    const selectedGrader = param.key;
-    if (selectedGrader === 'unassign') {
-      await props.updateGrader(props.submission, '');
-      message.success('Successfully unassigned grader');
-    } else {
-      await props.updateGrader(props.submission, selectedGrader);
-      message.success(`Successfully assigned to ${selectedGrader}`);
-    }
-  };
-
-  const overlay = <Menu onClick={onClick}>{menuItems}</Menu>;
+  function unassign() {
+    props.updateGrader(props.submission, '').then(() => {
+      message.success('Successfully unassigned submission');
+    });
+  }
 
   const currentGrader = props.submission.grader ? props.submission.grader : 'unassigned';
 
+  const renderUnassign = (menu: any) => (
+    <div>
+      {menu}
+      <Divider style={{ margin: '4px 0' }} />
+      <div style={{ padding: '6px', cursor: 'pointer', fontSize: 12 }} onClick={unassign}>
+        <Icon type="close" /> Unassign
+      </div>
+    </div>
+  );
+
   const dropdown = (
-    <CPDropdown
+    <Select
       value={currentGrader}
-      overlay={overlay}
-      overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
-      theme={theme}
+      style={{ width: 200, fontSize: 12 }}
       disabled={props.submission.isFinalized}
-    />
+      dropdownRender={renderUnassign}
+      onChange={handleChange}
+    >
+      {menuItems}
+    </Select>
   );
 
   if (props.isCourseAdmin) {
-    return dropdown;
+    return <span>{dropdown}</span>;
   } else {
-    return (
-      <ButtonGroup>
-        <Button style={{ cursor: 'default', backgroundColor: consoleTheme.subheaderBg, color: consoleTheme.text }}>
-          {currentGrader}
-        </Button>
-      </ButtonGroup>
-    );
+    return <span>{currentGrader}</span>;
   }
   return dropdown;
 };
@@ -342,17 +359,17 @@ interface IFinalizeButtonProps {
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
-  const [notice, setNotice] = React.useState(false);
+  // const [notice, setNotice] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  useOnClickOutside(ref, async (e: any) => {
-    const fileMenu = document.getElementById('file-menu');
-    if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
-      setNotice(true);
-      await wait(250);
-      setNotice(false);
-    }
-  });
+  // useOnClickOutside(ref, async (e: any) => {
+  //   const fileMenu = document.getElementById('file-menu');
+  //   if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
+  //     setNotice(true);
+  //     await wait(250);
+  //     setNotice(false);
+  //   }
+  // });
 
   const onClick = async () => {
     setIsLoading(true);
@@ -379,10 +396,10 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     <div ref={ref}>
       <ButtonGroup>
         <CPButton
-          cpType={notice ? 'primary' : 'secondary'}
+          cpType="primary"
           fallback="unlock"
           onClick={onClick}
-          loading={isLoading}
+          loading={isLoading && props.submission.isFinalized}
           small={true}
           disabled={!props.submission.isFinalized}
         >
@@ -392,8 +409,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           cpType="primary"
           fallback="lock"
           onClick={onClick}
-          loading={isLoading}
-          disabled={props.submission.grader === null || props.submission.isFinalized}
+          loading={isLoading && !props.submission.isFinalized}
+          disabled={props.submission.isFinalized}
           style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
           small={true}
         >
@@ -524,14 +541,10 @@ export const Students = (props: { submission: AnonymousSubmissionType; isAnonymo
   let revealButton;
 
   if (props.submission.students === undefined || (props.isAnonymous && !showStudents)) {
-    studentString = `${props.submission.id} <Anonymized>`;
+    studentString = '<Anonymized>';
 
     if (props.submission.students !== undefined && !showStudents) {
-      revealButton = (
-        <CPButton cpType="secondary" size="small" onClick={reveal} style={{ minWidth: '70px' }}>
-          reveal
-        </CPButton>
-      );
+      revealButton = <a onClick={reveal}>reveal</a>;
     }
   } else {
     studentString = props.submission.students.join(', ');

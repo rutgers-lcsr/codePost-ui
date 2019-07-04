@@ -6,6 +6,7 @@ interface ICPFlexProps {
   middle?: React.ReactNode[];
   gutterSize: number;
   style?: React.CSSProperties;
+  className?: string;
 }
 
 class CPFlex extends React.Component<ICPFlexProps, {}> {
@@ -38,7 +39,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
     }
 
     return (
-      <div className="cp-flex" style={this.props.style ? this.props.style : {}}>
+      <div className={`cp-flex ${this.props.className}`} style={this.props.style ? this.props.style : {}}>
         {leftNodes}
         <div className="gap" style={{ marginLeft: `-${this.props.gutterSize}px` }} />
         <div style={{ flex: 'auto', verticalAlign: 'middle' }}>{middleNodes}</div>

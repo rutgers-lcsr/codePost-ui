@@ -46,6 +46,8 @@ import { StudentSubmissionType, Submission } from '../../infrastructure/submissi
 
 import { UserType } from '../../infrastructure/user';
 
+import themeVars from '../../styles/abstracts/_theme.js';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
@@ -63,6 +65,9 @@ interface IStudentState {
   // Loading variables
   isLoadingAssignments: boolean;
   isLoadingSubmission: boolean;
+
+  // code viewer variables
+  verticalOffset: number;
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -100,6 +105,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       isLoadingSubmission: false,
       rubricCategories: [],
       commentRubricComments: {},
+      verticalOffset: 0,
     };
   }
 
@@ -436,7 +442,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               onHighlightClick={onHighlightClick}
             />
           );
-          return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;
+          return (
+            <CodePanelLayout
+              comments={comments}
+              code={code}
+              file={this.state.currentFile}
+              zoom={1}
+              splitBasis={themeVars.grade.splitBasis}
+              updateVerticalOffset={this.setVerticalOffset}
+            />
+          );
         } else {
           return null;
         }
@@ -453,6 +468,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     });
 
     this.setState({ currentFile });
+  };
+
+  public setVerticalOffset = (oldToNew: (oldValue: number) => number) => {
+    this.setState((oldState: IStudentState) => {
+      return {
+        verticalOffset: oldToNew(oldState.verticalOffset),
+        ...oldState,
+      };
+    });
   };
 
   /***********************************************************************************

@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Dropdown, Icon, Menu, message } from 'antd';
+import { Dropdown, Icon, Menu, message } from 'antd';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -33,7 +33,7 @@ import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
 import CPFlex from '../core/CPFlex';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import { FinalizeButton, StatusTags, SubheaderGrade, SubheaderTitle } from '../code-review/Subheader';
 
@@ -54,6 +54,10 @@ import * as Immutable from '../../infrastructure/immutable';
 import ThemeToggle from '../core/ThemeToggle';
 
 import SubmissionInfo from '../code-review/SubmissionInfo';
+
+import { Magnifier, Reset, Sizer } from '../code-review/code-panel/CodePanelWidgets';
+
+import themeVars from '../../styles/abstracts/_theme.js';
 
 /**********************************************************************************************************************/
 
@@ -78,6 +82,10 @@ interface IGradeState {
   oldCommentIDs: { [currentID: number]: number };
 
   selectedFile: FileType | undefined;
+
+  codeZoom: number;
+  codeSplitBasis: number;
+  codeVerticalOffset: number;
 }
 
 export interface IGradeProps {
@@ -303,6 +311,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     selectedFile: undefined,
     unsavedComments: {},
     oldCommentIDs: {},
+
+    codeZoom: 1,
+    codeSplitBasis: themeVars.grade.splitBasis,
+    codeVerticalOffset: 0,
   };
 
   public async componentDidMount() {
@@ -570,6 +582,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             ? Grade.clearUnsavedComments(this.state.comments, this.state.selectedFile)
             : this.state.comments;
         message.success('Successfully finalized submission');
+      } else {
+        message.success('Successfully unfinalized submission');
       }
 
       this.setState({ submission, comments });
@@ -605,6 +619,22 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   public onEscKeyPress = () => {
     this.changeActiveComment(undefined);
+  };
+
+  public setZoom = (newZoom: number) => {
+    this.setState({ codeZoom: newZoom });
+  };
+
+  public setSplitBasis = (newSplitBasis: number) => {
+    this.setState({ codeSplitBasis: newSplitBasis });
+  };
+
+  public setVerticalOffset = (oldToNew: (oldValue: number) => number) => {
+    this.setState((oldState: IGradeState) => {
+      return {
+        codeVerticalOffset: oldToNew(oldState.codeVerticalOffset),
+      };
+    });
   };
 
   //////////////////////////////////////
@@ -655,11 +685,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
     const subHeaderRight = [
       <ThemeToggle key="theme-toggle" small />,
-      <Button key="undo" icon="redo" />,
-      <Button.Group key="zoom">
-        <Button icon="zoom-in" />
-        <Button icon="zoom-out" />
-      </Button.Group>,
+      <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+      <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+      <Magnifier key="zoom" updateZoom={this.setZoom} />,
       <FinalizeButton
         key="subheader-finalize"
         submission={this.state.submission}
@@ -668,13 +696,22 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       />,
     ];
 
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+
     const subheader = (
       <CPFlex
-        style={{ backgroundColor: 'white', height: 49, fontSize: 12 }}
+        style={{
+          background: this.context.consoleTheme.subheaderBg,
+          color: this.context.consoleTheme.siderMenuItemColor,
+          padding: '0 15',
+          height: 49,
+          fontSize: 12,
+        }}
         left={subHeaderLeft}
         right={subHeaderRight}
         middle={subHeaderMiddle}
         gutterSize={20}
+        className={theme}
       />
     );
 
@@ -694,7 +731,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         />
       );
 
-      const comments = (verticalOffset: number) => (
+      const comments = (
         <GradeComments
           comments={this.state.comments[this.state.selectedFile!.id]}
           rubricComments={this.state.commentRubricComments}
@@ -708,11 +745,20 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
           oldCommentIDs={this.state.oldCommentIDs}
-          verticalOffset={verticalOffset}
+          verticalOffset={this.state.codeVerticalOffset}
         />
       );
 
-      content = <CodePanelLayout comments={comments} code={code} file={this.state.selectedFile} />;
+      content = (
+        <CodePanelLayout
+          comments={comments}
+          code={code}
+          file={this.state.selectedFile}
+          zoom={this.state.codeZoom}
+          splitBasis={this.state.codeSplitBasis}
+          updateVerticalOffset={this.setVerticalOffset}
+        />
+      );
     }
 
     return (
@@ -725,8 +771,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             <SubmissionInfo
               key="submission-info"
               title="Submission Info"
-              assignment={this.state.assignment.name}
-              students={this.state.submission.students !== undefined ? this.state.submission.students : []}
+              assignment={this.state.assignment}
+              submission={this.state.submission}
+              graders={this.state.graders}
+              isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
+              updateGrader={this.updateGrader}
             />,
             <FileMenu
               key={'file-menu'}
