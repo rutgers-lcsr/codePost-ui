@@ -7,7 +7,11 @@ import { ReactComponent as SunSvg } from '../../img/icons/sun.svg';
 
 import ToggleButton from 'react-toggle-button';
 
-const ThemeToggle = (props: any) => {
+interface IProps {
+  small?: boolean;
+}
+
+const ThemeToggle = (props: IProps) => {
   const { toggleConsoleTheme } = React.useContext(ConsoleThemeContext);
   const [checked, setChecked] = React.useState(false);
 
@@ -31,7 +35,7 @@ const ThemeToggle = (props: any) => {
     <MoonSvg
       onClick={onClick}
       style={{
-        height: '16px',
+        height: props.small ? '12px' : '16px',
         fill: 'white',
         position: 'absolute',
         top: '50%',
@@ -46,7 +50,7 @@ const ThemeToggle = (props: any) => {
       onClick={onClick}
       key="sun"
       style={{
-        height: '16px',
+        height: props.small ? '12px' : '16px',
         fill: '#e5dc8d',
         position: 'absolute',
         top: '50%',
@@ -77,13 +81,18 @@ const ThemeToggle = (props: any) => {
           base: 'rgb(220, 220, 220)',
         },
       }}
-      trackStyle={{ width: '30px', height: '12px' }}
-      thumbStyle={{ width: '25px', height: '25px', border, boxShadow: 'rgba(0, 0, 0, 0.0) 0px 0px 0px 1px' }}
+      trackStyle={{ width: props.small ? '25px' : '30px', height: props.small ? '10px' : '12px' }}
+      thumbStyle={{
+        width: props.small ? '20px' : '25px',
+        height: props.small ? '20px' : '25px',
+        border,
+        boxShadow: 'rgba(0, 0, 0, 0.0) 0px 0px 0px 1px',
+      }}
       thumbAnimateRange={[-12, 16]}
       thumbIcon={icon}
       value={checked}
       onToggle={onChange}
-      containerStyle={{ width: '30px' }}
+      containerStyle={{ width: props.small ? '25px' : '30px' }}
     />
   );
 };
