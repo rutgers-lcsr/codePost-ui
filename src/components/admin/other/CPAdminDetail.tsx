@@ -37,7 +37,13 @@ const CPAdminDetail = (props: ICPAdminDetailProps) => {
   const contentPadding = smallScreen ? '20px 15px' : '20px 35px';
 
   const titleTooltip = props.titleInfo ? (
-    <CPTooltip title={props.titleInfo} placement="right" infoIcon={true} hideThisOnHideTips={true} />
+    <CPTooltip
+      title={props.titleInfo}
+      placement="right"
+      infoIcon={true}
+      hideThisOnHideTips={true}
+      iconStyle={{ paddingLeft: 10 }}
+    />
   ) : (
     <div />
   );

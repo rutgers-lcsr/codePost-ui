@@ -182,6 +182,7 @@ class TableDetail extends React.Component<IProps, IState> {
         actions={actions}
         content={content}
         titleInfo={this.props.titleInfo}
+        gutterSize={0}
       />
     );
   }
