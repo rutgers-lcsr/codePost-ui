@@ -255,14 +255,19 @@ class StudentDetail extends React.Component<IProps, IState> {
                 </Select.Option>,
               ]}
             </Select>
-            &nbsp; <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+            &nbsp;{' '}
+            <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+            </CPTooltip>
           </div>
         );
       } else if (submission) {
         graderElement = (
           <div>
             {submission.grader ? submission.grader : '--'}&nbsp;
-            <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+            <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+            </CPTooltip>
           </div>
         );
       } else {

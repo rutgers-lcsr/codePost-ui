@@ -38,10 +38,10 @@ const CPAdminRubric = (props: ICPAdminRubricProps) => {
   );
 
   const subheaderLeft = [
-    <span key="title" className="cp-label cp-label--large cp-label--bold">
-      {props.title}
-    </span>,
-    titleTooltip,
+    <div key="title" style={{ display: 'flex', alignItem: 'center' }}>
+      <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
+      {titleTooltip}
+    </div>,
   ];
 
   return (

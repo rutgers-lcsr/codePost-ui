@@ -179,7 +179,11 @@ class GraderData extends React.Component<IProps, IState> {
             this.setState({ activeGrader: graderEmail });
           };
           const toRet = {
-            expand: <Icon type="zoom-in" onClick={expandFn} />,
+            expand: (
+              <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
+                <Icon type="zoom-in" onClick={expandFn} />
+              </CPTooltip>
+            ),
             key: graderEmail,
             grader: graderEmail,
           };

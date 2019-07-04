@@ -188,7 +188,11 @@ class StudentData extends React.Component<IProps, IState> {
           };
 
           const toRet = {
-            expand: <Icon type="zoom-in" onClick={expandFn} />,
+            expand: (
+              <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
+                <Icon type="zoom-in" onClick={expandFn} />
+              </CPTooltip>
+            ),
             student: studentEmail,
             key: studentEmail,
           };

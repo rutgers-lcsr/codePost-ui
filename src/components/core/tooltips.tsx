@@ -45,9 +45,15 @@ const ADMIN_HEADER_SETTINGS = 'User Settings';
 
 const ADMIN_STUDENTSUBMISSIONS_TITLE = 'Submissions submitted by each student in the course.';
 const ADMIN_STUDENTSUBMISSIONS_INACTIVES = 'Students who have been un enrolled from the course.';
+const ADMIN_STUDENTSUBMISSIONS_EXPAND = "View this student's submissions";
 const ADMIN_STUDENTSUBMISSIONS_VIEWED = "Information about student's interaction with his/her published feedback.";
+const ADMIN_STUDENTSUBMISSIONS_ASSIGNGRADER = 'Assign a grader to this submission';
+const ADMIN_STUDENTSUBMISSIONS_LOCKASSIGNGRADER = 'Finish assigning';
+
 const ADMIN_GRADERSUBMISSIONS_TITLE = 'Submissions graded by each grader in the course.';
 const ADMIN_GRADERSUBMISSIONS_INACTIVES = 'Graders who have been un enrolled from the course.';
+const ADMIN_GRADERSUBMISSIONS_EXPAND = 'View submissions graded by this grader';
+const ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT = 'View graded submissions for this assignment';
 
 const ADMIN_ASSIGNMENTS_PUBLISHED =
   'Publishing an assignment allows students who have finalized submissions to view those submissions.\
@@ -171,11 +177,16 @@ export const tooltips = {
     studentSubmissions: {
       title: ADMIN_STUDENTSUBMISSIONS_TITLE,
       inactives: ADMIN_STUDENTSUBMISSIONS_INACTIVES,
+      expand: ADMIN_STUDENTSUBMISSIONS_EXPAND,
       viewed: ADMIN_STUDENTSUBMISSIONS_VIEWED,
+      assignGrader: ADMIN_STUDENTSUBMISSIONS_ASSIGNGRADER,
+      lockAssignGrader: ADMIN_STUDENTSUBMISSIONS_LOCKASSIGNGRADER,
     },
     graderSubmissions: {
       title: ADMIN_GRADERSUBMISSIONS_TITLE,
       inactives: ADMIN_GRADERSUBMISSIONS_INACTIVES,
+      expand: ADMIN_GRADERSUBMISSIONS_EXPAND,
+      expandAssignment: ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT,
     },
     assignments: {
       published: ADMIN_ASSIGNMENTS_PUBLISHED,

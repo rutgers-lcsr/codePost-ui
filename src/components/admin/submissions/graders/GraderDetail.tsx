@@ -19,6 +19,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { TableDetail } from '../../other/TableDetail';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
@@ -213,7 +214,11 @@ class GraderDetail extends React.Component<IProps, IState> {
 
         return {
           key: assignment.name,
-          expand: <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />,
+          expand: (
+            <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
+              <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />
+            </CPTooltip>
+          ),
           assignment: assignment.name,
           claimed: graded ? graded.length : 0,
           finalized: numFinalized,
