@@ -61,6 +61,10 @@ const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
   'Select multiple students, so long as none of them have a pre-existing submission for the assignment you selected.';
 
 const ADMIN_RUBRIC_DELETECOMMENT = 'Delete this comment';
+const ADMIN_RUBRIC_CATEGORYPOINTLIMIT =
+  'The maximum amount of points a student can lose in this category.\
+   For example, if the limit is set at 4 points, no student will lose more than 4 points in this category,\
+    even if more deductions are applied. If set to 0, no limit will be set.';
 const ADMIN_RUBRIC_CATEGORYHELPTEXT =
   'Use this text to explain the rubric category to graders.\
    It will appear alongside the rubric category in the Code Review console.';
@@ -75,6 +79,8 @@ const ADMIN_RUBRIC_TITLE =
    In the grade console, you'll be able to reference and add rubric items to each submission.";
 
 const ADMIN_STUDENTROSTER_TITLE = 'Students currently enrolled in this course.';
+const ADMIN_STUDENTROSTER_EDITSECTION = 'Edit section';
+const ADMIN_STUDENTROSTER_LOCKSECTION = 'Finish editing';
 const ADMIN_GRADERROSTER_TITLE = 'Users who have grader privileges in this course.';
 const ADMIN_GRADERROSTER_SUPERGRADER = (
   <div>
@@ -186,11 +192,14 @@ export const tooltips = {
       instances: ADMIN_RUBRIC_INSTANCES,
       categoryUp: ADMIN_RUBRIC_CATEGORYUP,
       categoryDown: ADMIN_RUBRIC_CATEGORYDOWN,
+      categoryPointLimit: ADMIN_RUBRIC_CATEGORYPOINTLIMIT,
       title: ADMIN_RUBRIC_TITLE,
       categoryHelpText: ADMIN_RUBRIC_CATEGORYHELPTEXT,
     },
     studentRoster: {
       title: ADMIN_STUDENTROSTER_TITLE,
+      editSection: ADMIN_STUDENTROSTER_EDITSECTION,
+      lockSection: ADMIN_STUDENTROSTER_LOCKSECTION,
     },
     graderRoster: {
       title: ADMIN_GRADERROSTER_TITLE,

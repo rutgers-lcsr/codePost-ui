@@ -482,6 +482,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       <div key="points">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Point Limit
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryPointLimit}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <InputNumber
           value={this.state.pointLimit ? this.state.pointLimit : 0}
@@ -491,8 +497,13 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </div>,
       <div key="help-text">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Help Text{' '}
-          <CPTooltip title={tooltips.admin.rubric.categoryHelpText} infoIcon={true} hideThisOnHideTips={true} />
+          Category Help Text
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryHelpText}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <Input.TextArea
           style={{ width: 350 }}
