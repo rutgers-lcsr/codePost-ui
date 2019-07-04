@@ -224,7 +224,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                 Pro
               </Radio>
             </Radio.Group>
-            <CPTooltip placement={'bottom'} title={tooltips.preauth.create.proPricing} type="question" />
+            <CPTooltip placement={'bottom'} title={tooltips.preauth.create.proPricing} infoIcon={true} />
             {spacing}
             <Input
               placeholder={'Your email'}

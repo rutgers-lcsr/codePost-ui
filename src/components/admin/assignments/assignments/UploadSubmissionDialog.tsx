@@ -252,7 +252,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             />
             <br />
             <br />
-            Students: <CPTooltip title={tooltips.admin.assignments.uploadSubmission} type="info" />
+            Students: <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
             <Select
               placeholder={'Select students'}
               isMulti={true}

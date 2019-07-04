@@ -29,7 +29,7 @@ const CPAdminRubric = (props: ICPAdminRubricProps) => {
     <CPTooltip
       title={props.titleInfo}
       placement="right"
-      type="info"
+      infoIcon={true}
       hideThisOnHideTips={true}
       iconStyle={{ paddingLeft: 10 }}
     />

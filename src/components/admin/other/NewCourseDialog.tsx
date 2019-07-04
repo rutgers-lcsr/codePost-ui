@@ -165,7 +165,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                       <Radio value="private">Clone existing course</Radio>
                     </Radio.Group>,
                   )}
-                  <CPTooltip title={tooltips.admin.newCourse.clone} type="info" />
+                  <CPTooltip title={tooltips.admin.newCourse.clone} infoIcon={true} />
                 </Form.Item>
                 <Form.Item label="Course to clone">
                   {getFieldDecorator('cloneID')(

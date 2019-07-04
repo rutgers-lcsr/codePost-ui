@@ -146,7 +146,7 @@ class ManageGraders extends React.Component<IProps, IState> {
           title: (
             <div>
               Supergrader Status{' '}
-              <CPTooltip title={tooltips.admin.graderRoster.supergrader} type="question" hideThisOnHideTips={true} />
+              <CPTooltip title={tooltips.admin.graderRoster.supergrader} infoIcon={true} hideThisOnHideTips={true} />
             </div>
           ),
           dataIndex: 'status',

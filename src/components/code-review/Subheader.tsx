@@ -306,7 +306,7 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
         label="grader:"
         disabled={props.submission.isFinalized}
       />
-      <CPTooltip title={tooltips.grade.subheader.assignGrader} type="info" hideThisOnHideTips={true} />
+      <CPTooltip title={tooltips.grade.subheader.assignGrader} infoIcon={true} hideThisOnHideTips={true} />
     </div>
   );
 

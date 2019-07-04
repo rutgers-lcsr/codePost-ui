@@ -442,7 +442,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Published
             <CPTooltip
               title={tooltips.admin.assignments.published}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />
@@ -458,7 +458,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Submissions
             <CPTooltip
               title={tooltips.admin.assignments.submissions}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />
@@ -474,7 +474,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Finalized
             <CPTooltip
               title={tooltips.admin.assignments.finalized}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />
@@ -490,7 +490,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Unclaimed
             <CPTooltip
               title={tooltips.admin.assignments.unclaimed}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />
@@ -506,7 +506,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Missing
             <CPTooltip
               title={tooltips.admin.assignments.missing}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />
@@ -522,7 +522,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             Unviewed
             <CPTooltip
               title={tooltips.admin.assignments.unviewed}
-              type="question"
+              infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
             />

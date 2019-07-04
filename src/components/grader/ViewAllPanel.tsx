@@ -208,7 +208,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         <CPTooltip
           title={tooltips.grader.allSubmissions.filter}
           placement="right"
-          type="info"
+          infoIcon={true}
           hideThisOnHideTips={true}
           iconStyle={{ paddingLeft: 10 }}
         />

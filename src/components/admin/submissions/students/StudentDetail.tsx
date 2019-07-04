@@ -182,7 +182,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         title: (
           <div>
             Viewed &nbsp;
-            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} type="question" hideThisOnHideTips={true} />
+            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} infoIcon={true} hideThisOnHideTips={true} />
           </div>
         ),
         dataIndex: 'viewed',

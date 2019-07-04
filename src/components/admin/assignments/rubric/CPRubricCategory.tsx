@@ -84,7 +84,7 @@ const commentTableColumns = [
         Deduction
         <CPTooltip
           title={tooltips.admin.rubric.deduction}
-          type="question"
+          infoIcon={true}
           hideThisOnHideTips={true}
           iconStyle={{ paddingLeft: 5 }}
         />
@@ -100,7 +100,7 @@ const commentTableColumns = [
         Instances
         <CPTooltip
           title={tooltips.admin.rubric.instances}
-          type="question"
+          infoIcon={true}
           hideThisOnHideTips={true}
           iconStyle={{ paddingLeft: 5 }}
         />
@@ -492,7 +492,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       <div key="help-text">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Help Text{' '}
-          <CPTooltip title={tooltips.admin.rubric.categoryHelpText} type="question" hideThisOnHideTips={true} />
+          <CPTooltip title={tooltips.admin.rubric.categoryHelpText} infoIcon={true} hideThisOnHideTips={true} />
         </div>
         <Input.TextArea
           style={{ width: 350 }}

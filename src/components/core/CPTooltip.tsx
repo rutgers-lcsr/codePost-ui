@@ -7,11 +7,9 @@ import { ShowTooltipContext } from './tooltips';
 
 import themeVars from '../../styles/abstracts/_theme';
 
-type TooltipType = 'info' | 'question';
-
 interface IProps extends TooltipProps {
   children?: React.ReactNode;
-  type?: TooltipType;
+  infoIcon?: boolean;
   iconStyle?: React.CSSProperties;
   title: string | React.ReactNode;
   hideThisOnHideTips?: boolean;
@@ -36,17 +34,12 @@ const getTooltipState = (
 };
 
 const CPTooltip = (props: IProps) => {
-  const { children, type, title, iconStyle, hideThisOnHideTips, hideChildrenOnHideTips, ...antprops } = props;
+  const { children, infoIcon, title, iconStyle, hideThisOnHideTips, hideChildrenOnHideTips, ...antprops } = props;
   const showTooltips = useContext(ShowTooltipContext);
 
   let icon;
-  if (type !== undefined) {
-    const iconType = type === 'info' ? 'info-circle' : 'question-circle';
-    const iconColor =
-      type === 'info'
-        ? { color: themeVars.theme.neutralSecondaryText }
-        : { color: themeVars.theme.neutralSecondaryText };
-    icon = <Icon type={iconType} style={{ ...iconColor, ...iconStyle }} />;
+  if (infoIcon) {
+    icon = <Icon type="info-circle" theme="twoTone" twoToneColor={themeVars.theme.brandPrimary} style={iconStyle} />;
   }
 
   const tooltipState = getTooltipState(showTooltips, hideThisOnHideTips, hideChildrenOnHideTips);
