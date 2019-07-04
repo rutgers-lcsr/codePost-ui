@@ -1,7 +1,19 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
+import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
+import { SelectParam } from 'antd/lib/menu';
+const ButtonGroup = Button.Group;
+
+/* other library imports */
 import * as moment from 'moment';
 
+/* codePost imports */
 import Grade from '../grade/Grade';
 
 import useOnClickOutside from '../core/useOnClickOutside';
@@ -15,16 +27,12 @@ import { wait } from '../../infrastructure/animation';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import { Button, Descriptions, Divider, Icon, Menu, message, Popconfirm, Popover, Skeleton, Tag, Tooltip } from 'antd';
-
-const ButtonGroup = Button.Group;
-
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-
-import { SelectParam } from 'antd/lib/menu';
 
 import CPButton from '../core/CPButton';
 import CPDropdown from '../core/CPDropdown';
+
+/**********************************************************************************************************************/
 
 interface ISubheaderTitleProps {
   assignment: AssignmentType;
@@ -33,11 +41,13 @@ interface ISubheaderTitleProps {
 export const SubheaderTitle = (props: ISubheaderTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
-    <span className=" cp-label cp-label--very-bold cp-label--large" style={{ color: consoleTheme.subheaderTitle }}>
+    <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
       {props.assignment.name}
     </span>
   );
 };
+
+/**********************************************************************************************************************/
 
 type StatisticType = 'Grade' | 'Mean' | 'Median';
 
@@ -80,6 +90,8 @@ export const SubheaderStatistic = (props: ISubheaderStatisticProps) => {
     </span>
   );
 };
+
+/**********************************************************************************************************************/
 
 interface ISubheaderInfoProps {
   assignment: AssignmentType;
@@ -243,6 +255,8 @@ export const SubheaderInfo = (props: ISubheaderInfoProps) => {
   );
 };
 
+/**********************************************************************************************************************/
+
 interface ISubheaderGradeProps {
   assignment: AssignmentType;
   submission: AnonymousSubmissionType;
@@ -250,17 +264,17 @@ interface ISubheaderGradeProps {
 }
 
 export const SubheaderGrade = (props: ISubheaderGradeProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const gradeString = props.submission.isFinalized
-    ? `${props.submission.grade} / ${props.assignment.points}`
-    : `${props.calculateGrade()} / ${props.assignment.points}`;
+  // const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const gradeNum = props.submission.isFinalized ? (props.submission.grade as number) : props.calculateGrade();
 
   return (
-    <span className="cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderGrade }}>
-      {gradeString}
-    </span>
+    <Button>
+      Grade: {gradeNum} / {props.assignment.points}
+    </Button>
   );
 };
+
+/**********************************************************************************************************************/
 
 interface ISubheaderGraderProps {
   submission: AnonymousSubmissionType;
@@ -299,7 +313,6 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
       overlay={overlay}
       overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
       theme={theme}
-      label="grader:"
       disabled={props.submission.isFinalized}
     />
   );
@@ -309,12 +322,6 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   } else {
     return (
       <ButtonGroup>
-        <Button
-          disabled={true}
-          style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.buttonDisabledColor }}
-        >
-          grader:
-        </Button>
         <Button style={{ cursor: 'default', backgroundColor: consoleTheme.subheaderBg, color: consoleTheme.text }}>
           {currentGrader}
         </Button>
@@ -323,6 +330,8 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   }
   return dropdown;
 };
+
+/**********************************************************************************************************************/
 
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
@@ -366,58 +375,53 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setPopconfirmVisible(false);
   };
 
-  if (props.submission.isFinalized) {
-    return (
-      <div ref={ref}>
-        <CPButton cpType={notice ? 'primary' : 'secondary'} fallback="unlock" onClick={onClick} loading={isLoading}>
-          Unfinalize
-        </CPButton>
-      </div>
-    );
-  } else {
-    // uses solution to antd tooltip bug propsoed here:
-    // https://github.com/react-component/tooltip/issues/18
-    const isDisabled = props.submission.grader === null;
-    const buttonToReturn = (
-      <CPButton
-        cpType="primary"
-        fallback="lock"
-        onClick={onClick}
-        loading={isLoading}
-        disabled={isDisabled}
-        style={isDisabled ? { pointerEvents: 'none' } : undefined}
-      >
-        <Popconfirm
-          title={
-            <div>
-              <p>You have draft comments that will not be saved.</p>{' '}
-              <p>
-                <b>Are you sure you want to continue?</b>
-              </p>
-            </div>
-          }
-          visible={popconfirmVisible}
-          onConfirm={confirm}
-          onCancel={cancel}
-          okText="Yes"
-          cancelText="No"
-          placement="bottomRight"
+  return (
+    <div ref={ref}>
+      <ButtonGroup>
+        <CPButton
+          cpType={notice ? 'primary' : 'secondary'}
+          fallback="unlock"
+          onClick={onClick}
+          loading={isLoading}
+          small={true}
+          disabled={!props.submission.isFinalized}
         >
-          Finalize
-        </Popconfirm>
-      </CPButton>
-    );
-    if (isDisabled) {
-      return (
-        <Tooltip title="Assign a grader before finalizing." placement="bottom">
-          <span>{buttonToReturn}</span>
-        </Tooltip>
-      );
-    } else {
-      return buttonToReturn;
-    }
-  }
+          Edit
+        </CPButton>
+        <CPButton
+          cpType="primary"
+          fallback="lock"
+          onClick={onClick}
+          loading={isLoading}
+          disabled={props.submission.grader === null || props.submission.isFinalized}
+          style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
+          small={true}
+        >
+          <Popconfirm
+            title={
+              <div>
+                <p>You have draft comments that will not be saved.</p>{' '}
+                <p>
+                  <b>Are you sure you want to continue?</b>
+                </p>
+              </div>
+            }
+            visible={popconfirmVisible}
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+            placement="bottomRight"
+          >
+            Done
+          </Popconfirm>
+        </CPButton>
+      </ButtonGroup>
+    </div>
+  );
 };
+
+/**********************************************************************************************************************/
 
 interface IStatusTagsProps {
   assignment: AssignmentType;
@@ -495,6 +499,8 @@ export const StatusTags = (props: IStatusTagsProps) => {
   );
 };
 
+/**********************************************************************************************************************/
+
 export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
@@ -503,6 +509,8 @@ export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
     </span>
   );
 };
+
+/**********************************************************************************************************************/
 
 export const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boolean }) => {
   const [showStudents, setShowStudents] = React.useState(false);

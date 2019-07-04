@@ -1,5 +1,14 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
+import { Button, Dropdown, Icon, Menu, message } from 'antd';
+
+/* codePost imports */
 import Loading from '../core/Loading';
 
 import {
@@ -19,25 +28,14 @@ import { AnonymousSubmissionType, Submission } from '../../infrastructure/submis
 
 import { UserType } from '../../infrastructure/user';
 
-import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
+// import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
 import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
-
-import { Divider, message } from 'antd';
 
 import CPFlex from '../core/CPFlex';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
-import {
-  FinalizeButton,
-  LastEdited,
-  StatusTags,
-  Students,
-  SubheaderGrade,
-  SubheaderGrader,
-  SubheaderInfo,
-  SubheaderTitle,
-} from '../code-review/Subheader';
+import { FinalizeButton, StatusTags, SubheaderGrade, SubheaderTitle } from '../code-review/Subheader';
 
 import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
@@ -52,6 +50,12 @@ import { GradeCode } from '../code-review/code-panel/CodeContent';
 import { GradeComments } from '../code-review/code-panel/Comments';
 
 import * as Immutable from '../../infrastructure/immutable';
+
+import ThemeToggle from '../core/ThemeToggle';
+
+import SubmissionInfo from '../code-review/SubmissionInfo';
+
+/**********************************************************************************************************************/
 
 interface IGradeState {
   isLoading: boolean;
@@ -608,7 +612,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   //////////////////////////////////////
 
   public render() {
-    const isCourseAdmin = this.isCourseAdmin(this.state.assignment);
+    // const isCourseAdmin = this.isCourseAdmin(this.state.assignment);
 
     if (this.state.isLoading) {
       return <Loading />;
@@ -618,33 +622,44 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <div>No Submission Found</div>;
     }
 
-    const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
-    const subHeaderLeftTop = [
+    const menu = (
+      <Menu mode="vertical">
+        <Menu.ItemGroup title="Item 1">
+          <Menu.Item key="setting:1">Option 1</Menu.Item>
+          <Menu.Item key="setting:2">Option 2</Menu.Item>
+        </Menu.ItemGroup>
+        <Menu.ItemGroup title="Item 2">
+          <Menu.Item key="setting:3">Option 3</Menu.Item>
+          <Menu.Item key="setting:4">Option 4</Menu.Item>
+        </Menu.ItemGroup>
+      </Menu>
+    );
+
+    // const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
+    const subHeaderLeft = [
+      <Dropdown overlay={menu} trigger={['click']} key="menu">
+        <Icon type="menu" />
+      </Dropdown>,
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+      <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission} />,
+    ];
+
+    const subHeaderMiddle = [
       <SubheaderGrade
         key="subheader-grade"
         assignment={this.state.assignment}
         submission={this.state.submission}
         calculateGrade={this.calculateGradeFromState}
       />,
-      <SubheaderInfo
-        key="subheader-info"
-        submission={this.state.submission}
-        assignment={this.state.assignment}
-        rubricCategories={this.state.rubricCategories}
-        comments={this.state.comments}
-        commentRubricComments={this.state.commentRubricComments}
-      />,
     ];
 
-    const subHeaderRightTop = [
-      <SubheaderGrader
-        key="subheader-grader"
-        submission={this.state.submission}
-        graders={this.state.graders}
-        isCourseAdmin={isCourseAdmin}
-        updateGrader={this.updateGrader}
-      />,
+    const subHeaderRight = [
+      <ThemeToggle key="theme-toggle" small />,
+      <Button key="undo" icon="redo" />,
+      <Button.Group key="zoom">
+        <Button icon="zoom-in" />
+        <Button icon="zoom-out" />
+      </Button.Group>,
       <FinalizeButton
         key="subheader-finalize"
         submission={this.state.submission}
@@ -653,23 +668,14 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       />,
     ];
 
-    const subHeaderLeftBottom = [
-      <StatusTags key="subheader-status-tags" assignment={this.state.assignment} submission={this.state.submission} />,
-      <Divider key="subheader-divider" type="vertical" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }} />,
-      <Students
-        key="subheader-students"
-        submission={this.state.submission}
-        isAnonymous={this.state.assignment.anonymousGrading}
-      />,
-    ];
-
-    const subHeaderRightBottom = [<LastEdited key="subheader-last-edited" submission={this.state.submission} />];
-
     const subheader = (
-      <div>
-        <CPFlex left={subHeaderLeftTop} right={subHeaderRightTop} gutterSize={6} />
-        <CPFlex left={subHeaderLeftBottom} right={subHeaderRightBottom} gutterSize={6} />
-      </div>
+      <CPFlex
+        style={{ backgroundColor: 'white', height: 49, fontSize: 12 }}
+        left={subHeaderLeft}
+        right={subHeaderRight}
+        middle={subHeaderMiddle}
+        gutterSize={20}
+      />
     );
 
     let content;
@@ -710,31 +716,39 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
 
     return (
-      <StandardConsoleLayout
-        consoleTypes={['grade', 'subheader']}
-        header={header}
-        subheader={subheader}
-        sider={[
-          <FileMenu
-            key={'file-menu'}
-            title="Files"
-            files={this.state.files}
-            comments={this.state.comments}
-            selectedFile={this.state.selectedFile}
-            getPointsInFile={this.getPointsInFile}
-            changeSelectedFile={this.changeSelectedFile}
-            canChange={this.containsUnsavedComments}
-          />,
-          <RubricMenu
-            key={'rubric-menu'}
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            handleRubricCommentClick={this.onRubricCommentClick}
-          />,
-        ]}
-        content={content}
-        removeSiderOnMobile={false}
-      />
+      <div id="Grade">
+        <StandardConsoleLayout
+          consoleTypes={['grade']}
+          header={subheader}
+          subheader={null}
+          sider={[
+            <SubmissionInfo
+              key="submission-info"
+              title="Submission Info"
+              assignment={this.state.assignment.name}
+              students={this.state.submission.students !== undefined ? this.state.submission.students : []}
+            />,
+            <FileMenu
+              key={'file-menu'}
+              title="Files"
+              files={this.state.files}
+              comments={this.state.comments}
+              selectedFile={this.state.selectedFile}
+              getPointsInFile={this.getPointsInFile}
+              changeSelectedFile={this.changeSelectedFile}
+              canChange={this.containsUnsavedComments}
+            />,
+            <RubricMenu
+              key={'rubric-menu'}
+              rubricCategories={this.state.rubricCategories}
+              rubricComments={this.state.rubricComments}
+              handleRubricCommentClick={this.onRubricCommentClick}
+            />,
+          ]}
+          content={content}
+          removeSiderOnMobile={false}
+        />
+      </div>
     );
   }
 }
