@@ -30,10 +30,11 @@ class SubmissionInfo extends React.Component<IFileMenuProps, {}> {
           </div>
         ) : null}
         <div style={{ overflowY: 'scroll', paddingLeft: 15, fontSize: 12 }}>
-          Students: <Students submission={this.props.submission} isAnonymous={this.props.assignment.anonymousGrading} />
+          <b>Students</b>:{' '}
+          <Students submission={this.props.submission} isAnonymous={this.props.assignment.anonymousGrading} />
           <br />
           <br />
-          Grader:{' '}
+          <b>Grader</b>:{' '}
           <SubheaderGrader
             submission={this.props.submission}
             isCourseAdmin={this.props.isCourseAdmin}
@@ -42,7 +43,7 @@ class SubmissionInfo extends React.Component<IFileMenuProps, {}> {
           />
           <br />
           <br />
-          Last edited:{' '}
+          <b>Last edited</b>:{' '}
           {this.props.submission.dateEdited ? moment(this.props.submission.dateEdited).format('lll') : '--'}
         </div>
       </div>
