@@ -41,7 +41,9 @@ export const Magnifier = (props: IMagnifierProps) => {
       <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small>
         <Icon type="zoom-out" />
       </CPButton>
-      <Button>{(zoom * 100).toFixed(0)}%</Button>
+      <CPButton cpType={cpType} small>
+        {(zoom * 100).toFixed(0)}%
+      </CPButton>
       <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small>
         <Icon type="zoom-in" />
       </CPButton>

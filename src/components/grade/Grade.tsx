@@ -701,8 +701,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     const subheader = (
       <CPFlex
         style={{
-          background: this.context.consoleTheme.subheaderBg,
-          color: this.context.consoleTheme.siderMenuItemColor,
           padding: '0 15',
           height: 49,
           fontSize: 12,

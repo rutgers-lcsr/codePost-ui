@@ -84,7 +84,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     return (
       <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
         <Layout className="layout--standard-console">
-          <Header className="layout--standard-console__header">{props.header}</Header>
+          <Header
+            style={{
+              backgroundColor: consoleTheme.subheaderBg,
+            }}
+            className="layout--standard-console__header"
+          >
+            {props.header}
+          </Header>
           <Layout style={{ overflowX: 'scroll' }}>
             <Sider
               width={siderWidth}

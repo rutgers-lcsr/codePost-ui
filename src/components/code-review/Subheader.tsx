@@ -274,13 +274,14 @@ interface ISubheaderGradeProps {
 }
 
 export const SubheaderGrade = (props: ISubheaderGradeProps) => {
-  // const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const gradeNum = props.submission.isFinalized ? (props.submission.grade as number) : props.calculateGrade();
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
   return (
-    <Button>
+    <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'}>
       Grade: {gradeNum} / {props.assignment.points}
-    </Button>
+    </CPButton>
   );
 };
 
@@ -371,6 +372,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   //   }
   // });
 
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
   const onClick = async () => {
     setIsLoading(true);
     if (!props.submission.isFinalized && !props.canToggle()) {
@@ -392,25 +395,27 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setPopconfirmVisible(false);
   };
 
+  const isFinalized = props.submission.isFinalized;
+
   return (
     <div ref={ref}>
       <ButtonGroup>
         <CPButton
-          cpType="primary"
+          cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
           onClick={onClick}
-          loading={isLoading && props.submission.isFinalized}
+          loading={isLoading && isFinalized}
           small={true}
-          disabled={!props.submission.isFinalized}
+          disabled={!isFinalized}
         >
           Edit
         </CPButton>
         <CPButton
-          cpType="primary"
+          cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
           fallback="lock"
           onClick={onClick}
-          loading={isLoading && !props.submission.isFinalized}
-          disabled={props.submission.isFinalized}
+          loading={isLoading && !isFinalized}
+          disabled={isFinalized}
           style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
           small={true}
         >
