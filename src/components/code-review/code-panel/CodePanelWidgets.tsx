@@ -62,6 +62,19 @@ export const Sizer = (props: ISizerProps) => {
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
   const [splitBasis, setSplitBasis] = React.useState(themeVars.grade.splitBasis);
 
+  // Track window width to prevent user from extending code too far to the right and
+  // squishing comments
+  const [width, setWidth] = React.useState(window.innerWidth);
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  });
+
   function shrink() {
     const newSplitBasis = Math.max(200, splitBasis - 100);
     setSplitBasis(newSplitBasis);
@@ -71,9 +84,8 @@ export const Sizer = (props: ISizerProps) => {
   function grow() {
     const codeContainer = document.getElementById('code-container');
     if (codeContainer !== null) {
-      // FIXME: need to read window width here
-      // const maxWidth = this.props.windowwidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
-      const newSplitBasis = Math.min(1000, splitBasis + 100);
+      const maxWidth = width - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
+      const newSplitBasis = Math.min(maxWidth, splitBasis + 100);
       setSplitBasis(newSplitBasis);
       props.updateSplitBasis(newSplitBasis);
     }
