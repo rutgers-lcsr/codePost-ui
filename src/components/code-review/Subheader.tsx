@@ -6,20 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import {
-  Button,
-  Descriptions,
-  Divider,
-  Icon,
-  message,
-  Modal,
-  Popconfirm,
-  Popover,
-  Select,
-  Skeleton,
-  Tag,
-  Tooltip,
-} from 'antd';
+import { Avatar, Button, Descriptions, Divider, Icon, message, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* other library imports */
@@ -117,11 +104,6 @@ interface ISubheaderInfoProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const SubheaderInfo = (props: ISubheaderInfoProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-
-  let content = <Skeleton active />;
-  const title = 'How was this calculated?';
-
   const pointsPerCategory = Grade.pointsPerCategory(props.commentRubricComments);
   const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = Grade.genericCommentPoints(props.comments);
@@ -245,24 +227,12 @@ export const SubheaderInfo = (props: ISubheaderInfoProps) => {
     </Descriptions>
   );
 
-  content = (
+  return (
     <div>
       {categoriesTable}
       <Divider />
       {summaryTable}
     </div>
-  );
-
-  return (
-    <Popover content={content} title={title} placement="rightTop">
-      <CPButton
-        key="subheader-info"
-        cpType="highlight"
-        size="small"
-        icon="question"
-        style={{ cursor: 'help', backgroundColor: consoleTheme.subheaderBg }}
-      />
-    </Popover>
   );
 };
 
@@ -272,17 +242,36 @@ interface ISubheaderGradeProps {
   assignment: AssignmentType;
   submission: AnonymousSubmissionType;
   calculateGrade: () => number | undefined;
+  rubricCategories: RubricCategoryType[];
+  comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
 }
 
 export const SubheaderGrade = (props: ISubheaderGradeProps) => {
+  const [breakdownVisible, setBreakdownVisible] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const gradeNum = props.submission.isFinalized ? (props.submission.grade as number) : props.calculateGrade();
   const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
+  function handleClick() {
+    setBreakdownVisible(!breakdownVisible);
+  }
+
   return (
-    <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'}>
-      Grade: {gradeNum} / {props.assignment.points}
-    </CPButton>
+    <div>
+      <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
+        Grade: {gradeNum} / {props.assignment.points}
+      </CPButton>
+      <Modal title={'Grade breakdown'} visible={breakdownVisible} onCancel={handleClick} footer={null}>
+        <SubheaderInfo
+          submission={props.submission}
+          assignment={props.assignment}
+          rubricCategories={props.rubricCategories}
+          comments={props.comments}
+          commentRubricComments={props.commentRubricComments}
+        />
+      </Modal>
+    </div>
   );
 };
 
@@ -298,9 +287,6 @@ interface ISubheaderGraderProps {
 export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const [modalVisible, setModalVisible] = React.useState(false);
 
-  const menuItems = props.graders.map((grader: string, index: number) => {
-    return <Select.Option key={grader}>{grader}</Select.Option>;
-  });
   // const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   function handleChange(grader: string) {
@@ -319,7 +305,9 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
     setModalVisible(!modalVisible);
   }
 
-  const currentGrader = props.submission.grader ? props.submission.grader : 'unassigned';
+  const menuItems = props.graders.map((grader: string, index: number) => {
+    return <Select.Option key={grader}>{grader}</Select.Option>;
+  });
 
   const renderUnassign = (menu: any) => (
     <div>
@@ -331,32 +319,73 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
     </div>
   );
 
-  const dropdown = (
-    <Select
-      value={currentGrader}
-      style={{ width: '100%' }}
-      disabled={props.submission.isFinalized}
-      dropdownRender={renderUnassign}
-      onChange={handleChange}
-    >
-      {menuItems}
-    </Select>
-  );
-
   if (props.isCourseAdmin) {
+    let graderDisplay;
+    if (props.submission.grader === null) {
+      graderDisplay = (
+        <div onClick={toggleModal}>
+          <Tag color={'geekblue'} style={{ cursor: 'pointer' }}>
+            Assign
+          </Tag>
+        </div>
+      );
+    } else {
+      graderDisplay = (
+        <div style={{ display: 'flex' }}>
+          <Avatar size="small" icon="audit" shape="square" />
+          &nbsp;
+          <span
+            onClick={toggleModal}
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              width: '80%',
+              textDecoration: 'underline',
+              textDecorationColor: '#ccc',
+              cursor: 'pointer',
+            }}
+          >
+            {props.submission.grader}
+          </span>
+        </div>
+      );
+    }
+
+    const dropdown = (
+      <Select
+        value={props.submission.grader === null ? '' : props.submission.grader}
+        style={{ width: '100%' }}
+        disabled={props.submission.isFinalized}
+        dropdownRender={renderUnassign}
+        onChange={handleChange}
+      >
+        {menuItems}
+      </Select>
+    );
+
     return (
-      <span>
-        {currentGrader} &nbsp;
-        <a onClick={toggleModal}>edit</a>
+      <div>
+        {graderDisplay}
         <Modal onCancel={toggleModal} visible={modalVisible} footer={null} title="Select a grader">
           {dropdown}
         </Modal>
-      </span>
+      </div>
     );
   } else {
-    return <span>{currentGrader}</span>;
+    return (
+      <div
+        style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          width: '80%',
+        }}
+      >
+        {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
+      </div>
+    );
   }
-  return dropdown;
 };
 
 /**********************************************************************************************************************/
@@ -546,31 +575,44 @@ export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
 /**********************************************************************************************************************/
 
 export const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boolean }) => {
-  const [showStudents, setShowStudents] = React.useState(false);
+  const [showStudents, setShowStudents] = React.useState(!props.isAnonymous && props.submission.students !== undefined);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const reveal = () => {
     setShowStudents(true);
   };
 
-  let studentString;
-  let revealButton;
-
-  if (props.submission.students === undefined || (props.isAnonymous && !showStudents)) {
-    studentString = '<Anonymized>';
-
-    if (props.submission.students !== undefined && !showStudents) {
-      revealButton = <a onClick={reveal}>reveal</a>;
-    }
+  if (showStudents) {
+    return (
+      <div style={{ color: consoleTheme.subheaderStudents }}>
+        {props.submission.students!.map((student) => {
+          return (
+            <div key={student} style={{ display: 'flex' }}>
+              <Avatar size="small" icon="user" shape="square" /> &nbsp;{' '}
+              <span
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '80%',
+                }}
+              >
+                {student}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
   } else {
-    studentString = props.submission.students.join(', ');
+    if (props.submission.students === undefined) {
+      return <Tag color={'geekblue'}>Anonymized</Tag>;
+    } else {
+      return (
+        <div>
+          <Tag color={'geekblue'}>Anonymized</Tag> <a onClick={reveal}>reveal</a>
+        </div>
+      );
+    }
   }
-  return (
-    <span>
-      <span className="cp-label" style={{ color: consoleTheme.subheaderStudents }}>
-        {studentString}{' '}
-      </span>
-      {revealButton}
-    </span>
-  );
 };

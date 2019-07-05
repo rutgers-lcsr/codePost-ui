@@ -668,7 +668,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     // const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
     const subHeaderLeft = [
       <Dropdown overlay={menu} trigger={['click']} key="menu">
-        <Icon type="menu" />
+        <Icon type="menu" twoToneColor="white" />
       </Dropdown>,
       <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
       <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission} />,
@@ -680,11 +680,14 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         assignment={this.state.assignment}
         submission={this.state.submission}
         calculateGrade={this.calculateGradeFromState}
+        rubricCategories={this.state.rubricCategories}
+        comments={this.state.comments}
+        commentRubricComments={this.state.commentRubricComments}
       />,
     ];
 
     const subHeaderRight = [
-      <ThemeToggle key="theme-toggle" small />,
+      <ThemeToggle key="theme-toggle" small={true} />,
       <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
       <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
       <Magnifier key="zoom" updateZoom={this.setZoom} />,
@@ -704,6 +707,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           padding: '0 15',
           height: 49,
           fontSize: 12,
+          overflow: 'initial',
         }}
         left={subHeaderLeft}
         right={subHeaderRight}

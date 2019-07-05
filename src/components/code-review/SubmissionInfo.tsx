@@ -1,13 +1,11 @@
 import * as React from 'react';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import moment from 'moment';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
 import { Students, SubheaderGrader } from './Subheader';
-
-import * as moment from 'moment';
 
 interface IFileMenuProps {
   title?: string;
@@ -18,39 +16,52 @@ interface IFileMenuProps {
   updateGrader: (submission: AnonymousSubmissionType, graderUsername: string | undefined) => Promise<SubmissionType>;
 }
 
-class SubmissionInfo extends React.Component<IFileMenuProps, {}> {
-  public render() {
-    return (
-      <div id="file-menu" style={{ overflowY: 'scroll' }}>
-        {this.props.title ? (
-          <div style={{ padding: '13px 20px 0px 16px' }}>
-            <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
-              {this.props.title}
-            </div>
-          </div>
-        ) : null}
-        <div style={{ overflowY: 'scroll', paddingLeft: 15, fontSize: 12 }}>
-          <b>Students</b>:{' '}
-          <Students submission={this.props.submission} isAnonymous={this.props.assignment.anonymousGrading} />
-          <br />
-          <br />
-          <b>Grader</b>:{' '}
-          <SubheaderGrader
-            submission={this.props.submission}
-            isCourseAdmin={this.props.isCourseAdmin}
-            graders={this.props.graders}
-            updateGrader={this.props.updateGrader}
-          />
-          <br />
-          <br />
-          <b>Last edited</b>:{' '}
-          {this.props.submission.dateEdited ? moment(this.props.submission.dateEdited).format('lll') : '--'}
-        </div>
-      </div>
-    );
-  }
-}
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-SubmissionInfo.contextType = ConsoleThemeContext;
+const SubmissionInfo = (props: IFileMenuProps) => {
+  let lastEdited;
+  if (props.submission.dateEdited) {
+    const dateObj = new Date(props.submission.dateEdited);
+    const today = new Date();
+    if (dateObj.getFullYear() === today.getFullYear()) {
+      if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
+        if (today.getTime() - dateObj.getTime() < 30000) {
+          lastEdited = 'Last edited moments ago';
+        } else {
+          lastEdited = `Last edit at ${moment(dateObj).format('h:mm a')}`;
+        }
+      } else {
+        lastEdited = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+      }
+    } else {
+      lastEdited = `Last edit in ${dateObj.getFullYear()}`;
+    }
+  }
+
+  return (
+    <div>
+      {props.title ? (
+        <div style={{ padding: '13px 20px 0px 16px', marginBottom: 5 }}>
+          <span className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
+            {props.title}
+          </span>
+          &nbsp;
+          <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
+        </div>
+      ) : null}
+      <div style={{ paddingLeft: 15, fontSize: 12 }}>
+        <b>Students</b>: <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />
+        <br />
+        <b>Grader</b>:{' '}
+        <SubheaderGrader
+          submission={props.submission}
+          isCourseAdmin={props.isCourseAdmin}
+          graders={props.graders}
+          updateGrader={props.updateGrader}
+        />
+      </div>
+    </div>
+  );
+};
 
 export default SubmissionInfo;
