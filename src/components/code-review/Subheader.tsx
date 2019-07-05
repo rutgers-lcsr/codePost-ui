@@ -12,6 +12,7 @@ import {
   Divider,
   Icon,
   message,
+  Modal,
   Popconfirm,
   Popover,
   Select,
@@ -295,15 +296,12 @@ interface ISubheaderGraderProps {
 }
 
 export const SubheaderGrader = (props: ISubheaderGraderProps) => {
+  const [modalVisible, setModalVisible] = React.useState(false);
+
   const menuItems = props.graders.map((grader: string, index: number) => {
-    return (
-      <Select.Option key={grader} style={{ fontSize: 12 }}>
-        {grader}
-      </Select.Option>
-    );
+    return <Select.Option key={grader}>{grader}</Select.Option>;
   });
   // const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  // const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
   function handleChange(grader: string) {
     props.updateGrader(props.submission, grader).then(() => {
@@ -317,13 +315,17 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
     });
   }
 
+  function toggleModal() {
+    setModalVisible(!modalVisible);
+  }
+
   const currentGrader = props.submission.grader ? props.submission.grader : 'unassigned';
 
   const renderUnassign = (menu: any) => (
     <div>
       {menu}
       <Divider style={{ margin: '4px 0' }} />
-      <div style={{ padding: '6px', cursor: 'pointer', fontSize: 12 }} onClick={unassign}>
+      <div style={{ padding: '6px', cursor: 'pointer' }} onClick={unassign}>
         <Icon type="close" /> Unassign
       </div>
     </div>
@@ -332,7 +334,7 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   const dropdown = (
     <Select
       value={currentGrader}
-      style={{ width: 200, fontSize: 12 }}
+      style={{ width: '100%' }}
       disabled={props.submission.isFinalized}
       dropdownRender={renderUnassign}
       onChange={handleChange}
@@ -342,7 +344,15 @@ export const SubheaderGrader = (props: ISubheaderGraderProps) => {
   );
 
   if (props.isCourseAdmin) {
-    return <span>{dropdown}</span>;
+    return (
+      <span>
+        {currentGrader} &nbsp;
+        <a onClick={toggleModal}>edit</a>
+        <Modal onCancel={toggleModal} visible={modalVisible} footer={null} title="Select a grader">
+          {dropdown}
+        </Modal>
+      </span>
+    );
   } else {
     return <span>{currentGrader}</span>;
   }
@@ -360,9 +370,10 @@ interface IFinalizeButtonProps {
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
-  // const [notice, setNotice] = React.useState(false);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  // const [notice, setNotice] = React.useState(false);
   // useOnClickOutside(ref, async (e: any) => {
   //   const fileMenu = document.getElementById('file-menu');
   //   if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
