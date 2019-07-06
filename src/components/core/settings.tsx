@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Icon, Input, message, Modal, Tooltip, Typography } from 'antd';
+import { Icon, Input, message, Modal, Switch, Typography } from 'antd';
 
 /* codePost imports */
 import { UserType } from '../../infrastructure/user';
@@ -14,6 +14,8 @@ import { UserType } from '../../infrastructure/user';
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
 import CPButton from '../core/CPButton';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 /**********************************************************************************************************************/
 
@@ -63,6 +65,30 @@ class Settings extends React.Component<IProps, IState> {
     });
   };
 
+  public updateShowProductTips = (setTipsValue: boolean) => {
+    const payload = { showProductTips: setTipsValue };
+    this.setState({ loading: true }, () => {
+      fetch(`${process.env.REACT_APP_API_URL}/users/me/`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      })
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          return Promise.reject();
+        })
+        .then((json) => {
+          this.props.replaceUser(json, false);
+          this.setState({ loading: false });
+        });
+    });
+  };
+
   public copyKeyToClipboard = () => {
     const copyText = document.getElementById('api-key') as HTMLInputElement;
     if (copyText) {
@@ -92,12 +118,16 @@ class Settings extends React.Component<IProps, IState> {
             className="input--disabled-normal"
             id="api-key"
             value={user.api_token}
-            prefix={<Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />}
+            prefix={
+              <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
+                <Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
+              </CPTooltip>
+            }
             disabled={true}
             addonAfter={
-              <Tooltip title="Reset key">
+              <CPTooltip title={tooltips.settings.token.reset}>
                 <Icon type="redo" onClick={this.toggleResetStatus} />
-              </Tooltip>
+              </CPTooltip>
             }
           />
         );
@@ -118,6 +148,22 @@ class Settings extends React.Component<IProps, IState> {
         <br />
         <Typography.Title level={4}>Organization info</Typography.Title>
         Member of: <Typography.Text strong>{user.organization}</Typography.Text>
+        <br />
+        <br />
+        <br />
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+          <div style={{ flexGrow: 1 }}>
+            <Typography.Title level={4}>Enable tips</Typography.Title>
+            If you're a codePost veteran and don't want to see help text and tips across the site, then you can turn
+            this setting off.
+          </div>
+          <div style={{ paddingLeft: 40 }}>
+            <Switch
+              checked={user.showProductTips}
+              onChange={this.updateShowProductTips.bind(this, !user.showProductTips)}
+            />
+          </div>
+        </div>
         <br />
         <br />
         {user.canModifyRosters ? (

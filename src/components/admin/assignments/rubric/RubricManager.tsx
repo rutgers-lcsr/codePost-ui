@@ -30,6 +30,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import { tooltips } from '../../../../components/core/tooltips';
 import CPAdminRubric from './CPAdminRubric';
 import CPRubricCategory from './CPRubricCategory';
 
@@ -584,8 +585,6 @@ class RubricManager extends React.Component<IProps, IState> {
       helpText: '',
     };
 
-    console.log(payload);
-
     newComments[payload.id] = [];
 
     this.setState({
@@ -944,6 +943,7 @@ class RubricManager extends React.Component<IProps, IState> {
               <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
             </Breadcrumb>
           }
+          titleInfo={tooltips.admin.rubric.title}
         />
       );
     } else {

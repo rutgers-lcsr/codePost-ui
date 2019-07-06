@@ -14,6 +14,8 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { BUTTON_STATE } from '../../types/common';
 import CPButton from '../core/CPButton';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 
@@ -247,29 +249,35 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     switch (buttonState) {
       case BUTTON_STATE.Active:
         claimButton = (
-          <CPButton cpType="primary" key={2} icon="plus-circle" onClick={handleClick}>
-            Claim
-          </CPButton>
+          <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
+            <div>
+              <CPButton cpType="primary" key={2} icon="plus-circle" onClick={handleClick} fallback="plus-circle">
+                Claim
+              </CPButton>
+            </div>
+          </CPTooltip>
         );
         break;
       case BUTTON_STATE.Inactive:
         claimButton = (
-          <CPButton cpType="disabled" key={2} icon="inbox">
+          <CPButton cpType="disabled" key={2} icon="inbox" fallback="inbox">
             Queue empty
           </CPButton>
         );
         const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
         refreshButton = (
-          <Button icon="redo" onClick={refreshFunction}>
+          <CPButton cpType="secondary" icon="redo" onClick={refreshFunction} fallback="redo">
             Refresh
-          </Button>
+          </CPButton>
         );
         break;
       case BUTTON_STATE.Loading:
         claimButton = (
-          <CPButton cpType="primary" key={2} loading={true}>
-            Claim
-          </CPButton>
+          <div>
+            <CPButton cpType="primary" key={2} loading={true}>
+              Claim
+            </CPButton>
+          </div>
         );
         break;
     }
@@ -286,9 +294,11 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
           </Menu>
         );
         filterComponent = (
-          <Dropdown overlay={filterMenu} trigger={['click']}>
-            <Button icon="filter">Filter</Button>
-          </Dropdown>
+          <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
+            <Dropdown overlay={filterMenu} trigger={['click']}>
+              <Button icon="filter">Filter</Button>
+            </Dropdown>
+          </CPTooltip>
         );
         break;
       case FILTER_TYPE.BY_SECTION:
@@ -309,7 +319,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     }
 
     return (
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {claimButton} &nbsp; {refreshButton} &nbsp; {filterComponent}
       </div>
     );
@@ -444,7 +454,8 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     return (
       <CPAdminDetail
         goBack={null}
-        title={`My submissions: ${this.props.assignment.name}`}
+        title={<div>{`My submissions: ${this.props.assignment.name}`}</div>}
+        titleInfo={tooltips.grader.mySubmissions.title}
         actions={actions}
         content={content}
         gutterSize={0}

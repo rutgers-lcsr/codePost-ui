@@ -17,6 +17,8 @@ import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 import CPDropdown from '../core/CPDropdown';
 
 import CPFlex from '../core/CPFlex';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 import _ from 'lodash';
 
@@ -381,9 +383,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         {this.props.user.email}
       </span>,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
-      <Link className="internal-link" key="settings" to="/settings">
-        <Icon type="setting" />
-      </Link>,
+      <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
+        <Link className="internal-link" to="/settings">
+          <Icon type="setting" />
+        </Link>
+      </CPTooltip>,
       <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
         Logout
       </Button>,

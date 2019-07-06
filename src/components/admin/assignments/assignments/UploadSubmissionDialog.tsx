@@ -6,13 +6,16 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, Modal, Progress, Tooltip, Upload } from 'antd';
+import { Alert, Button, Icon, Modal, Progress, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
@@ -249,13 +252,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             />
             <br />
             <br />
-            Students:{' '}
-            <Tooltip
-              title={`Select multiple students, so long as none of them have a
-             pre-existing submission for the assignment you selected.`}
-            >
-              <Icon type="info-circle" />
-            </Tooltip>
+            Students: <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
             <Select
               placeholder={'Select students'}
               isMulti={true}

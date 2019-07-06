@@ -30,6 +30,8 @@ import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
 import { runFSSetup } from './components/utils/Fullstory';
 
+import { ShowTooltipContext } from './components/core/tooltips';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -184,6 +186,14 @@ class App extends React.Component<{}, IState> {
       });
   };
 
+  public wrapTooltipContext = (node: React.ReactNode) => {
+    if (typeof this.state.user !== 'undefined') {
+      return <ShowTooltipContext.Provider value={this.state.user.showProductTips}>{node}</ShowTooltipContext.Provider>;
+    } else {
+      return node;
+    }
+  };
+
   public handleLogin = (username: string, password: string, toRedirect: boolean) => {
     this.setState({ error: '' });
     return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
@@ -253,14 +263,16 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => (
-              <AsyncStudent
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                initialCourses={studentCourses}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  initialCourses={studentCourses}
+                />,
+              )
+            }
           />
         );
       }
@@ -271,16 +283,18 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-            render={(props: any) => (
-              <AsyncGrader
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                superGraderCourses={superGraderCourses}
-                courses={graderCourses}
-                sectionsLed={sectionsLed}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncGrader
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  superGraderCourses={superGraderCourses}
+                  courses={graderCourses}
+                  sectionsLed={sectionsLed}
+                />,
+              )
+            }
           />
         );
       }
@@ -291,15 +305,17 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-            render={(props: any) => (
-              <AsyncAdmin
-                {...props}
-                addCourse={this.addCourseToAdminList}
-                user={this.state.user}
-                initialCourses={courseAdminCourses}
-                logout={this.handleLogout}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncAdmin
+                  {...props}
+                  addCourse={this.addCourseToAdminList}
+                  user={this.state.user}
+                  initialCourses={courseAdminCourses}
+                  logout={this.handleLogout}
+                />,
+              )
+            }
           />
         );
       }
@@ -310,7 +326,9 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADE}/:submissionId`}
-            render={(props: any) => <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />}
+            render={(props: any) =>
+              this.wrapTooltipContext(<AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />)
+            }
           />
         );
       }
@@ -357,14 +375,16 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={'/settings'}
-            render={(props: any) => (
-              <Settings
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                replaceUser={this.replaceUser}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <Settings
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  replaceUser={this.replaceUser}
+                />,
+              )
+            }
           />
 
           {pageSelector}

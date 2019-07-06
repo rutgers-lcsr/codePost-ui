@@ -96,8 +96,6 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         sections: [], // ignored by API
       };
 
-      console.log(payload);
-
       this.props.updateSettings(payload).then(() => {
         message.success('Your settings were saved!');
         this.setState({ isLoading: false, isDirty: false });

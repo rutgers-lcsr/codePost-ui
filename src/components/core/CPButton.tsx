@@ -1,12 +1,14 @@
 import * as React from 'react';
 
-import { Button, Tooltip } from 'antd';
+import { Button } from 'antd';
 
 import { ButtonProps } from 'antd/lib/button';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+
+import CPTooltip from './CPTooltip';
 
 export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
 
@@ -85,9 +87,9 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
     if (this.props.windowwidth < 900 && fallback) {
       const { children, ...withoutChildren } = props;
       return (
-        <Tooltip title={children}>
+        <CPTooltip title={children}>
           <Button shape="circle" icon={fallback} {...customProps} {...withoutChildren} />
-        </Tooltip>
+        </CPTooltip>
       );
     }
 
