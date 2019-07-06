@@ -39,7 +39,14 @@ const CPTooltip = (props: IProps) => {
 
   let icon;
   if (infoIcon) {
-    icon = <Icon type="info-circle" theme="twoTone" twoToneColor={themeVars.theme.brandPrimary} style={iconStyle} />;
+    icon = (
+      <Icon
+        type="info-circle"
+        theme={showTooltips ? 'twoTone' : 'outlined'}
+        twoToneColor={themeVars.theme.brandPrimary}
+        style={iconStyle}
+      />
+    );
   }
 
   const tooltipState = getTooltipState(showTooltips, hideThisOnHideTips, hideChildrenOnHideTips);
