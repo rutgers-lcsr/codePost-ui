@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Button, Icon, Tooltip } from 'antd';
+import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tooltip } from 'antd';
 
 const ButtonGroup = Button.Group;
 
@@ -9,6 +9,16 @@ import CPButton from '../../core/CPButton';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
+
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
+
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../../types/common';
+
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+
+import Grade from '../../grade/Grade';
+
+import { AssignmentType } from '../../../infrastructure/assignment';
 
 /**********************************************************************************************************************/
 
@@ -218,3 +228,282 @@ export const Reset = (props: IResetProps) => {
 };
 
 /**********************************************************************************************************************/
+
+interface IFinalizeButtonProps {
+  submission: AnonymousSubmissionType;
+  canToggle: () => boolean;
+  toggleFinalized: () => void;
+}
+
+export const FinalizeButton = (props: IFinalizeButtonProps) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // const [notice, setNotice] = React.useState(false);
+  // useOnClickOutside(ref, async (e: any) => {
+  //   const fileMenu = document.getElementById('file-menu');
+  //   if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
+  //     setNotice(true);
+  //     await wait(250);
+  //     setNotice(false);
+  //   }
+  // });
+
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
+  const onClick = async () => {
+    setIsLoading(true);
+    if (!props.submission.isFinalized && !props.canToggle()) {
+      setPopconfirmVisible(true);
+    } else {
+      await props.toggleFinalized();
+      setIsLoading(false);
+    }
+  };
+
+  const confirm = async () => {
+    await props.toggleFinalized();
+    setIsLoading(false);
+    setPopconfirmVisible(false);
+  };
+
+  const cancel = () => {
+    setIsLoading(false);
+    setPopconfirmVisible(false);
+  };
+
+  const isFinalized = props.submission.isFinalized;
+
+  return (
+    <div ref={ref}>
+      <ButtonGroup>
+        <CPButton
+          cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
+          fallback="unlock"
+          onClick={onClick}
+          loading={isLoading && isFinalized}
+          small={true}
+          disabled={!isFinalized}
+        >
+          Edit
+        </CPButton>
+        <CPButton
+          cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
+          fallback="lock"
+          onClick={onClick}
+          loading={isLoading && !isFinalized}
+          disabled={isFinalized}
+          style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
+          small={true}
+        >
+          <Popconfirm
+            title={
+              <div>
+                <p>You have draft comments that will not be saved.</p>{' '}
+                <p>
+                  <b>Are you sure you want to continue?</b>
+                </p>
+              </div>
+            }
+            visible={popconfirmVisible}
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+            placement="bottomRight"
+          >
+            Done
+          </Popconfirm>
+        </CPButton>
+      </ButtonGroup>
+    </div>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IGradeBreakdownProps {
+  assignment: AssignmentType;
+  submission: AnonymousSubmissionType | StudentSubmissionType;
+  rubricCategories: RubricCategoryType[];
+  comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
+}
+
+// FIXME: Although the calculate methods that compose this component are modularized,
+//         it will be prudent to find a way to rigorously test this presentation.
+//         Possibly with Snapshot tests
+//         Wrong values here will damage the accountability chain.
+export const GradeBreakdown = (props: IGradeBreakdownProps) => {
+  const pointsPerCategory = Grade.pointsPerCategory(props.commentRubricComments);
+  const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
+  const genericPoints = Grade.genericCommentPoints(props.comments);
+
+  const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+    return accumulator + current;
+  }, 0);
+
+  const styledLabel = (n: number, excluded?: boolean) => {
+    let points = n;
+    let style = {};
+    let className = 'cp-label';
+    let modifier = null;
+
+    if (n > 0) {
+      modifier = '-';
+      className = 'cp-label cp-label--bold cp-label--error';
+    } else if (n < 0) {
+      modifier = '+';
+      points = n * -1;
+      className = 'cp-label cp-label--bold cp-label--success';
+    } else {
+      className = 'cp-label cp-label--bold cp-label--neutral';
+    }
+
+    if (excluded) {
+      style = { ...style, textDecoration: 'line-through' };
+      className = 'cp-label cp-label--neutral';
+    }
+
+    return (
+      <span style={style} className={className}>
+        {modifier}
+        {points}
+      </span>
+    );
+  };
+
+  let categories = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+    const uncappedPoints = pointsPerCategory.hasOwnProperty(rubricCategory.id)
+      ? pointsPerCategory[rubricCategory.id]
+      : null;
+
+    const cappedPoints = pointsPerCategoryWithCaps.hasOwnProperty(rubricCategory.id)
+      ? pointsPerCategoryWithCaps[rubricCategory.id]
+      : null;
+
+    let exceededBy = null;
+    if (uncappedPoints !== null && cappedPoints !== null && uncappedPoints !== cappedPoints) {
+      const diff = uncappedPoints - cappedPoints;
+      exceededBy = <span className="cp-label cp-label--italic cp-label--bold">(exceeded limit by {diff})</span>;
+    }
+
+    let points;
+    if (exceededBy !== null && uncappedPoints !== null && cappedPoints !== null) {
+      points = (
+        <span className="cp-label">
+          {styledLabel(uncappedPoints, true)} <Icon type="caret-right" /> {styledLabel(cappedPoints)}
+        </span>
+      );
+    } else if (cappedPoints !== null) {
+      points = <span className="cp-label">{styledLabel(cappedPoints)}</span>;
+    }
+
+    return {
+      description: (
+        <span className="cp-label cp-label--italic">
+          {rubricCategory.name} {exceededBy}
+        </span>
+      ),
+      value: <span className="cp-label">{points}</span>,
+    };
+  });
+
+  categories = [
+    ...categories,
+    {
+      description: <span className="cp-label cp-label--italic">other</span>,
+      value: styledLabel(genericPoints),
+    },
+  ];
+
+  const categoriesTable = (
+    <Descriptions title="Category Breakdown" column={1} bordered>
+      {categories.map((item: any, index: number) => {
+        return (
+          <Descriptions.Item key={index} label={item.description}>
+            {item.value}
+          </Descriptions.Item>
+        );
+      })}
+    </Descriptions>
+  );
+
+  const summary = [
+    {
+      description: <span className="cp-label">Assignment Total</span>,
+      value: <span>{props.assignment.points}</span>,
+    },
+    {
+      description: <span className="cp-label">Net Point Delta</span>,
+      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+    },
+    {
+      description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
+      value: (
+        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
+      ),
+    },
+  ];
+
+  const summaryTable = (
+    <Descriptions title="Summary" column={1} bordered>
+      {summary.map((item: any, index: number) => {
+        return (
+          <Descriptions.Item key={index} label={item.description}>
+            {item.value}
+          </Descriptions.Item>
+        );
+      })}
+    </Descriptions>
+  );
+
+  return (
+    <div>
+      {categoriesTable}
+      <Divider />
+      {summaryTable}
+    </div>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IGradeButtonProps {
+  assignment: AssignmentType;
+  submission: AnonymousSubmissionType;
+  calculateGrade: () => number | undefined;
+  rubricCategories: RubricCategoryType[];
+  comments: IFileToCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
+}
+
+export const GradeButton = (props: IGradeButtonProps) => {
+  const [breakdownVisible, setBreakdownVisible] = React.useState(false);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const gradeNum = props.submission.isFinalized ? (props.submission.grade as number) : props.calculateGrade();
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
+  function handleClick() {
+    setBreakdownVisible(!breakdownVisible);
+  }
+
+  return (
+    <div>
+      <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
+        Grade: {gradeNum} / {props.assignment.points}
+      </CPButton>
+      <Modal title={'Grade breakdown'} visible={breakdownVisible} onCancel={handleClick} footer={null}>
+        <GradeBreakdown
+          submission={props.submission}
+          assignment={props.assignment}
+          rubricCategories={props.rubricCategories}
+          comments={props.comments}
+          commentRubricComments={props.commentRubricComments}
+        />
+      </Modal>
+    </div>
+  );
+};

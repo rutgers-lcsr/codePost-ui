@@ -35,7 +35,7 @@ import CPFlex from '../core/CPFlex';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
-import { FinalizeButton, StatusTags, SubheaderGrade, SubheaderTitle } from '../code-review/Subheader';
+import { StatusTags, SubheaderTitle } from '../code-review/Subheader';
 
 import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
@@ -55,7 +55,7 @@ import ThemeToggle from '../core/ThemeToggle';
 
 import SubmissionInfo from '../code-review/SubmissionInfo';
 
-import { Magnifier, Reset, Sizer } from '../code-review/code-panel/CodePanelWidgets';
+import { FinalizeButton, GradeButton, Magnifier, Reset, Sizer } from '../code-review/code-panel/CodePanelWidgets';
 
 import themeVars from '../../styles/abstracts/_theme.js';
 
@@ -675,7 +675,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     ];
 
     const subHeaderMiddle = [
-      <SubheaderGrade
+      <GradeButton
         key="subheader-grade"
         assignment={this.state.assignment}
         submission={this.state.submission}

@@ -19,7 +19,7 @@ import Grade from '../grade/Grade';
 import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
 import StandardConsoleLayout, { ConsoleType } from '../core/layouts/StandardConsoleLayout';
 
-import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from '../code-review/Subheader';
+import { SubheaderStatistic, SubheaderTitle } from '../code-review/Subheader';
 
 import { StudentCode } from '../code-review/code-panel/CodeContent';
 
@@ -516,18 +516,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       if (status === STATUS.ShowSubmission) {
         consoleTypes = ['subheader'];
         let subheaderTitle;
-        let subheaderInfo;
         if (this.state.currentAssignment !== undefined && this.state.currentSubmission !== undefined) {
           subheaderTitle = <SubheaderTitle key="subheader-title" assignment={this.state.currentAssignment} />;
-          subheaderInfo = (
-            <SubheaderInfo
-              assignment={this.state.currentAssignment}
-              submission={this.state.currentSubmission}
-              rubricCategories={this.state.rubricCategories}
-              comments={this.state.comments}
-              commentRubricComments={this.state.commentRubricComments}
-            />
-          );
         }
         const subheaderLeft = [
           subheaderTitle,
@@ -552,7 +542,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             assignment={this.state.currentAssignment}
             submission={this.state.currentSubmission}
           />,
-          subheaderInfo,
         ];
 
         subheader = <CPFlex left={subheaderLeft} right={[]} gutterSize={14} />;
