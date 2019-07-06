@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty, message, Spin } from 'antd';
+import { Breadcrumb, Empty, message } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
@@ -30,6 +30,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import Loading from '../../../../components/core/Loading';
 import { tooltips } from '../../../../components/core/tooltips';
 import CPAdminRubric from './CPAdminRubric';
 import CPRubricCategory from './CPRubricCategory';
@@ -947,7 +948,7 @@ class RubricManager extends React.Component<IProps, IState> {
         />
       );
     } else {
-      return <Spin />;
+      return <Loading />;
     }
   }
 }
