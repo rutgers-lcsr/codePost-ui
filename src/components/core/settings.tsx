@@ -65,14 +65,16 @@ class Settings extends React.Component<IProps, IState> {
     });
   };
 
-  public updateShowProductTips = () => {
+  public updateShowProductTips = (setTipsValue: boolean) => {
+    const payload = { showProductTips: setTipsValue };
     this.setState({ loading: true }, () => {
-      fetch(`${process.env.REACT_APP_API_URL}/users/toggleTips/`, {
+      fetch(`${process.env.REACT_APP_API_URL}/users/me/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
-        method: 'POST',
+        method: 'PATCH',
+        body: JSON.stringify(payload),
       })
         .then((res) => {
           if (res.ok) {
@@ -82,7 +84,6 @@ class Settings extends React.Component<IProps, IState> {
         })
         .then((json) => {
           this.props.replaceUser(json, false);
-          console.log(json);
           this.setState({ loading: false });
         });
     });
@@ -157,7 +158,10 @@ class Settings extends React.Component<IProps, IState> {
             this setting off.
           </div>
           <div style={{ paddingLeft: 40 }}>
-            <Switch checked={user.showProductTips} onChange={this.updateShowProductTips} />
+            <Switch
+              checked={user.showProductTips}
+              onChange={this.updateShowProductTips.bind(this, !user.showProductTips)}
+            />
           </div>
         </div>
         <br />
