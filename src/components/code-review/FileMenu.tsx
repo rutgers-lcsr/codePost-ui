@@ -25,13 +25,31 @@ interface IFileMenuProps {
 }
 
 class FileMenu extends React.Component<IFileMenuProps, {}> {
+  public componentWillMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public handleKeyDown = (e: any) => {
+    // Keyboard shortcuts{
+    if (e.which >= 49 && e.which <= 57 && e.metaKey) {
+      e.preventDefault();
+      if (e.which - 49 < this.props.files.length) {
+        this.props.changeSelectedFile(this.props.files[e.which - 49].id);
+      }
+    }
+  };
+
   public onSelect = (selectedParam: SelectParam) => {
     const fileID = +selectedParam.key.split('-')[1];
     this.props.changeSelectedFile(fileID);
   };
 
   public buildFileMenu = (files: FileType[]) => {
-    return files.map((file: FileType) => {
+    return files.map((file: FileType, index: number) => {
       // const totalPointsInFile = 10;
       const [deductions, bonuses] = this.props.getPointsInFile(file);
 
@@ -94,7 +112,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
               verticalAlign: 'middle',
             }}
           >
-            {file.name}
+            {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘-{index + 1}]</span>
           </span>
           <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
           <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>

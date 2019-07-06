@@ -33,20 +33,61 @@ export const Magnifier = (props: IMagnifierProps) => {
     props.updateZoom(newZoom);
   }
 
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeydown = (e: any) => {
+      if (e.which === 187 && e.metaKey) {
+        // [⌘ + +]
+        e.preventDefault();
+        zoomIn();
+      } else if (e.which === 189 && e.metaKey) {
+        // [⌘ + -]
+        e.preventDefault();
+        zoomOut();
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
   // Note: would be nice to let the user set her zoom explicitly
   // Would need to replace the middle button with an input
 
   return (
     <ButtonGroup>
-      <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small>
-        <Icon type="zoom-out" />
-      </CPButton>
+      <Tooltip
+        placement="top"
+        title={
+          <div>
+            Shrink code
+            <br />
+            [⌘ + -]
+          </div>
+        }
+      >
+        <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
+          <Icon type="zoom-out" />
+        </CPButton>
+      </Tooltip>
       <CPButton cpType={cpType} small>
         {(zoom * 100).toFixed(0)}%
       </CPButton>
-      <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small>
-        <Icon type="zoom-in" />
-      </CPButton>
+      <Tooltip
+        placement="top"
+        title={
+          <div>
+            Magnify code
+            <br />
+            [⌘ + +]
+          </div>
+        }
+      >
+        <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small={true}>
+          <Icon type="zoom-in" />
+        </CPButton>
+      </Tooltip>
     </ButtonGroup>
   );
 };
@@ -91,14 +132,53 @@ export const Sizer = (props: ISizerProps) => {
     }
   }
 
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeydown = (e: any) => {
+      if (e.which === 37 && e.metaKey) {
+        // [⌘ + ←]
+        shrink();
+      } else if (e.which === 39 && e.metaKey) {
+        // [⌘ + →]
+        grow();
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
   return (
     <ButtonGroup>
-      <CPButton id="shrink" cpType={cpType} onClick={shrink} small>
-        <Icon type="double-left" />
-      </CPButton>
-      <CPButton id="grow" cpType={cpType} onClick={grow} small>
-        <Icon type="double-right" />
-      </CPButton>
+      <Tooltip
+        placement="top"
+        title={
+          <div>
+            Shrink code window
+            <br />
+            [⌘ + ←]
+          </div>
+        }
+      >
+        <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
+          <Icon type="double-left" />
+        </CPButton>
+      </Tooltip>
+      <Tooltip
+        placement="top"
+        title={
+          <div>
+            Expand code window
+            <br />
+            [⌘ + →]
+          </div>
+        }
+      >
+        <CPButton id="grow" cpType={cpType} onClick={grow} small={true}>
+          <Icon type="double-right" />
+        </CPButton>
+      </Tooltip>
     </ButtonGroup>
   );
 };
@@ -129,7 +209,7 @@ export const Reset = (props: IResetProps) => {
       }
     >
       <ButtonGroup>
-        <CPButton id="reset" cpType={cpType} small onClick={onClick}>
+        <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
           <Icon type="redo" />
         </CPButton>
       </ButtonGroup>

@@ -28,6 +28,25 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     searchTerm: '',
   };
 
+  public componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public handleKeyDown = (e: any) => {
+    // Keyboard shortcuts{
+    if (e.which === 79 && e.metaKey) {
+      e.preventDefault();
+      const el = document.getElementById('rubric-search');
+      if (el !== null) {
+        el.focus();
+      }
+    }
+  };
+
   public onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchTerm: e.target.value });
   };
@@ -131,6 +150,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     const rubricKeys = this.props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
       return `category-${rubricCategory.id}`;
     });
+
     return (
       <div>
         <div style={{ padding: '18px 20px 20px 16px' }} id="rubric-menu-title">
@@ -138,7 +158,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
             Rubric
           </div>
           <Input
-            placeholder="Search..."
+            placeholder="Search rubric...(⌘+O)"
+            id="rubric-search"
             onChange={this.onSearch}
             value={this.state.searchTerm}
             style={{
