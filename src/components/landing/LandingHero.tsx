@@ -59,7 +59,7 @@ const LandingHero = () => {
         &nbsp; &nbsp;
         <CPButton
           style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
-          id="calendly-button"
+          id="calendly-button-top"
           cpType="secondary"
         >
           Schedule demo
