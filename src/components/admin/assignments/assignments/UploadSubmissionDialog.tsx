@@ -155,6 +155,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return toRet;
   };
 
+  public onCancel = () => {
+    this.setState({ files: [], foundCollision: false, status: STATUS.NONE });
+    this.props.onCancel();
+  };
+
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -324,7 +329,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       <Modal
         visible={true}
         title="Upload Submissions"
-        onCancel={this.props.onCancel}
+        onCancel={this.onCancel}
         width={700}
         footer={[goBackButton, goForwardButton]}
       >
