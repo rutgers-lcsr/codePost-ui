@@ -81,6 +81,13 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
     }
   };
 
+  public openLink = (url: string) => {
+    const w = window.open(url, '_blank');
+    if (w) {
+      w.focus();
+    }
+  };
+
   public render() {
     return (
       <div>
@@ -129,21 +136,13 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
         </Menu>
         <div style={{ height: '100%' }}>
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
-            <Menu.Item key="docs">
+            <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
               <Icon type="pushpin" />
-              <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
-                  Docs
-                </a>
-              </span>
+              <span>Docs</span>
             </Menu.Item>
-            <Menu.Item key="api-reference">
+            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://help.codepost.io/reference')}>
               <Icon type="api" />
-              <span>
-                <a href="https://help.codepost.io/reference" target="_blank" className="internal-link--menu">
-                  API Reference
-                </a>
-              </span>
+              <span>API Reference</span>
             </Menu.Item>
           </Menu>
         </div>
