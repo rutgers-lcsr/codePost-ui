@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Modal, Table, Tooltip, Typography } from 'antd';
+import { Button, Icon, Modal, Table, Typography } from 'antd';
 
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
@@ -15,6 +15,8 @@ import { CommentIO, CommentType } from '../../../../infrastructure/comment';
 import { File, FileType } from '../../../../infrastructure/file';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../../infrastructure/submission';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -134,9 +136,9 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
           comment.text === null || comment.text.length === 0 ? (
             <Icon type="pushpin" />
           ) : (
-            <Tooltip title={comment.text}>
+            <CPTooltip title={comment.text}>
               <Icon type="pushpin" theme="filled" />
-            </Tooltip>
+            </CPTooltip>
           ),
         open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
       };

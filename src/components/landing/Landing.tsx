@@ -41,8 +41,18 @@ class Landing extends React.PureComponent<{}, {}> {
     head!.appendChild(script);
     head!.appendChild(link);
 
-    const calendlyDiv = document.getElementById('calendly-button');
-    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    const calendlyDivTop = document.getElementById('calendly-button-top');
+    const calendlyDivBottom = document.getElementById('calendly-button-bottom');
+    const calendlyDivFooter = document.getElementById('calendly-button-footer');
+    calendlyDivTop!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    calendlyDivBottom!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
+    );
+    calendlyDivFooter!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
+    );
   }
 
   public render() {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Divider, Input, Menu, Tooltip } from 'antd';
+import { Divider, Input, Menu } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
 
@@ -12,6 +12,8 @@ import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+
+import CPTooltip from '../../components/core/CPTooltip';
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
@@ -112,11 +114,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <Tooltip placement="right" title={info}>
+              <CPTooltip placement="right" title={info}>
                 <div style={{ paddingRight: '40px' }}>
                   <span>{rubricCategory.name}</span>
                 </div>
-              </Tooltip>
+              </CPTooltip>
             </div>
           }
         >

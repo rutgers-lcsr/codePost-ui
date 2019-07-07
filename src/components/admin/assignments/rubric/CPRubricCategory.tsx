@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -17,6 +17,8 @@ import _ from 'lodash';
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
+import { tooltips } from '../../../core/tooltips';
 
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -77,13 +79,33 @@ const commentTableColumns = [
     key: 'text',
   },
   {
-    title: 'Deduction',
+    title: (
+      <div>
+        Deduction
+        <CPTooltip
+          title={tooltips.admin.rubric.deduction}
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     dataIndex: 'deduction',
     key: 'deduction',
     align: aligner,
   },
   {
-    title: 'Instances',
+    title: (
+      <div>
+        Instances
+        <CPTooltip
+          title={tooltips.admin.rubric.instances}
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     key: 'linked',
     dataIndex: 'linked',
     align: aligner,
@@ -226,8 +248,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   public saveCategory = () => {
     const { rubricCategory } = this.props;
     const { name, pointLimit, helpText } = this.state;
-    console.log('bump');
-    console.log(pointLimit);
 
     if (
       name !== rubricCategory.name ||
@@ -373,7 +393,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               />
             </span>
           ),
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       } else {
         return {
@@ -394,7 +418,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           linked: null,
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       }
     });
@@ -413,18 +441,22 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </span>,
       <span key="buttons">
         {this.props.index > 0 && this.props.numCategories > 1 ? (
-          <Button
-            icon="caret-up"
-            size="small"
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
-          />
+          <CPTooltip title={tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
+            <Button
+              icon="caret-up"
+              size="small"
+              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+            />
+          </CPTooltip>
         ) : null}
         {this.props.index !== this.props.numCategories - 1 ? (
-          <Button
-            icon="caret-down"
-            size="small"
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
-          />
+          <CPTooltip title={tooltips.admin.rubric.categoryDown} hideThisOnHideTips={true}>
+            <Button
+              icon="caret-down"
+              size="small"
+              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
+            />
+          </CPTooltip>
         ) : null}
       </span>,
     ];
@@ -450,6 +482,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       <div key="points">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Point Limit
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryPointLimit}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <InputNumber
           value={this.state.pointLimit ? this.state.pointLimit : 0}
@@ -459,13 +497,13 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </div>,
       <div key="help-text">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Help Text{' '}
-          <Tooltip
-            title={`Use this text to explain the rubric category to graders.
-           It will appear alongside the rubric category in the Code Review console.`}
-          >
-            <Icon type="question-circle" />
-          </Tooltip>
+          Category Help Text
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryHelpText}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <Input.TextArea
           style={{ width: 350 }}

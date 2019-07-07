@@ -13,6 +13,9 @@ const SubMenu = Menu.SubMenu;
 type alignType = 'left' | 'right' | 'center';
 
 import CPButton from '../../../components/core/CPButton';
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
+
 import CPAdminDetail from '../other/CPAdminDetail';
 
 /* other library imports */
@@ -434,37 +437,97 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         key: 'assignment',
       },
       {
-        title: 'Published',
+        title: (
+          <div>
+            Published
+            <CPTooltip
+              title={tooltips.admin.assignments.published}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'published',
         key: 'published',
         align: aligner,
       },
       {
-        title: 'Submissions',
+        title: (
+          <div>
+            Submissions
+            <CPTooltip
+              title={tooltips.admin.assignments.submissions}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'submissions',
         key: 'submissions',
         align: aligner,
       },
       {
-        title: 'Finalized',
+        title: (
+          <div>
+            Finalized
+            <CPTooltip
+              title={tooltips.admin.assignments.finalized}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'finalized',
         key: 'finalized',
         align: aligner,
       },
       {
-        title: 'Unclaimed',
+        title: (
+          <div>
+            Unclaimed
+            <CPTooltip
+              title={tooltips.admin.assignments.unclaimed}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'unclaimed',
         key: 'unclaimed',
         align: aligner,
       },
       {
-        title: 'Missing',
+        title: (
+          <div>
+            Missing
+            <CPTooltip
+              title={tooltips.admin.assignments.missing}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'missing',
         key: 'missing',
         align: aligner,
       },
       {
-        title: 'Unviewed',
+        title: (
+          <div>
+            Unviewed
+            <CPTooltip
+              title={tooltips.admin.assignments.unviewed}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'unviewed',
         key: 'unviewed',
         align: aligner,

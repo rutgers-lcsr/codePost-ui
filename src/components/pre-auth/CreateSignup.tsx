@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Checkbox, Divider, Icon, Input, Progress, Radio, Switch, Tooltip, Typography } from 'antd';
+import { Alert, Checkbox, Divider, Icon, Input, Progress, Radio, Switch, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -21,6 +21,8 @@ import universities from './universities';
 import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import { Testimonial } from '../landing/Testimonial';
@@ -231,20 +233,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                 Pro
               </Radio>
             </Radio.Group>
-            <Tooltip
-              placement={'bottom'}
-              title={
-                <span>
-                  To sign up for Pro, please contact us at <a href="mailto:team@codepost.io">team@codepost.io</a>. To
-                  learn more about Pro, check out our{' '}
-                  <Link to="/pricing" target="_blank">
-                    Pricing
-                  </Link>{' '}
-                </span>
-              }
-            >
-              <Icon type="question-circle" />
-            </Tooltip>
+            <CPTooltip placement={'bottom'} title={tooltips.preauth.create.proPricing} infoIcon={true} />
             {spacing}
             <Input
               placeholder={'Your email'}

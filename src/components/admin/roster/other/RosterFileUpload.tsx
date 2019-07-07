@@ -6,21 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import {
-  Alert,
-  Badge,
-  Button,
-  Collapse,
-  Divider,
-  Icon,
-  Modal,
-  Spin,
-  Steps,
-  Table,
-  Tooltip,
-  Typography,
-  Upload,
-} from 'antd';
+import { Alert, Badge, Button, Collapse, Divider, Icon, Modal, Spin, Steps, Table, Typography, Upload } from 'antd';
 const { Step } = Steps;
 
 /* other library imports */
@@ -33,6 +19,8 @@ import { SectionType } from '../../../../infrastructure/section';
 import { USER_APP } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 /**********************************************************************************************************************/
 
@@ -945,11 +933,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     if (this.state.status === UPLOAD_STATUS.REVIEW) {
       if (this.state.uploadErrors.length > 0) {
         goForwardButton = (
-          <Tooltip key="submit" title={'You must fix all errors before proceeding.'}>
+          <CPTooltip key="submit" title={tooltips.admin.uploadRoster.error}>
             <Button key="submit" type="primary" disabled={true}>
               Continue
             </Button>
-          </Tooltip>
+          </CPTooltip>
         );
       } else {
         goForwardButton = (

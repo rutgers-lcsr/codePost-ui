@@ -17,6 +17,8 @@ import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
+import { tooltips } from '../core/tooltips';
+
 import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
 
@@ -278,6 +280,8 @@ class SectionPanel extends React.Component<IProps, IState> {
         title={`Section: ${this.state.activeSection.name}`}
         actions={[anonymousToggle, selectContent]}
         content={content}
+        gutterSize={0}
+        titleInfo={tooltips.grader.section.title}
       />
     );
   }

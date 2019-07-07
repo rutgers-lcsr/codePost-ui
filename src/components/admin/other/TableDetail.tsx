@@ -32,6 +32,7 @@ interface IProps {
   data: any[];
   tableProps?: any;
   drawer?: React.ReactNode;
+  titleInfo?: string | React.ReactNode;
 }
 
 interface IState {
@@ -180,6 +181,7 @@ class TableDetail extends React.Component<IProps, IState> {
         title={this.props.title}
         actions={actions}
         content={content}
+        titleInfo={this.props.titleInfo}
       />
     );
   }

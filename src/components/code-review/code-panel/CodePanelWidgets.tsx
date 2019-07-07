@@ -1,12 +1,15 @@
 import * as React from 'react';
 
-import { Button, Icon, Tooltip } from 'antd';
+import { Button, Icon } from 'antd';
 
 const ButtonGroup = Button.Group;
 
 import CPButton from '../../core/CPButton';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
+import CPTooltip from '../../core/CPTooltip';
+import { tooltips } from '../../core/tooltips';
 
 interface IMagnifierProps {
   visible: boolean;
@@ -26,12 +29,16 @@ export const Magnifier = (props: IMagnifierProps) => {
       }}
     >
       <ButtonGroup>
-        <CPButton id="zoom-out" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
-          <Icon type="zoom-out" />
-        </CPButton>
-        <CPButton id="zoom-in" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
-          <Icon type="zoom-in" />
-        </CPButton>
+        <CPTooltip placement="top" title={tooltips.grade.codePanel.zoomOut} hideThisOnHideTips={true}>
+          <CPButton id="zoom-out" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomOut}>
+            <Icon type="zoom-out" />
+          </CPButton>
+        </CPTooltip>
+        <CPTooltip placement="top" title={tooltips.grade.codePanel.zoomIn} hideThisOnHideTips={true}>
+          <CPButton id="zoom-in" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.zoomIn}>
+            <Icon type="zoom-in" />
+          </CPButton>
+        </CPTooltip>
       </ButtonGroup>
     </div>
   );
@@ -55,12 +62,16 @@ export const Sizer = (props: ISizerProps) => {
       }}
     >
       <ButtonGroup>
-        <CPButton id="shrink" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
-          <Icon type="double-left" />
-        </CPButton>
-        <CPButton id="grow" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
-          <Icon type="double-right" />
-        </CPButton>
+        <CPTooltip placement="top" title={tooltips.grade.codePanel.shrink} hideThisOnHideTips={true}>
+          <CPButton id="shrink" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.shrink}>
+            <Icon type="double-left" />
+          </CPButton>
+        </CPTooltip>
+        <CPTooltip placement="top" title={tooltips.grade.codePanel.grow} hideThisOnHideTips={true}>
+          <CPButton id="grow" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.grow}>
+            <Icon type="double-right" />
+          </CPButton>
+        </CPTooltip>
       </ButtonGroup>
     </div>
   );
@@ -82,22 +93,13 @@ export const Reset = (props: IResetProps) => {
         visibility: props.visible ? 'visible' : 'hidden',
       }}
     >
-      <Tooltip
-        placement="top"
-        title={
-          <div>
-            reset comment alignments
-            <br />
-            [⌘+click highlights]
-          </div>
-        }
-      >
+      <CPTooltip placement="top" title={tooltips.grade.codePanel.alignment}>
         <ButtonGroup>
           <CPButton id="reset" cpType={cpType} size="small" style={{ minWidth: '20px' }} onClick={props.reset}>
             <Icon type="redo" />
           </CPButton>
         </ButtonGroup>
-      </Tooltip>
+      </CPTooltip>
     </div>
   );
 };

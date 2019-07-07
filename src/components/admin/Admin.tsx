@@ -11,6 +11,8 @@ import { ClickParam } from 'antd/lib/menu';
 
 import CPDropdown from '../core/CPDropdown';
 import CPFlex from '../core/CPFlex';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1137,9 +1139,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         {this.props.user.email}
       </span>,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
-      <Link className="internal-link" key="settings" to="/settings">
-        <Icon type="setting" />
-      </Link>,
+      <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
+        <Link className="internal-link" to="/settings">
+          <Icon type="setting" />
+        </Link>
+      </CPTooltip>,
       <Button key="header-logout" size="small" onClick={this.props.logout}>
         Logout
       </Button>,

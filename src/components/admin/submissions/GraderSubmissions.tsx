@@ -22,6 +22,8 @@ import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import GraderDetail from './graders/GraderDetail';
 
 import CPButton from '../../../components/core/CPButton';
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
 
 import { PANELS } from '../Admin';
 
@@ -150,9 +152,14 @@ class GraderData extends React.Component<IProps, IState> {
               <Checkbox defaultChecked={this.state.showActive} onChange={this.toggleValue.bind(this, 'showActive')}>
                 Active graders
               </Checkbox>
-              <Checkbox defaultChecked={this.state.showInactive} onChange={this.toggleValue.bind(this, 'showInactive')}>
-                Inactive graders
-              </Checkbox>
+              <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+                <Checkbox
+                  defaultChecked={this.state.showInactive}
+                  onChange={this.toggleValue.bind(this, 'showInactive')}
+                >
+                  Inactive graders
+                </Checkbox>
+              </CPTooltip>
             </div>
           );
         }
@@ -172,7 +179,11 @@ class GraderData extends React.Component<IProps, IState> {
             this.setState({ activeGrader: graderEmail });
           };
           const toRet = {
-            expand: <Icon type="zoom-in" onClick={expandFn} />,
+            expand: (
+              <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
+                <Icon type="zoom-in" onClick={expandFn} />
+              </CPTooltip>
+            ),
             key: graderEmail,
             grader: graderEmail,
           };
@@ -244,6 +255,7 @@ class GraderData extends React.Component<IProps, IState> {
               <Breadcrumb.Item>Graders</Breadcrumb.Item>
             </Breadcrumb>
           }
+          titleInfo={tooltips.admin.graderSubmissions.title}
         />
       );
     } else {

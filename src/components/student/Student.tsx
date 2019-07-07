@@ -35,6 +35,9 @@ import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 
 import MultiSelectorSider from '../core/MultiSelectorSider';
 
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
+
 import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, USER_TYPE } from '../../types/common';
 
 import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
@@ -494,7 +497,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         let subheaderTitle;
         let subheaderInfo;
         if (this.state.currentAssignment !== undefined && this.state.currentSubmission !== undefined) {
-          subheaderTitle = <SubheaderTitle key="subheader-title" assignment={this.state.currentAssignment} />;
+          subheaderTitle = (
+            <CPTooltip title={tooltips.student.subheader.assignment} hideThisOnHideTips={true}>
+              <div>
+                <SubheaderTitle key="subheader-title" assignment={this.state.currentAssignment} />
+              </div>
+            </CPTooltip>
+          );
           subheaderInfo = (
             <SubheaderInfo
               assignment={this.state.currentAssignment}
