@@ -1,9 +1,13 @@
+/**********************************************************************************************************************/
+
+/* React imports */
 import * as React from 'react';
 
+/* antd imports */
 import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tooltip } from 'antd';
-
 const ButtonGroup = Button.Group;
 
+/* codePost imports */
 import CPButton from '../../core/CPButton';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
@@ -19,6 +23,8 @@ import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import Grade from '../../grade/Grade';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
+
+import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from '../Shortcuts';
 
 /**********************************************************************************************************************/
 
@@ -46,11 +52,10 @@ export const Magnifier = (props: IMagnifierProps) => {
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
-      if (e.which === 187 && e.metaKey) {
-        // [⌘ + +]
+      if (e.which === ZOOM_IN_SHORTCUT && e.metaKey) {
         e.preventDefault();
         zoomIn();
-      } else if (e.which === 189 && e.metaKey) {
+      } else if (e.which === ZOOM_OUT_SHORTCUT && e.metaKey) {
         // [⌘ + -]
         e.preventDefault();
         zoomOut();
@@ -64,6 +69,7 @@ export const Magnifier = (props: IMagnifierProps) => {
 
   // Note: would be nice to let the user set her zoom explicitly
   // Would need to replace the middle button with an input
+  // or maybe open a modal when the middle button is pressed
 
   return (
     <ButtonGroup>
@@ -145,11 +151,9 @@ export const Sizer = (props: ISizerProps) => {
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
-      if (e.which === 37 && e.metaKey) {
-        // [⌘ + ←]
+      if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
         shrink();
-      } else if (e.which === 39 && e.metaKey) {
-        // [⌘ + →]
+      } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
         grow();
       }
     };

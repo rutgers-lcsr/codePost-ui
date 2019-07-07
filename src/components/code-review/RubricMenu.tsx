@@ -1,17 +1,24 @@
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
 import { Input, Menu } from 'antd';
-
 import { ClickParam } from 'antd/lib/menu';
-
 const SubMenu = Menu.SubMenu;
 
+/* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+
+import { RUBRIC_SEARCH_SHORTCUT } from './Shortcuts';
+
+/**********************************************************************************************************************/
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
@@ -38,7 +45,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
 
   public handleKeyDown = (e: any) => {
     // Keyboard shortcuts
-    if (e.which === 79 && e.metaKey) {
+    if (e.which === RUBRIC_SEARCH_SHORTCUT && e.metaKey) {
       e.preventDefault();
       const el = document.getElementById('rubric-search');
       if (el !== null) {
