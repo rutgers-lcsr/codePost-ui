@@ -60,6 +60,9 @@ interface IState {
   status: STATUS;
   createNewOrg: boolean;
   progress: number;
+
+  // Misc
+  matchOrg: string;
 }
 
 interface IProps extends IWithWindowWatcherProps {
@@ -78,6 +81,8 @@ class CreateSignup extends React.Component<IProps, IState> {
     status: STATUS.INPUT,
     createNewOrg: false,
     progress: 0,
+
+    matchOrg: '',
   };
 
   private interval: any;
@@ -137,29 +142,33 @@ class CreateSignup extends React.Component<IProps, IState> {
           }
         })
         .then((json) => {
-          // after triggering validation process, check status at interval defined by USER_VALIDATION_INTERVAL
-          this.interval = setInterval(() => {
-            this.checkUserValidation();
-          }, USER_VALIDATION_INTERVAL);
+          if (!json.success) {
+            this.setState({ status: STATUS.BAD_EMAIL, matchOrg: json.org });
+          } else {
+            // after triggering validation process, check status at interval defined by USER_VALIDATION_INTERVAL
+            this.interval = setInterval(() => {
+              this.checkUserValidation();
+            }, USER_VALIDATION_INTERVAL);
 
-          // start progress counter
-          this.setState({ progress: 1 }, () => {
-            // update counter periodically
-            this.progressInterval = setInterval(() => {
-              const currentProgress = this.state.progress;
-              const newProgress = currentProgress + 0.15 + Math.abs(randomNormal()) * 0.3;
-              if (newProgress >= 100) {
-                clearInterval(this.interval);
-                clearInterval(this.progressInterval);
-                this.setState({ progress: 100, status: STATUS.VALIDATION_ONGOING });
-              } else {
-                this.setState({ progress: parseInt(newProgress.toFixed(0), 10) });
-              }
-            }, PROGRESS_INCREMENT_TIME);
-          });
+            // start progress counter
+            this.setState({ progress: 1 }, () => {
+              // update counter periodically
+              this.progressInterval = setInterval(() => {
+                const currentProgress = this.state.progress;
+                const newProgress = currentProgress + 0.15 + Math.abs(randomNormal()) * 0.3;
+                if (newProgress >= 100) {
+                  clearInterval(this.interval);
+                  clearInterval(this.progressInterval);
+                  this.setState({ progress: 100, status: STATUS.VALIDATION_ONGOING });
+                } else {
+                  this.setState({ progress: parseInt(newProgress.toFixed(0), 10) });
+                }
+              }, PROGRESS_INCREMENT_TIME);
+            });
+          }
         })
         .catch((err) => {
-          this.setState({ status: STATUS.BAD_EMAIL });
+          console.log(err);
         });
     });
   };
@@ -370,12 +379,21 @@ class CreateSignup extends React.Component<IProps, IState> {
         break;
       case STATUS.BAD_EMAIL:
         content = (
-          <Alert
-            message="Whoops!"
-            description="It looks like the organization you're trying to join has a different email domain than
-             the one you're using. Make sure you're using your institution's email and try signing up again!"
-            type="error"
-          />
+          <div>
+            <Alert
+              message="Whoops!"
+              description={
+                <div>
+                  It looks like your email corresponds to a different organization than you selected. You selected{' '}
+                  <b>{this.state.selectedOrg!.label}</b> but your email corresponds to <b>{this.state.matchOrg}</b>.
+                </div>
+              }
+              type="error"
+            />
+            <br />
+            <CPButton cpType="secondary">Start over</CPButton> &nbsp;
+            <CPButton cpType="primary">Join {this.state.matchOrg}</CPButton>
+          </div>
         );
         break;
       default:
@@ -408,22 +426,25 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
             <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
-          <div
-            style={{
-              marginLeft: this.props.windowwidth < 750 ? 0 : 40,
-              marginTop: this.props.windowwidth < 750 ? 40 : 0,
-              padding: '25px 15px',
-              boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
-              borderRadius: 8,
-            }}
-          >
-            <Testimonial
-              text={<div>{bobText}</div>}
-              name="Robert Sedgewick"
-              thumbnail={bobImg}
-              school="Princeton University"
-            />
-          </div>
+          {this.state.status === STATUS.INPUT ? (
+            <div
+              style={{
+                marginLeft: this.props.windowwidth < 750 ? 0 : 75,
+                marginTop: this.props.windowwidth < 750 ? 40 : 0,
+                padding: '25px 15px',
+                boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+                borderRadius: 8,
+                width: 300,
+              }}
+            >
+              <Testimonial
+                text={<div>{bobText}</div>}
+                name="Robert Sedgewick"
+                thumbnail={bobImg}
+                school="Princeton University"
+              />
+            </div>
+          ) : null}
         </div>
       </PreAuthSignupLayout>
     );
