@@ -1220,6 +1220,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               deleteSubmission={this.deleteSubmission}
               updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
+              refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
             />
           );
           break;

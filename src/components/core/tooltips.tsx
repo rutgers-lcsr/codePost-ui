@@ -61,7 +61,9 @@ const ADMIN_ASSIGNMENTS_PUBLISHED =
 const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment';
 const ADMIN_ASSIGNMENTS_FINALIZED = 'The submissions that have been marked as Finalized';
 const ADMIN_ASSIGNMENTS_CLAIMED = 'The submissions that have been claimed by a grader.';
+const ADMIN_ASSIGNMENTS_INPROGRESS = 'The submissionst hat have been claimed by a grader but have not been finalized.';
 const ADMIN_ASSIGNMENTS_MISSING = 'The students that have not submitted a submission. ';
+const ADMIN_ASSIGNMENTS_VIEWED = 'The students who have viewed their feedback. ';
 const ADMIN_ASSIGNMENTS_UNVIEWED = 'The students that have not viewed their feedback. ';
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
   'Select multiple students, so long as none of them have a pre-existing submission for the assignment you selected.';
@@ -192,8 +194,10 @@ export const tooltips = {
       published: ADMIN_ASSIGNMENTS_PUBLISHED,
       submissions: ADMIN_ASSIGNMENTS_SUBMISSIONS,
       finalized: ADMIN_ASSIGNMENTS_FINALIZED,
+      inProgress: ADMIN_ASSIGNMENTS_INPROGRESS,
       unclaimed: ADMIN_ASSIGNMENTS_CLAIMED,
       missing: ADMIN_ASSIGNMENTS_MISSING,
+      viewed: ADMIN_ASSIGNMENTS_VIEWED,
       unviewed: ADMIN_ASSIGNMENTS_UNVIEWED,
       uploadSubmission: ADMIN_ASSIGNMENTS_UPLOADSUBMISSION,
     },
