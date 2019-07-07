@@ -614,6 +614,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             </div>
           }
           sider={[sider]}
+          siderTitles={['', '', '']}
           content={status !== STATUS.ShowSubmission ? content : fileMenu}
           removeSiderOnMobile={true}
         />
@@ -628,6 +629,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         sider={[sider]}
         content={content}
         removeSiderOnMobile={true}
+        siderTitles={['', '', '']}
       />
     );
   }

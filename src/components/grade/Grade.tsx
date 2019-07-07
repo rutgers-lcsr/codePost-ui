@@ -780,7 +780,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               updateGrader={this.updateGrader}
             />,
             <FileMenu
-              key={'file-menu'}
+              key="file-menu"
               title="Files"
               files={this.state.files}
               comments={this.state.comments}
@@ -790,12 +790,13 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               canChange={this.containsUnsavedComments}
             />,
             <RubricMenu
-              key={'rubric-menu'}
+              key="rubric-menu"
               rubricCategories={this.state.rubricCategories}
               rubricComments={this.state.rubricComments}
               handleRubricCommentClick={this.onRubricCommentClick}
             />,
           ]}
+          siderTitles={['Submission Info', 'Files', 'Rubric']}
           content={content}
           removeSiderOnMobile={false}
         />

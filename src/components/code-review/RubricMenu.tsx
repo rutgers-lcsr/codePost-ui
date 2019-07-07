@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Divider, Input, Menu, Tooltip } from 'antd';
+import { Input, Menu } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
 
@@ -37,7 +37,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   }
 
   public handleKeyDown = (e: any) => {
-    // Keyboard shortcuts{
+    // Keyboard shortcuts
     if (e.which === 79 && e.metaKey) {
       e.preventDefault();
       const el = document.getElementById('rubric-search');
@@ -98,21 +98,21 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         );
       });
 
-      const info = (
-        <div>
-          <div>
-            <b>Point Limit: </b>
-            {rubricCategory.pointLimit === 0 ? 'n/a' : rubricCategory.pointLimit}
-          </div>
-          <Divider style={{ margin: '10px 0px' }} />
-          {rubricCategory.helpText ? (
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              <b>Details: </b>
-              {rubricCategory.helpText}
-            </div>
-          ) : null}
-        </div>
-      );
+      // const info = (
+      //   <div>
+      //     <div>
+      //       <b>Point Limit: </b>
+      //       {rubricCategory.pointLimit === 0 ? 'n/a' : rubricCategory.pointLimit}
+      //     </div>
+      //     <Divider style={{ margin: '10px 0px' }} />
+      //     {rubricCategory.helpText ? (
+      //       <div style={{ whiteSpace: 'pre-wrap' }}>
+      //         <b>Details: </b>
+      //         {rubricCategory.helpText}
+      //       </div>
+      //     ) : null}
+      //   </div>
+      // );
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
@@ -131,11 +131,9 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <Tooltip placement="right" title={info}>
-                <div style={{ paddingRight: '40px' }}>
-                  <span>{rubricCategory.name}</span>
-                </div>
-              </Tooltip>
+              <div style={{ paddingRight: '40px' }}>
+                <span>{rubricCategory.name}</span>
+              </div>
             </div>
           }
         >
@@ -152,11 +150,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     });
 
     return (
-      <div>
-        <div style={{ padding: '18px 20px 20px 16px' }} id="rubric-menu-title">
-          <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
-            Rubric
-          </div>
+      <div style={{ marginTop: '8px' }}>
+        <div id="rubric-menu-title" style={{ marginBottom: '5px', display: 'flex' }}>
           <Input
             placeholder="Search rubric...(⌘+O)"
             id="rubric-search"
@@ -166,19 +161,23 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               backgroundColor: this.context.consoleTheme.siderBg,
               border: this.context.consoleTheme.buttonSecondaryBorder,
               color: this.context.consoleTheme.buttonSecondaryColor,
+              width: '90%',
+              margin: '0 auto',
             }}
           />
         </div>
-        <Menu
-          defaultOpenKeys={rubricKeys}
-          selectedKeys={[]}
-          mode="inline"
-          className="rubric-menu"
-          id="rubric-menu"
-          style={{ backgroundColor: this.context.consoleTheme.siderBg }}
-        >
-          {rubricMenu}
-        </Menu>
+        <div style={{ height: '100%', overflow: 'scroll' }}>
+          <Menu
+            defaultOpenKeys={rubricKeys}
+            selectedKeys={[]}
+            mode="inline"
+            className="rubric-menu"
+            id="rubric-menu"
+            style={{ backgroundColor: this.context.consoleTheme.siderBg }}
+          >
+            {rubricMenu}
+          </Menu>
+        </div>
       </div>
     );
   }
