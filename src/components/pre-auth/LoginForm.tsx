@@ -47,7 +47,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
 
   public handleLogin = () => {
     this.setState({ loading: true });
-    this.props.handleLogin(this.state.email, this.state.password, this.props.redirectAfterLogin).then(() => {
+    this.props.handleLogin(this.state.email, this.state.password, this.props.redirectAfterLogin).catch(() => {
       this.setState({ password: '', loading: false });
     });
   };

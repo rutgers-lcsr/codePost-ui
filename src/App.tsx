@@ -223,6 +223,7 @@ class App extends React.Component<{}, IState> {
       .catch((error) => {
         localStorage.removeItem('token');
         this.setState({ has_token: false, user: undefined, error: 'invalid' });
+        return Promise.reject();
       });
   };
 
