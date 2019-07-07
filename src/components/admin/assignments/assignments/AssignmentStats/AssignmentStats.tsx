@@ -125,6 +125,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
       this.props.submissions,
       this.props.submissionsByStudent,
       this.props.viewsBySubmission,
+      this.props.students,
     );
 
     type alignType = 'left' | 'right' | 'center';

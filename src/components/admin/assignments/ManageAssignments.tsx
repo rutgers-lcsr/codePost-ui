@@ -360,6 +360,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           this.props.submissions,
           this.props.submissionsByStudent,
           this.props.viewsBySubmission,
+          this.props.students,
         );
 
         data = this.props.assignments

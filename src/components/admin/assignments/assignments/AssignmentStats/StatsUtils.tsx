@@ -54,6 +54,7 @@ export const calculateMultipleAssignmentProgressStats = (
   submissions: IAssignmentToSubmissionsMap,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
+  activeStudents: string[],
 ) => {
   const toRet: IAssignmentProgressStatsMap = {};
   assignments.forEach((assignment) => {
@@ -62,6 +63,7 @@ export const calculateMultipleAssignmentProgressStats = (
       submissions[assignment.id],
       submissionsByStudent,
       viewsBySubmission,
+      activeStudents,
     );
     toRet[assignment.id] = stats;
   });
@@ -74,10 +76,17 @@ export const calculateFullStats = (
   submissions: SubmissionType[],
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
+  activeStudents: string[],
 ): IFullStats => {
   const assignmentSubs = submissions;
 
-  const progressStats = calculateGradingProgressStats(assignment, submissions, submissionsByStudent, viewsBySubmission);
+  const progressStats = calculateGradingProgressStats(
+    assignment,
+    submissions,
+    submissionsByStudent,
+    viewsBySubmission,
+    activeStudents,
+  );
 
   let totalScore = 0;
   // Calculate Summary statistics if includeSummaryStats is true.
@@ -144,6 +153,7 @@ export const calculateGradingProgressStats = (
   submissions: SubmissionType[],
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
+  activeStudents: string[],
 ): IGradingProgressStats => {
   const assignmentSubs = submissions;
   const numSubmissions = assignmentSubs.length;
@@ -181,8 +191,13 @@ export const calculateGradingProgressStats = (
     }
   });
 
+  // submissionsByStudent includes inactive students, so we need to check enrollment before including in missing
+  // Array.includes() is O(N), so that could approach N^2 if there's a lot of missing submissions (future assignment)
+  // Instead, we create a set in O(N) and perform each check in O(1)
+  const studentsSet = new Set(activeStudents);
+
   const numMissing = Object.keys(submissionsByStudent).reduce((missing: number, student: string) => {
-    if (!submissionsByStudent[student][assignment.id]) {
+    if (!submissionsByStudent[student][assignment.id] && studentsSet.has(student)) {
       return missing + 1;
     }
     return missing;
