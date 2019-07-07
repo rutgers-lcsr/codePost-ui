@@ -30,10 +30,14 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
     this.setState({ openKeys: [selectedPanelKey] });
 
     /* set up Headway widget */
-    (window as any).Headway.init({
-      selector: '.version', // CSS selector where to inject the badge
-      account: '7v3mQJ',
-    });
+    try {
+      (window as any).Headway.init({
+        selector: '.version', // CSS selector where to inject the badge
+        account: '7v3mQJ',
+      });
+    } catch {
+      console.error('Headway failed to load.');
+    }
   }
 
   public componentDidUpdate(oldProps: IAdminNavProps) {
