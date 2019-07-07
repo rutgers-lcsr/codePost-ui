@@ -319,7 +319,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     if (!this.props.loadComplete) {
       content = (
         <div>
-          <Table pagination={false} columns={columns} dataSource={data} loading={!this.props.loadComplete} />
+          <Table pagination={false} columns={columns} locale={{ emptyText: ' ' }} loading={!this.props.loadComplete} />
         </div>
       );
     } else {
