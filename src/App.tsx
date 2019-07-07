@@ -252,7 +252,7 @@ class App extends React.Component<{}, IState> {
         studentRoute = (
           <Route
             exact={true}
-            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+            path={`${STUDENT}/:courseName?/:period?`}
             render={(props: any) => (
               <AsyncStudent
                 {...props}
