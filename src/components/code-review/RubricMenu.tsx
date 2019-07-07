@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Input, Menu } from 'antd';
+import { Divider, Input, Menu, Tag, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 const SubMenu = Menu.SubMenu;
 
@@ -105,21 +105,28 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         );
       });
 
-      // const info = (
-      //   <div>
-      //     <div>
-      //       <b>Point Limit: </b>
-      //       {rubricCategory.pointLimit === 0 ? 'n/a' : rubricCategory.pointLimit}
-      //     </div>
-      //     <Divider style={{ margin: '10px 0px' }} />
-      //     {rubricCategory.helpText ? (
-      //       <div style={{ whiteSpace: 'pre-wrap' }}>
-      //         <b>Details: </b>
-      //         {rubricCategory.helpText}
-      //       </div>
-      //     ) : null}
-      //   </div>
-      // );
+      const info = (
+        <div>
+          <div>
+            <b>Point Limit: </b>
+            {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
+          </div>
+          <Divider style={{ margin: '10px 0px' }} />
+          {rubricCategory.helpText ? (
+            <div style={{ whiteSpace: 'pre-wrap' }}>
+              <b>Details: </b>
+              {rubricCategory.helpText}
+            </div>
+          ) : null}
+        </div>
+      );
+
+      const capTag =
+        rubricCategory.pointLimit !== null || rubricCategory.helpText !== null ? (
+          <Tooltip title={info}>
+            <Tag>Details</Tag>
+          </Tooltip>
+        ) : null;
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
@@ -139,7 +146,10 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               }}
             >
               <div style={{ paddingRight: '40px' }}>
-                <span>{rubricCategory.name}</span>
+                <span>
+                  {rubricCategory.name}
+                  <span style={{ float: 'right' }}>{capTag}</span>
+                </span>
               </div>
             </div>
           }
