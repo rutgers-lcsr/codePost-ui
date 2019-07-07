@@ -652,16 +652,42 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <div>No Submission Found</div>;
     }
 
+    const groupStyle = {
+      padding: '5px 20px',
+      lineHeight: '40px',
+      fontSize: '14px',
+      color: '#8d9298',
+      background: '#f4f4f4',
+      fontWeight: 600,
+      cursor: 'default',
+    };
+    const itemStyle = {
+      padding: '5px 20px',
+      lineHeight: '35px',
+      fontSize: '14px',
+      cursor: 'pointer',
+    };
+
     const menu = (
-      <Menu mode="vertical">
-        <Menu.ItemGroup title="Item 1">
-          <Menu.Item key="setting:1">Option 1</Menu.Item>
-          <Menu.Item key="setting:2">Option 2</Menu.Item>
-        </Menu.ItemGroup>
-        <Menu.ItemGroup title="Item 2">
-          <Menu.Item key="setting:3">Option 3</Menu.Item>
-          <Menu.Item key="setting:4">Option 4</Menu.Item>
-        </Menu.ItemGroup>
+      <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
+        <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
+          Code Review Console
+        </Menu.Item>
+        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+          Redo tutorial
+        </Menu.Item>
+        <Menu.Item key="setting:3" style={itemStyle} className="header-menu">
+          Help! (talk to a human from codePost)
+        </Menu.Item>
+        <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
+          Other
+        </Menu.Item>
+        <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
+          <a href="/">Home</a>
+        </Menu.Item>
+        <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+          <a href="/logout">Logout</a>
+        </Menu.Item>
       </Menu>
     );
 
