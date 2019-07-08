@@ -245,6 +245,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  // FIXME: discuss this feature as a team
   // const [notice, setNotice] = React.useState(false);
   // useOnClickOutside(ref, async (e: any) => {
   //   const fileMenu = document.getElementById('file-menu');
