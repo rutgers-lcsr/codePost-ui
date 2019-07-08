@@ -19,6 +19,8 @@ import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
+import { acceptedFilesString } from './AcceptedFileTypes';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -270,11 +272,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}
-            <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={this.onChangeFiles}>
-              <Button>
-                <Icon type="upload" /> Upload files
-              </Button>
-            </Upload>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Upload
+                beforeUpload={beforeUpload}
+                listType="text"
+                multiple={true}
+                onChange={this.onChangeFiles}
+                accept={acceptedFilesString}
+              >
+                <Button>
+                  <Icon type="upload" /> Upload files
+                </Button>
+              </Upload>
+              <CPTooltip
+                title={tooltips.admin.assignments.uploadSubmissionFileTypes}
+                infoIcon={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
           </div>
         );
         break;
