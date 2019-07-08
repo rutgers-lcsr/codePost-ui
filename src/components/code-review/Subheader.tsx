@@ -173,7 +173,10 @@ export const LastEdited = (props: { submission: AnonymousSubmissionType }) => {
 
 /**********************************************************************************************************************/
 
-export const Students = (props: { submission: AnonymousSubmissionType; isAnonymous: boolean }) => {
+export const Students = (props: {
+  submission: AnonymousSubmissionType | StudentSubmissionType;
+  isAnonymous: boolean;
+}) => {
   const [showStudents, setShowStudents] = React.useState(!props.isAnonymous && props.submission.students !== undefined);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 

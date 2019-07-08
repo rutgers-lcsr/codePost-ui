@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Divider, Input, Menu, Tag, Tooltip } from 'antd';
+import { Divider, Input, Menu, Popover, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 const SubMenu = Menu.SubMenu;
 
@@ -123,9 +123,9 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
 
       const capTag =
         rubricCategory.pointLimit !== null || rubricCategory.helpText !== null ? (
-          <Tooltip title={info}>
+          <Popover title="Category Details" content={info}>
             <Tag>Details</Tag>
-          </Tooltip>
+          </Popover>
         ) : null;
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)

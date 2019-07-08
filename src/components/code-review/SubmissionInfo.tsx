@@ -5,63 +5,103 @@ import moment from 'moment';
 import { Avatar, Divider, Icon, message, Modal, Select, Tag, Tooltip } from 'antd';
 
 import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 
 import { Students } from './Subheader';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
-interface IFileMenuProps {
+interface ISubmissionReadProps {
   title?: string;
   assignment: AssignmentType;
-  submission: AnonymousSubmissionType;
+  submission?: AnonymousSubmissionType;
+  readOnlySubmission?: StudentSubmissionType;
+}
+
+interface ISubmissionInfoWriteProps {
   graders: string[];
   isCourseAdmin: boolean;
-  updateGrader: (submission: AnonymousSubmissionType, graderUsername: string | undefined) => Promise<SubmissionType>;
+  updateGrader: (
+    submission: AnonymousSubmissionType,
+    graderUsername: string | undefined,
+  ) => Promise<AnonymousSubmissionType>;
 }
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const SubmissionInfo = (props: IFileMenuProps) => {
+const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   let lastEdited;
-  if (props.submission.dateEdited) {
-    const dateObj = new Date(props.submission.dateEdited);
-    const today = new Date();
-    if (dateObj.getFullYear() === today.getFullYear()) {
-      if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
-        if (today.getTime() - dateObj.getTime() < 30000) {
-          lastEdited = 'Last edited moments ago';
+  if (props.submission !== undefined) {
+    if (props.submission.dateEdited) {
+      const dateObj = new Date(props.submission.dateEdited);
+      const today = new Date();
+      if (dateObj.getFullYear() === today.getFullYear()) {
+        if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
+          if (today.getTime() - dateObj.getTime() < 30000) {
+            lastEdited = 'Last edited moments ago';
+          } else {
+            lastEdited = `Last edit at ${moment(dateObj).format('h:mm a')}`;
+          }
         } else {
-          lastEdited = `Last edit at ${moment(dateObj).format('h:mm a')}`;
+          lastEdited = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
         }
       } else {
-        lastEdited = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+        lastEdited = `Last edit in ${dateObj.getFullYear()}`;
       }
-    } else {
-      lastEdited = `Last edit in ${dateObj.getFullYear()}`;
     }
+  }
+
+  let studentList;
+  if (props.submission !== undefined) {
+    studentList = <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />;
+  } else {
+    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={props.assignment.anonymousGrading} />;
   }
 
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
       <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
       <div style={{ fontSize: 12 }}>
-        <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>:{' '}
-        <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />
-        <br />
-        <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
-        <GraderInfo
-          submission={props.submission}
-          isCourseAdmin={props.isCourseAdmin}
-          graders={props.graders}
-          updateGrader={props.updateGrader}
-        />
+        <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
+        {props.submission !== undefined ? (
+          <div>
+            <br />
+            <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
+            <GraderInfo
+              submission={props.submission}
+              isCourseAdmin={props.isCourseAdmin}
+              graders={props.graders}
+              updateGrader={props.updateGrader}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
 };
+
+const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISubmissionInfoWriteProps>) => {
+  return class WrappedComponent extends React.Component<ISubmissionReadProps, {}> {
+    public updateGrader = (submission: AnonymousSubmissionType, graderUsername: string | undefined) => {
+      return Promise.resolve(submission);
+    };
+
+    public render() {
+      return (
+        <Component
+          {...this.props as ISubmissionReadProps}
+          updateGrader={this.updateGrader}
+          isCourseAdmin={false}
+          graders={[]}
+        />
+      );
+    }
+  };
+};
+
+const ReadOnlySubmissionInfo = makeReadOnly(SubmissionInfo);
 
 /**********************************************************************************************************************/
 
@@ -69,7 +109,10 @@ interface IGraderInfoProps {
   submission: AnonymousSubmissionType;
   graders: string[];
   isCourseAdmin: boolean;
-  updateGrader: (submission: AnonymousSubmissionType, graderUsername: string | undefined) => Promise<SubmissionType>;
+  updateGrader: (
+    submission: AnonymousSubmissionType,
+    graderUsername: string | undefined,
+  ) => Promise<AnonymousSubmissionType>;
 }
 
 export const GraderInfo = (props: IGraderInfoProps) => {
@@ -185,4 +228,4 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   }
 };
 
-export default SubmissionInfo;
+export { SubmissionInfo, ReadOnlySubmissionInfo };

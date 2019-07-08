@@ -477,7 +477,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
 
 interface IGradeButtonProps {
   assignment: AssignmentType;
-  submission: AnonymousSubmissionType;
+  submission: AnonymousSubmissionType | StudentSubmissionType;
   calculateGrade: () => number | undefined;
   rubricCategories: RubricCategoryType[];
   comments: IFileToCommentsMap;

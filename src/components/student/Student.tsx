@@ -318,8 +318,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           ),
         };
 
-        if (submission === undefined) {
-          // Case 2: assignment is published, but student has no submission
+        if (submission === undefined || !submission.isFinalized) {
+          // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           return {
             ...toRet,
             partners: (
@@ -393,7 +393,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           data={data}
           pagination={false}
           hideSearch={true}
-          tableProps={{ rowClassName, bordered: true }}
+          tableProps={{ rowClassName }}
         />
       );
     }

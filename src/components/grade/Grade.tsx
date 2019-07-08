@@ -24,11 +24,10 @@ import { Course, CourseSettingsType, CourseType } from '../../infrastructure/cou
 
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
-import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
+import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
 import { UserType } from '../../infrastructure/user';
 
-// import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
 import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
 import CPFlex from '../core/CPFlex';
@@ -45,15 +44,15 @@ import RubricMenu from '../code-review/RubricMenu';
 
 import { FileType } from '../../infrastructure/file';
 
-import { GradeCode } from '../code-review/code-panel/CodeContent';
+import { GradeCode, StudentCode } from '../code-review/code-panel/CodeContent';
 
-import { GradeComments } from '../code-review/code-panel/Comments';
+import { GradeComments, StudentComments } from '../code-review/code-panel/Comments';
 
 import * as Immutable from '../../infrastructure/immutable';
 
 import ThemeToggle from '../core/ThemeToggle';
 
-import SubmissionInfo from '../code-review/SubmissionInfo';
+import { ReadOnlySubmissionInfo, SubmissionInfo } from '../code-review/SubmissionInfo';
 
 import { FinalizeButton, GradeButton, Magnifier, Reset, Sizer } from '../code-review/code-panel/CodePanelWidgets';
 
@@ -61,31 +60,40 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 /**********************************************************************************************************************/
 
+enum PERMISSION_LEVEL {
+  NONE,
+  READ,
+  WRITE,
+}
+
 interface IGradeState {
+  /* UI control */
+  permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
-  redirect: boolean;
-  assignment?: AssignmentType;
-  course?: CourseType;
-  submission?: AnonymousSubmissionType;
-  rubricCategories: RubricCategoryType[];
-  rubricComments: IRubricCategoryToRubricCommentsMap;
-
-  files: FileType[];
-  graders: string[];
-  comments: IFileToCommentsMap;
-  commentRubricComments: ICommentToRubricCommentMap;
-  allowGradersToEditRubric: boolean;
-
-  activeCommentID?: number;
-  unsavedComments: IdMapType;
-
-  oldCommentIDs: { [currentID: number]: number };
-
   selectedFile: FileType | undefined;
-
   codeZoom: number;
   codeSplitBasis: number;
   codeVerticalOffset: number;
+
+  /* submissions data for readers and writers */
+  readOnlySubmission?: StudentSubmissionType;
+  assignment?: AssignmentType;
+  course?: CourseType;
+  files: FileType[];
+  comments: IFileToCommentsMap;
+
+  /* writer data */
+  submission?: AnonymousSubmissionType;
+  rubricCategories: RubricCategoryType[];
+  rubricComments: IRubricCategoryToRubricCommentsMap;
+  commentRubricComments: ICommentToRubricCommentMap;
+  allowGradersToEditRubric: boolean;
+  activeCommentID?: number;
+  unsavedComments: IdMapType;
+  oldCommentIDs: { [currentID: number]: number };
+
+  /* admin data */
+  graders: string[];
 }
 
 export interface IGradeProps {
@@ -96,7 +104,9 @@ export interface IGradeProps {
 }
 
 class Grade extends React.Component<IGradeProps, IGradeState> {
-  // -------------------------- Static Methods -------------------------- //
+  /***********************************************************************************************/
+  /* Static Methods
+  /***********************************************************************************************/
 
   // --- Comments
   public static addCommentToState = (comments: IFileToCommentsMap, comment: CommentType, file: FileType) => {
@@ -292,9 +302,12 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     return assignment.points - commentPoints - categoryPoints;
   };
 
-  // -------------------------- Initialization / Lifecycles -------------------------- //
+  /***********************************************************************************************/
+  /* Component instance
+  /***********************************************************************************************/
 
   public state: Readonly<IGradeState> = {
+    permissionLevel: PERMISSION_LEVEL.READ,
     activeCommentID: undefined,
     assignment: undefined,
     commentRubricComments: {},
@@ -302,7 +315,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     files: [],
     graders: [],
     isLoading: true,
-    redirect: false,
     rubricCategories: [],
     rubricComments: {},
     submission: undefined,
@@ -317,58 +329,109 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     codeVerticalOffset: 0,
   };
 
+  /***********************************************************************************
+  /* Lifecycle methods
+  /**********************************************************************************/
+
   public async componentDidMount() {
-    this.setState({ isLoading: true });
+    // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `Submission - ${submissionID}`;
-    const submission = await Submission.readAnonymous(submissionID);
-    if (submission) {
-      const [
-        assignment,
-        [files, comments, commentRubricComments],
-        [rubricCategories, rubricComments],
-      ] = await Promise.all([
-        Assignment.read(submission.assignment),
-        Submission.loadData(submission),
-        this.loadRubric(submission.assignment),
-      ]);
 
-      const course = await Course.read(assignment.course);
-      const settings = await this.loadSettings(assignment);
-      const allowGradersToEditRubric = settings.allowGradersToEditRubric;
-      const graders = this.isCourseAdmin(assignment)
-        ? (await Course.readRoster(assignment.course))['graders'].sort()
-        : [];
+    const permissionLevel = await this.detectPermissionType(submissionID);
 
-      if (assignment && !submission.isFinalized) {
+    // Everything we need to load
+    let submission;
+    let assignment;
+    let files;
+    let comments;
+    let commentRubricComments;
+    let course;
+
+    switch (permissionLevel) {
+      case PERMISSION_LEVEL.NONE:
+        // Will trigger 403 message in render
+        this.setState({ permissionLevel, isLoading: false });
+        break;
+      case PERMISSION_LEVEL.READ:
+        // load the data a reader has access to
+        submission = await Submission.readReadOnly(submissionID);
+        [assignment, [files, comments, commentRubricComments]] = await Promise.all([
+          Assignment.read(submission.assignment),
+          Submission.loadData(submission),
+        ]);
+        course = await Course.read(assignment.course);
+
+        // then store it in state
+        this.setState({
+          assignment,
+          course,
+          readOnlySubmission: submission,
+          files,
+          comments,
+          commentRubricComments,
+          isLoading: false,
+          selectedFile: files.length > 0 ? files[0] : undefined,
+          permissionLevel,
+        });
+        break;
+
+      case PERMISSION_LEVEL.WRITE:
+        // load the data a writer has access to
+        let rubricCategories;
+        let rubricComments;
+
+        const writableSubmission = await Submission.readAnonymous(submissionID);
+        [
+          assignment,
+          [files, comments, commentRubricComments],
+          { rubricCategories, rubricComments },
+        ] = await Promise.all([
+          Assignment.read(writableSubmission.assignment),
+          Submission.loadData(writableSubmission),
+          this.loadRubric(writableSubmission.assignment),
+        ]);
+        course = await Course.read(assignment.course);
+        const settings = await this.loadSettings(assignment);
+        const allowGradersToEditRubric = settings.allowGradersToEditRubric;
+
+        // load the data only an admin has access to
+        const graders = this.isCourseAdmin(assignment)
+          ? (await Course.readRoster(assignment.course))['graders'].sort()
+          : [];
+
+        // fill in grade using available data if submission doesn't contain an up-to-date grade
+        if (assignment && !writableSubmission.isFinalized) {
+          writableSubmission.grade = Grade.calculateGrade(
+            assignment,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+          );
+        }
+
         // @ts-ignore
-        submission.grade = Grade.calculateGrade(assignment, comments, commentRubricComments, rubricCategories);
-      }
-
-      let selectedFile;
-      if (files.length > 0) {
-        selectedFile = files[0];
-      }
-
-      // @ts-ignore
-      this.setState({
-        assignment,
-        course,
-        submission,
-        files,
-        comments,
-        commentRubricComments,
-        rubricCategories,
-        rubricComments,
-        graders,
-        allowGradersToEditRubric,
-        isLoading: false,
-        selectedFile,
-      });
+        this.setState({
+          assignment,
+          course,
+          submission: writableSubmission,
+          files,
+          comments,
+          commentRubricComments,
+          rubricCategories,
+          rubricComments,
+          graders,
+          allowGradersToEditRubric,
+          isLoading: false,
+          selectedFile: files.length > 0 ? files[0] : undefined,
+          permissionLevel,
+        });
     }
   }
 
-  // -------------------------- Loading -------------------------- //
+  /***********************************************************************************
+  /* Loading methods
+  /**********************************************************************************/
 
   public loadSettings = async (assignment: AssignmentType) => {
     const courseID = assignment.course;
@@ -390,10 +453,37 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         .sort(RubricComment.compare);
     });
 
-    return [rubricCategories, rubricComments];
+    return { rubricCategories, rubricComments };
   };
 
-  // -------------------------- Handlers -------------------------- //
+  public detectPermissionType = (submissionID: number) => {
+    // Read submission and figure out whether the client is a reader or writer
+    return fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionID}/checkPermission/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        return Promise.reject();
+      })
+      .then((json) => {
+        console.log(json);
+        if (json.write) {
+          return PERMISSION_LEVEL.WRITE;
+        } else if (json.read) {
+          return PERMISSION_LEVEL.READ;
+        } else {
+          return PERMISSION_LEVEL.NONE;
+        }
+      });
+  };
+
+  /***********************************************************************************
+  /* Hanlders
+  /**********************************************************************************/
 
   public changeActiveComment = (id: number | undefined): void => {
     this.setState({ activeCommentID: id });
@@ -430,6 +520,10 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     }
     return true;
   };
+
+  /***********************************************************************************
+  /* Helper functions
+  /**********************************************************************************/
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
@@ -637,21 +731,29 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     });
   };
 
-  //////////////////////////////////////
-  // Main
-  //////////////////////////////////////
+  /***********************************************************************************
+  /* Render
+  /**********************************************************************************/
 
   public render() {
-    // const isCourseAdmin = this.isCourseAdmin(this.state.assignment);
-
     if (this.state.isLoading) {
       return <Loading />;
     }
 
-    if (!this.state.submission || !this.state.assignment) {
-      return <div>No Submission Found</div>;
+    if (this.state.permissionLevel === PERMISSION_LEVEL.NONE) {
+      return <div>You don't have access to this submission. Sad.. </div>;
     }
 
+    if (!this.state.assignment) {
+      return <div>Weird... should have loaded the assignment by now</div>;
+    }
+
+    // At this stage, we're going to render the Code Review Console, so we can
+    // build the elements that are common between read-level and write-level
+
+    /*********************************************************
+    /* Build header
+    /*********************************************************/
     const groupStyle = {
       padding: '5px 20px',
       lineHeight: '40px',
@@ -691,25 +793,132 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       </Menu>
     );
 
-    // const header = <StandardConsoleHeader user={this.props.user} handleLogout={this.props.handleLogout} />;
-    const subHeaderLeft = [
-      <Dropdown overlay={menu} trigger={['click']} key="menu">
-        <Icon type="menu" twoToneColor="white" />
-      </Dropdown>,
-      <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
-      <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission} />,
-    ];
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
     const subHeaderMiddle = [
       <GradeButton
         key="subheader-grade"
         assignment={this.state.assignment}
-        submission={this.state.submission}
+        submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
         calculateGrade={this.calculateGradeFromState}
         rubricCategories={this.state.rubricCategories}
         comments={this.state.comments}
         commentRubricComments={this.state.commentRubricComments}
       />,
+    ];
+
+    /*********************************************************
+    /* Render console for read-only submission
+    /*********************************************************/
+    if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
+      let readOnlyContent;
+      if (this.state.selectedFile) {
+        const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          <StudentCode
+            key={this.state.selectedFile!.id}
+            file={this.state.selectedFile!}
+            comments={this.state.comments[this.state.selectedFile!.id]}
+            readOnly={true}
+            user={this.props.user.email}
+            codeStyle={codeStyle}
+            highlightHeight={highlightHeight}
+            onHighlightClick={onHighlightClick}
+          />
+        );
+
+        const comments = (
+          <StudentComments
+            comments={this.state.comments[this.state.selectedFile!.id]}
+            rubricComments={this.state.commentRubricComments}
+            file={this.state.selectedFile!}
+            verticalOffset={this.state.codeVerticalOffset}
+          />
+        );
+
+        readOnlyContent = (
+          <CodePanelLayout
+            comments={comments}
+            code={code}
+            file={this.state.selectedFile}
+            zoom={this.state.codeZoom}
+            splitBasis={this.state.codeSplitBasis}
+            updateVerticalOffset={this.setVerticalOffset}
+          />
+        );
+      }
+
+      const readOnlySubHeaderLeft = [
+        <Dropdown overlay={menu} trigger={['click']} key="menu">
+          <Icon type="menu" twoToneColor="white" />
+        </Dropdown>,
+        <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+      ];
+
+      const readOnlysubHeaderRight = [
+        <ThemeToggle key="theme-toggle" small={true} />,
+        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+        <Magnifier key="zoom" updateZoom={this.setZoom} />,
+      ];
+
+      const readOnlySubheader = (
+        <CPFlex
+          style={{
+            padding: '0 15',
+            height: 49,
+            fontSize: 12,
+            overflow: 'initial',
+          }}
+          left={readOnlySubHeaderLeft}
+          right={readOnlysubHeaderRight}
+          middle={subHeaderMiddle}
+          gutterSize={20}
+          className={theme}
+        />
+      );
+
+      return (
+        <div id="Grade">
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={readOnlySubheader}
+            subheader={null}
+            sider={[
+              <ReadOnlySubmissionInfo
+                key="submission-info"
+                title="Submission Info"
+                assignment={this.state.assignment}
+                readOnlySubmission={this.state.readOnlySubmission!}
+              />,
+              <FileMenu
+                key="file-menu"
+                title="Files"
+                files={this.state.files}
+                comments={this.state.comments}
+                selectedFile={this.state.selectedFile}
+                getPointsInFile={this.getPointsInFile}
+                changeSelectedFile={this.changeSelectedFile}
+                canChange={this.containsUnsavedComments}
+              />,
+            ]}
+            siderTitles={['Submission Info', 'Files']}
+            content={readOnlyContent}
+            removeSiderOnMobile={false}
+          />
+        </div>
+      );
+    }
+
+    /*********************************************************
+    /* Render console for writable submission submission
+    /*********************************************************/
+
+    const subHeaderLeft = [
+      <Dropdown overlay={menu} trigger={['click']} key="menu">
+        <Icon type="menu" twoToneColor="white" />
+      </Dropdown>,
+      <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+      <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission!} />,
     ];
 
     const subHeaderRight = [
@@ -719,13 +928,11 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       <Magnifier key="zoom" updateZoom={this.setZoom} />,
       <FinalizeButton
         key="subheader-finalize"
-        submission={this.state.submission}
+        submission={this.state.submission!}
         canToggle={this.containsUnsavedComments}
         toggleFinalized={this.toggleFinalized}
       />,
     ];
-
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
     const subheader = (
       <CPFlex
@@ -800,7 +1007,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
               key="submission-info"
               title="Submission Info"
               assignment={this.state.assignment}
-              submission={this.state.submission}
+              submission={this.state.submission!}
               graders={this.state.graders}
               isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
               updateGrader={this.updateGrader}
