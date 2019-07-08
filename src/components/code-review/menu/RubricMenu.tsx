@@ -81,15 +81,6 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         return rubricComment.text.toUpperCase().includes(this.state.searchTerm.toUpperCase());
       });
       const rows = rubricComments.map((rubricComment: RubricCommentType) => {
-        let points = '';
-        if (rubricComment.pointDelta > 0) {
-          points = `-${rubricComment.pointDelta}`;
-        } else if (rubricComment.pointDelta < 0) {
-          points = `+${rubricComment.pointDelta * -1}`;
-        } else {
-          points = `${rubricComment.pointDelta}`;
-        }
-
         return (
           <Menu.Item
             key={`comment-${rubricCategory.id}-${rubricComment.id}`}
@@ -99,10 +90,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               color: this.context.consoleTheme.siderMenuItemColor,
             }}
           >
-            <span>{rubricComment.text}</span>
-            <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
-              {points}
-            </span>
+            <RubricMenuCommentElement key={rubricComment.id} rubricComment={rubricComment} />
           </Menu.Item>
         );
       });
@@ -202,5 +190,27 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   }
 }
 RubricMenu.contextType = ConsoleThemeContext;
+
+interface IRubricMenuCommentElementProps {
+  rubricComment: RubricCommentType;
+}
+
+const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
+  let points = '';
+  if (props.rubricComment.pointDelta > 0) {
+    points = `-${props.rubricComment.pointDelta}`;
+  } else if (props.rubricComment.pointDelta < 0) {
+    points = `+${props.rubricComment.pointDelta * -1}`;
+  } else {
+    points = `${props.rubricComment.pointDelta}`;
+  }
+
+  return (
+    <div>
+      <span>{props.rubricComment.text}</span>
+      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+    </div>
+  );
+};
 
 export default RubricMenu;
