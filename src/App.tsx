@@ -45,7 +45,7 @@ const AsyncGrader = Loadable({
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./components/grade/Grade'),
+  loader: () => import('./components/code-review/CodeConsole'),
   loading: RouterLoading,
 });
 

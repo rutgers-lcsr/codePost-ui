@@ -67,7 +67,7 @@ enum PERMISSION_LEVEL {
   WRITE,
 }
 
-interface IGradeState {
+interface ICodeConsoleState {
   /* UI control */
   permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
@@ -97,14 +97,14 @@ interface IGradeState {
   graders: string[];
 }
 
-export interface IGradeProps {
+export interface ICodeConsoleProps {
   match: any;
   history: any;
   user: UserType;
   handleLogout: () => void;
 }
 
-class Grade extends React.Component<IGradeProps, IGradeState> {
+class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
   /***********************************************************************************************/
   /* Static Methods
   /***********************************************************************************************/
@@ -292,9 +292,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     commentRubricComments: ICommentToRubricCommentMap,
     rubricCategories: RubricCategoryType[],
   ): number => {
-    const commentPoints = Grade.genericCommentPoints(comments);
-    const pointsPerCategory = Grade.pointsPerCategory(commentRubricComments);
-    const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
+    const commentPoints = CodeConsole.genericCommentPoints(comments);
+    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments);
+    const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
 
     const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
       return accumulator + current;
@@ -307,7 +307,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   /* Component instance
   /***********************************************************************************************/
 
-  public state: Readonly<IGradeState> = {
+  public state: Readonly<ICodeConsoleState> = {
     permissionLevel: PERMISSION_LEVEL.READ,
     activeCommentID: undefined,
     assignment: undefined,
@@ -403,7 +403,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
-          writableSubmission.grade = Grade.calculateGrade(
+          writableSubmission.grade = CodeConsole.calculateGrade(
             assignment,
             comments,
             commentRubricComments,
@@ -492,7 +492,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   public changeSelectedFile = (fileID: number): void => {
     const comments =
       this.state.selectedFile !== undefined
-        ? Grade.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+        ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
         : this.state.comments;
 
     const selectedFile = this.state.files.find((file: FileType) => {
@@ -527,21 +527,21 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
-    const comments = Grade.addCommentToState(this.state.comments, comment, file);
-    // const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
+    const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
+    // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
     this.setState({ comments, activeCommentID: comment.id });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
-    const comments = Grade.updateCommentsState(this.state.comments, commentID, newComment);
+    const comments = CodeConsole.updateCommentsState(this.state.comments, commentID, newComment);
 
-    const [rubricComment, restOfCommentRubricComments] = Grade.removeFromCommentRubricCommentsState(
+    const [rubricComment, restOfCommentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       commentID,
     );
 
-    const commentRubricComments = Grade.addToCommentRubricCommentsState(
+    const commentRubricComments = CodeConsole.addToCommentRubricCommentsState(
       restOfCommentRubricComments,
       newComment.id,
       newRubricComment ? newRubricComment : rubricComment,
@@ -561,8 +561,8 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       savedComment = await CommentIO.update(comment);
     }
 
-    let unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
-    unsavedComments = Grade.removeIdFromUnsavedState(unsavedComments, savedComment.id);
+    let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
     this.setState({ unsavedComments, oldCommentIDs, activeCommentID: undefined });
 
@@ -574,33 +574,33 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
-    const comments = Grade.removeCommentFromState(this.state.comments, comment);
-    const [, commentRubricComments] = Grade.removeFromCommentRubricCommentsState(
+    const comments = CodeConsole.removeCommentFromState(this.state.comments, comment);
+    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
     this.setState({ comments, unsavedComments, commentRubricComments });
   };
 
   public addUnsaved = (commentID: number) => {
-    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, commentID);
+    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, commentID);
     this.setState({ unsavedComments });
   };
 
   public removeUnsaved = (commentID: number) => {
-    const unsavedComments = Grade.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
+    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
     this.setState({ unsavedComments });
   };
 
   public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
-    const comments = Grade.unlinkRubricComment(this.state.comments, comment, rubricComment);
-    const [, commentRubricComments] = Grade.removeFromCommentRubricCommentsState(
+    const comments = CodeConsole.unlinkRubricComment(this.state.comments, comment, rubricComment);
+    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, comment.id);
+    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
 
     this.setState({ comments, commentRubricComments, unsavedComments });
   };
@@ -610,18 +610,18 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return;
     }
 
-    const comments = Grade.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
+    const comments = CodeConsole.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
       return;
     }
 
-    const commentRubricComments = Grade.addToCommentRubricCommentsState(
+    const commentRubricComments = CodeConsole.addToCommentRubricCommentsState(
       this.state.commentRubricComments,
       this.state.activeCommentID,
       rubricComment,
     );
-    // const unsavedComments = Grade.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentID);
+    // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, this.state.activeCommentID);
     // this.setState({unsavedComments});
 
     this.setState({ comments, commentRubricComments });
@@ -632,7 +632,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return undefined;
     }
 
-    return Grade.calculateGrade(
+    return CodeConsole.calculateGrade(
       this.state.assignment,
       this.state.comments,
       this.state.commentRubricComments,
@@ -641,7 +641,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public getPointsInFile = (file: FileType): number[] => {
-    return Grade.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
+    return CodeConsole.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
   };
 
   public updateSubmissionGrade = () => {
@@ -673,7 +673,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       if (!this.state.submission.isFinalized) {
         comments =
           this.state.selectedFile !== undefined
-            ? Grade.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+            ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
             : this.state.comments;
         message.success('Successfully finalized submission');
       } else {
@@ -724,7 +724,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   public setVerticalOffset = (oldToNew: (oldValue: number) => number) => {
-    this.setState((oldState: IGradeState) => {
+    this.setState((oldState: ICodeConsoleState) => {
       return {
         codeVerticalOffset: oldToNew(oldState.codeVerticalOffset),
       };
@@ -1076,6 +1076,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     );
   }
 }
-Grade.contextType = ConsoleThemeContext;
+CodeConsole.contextType = ConsoleThemeContext;
 
-export default Grade;
+export default CodeConsole;

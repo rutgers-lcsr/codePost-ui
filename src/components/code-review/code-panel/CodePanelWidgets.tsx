@@ -20,7 +20,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../../types/c
 
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 
-import Grade from '../../grade/Grade';
+import CodeConsole from '../CodeConsole';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 
@@ -341,9 +341,9 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  const pointsPerCategory = Grade.pointsPerCategory(props.commentRubricComments);
-  const pointsPerCategoryWithCaps = Grade.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
-  const genericPoints = Grade.genericCommentPoints(props.comments);
+  const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments);
+  const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
+  const genericPoints = CodeConsole.genericCommentPoints(props.comments);
 
   const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
     return accumulator + current;
