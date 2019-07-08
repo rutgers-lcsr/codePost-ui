@@ -180,6 +180,7 @@ class MergeRubricCommentsDialog extends React.Component<
           cpType="secondary"
           icon="branches"
           fallback="branches"
+          fallbackWidth={1250}
         >
           Merge Comments
         </CPButton>

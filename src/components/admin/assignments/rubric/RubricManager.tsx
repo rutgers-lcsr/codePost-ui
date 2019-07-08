@@ -32,6 +32,7 @@ import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types
 import CPButton from '../../../../components/core/CPButton';
 import Loading from '../../../../components/core/Loading';
 import { tooltips } from '../../../../components/core/tooltips';
+
 import CPAdminRubric from './CPAdminRubric';
 import CPRubricCategory from './CPRubricCategory';
 
@@ -869,6 +870,7 @@ class RubricManager extends React.Component<IProps, IState> {
           disabled={!changesMade}
           icon="undo"
           fallback="undo"
+          fallbackWidth={1250}
         >
           Undo changes
         </CPButton>,
@@ -879,6 +881,7 @@ class RubricManager extends React.Component<IProps, IState> {
           cpType="primary"
           icon="save"
           fallback="save"
+          fallbackWidth={500}
           loading={this.state.isSaving}
         >
           Save

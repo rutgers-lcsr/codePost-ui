@@ -19,6 +19,7 @@ import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../../core/withWindowWatcher';
 
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -29,7 +30,7 @@ import { DIRECTION } from '../../../../types/common';
 
 /**********************************************************************************************************************/
 
-interface ICPRubricCategoryProps {
+interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
   // data
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
@@ -472,13 +473,16 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </Popconfirm>,
     ];
 
-    const contentLeft = [
+    const categoryName = (
       <div key="name">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Name
         </div>
         <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} />
-      </div>,
+      </div>
+    );
+
+    const categoryPoints = (
       <div key="points">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Point Limit
@@ -494,8 +498,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           onChange={this.setValue.bind(this, 'pointLimit')}
           onBlur={this.saveCategory}
         />
-      </div>,
-      <div key="help-text">
+      </div>
+    );
+
+    const helpText = (
+      <div key="help-text" style={{ maxWidth: 300 }}>
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Help Text
           <CPTooltip
@@ -510,15 +517,20 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           value={this.state.helpText}
           onChange={this.changeHelpText}
           onBlur={this.saveCategory}
+          autosize={true}
         />
-      </div>,
-    ];
+      </div>
+    );
 
-    // const components = {
-    //   body: {
-    //     row: DragableBodyRow,
-    //   },
-    // };
+    const contentLeft =
+      this.props.windowwidth < 1200 ? (
+        <div>
+          <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
+          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 20 }} />
+        </div>
+      ) : (
+        <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      );
 
     return (
       <div className="cp-rubric-category">
@@ -526,7 +538,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           <CPFlex left={titleLeft} right={titleRight} gutterSize={10} />
         </div>
         <div className="cp-rubric-category__content">
-          <CPFlex left={contentLeft} right={[]} gutterSize={60} />
+          {contentLeft}
           <div style={{ height: '40px' }} />
           <Table
             columns={commentTableColumns}
@@ -618,4 +630,4 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 //   }))(BodyRow),
 // );
 
-export default CPRubricCategory;
+export default withWindowWatcher(CPRubricCategory);

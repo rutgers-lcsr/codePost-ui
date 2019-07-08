@@ -15,6 +15,7 @@ export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highli
 interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
   fallback?: string;
+  fallbackWidth?: number; // Optional: window width when the button falls back to icon
 }
 
 interface ICPButtonState {
@@ -84,7 +85,8 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
     }
 
     // Optionally resize a button to an icon button if it has fallback defined
-    if (this.props.windowwidth < 900 && fallback) {
+    const fallbackWidth = this.props.fallbackWidth ? this.props.fallbackWidth : 900;
+    if (this.props.windowwidth < fallbackWidth && fallback) {
       const { children, ...withoutChildren } = props;
       return (
         <CPTooltip title={children}>

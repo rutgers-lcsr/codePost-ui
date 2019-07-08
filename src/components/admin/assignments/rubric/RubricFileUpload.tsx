@@ -380,6 +380,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           disabled={this.props.isDisabled}
           icon="upload"
           fallback="upload"
+          fallbackWidth={1250}
         >
           Upload Rubric
         </CPButton>
