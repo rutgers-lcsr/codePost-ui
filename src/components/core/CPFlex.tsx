@@ -11,7 +11,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
   public render() {
     const leftNodes = this.props.left.map((node: React.ReactNode, index: number) => {
       return (
-        <div key={`left-${index}`} className="left" style={{ marginRight: `${this.props.gutterSize}px` }}>
+        <div key={`left-${index}`} style={{ marginRight: `${this.props.gutterSize}px` }}>
           {node}
         </div>
       );
@@ -19,17 +19,16 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
 
     const rightNodes = this.props.right.map((node: React.ReactNode, index: number) => {
       return (
-        <div key={`right-${index}`} className="right" style={{ marginLeft: `${this.props.gutterSize}px` }}>
+        <div key={`right-${index}`} style={{ marginLeft: `${this.props.gutterSize}px` }}>
           {node}
         </div>
       );
     });
 
     return (
-      <div className="cp-flex" style={this.props.style ? this.props.style : {}}>
-        {leftNodes}
-        <div className="gap" style={{ marginLeft: `-${this.props.gutterSize}px` }} />
-        {rightNodes}
+      <div style={{ display: 'flex', justifyContent: 'space-between', ...this.props.style }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>{leftNodes}</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>{rightNodes}</div>
       </div>
     );
   }
