@@ -29,7 +29,6 @@ import { wait } from '../../../infrastructure/animation';
 interface IStandardConsoleLayoutProps {
   consoleTypes?: ConsoleType[];
   header: React.ReactNode;
-  subheader: React.ReactNode;
   sider: React.ReactNode[];
   content: React.ReactNode;
   children?: React.ReactNode;
@@ -41,7 +40,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
   const windowSize = useWindowSize();
   const mobile = windowSize.width < layoutVars.breakpoints.mobile.student;
-  const subheaderStyle = mobile ? { background: 'transparent' } : {};
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
@@ -67,23 +65,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               return siderNode;
             })}
           </div>
-          {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
-            <div
-              style={{
-                ...subheaderStyle,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                paddingBottom: 20,
-                backgroundColor: consoleTheme.subheaderBg,
-                borderBottom: consoleTheme.subheaderBorderBottom,
-              }}
-            >
-              {props.subheader}
-            </div>
-          ) : null}
           <Content className="layout--standard-console__content">{props.content}</Content>
           {props.children}
         </Layout>
@@ -149,18 +130,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                 minWidth: layoutVars.minWidths.grade,
               }}
             >
-              {props.consoleTypes && props.consoleTypes.includes('subheader') ? (
-                <Header
-                  className="layout--standard-console__subheader"
-                  style={{
-                    height: themeVars.grade.subheaderHeight,
-                    backgroundColor: consoleTheme.subheaderBg,
-                    borderBottom: consoleTheme.subheaderBorderBottom,
-                  }}
-                >
-                  {props.subheader}
-                </Header>
-              ) : null}
               <Content className="layout--standard-console__content">{props.content}</Content>
               {props.children}
             </Layout>
