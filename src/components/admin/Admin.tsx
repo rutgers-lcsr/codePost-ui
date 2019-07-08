@@ -1129,7 +1129,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (this.state.currentCourse) {
       selectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
     }
-    const dropdown = <CPDropdown value={selectorText} overlay={menu} />;
+    // Dropdown overlay maxHeight is to create scroll for long menus that scales with window height
+    const dropdown = (
+      <CPDropdown
+        value={selectorText}
+        overlay={menu}
+        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'scroll' }}
+      />
+    );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
 
     const headerLeft = [dropdown, createButton];
