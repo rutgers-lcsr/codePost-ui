@@ -278,7 +278,10 @@ class RubricManager extends React.Component<IProps, IState> {
 
         let categoryPromise: Promise<any>;
         if (categoryNeedsSaving) {
-          categoryPromise = RubricCategory.update(category);
+          // We don't want to pass in the ids of comments on update
+          // Passing in these comments can create race conditions
+          const { rubricComments, ...payload } = category;
+          categoryPromise = RubricCategory.update(payload);
         } else {
           categoryPromise = Promise.resolve();
         }
@@ -293,7 +296,11 @@ class RubricManager extends React.Component<IProps, IState> {
             });
 
             if (commentNeedsSaving) {
-              return RubricComment.update(comment);
+              // We don't want to pass in the ids of linked comments on update
+              // Passing in these comments can create race conditions
+              // An example is if a linked comment gets deleted between rubric saves
+              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+              return RubricComment.update(payload);
             } else {
               return Promise.resolve();
             }
