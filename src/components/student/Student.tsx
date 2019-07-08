@@ -34,6 +34,8 @@ import CPDropdown from '../core/CPDropdown';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
+import { openSubmission } from '../admin/other/AdminUtils';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
@@ -340,7 +342,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                     })
                     .join(', '),
             grade: submission.grade !== null ? `${submission.grade}/${assignment.points}` : null,
-            code: <Icon type="code" style={{ cursor: 'pointer' }} />,
+            code: (
+              <div onClick={openSubmission.bind(this, submission.id)}>
+                <Icon type="code" style={{ cursor: 'pointer' }} />
+              </div>
+            ),
             statusType: SUBMISSION_STATUS.HAS_SUBMISSION,
           };
         }

@@ -22,6 +22,8 @@ type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
+import { CODE } from '../../routes';
+
 /**********************************************************************************************************************/
 
 /* for type checking functions that operate on table rows */
@@ -127,7 +129,7 @@ class SectionPanel extends React.Component<IProps, IState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/${CODE}/${submission.id}`);
   };
 
   /***********************************************************************************

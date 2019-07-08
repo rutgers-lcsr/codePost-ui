@@ -11,7 +11,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 /* codePost imports */
 import LoginForm from './LoginForm';
 
-import { ADMIN, GRADE, GRADER, STUDENT } from '../../routes';
+import { ADMIN, CODE, GRADER, STUDENT } from '../../routes';
 
 /**********************************************************************************************************************/
 
@@ -68,7 +68,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
 
             <Route
               exact={true}
-              path={`${GRADE}/:submissionId`}
+              path={`${CODE}/:submissionId`}
               render={(props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}

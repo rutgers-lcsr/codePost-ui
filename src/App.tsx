@@ -15,7 +15,7 @@ import LogInAs from './components/core/LogInAs';
 
 import Home from './components/core/Home';
 
-import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, GRADER, HOME, STUDENT } from './routes';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
@@ -309,7 +309,7 @@ class App extends React.Component<{}, IState> {
         gradeRoute = (
           <Route
             exact={true}
-            path={`${GRADE}/:submissionId`}
+            path={`${CODE}/:submissionId`}
             render={(props: any) => <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />}
           />
         );

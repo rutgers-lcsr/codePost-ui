@@ -4,9 +4,11 @@
 
 /**********************************************************************************************************************/
 
+import { CODE } from '../../../routes';
+
 function openSubmission(submissionID: number | string) {
   if (window) {
-    window.open(`/grade/${submissionID}`);
+    window.open(`${CODE}/${submissionID}`);
   }
 }
 
