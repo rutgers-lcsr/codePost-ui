@@ -113,6 +113,11 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       grow.addEventListener('click', this.manualWait);
       shrink.addEventListener('click', this.manualWait);
     }
+
+    const comments = document.getElementById('code-panel--comments');
+    if (comments !== null) {
+      comments.addEventListener('scroll', this.scrollFromComments);
+    }
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -141,6 +146,11 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       grow.removeEventListener('click', this.manualWait);
       shrink.removeEventListener('click', this.manualWait);
     }
+
+    const comments = document.getElementById('code-panel--comments');
+    if (comments !== null) {
+      comments.removeEventListener('scroll', this.scrollFromComments);
+    }
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
@@ -153,6 +163,18 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     return null;
   }
+
+  public scrollFromComments = () => {
+    const comments = document.getElementById('code-panel--comments');
+    if (comments !== null) {
+      // Rage scroll!
+      // Reset the scroll height in case new stuff has been rendered that the
+      // user is trying to get to
+      if (comments.offsetHeight + comments.scrollTop >= comments.scrollHeight) {
+        this.placeCommentsOnNextFrame();
+      }
+    }
+  };
 
   public componentDidUpdate = async (
     prevProps: ICommentsCoreProps & ICommentsEditProps,
