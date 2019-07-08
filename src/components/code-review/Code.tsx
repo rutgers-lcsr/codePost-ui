@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Dropdown, Icon, Menu, message } from 'antd';
+import { Dropdown, Empty, Icon, Menu, message } from 'antd';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -60,6 +60,7 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 /**********************************************************************************************************************/
 
+/* f(logged in user, submission) */
 enum PERMISSION_LEVEL {
   NONE,
   READ,
@@ -410,7 +411,6 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           );
         }
 
-        // @ts-ignore
         this.setState({
           assignment,
           course,
@@ -482,7 +482,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
   };
 
   /***********************************************************************************
-  /* Hanlders
+  /* Handlers
   /**********************************************************************************/
 
   public changeActiveComment = (id: number | undefined): void => {
@@ -740,8 +740,51 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       return <Loading />;
     }
 
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+
     if (this.state.permissionLevel === PERMISSION_LEVEL.NONE) {
-      return <div>You don't have access to this submission. Sad.. </div>;
+      return (
+        <div id="Grade">
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={[]}
+                right={[
+                  <ThemeToggle key="theme-toggle" small={true} />,
+                  <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+                  <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+                  <Magnifier key="zoom" updateZoom={this.setZoom} />,
+                ]}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={[]}
+            siderTitles={[]}
+            content={
+              <Empty
+                imageStyle={{
+                  marginTop: '200px',
+                  height: 60,
+                }}
+                description={
+                  <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
+                    Whoops! Looks like you don't have access to this submission...😔
+                  </span>
+                }
+              />
+            }
+            removeSiderOnMobile={false}
+          />
+        </div>
+      );
     }
 
     if (!this.state.assignment) {
@@ -793,9 +836,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       </Menu>
     );
 
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
-
-    const subHeaderMiddle = [
+    const headerMiddle = [
       <GradeButton
         key="subheader-grade"
         assignment={this.state.assignment}
@@ -847,21 +888,21 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         );
       }
 
-      const readOnlySubHeaderLeft = [
+      const readOnlyHeaderLeft = [
         <Dropdown overlay={menu} trigger={['click']} key="menu">
           <Icon type="menu" twoToneColor="white" />
         </Dropdown>,
         <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
       ];
 
-      const readOnlysubHeaderRight = [
+      const readOnlyHeaderRight = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
         <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
         <Magnifier key="zoom" updateZoom={this.setZoom} />,
       ];
 
-      const readOnlySubheader = (
+      const readOnlyHeader = (
         <CPFlex
           style={{
             padding: '0 15',
@@ -869,9 +910,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
             fontSize: 12,
             overflow: 'initial',
           }}
-          left={readOnlySubHeaderLeft}
-          right={readOnlysubHeaderRight}
-          middle={subHeaderMiddle}
+          left={readOnlyHeaderLeft}
+          right={readOnlyHeaderRight}
+          middle={headerMiddle}
           gutterSize={20}
           className={theme}
         />
@@ -881,8 +922,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
         <div id="Grade">
           <StandardConsoleLayout
             consoleTypes={['grade']}
-            header={readOnlySubheader}
-            subheader={null}
+            header={readOnlyHeader}
             sider={[
               <ReadOnlySubmissionInfo
                 key="submission-info"
@@ -913,7 +953,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
     /* Render console for writable submission submission
     /*********************************************************/
 
-    const subHeaderLeft = [
+    const headerLeft = [
       <Dropdown overlay={menu} trigger={['click']} key="menu">
         <Icon type="menu" twoToneColor="white" />
       </Dropdown>,
@@ -921,7 +961,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission!} />,
     ];
 
-    const subHeaderRight = [
+    const headerRight = [
       <ThemeToggle key="theme-toggle" small={true} />,
       <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
       <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
@@ -934,7 +974,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       />,
     ];
 
-    const subheader = (
+    const header = (
       <CPFlex
         style={{
           padding: '0 15',
@@ -942,9 +982,9 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
           fontSize: 12,
           overflow: 'initial',
         }}
-        left={subHeaderLeft}
-        right={subHeaderRight}
-        middle={subHeaderMiddle}
+        left={headerLeft}
+        right={headerRight}
+        middle={headerMiddle}
         gutterSize={20}
         className={theme}
       />
@@ -1000,8 +1040,7 @@ class Grade extends React.Component<IGradeProps, IGradeState> {
       <div id="Grade">
         <StandardConsoleLayout
           consoleTypes={['grade']}
-          header={subheader}
-          subheader={null}
+          header={header}
           sider={[
             <SubmissionInfo
               key="submission-info"
