@@ -105,14 +105,15 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   const rootRenderer = (props: any) => {
     topLevelChildren = props.children.length;
     return (
-      <div id="code-markdown" className="markdown">
+      <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
         {props.children}
       </div>
     );
   };
 
   const headingRenderer = (props: any) => {
-    return React.createElement(`h${props.level}`, blockProps(props), props.children);
+    const fontSize = 24 * Math.pow(0.9, props.level);
+    return React.createElement(`h${props.level}`, { ...blockProps(props), style: { fontSize } }, props.children);
   };
 
   const paragraphRenderer = (props: any) => {
