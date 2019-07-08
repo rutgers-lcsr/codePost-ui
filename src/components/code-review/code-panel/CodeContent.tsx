@@ -58,7 +58,16 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
     const { addComment, ...codeProps } = { ...props };
     return (
-      <div id="code-main" className="code code--markdown" style={props.codeStyle}>
+      <div
+        id="code-main"
+        className="code code--markdown"
+        style={{
+          ...props.codeStyle,
+          backgroundColor: 'white',
+          paddingTop: '3px',
+          paddingRight: '20px',
+        }}
+      >
         <Markdown
           key={props.file.id}
           {...codeProps}
