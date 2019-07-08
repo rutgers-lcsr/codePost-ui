@@ -441,24 +441,25 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         Category: {this.props.rubricCategory.name}
       </span>,
       <span key="buttons">
-        {this.props.index > 0 && this.props.numCategories > 1 ? (
-          <CPTooltip title={tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
-            <Button
-              icon="caret-up"
-              size="small"
-              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
-            />
-          </CPTooltip>
-        ) : null}
-        {this.props.index !== this.props.numCategories - 1 ? (
-          <CPTooltip title={tooltips.admin.rubric.categoryDown} hideThisOnHideTips={true}>
-            <Button
-              icon="caret-down"
-              size="small"
-              onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
-            />
-          </CPTooltip>
-        ) : null}
+        <CPTooltip title={this.props.index === 0 ? '' : tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
+          <Button
+            icon="caret-up"
+            size="small"
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+            disabled={this.props.index === 0}
+          />
+        </CPTooltip>
+        <CPTooltip
+          title={this.props.index === this.props.numCategories - 1 ? '' : tooltips.admin.rubric.categoryDown}
+          hideThisOnHideTips={true}
+        >
+          <Button
+            icon="caret-down"
+            size="small"
+            disabled={this.props.index === this.props.numCategories - 1}
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
+          />
+        </CPTooltip>
       </span>,
     ];
     const titleRight = [
@@ -526,7 +527,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       this.props.windowwidth < 1200 ? (
         <div>
           <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 20 }} />
+          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
         </div>
       ) : (
         <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
