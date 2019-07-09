@@ -49,79 +49,83 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
   };
 
   public buildFileMenu = (files: FileType[]) => {
-    return files.map((file: FileType, index: number) => {
-      // const totalPointsInFile = 10;
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
+    return files
+      .sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      })
+      .map((file: FileType, index: number) => {
+        // const totalPointsInFile = 10;
+        const [deductions, bonuses] = this.props.getPointsInFile(file);
 
-      let opacity = 0.7;
-      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-        opacity = 1;
-      }
-      let commentCount = 0;
-      if (this.props.comments === undefined) {
-        commentCount = file.comments.length;
-      } else {
-        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-          return comment.id > 0;
-        }).length;
-      }
+        let opacity = 0.7;
+        if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+          opacity = 1;
+        }
+        let commentCount = 0;
+        if (this.props.comments === undefined) {
+          commentCount = file.comments.length;
+        } else {
+          commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+            return comment.id > 0;
+          }).length;
+        }
 
-      let commentCountBadge = null;
-      if (commentCount > 0) {
-        commentCountBadge = (
-          <Badge
-            count={commentCount}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
-          />
+        let commentCountBadge = null;
+        if (commentCount > 0) {
+          commentCountBadge = (
+            <Badge
+              count={commentCount}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
+            />
+          );
+        }
+
+        let deductionBadge = null;
+        let bonusBadge = null;
+
+        if (deductions > 0) {
+          deductionBadge = (
+            <Badge
+              count={deductions * -1}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
+            />
+          );
+        }
+
+        if (bonuses > 0) {
+          bonusBadge = (
+            <Badge
+              count={`+${bonuses}`}
+              className="cp-badge"
+              style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
+            />
+          );
+        }
+
+        return (
+          <Menu.Item key={`file-${file.id}`}>
+            <span
+              style={{
+                display: 'inline-block',
+                maxWidth: '148px',
+                wordWrap: 'break-word',
+                whiteSpace: 'pre-wrap',
+                lineHeight: '12px',
+                verticalAlign: 'middle',
+              }}
+            >
+              {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘-{index + 1}]</span>
+            </span>
+            <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
+            <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
+            <span style={{ position: 'absolute', right: '15px' }}>
+              {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
+            </span>
+          </Menu.Item>
         );
-      }
-
-      let deductionBadge = null;
-      let bonusBadge = null;
-
-      if (deductions > 0) {
-        deductionBadge = (
-          <Badge
-            count={deductions * -1}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
-          />
-        );
-      }
-
-      if (bonuses > 0) {
-        bonusBadge = (
-          <Badge
-            count={`+${bonuses}`}
-            className="cp-badge"
-            style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
-          />
-        );
-      }
-
-      return (
-        <Menu.Item key={`file-${file.id}`}>
-          <span
-            style={{
-              display: 'inline-block',
-              maxWidth: '148px',
-              wordWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
-              lineHeight: '12px',
-              verticalAlign: 'middle',
-            }}
-          >
-            {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘-{index + 1}]</span>
-          </span>
-          <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
-          <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
-          <span style={{ position: 'absolute', right: '15px' }}>
-            {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
-          </span>
-        </Menu.Item>
-      );
-    });
+      });
   };
 
   public render() {
