@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Dropdown, Empty, Icon, Menu, message } from 'antd';
+import { Badge, Dropdown, Empty, Icon, Menu, message } from 'antd';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -847,6 +847,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       />,
     ];
 
+    const fileMenuTitle = (
+      <span key="files">
+        Files{' '}
+        <span>
+          <Badge
+            style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset' }}
+            count={this.state.files.length}
+          />
+        </span>
+      </span>
+    );
+
     /*********************************************************
     /* Render console for read-only submission
     /*********************************************************/
@@ -940,7 +952,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canChange={this.containsUnsavedComments}
               />,
             ]}
-            siderTitles={['Submission Info', 'Files']}
+            siderTitles={['Submission Info', fileMenuTitle]}
             content={readOnlyContent}
           />
         </div>
@@ -1066,7 +1078,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               handleRubricCommentClick={this.onRubricCommentClick}
             />,
           ]}
-          siderTitles={['Submission Info', 'Files', 'Rubric']}
+          siderTitles={['Submission Info', fileMenuTitle, 'Rubric']}
           content={content}
         />
       </div>

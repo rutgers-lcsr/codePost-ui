@@ -32,7 +32,7 @@ interface IStandardConsoleLayoutProps {
   sider: React.ReactNode[];
   content: React.ReactNode;
   children?: React.ReactNode;
-  siderTitles: string[];
+  siderTitles: Array<string | React.ReactNode>;
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
