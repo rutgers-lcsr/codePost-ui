@@ -466,7 +466,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   );
 
   return (
-    <div>
+    <div style={{ maxHeight: '80vh', overflowY: 'scroll' }}>
       {categoriesTable}
       <Divider />
       {summaryTable}
