@@ -201,6 +201,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
         disabled={props.submission.isFinalized}
         dropdownRender={renderUnassign}
         onChange={handleChange}
+        showSearch
       >
         {menuItems}
       </Select>
