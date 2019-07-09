@@ -36,6 +36,8 @@ import { TableDetail } from '../admin/other/TableDetail';
 
 import { openSubmission } from '../admin/other/AdminUtils';
 
+import CPLogo from '../core/CPLogo';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
@@ -410,9 +412,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         })}
       </Menu>
     );
-    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} />;
+    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} key="dropdown" />;
 
-    const headerLeft = [courseDropdown];
+    const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
 
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
