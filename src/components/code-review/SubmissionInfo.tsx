@@ -185,7 +185,9 @@ export const GraderInfo = (props: IGraderInfoProps) => {
                 {props.submission.grader}
               </Tooltip>
             ) : (
-              props.submission.grader
+              <Tooltip title="Click to reassign grader" placement="right">
+                {props.submission.grader}
+              </Tooltip>
             )}
           </span>
         </div>
