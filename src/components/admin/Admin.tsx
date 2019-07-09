@@ -62,6 +62,8 @@ import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { UserType } from '../../infrastructure/user';
 import { addToPayload } from '../../infrastructure/utils';
 
+import { AdminOnboardingSelector } from '../core/OnboardingSelector';
+
 /**********************************************************************************************************************/
 
 export enum PANELS {
@@ -1310,7 +1312,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const navigation = (collapsed: boolean) => (
-      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
+      <span>
+        <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
+        <AdminOnboardingSelector
+          visible={this.state.onboardingModalVisible}
+          onCancel={this.closeModal}
+          email={this.props.user.email}
+        />
+      </span>
     );
 
     return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collapsible={true} />;
