@@ -781,7 +781,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 }
               />
             }
-            removeSiderOnMobile={false}
           />
         </div>
       );
@@ -943,7 +942,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             ]}
             siderTitles={['Submission Info', 'Files']}
             content={readOnlyContent}
-            removeSiderOnMobile={false}
           />
         </div>
       );
@@ -1070,7 +1068,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           ]}
           siderTitles={['Submission Info', 'Files', 'Rubric']}
           content={content}
-          removeSiderOnMobile={false}
         />
       </div>
     );

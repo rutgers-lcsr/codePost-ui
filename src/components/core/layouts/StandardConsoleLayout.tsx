@@ -32,14 +32,12 @@ interface IStandardConsoleLayoutProps {
   sider: React.ReactNode[];
   content: React.ReactNode;
   children?: React.ReactNode;
-  removeSiderOnMobile: boolean;
   siderTitles: string[];
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
   const windowSize = useWindowSize();
-  const mobile = windowSize.width < layoutVars.breakpoints.mobile.student;
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
@@ -55,89 +53,72 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     useGradeResizer();
   }
 
-  if (mobile && props.removeSiderOnMobile) {
-    return (
-      <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
-        <Layout className="layout--standard-console">
-          <Header className="layout--standard-console__header">{props.header}</Header>
-          <div style={{ backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderTitle }}>
-            {props.sider.map((siderNode: React.ReactNode) => {
-              return siderNode;
-            })}
-          </div>
-          <Content className="layout--standard-console__content">{props.content}</Content>
-          {props.children}
-        </Layout>
-      </ConsoleThemeContext.Provider>
-    );
-  } else {
-    // Manually set collapse icon so we can change color for dark mode
-    const collapseIcon = ({ isActive }: { isActive: boolean }) => {
-      const iconType = isActive ? 'up' : 'down';
-      return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
-    };
+  // Manually set collapse icon so we can change color for dark mode
+  const collapseIcon = ({ isActive }: { isActive: boolean }) => {
+    const iconType = isActive ? 'up' : 'down';
+    return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
+  };
 
-    return (
-      <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
-        <Layout className="layout--standard-console">
-          <Header
+  return (
+    <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
+      <Layout className="layout--standard-console">
+        <Header
+          style={{
+            backgroundColor: consoleTheme.subheaderBg,
+          }}
+          className="layout--standard-console__header"
+        >
+          {props.header}
+        </Header>
+        <Layout style={{ overflowX: 'scroll' }}>
+          <Sider
+            width={siderWidth}
+            className="layout--standard-console__sider"
             style={{
-              backgroundColor: consoleTheme.subheaderBg,
+              backgroundColor: consoleTheme.siderBg,
+              color: consoleTheme.siderTitle,
             }}
-            className="layout--standard-console__header"
           >
-            {props.header}
-          </Header>
-          <Layout style={{ overflowX: 'scroll' }}>
-            <Sider
-              width={siderWidth}
-              className="layout--standard-console__sider"
+            <Collapse
+              expandIconPosition="right"
+              defaultActiveKey={props.sider.map((el, index) => index.toString())}
+              bordered={false}
+              onChange={onCollapse}
+              expandIcon={collapseIcon}
               style={{
                 backgroundColor: consoleTheme.siderBg,
                 color: consoleTheme.siderTitle,
               }}
             >
-              <Collapse
-                expandIconPosition="right"
-                defaultActiveKey={props.sider.map((el, index) => index.toString())}
-                bordered={false}
-                onChange={onCollapse}
-                expandIcon={collapseIcon}
-                style={{
-                  backgroundColor: consoleTheme.siderBg,
-                  color: consoleTheme.siderTitle,
-                }}
-              >
-                {props.sider.map((siderNode: React.ReactNode, index: number) => {
-                  return (
-                    <Collapse.Panel
-                      header={
-                        <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
-                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                        </div>
-                      }
-                      key={index.toString()}
-                    >
-                      {siderNode}
-                    </Collapse.Panel>
-                  );
-                })}
-              </Collapse>
-            </Sider>
-            <Layout
-              style={{
-                backgroundColor: consoleTheme.mainBg,
-                minWidth: layoutVars.minWidths.grade,
-              }}
-            >
-              <Content className="layout--standard-console__content">{props.content}</Content>
-              {props.children}
-            </Layout>
+              {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                return (
+                  <Collapse.Panel
+                    header={
+                      <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
+                        <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                      </div>
+                    }
+                    key={index.toString()}
+                  >
+                    {siderNode}
+                  </Collapse.Panel>
+                );
+              })}
+            </Collapse>
+          </Sider>
+          <Layout
+            style={{
+              backgroundColor: consoleTheme.mainBg,
+              minWidth: layoutVars.minWidths.grade,
+            }}
+          >
+            <Content className="layout--standard-console__content">{props.content}</Content>
+            {props.children}
           </Layout>
         </Layout>
-      </ConsoleThemeContext.Provider>
-    );
-  }
+      </Layout>
+    </ConsoleThemeContext.Provider>
+  );
 };
 
 /**********************************************************************************************************************/
