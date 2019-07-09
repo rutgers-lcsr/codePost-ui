@@ -26,7 +26,7 @@ const _Badge = (props: IBadgeProps) => {
     label = `+${count}`;
     className += ' badge--positive';
   } else {
-    label = '-0';
+    label = 'Ø';
     className += ' badge--neutral';
   }
 

@@ -133,16 +133,16 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               style={{
                 position: 'absolute',
                 width: '100%',
-                paddingLeft: '26px',
+                paddingLeft: '10px',
                 backgroundColor: this.context.consoleTheme.siderSubmenuTitleBg,
                 color: this.context.consoleTheme.siderSubmenuTitleColor,
-                borderBottom: this.context.consoleTheme.siderSubmenuBorder,
+                // borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
               <CPTooltip placement="right" title={''}>
                 <div style={{ paddingRight: '40px' }}>
-                  <span>
-                    {rubricCategory.name}
+                  <span className="cp-label" style={{ fontSize: '14px' }}>
+                    <span className="cp-label--success">></span> {rubricCategory.name}{' '}
                     <span style={{ float: 'right' }}>{capTag}</span>
                   </span>
                 </div>
@@ -202,26 +202,13 @@ interface IRubricMenuCommentElementProps {
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
-  // let points = '';
-  // if (props.rubricComment.pointDelta > 0) {
-  //   points = `-${props.rubricComment.pointDelta}`;
-  // } else if (props.rubricComment.pointDelta < 0) {
-  //   points = `+${props.rubricComment.pointDelta * -1}`;
-  // } else {
-  //   points = `${props.rubricComment.pointDelta}`;
-  // }
-  // console.log(points);
-
-  // const points = props.rubricComment.pointDelta * -1;
-
-  // <span style={{ position: 'absolute', right: '20px',
-  // top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
   return (
     <div
       style={{
-        border: '1px solid gray',
-        borderRadius: '4px',
-        padding: '8px 14px 8px 8px',
+        border: '1px solid #e3e3e3',
+        backgroundColor: '#fafafa',
+        borderRadius: '8px',
+        padding: '6px 14px 8px 8px',
         fontSize: '10.5px',
       }}
     >
