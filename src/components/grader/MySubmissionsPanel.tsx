@@ -27,8 +27,6 @@ import { loadIDList } from '../../infrastructure/generics';
 
 type alignType = 'left' | 'right' | 'center';
 
-import { CODE } from '../../routes';
-
 /**********************************************************************************************************************/
 
 /* for type checking functions that operate on table rows */
@@ -208,7 +206,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
   /**********************************************************************************/
 
   public openGradePage = (submission: AnonymousSubmissionType) => {
-    window.open(`/${CODE}/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   public getSectionParameters = (sections: SectionType[]) => {

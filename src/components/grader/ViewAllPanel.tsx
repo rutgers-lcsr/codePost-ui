@@ -23,8 +23,6 @@ type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
-import { CODE } from '../../routes';
-
 /**********************************************************************************************************************/
 
 interface IViewAllProps {
@@ -101,7 +99,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/${CODE}/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   public render() {
