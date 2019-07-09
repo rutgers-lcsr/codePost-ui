@@ -190,7 +190,13 @@ export const Students = (props: {
         {props.submission.students!.map((student) => {
           return (
             <div key={student} style={{ display: 'flex' }}>
-              <Avatar size="small" icon="user" shape="square" /> &nbsp;{' '}
+              <Avatar
+                size="small"
+                icon="user"
+                shape="square"
+                style={{ backgroundColor: consoleTheme.avatarBackground }}
+              />
+              &nbsp;{' '}
               <span
                 style={{
                   whiteSpace: 'nowrap',

@@ -43,6 +43,7 @@ export const consoleThemes = {
     siderSubmenuTitleBg: '#fafafa',
     siderSubmenuTitleColor: themeVars.theme.neutralMainText,
     siderSubmenuBorder: '1px solid #e8e8e8',
+    avatarBackground: '#ccc',
   },
   dark: {
     text: themeVars.theme.neutralDarkMainText,
@@ -82,6 +83,7 @@ export const consoleThemes = {
     siderSubmenuTitleBg: '#323435',
     siderSubmenuTitleColor: themeVars.theme.neutralDarkMainText,
     siderSubmenuBorder: '1px solid #323435',
+    avatarBackground: '#24be85',
   },
 };
 

@@ -165,7 +165,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     } else {
       graderDisplay = (
         <div style={{ display: 'flex' }}>
-          <Avatar size="small" icon="audit" shape="square" />
+          <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
           &nbsp;
           <span
             onClick={toggleModal}
