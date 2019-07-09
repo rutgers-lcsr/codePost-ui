@@ -79,7 +79,7 @@ export const Magnifier = (props: IMagnifierProps) => {
           <div>
             Shrink code
             <br />
-            [⌘ + -]
+            [⌘ -]
           </div>
         }
       >
@@ -96,7 +96,7 @@ export const Magnifier = (props: IMagnifierProps) => {
           <div>
             Magnify code
             <br />
-            [⌘ + +]
+            [⌘ +]
           </div>
         }
       >
@@ -171,7 +171,7 @@ export const Sizer = (props: ISizerProps) => {
           <div>
             Shrink code window
             <br />
-            [⌘ + ←]
+            [⌘ ←]
           </div>
         }
       >
@@ -185,7 +185,7 @@ export const Sizer = (props: ISizerProps) => {
           <div>
             Expand code window
             <br />
-            [⌘ + →]
+            [⌘ →]
           </div>
         }
       >
@@ -218,7 +218,7 @@ export const Reset = (props: IResetProps) => {
         <div>
           reset comment alignments
           <br />
-          [⌘+click highlights]
+          [⌘ click highlights]
         </div>
       }
     >

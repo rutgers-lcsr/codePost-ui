@@ -116,7 +116,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
                 verticalAlign: 'middle',
               }}
             >
-              {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘-{index + 1}]</span>
+              {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘ {index + 1}]</span>
             </span>
             <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
             <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
