@@ -67,6 +67,12 @@ const ADMIN_ASSIGNMENTS_VIEWED = 'The students who have viewed their feedback. '
 const ADMIN_ASSIGNMENTS_UNVIEWED = 'The students that have not viewed their feedback. ';
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
   'Select multiple students, so long as none of them have a pre-existing submission for the assignment you selected.';
+const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
+  <div>
+    Not able to upload a file type that you think codePost should support?{' '}
+    <a href="mailto:team@codepost.io?subject=File Support Request">Let us know</a> and we'll add it.
+  </div>
+);
 
 const ADMIN_RUBRIC_DELETECOMMENT = 'Delete this comment';
 const ADMIN_RUBRIC_CATEGORYPOINTLIMIT =
@@ -200,6 +206,7 @@ export const tooltips = {
       viewed: ADMIN_ASSIGNMENTS_VIEWED,
       unviewed: ADMIN_ASSIGNMENTS_UNVIEWED,
       uploadSubmission: ADMIN_ASSIGNMENTS_UPLOADSUBMISSION,
+      uploadSubmissionFileTypes: ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES,
     },
     rubric: {
       deleteComment: ADMIN_RUBRIC_DELETECOMMENT,
