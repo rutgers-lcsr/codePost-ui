@@ -38,7 +38,7 @@ const commentTableColumns = [
     dataIndex: 'linked',
     align: centerAlign,
     render: (count: number, record: any) => (
-      <Badge count={count} className="cp-badge" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
+      <Badge count={count} className="badge badge--standard" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
     ),
   },
   {

@@ -6,19 +6,20 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Menu, Popconfirm } from 'antd';
+import { Menu, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
 import { FileType } from '../../../infrastructure/file';
-
-import themeVars from '../../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
 import { IFileToCommentsMap } from '../../../types/common';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
+import _Badge from '../../core/Badge';
+import CPTooltip from '../../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -66,10 +67,6 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
         // const totalPointsInFile = 10;
         const [deductions, bonuses] = this.props.getPointsInFile(file);
 
-        let opacity = 0.7;
-        if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-          opacity = 1;
-        }
         let commentCount = 0;
         if (this.props.comments === undefined) {
           commentCount = file.comments.length;
@@ -79,14 +76,17 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           }).length;
         }
 
+        let faded = true;
+        if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+          faded = false;
+        }
+
         let commentCountBadge = null;
         if (commentCount > 0) {
           commentCountBadge = (
-            <Badge
-              count={commentCount}
-              className="cp-badge"
-              style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
-            />
+            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+              <_Badge count={commentCount} forcedStyle="neutral" faded={faded} />
+            </CPTooltip>
           );
         }
 
@@ -94,23 +94,11 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
         let bonusBadge = null;
 
         if (deductions > 0) {
-          deductionBadge = (
-            <Badge
-              count={deductions * -1}
-              className="cp-badge"
-              style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
-            />
-          );
+          deductionBadge = <_Badge count={deductions * -1} faded={faded} />;
         }
 
         if (bonuses > 0) {
-          bonusBadge = (
-            <Badge
-              count={`+${bonuses}`}
-              className="cp-badge"
-              style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
-            />
-          );
+          bonusBadge = <_Badge count={bonuses} faded={faded} />;
         }
 
         return (

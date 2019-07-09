@@ -20,6 +20,9 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
+import _Badge from '../../core/Badge';
+import CPTooltip from '../../core/CPTooltip';
+
 /**********************************************************************************************************************/
 
 interface IRubricMenuProps {
@@ -95,6 +98,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         );
       });
 
+      // @ts-ignore
       const info = (
         <div>
           <div>
@@ -135,12 +139,14 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <div style={{ paddingRight: '40px' }}>
-                <span>
-                  {rubricCategory.name}
-                  <span style={{ float: 'right' }}>{capTag}</span>
-                </span>
-              </div>
+              <CPTooltip placement="right" title={''}>
+                <div style={{ paddingRight: '40px' }}>
+                  <span>
+                    {rubricCategory.name}
+                    <span style={{ float: 'right' }}>{capTag}</span>
+                  </span>
+                </div>
+              </CPTooltip>
             </div>
           }
         >
@@ -196,19 +202,31 @@ interface IRubricMenuCommentElementProps {
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
-  let points = '';
-  if (props.rubricComment.pointDelta > 0) {
-    points = `-${props.rubricComment.pointDelta}`;
-  } else if (props.rubricComment.pointDelta < 0) {
-    points = `+${props.rubricComment.pointDelta * -1}`;
-  } else {
-    points = `${props.rubricComment.pointDelta}`;
-  }
+  // let points = '';
+  // if (props.rubricComment.pointDelta > 0) {
+  //   points = `-${props.rubricComment.pointDelta}`;
+  // } else if (props.rubricComment.pointDelta < 0) {
+  //   points = `+${props.rubricComment.pointDelta * -1}`;
+  // } else {
+  //   points = `${props.rubricComment.pointDelta}`;
+  // }
+  // console.log(points);
 
+  // const points = props.rubricComment.pointDelta * -1;
+
+  // <span style={{ position: 'absolute', right: '20px',
+  // top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
   return (
-    <div>
-      <span>{props.rubricComment.text}</span>
-      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+    <div
+      style={{
+        border: '1px solid gray',
+        borderRadius: '4px',
+        padding: '8px 14px 8px 8px',
+        fontSize: '10.5px',
+      }}
+    >
+      <_Badge count={props.rubricComment.pointDelta * -1} size="small" />
+      <div style={{ paddingTop: '6px' }}>{props.rubricComment.text}</div>
     </div>
   );
 };
