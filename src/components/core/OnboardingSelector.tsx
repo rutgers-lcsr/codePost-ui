@@ -136,8 +136,6 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   let footerButtons = null;
   if (uploading) {
     const beforeUpload = (file: File, fileList: File[]) => {
-      console.log(file);
-      console.log(fileList);
       const readFile = (toRead: File) => {
         const reader = new FileReader();
         reader.onload = () => {
