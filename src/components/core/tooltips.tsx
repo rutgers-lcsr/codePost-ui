@@ -78,7 +78,7 @@ const ADMIN_RUBRIC_DELETECOMMENT = 'Delete this comment';
 const ADMIN_RUBRIC_CATEGORYPOINTLIMIT =
   'The maximum amount of points a student can lose in this category.\
    For example, if the limit is set at 4 points, no student will lose more than 4 points in this category,\
-    even if more deductions are applied. If set to 0, no limit will be set.';
+    even if more deductions are applied. If left blank, no limit will be set.';
 const ADMIN_RUBRIC_CATEGORYHELPTEXT =
   'Use this text to explain the rubric category to graders.\
    It will appear alongside the rubric category in the Code Review console.';
