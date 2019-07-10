@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tag, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
