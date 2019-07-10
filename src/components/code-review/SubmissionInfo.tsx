@@ -57,7 +57,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   if (props.submission !== undefined) {
     studentList = <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />;
   } else {
-    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={props.assignment.anonymousGrading} />;
+    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={false} />;
   }
 
   return (
