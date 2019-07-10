@@ -370,13 +370,24 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           ),
         };
 
-        if (submission === undefined || !submission.isFinalized) {
+        if (submission === undefined) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           return {
             ...toRet,
             partners: (
               <div>
                 <Icon type="minus-circle" /> &nbsp; Your submission hasn't been uploaded
+              </div>
+            ),
+            statusType: SUBMISSION_STATUS.NO_SUBMISSION,
+          };
+        } else if (!submission.isFinalized) {
+          // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+          return {
+            ...toRet,
+            partners: (
+              <div>
+                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been graded yet
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
