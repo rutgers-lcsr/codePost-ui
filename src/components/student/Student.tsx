@@ -451,7 +451,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           data={data}
           pagination={false}
           hideSearch={true}
-          tableProps={{ rowClassName }}
+          tableProps={{ rowClassName, bordered: true }}
         />
       );
     }
