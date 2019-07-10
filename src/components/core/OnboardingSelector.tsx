@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Divider, Icon, Modal, Upload } from 'antd';
+import { Button, Divider, Icon, Modal, Upload } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -22,11 +22,18 @@ interface IOnboardingSelectorProps {
   footer: string;
   visible: boolean;
   onCancel: () => void;
+  footerButtons: React.ReactNode | null;
 }
 
 const OnboardingSelector = (props: IOnboardingSelectorProps) => {
   return (
-    <Modal title={props.title} visible={props.visible} onCancel={props.onCancel} footer={null} width={600}>
+    <Modal
+      title={props.title}
+      visible={props.visible}
+      onCancel={props.onCancel}
+      footer={props.footerButtons}
+      width={600}
+    >
       {props.message}
       <br />
       <br />
@@ -100,6 +107,7 @@ const AdminOnboardingSelector = (props: IProps) => {
       onCancel={props.onCancel}
       message={message}
       footer={footer}
+      footerButtons={null}
     />
   );
 };
@@ -121,18 +129,37 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   const [uploading, setUploading] = React.useState(false);
   const [files, setFiles] = React.useState([] as IFileType[]);
 
+  let title;
+  let options = [];
+  let message;
+  const footer = '';
+  let footerButtons = null;
   if (uploading) {
     const beforeUpload = (file: File, fileList: File[]) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          const newFiles = files.filter((el) => {
-            return el.name !== file.name;
-          });
-          setFiles([...newFiles, { name: file.name, data: reader.result }]);
-        }
+      console.log(file);
+      console.log(fileList);
+      const readFile = (toRead: File) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            const newFiles = files.filter((el) => {
+              return el.name !== toRead.name;
+            });
+            setFiles([...newFiles, { name: toRead.name, data: reader.result }]);
+          }
+        };
+        reader.readAsText(toRead);
       };
-      reader.readAsText(file);
+
+      // If a user uploads one file, then read that file individually
+      // If a user uploads multiple files at once, make sure we read all of them
+      if (fileList.length === 1) {
+        readFile(file);
+      } else {
+        fileList.forEach((listFile) => {
+          readFile(listFile);
+        });
+      }
 
       // prevent upload
       return false;
@@ -150,26 +177,28 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       props.onUploadConfirm(files);
     };
 
-    const getStarted = (
-      <CPButton cpType="primary" disabled={files.length !== 3} onClick={uploadFiles}>
-        Get started
-      </CPButton>
+    title = (
+      <span>
+        Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+      </span>
     );
 
-    return (
-      <OnboardingSelector
-        title={
-          <span>
-            Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
-          </span>
-        }
-        options={[uploader, getStarted]}
-        visible={props.visible}
-        onCancel={props.onCancel}
-        message={"Upload 3 code files to annotate them in codePost. You can choose any files (they won't be saved)"}
-        footer={''}
-      />
-    );
+    options = [uploader];
+
+    message = "Upload 3 code files to annotate them in codePost. You can choose any files (they won't be saved)";
+
+    const goBack = () => {
+      setUploading(false);
+    };
+
+    footerButtons = [
+      <Button key="back" onClick={goBack}>
+        Back
+      </Button>,
+      <CPButton key="forward" cpType="primary" disabled={files.length !== 3} onClick={uploadFiles}>
+        Get started
+      </CPButton>,
+    ];
   } else {
     // call prop function onClick which triggers tour
     const uploadFile = (
@@ -184,23 +213,26 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       </CPButton>
     );
 
-    const message = "In this tour, you'll learn the basics of the code review console.";
-
-    return (
-      <OnboardingSelector
-        title={
-          <span>
-            Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
-          </span>
-        }
-        options={[uploadFile, useDefaultFile]}
-        visible={props.visible}
-        onCancel={props.onCancel}
-        message={message}
-        footer={''}
-      />
+    title = (
+      <span>
+        Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+      </span>
     );
+    options = [uploadFile, useDefaultFile];
+    message = "In this tour, you'll learn the basics of the code review console.";
   }
+
+  return (
+    <OnboardingSelector
+      title={title}
+      options={options}
+      visible={props.visible}
+      onCancel={props.onCancel}
+      message={message}
+      footer={footer}
+      footerButtons={footerButtons}
+    />
+  );
 };
 
 /**********************************************************************************************************************/
