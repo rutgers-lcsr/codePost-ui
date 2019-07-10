@@ -44,6 +44,7 @@ interface IStudentState {
   currentCourse?: CourseType;
   assignments: ICourseToAssignmentMap;
   submissions: IAssignmentToSubmissionsMap;
+  viewsBySubmission: { [submissionID: number]: boolean };
 
   // Loading variables
   isLoadingAssignments: boolean;
@@ -53,7 +54,8 @@ interface IStudentState {
 enum SUBMISSION_STATUS {
   ASSIGNMENT_NOT_PUBLISHED,
   NO_SUBMISSION,
-  HAS_SUBMISSION,
+  SUBMISSION_VIEWED,
+  SUBMISSION_UNVIEWED,
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -74,6 +76,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       currentCourse: undefined,
       assignments: {},
       submissions: {},
+      viewsBySubmission: {},
       isLoadingAssignments: true,
       isLoadingSubmissions: true,
     };
@@ -90,8 +93,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         if (course) {
           this.changeURL(course);
           this.setState({ currentCourse: course });
-          this.loadSubmissions(assignments[course.id]).then((submissions) => {
-            this.setState({ submissions, isLoadingSubmissions: false });
+          this.loadSubmissions(this.state.assignments[course.id]).then((submissions) => {
+            this.loadHistories(Object.values(submissions), this.props.user.email).then(
+              (viewMap: { [submissionID: number]: boolean }) => {
+                this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+              },
+            );
           });
         }
       });
@@ -157,17 +164,43 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadSubmissions = async (assignments: AssignmentType[]) => {
     const submissions = {};
     for (const assignment of assignments) {
-      submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
-        student: this.props.user.email,
-      });
+      if (assignment.isReleased) {
+        submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
+          student: this.props.user.email,
+        });
+      }
     }
 
     return submissions;
   };
 
+  public loadHistories = async (submissions: IAssignmentToSubmissionsMap, email: string) => {
+    const toRet = {};
+    const keys = Object.keys(submissions);
+    for (const key of keys) {
+      const submissionList: StudentSubmissionType[] = submissions[key];
+      if (submissionList.length > 0) {
+        const submission = submissionList[0];
+        const history = await Submission.readHistory(submission.id, { student: email });
+        for (const historyItem of history) {
+          if (historyItem.student === email) {
+            toRet[submission.id] = historyItem.hasViewed;
+          }
+        }
+      }
+    }
+
+    return toRet;
+  };
+
   /***********************************************************************************
   /* Handlers
   /**********************************************************************************/
+  public openAndMarkViewed = (submission: StudentSubmissionType) => {
+    openSubmission(submission.id);
+    this.markViewed(submission);
+  };
+
   public markViewed = async (submission: StudentSubmissionType) => {
     // Get the history
     const history = await Submission.readHistory(submission.id, { student: this.props.user.email });
@@ -194,7 +227,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           this.setState({ isLoadingSubmissions: true }, () => {
             this.changeURL(currentCourse);
             this.loadSubmissions(this.state.assignments[currentCourse.id]).then((submissions) => {
-              this.setState({ submissions, isLoadingSubmissions: false });
+              this.loadHistories(Object.values(submissions), this.props.user.email).then(
+                (viewMap: { [submissionID: number]: boolean }) => {
+                  this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+                },
+              );
             });
           });
         },
@@ -233,14 +270,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /**********************************************************************************/
 
   public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionsMap) => {
-    const modifyIf = (statusTargets: SUBMISSION_STATUS[], width: number) => {
+    const modifyIf = (modMap: { [statusTarget: number]: number }) => {
       return (value: any, row: any, index: number) => {
         const obj = {
           children: value,
           props: { colSpan: 1, align: 'left' },
         };
-        if (statusTargets.indexOf(row.statusType) > -1) {
-          obj.props.colSpan = width;
+
+        if (row.statusType in modMap) {
+          obj.props.colSpan = modMap[row.statusType];
           obj.props.align = 'center';
         }
         return obj;
@@ -264,21 +302,30 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         title: 'Partners',
         dataIndex: 'partners',
         key: 'partners',
-        render: modifyIf([SUBMISSION_STATUS.NO_SUBMISSION, SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED], 3),
+        render: modifyIf({ [SUBMISSION_STATUS.NO_SUBMISSION]: 3, [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3 }),
+        align: aligner,
       },
       {
         title: 'Grade',
         dataIndex: 'grade',
         key: 'grade',
         align: aligner,
-        render: modifyIf([SUBMISSION_STATUS.NO_SUBMISSION, SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED], 0),
+        render: modifyIf({
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 2,
+        }),
       },
       {
         title: 'Code',
         dataIndex: 'code',
         key: 'code',
         align: aligner,
-        render: modifyIf([SUBMISSION_STATUS.NO_SUBMISSION, SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED], 0),
+        render: modifyIf({
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+        }),
       },
     ];
 
@@ -333,6 +380,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           };
         } else {
           // Case 3: assignment is published, and student has a submission
+          const hasBeenViewed = this.state.viewsBySubmission[submission.id];
           return {
             ...toRet,
             partners:
@@ -343,13 +391,21 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                       return student !== this.props.user.email;
                     })
                     .join(', '),
-            grade: submission.grade !== null ? `${submission.grade}/${assignment.points}` : null,
+            grade: hasBeenViewed ? (
+              submission.grade !== null ? (
+                `${submission.grade}/${assignment.points}`
+              ) : null
+            ) : (
+              <Tag onClick={this.openAndMarkViewed.bind(this, submission)} style={{ cursor: 'pointer' }}>
+                View feedback
+              </Tag>
+            ),
             code: (
               <div onClick={openSubmission.bind(this, submission.id)}>
                 <Icon type="code" style={{ cursor: 'pointer' }} />
               </div>
             ),
-            statusType: SUBMISSION_STATUS.HAS_SUBMISSION,
+            statusType: hasBeenViewed ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
           };
         }
       }
