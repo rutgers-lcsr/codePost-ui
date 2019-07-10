@@ -10,11 +10,12 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Divider, Menu, Spin, Tooltip } from 'antd';
+import { Divider, Menu, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost imports */
 import CPDropdown from './CPDropdown';
+import CPTooltip from './CPTooltip';
 
 import { IOption } from '../../types/common';
 
@@ -53,9 +54,9 @@ const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => vo
         if (item.isDisabled) {
           return (
             <Menu.Item key={item.value} disabled={item.isDisabled}>
-              <Tooltip title={disabledMessage} placement={'right'}>
+              <CPTooltip title={disabledMessage} placement={'right'}>
                 {item.label}
-              </Tooltip>
+              </CPTooltip>
             </Menu.Item>
           );
         } else {

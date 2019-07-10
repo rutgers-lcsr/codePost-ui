@@ -63,6 +63,7 @@ const ThemeToggle = (props: IProps) => {
   const icon = checked ? Moon : Sun;
 
   const border = checked ? '1px solid #494d4f' : '1px solid rgb(220, 220, 220)';
+
   return (
     <ToggleButton
       inactiveLabel={''}

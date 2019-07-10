@@ -6,22 +6,21 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Avatar, Tag, Tooltip } from 'antd';
+import { Avatar, Tag } from 'antd';
 
 /* other library imports */
 import * as moment from 'moment';
 
 /* codePost imports */
-
 // import useOnClickOutside from '../core/useOnClickOutside';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 
-// import { wait } from '../../infrastructure/animation';
-
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+
+import CPTooltip from '../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -146,7 +145,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
   }
 
   return (
-    <Tooltip title={tooltipText} placement="bottom">
+    <CPTooltip title={tooltipText} placement="bottom">
       <Tag
         color={tagColor}
         style={{
@@ -156,7 +155,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
       >
         {tagText}
       </Tag>
-    </Tooltip>
+    </CPTooltip>
   );
 };
 

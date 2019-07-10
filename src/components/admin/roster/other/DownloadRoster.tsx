@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Button, Checkbox, Modal, Radio, Tooltip } from 'antd';
+import { Button, Checkbox, Modal, Radio } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -19,7 +19,8 @@ import { SectionType } from '../../../../infrastructure/section';
 import { USER_TYPE } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
-
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 /**********************************************************************************************************************/
 
 /* file types allowed for roster upload */
@@ -244,11 +245,11 @@ class DownloadRoster extends React.Component<IProps, IState> {
       }).length === 0;
 
     const okButton = isDownloadDisabled ? (
-      <Tooltip key="submit" title={'You must select at least one group to include.'}>
+      <CPTooltip key="submit" title={tooltips.admin.downloadRoster.chooseGroup}>
         <Button key="submit" type="primary" disabled={true}>
           Download
         </Button>
-      </Tooltip>
+      </CPTooltip>
     ) : (
       <Button key="submit" type="primary" disabled={false} onClick={this.downloadRoster}>
         Download

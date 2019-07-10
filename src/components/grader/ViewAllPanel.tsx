@@ -13,6 +13,9 @@ const { Option } = Select;
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { Course, CourseType } from '../../infrastructure/course';
 
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
+
 import { SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
@@ -190,17 +193,26 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     );
 
     const graderSelect = (
-      <Select
-        placeholder="Select Graders..."
-        mode="multiple"
-        onSelect={this.handleSelect}
-        onDeselect={this.handleDeselect}
-        style={{ width: 500, marginBottom: 20 }}
-      >
-        {graders.map((grader) => {
-          return <Option key={grader}>{grader}</Option>;
-        })}
-      </Select>
+      <div>
+        <Select
+          placeholder="Select Graders..."
+          mode="multiple"
+          onSelect={this.handleSelect}
+          onDeselect={this.handleDeselect}
+          style={{ width: 500, marginBottom: 20 }}
+        >
+          {graders.map((grader) => {
+            return <Option key={grader}>{grader}</Option>;
+          })}
+        </Select>
+        <CPTooltip
+          title={tooltips.grader.allSubmissions.filter}
+          placement="right"
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 10 }}
+        />
+      </div>
     );
 
     const content = (
@@ -216,6 +228,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         title={`All submissions: ${this.props.currentAssignment.name}`}
         actions={[anonymousToggle]}
         content={content}
+        gutterSize={0}
+        titleInfo={tooltips.grader.allSubmissions.title}
       />
     );
   }

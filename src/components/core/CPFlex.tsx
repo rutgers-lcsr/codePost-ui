@@ -13,7 +13,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
   public render() {
     const leftNodes = this.props.left.map((node: React.ReactNode, index: number) => {
       return (
-        <div key={`left-${index}`} className="left" style={{ marginRight: `${this.props.gutterSize}px` }}>
+        <div key={`left-${index}`} style={{ marginRight: `${this.props.gutterSize}px` }}>
           {node}
         </div>
       );
@@ -21,7 +21,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
 
     const rightNodes = this.props.right.map((node: React.ReactNode, index: number) => {
       return (
-        <div key={`right-${index}`} className="right" style={{ marginLeft: `${this.props.gutterSize}px` }}>
+        <div key={`right-${index}`} style={{ marginLeft: `${this.props.gutterSize}px` }}>
           {node}
         </div>
       );
@@ -30,20 +30,15 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
     let middleNodes;
     if (this.props.middle !== undefined) {
       middleNodes = this.props.middle.map((node: React.ReactNode, index: number) => {
-        return (
-          <div key={`middle-${index}`} className="middle" style={{ display: 'inline-block' }}>
-            {node}
-          </div>
-        );
+        return <div key={`middle-${index}`}>{node}</div>;
       });
     }
 
     return (
-      <div className={`cp-flex ${this.props.className}`} style={this.props.style ? this.props.style : {}}>
-        {leftNodes}
-        <div className="gap" style={{ marginLeft: `-${this.props.gutterSize}px` }} />
-        <div style={{ flex: 'auto', verticalAlign: 'middle' }}>{middleNodes}</div>
-        {rightNodes}
+      <div style={{ display: 'flex', justifyContent: 'space-between', ...this.props.style }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>{leftNodes}</div>
+        <div style={{ margin: '0 auto', alignItems: 'center', display: 'flex' }}>{middleNodes}</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>{rightNodes}</div>
       </div>
     );
   }

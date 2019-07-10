@@ -34,6 +34,7 @@ interface IProps {
   drawer?: React.ReactNode;
   pagination?: any;
   hideSearch?: boolean;
+  titleInfo?: string | React.ReactNode;
 }
 
 interface IState {
@@ -195,6 +196,7 @@ class TableDetail extends React.Component<IProps, IState> {
         title={this.props.title}
         actions={actions}
         content={content}
+        titleInfo={this.props.titleInfo}
       />
     );
   }

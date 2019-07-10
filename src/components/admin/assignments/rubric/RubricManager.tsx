@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty, message, Spin } from 'antd';
+import { Breadcrumb, Empty, message } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
@@ -30,6 +30,9 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import Loading from '../../../../components/core/Loading';
+import { tooltips } from '../../../../components/core/tooltips';
+
 import CPAdminRubric from './CPAdminRubric';
 import CPRubricCategory from './CPRubricCategory';
 
@@ -275,7 +278,10 @@ class RubricManager extends React.Component<IProps, IState> {
 
         let categoryPromise: Promise<any>;
         if (categoryNeedsSaving) {
-          categoryPromise = RubricCategory.update(category);
+          // We don't want to pass in the ids of comments on update
+          // Passing in these comments can create race conditions
+          const { rubricComments, ...payload } = category;
+          categoryPromise = RubricCategory.update(payload);
         } else {
           categoryPromise = Promise.resolve();
         }
@@ -290,7 +296,11 @@ class RubricManager extends React.Component<IProps, IState> {
             });
 
             if (commentNeedsSaving) {
-              return RubricComment.update(comment);
+              // We don't want to pass in the ids of linked comments on update
+              // Passing in these comments can create race conditions
+              // An example is if a linked comment gets deleted between rubric saves
+              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+              return RubricComment.update(payload);
             } else {
               return Promise.resolve();
             }
@@ -584,8 +594,6 @@ class RubricManager extends React.Component<IProps, IState> {
       helpText: '',
     };
 
-    console.log(payload);
-
     newComments[payload.id] = [];
 
     this.setState({
@@ -869,6 +877,7 @@ class RubricManager extends React.Component<IProps, IState> {
           disabled={!changesMade}
           icon="undo"
           fallback="undo"
+          fallbackWidth={1250}
         >
           Undo changes
         </CPButton>,
@@ -879,6 +888,7 @@ class RubricManager extends React.Component<IProps, IState> {
           cpType="primary"
           icon="save"
           fallback="save"
+          fallbackWidth={500}
           loading={this.state.isSaving}
         >
           Save
@@ -944,10 +954,11 @@ class RubricManager extends React.Component<IProps, IState> {
               <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
             </Breadcrumb>
           }
+          titleInfo={tooltips.admin.rubric.title}
         />
       );
     } else {
-      return <Spin />;
+      return <Loading />;
     }
   }
 }

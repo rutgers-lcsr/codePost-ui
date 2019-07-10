@@ -6,12 +6,15 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Comment, Divider, Icon, Tooltip, Typography } from 'antd';
+import { Comment, Divider, Icon, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
+
 import PreAuthLayout from './PreAuthLayout';
 
 import { IQuoteType, quotes } from './quotes';
@@ -103,15 +106,15 @@ class NoMatch extends React.Component<IProps, IState> {
 
     const actions = [
       <span key="like">
-        <Tooltip title="Like">
+        <CPTooltip title={tooltips.preauth.noMatch.like}>
           <Icon type="like" theme={action === 'liked' ? 'filled' : 'outlined'} onClick={this.like} />
-        </Tooltip>
+        </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{likes}</span>
       </span>,
-      <span key="dislike">
-        <Tooltip title="Dislike">
+      <span key={tooltips.preauth.noMatch.dislike}>
+        <CPTooltip title="Dislike">
           <Icon type="dislike" theme={action === 'disliked' ? 'filled' : 'outlined'} onClick={this.dislike} />
-        </Tooltip>
+        </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{dislikes}</span>
       </span>,
     ];

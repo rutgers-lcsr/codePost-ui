@@ -11,6 +11,8 @@ import { ClickParam } from 'antd/lib/menu';
 
 import CPDropdown from '../core/CPDropdown';
 import CPFlex from '../core/CPFlex';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1129,7 +1131,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     if (this.state.currentCourse) {
       selectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
     }
-    const dropdown = <CPDropdown value={selectorText} overlay={menu} />;
+    // Dropdown overlay maxHeight is to create scroll for long menus that scales with window height
+    const dropdown = (
+      <CPDropdown
+        value={selectorText}
+        overlay={menu}
+        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'scroll' }}
+      />
+    );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
 
     const headerLeft = [dropdown, createButton];
@@ -1139,9 +1148,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         {this.props.user.email}
       </span>,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
-      <Link className="internal-link" key="settings" to="/settings">
-        <Icon type="setting" />
-      </Link>,
+      <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
+        <Link className="internal-link" to="/settings">
+          <Icon type="setting" />
+        </Link>
+      </CPTooltip>,
       <Button key="header-logout" size="small" onClick={this.props.logout}>
         Logout
       </Button>,
@@ -1218,6 +1229,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               deleteSubmission={this.deleteSubmission}
               updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
+              refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
             />
           );
           break;
