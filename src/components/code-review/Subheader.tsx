@@ -188,14 +188,14 @@ export const Students = (props: {
       <div style={{ color: consoleTheme.subheaderStudents }}>
         {props.submission.students!.map((student) => {
           return (
-            <div key={student} style={{ display: 'flex' }}>
+            <div key={student} style={{ display: 'flex', alignItems: 'center' }}>
               <Avatar
                 size="small"
                 icon="user"
                 shape="square"
                 style={{ backgroundColor: consoleTheme.avatarBackground }}
               />
-              &nbsp;{' '}
+              <span style={{ width: '8px' }} />
               <span
                 style={{
                   whiteSpace: 'nowrap',

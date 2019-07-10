@@ -164,9 +164,9 @@ export const GraderInfo = (props: IGraderInfoProps) => {
       );
     } else {
       graderDisplay = (
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
-          &nbsp;
+          <span style={{ width: '8px' }} />
           <span
             onClick={toggleModal}
             style={{
