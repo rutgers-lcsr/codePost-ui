@@ -20,8 +20,6 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
-import CPTooltip from '../../../components/core/CPTooltip';
-
 /**********************************************************************************************************************/
 
 interface IRubricMenuProps {
@@ -149,14 +147,12 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <CPTooltip placement="right" title={info}>
-                <div style={{ paddingRight: '40px' }}>
-                  <span>
-                    {rubricCategory.name}
-                    <span style={{ float: 'right' }}>{capTag}</span>
-                  </span>
-                </div>
-              </CPTooltip>
+              <div style={{ paddingRight: '40px' }}>
+                <span>
+                  {rubricCategory.name}
+                  <span style={{ float: 'right' }}>{capTag}</span>
+                </span>
+              </div>
             </div>
           }
         >
