@@ -263,19 +263,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       };
     }
 
-    if (name !== this.props.rubricCategory.name) {
-      if (
-        this.props.otherCategories.some((el) => {
-          return el.name === name;
-        })
-      ) {
-        return {
-          valid: false,
-          message: 'Another category already has this name',
-        };
-      }
-    }
-
     return {
       valid: true,
       message: '',
@@ -326,29 +313,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   };
 
   public validateComments = (newComment: RubricCommentType) => {
-    const newCommentList = Object.values(this.state.rubricComments).map((el) => {
-      if (el.id === newComment.id) {
-        return newComment;
-      } else {
-        return el;
-      }
-    });
-
-    // Test 1: no two comments can have identical text
-    const commentText = newCommentList
-      .map((el) => {
-        return el.text;
-      })
-      .sort();
-
-    for (let i = 0; i < commentText.length - 1; i = i + 1) {
-      if (commentText[i + 1] === commentText[i]) {
-        return {
-          valid: false,
-          message: 'Two comments cannot have identical text',
-        };
-      }
-    }
+    // no tests yet!
 
     return {
       valid: true,
