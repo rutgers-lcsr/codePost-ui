@@ -15,6 +15,7 @@ export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highli
 interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
   fallback?: string;
+  small?: boolean;
   fallbackWidth?: number; // Optional: window width when the button falls back to icon
 }
 
@@ -97,7 +98,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
 
     if (props.children === undefined) {
       customProps['shape'] = 'circle';
-    } else {
+    } else if (!(this.props.small !== undefined && this.props.small)) {
       customProps['className'] = customProps['className'].concat(' ', 'cp-button--with-text');
     }
 

@@ -542,7 +542,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       assignmentSubs.forEach((submission: SubmissionType) => {
         // NOTE: students in submission.students might be inactive
         submission.students.forEach((student: string) => {
-          subsByStudent[student][assignment.id] = submission;
+          if (student in subsByStudent) {
+            subsByStudent[student][assignment.id] = submission;
+          }
         });
 
         // NOTE: graders in submission.students might be inactive

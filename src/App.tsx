@@ -15,7 +15,7 @@ import LogInAs from './components/core/LogInAs';
 
 import Home from './components/core/Home';
 
-import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, GRADER, HOME, STUDENT } from './routes';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
@@ -47,7 +47,7 @@ const AsyncGrader = Loadable({
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./components/grade/Grade'),
+  loader: () => import('./components/code-review/CodeConsole'),
   loading: RouterLoading,
 });
 
@@ -263,7 +263,7 @@ class App extends React.Component<{}, IState> {
         studentRoute = (
           <Route
             exact={true}
-            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+            path={`${STUDENT}/:courseName?/:period?`}
             render={(props: any) =>
               this.wrapTooltipContext(
                 <AsyncStudent
@@ -321,18 +321,15 @@ class App extends React.Component<{}, IState> {
         );
       }
 
-      let gradeRoute;
-      if (isGrader || isAdmin) {
-        gradeRoute = (
-          <Route
-            exact={true}
-            path={`${GRADE}/:submissionId`}
-            render={(props: any) =>
-              this.wrapTooltipContext(<AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />)
-            }
-          />
-        );
-      }
+      const gradeRoute = (
+        <Route
+          exact={true}
+          path={`${CODE}/:submissionId`}
+          render={(props: any) =>
+            this.wrapTooltipContext(<AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />)
+          }
+        />
+      );
 
       // If user has only one role, use / to redirect to relevant role's page. Otherwise, allow user to choose
       // role from /

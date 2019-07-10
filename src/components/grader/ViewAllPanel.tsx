@@ -102,7 +102,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   public render() {

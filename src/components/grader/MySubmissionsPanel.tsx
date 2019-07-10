@@ -208,7 +208,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
   /**********************************************************************************/
 
   public openGradePage = (submission: AnonymousSubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   public getSectionParameters = (sections: SectionType[]) => {

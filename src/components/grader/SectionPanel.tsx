@@ -129,7 +129,7 @@ class SectionPanel extends React.Component<IProps, IState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   /***********************************************************************************

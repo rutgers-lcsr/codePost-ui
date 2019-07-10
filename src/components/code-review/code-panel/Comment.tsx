@@ -512,11 +512,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const footerRight = [commentElements.saveButton, commentElements.deleteButton];
 
+    // Sets zIndex explicitly to avoid style conflict when modals open on this page
+    // Per: https://github.com/ant-design/ant-design/issues/6722
     return (
       <div
         className={className}
         id={`comment-${this.props.comment.id}`}
-        style={{ top: `${this.props.placement}px`, cursor }}
+        style={{ top: `${this.props.placement}px`, cursor, zIndex: 0 }}
         onClick={onClick}
         onMouseEnter={this.highlightRelatedComment}
         onMouseLeave={this.unhighlightRelatedComment}

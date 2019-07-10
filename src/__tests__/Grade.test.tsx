@@ -1,334 +1,336 @@
-import * as React from 'react';
+//tslint:disable
 
-import { shallow } from 'enzyme';
+// import * as React from 'react';
 
-import Grade, { IGradeProps } from '../components/grade/Grade';
+// import { shallow } from 'enzyme';
 
-import { Submission } from '../infrastructure/submission';
+// import Grade, { IGradeProps } from '../components/grade/Grade';
 
-describe('Grade', () => {
-  const setup = (propOverrides?: Partial<IGradeProps>) => {
-    // default props
-    const logout = () => null;
-    const props = Object.assign(
-      {
-        match: {
-          path: '/grade/:submissionId',
-          url: '/grade/1',
-          isExact: true,
-          params: {
-            submissionId: '1',
-          },
-        },
-        history: {},
-        location: {
-          pathname: '/grade/1',
-          search: '',
-          hash: '',
-        },
-        user: {},
-        addToast: (text: string, action: string | undefined) => {
-          return;
-        },
-        addErrorToast: (text: string, action: string | undefined) => {
-          return;
-        },
-        handleLogout: logout,
-      },
-      propOverrides,
-    );
+// import { Submission } from '../infrastructure/submission';
 
-    const wrapper = shallow(<Grade {...props} />);
+// describe('Grade', () => {
+//   const setup = (propOverrides?: Partial<IGradeProps>) => {
+//     // default props
+//     const logout = () => null;
+//     const props = Object.assign(
+//       {
+//         match: {
+//           path: '/grade/:submissionId',
+//           url: '/grade/1',
+//           isExact: true,
+//           params: {
+//             submissionId: '1',
+//           },
+//         },
+//         history: {},
+//         location: {
+//           pathname: '/grade/1',
+//           search: '',
+//           hash: '',
+//         },
+//         user: {},
+//         addToast: (text: string, action: string | undefined) => {
+//           return;
+//         },
+//         addErrorToast: (text: string, action: string | undefined) => {
+//           return;
+//         },
+//         handleLogout: logout,
+//       },
+//       propOverrides,
+//     );
 
-    return {
-      props,
-      wrapper,
-    };
-  };
+//     const wrapper = shallow(<Grade {...props} />);
 
-  it('commentPoints()', () => {
-    const comments = {
-      1: [
-        {
-          id: 1,
-          text: 'good job',
-          pointDelta: 1,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 1,
-          rubricComment: null,
-        },
-      ],
-      2: [
-        {
-          id: 2,
-          text: 'good job',
-          pointDelta: 3,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 2,
-          rubricComment: null,
-        },
-      ],
-    };
+//     return {
+//       props,
+//       wrapper,
+//     };
+//   };
 
-    // This is just a hack to avoid all the loading functions in ComponentDidMount()
-    Submission.read = jest.fn().mockReturnValue(undefined);
+//   it('commentPoints()', () => {
+//     const comments = {
+//       1: [
+//         {
+//           id: 1,
+//           text: 'good job',
+//           pointDelta: 1,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 1,
+//           rubricComment: null,
+//         },
+//       ],
+//       2: [
+//         {
+//           id: 2,
+//           text: 'good job',
+//           pointDelta: 3,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 2,
+//           rubricComment: null,
+//         },
+//       ],
+//     };
 
-    const { wrapper } = setup();
-    expect(wrapper.instance().commentPoints(comments)).toBe(4);
-  });
+//     // This is just a hack to avoid all the loading functions in ComponentDidMount()
+//     Submission.read = jest.fn().mockReturnValue(undefined);
 
-  it('pointsPerCategory()', () => {
-    const commentRubricComments = {
-      1: {
-        id: 1,
-        text: 'good job',
-        pointDelta: 2,
-        category: 2,
-        comments: [1],
-      },
-      2: {
-        id: 2,
-        text: 'good job',
-        pointDelta: 1,
-        category: 2,
-        comments: [2],
-      },
-    };
+//     const { wrapper } = setup();
+//     expect(wrapper.instance().commentPoints(comments)).toBe(4);
+//   });
 
-    // This is just a hack to avoid all the loading functions in ComponentDidMount()
-    Submission.read = jest.fn().mockReturnValue(undefined);
+//   it('pointsPerCategory()', () => {
+//     const commentRubricComments = {
+//       1: {
+//         id: 1,
+//         text: 'good job',
+//         pointDelta: 2,
+//         category: 2,
+//         comments: [1],
+//       },
+//       2: {
+//         id: 2,
+//         text: 'good job',
+//         pointDelta: 1,
+//         category: 2,
+//         comments: [2],
+//       },
+//     };
 
-    const { wrapper } = setup();
-    expect(wrapper.instance().pointsPerCategory(commentRubricComments)).toEqual({ 2: 3 });
-  });
+//     // This is just a hack to avoid all the loading functions in ComponentDidMount()
+//     Submission.read = jest.fn().mockReturnValue(undefined);
 
-  it('pointsPerCategoryWithCaps()', () => {
-    const pointsPerCategory = {
-      2: 3,
-      3: 4,
-    };
+//     const { wrapper } = setup();
+//     expect(wrapper.instance().pointsPerCategory(commentRubricComments)).toEqual({ 2: 3 });
+//   });
 
-    const rubricCategories = [
-      {
-        id: 2,
-        rubricComments: [1, 2],
-        assignment: 1,
-        pointLimit: 2,
-      },
-    ];
+//   it('pointsPerCategoryWithCaps()', () => {
+//     const pointsPerCategory = {
+//       2: 3,
+//       3: 4,
+//     };
 
-    // This is just a hack to avoid all the loading functions in ComponentDidMount()
-    Submission.read = jest.fn().mockReturnValue(undefined);
+//     const rubricCategories = [
+//       {
+//         id: 2,
+//         rubricComments: [1, 2],
+//         assignment: 1,
+//         pointLimit: 2,
+//       },
+//     ];
 
-    const { wrapper } = setup();
-    expect(wrapper.instance().pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories)).toEqual({ 2: 2, 3: 4 });
-  });
+//     // This is just a hack to avoid all the loading functions in ComponentDidMount()
+//     Submission.read = jest.fn().mockReturnValue(undefined);
 
-  it('hasPositiveAndNegativeComments()', () => {
-    let comments = {
-      1: [
-        {
-          id: 1,
-          text: 'good job',
-          pointDelta: 1,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 1,
-          rubricComment: null,
-        },
-      ],
-      2: [
-        {
-          id: 2,
-          text: 'good job',
-          pointDelta: 3,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 2,
-          rubricComment: null,
-        },
-      ],
-    };
+//     const { wrapper } = setup();
+//     expect(wrapper.instance().pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories)).toEqual({ 2: 2, 3: 4 });
+//   });
 
-    let commentRubricComments = {};
-    // This is just a hack to avoid all the loading functions in ComponentDidMount()
-    Submission.read = jest.fn().mockReturnValue(undefined);
+//   it('hasPositiveAndNegativeComments()', () => {
+//     let comments = {
+//       1: [
+//         {
+//           id: 1,
+//           text: 'good job',
+//           pointDelta: 1,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 1,
+//           rubricComment: null,
+//         },
+//       ],
+//       2: [
+//         {
+//           id: 2,
+//           text: 'good job',
+//           pointDelta: 3,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 2,
+//           rubricComment: null,
+//         },
+//       ],
+//     };
 
-    const { wrapper } = setup();
-    expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(false);
+//     let commentRubricComments = {};
+//     // This is just a hack to avoid all the loading functions in ComponentDidMount()
+//     Submission.read = jest.fn().mockReturnValue(undefined);
 
-    comments = {
-      1: [
-        {
-          id: 1,
-          text: 'good job',
-          pointDelta: -1,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 1,
-          rubricComment: null,
-        },
-      ],
-      2: [
-        {
-          id: 2,
-          text: 'good job',
-          pointDelta: 3,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 2,
-          rubricComment: null,
-        },
-      ],
-    };
+//     const { wrapper } = setup();
+//     expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(false);
 
-    expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(true);
+//     comments = {
+//       1: [
+//         {
+//           id: 1,
+//           text: 'good job',
+//           pointDelta: -1,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 1,
+//           rubricComment: null,
+//         },
+//       ],
+//       2: [
+//         {
+//           id: 2,
+//           text: 'good job',
+//           pointDelta: 3,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 2,
+//           rubricComment: null,
+//         },
+//       ],
+//     };
 
-    comments = {
-      1: [
-        {
-          id: 1,
-          text: 'good job',
-          // @ts-ignore
-          pointDelta: undefined,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 1,
-          rubricComment: null,
-        },
-      ],
-      2: [
-        {
-          id: 2,
-          text: 'good job',
-          pointDelta: 3,
-          startChar: 0,
-          endChar: 1,
-          startLine: 0,
-          endLine: 0,
-          file: 2,
-          rubricComment: null,
-        },
-      ],
-    };
-    commentRubricComments = {
-      1: {
-        id: 1,
-        text: 'good job',
-        pointDelta: -1,
-        category: 1,
-        comments: [1],
-      },
-    };
+//     expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(true);
 
-    expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(true);
-  });
+//     comments = {
+//       1: [
+//         {
+//           id: 1,
+//           text: 'good job',
+//           // @ts-ignore
+//           pointDelta: undefined,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 1,
+//           rubricComment: null,
+//         },
+//       ],
+//       2: [
+//         {
+//           id: 2,
+//           text: 'good job',
+//           pointDelta: 3,
+//           startChar: 0,
+//           endChar: 1,
+//           startLine: 0,
+//           endLine: 0,
+//           file: 2,
+//           rubricComment: null,
+//         },
+//       ],
+//     };
+//     commentRubricComments = {
+//       1: {
+//         id: 1,
+//         text: 'good job',
+//         pointDelta: -1,
+//         category: 1,
+//         comments: [1],
+//       },
+//     };
 
-  it('addCommentHelper()', () => {
-    const newComment = {
-      id: 1,
-      text: 'good job',
-      pointDelta: 1,
-      startChar: 0,
-      endChar: 1,
-      startLine: 0,
-      endLine: 0,
-      file: 1,
-      rubricComment: null,
-    };
+//     expect(wrapper.instance().hasPositiveAndNegativeComments(comments, commentRubricComments)).toBe(true);
+//   });
 
-    const file = {
-      id: 1,
-      code: 'code',
-      comments: [],
-      extension: 'txt',
-      name: 'code.txt',
-      submission: 1,
-    };
+//   it('addCommentHelper()', () => {
+//     const newComment = {
+//       id: 1,
+//       text: 'good job',
+//       pointDelta: 1,
+//       startChar: 0,
+//       endChar: 1,
+//       startLine: 0,
+//       endLine: 0,
+//       file: 1,
+//       rubricComment: null,
+//     };
 
-    const { wrapper } = setup();
+//     const file = {
+//       id: 1,
+//       code: 'code',
+//       comments: [],
+//       extension: 'txt',
+//       name: 'code.txt',
+//       submission: 1,
+//     };
 
-    const comments = wrapper.instance().addCommentHelper(newComment, file, { 1: [] });
-    expect(comments).toEqual({ 1: [newComment] });
-  });
+//     const { wrapper } = setup();
 
-  it('updateCommentHelper()', () => {
-    const comment = {
-      id: 1,
-      text: 'good job',
-      pointDelta: 1,
-      startChar: 0,
-      endChar: 1,
-      startLine: 0,
-      endLine: 0,
-      file: 1,
-      rubricComment: null,
-    };
+//     const comments = wrapper.instance().addCommentHelper(newComment, file, { 1: [] });
+//     expect(comments).toEqual({ 1: [newComment] });
+//   });
 
-    const newComment = {
-      id: 1,
-      text: 'great job',
-      pointDelta: 1,
-      startChar: 0,
-      endChar: 1,
-      startLine: 0,
-      endLine: 0,
-      file: 1,
-      rubricComment: null,
-    };
+//   it('updateCommentHelper()', () => {
+//     const comment = {
+//       id: 1,
+//       text: 'good job',
+//       pointDelta: 1,
+//       startChar: 0,
+//       endChar: 1,
+//       startLine: 0,
+//       endLine: 0,
+//       file: 1,
+//       rubricComment: null,
+//     };
 
-    const file = {
-      id: 1,
-      code: 'code',
-      comments: [],
-      extension: 'txt',
-      name: 'code.txt',
-      submission: 1,
-    };
+//     const newComment = {
+//       id: 1,
+//       text: 'great job',
+//       pointDelta: 1,
+//       startChar: 0,
+//       endChar: 1,
+//       startLine: 0,
+//       endLine: 0,
+//       file: 1,
+//       rubricComment: null,
+//     };
 
-    const { wrapper } = setup();
+//     const file = {
+//       id: 1,
+//       code: 'code',
+//       comments: [],
+//       extension: 'txt',
+//       name: 'code.txt',
+//       submission: 1,
+//     };
 
-    const [comments, commentRubricComments, unsavedComments] = wrapper
-      .instance()
-      .updateCommentHelper(1, newComment, file, true, { 1: [comment] }, {}, []);
+//     const { wrapper } = setup();
 
-    expect(comments).toEqual({ 1: [newComment] });
-    expect(commentRubricComments).toEqual({});
-    expect(unsavedComments).toEqual([]);
+//     const [comments, commentRubricComments, unsavedComments] = wrapper
+//       .instance()
+//       .updateCommentHelper(1, newComment, file, true, { 1: [comment] }, {}, []);
 
-    const [comments2, commentRubricComments2, unsavedComments2] = wrapper
-      .instance()
-      .updateCommentHelper(1, newComment, file, false, { 1: [comment] }, {}, []);
+//     expect(comments).toEqual({ 1: [newComment] });
+//     expect(commentRubricComments).toEqual({});
+//     expect(unsavedComments).toEqual([]);
 
-    expect(comments2).toEqual({ 1: [newComment] });
-    expect(commentRubricComments2).toEqual({});
-    expect(unsavedComments2).toEqual([1]);
-  });
+//     const [comments2, commentRubricComments2, unsavedComments2] = wrapper
+//       .instance()
+//       .updateCommentHelper(1, newComment, file, false, { 1: [comment] }, {}, []);
 
-  it('addComment() and updateComment()', () => {
-    const { wrapper } = setup();
+//     expect(comments2).toEqual({ 1: [newComment] });
+//     expect(commentRubricComments2).toEqual({});
+//     expect(unsavedComments2).toEqual([1]);
+//   });
 
-    // Should not add or update comment if no submission
-    let didModifyComment = wrapper.instance().updateComment(1, {}, {}, true);
-    expect(didModifyComment).toBe(false);
+//   it('addComment() and updateComment()', () => {
+//     const { wrapper } = setup();
 
-    didModifyComment = wrapper.instance().addComment({}, {});
-    expect(didModifyComment).toBe(false);
-  });
-});
+//     // Should not add or update comment if no submission
+//     let didModifyComment = wrapper.instance().updateComment(1, {}, {}, true);
+//     expect(didModifyComment).toBe(false);
+
+//     didModifyComment = wrapper.instance().addComment({}, {});
+//     expect(didModifyComment).toBe(false);
+//   });
+// });

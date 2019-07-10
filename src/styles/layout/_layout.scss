@@ -1,3 +1,48 @@
+#Student {
+  height: 100%;
+
+  .disabled-row > td {
+    background: #fff !important;
+    cursor: not-allowed !important;
+  }
+}
+
+#Grade {
+  header button {
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+
+  .layout--standard-console {
+    &__header {
+      border-bottom: 1px solid gray;
+      height: 50px;
+    }
+
+    &__sider {
+      height: calc(100vh - 50px);
+      overflow: hidden;
+    }
+  }
+
+  .header-menu:hover {
+    background-color: #f0fff7 !important;
+  }
+
+  .dropdown {
+    font-size: 12;
+    width: 200px;
+  }
+
+  .ant-collapse-header {
+    padding-bottom: 0;
+  }
+
+  .ant-collapse-content-box {
+    padding: 0;
+  }
+}
+
 #HW_badge_cont {
   display: inline-block !important;
 }

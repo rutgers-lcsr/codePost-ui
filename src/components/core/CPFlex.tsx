@@ -3,8 +3,10 @@ import * as React from 'react';
 interface ICPFlexProps {
   left: React.ReactNode[];
   right: React.ReactNode[];
+  middle?: React.ReactNode[];
   gutterSize: number;
   style?: React.CSSProperties;
+  className?: string;
 }
 
 class CPFlex extends React.Component<ICPFlexProps, {}> {
@@ -25,9 +27,17 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
       );
     });
 
+    let middleNodes;
+    if (this.props.middle !== undefined) {
+      middleNodes = this.props.middle.map((node: React.ReactNode, index: number) => {
+        return <div key={`middle-${index}`}>{node}</div>;
+      });
+    }
+
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', ...this.props.style }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>{leftNodes}</div>
+        <div style={{ margin: '0 auto', alignItems: 'center', display: 'flex' }}>{middleNodes}</div>
         <div style={{ display: 'flex', alignItems: 'center' }}>{rightNodes}</div>
       </div>
     );

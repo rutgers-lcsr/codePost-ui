@@ -1,20 +1,26 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
 import { Badge, Menu, Popconfirm } from 'antd';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
+/* codePost imports */
+import { CommentType } from '../../../infrastructure/comment';
+import { FileType } from '../../../infrastructure/file';
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
-import { IFileToCommentsMap } from '../../types/common';
+import { IFileToCommentsMap } from '../../../types/common';
 
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import CPTooltip from '../core/CPTooltip';
-import { tooltips } from '../core/tooltips';
+/**********************************************************************************************************************/
 
 interface IFileMenuProps {
   title?: string;
@@ -28,91 +34,107 @@ interface IFileMenuProps {
 }
 
 class FileMenu extends React.Component<IFileMenuProps, {}> {
+  public componentWillMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public handleKeyDown = (e: any) => {
+    // Keyboard shortcuts{
+    if (e.which >= 49 && e.which <= 57 && e.metaKey) {
+      e.preventDefault();
+      if (e.which - 49 < this.props.files.length) {
+        this.props.changeSelectedFile(this.props.files[e.which - 49].id);
+      }
+    }
+  };
+
   public onSelect = (selectedParam: SelectParam) => {
     const fileID = +selectedParam.key.split('-')[1];
     this.props.changeSelectedFile(fileID);
   };
 
   public buildFileMenu = (files: FileType[]) => {
-    return files.map((file: FileType) => {
-      // const totalPointsInFile = 10;
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
+    return files
+      .sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      })
+      .map((file: FileType, index: number) => {
+        // const totalPointsInFile = 10;
+        const [deductions, bonuses] = this.props.getPointsInFile(file);
 
-      let opacity = 0.7;
-      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-        opacity = 1;
-      }
-      let commentCount = 0;
-      if (this.props.comments === undefined) {
-        commentCount = file.comments.length;
-      } else {
-        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-          return comment.id > 0;
-        }).length;
-      }
+        let opacity = 0.7;
+        if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+          opacity = 1;
+        }
+        let commentCount = 0;
+        if (this.props.comments === undefined) {
+          commentCount = file.comments.length;
+        } else {
+          commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+            return comment.id > 0;
+          }).length;
+        }
 
-      let commentCountBadge = null;
-      if (commentCount > 0) {
-        commentCountBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+        let commentCountBadge = null;
+        if (commentCount > 0) {
+          commentCountBadge = (
             <Badge
               count={commentCount}
               className="cp-badge"
               style={{ backgroundColor: themeVars.theme.neutralSecondaryText, opacity }}
             />
-          </CPTooltip>
-        );
-      }
+          );
+        }
 
-      let deductionBadge = null;
-      let bonusBadge = null;
+        let deductionBadge = null;
+        let bonusBadge = null;
 
-      if (deductions > 0) {
-        deductionBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+        if (deductions > 0) {
+          deductionBadge = (
             <Badge
               count={deductions * -1}
               className="cp-badge"
               style={{ backgroundColor: themeVars.theme.actionRed, opacity }}
             />
-          </CPTooltip>
-        );
-      }
+          );
+        }
 
-      if (bonuses > 0) {
-        bonusBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.additions} hideThisOnHideTips={true}>
+        if (bonuses > 0) {
+          bonusBadge = (
             <Badge
               count={`+${bonuses}`}
               className="cp-badge"
               style={{ backgroundColor: themeVars.theme.actionGreen, opacity }}
             />
-          </CPTooltip>
-        );
-      }
+          );
+        }
 
-      return (
-        <Menu.Item key={`file-${file.id}`}>
-          <span
-            style={{
-              display: 'inline-block',
-              maxWidth: '148px',
-              wordWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
-              lineHeight: '12px',
-              verticalAlign: 'middle',
-            }}
-          >
-            {file.name}
-          </span>
-          <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
-          <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
-          <span style={{ position: 'absolute', right: '15px' }}>
-            {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
-          </span>
-        </Menu.Item>
-      );
-    });
+        return (
+          <Menu.Item key={`file-${file.id}`}>
+            <span
+              style={{
+                display: 'inline-block',
+                maxWidth: '148px',
+                wordWrap: 'break-word',
+                whiteSpace: 'pre-wrap',
+                lineHeight: '12px',
+                verticalAlign: 'middle',
+              }}
+            >
+              {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘ {index + 1}]</span>
+            </span>
+            <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
+            <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
+            <span style={{ position: 'absolute', right: '15px' }}>
+              {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
+            </span>
+          </Menu.Item>
+        );
+      });
   };
 
   public render() {
@@ -123,13 +145,6 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
     return (
       <div id="file-menu" style={{ overflowY: 'scroll' }}>
-        {this.props.title ? (
-          <div style={{ padding: '13px 20px 0px 16px' }}>
-            <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
-              {this.props.title}
-            </div>
-          </div>
-        ) : null}
         <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
