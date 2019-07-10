@@ -38,6 +38,8 @@ import { openSubmission } from '../admin/other/AdminUtils';
 
 import CPLogo from '../core/CPLogo';
 
+import layoutVars from '../../styles/layout/_layoutVars';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
@@ -64,7 +66,6 @@ export interface IStudentProps extends IWithWindowWatcherProps {
   match: any;
   history: any;
 
-  // handleLogout
   handleLogout: () => void;
 }
 
@@ -333,6 +334,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       if (!assignment.isReleased) {
         // Case 1: assignment isn't published
         return {
+          key: assignment.name,
           assignment: assignment.name,
           statusType: SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED,
           partners: (
@@ -357,6 +359,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         }
 
         const toRet = {
+          key: assignment.name,
           assignment: assignment.name,
           stats: hasStats ? (
             <Popover content={statsContent} title="Assignment Stats">
@@ -395,10 +398,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               submission.grade !== null ? (
                 `${submission.grade}/${assignment.points}`
               ) : null
-            ) : (
+            ) : this.props.windowwidth > layoutVars.breakpoints.mobile.student ? (
               <Tag onClick={this.openAndMarkViewed.bind(this, submission)} style={{ cursor: 'pointer' }}>
                 View feedback
               </Tag>
+            ) : (
+              <Tag>Login on desktop to view</Tag>
             ),
             code: (
               <div onClick={openSubmission.bind(this, submission.id)}>
