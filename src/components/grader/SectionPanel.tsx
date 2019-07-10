@@ -69,15 +69,22 @@ class SectionPanel extends React.Component<IProps, IState> {
     };
   }
 
-  public componentDidMount() {
-    this.setState({ isLoading: true }, () => {
-      this.loadSubmissionsForSection().then((returned) => {
-        this.setState({ submissionsBySection: returned, isLoading: false });
-      });
-    });
-
+  public async initialLoad() {
+    this.setState({ isLoading: true });
+    const submissionsBySection = await this.loadSubmissionsForSection();
+    this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sectionsLed.length === 1) {
       this.handleSelect(String(this.props.sectionsLed[0].id));
+    }
+  }
+
+  public componentDidMount() {
+    this.initialLoad();
+  }
+
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.currentAssignment !== this.props.currentAssignment) {
+      this.initialLoad();
     }
   }
 
