@@ -34,7 +34,7 @@ const AsyncLanding = Loadable({
 
 interface IndexManagerProps {
   error: string;
-  handleLogin: (email: string, password: string) => void;
+  handleLogin: (email: string, password: string, toRedirect: boolean) => Promise<void>;
   handleLogout: () => void;
   isLoggedIn: boolean;
 }
@@ -57,7 +57,9 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={'/login'}
-              render={(props: any) => <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} />}
+              render={(props: any) => (
+                <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} redirectAfterLogin={true} />
+              )}
             />
 
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
@@ -103,7 +105,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
 
             {/* Reminder: we used to offer an "upgrade" path */}
 
-            <Route component={NoMatch} />
+            <Route component={NoMatch} isLoggedIn={this.props.isLoggedIn} />
           </Switch>
         </BrowserRouter>
       </div>

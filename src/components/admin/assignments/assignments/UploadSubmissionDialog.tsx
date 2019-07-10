@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, Modal, Tooltip, Upload } from 'antd';
+import { Alert, Button, Icon, Modal, Progress, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -14,7 +14,12 @@ import Select from 'react-select';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
+
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
+
+import { acceptedFilesString } from './AcceptedFileTypes';
 
 /**********************************************************************************************************************/
 
@@ -60,10 +65,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public componentDidUpdate(prevProps: IProps) {
-    if (!prevProps.selectedAssignment && this.props.selectedAssignment) {
+    if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
       this.setState({ selectedAssignment: this.props.selectedAssignment });
     }
-    if (!prevProps.selectedStudents && this.props.selectedStudents) {
+    if (prevProps.selectedStudents !== this.props.selectedStudents) {
       this.setState({ selectedStudents: this.props.selectedStudents });
     }
   }
@@ -152,6 +157,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return toRet;
   };
 
+  public onCancel = () => {
+    this.setState({ files: [], foundCollision: false, status: STATUS.NONE });
+    this.props.onCancel();
+  };
+
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -180,9 +190,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     let content;
     switch (status) {
       case STATUS.COMPLETE:
-        content = <p>Submission upload complete!</p>;
+        content = (
+          <div>
+            Uploading submissions: &nbsp; <Progress percent={100} size="small" />
+            <br />
+            <br />
+            Upload complete!
+          </div>
+        );
         break;
       case STATUS.SAVING:
+        content = (
+          <div>
+            Uploading submissions: &nbsp; <Progress percent={0} size="small" />
+          </div>
+        );
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
@@ -237,13 +259,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             />
             <br />
             <br />
-            Students:{' '}
-            <Tooltip
-              title={`Select multiple students, so long as none of them have a
-             pre-existing submission for the assignment you selected.`}
-            >
-              <Icon type="info-circle" />
-            </Tooltip>
+            Students: <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
             <Select
               placeholder={'Select students'}
               isMulti={true}
@@ -256,12 +272,70 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}
-            <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={this.onChangeFiles}>
-              <Button>
-                <Icon type="upload" /> Upload
-              </Button>
-            </Upload>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Upload
+                beforeUpload={beforeUpload}
+                listType="text"
+                multiple={true}
+                onChange={this.onChangeFiles}
+                accept={acceptedFilesString}
+              >
+                <Button>
+                  <Icon type="upload" /> Upload files
+                </Button>
+              </Upload>
+              <CPTooltip
+                title={tooltips.admin.assignments.uploadSubmissionFileTypes}
+                infoIcon={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
           </div>
+        );
+        break;
+    }
+
+    // modal's back button
+    let goBackButton;
+    switch (this.state.status) {
+      case STATUS.NONE:
+        goBackButton = (
+          <Button key="back" onClick={this.cancel}>
+            Cancel
+          </Button>
+        );
+        break;
+      case STATUS.SAVING:
+        goBackButton = (
+          <Button key="back" disabled={true}>
+            Cancel
+          </Button>
+        );
+        break;
+    }
+
+    // modal's forward button
+    let goForwardButton = null;
+    switch (this.state.status) {
+      case STATUS.NONE:
+        goForwardButton = (
+          <Button key="submit" type="primary" disabled={disableUpload} onClick={this.upload}>
+            Upload
+          </Button>
+        );
+        break;
+      case STATUS.SAVING:
+        goForwardButton = (
+          <Button key="submit" type="primary" disabled={disableUpload} loading={true}>
+            Upload
+          </Button>
+        );
+        break;
+      case STATUS.COMPLETE:
+        goForwardButton = (
+          <Button key="submit" type="primary" onClick={this.cancel}>
+            Close
+          </Button>
         );
         break;
     }
@@ -270,22 +344,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       <Modal
         visible={true}
         title="Upload Submissions"
-        onCancel={this.props.onCancel}
+        onCancel={this.onCancel}
         width={700}
-        footer={[
-          <Button key="back" onClick={this.props.onCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={this.state.status === STATUS.SAVING}
-            disabled={disableUpload}
-            onClick={this.upload}
-          >
-            Upload
-          </Button>,
-        ]}
+        footer={[goBackButton, goForwardButton]}
       >
         {content}
       </Modal>

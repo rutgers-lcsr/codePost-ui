@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Icon, Tooltip, Typography } from 'antd';
+import { Icon, Typography } from 'antd';
 const { Text } = Typography;
 
 /* other library imports */
@@ -15,6 +15,8 @@ import * as moment from 'moment';
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+
+import CPTooltip from '../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -39,11 +41,11 @@ const getViewIcon = (
   // case: looking up a single student, and student has viewed the submission
   if (studentToLookup && studentToLookup in views) {
     return (
-      <Tooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
+      <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
         <div>
           <Icon type="eye" theme="filled" />
         </div>
-      </Tooltip>
+      </CPTooltip>
     );
   }
 
@@ -76,29 +78,40 @@ const getViewIcon = (
     // case: all students have viewed
     case submission.students.length:
       return (
-        <Tooltip title={getTooltipLabel()}>
+        <CPTooltip title={getTooltipLabel()}>
           <div>
             <Icon type="eye" theme="filled" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
     default:
       return (
-        <Tooltip title={getTooltipLabel()}>
+        <CPTooltip title={getTooltipLabel()}>
           <div>
             <Icon type="eye" theme="twoTone" twoToneColor="#646464" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
   }
 };
 
+const sortByGrade = (
+  a: { grade: number | null; isFinalized: boolean },
+  b: { grade: number | null; isFinalized: boolean },
+) => {
+  if (a.grade === null) return -1;
+  if (b.grade === null) return 1;
+  if (!a.isFinalized) return -1;
+  if (!b.isFinalized) return 1;
+  return a.grade - b.grade;
+};
+
 interface ISubDataBasic {
-  grade: number | string | React.ReactElement;
+  gradeText: string | React.ReactElement;
   grader: string | React.ReactElement;
-  status: string | React.ReactElement;
   lastEdited: string;
-  gradeToSort: number;
+  grade: number | null;
+  isFinalized: boolean;
 }
 
 // Return submission data in form suitable for presenting in an antd table
@@ -108,15 +121,13 @@ const formatSub = (
 ): ISubDataBasic => {
   if (sub === undefined || sub === null) {
     return {
-      grade: '--',
-      gradeToSort: -1,
+      gradeText: '--',
+      grade: null,
+      isFinalized: false,
       grader: '--',
-      status: '--',
       lastEdited: '--',
     };
   } else {
-    const finalizeIcon = sub.isFinalized ? <Icon type="check-circle" /> : <div />;
-
     let gradeText;
     if (sub.isFinalized) {
       if (assignment !== undefined) {
@@ -124,18 +135,20 @@ const formatSub = (
       } else {
         gradeText = <Text>{`${sub.grade}`}</Text>;
       }
-    } else {
+    } else if (sub.grader) {
       gradeText = <Text type="warning">Unfinalized</Text>;
+    } else {
+      gradeText = <Text type="warning">Unclaimed</Text>;
     }
 
     return {
-      grade: gradeText,
-      gradeToSort: sub.grade ? sub.grade : -1,
+      gradeText,
+      grade: sub.grade,
+      isFinalized: sub.isFinalized,
       grader: sub.grader ? sub.grader : <Text type="warning">Unclaimed</Text>,
-      status: <div>{finalizeIcon}</div>,
       lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(sub.dateEdited).format('LT')}`,
     };
   }
 };
 
-export { getViewIcon, formatSub, ISubDataBasic };
+export { getViewIcon, formatSub, sortByGrade, ISubDataBasic };

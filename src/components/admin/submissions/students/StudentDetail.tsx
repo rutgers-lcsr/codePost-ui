@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select, Tooltip } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
 const confirm = Modal.confirm;
 
 /* other library imports */
@@ -21,6 +21,9 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { TableDetail } from '../../other/TableDetail';
 
 import UploadSubmissionDialog from '../../assignments/assignments/UploadSubmissionDialog';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
@@ -45,6 +48,8 @@ interface IProps {
 interface IState {
   uploadSubmissionVisible: boolean;
   selectedSubmission: string /* stores the name of the assignment associated with the submission */;
+
+  assignmentToUpload?: AssignmentType;
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
@@ -53,8 +58,17 @@ class StudentDetail extends React.Component<IProps, IState> {
     selectedSubmission: '',
   };
 
-  public toggleUploadSubmissionVisible = () => {
-    this.setState({ uploadSubmissionVisible: !this.state.uploadSubmissionVisible });
+  public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
+    if (assignmentToUpload === undefined) {
+      this.setState({ uploadSubmissionVisible: false });
+    } else {
+      const toUpload = this.props.assignments.find((el) => {
+        return el.id === assignmentToUpload;
+      });
+      if (toUpload !== undefined) {
+        this.setState({ uploadSubmissionVisible: true, assignmentToUpload: toUpload });
+      }
+    }
   };
 
   public changeActiveSubmission = (assignment: string) => {
@@ -85,11 +99,11 @@ class StudentDetail extends React.Component<IProps, IState> {
     } else if (student in this.props.viewsBySubmission[submission.id]) {
       // case: submission has been viewed
       return (
-        <Tooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
+        <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
           <div>
             <Icon type="eye" theme="filled" />
           </div>
-        </Tooltip>
+        </CPTooltip>
       );
     } else {
       // case: submission has not been viewed
@@ -168,9 +182,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         title: (
           <div>
             Viewed &nbsp;
-            <Tooltip title={<div>Information about student's interaction with his/her published feedback.</div>}>
-              <Icon type="question-circle" />
-            </Tooltip>
+            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} infoIcon={true} hideThisOnHideTips={true} />
           </div>
         ),
         dataIndex: 'viewed',
@@ -212,7 +224,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       ) : (
         <Menu>
           <Menu.Item key="0">
-            <span onClick={this.toggleUploadSubmissionVisible}>
+            <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
               <Icon type="upload" /> Upload submission
             </span>
           </Menu.Item>
@@ -225,7 +237,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           <div>
             <Select
               style={{ width: 200 }}
-              defaultValue={submission.grader ? submission.grader : 0}
+              defaultValue={submission.grader ? submission.grader : undefined}
               onChange={this.changeGrader.bind(this, submission)}
             >
               {[
@@ -238,19 +250,24 @@ class StudentDetail extends React.Component<IProps, IState> {
                       </Select.Option>
                     );
                   }),
-                <Select.Option key={0} value={0}>
+                <Select.Option key={0} value={undefined}>
                   No grader
                 </Select.Option>,
               ]}
             </Select>
-            &nbsp; <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+            &nbsp;{' '}
+            <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+            </CPTooltip>
           </div>
         );
       } else if (submission) {
         graderElement = (
           <div>
             {submission.grader ? submission.grader : '--'}&nbsp;
-            <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+            <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+            </CPTooltip>
           </div>
         );
       } else {
@@ -306,12 +323,13 @@ class StudentDetail extends React.Component<IProps, IState> {
         <UploadSubmissionDialog
           key={'0'}
           isVisible={this.state.uploadSubmissionVisible}
-          onCancel={this.toggleUploadSubmissionVisible}
+          onCancel={this.toggleUploadSubmissionVisible.bind(this, undefined)}
           assignments={this.props.assignments}
           selectedStudents={[this.props.student]}
           students={this.props.students}
           submissions={this.props.submissions}
           uploadSubmission={this.props.uploadSubmission}
+          selectedAssignment={this.state.assignmentToUpload}
         />
       </div>
     );

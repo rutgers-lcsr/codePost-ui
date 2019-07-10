@@ -10,12 +10,14 @@ import { Divider, Icon, Select, Spin, Switch, Table } from 'antd';
 const { Option } = Select;
 
 /* codePost imports */
-import { formatSub, getViewIcon, ISubDataBasic } from './GraderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
+
+import { tooltips } from '../core/tooltips';
 
 import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
@@ -127,7 +129,7 @@ class SectionPanel extends React.Component<IProps, IState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   /***********************************************************************************
@@ -158,12 +160,16 @@ class SectionPanel extends React.Component<IProps, IState> {
           title: 'Partner(s)',
           dataIndex: 'partners',
           sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
+          align: centerAlign,
         },
         {
           title: 'Grade',
-          dataIndex: 'grade',
+          dataIndex: 'gradeText',
           sorter: (a: ITableRow, b: ITableRow) => {
-            return a.gradeToSort - b.gradeToSort;
+            return sortByGrade(
+              { grade: a.grade, isFinalized: a.isFinalized },
+              { grade: b.grade, isFinalized: b.isFinalized },
+            );
           },
           align: centerAlign,
         },
@@ -185,7 +191,7 @@ class SectionPanel extends React.Component<IProps, IState> {
         },
         {
           title: 'Viewed by Student(s)',
-          dataIndex: 'viewed',
+          dataIndex: 'viewIcon',
           align: centerAlign,
         },
       ];
@@ -274,6 +280,8 @@ class SectionPanel extends React.Component<IProps, IState> {
         title={`Section: ${this.state.activeSection.name}`}
         actions={[anonymousToggle, selectContent]}
         content={content}
+        gutterSize={0}
+        titleInfo={tooltips.grader.section.title}
       />
     );
   }

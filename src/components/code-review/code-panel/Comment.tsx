@@ -2,9 +2,8 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Badge, Input, message, Popover, Typography } from 'antd';
+import { Badge, Input, message, Popover } from 'antd';
 const { TextArea } = Input;
-const { Paragraph } = Typography;
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -29,7 +28,6 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
-// import { tomorrowNight } from 'react-syntax-highlighter/dist/styles/hljs';
 
 interface ICommentProps {
   commentType: UICommentType;
@@ -63,12 +61,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
-    console.log(`Mounted: ${this.props.comment.id}`);
+    // console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
   }
 
   public componentWillUnmount() {
-    console.log(`Unmounting: ${this.props.comment.id}`);
+    // console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -158,7 +156,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public onCommentClick = (e: React.MouseEvent) => {
-    // FIXME:
+    // FIXME: No longer use 'expand' due to markdown issues
     if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
       e.stopPropagation();
     } else {
@@ -265,15 +263,23 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const codeRenderer = (props: any) => {
       return (
-        <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
-          {props.value}
-        </SyntaxHighlighter>
+        <div
+          style={{
+            border: `1px solid ${this.context.consoleTheme.commentTitleBorder}`,
+            borderRadius: '4px',
+            backgroundColor: this.context.consoleTheme.commentCode,
+          }}
+        >
+          <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
+            {props.value}
+          </SyntaxHighlighter>
+        </div>
       );
     };
 
     const inlineCodeRenderer = (props: any) => {
       const style = {
-        backgroundColor: this.context.consoleTheme.commentTitle,
+        backgroundColor: this.context.consoleTheme.commentCode,
         color: this.context.consoleTheme.text,
       };
 
@@ -461,15 +467,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
-      commentElements.comment = (
-        <Paragraph
-          className="comment__comment"
-          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
-          ellipsis={{ rows: 2, expandable: false, onExpand: this.props.setCommentPlacements }}
-        >
-          <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
-        </Paragraph>
-      );
+      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -514,11 +512,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const footerRight = [commentElements.saveButton, commentElements.deleteButton];
 
+    // Sets zIndex explicitly to avoid style conflict when modals open on this page
+    // Per: https://github.com/ant-design/ant-design/issues/6722
     return (
       <div
         className={className}
         id={`comment-${this.props.comment.id}`}
-        style={{ top: `${this.props.placement}px`, cursor }}
+        style={{ top: `${this.props.placement}px`, cursor, zIndex: 0 }}
         onClick={onClick}
         onMouseEnter={this.highlightRelatedComment}
         onMouseLeave={this.unhighlightRelatedComment}

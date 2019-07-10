@@ -45,6 +45,9 @@ describe('ManageAssignments', () => {
         setLoadingDialog: jest.fn(),
         clearLoadingDialog: jest.fn(),
         uploadSubmission: jest.fn(),
+        updateSubmission: jest.fn(),
+        deleteSubmission: jest.fn(),
+        refreshCourseData: jest.fn(),
       },
       propOverrides,
     );

@@ -19,13 +19,16 @@ import CPButton from '../core/CPButton';
 /**********************************************************************************************************************/
 
 interface ILoginFormProps {
-  handleLogin: (email: string, password: string) => void;
+  handleLogin: (email: string, password: string, toRedirect: boolean) => Promise<void>;
   error: string;
+  title?: string;
+  redirectAfterLogin: boolean;
 }
 
 const initialState = {
   email: '',
   password: '',
+  loading: false,
 };
 
 type State = Readonly<typeof initialState>;
@@ -43,7 +46,10 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   };
 
   public handleLogin = () => {
-    return this.props.handleLogin(this.state.email, this.state.password);
+    this.setState({ loading: true });
+    this.props.handleLogin(this.state.email, this.state.password, this.props.redirectAfterLogin).catch(() => {
+      this.setState({ password: '', loading: false });
+    });
   };
 
   public handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -89,7 +95,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
         <div style={{ maxWidth: 500 }}>
           <br />
           <br />
-          <Typography.Title level={1}>Login</Typography.Title>
+          <Typography.Title level={1}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
           <Input
             prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
             placeholder="Email address"
@@ -109,7 +115,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           {this.renderError(this.props.error)}
           <br />
           <br />
-          <CPButton onClick={this.handleLogin} cpType="primary">
+          <CPButton onClick={this.handleLogin} cpType="primary" loading={this.state.loading}>
             Continue
           </CPButton>
           <br />

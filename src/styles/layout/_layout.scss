@@ -1,3 +1,56 @@
+#Student {
+  height: 100%;
+
+  .disabled-row > td {
+    background: #fff !important;
+    cursor: not-allowed !important;
+  }
+}
+
+#Grade {
+  header button {
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+
+  .layout--standard-console {
+    &__header {
+      border-bottom: 1px solid gray;
+      height: 50px;
+    }
+
+    &__sider {
+      height: calc(100vh - 50px);
+      overflow: hidden;
+    }
+  }
+
+  .header-menu:hover {
+    background-color: #f0fff7 !important;
+  }
+
+  .dropdown {
+    font-size: 12;
+    width: 200px;
+  }
+
+  .ant-collapse-header {
+    padding-bottom: 0;
+  }
+
+  .ant-collapse-content-box {
+    padding: 0;
+  }
+}
+
+#HW_badge_cont {
+  display: inline-block !important;
+}
+
+#HW_badge {
+  top: 18px !important;
+}
+
 #PreAuth {
   .header a {
     color: grey;
@@ -25,6 +78,7 @@
 .internal-link--menu {
   color: inherit;
   transition: 0s;
+  padding: 0;
 
   &:hover {
     color: inherit;
@@ -128,8 +182,6 @@
   }
 
   &__subheader {
-    background-color: #fff;
-    border-bottom: 1px solid #e9e9e9;
     line-height: 40px;
 
     padding: 24px 20px 20px 36px;

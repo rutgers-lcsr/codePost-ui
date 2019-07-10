@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal, Tooltip } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
 const confirm = Modal.confirm;
 
 /* other library imports */
@@ -17,6 +17,9 @@ import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
@@ -32,7 +35,6 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
 }
 
 interface IState {
@@ -104,11 +106,11 @@ class GraderDetail extends React.Component<IProps, IState> {
           })
           .join('\n');
         return (
-          <Tooltip title={tooltipText}>
+          <CPTooltip title={tooltipText}>
             <div>
               <Icon type="eye" theme="filled" />
             </div>
-          </Tooltip>
+          </CPTooltip>
         );
       } else {
         // case: submission has not been viewed
@@ -117,11 +119,11 @@ class GraderDetail extends React.Component<IProps, IState> {
             ? 'No students have viewed this submission yet'
             : `${submission.students[0]} has not viewed this submission yet`;
         return (
-          <Tooltip title={tooltipText}>
+          <CPTooltip title={tooltipText}>
             <div>
               <Icon type="eye" />
             </div>
-          </Tooltip>
+          </CPTooltip>
         );
       }
     }
@@ -212,7 +214,11 @@ class GraderDetail extends React.Component<IProps, IState> {
 
         return {
           key: assignment.name,
-          expand: <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />,
+          expand: (
+            <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
+              <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />
+            </CPTooltip>
+          ),
           assignment: assignment.name,
           claimed: graded ? graded.length : 0,
           finalized: numFinalized,

@@ -37,7 +37,6 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
 
     this.props.onSave(payload).then(() => {
       message.success('Assignment settings updated!');
-      this.props.onCancel();
     });
   };
 
@@ -54,7 +53,6 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       }
 
       this.updateSettings(values.name, values.points, values.anonymousGrading, values.hideGrades);
-      form.resetFields();
     });
   };
 
@@ -100,6 +98,7 @@ const CollectionCreateForm: any = Form.create()(
   class extends React.Component<IFormProps, {}> {
     public validateName = (rule: any, value: string, callback: any) => {
       if (
+        value !== this.props.assignment.name &&
         this.props.assignments.some((el) => {
           return el.name === value;
         })
@@ -150,6 +149,7 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item label="Points" extra="Total points possible for this assignment.">
               {getFieldDecorator('points', {
                 initialValue: this.props.assignment.points,
+                valuePropName: 'checked',
                 rules: [
                   { required: true, message: 'Please specify a point value' },
                   { validator: this.validatePoints },
@@ -165,8 +165,9 @@ const CollectionCreateForm: any = Form.create()(
                 </div>
               }
             >
-              {getFieldDecorator('anonymous-grading-mode', {
+              {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
             <Form.Item

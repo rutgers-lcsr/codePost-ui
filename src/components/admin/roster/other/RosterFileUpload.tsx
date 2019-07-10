@@ -6,21 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import {
-  Alert,
-  Badge,
-  Button,
-  Collapse,
-  Divider,
-  Icon,
-  Modal,
-  Spin,
-  Steps,
-  Table,
-  Tooltip,
-  Typography,
-  Upload,
-} from 'antd';
+import { Alert, Badge, Button, Collapse, Divider, Icon, Modal, Spin, Steps, Table, Typography, Upload } from 'antd';
 const { Step } = Steps;
 
 /* other library imports */
@@ -33,6 +19,8 @@ import { SectionType } from '../../../../infrastructure/section';
 import { USER_APP } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
 
 /**********************************************************************************************************************/
 
@@ -769,6 +757,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             review any changes before they are made after uploading your file.
             <br />
             <br />
+            If you exclude a user group(s), the excluded group(s) will be left unchanged. For example, if you upload a
+            roster that includes only students (with no graders or admins), the graders and admins won't be changed.
+            <br />
+            <br />
             <Collapse bordered={true} accordion={true}>
               <Collapse.Panel header="JSON" key="1">
                 <ReactMarkdown source={this.exampleJSON} />
@@ -941,11 +933,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     if (this.state.status === UPLOAD_STATUS.REVIEW) {
       if (this.state.uploadErrors.length > 0) {
         goForwardButton = (
-          <Tooltip key="submit" title={'You must fix all errors before proceeding.'}>
+          <CPTooltip key="submit" title={tooltips.admin.uploadRoster.error}>
             <Button key="submit" type="primary" disabled={true}>
               Continue
             </Button>
-          </Tooltip>
+          </CPTooltip>
         );
       } else {
         goForwardButton = (

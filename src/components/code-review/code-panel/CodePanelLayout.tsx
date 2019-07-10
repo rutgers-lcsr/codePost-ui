@@ -3,7 +3,6 @@ import * as React from 'react';
 import { File, FileType } from '../../../infrastructure/file';
 
 import CodePanelSizing from './CodePanelSizing';
-import { Magnifier, Reset, Sizer } from './CodePanelWidgets';
 
 import * as Animation from '../../../infrastructure/animation';
 
@@ -22,24 +21,38 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
     highlightHeight: string,
     onHighlightClick: (e: React.MouseEvent) => void,
   ) => React.ReactNode;
-  comments: (verticalOffset: number) => React.ReactNode;
+  comments: React.ReactNode;
+  zoom: number;
+  splitBasis: number;
+  updateVerticalOffset: (updater: (oldValue: number) => number) => void;
 }
 
 interface ICodePanelLayoutState {
-  zoom: number;
   adjustmentsVisible: boolean;
-  splitBasis: number;
-  verticalOffset: number;
+  lineNumberPadding: number;
 }
 
 class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
   public nextFrameActionId: number;
 
   public state: Readonly<ICodePanelLayoutState> = {
-    zoom: 1,
     adjustmentsVisible: false,
-    splitBasis: themeVars.grade.splitBasis,
-    verticalOffset: 0,
+    lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code),
+  };
+
+  public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
+    if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
+      this.resizeOnNextFrame();
+    }
+
+    if (this.props.file !== prevProps.file) {
+      // await Animation.wait(1000);
+      this.resizeOnNextFrame();
+    }
+
+    if (this.props.splitBasis !== prevProps.splitBasis) {
+      this.resizeComponents();
+    }
   };
 
   public componentDidMount() {
@@ -76,6 +89,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       comments.scrollTop = comments.scrollTop + e.deltaY;
     }
 
+    this.horizontalCodeScroll();
+  };
+
+  public horizontalCodeScroll = () => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
 
@@ -96,17 +113,6 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       if (codeSyntax !== null) {
         codeSyntax.scrollTop = codeMain.scrollTop;
       }
-    }
-  };
-
-  public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
-    if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
-      this.resizeOnNextFrame();
-    }
-
-    if (this.props.file !== prevProps.file) {
-      // await Animation.wait(1000);
-      this.resizeOnNextFrame();
     }
   };
 
@@ -164,41 +170,18 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
+
+      this.setState({ lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code) });
     }
-  };
-
-  public shrink = () => {
-    const splitBasis = Math.max(200, this.state.splitBasis - 100);
-    this.setState({ splitBasis }, this.resizeComponents);
-  };
-
-  public grow = () => {
-    const codeContainer = document.getElementById('code-container');
-    if (codeContainer !== null) {
-      const maxWidth = this.props.windowwidth - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
-      const splitBasis = Math.min(maxWidth, this.state.splitBasis + 100);
-      this.setState({ splitBasis }, this.resizeComponents);
-    }
-  };
-
-  public zoomIn = () => {
-    const zoom = Math.min(2, this.state.zoom + 0.1);
-    this.setState({ zoom }, this.resizeComponents);
-  };
-
-  public zoomOut = () => {
-    const zoom = Math.max(0.5, this.state.zoom - 0.1);
-    this.setState({ zoom }, this.resizeComponents);
   };
 
   public getCodeStyle = () => {
     return {
-      lineHeight: `${themeVars.grade.codeLineHeight * this.state.zoom}px`,
-      fontSize: `${themeVars.grade.codeFontSize * this.state.zoom}px`,
-      // FIXME: 10 on next line comes from SyntaxHighlighter styles
+      lineHeight: `${themeVars.grade.codeLineHeight * this.props.zoom}px`,
+      fontSize: `${themeVars.grade.codeFontSize * this.props.zoom}px`,
       paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
-        ? '0px'
-        : `${themeVars.grade.lineNumberPadding * this.state.zoom + 10}px`,
+        ? '20px'
+        : `${this.state.lineNumberPadding + 20}px`,
     };
   };
 
@@ -212,14 +195,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
 
   public resizeHighlights = () => {
     const highlights = document.getElementsByClassName('highlight');
-    const highlightHeight = `${themeVars.grade.highlightHeight * this.state.zoom}px`;
+    const highlightHeight = `${themeVars.grade.highlightHeight * this.props.zoom}px`;
     [].forEach.call(highlights, (highlight: any) => {
       highlight.style.setProperty('height', highlightHeight);
     });
-  };
-
-  public resetVerticalOffset = () => {
-    this.setState({ verticalOffset: 0 });
   };
 
   public onHighlightClick = (e: React.MouseEvent) => {
@@ -234,8 +213,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
         const comment = document.getElementById(`comment-${commentID}`);
         if (comment !== null && comment.style.top !== null) {
           const commentTop = parseInt(comment.style.top, 10);
-          const verticalOffset = commentTop - e.currentTarget.offsetTop + this.state.verticalOffset + -18;
-          this.setState({ verticalOffset });
+          const offSetValue = e.currentTarget.offsetTop;
+          this.props.updateVerticalOffset((oldValue: number) => {
+            return commentTop - offSetValue + oldValue + -18;
+          });
         }
       }
     }
@@ -243,7 +224,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
 
   public render() {
     const codeStyle = this.getCodeStyle();
-    const highlightHeight = `${themeVars.grade.highlightHeight * this.state.zoom}px`;
+    const highlightHeight = `${themeVars.grade.highlightHeight * this.props.zoom}px`;
     const consoleTheme = this.context.consoleTheme;
 
     // FIXME: This only catches existing highlights.
@@ -264,28 +245,26 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
                 margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
                   themeVars.grade.codeContainer.marginLeft
                 }px`,
-                flex: `0 1 ${this.state.splitBasis}px`,
+                flex: `0 1 ${this.props.splitBasis}px`,
               }}
             >
               <div
                 id="code-container"
                 className="code-container"
                 style={{
-                  backgroundColor: consoleTheme.codeBg,
+                  backgroundColor: consoleTheme.codeHeaderBg,
                   border: `1px solid ${consoleTheme.codeBorder}`,
                   padding,
+                  overflowX: 'hidden',
                 }}
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
               >
-                <Reset reset={this.resetVerticalOffset} visible={this.state.adjustmentsVisible} />
-                <Sizer shrink={this.shrink} grow={this.grow} visible={this.state.adjustmentsVisible} />
-                <Magnifier zoomIn={this.zoomIn} zoomOut={this.zoomOut} visible={this.state.adjustmentsVisible} />
                 {this.props.code(codeStyle, highlightHeight, this.onHighlightClick)}
               </div>
             </div>
             <div id="code-panel--comments" className="code-panel--comments">
-              {this.props.comments(this.state.verticalOffset)}
+              {this.props.comments}
             </div>
           </div>
         </div>

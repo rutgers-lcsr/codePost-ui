@@ -41,23 +41,37 @@ class Landing extends React.PureComponent<{}, {}> {
     head!.appendChild(script);
     head!.appendChild(link);
 
-    const calendlyDiv = document.getElementById('calendly-button');
-    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    const calendlyDivTop = document.getElementById('calendly-button-top');
+    const calendlyDivBottom = document.getElementById('calendly-button-bottom');
+    const calendlyDivFooter = document.getElementById('calendly-button-footer');
+    calendlyDivTop!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    calendlyDivBottom!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
+    );
+    calendlyDivFooter!.setAttribute(
+      'onclick',
+      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
+    );
   }
 
   public render() {
     const whyText = (
       <div>
+        <div style={{ paddingBottom: 15 }}>
+          codePost integrates with your existing tools to make it easy to do code review, so you can give students
+          better feedback without the hassle.
+        </div>
         Autograding can tell your students whether their code is correct, but
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ul style={{ maxWidth: 400, textAlign: 'start' }}>
-            <li> Autograder output without context is confusing</li>
-            <li> Bad code can still pass correctness tests</li>
+          <ul style={{ maxWidth: 400, textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
+            <li> 🧐 Autograder output without context is confusing</li>
+            <li> 👎 Bad code can still pass correctness tests</li>
           </ul>
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          codePost integrates with your existing tools to make it easy to do code review, so you can give students
-          better feedback without the hassle.
+          With codePost, you can explain autograder output so your students learn more, &amp; give feedback on
+          everything an autograder can’t evaluate.
         </div>
       </div>
     );
@@ -65,22 +79,23 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelOneText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Use codePost to annotate code effortlessly, with easy-to-read comments that don't clutter code. You and your
-          course staff can provide custom feedback, as well as apply standardized rubrics.
+          Use codePost to annotate programming assignments with easy-to-read comments that don't clutter code. You and
+          your course staff can provide custom feedback, as well as apply standardized rubrics. And we support iPython
+          notebooks too.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality feedback, in the browser.</div>
+        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser</div>
       </div>
     );
 
     const panelTwoText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Don't let course management take time away from teaching. Manage rosters, create assignments, and make sure
-          everything gets graded within a lightweight, intuitive interface. And when you want, dive into your course
-          data to audit grading, mine for pedagogical insights, and more.
+          Don't let course management take time away from teaching. Manage your course and make sure everything gets
+          graded within a lightweight, intuitive interface. Dive into your course data anytime to understand how your
+          students are doing, audit grading, and mine for pedagogical insights.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          Easy course management that so you can spend more time teaching.
+          Easy course management, so you can spend more time teaching
         </div>
       </div>
     );
@@ -88,16 +103,19 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelThreeText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          We know that each CS course has its own unique requirements, tools, and processes. We also think the best run
-          courses are managed with code. In that spirit, we've built the codePost API.
+          We know that every CS course has unique requirements, tools, and processes. We also think the best run courses
+          are managed with code. In that spirit, we've built the codePost API. It allows you to{' '}
+          <span style={{ fontWeight: 600 }}>automate common tasks</span>
+          {''} (like syncing rosters with your registrar),{' '}
+          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or autograder), and{' '}
+          <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data. It's also easy to use - you
+          can start building powerful scripts in less than 10 minutes (actually).
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          It's expressive and composable, and allows you to{' '}
-          <span style={{ fontWeight: 600 }}>manage your course programmatically</span>,{' '}
-          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or homegrown solutions),
-          and <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data.
+          Our users have integrated with tools such as{' '}
+          <span style={{ fontWeight: 600 }}>Github, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span> and more using
+          the codePost API!
         </div>
-        It's also easy to use - you can start building powerful scripts in less than 10 minutes!
       </div>
     );
 
@@ -119,7 +137,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelOneText}
         title="1. ANNOTATE STUDENT CODE"
-        subTitle="Effortlessly annotate and grade programming assignments."
+        subTitle="Effortlessly annotate and grade programming assignments"
         module={<GradeAnimationVideo width={610} height={390} controls={500} />}
         type="right"
         moduleMaxWidth={610}
@@ -133,7 +151,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <LandingPanel
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
-        subTitle="Data at your fingertips, when you want it."
+        subTitle="Less time configuring software, more time teaching"
         module={<AdminAnimation />}
         type="left"
         moduleMaxWidth={610}
@@ -148,8 +166,8 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
-            title="3. SIMPLIFY YOUR INFRASTRUCTURE "
-            subTitle="Run your course with codePost’s API."
+            title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
+            subTitle="Run your course with codePost’s API"
             module={<APIAnimation />}
             type="right"
             moduleMaxWidth={600}

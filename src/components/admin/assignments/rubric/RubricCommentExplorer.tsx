@@ -16,6 +16,8 @@ import { File, FileType } from '../../../../infrastructure/file';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
+import CPTooltip from '../../../../components/core/CPTooltip';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -111,6 +113,12 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         align: aligner,
       },
       {
+        title: 'Text',
+        dataIndex: 'text',
+        key: 'text',
+        align: aligner,
+      },
+      {
         title: 'Open',
         dataIndex: 'open',
         key: 'open',
@@ -124,6 +132,14 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         students: commentToSubMap[comment.id].students.join(', '),
         file: commentToSubMap[comment.id].fileName,
         author: comment.author,
+        text:
+          comment.text === null || comment.text.length === 0 ? (
+            <Icon type="pushpin" />
+          ) : (
+            <CPTooltip title={comment.text}>
+              <Icon type="pushpin" theme="filled" />
+            </CPTooltip>
+          ),
         open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
       };
     });

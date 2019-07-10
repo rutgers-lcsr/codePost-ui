@@ -28,6 +28,16 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   public componentDidMount() {
     const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
     this.setState({ openKeys: [selectedPanelKey] });
+
+    /* set up Headway widget */
+    try {
+      (window as any).Headway.init({
+        selector: '.version', // CSS selector where to inject the badge
+        account: '7v3mQJ',
+      });
+    } catch {
+      console.error('Headway failed to load.');
+    }
   }
 
   public componentDidUpdate(oldProps: IAdminNavProps) {
@@ -39,6 +49,14 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
       if (this.state.openKeys.indexOf(selectedPanelKey) < 0 && selectedPanelKey !== '') {
         this.setState({ openKeys: [...this.state.openKeys, selectedPanelKey] });
       }
+    }
+
+    if (this.props.collapsed !== oldProps.collapsed) {
+      /* re-mount Headway widget */
+      (window as any).Headway.init({
+        selector: '.version', // CSS selector where to inject the badge
+        account: '7v3mQJ',
+      });
     }
   }
 
@@ -64,6 +82,13 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
       this.setState({ openKeysCollapsed: openKeys });
     } else {
       this.setState({ openKeys });
+    }
+  };
+
+  public openLink = (url: string) => {
+    const w = window.open(url, '_blank');
+    if (w) {
+      w.focus();
     }
   };
 
@@ -114,24 +139,19 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
           </Menu.Item>
         </Menu>
         <div style={{ height: '100%' }}>
-          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
-            <Menu.Item key="docs">
+          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
+            <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
               <Icon type="pushpin" />
-              <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
-                  Docs
-                </a>
-              </span>
+              <span>Docs</span>
             </Menu.Item>
-            <Menu.Item key="api-reference">
+            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://help.codepost.io/reference')}>
               <Icon type="api" />
-              <span>
-                <a href="https://help.codepost.io" target="_blank" className="internal-link--menu">
-                  API Reference
-                </a>
-              </span>
+              <span>API Reference</span>
             </Menu.Item>
           </Menu>
+        </div>
+        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 24 }}>
+          {this.props.collapsed ? null : `v${process.env.REACT_APP_VERSION}`}
         </div>
       </div>
     );

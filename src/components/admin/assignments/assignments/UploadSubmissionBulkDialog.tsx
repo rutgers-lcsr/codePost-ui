@@ -18,7 +18,6 @@ import {
   Switch,
   Table,
   Tag,
-  Tooltip,
   Typography,
   Upload,
 } from 'antd';
@@ -29,11 +28,16 @@ const { Step } = Steps;
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
 
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
+
 import _ from 'lodash';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
-import { Submission, SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionType } from '../../../../infrastructure/submission';
+
+import { acceptedFilesSet } from './AcceptedFileTypes';
 
 /**********************************************************************************************************************/
 
@@ -55,6 +59,8 @@ interface IProps {
   submissions: SubmissionType[];
   students: string[];
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  updateSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionType) => Promise<void>;
 }
 
 interface IProtoSubmission {
@@ -210,6 +216,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     submissions.forEach((submission) => {
       for (const file of submission.files) {
         const anyFile: any = file;
+        const extension = anyFile.name.includes('.') ? anyFile.name.split('.').slice(-1)[0] : '';
+        if (!acceptedFilesSet.has(`.${extension}`)) {
+          const errorPaths = this.state.errorPaths;
+          const newMessage = `File type not accepted: ${anyFile.webkitRelativePath}`;
+          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
+        }
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
         studentsReader.onerror = () => {
@@ -238,57 +250,58 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }, 0);
 
     if (readFiles === numFiles) {
-      if (overwriteMode) {
-        this.handleOverwrite().then(() => {
+      this.setState({ status: STATUS.UPLOADING }, () => {
+        if (overwriteMode) {
+          this.handleOverwrite().then(() => {
+            this.upload();
+          });
+        } else {
           this.upload();
-        });
-      } else {
-        this.upload();
-      }
+        }
+      });
     }
   };
 
   public upload = () => {
     const { protoSubmissions, fileMap } = this.state;
-    this.setState({ status: STATUS.UPLOADING }, () => {
-      // tslint:disable
-      const toUpload = this.state.overwriteMode
-        ? protoSubmissions
-        : protoSubmissions.filter((el) => {
-            return !el.isCollision;
-          });
-      // tslint:enable
-      const promises = toUpload.map((submission) => {
-        const files: any[] = [];
-        submission.files.forEach((file: any) => {
-          const payload = {
-            name: file.name,
-            data: fileMap[file.webkitRelativePath],
-          };
-          files.push(payload);
-        });
-        return this.props
-          .uploadSubmission(this.props.assignment, submission.students, files)
-          .then((newSub) => {
-            const uploadMap = this.state.uploadMap;
-            submission.students.forEach((student) => {
-              uploadMap[student] = UPLOAD_STATUS.SUCCESS;
-            });
-            this.setState({ uploadMap, numUploaded: this.state.numUploaded + 1 });
-          })
-          .catch((errors) => {
-            const uploadMap = this.state.uploadMap;
-            submission.students.forEach((student) => {
-              uploadMap[student] = UPLOAD_STATUS.SUCCESS;
-            });
-            this.setState({ uploadMap });
-          });
-      });
 
-      Promise.all(promises).then(() => {
-        this.setState({
-          status: STATUS.COMPLETE,
+    // tslint:disable
+    const toUpload = this.state.overwriteMode
+      ? protoSubmissions
+      : protoSubmissions.filter((el) => {
+          return !el.isCollision;
         });
+    // tslint:enable
+    const promises = toUpload.map((submission) => {
+      const files: any[] = [];
+      submission.files.forEach((file: any) => {
+        const payload = {
+          name: file.name,
+          data: fileMap[file.webkitRelativePath],
+        };
+        files.push(payload);
+      });
+      return this.props
+        .uploadSubmission(this.props.assignment, submission.students, files)
+        .then((newSub) => {
+          const uploadMap = this.state.uploadMap;
+          submission.students.forEach((student) => {
+            uploadMap[student] = UPLOAD_STATUS.SUCCESS;
+          });
+          this.setState({ uploadMap, numUploaded: this.state.numUploaded + 1 });
+        })
+        .catch((errors) => {
+          const uploadMap = this.state.uploadMap;
+          submission.students.forEach((student) => {
+            uploadMap[student] = UPLOAD_STATUS.SUCCESS;
+          });
+          this.setState({ uploadMap });
+        });
+    });
+
+    Promise.all(promises).then(() => {
+      this.setState({
+        status: STATUS.COMPLETE,
       });
     });
   };
@@ -314,6 +327,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const toChange: SubmissionType[] = [];
     students.forEach((student) => {
       const newSubmission = this.getSubforStudent(student, this.state.protoSubmissions);
+
       if (newSubmission !== undefined && newSubmission.isCollision) {
         const match = submissions.find((submission) => {
           return submission.students.some((el) => {
@@ -325,6 +339,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           const reMatch = toChange.find((el) => {
             return el.id === match.id;
           });
+
           if (reMatch) {
             reMatch.students.filter((el) => {
               return el !== student;
@@ -344,10 +359,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises: Array<Promise<any>> = toChange.map((submission) => {
       if (submission.students.length === 0) {
         // if submission.students.length = 0, delete submission
-        return Submission.delete(submission.id);
+        return this.props.deleteSubmission(submission);
       } else {
         // if submission.students.length > 0, patch students field
-        return Submission.update(submission);
+        return this.props.updateSubmission(submission);
       }
     });
 
@@ -505,6 +520,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     ];
 
     let content;
+    let numToUpload = 0;
     switch (this.state.status) {
       case STATUS.NONE:
         const exampleText =
@@ -633,6 +649,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             if (sub.isCollision) {
               hasCollisions = true;
               if (this.state.overwriteMode) {
+                numToUpload = numToUpload + 1;
                 status = (
                   <Tag color="green" key={el}>
                     Ok
@@ -647,14 +664,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                      uploaded aleady has a submission uploaded for this assignment.`;
                 }
                 status = (
-                  <Tooltip title={tooltipText}>
+                  <CPTooltip title={tooltipText}>
                     <Tag color="volcano" key={el}>
                       CONFLICT
                     </Tag>
-                  </Tooltip>
+                  </CPTooltip>
                 );
               }
             } else {
+              numToUpload = numToUpload + 1;
               status = (
                 <Tag color="green" key={el}>
                   Ok
@@ -700,9 +718,18 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           <div>
             {this.state.errorPaths.length > 0 ? (
               <div>
-                <Divider orientation="left">Errors</Divider>
+                <Divider orientation="left" style={{ color: 'red' }}>
+                  Errors
+                </Divider>
                 <div>
-                  <div> The following files were rejected. Hit "start over" if you want to re-upload submissions. </div>
+                  <div>
+                    The following files were rejected. Hit "start over" if you want to re-upload submissions.{' '}
+                    <CPTooltip
+                      title={tooltips.admin.assignments.uploadSubmissionFileTypes}
+                      infoIcon={true}
+                      iconStyle={{ paddingLeft: 5 }}
+                    />
+                  </div>
                   <ul>
                     {this.state.errorPaths.map((el, i) => {
                       return <li key={i}>{el}</li>;
@@ -862,7 +889,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.UPLOADED:
         goForwardButton = (
-          <Button key="forward" type="primary" onClick={this.onUpload}>
+          <Button key="forward" type="primary" onClick={this.onUpload} disabled={numToUpload === 0}>
             Upload
           </Button>
         );
