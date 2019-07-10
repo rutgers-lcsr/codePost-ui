@@ -1,4 +1,6 @@
 /**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
 
 /* react imports */
 import * as React from 'react';
@@ -9,16 +11,16 @@ import { ClickParam } from 'antd/lib/menu';
 const SubMenu = Menu.SubMenu;
 
 /* codePost imports */
-import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
+import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { RUBRIC_SEARCH_SHORTCUT } from './Shortcuts';
+import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
-import CPTooltip from '../../components/core/CPTooltip';
+import CPTooltip from '../../../components/core/CPTooltip';
 
 /**********************************************************************************************************************/
 

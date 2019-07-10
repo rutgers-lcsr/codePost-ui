@@ -1,17 +1,26 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
 import { Badge, Menu, Popconfirm } from 'antd';
 
-import { CommentType } from '../../infrastructure/comment';
-import { FileType } from '../../infrastructure/file';
+/* codePost imports */
+import { CommentType } from '../../../infrastructure/comment';
+import { FileType } from '../../../infrastructure/file';
 
-import themeVars from '../../styles/abstracts/_theme.js';
+import themeVars from '../../../styles/abstracts/_theme.js';
 
 import { SelectParam } from 'antd/lib/menu';
 
-import { IFileToCommentsMap } from '../../types/common';
+import { IFileToCommentsMap } from '../../../types/common';
 
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
+/**********************************************************************************************************************/
 
 interface IFileMenuProps {
   title?: string;

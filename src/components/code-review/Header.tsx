@@ -4,27 +4,25 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tooltip } from 'antd';
+import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tag, Tooltip } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
-import CPButton from '../../core/CPButton';
+import CPButton from '../core/CPButton';
+import CPTooltip from '../core/CPTooltip';
 
-import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+import themeVars from '../../styles/abstracts/_theme.js';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
+import { AssignmentType } from '../../infrastructure/assignment';
+import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 
-import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../../types/common';
+import CodeConsole from './CodeConsole';
 
-import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
-
-import CodeConsole from '../CodeConsole';
-
-import { AssignmentType } from '../../../infrastructure/assignment';
-
-import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from '../Shortcuts';
+import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
 
 /**********************************************************************************************************************/
 
@@ -510,5 +508,96 @@ export const GradeButton = (props: IGradeButtonProps) => {
         />
       </Modal>
     </div>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IStatusTagsProps {
+  assignment: AssignmentType;
+  submission: AnonymousSubmissionType;
+}
+
+type StatusTagType = 0 | 1 | 2 | 3;
+
+export const StatusTags = (props: IStatusTagsProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
+  const subStatus = (finalized: boolean, published: boolean): StatusTagType => {
+    if (!finalized && !published) {
+      return 0;
+    }
+
+    if (finalized && !published) {
+      return 1;
+    }
+
+    if (!finalized && published) {
+      return 2;
+    }
+
+    if (finalized && published) {
+      return 3;
+    }
+
+    // should never hit
+    return 0;
+  };
+
+  const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.isReleased);
+
+  // @ts-ignore
+  let tagColor;
+  let tagText;
+  let tooltipText;
+  switch (statusTagType) {
+    case 0:
+      tagColor = theme === 'light' ? 'blue' : '#1890ff';
+      tagText = 'not finalized and not published';
+      tooltipText = 'student cannot view';
+      break;
+    case 1:
+      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
+      tagText = 'finalized but not published';
+      tooltipText = 'student cannot view';
+      break;
+    case 2:
+      tagColor = theme === 'light' ? 'red' : '#f5222d';
+      tagText = 'published but not finalized';
+      tooltipText = 'student cannot view';
+      break;
+    case 3:
+      tagColor = theme === 'light' ? 'gold' : '#faad14';
+      tagText = 'finalized and published';
+      tooltipText = 'student can view';
+      break;
+  }
+
+  return (
+    <CPTooltip title={tooltipText} placement="bottom">
+      <Tag
+        color={tagColor}
+        style={{
+          marginRight: '0px',
+          cursor: 'help',
+        }}
+      >
+        {tagText}
+      </Tag>
+    </CPTooltip>
+  );
+};
+
+interface ISubheaderTitleProps {
+  assignment: AssignmentType;
+}
+
+export const SubheaderTitle = (props: ISubheaderTitleProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  return (
+    <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
+      {props.assignment.name}
+    </span>
   );
 };

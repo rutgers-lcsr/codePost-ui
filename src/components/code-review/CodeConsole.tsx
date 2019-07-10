@@ -21,41 +21,37 @@ import {
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
-
+import { FileType } from '../../infrastructure/file';
+import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
-
 import { UserType } from '../../infrastructure/user';
 
+import CPFlex from '../core/CPFlex';
 import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
-import CPFlex from '../core/CPFlex';
-
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-
-import { StatusTags, SubheaderTitle } from '../code-review/Subheader';
-
-import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
-
-import FileMenu from '../code-review/FileMenu';
-
-import RubricMenu from '../code-review/RubricMenu';
-
-import { FileType } from '../../infrastructure/file';
-
 import { GradeCode, StudentCode } from '../code-review/code-panel/CodeContent';
-
+import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
 import { GradeComments, StudentComments } from '../code-review/code-panel/Comments';
-
-import * as Immutable from '../../infrastructure/immutable';
 
 import ThemeToggle from '../core/ThemeToggle';
 
-import { ReadOnlySubmissionInfo, SubmissionInfo } from '../code-review/SubmissionInfo';
+import FileMenu from './menu/FileMenu';
+import RubricMenu from './menu/RubricMenu';
+import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
-import { FinalizeButton, GradeButton, Magnifier, Reset, Sizer } from '../code-review/code-panel/CodePanelWidgets';
+import {
+  FinalizeButton,
+  GradeButton,
+  Magnifier,
+  Reset,
+  Sizer,
+  StatusTags,
+  SubheaderTitle,
+} from '../code-review/Header';
 
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
 
 /**********************************************************************************************************************/

@@ -1,15 +1,23 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
-import moment from 'moment';
-
+/* antd imports */
 import { Avatar, Divider, Icon, message, Modal, Select, Tag, Tooltip } from 'antd';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+/* other library imports */
+import moment from 'moment';
 
-import { Students } from './Subheader';
+/* codePost imports */
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
+/**********************************************************************************************************************/
 
 interface ISubmissionReadProps {
   title?: string;
@@ -228,6 +236,60 @@ export const GraderInfo = (props: IGraderInfoProps) => {
         {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
       </div>
     );
+  }
+};
+
+/**********************************************************************************************************************/
+
+export const Students = (props: {
+  submission: AnonymousSubmissionType | StudentSubmissionType;
+  isAnonymous: boolean;
+}) => {
+  const [showStudents, setShowStudents] = React.useState(!props.isAnonymous && props.submission.students !== undefined);
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  const reveal = () => {
+    setShowStudents(true);
+  };
+
+  if (showStudents) {
+    return (
+      <div style={{ color: consoleTheme.subheaderStudents }}>
+        {props.submission.students!.map((student) => {
+          return (
+            <div key={student} style={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                size="small"
+                icon="user"
+                shape="square"
+                style={{ backgroundColor: consoleTheme.avatarBackground }}
+              />
+              <span style={{ width: '8px' }} />
+              <span
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '80%',
+                }}
+              >
+                {student}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  } else {
+    if (props.submission.students === undefined) {
+      return <Tag color={'geekblue'}>Anonymized</Tag>;
+    } else {
+      return (
+        <div>
+          <Tag color={'geekblue'}>Anonymized</Tag> <a onClick={reveal}>reveal</a>
+        </div>
+      );
+    }
   }
 };
 
