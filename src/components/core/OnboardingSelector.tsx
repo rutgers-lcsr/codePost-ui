@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Modal, Upload } from 'antd';
+import { Divider, Icon, Modal, Upload } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -39,8 +39,12 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
           </div>
         );
       })}
-      <Divider />
-      {props.footer}
+      {props.footer.length > 0 ? (
+        <div>
+          <Divider />
+          {props.footer}
+        </div>
+      ) : null}
     </Modal>
   );
 };
@@ -136,9 +140,9 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     const uploader = (
       <Upload beforeUpload={beforeUpload} listType="text" multiple={true}>
-        <Button>
+        <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
-        </Button>
+        </CPButton>
       </Upload>
     );
 
@@ -146,7 +150,11 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       props.onUploadConfirm(files);
     };
 
-    const getStarted = <Button onClick={uploadFiles}>Get started</Button>;
+    const getStarted = (
+      <CPButton cpType="primary" disabled={files.length !== 3} onClick={uploadFiles}>
+        Get started
+      </CPButton>
+    );
 
     return (
       <OnboardingSelector
@@ -158,7 +166,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         options={[uploader, getStarted]}
         visible={props.visible}
         onCancel={props.onCancel}
-        message={''}
+        message={"Upload 3 code files to annotate them in codePost. You can choose any files (they won't be saved)"}
         footer={''}
       />
     );
