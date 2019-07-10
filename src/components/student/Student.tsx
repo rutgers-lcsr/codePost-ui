@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Popover, Tag } from 'antd';
+import { Button, Icon, Menu, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -348,7 +348,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       } else {
         const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
 
-        const hasStats = assignment.mean !== null || assignment.median !== null;
+        const hasStats = assignment.mean || assignment.median;
         let statsContent;
         if (hasStats) {
           statsContent = (
@@ -361,13 +361,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const toRet = {
           key: assignment.name,
           assignment: assignment.name,
-          stats: hasStats ? (
-            <Popover content={statsContent} title="Assignment Stats">
-              <Tag>See stats</Tag>
-            </Popover>
-          ) : (
-            '--'
-          ),
+          stats: hasStats ? statsContent : '--',
         };
 
         if (submission === undefined) {
