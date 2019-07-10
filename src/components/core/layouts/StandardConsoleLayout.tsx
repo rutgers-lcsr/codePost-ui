@@ -81,32 +81,34 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               color: consoleTheme.siderTitle,
             }}
           >
-            <Collapse
-              expandIconPosition="right"
-              defaultActiveKey={props.sider.map((el, index) => index.toString())}
-              bordered={false}
-              onChange={onCollapse}
-              expandIcon={collapseIcon}
-              style={{
-                backgroundColor: consoleTheme.siderBg,
-                color: consoleTheme.siderTitle,
-              }}
-            >
-              {props.sider.map((siderNode: React.ReactNode, index: number) => {
-                return (
-                  <Collapse.Panel
-                    header={
-                      <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
-                        <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                      </div>
-                    }
-                    key={index.toString()}
-                  >
-                    {siderNode}
-                  </Collapse.Panel>
-                );
-              })}
-            </Collapse>
+            {props.sider.length === 0 ? null : (
+              <Collapse
+                expandIconPosition="right"
+                defaultActiveKey={props.sider.map((el, index) => index.toString())}
+                bordered={false}
+                onChange={onCollapse}
+                expandIcon={collapseIcon}
+                style={{
+                  backgroundColor: consoleTheme.siderBg,
+                  color: consoleTheme.siderTitle,
+                }}
+              >
+                {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                  return (
+                    <Collapse.Panel
+                      header={
+                        <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
+                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                        </div>
+                      }
+                      key={index.toString()}
+                    >
+                      {siderNode}
+                    </Collapse.Panel>
+                  );
+                })}
+              </Collapse>
+            )}
           </Sider>
           <Layout
             style={{
