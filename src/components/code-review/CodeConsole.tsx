@@ -8,6 +8,9 @@ import * as React from 'react';
 /* antd imports */
 import { Badge, Dropdown, Empty, Icon, Menu, message } from 'antd';
 
+/* other library imports */
+import queryString from 'query-string';
+
 /* codePost imports */
 import Loading from '../core/Loading';
 
@@ -54,6 +57,8 @@ import {
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
 
+import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -65,6 +70,7 @@ enum PERMISSION_LEVEL {
 
 interface ICodeConsoleState {
   /* UI control */
+  inDemoMode: boolean;
   permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
   selectedFile: FileType | undefined;
@@ -96,6 +102,7 @@ interface ICodeConsoleState {
 export interface ICodeConsoleProps {
   match: any;
   history: any;
+  location: any;
   user: UserType;
   handleLogout: () => void;
 }
@@ -304,6 +311,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************************/
 
   public state: Readonly<ICodeConsoleState> = {
+    inDemoMode: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding'),
     permissionLevel: PERMISSION_LEVEL.READ,
     activeCommentID: undefined,
     assignment: undefined,
@@ -326,11 +334,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     codeVerticalOffset: 0,
   };
 
-  /***********************************************************************************
+  /**********************************************************************************
   /* Lifecycle methods
   /**********************************************************************************/
 
   public async componentDidMount() {
+    if (this.state.inDemoMode) {
+      this.setState({ isLoading: false });
+      return;
+    }
+
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `Submission - ${submissionID}`;
@@ -550,11 +563,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (comment.id < 0) {
-      savedComment = await CommentIO.create(comment);
-      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+    if (!this.state.inDemoMode) {
+      if (comment.id < 0) {
+        savedComment = await CommentIO.create(comment);
+        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      } else {
+        savedComment = await CommentIO.update(comment);
+      }
     } else {
-      savedComment = await CommentIO.update(comment);
+      savedComment = { ...comment, id: Math.floor(Math.random() * 9999999) };
+      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
     }
 
     let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
@@ -566,7 +584,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0) {
+    if (comment.id > 0 && !this.state.inDemoMode) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -727,6 +745,71 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     });
   };
 
+  public loadDemoData = (files: any[]) => {
+    const demoAssignment: AssignmentType = {
+      id: -1,
+      name: 'codePost Demo',
+      isReleased: false,
+      hideGrades: false,
+      rubricCategories: [],
+      course: -1,
+      sortKey: 0,
+      anonymousGrading: false,
+      mean: null,
+      median: null,
+      points: 20,
+    };
+
+    const demoCourse: CourseType = {
+      id: -1,
+      name: 'Demo',
+      period: 'demo',
+      assignments: [-1],
+      sections: [],
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
+      timezone: '',
+      emailNewUsers: false,
+      anonymousGradingDefault: false,
+      allowGradersToEditRubric: false,
+    };
+
+    const demoSubmission: AnonymousSubmissionType = {
+      id: 1,
+      isFinalized: false,
+      files: [1, 2, 3],
+      students: ['student1@example.edu'],
+      assignment: -1,
+      dateEdited: '',
+      grade: null,
+      grader: this.props.user.email,
+    };
+
+    const fileList: FileType[] = [];
+    const commentMap = {};
+    files.forEach((file, index) => {
+      fileList.push({
+        id: index,
+        code: file.data,
+        comments: [],
+        extension: file.name.split('.')[1],
+        name: file.name,
+        submission: 1,
+      });
+
+      commentMap[index] = [];
+    });
+
+    this.setState({
+      assignment: demoAssignment,
+      course: demoCourse,
+      submission: demoSubmission,
+      files: fileList,
+      comments: commentMap,
+      selectedFile: fileList.length > 0 ? fileList[0] : undefined,
+    });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -777,6 +860,46 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 }
               />
             }
+          />
+        </div>
+      );
+    }
+
+    if (this.state.inDemoMode && !this.state.assignment) {
+      // tslint:disable
+      return (
+        <div id="Grade">
+          <CodeConsoleOnboardingSelector
+            visible={this.state.inDemoMode}
+            onUploadConfirm={this.loadDemoData}
+            onCancel={() => {
+              return;
+            }}
+          />
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={[]}
+                right={[
+                  <ThemeToggle key="theme-toggle" small={true} />,
+                  <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+                  <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+                  <Magnifier key="zoom" updateZoom={this.setZoom} />,
+                ]}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={[]}
+            siderTitles={[]}
+            content={null}
           />
         </div>
       );
@@ -854,6 +977,121 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         </span>
       </span>
     );
+
+    /*********************************************************
+    /* Render console for demo mode
+    /*********************************************************/
+
+    if (this.state.inDemoMode) {
+      let demoContent;
+      if (this.state.selectedFile) {
+        const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          <GradeCode
+            key={this.state.selectedFile!.id}
+            file={this.state.selectedFile!}
+            comments={this.state.comments[this.state.selectedFile!.id]}
+            readOnly={this.state.submission!.isFinalized}
+            addComment={this.addComment}
+            user={this.props.user.email}
+            codeStyle={codeStyle}
+            highlightHeight={highlightHeight}
+            onHighlightClick={onHighlightClick}
+          />
+        );
+
+        const demoComments = (
+          <GradeComments
+            comments={this.state.comments[this.state.selectedFile!.id]}
+            rubricComments={this.state.commentRubricComments}
+            readOnly={this.state.submission!.isFinalized}
+            file={this.state.selectedFile!}
+            activeCommentID={this.state.activeCommentID}
+            changeActive={this.changeActiveComment}
+            deleteComment={this.deleteComment}
+            saveComment={this.saveComment}
+            addUnsaved={this.addUnsaved}
+            removeUnsaved={this.removeUnsaved}
+            removeRubricComment={this.removeRubricComment}
+            oldCommentIDs={this.state.oldCommentIDs}
+            verticalOffset={this.state.codeVerticalOffset}
+          />
+        );
+
+        demoContent = (
+          <CodePanelLayout
+            comments={demoComments}
+            code={demoCode}
+            file={this.state.selectedFile}
+            zoom={this.state.codeZoom}
+            splitBasis={this.state.codeSplitBasis}
+            updateVerticalOffset={this.setVerticalOffset}
+          />
+        );
+      }
+
+      // tslint:disable
+      return (
+        <div id="Grade">
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={[
+                  <Dropdown overlay={menu} trigger={['click']} key="menu">
+                    <Icon type="menu" twoToneColor="white" />
+                  </Dropdown>,
+                  <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+                ]}
+                right={[
+                  <ThemeToggle key="theme-toggle" small={true} />,
+                  <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+                  <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+                  <Magnifier key="zoom" updateZoom={this.setZoom} />,
+                ]}
+                middle={headerMiddle}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={[
+              <SubmissionInfo
+                key="submission-info"
+                title="Submission Info"
+                assignment={this.state.assignment}
+                submission={this.state.submission!}
+                graders={this.state.graders}
+                isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
+                updateGrader={this.updateGrader}
+              />,
+              <FileMenu
+                key="file-menu"
+                title="Files"
+                files={this.state.files}
+                comments={this.state.comments}
+                selectedFile={this.state.selectedFile}
+                getPointsInFile={this.getPointsInFile}
+                changeSelectedFile={this.changeSelectedFile}
+                canChange={this.containsUnsavedComments}
+              />,
+              <RubricMenu
+                key="rubric-menu"
+                rubricCategories={this.state.rubricCategories}
+                rubricComments={this.state.rubricComments}
+                handleRubricCommentClick={this.onRubricCommentClick}
+              />,
+            ]}
+            siderTitles={['Submission Info', fileMenuTitle, 'Rubric']}
+            content={demoContent}
+          />
+        </div>
+      );
+    }
 
     /*********************************************************
     /* Render console for read-only submission
