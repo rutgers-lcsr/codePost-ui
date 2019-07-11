@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export type CPLogoType = 'main' | 'icon';
+export type CPLogoType = 'main' | 'icon' | 'dark';
 
 interface ICPLogoProps {
   cpType: CPLogoType;
@@ -12,6 +12,12 @@ class CPLogo extends React.Component<ICPLogoProps, {}> {
     if (this.props.cpType === 'main') {
       return (
         <div className="cp-logo" onClick={this.props.onClick}>
+          code<span className="cp-logo__highlight">Post</span>
+        </div>
+      );
+    } else if (this.props.cpType === 'dark') {
+      return (
+        <div className="cp-logo" onClick={this.props.onClick} style={{ color: 'black' }}>
           code<span className="cp-logo__highlight">Post</span>
         </div>
       );

@@ -17,6 +17,8 @@ import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionType } from '../../infrastructure/submission';
 
+import { tooltips } from '../core/tooltips';
+
 import { compare } from '../utils/SortUtils';
 type alignType = 'left' | 'right' | 'center';
 
@@ -67,15 +69,22 @@ class SectionPanel extends React.Component<IProps, IState> {
     };
   }
 
-  public componentDidMount() {
-    this.setState({ isLoading: true }, () => {
-      this.loadSubmissionsForSection().then((returned) => {
-        this.setState({ submissionsBySection: returned, isLoading: false });
-      });
-    });
-
+  public async initialLoad() {
+    this.setState({ isLoading: true });
+    const submissionsBySection = await this.loadSubmissionsForSection();
+    this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sectionsLed.length === 1) {
       this.handleSelect(String(this.props.sectionsLed[0].id));
+    }
+  }
+
+  public componentDidMount() {
+    this.initialLoad();
+  }
+
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.currentAssignment !== this.props.currentAssignment) {
+      this.initialLoad();
     }
   }
 
@@ -127,7 +136,7 @@ class SectionPanel extends React.Component<IProps, IState> {
   };
 
   public openGradePage = (submission: SubmissionType) => {
-    window.open(`/grade/${submission.id}`);
+    window.open(`/code/${submission.id}`);
   };
 
   /***********************************************************************************
@@ -158,6 +167,7 @@ class SectionPanel extends React.Component<IProps, IState> {
           title: 'Partner(s)',
           dataIndex: 'partners',
           sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
+          align: centerAlign,
         },
         {
           title: 'Grade',
@@ -188,7 +198,7 @@ class SectionPanel extends React.Component<IProps, IState> {
         },
         {
           title: 'Viewed by Student(s)',
-          dataIndex: 'viewed',
+          dataIndex: 'viewIcon',
           align: centerAlign,
         },
       ];
@@ -277,6 +287,8 @@ class SectionPanel extends React.Component<IProps, IState> {
         title={`Section: ${this.state.activeSection.name}`}
         actions={[anonymousToggle, selectContent]}
         content={content}
+        gutterSize={0}
+        titleInfo={tooltips.grader.section.title}
       />
     );
   }

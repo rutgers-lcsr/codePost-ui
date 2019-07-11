@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tooltip } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -17,6 +17,9 @@ import _ from 'lodash';
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
+import { tooltips } from '../../../core/tooltips';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../../core/withWindowWatcher';
 
 import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -27,7 +30,7 @@ import { DIRECTION } from '../../../../types/common';
 
 /**********************************************************************************************************************/
 
-interface ICPRubricCategoryProps {
+interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
   // data
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
@@ -39,7 +42,7 @@ interface ICPRubricCategoryProps {
   savedRubricComments?: RubricCommentType[];
 
   // RubricCategory functions
-  updateCategory: (rCategory: RubricCategoryType) => void;
+  updateCategory: (rCategory: RubricCategoryType, hasError?: boolean) => void;
   deleteCategory: (rCategory: RubricCategoryType) => void;
   moveCategory: (rCategory: RubricCategoryType, direction: DIRECTION) => void;
 
@@ -55,6 +58,7 @@ interface ICPRubricCategoryProps {
   onCommentEdit: (obj: RubricCommentType) => void;
   onCommentUndo: (obj: RubricCommentType) => void;
   onCommentDragEnd: any;
+  otherCategories: RubricCategoryType[];
 }
 
 interface IState {
@@ -67,6 +71,12 @@ interface IState {
   /* local rubric comment data */
   rubricComments: { [id: number]: RubricCommentType };
   rubricCommentStatus: { [id: number]: STATUS };
+
+  /* validation status */
+  hasError: boolean;
+  errorMessage: string;
+  hasCommentError: boolean;
+  commentErrorMessage: string;
 }
 
 const aligner: 'left' | 'center' | 'right' = 'center';
@@ -77,13 +87,33 @@ const commentTableColumns = [
     key: 'text',
   },
   {
-    title: 'Deduction',
+    title: (
+      <div>
+        Deduction
+        <CPTooltip
+          title={tooltips.admin.rubric.deduction}
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     dataIndex: 'deduction',
     key: 'deduction',
     align: aligner,
   },
   {
-    title: 'Instances',
+    title: (
+      <div>
+        Instances
+        <CPTooltip
+          title={tooltips.admin.rubric.instances}
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
     key: 'linked',
     dataIndex: 'linked',
     align: aligner,
@@ -110,6 +140,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
+      hasError: false,
+      errorMessage: '',
+      hasCommentError: false,
+      commentErrorMessage: '',
     };
   }
 
@@ -223,22 +257,61 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     );
   };
 
+  public validateCategory = (name: string, helpText: string, pointLimit: number | null) => {
+    if (name.length < 4) {
+      return {
+        valid: false,
+        message: 'Category name must be at least 4 characters',
+      };
+    }
+
+    if (name.length > 32) {
+      return {
+        valid: false,
+        message: 'Category name cannot exceed 32 characters',
+      };
+    }
+
+    if (helpText.length > 500) {
+      return {
+        valid: false,
+        message: 'Helptext cannot exceed 500 characters',
+      };
+    }
+
+    if (pointLimit !== null && (!Number.isInteger(pointLimit) || pointLimit < 0)) {
+      return {
+        valid: false,
+        message: 'pointLimit must be a positive integer.',
+      };
+    }
+
+    return {
+      valid: true,
+      message: '',
+    };
+  };
+
   public saveCategory = () => {
     const { rubricCategory } = this.props;
     const { name, pointLimit, helpText } = this.state;
-    console.log('bump');
-    console.log(pointLimit);
 
     if (
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
       helpText !== rubricCategory.helpText
     ) {
+      const { valid, message } = this.validateCategory(name, helpText, pointLimit);
       const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
       payload.helpText = this.state.helpText;
-      this.props.updateCategory(payload);
+
+      // have to take into account the possibility of a comment error here
+      this.props.updateCategory(payload, !valid || this.state.hasCommentError);
+      this.setState({ hasError: !valid, errorMessage: message });
+    } else {
+      this.setState({ hasError: false });
     }
   };
 
@@ -262,6 +335,15 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     this.props.deleteComment(rubricComment);
   };
 
+  public validateComments = (newComment: RubricCommentType) => {
+    // no tests yet!
+
+    return {
+      valid: true,
+      message: '',
+    };
+  };
+
   public saveComment = (rubricCommentID: number) => {
     const { rubricComments } = this.props;
     const rubricComment = this.state.rubricComments[rubricCommentID];
@@ -271,7 +353,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     });
 
     if (match) {
-      let pointDelta = rubricComment.pointDelta;
+      let pointDelta = parseFloat(rubricComment.pointDelta.toFixed(1));
       const text = rubricComment.text;
 
       if (isNaN(rubricComment.pointDelta) || rubricComment.pointDelta === null) {
@@ -279,10 +361,25 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         pointDelta = 0;
       }
 
+      const { valid, message } = this.validateComments(rubricComment);
+      const payload: RubricCommentType = { ...rubricComment };
+      this.props.updateComment(payload);
+
       if (text !== match.text || pointDelta !== match.pointDelta) {
-        const payload: RubricCommentType = { ...rubricComment };
-        this.props.updateComment(payload);
+        const hasCurrentError = this.state.hasError || this.state.hasCommentError;
+        if (hasCurrentError && !this.state.hasError && valid) {
+          // moving from error state to safe state
+          this.props.updateCategory(this.props.rubricCategory, false);
+        } else if (!hasCurrentError && !valid) {
+          // moving from safe state to error state
+          this.props.updateCategory(this.props.rubricCategory, true);
+        }
       }
+
+      // we need to set state outside of the preceding if block
+      // this handles the situation in which moving from an edited state
+      // to a non-edited state clears or introduces an error
+      this.setState({ hasCommentError: !valid, commentErrorMessage: message });
     }
   };
 
@@ -373,7 +470,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               />
             </span>
           ),
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       } else {
         return {
@@ -394,7 +495,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           linked: null,
-          delete: <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />,
+          delete: (
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
+            </CPTooltip>
+          ),
         };
       }
     });
@@ -412,21 +517,35 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         Category: {this.props.rubricCategory.name}
       </span>,
       <span key="buttons">
-        {this.props.index > 0 && this.props.numCategories > 1 ? (
+        <CPTooltip title={this.props.index === 0 ? '' : tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
           <Button
             icon="caret-up"
             size="small"
             onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
+            disabled={this.props.index === 0}
           />
-        ) : null}
-        {this.props.index !== this.props.numCategories - 1 ? (
+        </CPTooltip>
+        <CPTooltip
+          title={this.props.index === this.props.numCategories - 1 ? '' : tooltips.admin.rubric.categoryDown}
+          hideThisOnHideTips={true}
+        >
           <Button
             icon="caret-down"
             size="small"
+            disabled={this.props.index === this.props.numCategories - 1}
             onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
           />
-        ) : null}
+        </CPTooltip>
       </span>,
+      this.state.hasError ? (
+        <Tag color="volcano" key="warning">
+          Error: {this.state.errorMessage}
+        </Tag>
+      ) : this.state.hasCommentError ? (
+        <Tag color="volcano" key="warning">
+          Error: {this.state.commentErrorMessage}
+        </Tag>
+      ) : null,
     ];
     const titleRight = [
       <Popconfirm
@@ -440,47 +559,64 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       </Popconfirm>,
     ];
 
-    const contentLeft = [
+    const categoryName = (
       <div key="name">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Name
         </div>
         <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} />
-      </div>,
+      </div>
+    );
+
+    const categoryPoints = (
       <div key="points">
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Point Limit
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryPointLimit}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <InputNumber
-          value={this.state.pointLimit ? this.state.pointLimit : 0}
+          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
           onChange={this.setValue.bind(this, 'pointLimit')}
           onBlur={this.saveCategory}
         />
-      </div>,
-      <div key="help-text">
+      </div>
+    );
+
+    const helpText = (
+      <div key="help-text" style={{ maxWidth: 300 }}>
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Help Text{' '}
-          <Tooltip
-            title={`Use this text to explain the rubric category to graders.
-           It will appear alongside the rubric category in the Code Review console.`}
-          >
-            <Icon type="question-circle" />
-          </Tooltip>
+          Category Help Text
+          <CPTooltip
+            title={tooltips.admin.rubric.categoryHelpText}
+            infoIcon={true}
+            hideThisOnHideTips={true}
+            iconStyle={{ paddingLeft: 5 }}
+          />
         </div>
         <Input.TextArea
           style={{ width: 350 }}
           value={this.state.helpText}
           onChange={this.changeHelpText}
           onBlur={this.saveCategory}
+          autosize={true}
         />
-      </div>,
-    ];
+      </div>
+    );
 
-    // const components = {
-    //   body: {
-    //     row: DragableBodyRow,
-    //   },
-    // };
+    const contentLeft =
+      this.props.windowwidth < 1200 ? (
+        <div>
+          <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
+          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
+        </div>
+      ) : (
+        <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      );
 
     return (
       <div className="cp-rubric-category">
@@ -488,7 +624,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           <CPFlex left={titleLeft} right={titleRight} gutterSize={10} />
         </div>
         <div className="cp-rubric-category__content">
-          <CPFlex left={contentLeft} right={[]} gutterSize={60} />
+          {contentLeft}
           <div style={{ height: '40px' }} />
           <Table
             columns={commentTableColumns}
@@ -580,4 +716,4 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 //   }))(BodyRow),
 // );
 
-export default CPRubricCategory;
+export default withWindowWatcher(CPRubricCategory);

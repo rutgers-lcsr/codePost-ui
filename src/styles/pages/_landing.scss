@@ -49,35 +49,48 @@
   animation: fade-in-bottom 1.4s;
 }
 
-// Link hover styling
-
-.link {
+#APIExample {
   // API Docs Reference styling, including arrow animation on move
-  &--api-docs {
-    .link--api-docs__arrow {
-      transform: translateX(0px) !important;
-      transition: transform 0.3s ease;
-    }
-    &:hover {
-      color: #7bd8b5 !important;
-      .link--api-docs__arrow {
-        transform: translateX(5px) !important;
+  .apiexample {
+    &__docs {
+      .apiexample__docs__arrow {
+        transform: translateX(0px);
         transition: transform 0.3s ease;
       }
+      &:hover {
+        color: #7bd8b5;
+        .apiexample__docs__arrow {
+          transform: translateX(5px);
+          transition: transform 0.3s ease;
+        }
+      }
+      &:focus {
+        color: #7bd8b5;
+      }
     }
-    &:focus {
-      color: #7bd8b5 !important;
-    }
-  }
-  &--api-example {
-    &:hover {
-      color: rgba(255, 255, 255, 0.8) !important;
+    &__header {
+      color: white;
       transition: 0.3s;
+      &__icon {
+        color: white;
+        transition: 0.3s;
+      }
+      &:hover {
+        color: #7bd8b5;
+        transition: 0.3s;
+
+        .apiexample__header__icon {
+          color: #7bd8b5;
+          transition: 0.3s;
+        }
+      }
     }
-  }
-  &--header {
-    &:hover {
-      color: rgba(0, 0, 0, 0.6) !important;
+    &__link {
+      transition: 0.3s;
+      &:hover {
+        color: rgba(255, 255, 255, 0.8) !important;
+        transition: 0.3s;
+      }
     }
   }
 }

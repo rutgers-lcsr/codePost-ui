@@ -43,7 +43,7 @@
   }
 
   &--focused {
-    border-left: $gutter-width solid $actionGreen;
+    border-left: $gutter-width solid $actionYellowFade;
 
     &.active {
       cursor: pointer;

@@ -1,17 +1,26 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
-import { Divider, Input, Menu, Tooltip } from 'antd';
-
+/* antd imports */
+import { Divider, Input, Menu, Popover, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-
 const SubMenu = Menu.SubMenu;
 
-import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
+/* codePost imports */
+import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
+import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
+
+/**********************************************************************************************************************/
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
@@ -26,6 +35,25 @@ interface IRubricMenuState {
 class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   public state: Readonly<IRubricMenuState> = {
     searchTerm: '',
+  };
+
+  public componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public handleKeyDown = (e: any) => {
+    // Keyboard shortcuts
+    if (e.which === RUBRIC_SEARCH_SHORTCUT && e.metaKey) {
+      e.preventDefault();
+      const el = document.getElementById('rubric-search');
+      if (el !== null) {
+        el.focus();
+      }
+    }
   };
 
   public onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +111,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         <div>
           <div>
             <b>Point Limit: </b>
-            {rubricCategory.pointLimit === 0 ? 'n/a' : rubricCategory.pointLimit}
+            {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
           </div>
           <Divider style={{ margin: '10px 0px' }} />
           {rubricCategory.helpText ? (
@@ -94,6 +122,13 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
           ) : null}
         </div>
       );
+
+      const capTag =
+        rubricCategory.pointLimit !== null || rubricCategory.helpText !== null ? (
+          <Popover title="Category Details" content={info}>
+            <Tag>Details</Tag>
+          </Popover>
+        ) : null;
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
@@ -112,11 +147,12 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <Tooltip placement="right" title={info}>
-                <div style={{ paddingRight: '40px' }}>
-                  <span>{rubricCategory.name}</span>
-                </div>
-              </Tooltip>
+              <div style={{ paddingRight: '40px' }}>
+                <span>
+                  {rubricCategory.name}
+                  <span style={{ float: 'right' }}>{capTag}</span>
+                </span>
+              </div>
             </div>
           }
         >
@@ -131,33 +167,36 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     const rubricKeys = this.props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
       return `category-${rubricCategory.id}`;
     });
+
     return (
-      <div>
-        <div style={{ padding: '18px 20px 20px 16px' }} id="rubric-menu-title">
-          <div className="cp-label cp-label--plus cp-label--bold" style={{ marginBottom: '14px' }}>
-            Rubric
-          </div>
+      <div style={{ marginTop: '8px' }}>
+        <div id="rubric-menu-title" style={{ marginBottom: '5px', display: 'flex' }}>
           <Input
-            placeholder="Search..."
+            placeholder="Search rubric...(⌘ O)"
+            id="rubric-search"
             onChange={this.onSearch}
             value={this.state.searchTerm}
             style={{
               backgroundColor: this.context.consoleTheme.siderBg,
               border: this.context.consoleTheme.buttonSecondaryBorder,
               color: this.context.consoleTheme.buttonSecondaryColor,
+              width: '90%',
+              margin: '0 auto',
             }}
           />
         </div>
-        <Menu
-          defaultOpenKeys={rubricKeys}
-          selectedKeys={[]}
-          mode="inline"
-          className="rubric-menu"
-          id="rubric-menu"
-          style={{ backgroundColor: this.context.consoleTheme.siderBg }}
-        >
-          {rubricMenu}
-        </Menu>
+        <div style={{ height: '100%', overflow: 'scroll' }}>
+          <Menu
+            defaultOpenKeys={rubricKeys}
+            selectedKeys={[]}
+            mode="inline"
+            className="rubric-menu"
+            id="rubric-menu"
+            style={{ backgroundColor: this.context.consoleTheme.siderBg }}
+          >
+            {rubricMenu}
+          </Menu>
+        </div>
       </div>
     );
   }

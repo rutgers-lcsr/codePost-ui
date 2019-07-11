@@ -48,7 +48,7 @@ const PreAuthFooter = () => {
           <a style={linkStyle} href="https://updates.codepost.io">
             Updates
           </a>{' '}
-          <a style={linkStyle} id="calendly-button">
+          <a style={linkStyle} id="calendly-button-footer">
             Demo
           </a>{' '}
           <Link style={linkStyle} to="/terms">

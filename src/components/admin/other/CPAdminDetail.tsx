@@ -11,7 +11,8 @@ const { Header, Content } = Layout;
 
 import layoutVars from '../../../styles/layout/_layoutVars';
 
-import CPFlex from './../../core/CPFlex';
+import CPFlex from '../../core/CPFlex';
+import CPTooltip from '../../core/CPTooltip';
 
 import useWindowSize from '../../core/useWindowSize';
 
@@ -25,6 +26,7 @@ interface ICPAdminDetailProps {
   breadcrumbs?: React.ReactNode;
   className?: string;
   gutterSize?: number;
+  titleInfo?: string | React.ReactNode;
 }
 
 const CPAdminDetail = (props: ICPAdminDetailProps) => {
@@ -34,10 +36,23 @@ const CPAdminDetail = (props: ICPAdminDetailProps) => {
   const contentMargin = smallScreen ? '20px 15px' : '20px 60px';
   const contentPadding = smallScreen ? '20px 15px' : '20px 35px';
 
+  const titleTooltip = props.titleInfo ? (
+    <CPTooltip
+      title={props.titleInfo}
+      placement="right"
+      infoIcon={true}
+      hideThisOnHideTips={true}
+      iconStyle={{ paddingLeft: 10 }}
+    />
+  ) : (
+    <div />
+  );
+
   const subheaderLeft = [
-    <span key="title" className="cp-label cp-label--large cp-label--bold">
-      {props.title}
-    </span>,
+    <div key="title" style={{ display: 'flex', alignItem: 'center' }}>
+      <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
+      {titleTooltip}
+    </div>,
   ];
 
   let goBack = null;

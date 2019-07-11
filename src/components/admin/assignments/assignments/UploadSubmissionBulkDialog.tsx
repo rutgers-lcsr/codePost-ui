@@ -18,7 +18,6 @@ import {
   Switch,
   Table,
   Tag,
-  Tooltip,
   Typography,
   Upload,
 } from 'antd';
@@ -29,11 +28,16 @@ const { Step } = Steps;
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
 
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
+
 import _ from 'lodash';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
+
+import { acceptedFilesSet } from './AcceptedFileTypes';
 
 /**********************************************************************************************************************/
 
@@ -212,6 +216,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     submissions.forEach((submission) => {
       for (const file of submission.files) {
         const anyFile: any = file;
+        const extension = anyFile.name.includes('.') ? anyFile.name.split('.').slice(-1)[0] : '';
+        if (!acceptedFilesSet.has(`.${extension}`)) {
+          const errorPaths = this.state.errorPaths;
+          const newMessage = `File type not accepted: ${anyFile.webkitRelativePath}`;
+          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
+        }
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
         studentsReader.onerror = () => {
@@ -344,8 +354,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         }
       }
     });
-
-    console.log(toChange);
 
     // loop through changed submissions
     const promises: Array<Promise<any>> = toChange.map((submission) => {
@@ -656,11 +664,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                      uploaded aleady has a submission uploaded for this assignment.`;
                 }
                 status = (
-                  <Tooltip title={tooltipText}>
+                  <CPTooltip title={tooltipText}>
                     <Tag color="volcano" key={el}>
                       CONFLICT
                     </Tag>
-                  </Tooltip>
+                  </CPTooltip>
                 );
               }
             } else {
@@ -710,9 +718,18 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           <div>
             {this.state.errorPaths.length > 0 ? (
               <div>
-                <Divider orientation="left">Errors</Divider>
+                <Divider orientation="left" style={{ color: 'red' }}>
+                  Errors
+                </Divider>
                 <div>
-                  <div> The following files were rejected. Hit "start over" if you want to re-upload submissions. </div>
+                  <div>
+                    The following files were rejected. Hit "start over" if you want to re-upload submissions.{' '}
+                    <CPTooltip
+                      title={tooltips.admin.assignments.uploadSubmissionFileTypes}
+                      infoIcon={true}
+                      iconStyle={{ paddingLeft: 5 }}
+                    />
+                  </div>
                   <ul>
                     {this.state.errorPaths.map((el, i) => {
                       return <li key={i}>{el}</li>;

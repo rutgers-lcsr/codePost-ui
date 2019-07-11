@@ -32,6 +32,9 @@ interface IProps {
   data: any[];
   tableProps?: any;
   drawer?: React.ReactNode;
+  pagination?: any;
+  hideSearch?: boolean;
+  titleInfo?: string | React.ReactNode;
 }
 
 interface IState {
@@ -156,13 +159,26 @@ class TableDetail extends React.Component<IProps, IState> {
 
         content = (
           <div>
-            <Input.Search onChange={this.setSearchText} placeholder={'Search...'} style={{ width: 300 }} allowClear />
-            <br />
-            <br />
+            {this.props.hideSearch ? null : (
+              <div>
+                <Input.Search
+                  onChange={this.setSearchText}
+                  placeholder={'Search...'}
+                  style={{ width: 300 }}
+                  allowClear
+                />
+                <br />
+                <br />
+              </div>
+            )}
             <Table
               columns={newColumns}
               dataSource={data}
-              pagination={{ showSizeChanger: true, pageSizeOptions: ['10', '50', '100'] }}
+              pagination={
+                this.props.pagination !== undefined
+                  ? this.props.pagination
+                  : { showSizeChanger: true, pageSizeOptions: ['10', '50', '100'] }
+              }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
             />
             {this.props.drawer}
@@ -180,6 +196,7 @@ class TableDetail extends React.Component<IProps, IState> {
         title={this.props.title}
         actions={actions}
         content={content}
+        titleInfo={this.props.titleInfo}
       />
     );
   }

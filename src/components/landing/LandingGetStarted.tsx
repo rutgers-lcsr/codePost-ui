@@ -53,7 +53,7 @@ const LandingGetStarted = () => {
         </div>
         <CPButton
           style={{ width: 160, height: 40, fontSize: 17, lineHeight: 2.2, display: 'inline' }}
-          id="calendly-button"
+          id="calendly-button-bottom"
           cpType="secondary"
         >
           Schedule demo

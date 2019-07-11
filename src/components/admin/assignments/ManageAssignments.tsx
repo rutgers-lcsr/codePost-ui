@@ -6,13 +6,16 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
 type alignType = 'left' | 'right' | 'center';
 
 import CPButton from '../../../components/core/CPButton';
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
+
 import CPAdminDetail from '../other/CPAdminDetail';
 
 /* other library imports */
@@ -30,13 +33,22 @@ import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
 import UploadSubmissionBulkDialog from './assignments/UploadSubmissionBulkDialog';
 import UploadSubmissionDialog from './assignments/UploadSubmissionDialog';
 
-import { openSubmission } from '../other/AdminUtils';
-
 import NewAssignmentDialog from './assignments/NewAssignmentDialog';
 
 import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 
 import RubricManager from './rubric/RubricManager';
+
+import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
+
+import {
+  calculateMultipleAssignmentProgressStats,
+  DRAWER_TYPE,
+  filterDataByStat,
+  getDrawerTitle,
+  IAssignmentProgressStatsMap,
+  StatsDrawer,
+} from './assignments/AssignmentStats/StatsUtils';
 
 /**********************************************************************************************************************/
 
@@ -47,6 +59,7 @@ export interface IManageAssignmentsProps {
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
   currentCourse: CourseType | undefined;
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   /* loading state */
   loadComplete: boolean;
@@ -59,7 +72,9 @@ export interface IManageAssignmentsProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
-  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+
+  /* Refresh course */
+  refreshCourseData: () => void;
 }
 
 export enum DETAIL_TYPE {
@@ -69,30 +84,7 @@ export enum DETAIL_TYPE {
   Settings,
   Delete,
   Drawer,
-}
-
-export enum DRAWER_TYPE {
-  Submitted,
-  Graded,
-  Ungraded,
-  Unclaimed,
-  Missing,
-  Unviewed,
-}
-
-export interface IAssignmentStats {
-  numSubmissions: number;
-  numGraded: number;
-  numUngraded: number;
-  numUnclaimed: number;
-  numMissing: number;
-  numUnviewed: number;
-  median: number;
-  mean: number;
-}
-
-export interface IAssignmentStatsMap {
-  [assignmentID: number]: IAssignmentStats;
+  Stats,
 }
 
 interface IManageAssignmentsState {
@@ -115,117 +107,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     isDownloading: false,
   };
 
-  /******************************************************************************
-   Assignment stat calculation
-  *****************************************************************************/
-
-  public memoizedStats = memoizeOne(
-    (
-      assignments: AssignmentType[],
-      submissions: IAssignmentToSubmissionsMap,
-      submissionsByStudent: IStudentSubmissionsDataTable,
-    ): IAssignmentStatsMap => {
-      const toRet: IAssignmentStatsMap = {};
-      assignments.forEach((assignment) => {
-        const assignmentSubs = submissions[assignment.id];
-        const numSubmissions = assignmentSubs.length;
-
-        // Calculate data for the assignment table:
-        //  numGraded: number of submissions graded
-        //  numUngraded: number of submissions not yet graded or claimed
-        //  numUnclaimed: (subset of numUngraded) submissions not claimed
-        //  numMissing: number of students who did not submit
-        let numGraded = 0;
-        let numUngraded = 0;
-        let numUnclaimed = 0;
-        let totalScore = 0;
-        let numUnviewed = 0;
-
-        assignmentSubs.forEach((submission: SubmissionType) => {
-          if (submission.isFinalized) {
-            numGraded += 1;
-            if (submission.grade !== null) {
-              totalScore += submission.grade;
-            }
-          } else if (submission.grader) {
-            numUngraded += 1;
-          } else {
-            numUnclaimed += 1;
-          }
-          // Only calculate unviewed, and show a drawer if the assignment is released
-          // Student is 'unviewed' if: (a) his/her submission has a History object
-          //                           (b) student's email is not in viewsBySubmission
-          //                           (c) student's submission is finalized
-          if (assignment.isReleased && submission.id in this.props.viewsBySubmission) {
-            submission.students.forEach((student) => {
-              if (
-                !(student in this.props.viewsBySubmission[submission.id]) &&
-                submissionsByStudent[student][assignment.id] &&
-                submissionsByStudent[student][assignment.id].isFinalized
-              ) {
-                numUnviewed += 1;
-              }
-            });
-          }
-        });
-
-        const numMissing = Object.keys(submissionsByStudent).reduce((missing: number, student: string) => {
-          if (!submissionsByStudent[student][assignment.id]) {
-            return missing + 1;
-          }
-          return missing;
-        }, 0);
-
-        // Get Mean and Median stats. If the assignment is released, we take the mean and median calculated by the API
-        // so that students will see the same stats that admins see.
-        // If the assignment is not released, we want to calculate it across all finalized submissions.
-        let mean = 0;
-        let median = 0;
-        if (typeof assignment.mean === 'number' && typeof assignment.median === 'number') {
-          mean = assignment.mean;
-          median = assignment.median;
-        } else {
-          if (numGraded === 0) {
-            mean = 0;
-            median = 0;
-          } else {
-            // calculate mean
-            mean = parseFloat((totalScore / numGraded).toPrecision(2));
-
-            // calculate median
-            const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
-              if (sub.isFinalized && sub.grade !== null) {
-                grades.push(sub.grade);
-              }
-              return grades;
-            }, []);
-
-            sortedFinalized.sort();
-            const index = Math.floor(sortedFinalized.length / 2);
-
-            // if odd, get the index, if even average the two middle elements
-            if (sortedFinalized.length % 2) {
-              median = sortedFinalized[index];
-            } else {
-              median = (sortedFinalized[index - 1] + sortedFinalized[index]) / 2;
-            }
-          }
-        }
-
-        toRet[assignment.id] = {
-          numSubmissions,
-          numGraded,
-          numUngraded,
-          numUnclaimed,
-          numMissing,
-          numUnviewed,
-          mean,
-          median,
-        };
-      });
-      return toRet;
-    },
-  );
+  public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
 
   /******************************************************************************
    * UI Control
@@ -236,89 +118,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const { submissionsByStudent } = this.props;
-    const subs = this.props.submissions[assignment.id];
+    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+      assignment,
+      this.props.submissionsByStudent,
+      type,
+      this.props.submissions[assignment.id],
+      this.props.viewsBySubmission,
+    );
 
-    const getContent = () => {
-      switch (type) {
-        case DRAWER_TYPE.Submitted:
-          return subs.map((sub: SubmissionType) => {
-            return { email: sub.students.join(', '), subID: sub.id };
-          });
-        case DRAWER_TYPE.Graded:
-          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
-            if (sub && sub.isFinalized) {
-              students.push({ email: sub.students.join(', '), subID: sub.id });
-            }
-            return students;
-          }, []);
-        case DRAWER_TYPE.Ungraded:
-          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
-            if (sub && !sub.isFinalized && sub.grader) {
-              students.push({ email: sub.students.join(', '), subID: sub.id });
-            }
-            return students;
-          }, []);
-        case DRAWER_TYPE.Unclaimed:
-          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
-            if (sub && !sub.isFinalized && !sub.grader) {
-              students.push({ email: sub.students.join(', '), subID: sub.id });
-            }
-            return students;
-          }, []);
-        case DRAWER_TYPE.Missing:
-          return Object.keys(submissionsByStudent).reduce(
-            (students: Array<{ email: string; subID: number | null }>, student: string) => {
-              if (!submissionsByStudent[student][assignment.id]) {
-                students.push({ email: student, subID: null });
-              }
-              return students;
-            },
-            [],
-          );
-        case DRAWER_TYPE.Unviewed:
-          return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
-            // Append a student if: (a) his/her submission has a History object
-            //                      (b) student's email is not in viewsBySubmission
-            //                      (c) student's submission is finalized
-            if (sub && sub.id in this.props.viewsBySubmission) {
-              sub.students.forEach((student) => {
-                if (
-                  !(student in this.props.viewsBySubmission[sub.id]) &&
-                  submissionsByStudent[student][assignment.id] &&
-                  submissionsByStudent[student][assignment.id].isFinalized
-                ) {
-                  students.push({ email: student, subID: sub.id });
-                }
-              });
-            }
-            return students;
-          }, []);
-      }
-    };
-
-    const newContent: Array<{ email: string; subID: number | null }> = getContent();
-
-    // Get the subtitle text to pass to the drawer
-    const getText = () => {
-      switch (type) {
-        case DRAWER_TYPE.Submitted:
-          return `Total Submissions (${newContent.length})`;
-        case DRAWER_TYPE.Graded:
-          return `Finalized Submissions (${newContent.length})`;
-        case DRAWER_TYPE.Ungraded:
-          return `Ungraded Submissions (${newContent.length})`;
-        case DRAWER_TYPE.Unclaimed:
-          return `Unclaimed Submissions (${newContent.length})`;
-        case DRAWER_TYPE.Missing:
-          return `Students missing a submission (${newContent.length})`;
-        case DRAWER_TYPE.Unviewed:
-          return `Unviewed submissions (${newContent.length})`;
-      }
-    };
+    const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: getText(), content: newContent },
+      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
       drawerType: type,
@@ -434,45 +245,67 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         key: 'assignment',
       },
       {
-        title: 'Published',
+        title: (
+          <div>
+            Published
+            <CPTooltip
+              title={tooltips.admin.assignments.published}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'published',
         key: 'published',
         align: aligner,
       },
       {
-        title: 'Submissions',
+        title: (
+          <div>
+            Submissions
+            <CPTooltip
+              title={tooltips.admin.assignments.submissions}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'submissions',
         key: 'submissions',
         align: aligner,
       },
       {
-        title: 'Finalized',
+        title: (
+          <div>
+            Finalized
+            <CPTooltip
+              title={tooltips.admin.assignments.finalized}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'finalized',
         key: 'finalized',
         align: aligner,
       },
       {
-        title: 'Unclaimed',
-        dataIndex: 'unclaimed',
-        key: 'unclaimed',
-        align: aligner,
-      },
-      {
-        title: 'Missing',
+        title: (
+          <div>
+            Missing
+            <CPTooltip
+              title={tooltips.admin.assignments.missing}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
         dataIndex: 'missing',
         key: 'missing',
-        align: aligner,
-      },
-      {
-        title: 'Unviewed',
-        dataIndex: 'unviewed',
-        key: 'unviewed',
-        align: aligner,
-      },
-      {
-        title: 'Mean',
-        dataIndex: 'mean',
-        key: 'mean',
         align: aligner,
       },
       {
@@ -486,7 +319,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     if (!this.props.loadComplete) {
       content = (
         <div>
-          <Table pagination={false} columns={columns} dataSource={data} loading={!this.props.loadComplete} />
+          <Table
+            pagination={false}
+            columns={columns}
+            locale={{ emptyText: 'Loading your assignments...' }}
+            loading={!this.props.loadComplete}
+          />
         </div>
       );
     } else {
@@ -517,10 +355,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           </CPButton>,
         ];
 
-        const assignmentStats: IAssignmentStatsMap = this.memoizedStats(
+        const assignmentStats: IAssignmentProgressStatsMap = this.calculateStats(
           this.props.assignments,
           this.props.submissions,
           this.props.submissionsByStudent,
+          this.props.viewsBySubmission,
+          this.props.students,
         );
 
         data = this.props.assignments
@@ -543,8 +383,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <Icon type="download" />
                   Download grades
                 </Menu.Item>
+                <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
+                  <Icon type="bar-chart" />
+                  View Stats
+                </Menu.Item>
                 <SubMenu
-                  key="sub1"
+                  key="4"
                   title={
                     <span>
                       <Icon type="upload" />
@@ -567,13 +411,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                     Multiple submissions
                   </Menu.Item>
                 </SubMenu>
-                <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
+                <Menu.Item key="5" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
                   <Icon type="setting" />
                   Settings
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
-                  key="4"
+                  key="6"
                   style={{ color: 'red' }}
                   onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Delete, assignment)}
                 >
@@ -617,22 +461,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   {statsForRow.numGraded}
                 </span>
               ),
-              unclaimed: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unclaimed)} style={hoverStyle}>
-                  {statsForRow.numUnclaimed}
-                </span>
-              ),
               missing: (
                 <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
                   {statsForRow.numMissing}
                 </span>
               ),
-              unviewed: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Unviewed)} style={hoverStyle}>
-                  {statsForRow.numUnviewed}
-                </span>
-              ),
-              mean: statsForRow.numGraded > 0 ? `${statsForRow.mean.toFixed(1)} / ${assignment.points}` : '--',
               actions: (
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Icon type="menu" />
@@ -701,48 +534,32 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
             );
             break;
+          case DETAIL_TYPE.Stats:
+            return (
+              <AssignmentStats
+                assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                students={this.props.students}
+                submissionsByStudent={this.props.submissionsByStudent}
+                viewsBySubmission={this.props.viewsBySubmission}
+                refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              />
+            );
+            break;
         }
 
-        const drawerColumns = [
-          {
-            title: 'Students',
-            dataIndex: 'students',
-            key: 'students',
-            align: 'left' as 'left' | 'center' | 'right' /* this is so ugly.. */,
-          },
-        ];
-        if (this.state.drawerType !== undefined && this.state.drawerType !== DRAWER_TYPE.Missing) {
-          drawerColumns.push({
-            title: 'Open',
-            dataIndex: 'open',
-            key: 'open',
-            align: aligner,
-          });
-        }
-
-        const drawerData = this.state.drawerContent.content.map((el) => {
-          return {
-            students: el.email,
-            open: el.subID ? (
-              <a onClick={openSubmission.bind(this, el.subID)} className="internal-link">
-                <Icon type="code" />
-              </a>
-            ) : null,
-          };
-        });
-
-        const drawerComponent = (
-          <Drawer
-            title={`${this.state.drawerContent.title} | ${this.state.drawerContent.subtitle}`}
-            placement="right"
-            closable={true}
-            onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
-            visible={this.state.detailType === DETAIL_TYPE.Drawer}
-            width={600}
-          >
-            <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
-          </Drawer>
-        );
+        const drawerComponent =
+          this.state.drawerType === undefined ? (
+            <div />
+          ) : (
+            <StatsDrawer
+              type={this.state.drawerType}
+              content={this.state.drawerContent}
+              onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
+              isVisible={this.state.detailType === DETAIL_TYPE.Drawer}
+            />
+          );
 
         content = (
           <div>

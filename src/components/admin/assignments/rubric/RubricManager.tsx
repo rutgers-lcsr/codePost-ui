@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty, message, Spin } from 'antd';
+import { Breadcrumb, Empty, message } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
@@ -30,6 +30,9 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
+import Loading from '../../../../components/core/Loading';
+import { tooltips } from '../../../../components/core/tooltips';
+
 import CPAdminRubric from './CPAdminRubric';
 import CPRubricCategory from './CPRubricCategory';
 
@@ -58,6 +61,7 @@ export interface IState {
   loadComplete: boolean;
   changeLock: boolean;
   isSaving: boolean;
+  errorObjects: number[];
 
   // rubric editing
   unsavedComments: RubricCommentType[];
@@ -96,6 +100,7 @@ class RubricManager extends React.Component<IProps, IState> {
       loadComplete: false,
       changeLock: true,
       isSaving: false,
+      errorObjects: [],
 
       unsavedComments: [],
       deletedComments: [],
@@ -275,7 +280,10 @@ class RubricManager extends React.Component<IProps, IState> {
 
         let categoryPromise: Promise<any>;
         if (categoryNeedsSaving) {
-          categoryPromise = RubricCategory.update(category);
+          // We don't want to pass in the ids of comments on update
+          // Passing in these comments can create race conditions
+          const { rubricComments, ...payload } = category;
+          categoryPromise = RubricCategory.update(payload);
         } else {
           categoryPromise = Promise.resolve();
         }
@@ -290,7 +298,11 @@ class RubricManager extends React.Component<IProps, IState> {
             });
 
             if (commentNeedsSaving) {
-              return RubricComment.update(comment);
+              // We don't want to pass in the ids of linked comments on update
+              // Passing in these comments can create race conditions
+              // An example is if a linked comment gets deleted between rubric saves
+              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+              return RubricComment.update(payload);
             } else {
               return Promise.resolve();
             }
@@ -418,6 +430,11 @@ class RubricManager extends React.Component<IProps, IState> {
       confirmedPropagation,
     } = this.state;
 
+    if (this.state.errorObjects.length > 0) {
+      message.error('Fix all errors before saving.');
+      return;
+    }
+
     this.setState({ isSaving: true }, () => {
       const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
 
@@ -524,7 +541,7 @@ class RubricManager extends React.Component<IProps, IState> {
   /* RubricCategory wrappers
   /***********************************************************************/
 
-  public updateRubricCategory = (rubricCategory: RubricCategoryType) => {
+  public updateRubricCategory = (rubricCategory: RubricCategoryType, hasError?: boolean) => {
     const { rubricCategories } = this.state;
     const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === rubricCategory.id);
 
@@ -532,6 +549,17 @@ class RubricManager extends React.Component<IProps, IState> {
       const newCategories: RubricCategoryType[] = [...rubricCategories];
       newCategories[index] = rubricCategory;
       this.setState({ rubricCategories: newCategories });
+      if (hasError !== undefined) {
+        if (hasError) {
+          this.setState({ errorObjects: [...this.state.errorObjects, rubricCategory.id] });
+        } else {
+          this.setState({
+            errorObjects: this.state.errorObjects.filter((el) => {
+              return el !== rubricCategory.id;
+            }),
+          });
+        }
+      }
     }
   };
 
@@ -583,8 +611,6 @@ class RubricManager extends React.Component<IProps, IState> {
       sortKey: rubricCategories.length,
       helpText: '',
     };
-
-    console.log(payload);
 
     newComments[payload.id] = [];
 
@@ -833,7 +859,8 @@ class RubricManager extends React.Component<IProps, IState> {
               onCommentDragEnd={this.onCommentDragEnd}
               moveCategory={this.moveCategory}
               index={catIndex}
-              numCategories={this.state.savedRubricCategories.length}
+              numCategories={this.state.rubricCategories.length}
+              otherCategories={this.state.rubricCategories}
             />
           );
         });
@@ -869,6 +896,7 @@ class RubricManager extends React.Component<IProps, IState> {
           disabled={!changesMade}
           icon="undo"
           fallback="undo"
+          fallbackWidth={1250}
         >
           Undo changes
         </CPButton>,
@@ -879,6 +907,7 @@ class RubricManager extends React.Component<IProps, IState> {
           cpType="primary"
           icon="save"
           fallback="save"
+          fallbackWidth={500}
           loading={this.state.isSaving}
         >
           Save
@@ -944,10 +973,11 @@ class RubricManager extends React.Component<IProps, IState> {
               <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
             </Breadcrumb>
           }
+          titleInfo={tooltips.admin.rubric.title}
         />
       );
     } else {
-      return <Spin />;
+      return <Loading />;
     }
   }
 }

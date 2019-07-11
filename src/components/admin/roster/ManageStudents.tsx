@@ -18,6 +18,9 @@ import { USER_APP, USER_TYPE } from '../../../types/common';
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
 
+import CPTooltip from '../../../components/core/CPTooltip';
+import { tooltips } from '../../../components/core/tooltips';
+
 import AddStudentDialog from './students/AddStudentDialog';
 
 import DownloadRoster from './other/DownloadRoster';
@@ -185,7 +188,10 @@ class ManageStudents extends React.Component<IProps, IState> {
                         </Select.Option>,
                       ]}
                     </Select>
-                    &nbsp; <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                    &nbsp;
+                    <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
+                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                    </CPTooltip>
                   </div>
                 );
               } else {
@@ -198,7 +204,9 @@ class ManageStudents extends React.Component<IProps, IState> {
                       textToHighlight={sections[student] ? sections[student].name : 'No section'}
                     />{' '}
                     &nbsp;
-                    <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                    <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
+                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                    </CPTooltip>
                   </div>
                 );
               }
@@ -282,6 +290,7 @@ class ManageStudents extends React.Component<IProps, IState> {
             </Breadcrumb.Item>
           </Breadcrumb>
         }
+        titleInfo={tooltips.admin.studentRoster.title}
       />
     );
   }

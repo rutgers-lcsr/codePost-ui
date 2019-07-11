@@ -39,6 +39,7 @@ const RubricCategoryVPatch = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       helpText: t.string,
+      sortKey: t.number,
     }),
   ],
   'RubricCategoryPatch',

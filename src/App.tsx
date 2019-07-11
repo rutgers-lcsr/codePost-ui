@@ -15,7 +15,7 @@ import LogInAs from './components/core/LogInAs';
 
 import Home from './components/core/Home';
 
-import { ADMIN, GRADE, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, GRADER, HOME, STUDENT } from './routes';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
@@ -29,6 +29,8 @@ import RouterLoading from './components/core/RouterLoading';
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
 import { runFSSetup } from './components/utils/Fullstory';
+
+import { ShowTooltipContext } from './components/core/tooltips';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
@@ -45,7 +47,7 @@ const AsyncGrader = Loadable({
 });
 
 const AsyncGrade = Loadable({
-  loader: () => import('./components/grade/Grade'),
+  loader: () => import('./components/code-review/CodeConsole'),
   loading: RouterLoading,
 });
 
@@ -184,6 +186,14 @@ class App extends React.Component<{}, IState> {
       });
   };
 
+  public wrapTooltipContext = (node: React.ReactNode) => {
+    if (typeof this.state.user !== 'undefined') {
+      return <ShowTooltipContext.Provider value={this.state.user.showProductTips}>{node}</ShowTooltipContext.Provider>;
+    } else {
+      return node;
+    }
+  };
+
   public handleLogin = (username: string, password: string, toRedirect: boolean) => {
     this.setState({ error: '' });
     return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
@@ -213,6 +223,7 @@ class App extends React.Component<{}, IState> {
       .catch((error) => {
         localStorage.removeItem('token');
         this.setState({ has_token: false, user: undefined, error: 'invalid' });
+        return Promise.reject();
       });
   };
 
@@ -252,15 +263,17 @@ class App extends React.Component<{}, IState> {
         studentRoute = (
           <Route
             exact={true}
-            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            render={(props: any) => (
-              <AsyncStudent
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                initialCourses={studentCourses}
-              />
-            )}
+            path={`${STUDENT}/:courseName?/:period?`}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  initialCourses={studentCourses}
+                />,
+              )
+            }
           />
         );
       }
@@ -271,16 +284,18 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-            render={(props: any) => (
-              <AsyncGrader
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                superGraderCourses={superGraderCourses}
-                courses={graderCourses}
-                sectionsLed={sectionsLed}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncGrader
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  superGraderCourses={superGraderCourses}
+                  courses={graderCourses}
+                  sectionsLed={sectionsLed}
+                />,
+              )
+            }
           />
         );
       }
@@ -291,29 +306,30 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-            render={(props: any) => (
-              <AsyncAdmin
-                {...props}
-                addCourse={this.addCourseToAdminList}
-                user={this.state.user}
-                initialCourses={courseAdminCourses}
-                logout={this.handleLogout}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <AsyncAdmin
+                  {...props}
+                  addCourse={this.addCourseToAdminList}
+                  user={this.state.user}
+                  initialCourses={courseAdminCourses}
+                  logout={this.handleLogout}
+                />,
+              )
+            }
           />
         );
       }
 
-      let gradeRoute;
-      if (isGrader || isAdmin) {
-        gradeRoute = (
-          <Route
-            exact={true}
-            path={`${GRADE}/:submissionId`}
-            render={(props: any) => <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />}
-          />
-        );
-      }
+      const gradeRoute = (
+        <Route
+          exact={true}
+          path={`${CODE}/:submissionId`}
+          render={(props: any) =>
+            this.wrapTooltipContext(<AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />)
+          }
+        />
+      );
 
       // If user has only one role, use / to redirect to relevant role's page. Otherwise, allow user to choose
       // role from /
@@ -357,14 +373,16 @@ class App extends React.Component<{}, IState> {
           <Route
             exact={true}
             path={'/settings'}
-            render={(props: any) => (
-              <Settings
-                {...props}
-                user={this.state.user}
-                handleLogout={this.handleLogout}
-                replaceUser={this.replaceUser}
-              />
-            )}
+            render={(props: any) =>
+              this.wrapTooltipContext(
+                <Settings
+                  {...props}
+                  user={this.state.user}
+                  handleLogout={this.handleLogout}
+                  replaceUser={this.replaceUser}
+                />,
+              )
+            }
           />
 
           {pageSelector}

@@ -6,63 +6,58 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty } from 'antd';
+import { Button, Icon, Menu, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
-
-import layoutVars from '../../styles/layout/_layoutVars';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
-
-import Grade from '../grade/Grade';
-
-import StandardConsoleHeader from '../core/layouts/StandardConsoleHeader';
-import StandardConsoleLayout, { ConsoleType } from '../core/layouts/StandardConsoleLayout';
-
-import { SubheaderInfo, SubheaderStatistic, SubheaderTitle } from '../code-review/Subheader';
-
-import { StudentCode } from '../code-review/code-panel/CodeContent';
-
-import { StudentComments } from '../code-review/code-panel/Comments';
-
-import Loading from '../core/Loading';
-
-import FileMenu from '../code-review/FileMenu';
 
 import CPFlex from '../core/CPFlex';
 
-import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
-
-import MultiSelectorSider from '../core/MultiSelectorSider';
-
-import { ICommentToRubricCommentMap, ICourseToAssignmentMap, IFileToCommentsMap, USER_TYPE } from '../../types/common';
+import { IAssignmentToSubmissionsMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
 import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { FileType } from '../../infrastructure/file';
 import { loadIDList } from '../../infrastructure/generics';
-import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
 import { UserType } from '../../infrastructure/user';
 
+import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
+
+import RoleMenu from '../core/RoleMenu';
+
+import CPDropdown from '../core/CPDropdown';
+
+import { TableDetail } from '../admin/other/TableDetail';
+
+import { openSubmission } from '../admin/other/AdminUtils';
+
+import CPLogo from '../core/CPLogo';
+
+import layoutVars from '../../styles/layout/_layoutVars';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
-  assignments: ICourseToAssignmentMap;
-  files: FileType[];
-  comments: IFileToCommentsMap;
-  commentRubricComments: ICommentToRubricCommentMap;
-  rubricCategories: RubricCategoryType[];
-
   currentCourse?: CourseType;
-  currentAssignment?: AssignmentType;
-  currentSubmission?: StudentSubmissionType;
-  currentFile?: FileType;
+  assignments: ICourseToAssignmentMap;
+  submissions: IAssignmentToSubmissionsMap;
+  viewsBySubmission: { [submissionID: number]: boolean };
 
   // Loading variables
   isLoadingAssignments: boolean;
-  isLoadingSubmission: boolean;
+  isLoadingSubmissions: boolean;
+}
+
+enum SUBMISSION_STATUS {
+  ASSIGNMENT_NOT_PUBLISHED,
+  NO_SUBMISSION,
+  SUBMISSION_VIEWED,
+  SUBMISSION_UNVIEWED,
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -71,17 +66,7 @@ export interface IStudentProps extends IWithWindowWatcherProps {
   match: any;
   history: any;
 
-  // handleLogout
   handleLogout: () => void;
-}
-
-export enum STATUS {
-  SelectCourse,
-  NoAssignments,
-  SelectAssignment,
-  NoSubmission,
-  SubmissionLoading,
-  ShowSubmission,
 }
 
 class Student extends React.Component<IStudentProps, IStudentState> {
@@ -89,17 +74,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     super(props);
     document.title = 'codePost - Student Console';
     this.state = {
-      assignments: {},
-      comments: {},
-      currentAssignment: undefined,
       currentCourse: undefined,
-      currentSubmission: undefined,
-      currentFile: undefined,
-      files: [],
+      assignments: {},
+      submissions: {},
+      viewsBySubmission: {},
       isLoadingAssignments: true,
-      isLoadingSubmission: false,
-      rubricCategories: [],
-      commentRubricComments: {},
+      isLoadingSubmissions: true,
     };
   }
 
@@ -110,18 +90,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public componentDidMount() {
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
-        const { course, assignment } = this.setStateFromURL(this.props.initialCourses, assignments);
+        const { course } = this.setStateFromURL(this.props.initialCourses, assignments);
         if (course) {
-          // Take assignment out of URL if it doesn't exist or isn't released
-          if (assignment === undefined || !assignment.isReleased) {
-            this.changeURL(course, undefined);
-            this.setState({ currentCourse: course });
-          } else {
-            this.changeURL(course, assignment);
-            this.setState({ currentCourse: course }, () => {
-              this.handleAssignmentChange(assignment ? assignment.id : undefined);
-            });
-          }
+          this.changeURL(course);
+          this.setState({ currentCourse: course });
+          this.loadSubmissions(this.state.assignments[course.id]).then((submissions) => {
+            this.loadHistories(Object.values(submissions), this.props.user.email).then(
+              (viewMap: { [submissionID: number]: boolean }) => {
+                this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+              },
+            );
+          });
         }
       });
     });
@@ -132,31 +111,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /**********************************************************************************/
 
   public setStateFromURL = (courses: CourseType[], assignments: ICourseToAssignmentMap) => {
-    const { courseName, period, assignmentName } = this.props.match.params;
+    const { courseName, period } = this.props.match.params;
     if (courses.length === 0) {
-      return { course: undefined, assignment: undefined };
+      return { course: undefined };
     } else {
       // is the URL trying to set the course?
       const tryingToSetCourse = courseName && period;
       let currentCourse: CourseType | undefined;
-      let currentAssignment: AssignmentType | undefined;
       if (tryingToSetCourse) {
         const formattedCourseName = courseName.replace(/_/g, ' ');
         const formattedPeriod = period.replace(/_/g, ' ');
         currentCourse = courses.find((obj: CourseType) => {
           return obj.name === formattedCourseName && obj.period === formattedPeriod;
         });
-      }
-
-      if (currentCourse) {
-        // is the URL trying to set the assignment?
-        if (assignmentName) {
-          const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
-          const assignmentList = assignments[currentCourse.id];
-          currentAssignment = assignmentList.find((assignment) => {
-            return assignment.name === formattedAssignmentName;
-          });
-        }
       }
 
       // By default open first course in course list
@@ -166,20 +133,14 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         })[0];
       }
 
-      return { course: currentCourse, assignment: currentAssignment };
+      return { course: currentCourse };
     }
   };
 
-  public changeURL = (course: CourseType, assignment?: AssignmentType) => {
+  public changeURL = (course: CourseType) => {
     const courseName = course.name.replace(/ /g, '_');
     const coursePeriod = course.period.replace(/ /g, '_');
-
-    if (assignment === undefined) {
-      this.props.history.push(`/student/${courseName}/${coursePeriod}`);
-    } else {
-      const assignmentName = assignment.name.replace(/ /g, '_');
-      this.props.history.push(`/student/${courseName}/${coursePeriod}/${assignmentName}`);
-    }
+    this.props.history.push(`/student/${courseName}/${coursePeriod}`);
   };
 
   /***********************************************************************************
@@ -196,24 +157,51 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       courses.forEach((course, i) => {
         toRet[course.id] = assignments[i];
       });
+
       return toRet;
     });
   };
 
-  public loadSubmission = async (assignment: AssignmentType) => {
-    if (!assignment.isReleased) {
-      return undefined;
+  public loadSubmissions = async (assignments: AssignmentType[]) => {
+    const submissions = {};
+    for (const assignment of assignments) {
+      if (assignment.isReleased) {
+        submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
+          student: this.props.user.email,
+        });
+      }
     }
-    return (await AssignmentStudent.readSubmissions(assignment.id, { student: this.props.user.email }))[0];
+
+    return submissions;
   };
 
-  public loadRubricCategories = async (assignment: AssignmentType) => {
-    return await loadIDList(assignment.rubricCategories, RubricCategory);
+  public loadHistories = async (submissions: IAssignmentToSubmissionsMap, email: string) => {
+    const toRet = {};
+    const keys = Object.keys(submissions);
+    for (const key of keys) {
+      const submissionList: StudentSubmissionType[] = submissions[key];
+      if (submissionList.length > 0) {
+        const submission = submissionList[0];
+        const history = await Submission.readHistory(submission.id, { student: email });
+        for (const historyItem of history) {
+          if (historyItem.student === email) {
+            toRet[submission.id] = historyItem.hasViewed;
+          }
+        }
+      }
+    }
+
+    return toRet;
   };
 
   /***********************************************************************************
   /* Handlers
   /**********************************************************************************/
+  public openAndMarkViewed = (submission: StudentSubmissionType) => {
+    openSubmission(submission.id);
+    this.markViewed(submission);
+  };
+
   public markViewed = async (submission: StudentSubmissionType) => {
     // Get the history
     const history = await Submission.readHistory(submission.id, { student: this.props.user.email });
@@ -225,64 +213,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return;
   };
 
-  public onAssignmentChange = (clicked: ClickParam) => {
-    this.handleAssignmentChange(+clicked.key);
-  };
-
-  public handleAssignmentChange = (assignmentID?: number) => {
-    const { assignments, currentCourse } = this.state;
-
-    if (!currentCourse) {
-      return;
-    }
-
-    if (assignmentID === undefined) {
-      this.changeURL(currentCourse, undefined);
-      this.setState({
-        currentAssignment: undefined,
-        currentSubmission: undefined,
-        files: [],
-        comments: {},
-        rubricCategories: [],
-        commentRubricComments: {},
-        currentFile: undefined,
-      });
-    } else {
-      const currentAssignment = assignments[currentCourse.id].find((assignment: AssignmentType) => {
-        return assignment.id === assignmentID;
-      });
-
-      if (currentAssignment !== undefined) {
-        this.setState({ currentAssignment, isLoadingSubmission: true, currentSubmission: undefined }, async () => {
-          const rubricCategories = await this.loadRubricCategories(currentAssignment);
-          const currentSubmission = await this.loadSubmission(currentAssignment);
-
-          if (currentSubmission) {
-            const [files, comments, commentRubricComments] = await Submission.loadData(currentSubmission);
-            let currentFile;
-            if (files.length > 0) {
-              currentFile = files[0];
-            }
-            // Mark submission as viewed
-            this.markViewed(currentSubmission);
-            this.setState({
-              files,
-              comments,
-              commentRubricComments,
-              currentSubmission,
-              rubricCategories,
-              currentFile,
-              isLoadingSubmission: false,
-            });
-          } else {
-            this.setState({ currentSubmission, isLoadingSubmission: false });
-          }
-        });
-        this.changeURL(currentCourse, currentAssignment);
-      }
-    }
-  };
-
   public handleCourseChange = (e: ClickParam) => {
     const courseID = +e.key;
     const currentCourse = this.props.initialCourses.find((course: CourseType) => {
@@ -292,17 +222,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (currentCourse) {
       this.setState(
         {
-          currentAssignment: undefined,
           currentCourse,
-          currentSubmission: undefined,
-          files: [],
-          comments: {},
-          rubricCategories: [],
-          commentRubricComments: {},
-          currentFile: undefined,
         },
         () => {
-          this.changeURL(currentCourse, undefined);
+          this.setState({ isLoadingSubmissions: true }, () => {
+            this.changeURL(currentCourse);
+            this.loadSubmissions(this.state.assignments[currentCourse.id]).then((submissions) => {
+              this.loadHistories(Object.values(submissions), this.props.user.email).then(
+                (viewMap: { [submissionID: number]: boolean }) => {
+                  this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+                },
+              );
+            });
+          });
         },
       );
     }
@@ -321,7 +253,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }));
   }
 
-  // Course Selector
   public getCourseName = (course: CourseType) => `${course.name} | ${course.period}`;
   public getCourseValue = (course: CourseType) => course.id;
   public getCourseDisabled = (course: CourseType) => false;
@@ -335,124 +266,165 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return { value: this.getCourseValue(currentCourse), label: this.getCourseName(currentCourse) };
   };
 
-  // Assignment Selector
-  public getAssignmentName = (assignment: AssignmentType) => assignment.name;
-  public getAssignmentValue = (assignment: AssignmentType) => assignment.id;
-  public getAssignmentDisabled = (assignment: AssignmentType) => !assignment.isReleased;
-  public assignmentSelectorItems = (assignments: AssignmentType[]) => {
-    return this.selectorItemsFormatter(
-      assignments,
-      this.getAssignmentValue,
-      this.getAssignmentName,
-      this.getAssignmentDisabled,
-    );
-  };
-  public assignmentActiveSelector = (currentAssignment: AssignmentType | undefined) => {
-    if (!currentAssignment) {
-      return undefined;
-    }
-    return { value: this.getAssignmentValue(currentAssignment), label: this.getAssignmentName(currentAssignment) };
-  };
+  /***********************************************************************************
+  /* Content area
+  /**********************************************************************************/
 
-  public getStatus = (
-    currentCourse: CourseType | undefined,
-    hasAssignments: boolean,
-    currentAssignment: AssignmentType | undefined,
-    isLoadingSubmission: boolean,
-    currentSubmission: StudentSubmissionType | undefined,
-  ) => {
-    if (!currentCourse) return STATUS.SelectCourse;
-    if (!hasAssignments) return STATUS.NoAssignments;
-    if (!currentAssignment) return STATUS.SelectAssignment;
-    if (isLoadingSubmission) return STATUS.SubmissionLoading;
-    if (currentSubmission === undefined || !currentSubmission.isFinalized) return STATUS.NoSubmission;
-    else return STATUS.ShowSubmission;
-  };
+  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionsMap) => {
+    const modifyIf = (modMap: { [statusTarget: number]: number }) => {
+      return (value: any, row: any, index: number) => {
+        const obj = {
+          children: value,
+          props: { colSpan: 1, align: 'left' },
+        };
 
-  public getContent = (status: STATUS) => {
-    const emptyStyle = { marginTop: '15%' };
-    switch (status) {
-      case STATUS.SelectCourse:
-        return (
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description="Select a course to get started."
-            style={emptyStyle}
-          />
-        );
-      case STATUS.NoAssignments:
-        return (
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description="No assignments yet. Check back soon!"
-            style={emptyStyle}
-          />
-        );
-      case STATUS.SelectAssignment:
-        return (
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description="Select an assignment to get started."
-            style={emptyStyle}
-          />
-        );
-      case STATUS.SubmissionLoading:
-        return <Loading />;
-      case STATUS.NoSubmission:
-        return (
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description="Your instructor hasn't published your submission yet."
-            style={emptyStyle}
-          />
-        );
-      case STATUS.ShowSubmission:
-        if (this.state.currentSubmission !== undefined && this.state.currentFile !== undefined) {
-          const comments = (verticalOffset: number) => (
-            <StudentComments
-              comments={this.state.comments[this.state.currentFile!.id]}
-              rubricComments={this.state.commentRubricComments}
-              file={this.state.currentFile!}
-              verticalOffset={verticalOffset}
-            />
-          );
-          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
-            <StudentCode
-              key={this.state.currentFile!.id}
-              file={this.state.currentFile!}
-              comments={this.state.comments[this.state.currentFile!.id]}
-              readOnly={this.state.currentSubmission!.isFinalized}
-              user={this.props.user.email}
-              codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
-              onHighlightClick={onHighlightClick}
-            />
-          );
-          return <CodePanelLayout comments={comments} code={code} file={this.state.currentFile} />;
-        } else {
-          return null;
+        if (row.statusType in modMap) {
+          obj.props.colSpan = modMap[row.statusType];
+          obj.props.align = 'center';
         }
-    }
-  };
+        return obj;
+      };
+    };
 
-  public getPointsInFile = (file: FileType): number[] => {
-    return Grade.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
-  };
+    const aligner: 'left' | 'center' | 'right' = 'center';
+    const columns = [
+      {
+        title: 'Assignment',
+        dataIndex: 'assignment',
+        key: 'assignment',
+      },
+      {
+        title: 'Stats',
+        dataIndex: 'stats',
+        key: 'stats',
+        align: aligner,
+      },
+      {
+        title: 'Partners',
+        dataIndex: 'partners',
+        key: 'partners',
+        render: modifyIf({ [SUBMISSION_STATUS.NO_SUBMISSION]: 3, [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3 }),
+        align: aligner,
+      },
+      {
+        title: 'Grade',
+        dataIndex: 'grade',
+        key: 'grade',
+        align: aligner,
+        render: modifyIf({
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 2,
+        }),
+      },
+      {
+        title: 'Code',
+        dataIndex: 'code',
+        key: 'code',
+        align: aligner,
+        render: modifyIf({
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+        }),
+      },
+    ];
 
-  public changeCurrentFile = (fileID: number): void => {
-    const currentFile = this.state.files.find((file: FileType) => {
-      return file.id === fileID;
+    const data = assignments.map((assignment) => {
+      if (!assignment.isReleased) {
+        // Case 1: assignment isn't published
+        return {
+          key: assignment.name,
+          assignment: assignment.name,
+          statusType: SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED,
+          partners: (
+            <div>
+              {' '}
+              <Icon type="stop" /> &nbsp; Assignment not yet published
+            </div>
+          ),
+          disabled: true,
+        };
+      } else {
+        const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+
+        const hasStats = assignment.mean || assignment.median;
+        let statsContent;
+        if (hasStats) {
+          statsContent = (
+            <div>
+              Mean: {assignment.mean}/{assignment.points} <br /> Median: {assignment.median}/{assignment.points}
+            </div>
+          );
+        }
+
+        const toRet = {
+          key: assignment.name,
+          assignment: assignment.name,
+          stats: hasStats ? statsContent : '--',
+        };
+
+        if (submission === undefined) {
+          // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+          return {
+            ...toRet,
+            partners: (
+              <div>
+                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been uploaded
+              </div>
+            ),
+            statusType: SUBMISSION_STATUS.NO_SUBMISSION,
+          };
+        } else if (!submission.isFinalized) {
+          // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+          return {
+            ...toRet,
+            partners: (
+              <div>
+                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been graded yet
+              </div>
+            ),
+            statusType: SUBMISSION_STATUS.NO_SUBMISSION,
+          };
+        } else {
+          // Case 3: assignment is published, and student has a submission
+
+          // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
+          const showGrade =
+            !(submission.id in this.state.viewsBySubmission) || this.state.viewsBySubmission[submission.id];
+          return {
+            ...toRet,
+            partners:
+              submission.students.length === 1
+                ? '--'
+                : submission.students
+                    .filter((student) => {
+                      return student !== this.props.user.email;
+                    })
+                    .join(', '),
+            grade: showGrade ? (
+              submission.grade !== null ? (
+                `${submission.grade}/${assignment.points}`
+              ) : null
+            ) : this.props.windowwidth > layoutVars.breakpoints.mobile.student ? (
+              <Tag onClick={this.openAndMarkViewed.bind(this, submission)} style={{ cursor: 'pointer' }}>
+                View feedback
+              </Tag>
+            ) : (
+              <Tag>Login on desktop to view</Tag>
+            ),
+            code: (
+              <div onClick={openSubmission.bind(this, submission.id)}>
+                <Icon type="code" style={{ cursor: 'pointer' }} />
+              </div>
+            ),
+            statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
+          };
+        }
+      }
     });
 
-    this.setState({ currentFile });
+    return { columns, data };
   };
 
   /***********************************************************************************
@@ -460,162 +432,85 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /**********************************************************************************/
 
   public render() {
-    const { assignments, currentAssignment, currentCourse, currentSubmission, isLoadingAssignments } = this.state;
-    const mobile = this.props.windowwidth < layoutVars.breakpoints.mobile.student;
+    const { assignments, currentCourse, isLoadingAssignments, isLoadingSubmissions, submissions } = this.state;
 
-    const hasAssignments =
-      currentCourse !== undefined &&
-      !isLoadingAssignments &&
-      assignments[currentCourse.id] !== undefined &&
-      assignments[currentCourse.id].length > 0;
-
-    const status = this.getStatus(
-      currentCourse,
-      hasAssignments,
-      currentAssignment,
-      this.state.isLoadingSubmission,
-      currentSubmission,
-    );
-
-    const canAlwaysChange = () => {
-      return true;
-    };
-
-    let content;
-    let subheader;
-    let consoleTypes: ConsoleType[] = [];
-    let fileMenu;
-    if (this.state.isLoadingAssignments) {
-      content = null;
+    let studentContent;
+    // if not loaded yet, render a get started div
+    if (!currentCourse) {
+      studentContent = (
+        <div style={{ padding: '40px', fontSize: 28 }}>
+          <div>Select course</div>
+        </div>
+      );
     } else {
-      content = this.getContent(status);
-      if (status === STATUS.ShowSubmission) {
-        consoleTypes = ['subheader'];
-        let subheaderTitle;
-        let subheaderInfo;
-        if (this.state.currentAssignment !== undefined && this.state.currentSubmission !== undefined) {
-          subheaderTitle = <SubheaderTitle key="subheader-title" assignment={this.state.currentAssignment} />;
-          subheaderInfo = (
-            <SubheaderInfo
-              assignment={this.state.currentAssignment}
-              submission={this.state.currentSubmission}
-              rubricCategories={this.state.rubricCategories}
-              comments={this.state.comments}
-              commentRubricComments={this.state.commentRubricComments}
-            />
-          );
+      const assignmentList = assignments[currentCourse.id];
+      const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
+      const rowClassName = (record: any, index: number) => {
+        if (record.disabled) {
+          return 'disabled-row';
+        } else {
+          return '';
         }
-        const subheaderLeft = [
-          subheaderTitle,
-          <SubheaderStatistic
-            key="grade"
-            name="Grade"
-            course={this.state.currentCourse}
-            assignment={this.state.currentAssignment}
-            submission={this.state.currentSubmission}
-          />,
-          <SubheaderStatistic
-            key="mean"
-            name="Mean"
-            course={this.state.currentCourse}
-            assignment={this.state.currentAssignment}
-            submission={this.state.currentSubmission}
-          />,
-          <SubheaderStatistic
-            key="median"
-            name="Median"
-            course={this.state.currentCourse}
-            assignment={this.state.currentAssignment}
-            submission={this.state.currentSubmission}
-          />,
-          subheaderInfo,
-        ];
+      };
 
-        subheader = <CPFlex left={subheaderLeft} right={[]} gutterSize={14} />;
-      }
-
-      if (this.state.currentFile !== undefined) {
-        fileMenu = mobile ? (
-          // Mobile File menu hides points
-          <FileMenu
-            key={'file-menu'}
-            files={this.state.files}
-            getPointsInFile={this.getPointsInFile}
-            changeSelectedFile={this.changeCurrentFile}
-            canChange={canAlwaysChange}
-            title="Files"
-            hidePoints={true}
-          />
-        ) : (
-          <FileMenu
-            key={'file-menu'}
-            files={this.state.files}
-            selectedFile={this.state.currentFile}
-            getPointsInFile={this.getPointsInFile}
-            changeSelectedFile={this.changeCurrentFile}
-            canChange={canAlwaysChange}
-            title="Files"
-          />
-        );
-      }
-    }
-
-    const header = (
-      <StandardConsoleHeader
-        user={this.props.user}
-        handleLogout={this.props.handleLogout}
-        thisApp={USER_TYPE.STUDENT}
-      />
-    );
-
-    const sider = (
-      <MultiSelectorSider
-        title1="Courses"
-        title2="Assignments"
-        theme="light"
-        key="sider"
-        activeFirstSelector={this.courseActiveSelector(currentCourse)}
-        firstSelectorItems={this.courseSelectorItems(this.props.initialCourses)}
-        onFirstSelectorClick={this.handleCourseChange}
-        activeSecondSelector={this.assignmentActiveSelector(currentAssignment)}
-        secondSelectorItems={
-          this.state.currentCourse && !this.state.isLoadingAssignments
-            ? this.assignmentSelectorItems(this.state.assignments[this.state.currentCourse.id])
-            : []
-        }
-        onSecondSelectorClick={this.onAssignmentChange}
-        isLoadingMenu={this.state.isLoadingAssignments}
-        children={mobile ? <div /> : fileMenu}
-        disabledMessage={'Not published yet'}
-      />
-    );
-    if (mobile) {
-      return (
-        // Mobile layout with no code panel, and removing of sider
-        <StandardConsoleLayout
-          consoleTypes={consoleTypes}
-          header={header}
-          subheader={
-            <div style={{ textAlign: 'center', paddingTop: 20 }}>
-              This submission has been graded. Please log into codePost on a desktop to see your feedback!
-            </div>
-          }
-          sider={[sider]}
-          content={status !== STATUS.ShowSubmission ? content : fileMenu}
-          removeSiderOnMobile={true}
+      studentContent = (
+        <TableDetail
+          loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
+          isEmpty={assignmentList.length === 0}
+          title={`${currentCourse.name} | ${currentCourse.period}`}
+          emptyNode={<div>Empty...</div>}
+          actions={[]}
+          columns={columns}
+          data={data}
+          pagination={false}
+          hideSearch={true}
+          tableProps={{ rowClassName, bordered: true }}
         />
       );
     }
 
+    /* Build header */
+    let courseSelectorText = 'Select a course';
+    if (this.state.currentCourse) {
+      courseSelectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
+    }
+    const courseMenu = (
+      <Menu onClick={this.handleCourseChange}>
+        {this.props.initialCourses.map((course, i) => {
+          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
+        })}
+      </Menu>
+    );
+    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} key="dropdown" />;
+
+    const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
+
+    const headerRight = [
+      <span key="header-user" className="cp-label cp-label--bold">
+        {this.props.user.email}
+      </span>,
+      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
+      <Link className="internal-link" key="settings" to="/settings">
+        <Icon type="setting" />
+      </Link>,
+      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
+        Logout
+      </Button>,
+    ];
+
+    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
+
+    const navigation = (collapsed: boolean) => null;
     return (
-      <StandardConsoleLayout
-        consoleTypes={consoleTypes}
-        header={header}
-        subheader={subheader}
-        sider={[sider]}
-        content={content}
-        removeSiderOnMobile={true}
-      />
+      <div id="Student">
+        <CPLayoutAdmin
+          header={header}
+          detail={studentContent}
+          navigation={navigation}
+          collapsible={true}
+          hasSider={false}
+        />
+      </div>
     );
   }
 }

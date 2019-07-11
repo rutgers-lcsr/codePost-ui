@@ -47,6 +47,7 @@ describe('ManageAssignments', () => {
         uploadSubmission: jest.fn(),
         updateSubmission: jest.fn(),
         deleteSubmission: jest.fn(),
+        refreshCourseData: jest.fn(),
       },
       propOverrides,
     );
