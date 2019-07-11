@@ -59,6 +59,8 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
+import recursion_student1 from '../utils/demo_subs/recursion/student1';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -787,18 +789,86 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const fileList: FileType[] = [];
     const commentMap = {};
-    files.forEach((file, index) => {
-      fileList.push({
-        id: index,
-        code: file.data,
-        comments: [],
-        extension: file.name.split('.')[1],
-        name: file.name,
-        submission: 1,
-      });
+    if (files.length > 0) {
+      files.forEach((file, index) => {
+        fileList.push({
+          id: index,
+          code: file.data,
+          comments: [],
+          extension: file.name.split('.')[1],
+          name: file.name,
+          submission: 1,
+        });
 
-      commentMap[index] = [];
-    });
+        commentMap[index] = [];
+      });
+    } else {
+      const toUse = recursion_student1('example.edu');
+      toUse.files.forEach((file, index) => {
+        fileList.push({
+          id: index,
+          code: file.code,
+          comments: [],
+          extension: file.name.split('.')[1],
+          name: file.name,
+          submission: 1,
+        });
+
+        commentMap[index] = [];
+      });
+    }
+
+    const rubricCategoryList: RubricCategoryType[] = [
+      { id: 1, name: 'Style', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 0, helpText: '' },
+      { id: 2, name: 'Performance', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 1, helpText: '' },
+    ];
+
+    const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
+      [1]: [
+        {
+          id: 1,
+          text: 'Unnecessary comment - this code speaks for itself!',
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 0,
+        },
+        {
+          id: 2,
+          text: 'Code not separated by newlines into logical blocks',
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 1,
+        },
+        {
+          id: 3,
+          text: "Generic variable name that doesn't describe value",
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 2,
+        },
+      ],
+      [2]: [
+        {
+          id: 4,
+          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          category: 2,
+          comments: [],
+          pointDelta: 2,
+          sortKey: 0,
+        },
+        {
+          id: 5,
+          text: 'Memoization would improve performance, since these values are frequently recomputed',
+          category: 2,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 0,
+        },
+      ],
+    };
 
     this.setState({
       assignment: demoAssignment,
@@ -807,6 +877,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       files: fileList,
       comments: commentMap,
       selectedFile: fileList.length > 0 ? fileList[0] : undefined,
+      rubricCategories: rubricCategoryList,
+      rubricComments: rubricCommentsMap,
     });
   };
 

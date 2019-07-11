@@ -232,6 +232,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     You can choose any files (they won't be saved)`;
 
     const goBack = () => {
+      setFiles([]); // reset uploaded files store
       setUploading(false);
     };
 
@@ -264,7 +265,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     );
 
     const useDefaultFile = (
-      <CPButton cpType="secondary" block>
+      <CPButton cpType="secondary" block onClick={props.onUploadConfirm.bind(true, [])}>
         No code handy? Use some default files
       </CPButton>
     );
