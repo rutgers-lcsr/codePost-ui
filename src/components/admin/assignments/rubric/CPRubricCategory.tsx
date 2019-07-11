@@ -241,7 +241,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         const newState = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
-          if (value) {
+          if (value !== null) {
             newVal = parseFloat(value);
           } else {
             newVal = null;
