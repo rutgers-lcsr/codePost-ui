@@ -276,7 +276,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
           return rubricCategory.id === +category;
         });
-        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 99999) : 99999;
+        const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
         pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
       }
     }
