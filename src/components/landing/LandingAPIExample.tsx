@@ -182,7 +182,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 0)}
           style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
-          className={exampleIndex === 0 ? '' : 'link--api-example'}
+          className={exampleIndex === 0 ? '' : 'apiexample__link'}
           cpType="link"
           icon="export"
           ghost={true}
@@ -192,7 +192,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 1)}
           style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
-          className={exampleIndex === 1 ? '' : 'link--api-example'}
+          className={exampleIndex === 1 ? '' : 'apiexample__link'}
           cpType="link"
           icon="team"
           ghost={true}
@@ -202,7 +202,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 2)}
           style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
-          className={exampleIndex === 2 ? '' : 'link--api-example'}
+          className={exampleIndex === 2 ? '' : 'apiexample__link'}
           cpType="link"
           icon="bar-chart"
           ghost={true}
@@ -217,10 +217,10 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           cpType="link"
           ghost={true}
           style={{ fontWeight: 600, fontSize: 18 }}
-          className="link--api-docs"
+          className="apiexample__docs"
         >
           Full API reference
-          <Icon type="arrow-right" className="link--api-docs__arrow" />
+          <Icon type="arrow-right" className="apiexample__docs__arrow" />
         </CPButton>
       </div>
     );
@@ -230,8 +230,9 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <Collapse bordered={false}>
           <Panel
             header={
-              <div>
-                See the API in action <Icon type="api" />{' '}
+              <div className="apiexample__header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>See the API in action</div>
+                <Icon type="api" className="apiexample__header__icon" />
               </div>
             }
             key="1"

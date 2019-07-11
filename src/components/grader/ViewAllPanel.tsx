@@ -58,7 +58,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     showStudentEmails: false,
   };
 
-  public async componentDidMount() {
+  public async initialLoad() {
+    this.setState({ isLoading: true });
     const [submissions, viewsBySubmission, roster] = await Promise.all([
       await Assignment.readSubmissions(this.props.currentAssignment.id),
       await this.loadSubmissionsViews(),
@@ -66,6 +67,16 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     ]);
 
     this.setState({ graders: roster.graders, viewsBySubmission, submissions, isLoading: false });
+  }
+
+  public componentDidMount() {
+    this.initialLoad();
+  }
+
+  public componentDidUpdate(oldProps: IViewAllProps) {
+    if (oldProps.currentAssignment !== this.props.currentAssignment) {
+      this.initialLoad();
+    }
   }
 
   public loadSubmissionsViews = async () => {

@@ -580,7 +580,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           />
         </div>
         <InputNumber
-          value={this.state.pointLimit ? this.state.pointLimit : 0}
+          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
           onChange={this.setValue.bind(this, 'pointLimit')}
           onBlur={this.saveCategory}
         />
