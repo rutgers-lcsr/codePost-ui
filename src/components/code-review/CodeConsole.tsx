@@ -58,6 +58,7 @@ import themeVars from '../../styles/abstracts/_theme.js';
 
 /* f(logged in user, submission) */
 enum PERMISSION_LEVEL {
+  NOT_FOUND,
   NONE,
   READ,
   WRITE,
@@ -346,8 +347,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let course;
 
     switch (permissionLevel) {
+      case PERMISSION_LEVEL.NOT_FOUND:
       case PERMISSION_LEVEL.NONE:
-        // Will trigger 403 message in render
+        // Will trigger 403 or 404 message in render
         this.setState({ permissionLevel, isLoading: false });
         break;
       case PERMISSION_LEVEL.READ:
@@ -459,20 +461,27 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
     })
-      .then((res) => {
+      .then(async (res) => {
         if (res.ok) {
           return res.json();
+        } else {
+          return Promise.reject(res);
         }
-        return Promise.reject();
       })
       .then((json) => {
-        console.log(json);
         if (json.write) {
           return PERMISSION_LEVEL.WRITE;
         } else if (json.read) {
           return PERMISSION_LEVEL.READ;
         } else {
           return PERMISSION_LEVEL.NONE;
+        }
+      })
+      .catch((error) => {
+        if (error.status === 404) {
+          return PERMISSION_LEVEL.NOT_FOUND;
+        } else {
+          return;
         }
       });
   };
@@ -738,7 +747,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
-    if (this.state.permissionLevel === PERMISSION_LEVEL.NONE) {
+    if (
+      this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
+      this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+    ) {
       return (
         <div id="Grade">
           <StandardConsoleLayout
@@ -772,7 +784,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 }}
                 description={
                   <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
-                    Whoops! Looks like you don't have access to this submission...😔
+                    {this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+                      ? "Whoops! This submission doesn't exist...😔"
+                      : "Whoops! Looks like you don't have access to this submission...😔"}
                   </span>
                 }
               />
