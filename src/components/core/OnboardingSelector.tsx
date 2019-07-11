@@ -6,7 +6,11 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Modal, Upload } from 'antd';
+import { Button, Divider, Icon, Modal, Tooltip, Upload } from 'antd';
+import { UploadChangeParam } from 'antd/lib/upload';
+
+/* other library imports */
+import _ from 'lodash';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -135,27 +139,66 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   const footer = '';
   let footerButtons = null;
   if (uploading) {
+    const onChange = (info: UploadChangeParam) => {
+      setFiles(
+        files.filter((el) => {
+          return info.fileList.some((el2) => {
+            return el2.name === el.name;
+          });
+        }),
+      );
+    };
+
     const beforeUpload = (file: File, fileList: File[]) => {
-      const readFile = (toRead: File) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === 'string') {
-            const newFiles = files.filter((el) => {
-              return el.name !== toRead.name;
-            });
-            setFiles([...newFiles, { name: toRead.name, data: reader.result }]);
-          }
-        };
-        reader.readAsText(toRead);
+      // NOTE: when uploading multiple files at once, this function
+      // gets called once for each file. For example, uploading [file1, file2]
+      // will fire off
+      // 1. beforeUpload(file1, [file1, file2])
+      // 2. beforeUpload(file2, [file1, file2])
+      //
+      // Could optimize by only uploading if fileList includes
+      // files not already uploaded (although this would miss situations
+      // where the client is re-uploading files with same name but different
+      // content).
+
+      // Asynchronously read contents of file
+      const readFile = (toRead: File): Promise<IFileType> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === 'string') {
+              resolve({ name: toRead.name, data: reader.result });
+            } else {
+              reject();
+            }
+          };
+          reader.readAsText(toRead);
+        });
       };
 
-      // If a user uploads one file, then read that file individually
-      // If a user uploads multiple files at once, make sure we read all of them
       if (fileList.length === 1) {
-        readFile(file);
+        // Case 1: If a user uploads one file, then read that file individually
+        readFile(file).then((beenRead: IFileType) => {
+          const newFiles = files.filter((el) => {
+            return el.name !== beenRead.name;
+          });
+          setFiles([...newFiles, { name: beenRead.name, data: beenRead.data }]);
+        });
       } else {
+        // Case 2: If a user uploads multiple files at once, make sure we read all of them
+        const fileNames = fileList.map((el) => {
+          return el.name;
+        });
+
+        const promises: Array<Promise<IFileType>> = [];
         fileList.forEach((listFile) => {
-          readFile(listFile);
+          promises.push(readFile(listFile));
+        });
+        Promise.all(promises).then((beenReadFiles) => {
+          const newFiles = files.filter((el) => {
+            return fileNames.indexOf(el.name) === -1;
+          });
+          setFiles([...newFiles, ...beenReadFiles]);
         });
       }
 
@@ -164,7 +207,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     };
 
     const uploader = (
-      <Upload beforeUpload={beforeUpload} listType="text" multiple={true}>
+      <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
         <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
         </CPButton>
@@ -175,6 +218,8 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       props.onUploadConfirm(files);
     };
 
+    const MIN_FILES_FOR_DEMO = 2;
+
     title = (
       <span>
         Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
@@ -183,7 +228,8 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     options = [uploader];
 
-    message = "Upload 3 code files to annotate them in codePost. You can choose any files (they won't be saved)";
+    message = `Upload at least ${MIN_FILES_FOR_DEMO} code files to annotate them in codePost.
+    You can choose any files (they won't be saved)`;
 
     const goBack = () => {
       setUploading(false);
@@ -193,9 +239,21 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       <Button key="back" onClick={goBack}>
         Back
       </Button>,
-      <CPButton key="forward" cpType="primary" disabled={files.length !== 3} onClick={uploadFiles}>
-        Get started
-      </CPButton>,
+      files.length < MIN_FILES_FOR_DEMO ? (
+        <Tooltip title={`Upload at least ${MIN_FILES_FOR_DEMO} files to continue`}>
+          <span>
+            {' '}
+            &nbsp;
+            <CPButton key="forward" cpType="primary" disabled={true}>
+              Get started
+            </CPButton>
+          </span>
+        </Tooltip>
+      ) : (
+        <CPButton key="forward" cpType="primary" onClick={uploadFiles}>
+          Get started
+        </CPButton>
+      ),
     ];
   } else {
     // call prop function onClick which triggers tour
