@@ -21,9 +21,11 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
 import _Badge from '../../core/Badge';
-import CPTooltip from '../../core/CPTooltip';
+// import CPTooltip from '../../core/CPTooltip';
 
 /**********************************************************************************************************************/
+
+import InlineMarkdown from '../../core/InlineMarkdown';
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];
@@ -139,14 +141,12 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
                 // borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <CPTooltip placement="right" title={''}>
-                <div style={{ paddingRight: '40px' }}>
-                  <span className="cp-label" style={{ fontSize: '14px' }}>
-                    <span className="cp-label--success">></span> {rubricCategory.name}{' '}
-                    <span style={{ float: 'right' }}>{capTag}</span>
-                  </span>
-                </div>
-              </CPTooltip>
+              <div style={{ paddingRight: '40px' }}>
+                <span className="cp-label" style={{ fontSize: '14px' }}>
+                  <span className="cp-label--success">></span> {rubricCategory.name}{' '}
+                  <span style={{ float: 'right' }}>{capTag}</span>
+                </span>
+              </div>
             </div>
           }
         >
@@ -213,7 +213,9 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
       }}
     >
       <_Badge count={props.rubricComment.pointDelta * -1} size="small" />
-      <div style={{ paddingTop: '6px' }}>{props.rubricComment.text}</div>
+      <div style={{ paddingTop: '6px' }}>
+        <InlineMarkdown source={props.rubricComment.text} />
+      </div>
     </div>
   );
 };
