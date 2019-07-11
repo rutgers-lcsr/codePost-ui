@@ -124,7 +124,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       );
 
       const capTag =
-        rubricCategory.pointLimit !== null || rubricCategory.helpText !== null ? (
+        rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' ? (
           <Popover title="Category Details" content={info}>
             <Tag>Details</Tag>
           </Popover>
