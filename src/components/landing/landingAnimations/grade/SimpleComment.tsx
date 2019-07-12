@@ -10,7 +10,7 @@ import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
 import CPPointInput from '../../../core/CPPointInput';
 
-import _Badge from '../../../core/Badge';
+import Badge from '../../../core/Badge';
 
 import { CommentType, UiComment } from '../../../../infrastructure/comment';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -280,7 +280,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     );
 
     const points: number = this.state.points;
-    const badge = <_Badge count={points * -1} />;
+    const badge = <Badge count={points * -1} />;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // ------------------------------------- author --------------------------------------- //

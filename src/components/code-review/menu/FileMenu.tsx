@@ -18,7 +18,7 @@ import { IFileToCommentsMap } from '../../../types/common';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import _Badge from '../../core/Badge';
+import Badge from '../../core/Badge';
 
 /**********************************************************************************************************************/
 
@@ -82,18 +82,18 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
         let commentCountBadge = null;
         if (commentCount > 0) {
-          commentCountBadge = <_Badge count={commentCount} forcedStyle="neutral" faded={faded} />;
+          commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} />;
         }
 
         let deductionBadge = null;
         let bonusBadge = null;
 
         if (deductions > 0) {
-          deductionBadge = <_Badge count={deductions * -1} faded={faded} />;
+          deductionBadge = <Badge count={deductions * -1} faded={faded} />;
         }
 
         if (bonuses > 0) {
-          bonusBadge = <_Badge count={bonuses} faded={faded} />;
+          bonusBadge = <Badge count={bonuses} faded={faded} />;
         }
 
         return (

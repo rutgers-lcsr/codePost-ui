@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Badge } from 'antd';
+import { Badge as AntBadge } from 'antd';
 
 type BadgeSize = 'standard' | 'small';
 type BadgeStyle = 'neutral' | 'positive' | 'negaitve';
@@ -12,7 +12,7 @@ interface IBadgeProps {
   size?: BadgeSize;
 }
 
-const _Badge = (props: IBadgeProps) => {
+const Badge = (props: IBadgeProps) => {
   const { count, faded, forcedStyle, size, ...extraProps } = props;
 
   const _size = size === undefined ? 'standard' : size;
@@ -41,7 +41,7 @@ const _Badge = (props: IBadgeProps) => {
     className += ' badge--normal';
   }
 
-  return <Badge count={label} className={className} {...extraProps} />;
+  return <AntBadge count={label} className={className} {...extraProps} />;
 };
 
-export default _Badge;
+export default Badge;

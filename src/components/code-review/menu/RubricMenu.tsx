@@ -20,7 +20,7 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
-import _Badge from '../../core/Badge';
+import Badge from '../../core/Badge';
 import InlineMarkdown from '../../core/InlineMarkdown';
 
 /**********************************************************************************************************************/
@@ -210,7 +210,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         fontSize: '10.5px',
       }}
     >
-      <_Badge count={props.rubricComment.pointDelta * -1} size="small" />
+      <Badge count={props.rubricComment.pointDelta * -1} size="small" />
       <div style={{ paddingTop: '6px' }}>
         <InlineMarkdown source={props.rubricComment.text} />
       </div>

@@ -10,7 +10,7 @@ import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 import InlineMarkdown from '../../core/InlineMarkdown';
 
-import _Badge from '../../core/Badge';
+import Badge from '../../core/Badge';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
@@ -345,7 +345,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const points: number = this.state.points;
 
-    const badge = <_Badge count={points * -1} />;
+    const badge = <Badge count={points * -1} />;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // ------------------------------------- author --------------------------------------- //
