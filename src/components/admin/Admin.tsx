@@ -62,6 +62,8 @@ import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { UserType } from '../../infrastructure/user';
 import { addToPayload } from '../../infrastructure/utils';
 
+import { AdminOnboardingSelector } from '../core/OnboardingSelector';
+
 /**********************************************************************************************************************/
 
 export enum PANELS {
@@ -96,6 +98,9 @@ const panelStrings = [
   'roster/sections',
   'settings/',
 ];
+
+// 5 minute interval for automatic reload
+const LOADING_INTERVAL = 300000;
 
 interface IAdminState {
   /**** UI control data ****/
@@ -144,6 +149,8 @@ interface IAdminProps {
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
+  private interval: number;
+
   public constructor(props: IAdminProps) {
     super(props);
     const { course, panel } = this.setStateFromURL(this.props.user.courseadminCourses);
@@ -193,6 +200,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
+
+    this.interval = window.setInterval(() => {
+      if (this.state.currentCourse) {
+        this.loadAllCourseData(this.state.currentCourse);
+      }
+    }, LOADING_INTERVAL);
+  }
+
+  public componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   /***********************************************************************************
@@ -240,6 +257,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
 
+    // remove loading interval for existing course
+    window.clearInterval(this.interval);
+    window.clearTimeout(this.interval);
+
     this.setState(
       {
         currentCourse: newCourse,
@@ -273,6 +294,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       () => {
         this.changeURL(newCourse, this.state.currentPanel);
         this.loadAllCourseData(newCourse);
+
+        // add loading interval for new course
+        this.interval = window.setInterval(() => {
+          this.loadAllCourseData(newCourse);
+        }, LOADING_INTERVAL);
       },
     );
   };
@@ -1312,7 +1338,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const navigation = (collapsed: boolean) => (
-      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
+      <span>
+        <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
+        <AdminOnboardingSelector
+          visible={this.state.onboardingModalVisible}
+          onCancel={this.closeModal}
+          email={this.props.user.email}
+        />
+      </span>
     );
 
     return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collapsible={true} />;

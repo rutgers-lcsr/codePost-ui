@@ -8,6 +8,9 @@ import * as React from 'react';
 /* antd imports */
 import { Badge, Dropdown, Empty, Icon, Menu, message } from 'antd';
 
+/* other library imports */
+import queryString from 'query-string';
+
 /* codePost imports */
 import Loading from '../core/Loading';
 
@@ -54,6 +57,10 @@ import {
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
 
+import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
+
+import recursion_student1 from '../utils/demo_subs/recursion/student1';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -66,6 +73,7 @@ enum PERMISSION_LEVEL {
 
 interface ICodeConsoleState {
   /* UI control */
+  inDemoMode: boolean;
   permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
   selectedFile: FileType | undefined;
@@ -97,6 +105,7 @@ interface ICodeConsoleState {
 export interface ICodeConsoleProps {
   match: any;
   history: any;
+  location: any;
   user: UserType;
   handleLogout: () => void;
 }
@@ -276,7 +285,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
           return rubricCategory.id === +category;
         });
-        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 99999) : 99999;
+        const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
         pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
       }
     }
@@ -305,6 +314,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************************/
 
   public state: Readonly<ICodeConsoleState> = {
+    inDemoMode: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding'),
     permissionLevel: PERMISSION_LEVEL.READ,
     activeCommentID: undefined,
     assignment: undefined,
@@ -327,11 +337,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     codeVerticalOffset: 0,
   };
 
-  /***********************************************************************************
+  /**********************************************************************************
   /* Lifecycle methods
   /**********************************************************************************/
 
   public async componentDidMount() {
+    if (this.state.inDemoMode) {
+      this.setState({ isLoading: false });
+      return;
+    }
+
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `Submission - ${submissionID}`;
@@ -559,11 +574,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (comment.id < 0) {
-      savedComment = await CommentIO.create(comment);
-      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+    if (!this.state.inDemoMode) {
+      if (comment.id < 0) {
+        savedComment = await CommentIO.create(comment);
+        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      } else {
+        savedComment = await CommentIO.update(comment);
+      }
     } else {
-      savedComment = await CommentIO.update(comment);
+      savedComment = { ...comment, id: Math.floor(Math.random() * 9999999) };
+      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
     }
 
     let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
@@ -575,7 +595,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0) {
+    if (comment.id > 0 && !this.state.inDemoMode) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -736,6 +756,141 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     });
   };
 
+  public loadDemoData = (files: any[]) => {
+    const demoAssignment: AssignmentType = {
+      id: -1,
+      name: 'codePost Demo',
+      isReleased: false,
+      hideGrades: false,
+      rubricCategories: [],
+      course: -1,
+      sortKey: 0,
+      anonymousGrading: false,
+      mean: null,
+      median: null,
+      points: 20,
+    };
+
+    const demoCourse: CourseType = {
+      id: -1,
+      name: 'Demo',
+      period: 'demo',
+      assignments: [-1],
+      sections: [],
+      sendReleasedSubmissionsToBack: false,
+      showStudentsStatistics: false,
+      timezone: '',
+      emailNewUsers: false,
+      anonymousGradingDefault: false,
+      allowGradersToEditRubric: false,
+    };
+
+    const demoSubmission: AnonymousSubmissionType = {
+      id: 1,
+      isFinalized: false,
+      files: [1, 2, 3],
+      students: ['student1@example.edu'],
+      assignment: -1,
+      dateEdited: '',
+      grade: null,
+      grader: this.props.user.email,
+    };
+
+    const fileList: FileType[] = [];
+    const commentMap = {};
+    if (files.length > 0) {
+      files.forEach((file, index) => {
+        fileList.push({
+          id: index,
+          code: file.data,
+          comments: [],
+          extension: file.name.split('.')[1],
+          name: file.name,
+          submission: 1,
+        });
+
+        commentMap[index] = [];
+      });
+    } else {
+      const toUse = recursion_student1('example.edu');
+      toUse.files.forEach((file, index) => {
+        fileList.push({
+          id: index,
+          code: file.code,
+          comments: [],
+          extension: file.name.split('.')[1],
+          name: file.name,
+          submission: 1,
+        });
+
+        commentMap[index] = [];
+      });
+    }
+
+    const rubricCategoryList: RubricCategoryType[] = [
+      { id: 1, name: 'Style', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 0, helpText: '' },
+      { id: 2, name: 'Performance', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 1, helpText: '' },
+    ];
+
+    const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
+      [1]: [
+        {
+          id: 1,
+          text: 'Unnecessary comment - this code speaks for itself!',
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 0,
+        },
+        {
+          id: 2,
+          text: 'Code not separated by newlines into logical blocks',
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 1,
+        },
+        {
+          id: 3,
+          text: "Generic variable name that doesn't describe value",
+          category: 1,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 2,
+        },
+      ],
+      [2]: [
+        {
+          id: 4,
+          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          category: 2,
+          comments: [],
+          pointDelta: 2,
+          sortKey: 0,
+        },
+        {
+          id: 5,
+          text: 'Memoization would improve performance, since these values are frequently recomputed',
+          category: 2,
+          comments: [],
+          pointDelta: 1,
+          sortKey: 0,
+        },
+      ],
+    };
+
+    this.setState({
+      assignment: demoAssignment,
+      course: demoCourse,
+      submission: demoSubmission,
+      files: fileList,
+      comments: commentMap,
+      selectedFile: fileList.length > 0 ? fileList[0] : undefined,
+      rubricCategories: rubricCategoryList,
+      rubricComments: rubricCommentsMap,
+    });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -747,348 +902,406 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
+    let leftHeader: React.ReactNode[] = [];
+    let middleHeader: React.ReactNode[] = [];
+    let rightHeader: React.ReactNode[] = [];
+    let content;
+    let siderTitles: Array<React.ReactNode | string> = [];
+    let sider: React.ReactNode[] = [];
+
     if (
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
     ) {
-      return (
-        <div id="Grade">
-          <StandardConsoleLayout
-            consoleTypes={['grade']}
-            header={
-              <CPFlex
-                style={{
-                  padding: '0 15',
-                  height: 49,
-                  fontSize: 12,
-                  overflow: 'initial',
-                }}
-                left={[]}
-                right={[
-                  <ThemeToggle key="theme-toggle" small={true} />,
-                  <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-                  <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-                  <Magnifier key="zoom" updateZoom={this.setZoom} />,
-                ]}
-                gutterSize={20}
-                className={theme}
-              />
-            }
-            sider={[]}
-            siderTitles={[]}
-            content={
-              <Empty
-                imageStyle={{
-                  marginTop: '200px',
-                  height: 60,
-                }}
-                description={
-                  <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
-                    {this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
-                      ? "Whoops! This submission doesn't exist...😔"
-                      : "Whoops! Looks like you don't have access to this submission...😔"}
-                  </span>
-                }
-              />
-            }
-          />
-        </div>
-      );
-    }
-
-    if (!this.state.assignment) {
-      return <div>Weird... should have loaded the assignment by now</div>;
-    }
-
-    // At this stage, we're going to render the Code Review Console, so we can
-    // build the elements that are common between read-level and write-level
-
-    /*********************************************************
-    /* Build header
-    /*********************************************************/
-    const groupStyle = {
-      padding: '5px 20px',
-      lineHeight: '40px',
-      fontSize: '14px',
-      color: '#8d9298',
-      background: '#f4f4f4',
-      fontWeight: 600,
-      cursor: 'default',
-    };
-    const itemStyle = {
-      padding: '5px 20px',
-      lineHeight: '35px',
-      fontSize: '14px',
-      cursor: 'pointer',
-    };
-
-    const menu = (
-      <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
-        <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
-          Code Review Console
-        </Menu.Item>
-        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-          Redo tutorial
-        </Menu.Item>
-        <Menu.Item key="setting:3" style={itemStyle} className="header-menu">
-          Help! (talk to a human from codePost)
-        </Menu.Item>
-        <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
-          Other
-        </Menu.Item>
-        <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
-          <a href="/">Home</a>
-        </Menu.Item>
-        <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-          <a href="/logout">Logout</a>
-        </Menu.Item>
-      </Menu>
-    );
-
-    const headerMiddle = [
-      <GradeButton
-        key="subheader-grade"
-        assignment={this.state.assignment}
-        submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
-        calculateGrade={this.calculateGradeFromState}
-        rubricCategories={this.state.rubricCategories}
-        comments={this.state.comments}
-        commentRubricComments={this.state.commentRubricComments}
-      />,
-    ];
-
-    const fileMenuTitle = (
-      <span key="files">
-        Files{' '}
-        <span>
-          <Badge
-            style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset' }}
-            count={this.state.files.length}
-          />
-        </span>
-      </span>
-    );
-
-    /*********************************************************
-    /* Render console for read-only submission
-    /*********************************************************/
-    if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
-      let readOnlyContent;
-      if (this.state.selectedFile) {
-        const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
-          <StudentCode
-            key={this.state.selectedFile!.id}
-            file={this.state.selectedFile!}
-            comments={this.state.comments[this.state.selectedFile!.id]}
-            readOnly={true}
-            user={this.props.user.email}
-            codeStyle={codeStyle}
-            highlightHeight={highlightHeight}
-            onHighlightClick={onHighlightClick}
-          />
-        );
-
-        const comments = (
-          <StudentComments
-            comments={this.state.comments[this.state.selectedFile!.id]}
-            rubricComments={this.state.commentRubricComments}
-            file={this.state.selectedFile!}
-            verticalOffset={this.state.codeVerticalOffset}
-          />
-        );
-
-        readOnlyContent = (
-          <CodePanelLayout
-            comments={comments}
-            code={code}
-            file={this.state.selectedFile}
-            zoom={this.state.codeZoom}
-            splitBasis={this.state.codeSplitBasis}
-            updateVerticalOffset={this.setVerticalOffset}
-          />
-        );
-      }
-
-      const readOnlyHeaderLeft = [
-        <Dropdown overlay={menu} trigger={['click']} key="menu">
-          <Icon type="menu" twoToneColor="white" />
-        </Dropdown>,
-        <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
-      ];
-
-      const readOnlyHeaderRight = [
+      rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
         <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
         <Magnifier key="zoom" updateZoom={this.setZoom} />,
       ];
 
-      const readOnlyHeader = (
-        <CPFlex
-          style={{
-            padding: '0 15',
-            height: 49,
-            fontSize: 12,
-            overflow: 'initial',
-          }}
-          left={readOnlyHeaderLeft}
-          right={readOnlyHeaderRight}
-          middle={headerMiddle}
-          gutterSize={20}
-          className={theme}
-        />
-      );
-
-      return (
-        <div id="Grade">
-          <StandardConsoleLayout
-            consoleTypes={['grade']}
-            header={readOnlyHeader}
-            sider={[
-              <ReadOnlySubmissionInfo
-                key="submission-info"
-                title="Submission Info"
-                assignment={this.state.assignment}
-                readOnlySubmission={this.state.readOnlySubmission!}
-              />,
-              <FileMenu
-                key="file-menu"
-                title="Files"
-                files={this.state.files}
-                comments={this.state.comments}
-                selectedFile={this.state.selectedFile}
-                getPointsInFile={this.getPointsInFile}
-                changeSelectedFile={this.changeSelectedFile}
-                canChange={this.containsUnsavedComments}
-              />,
-            ]}
-            siderTitles={['Submission Info', fileMenuTitle]}
-            content={readOnlyContent}
-          />
-        </div>
-      );
-    }
-
-    /*********************************************************
-    /* Render console for writable submission submission
-    /*********************************************************/
-
-    const headerLeft = [
-      <Dropdown overlay={menu} trigger={['click']} key="menu">
-        <Icon type="menu" twoToneColor="white" />
-      </Dropdown>,
-      <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
-      <StatusTags key="tag" assignment={this.state.assignment} submission={this.state.submission!} />,
-    ];
-
-    const headerRight = [
-      <ThemeToggle key="theme-toggle" small={true} />,
-      <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-      <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-      <Magnifier key="zoom" updateZoom={this.setZoom} />,
-      <FinalizeButton
-        key="subheader-finalize"
-        submission={this.state.submission!}
-        canToggle={this.containsUnsavedComments}
-        toggleFinalized={this.toggleFinalized}
-      />,
-    ];
-
-    const header = (
-      <CPFlex
-        style={{
-          padding: '0 15',
-          height: 49,
-          fontSize: 12,
-          overflow: 'initial',
-        }}
-        left={headerLeft}
-        right={headerRight}
-        middle={headerMiddle}
-        gutterSize={20}
-        className={theme}
-      />
-    );
-
-    let content;
-    if (this.state.selectedFile) {
-      const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
-        <GradeCode
-          key={this.state.selectedFile!.id}
-          file={this.state.selectedFile!}
-          comments={this.state.comments[this.state.selectedFile!.id]}
-          readOnly={this.state.submission!.isFinalized}
-          addComment={this.addComment}
-          user={this.props.user.email}
-          codeStyle={codeStyle}
-          highlightHeight={highlightHeight}
-          onHighlightClick={onHighlightClick}
-        />
-      );
-
-      const comments = (
-        <GradeComments
-          comments={this.state.comments[this.state.selectedFile!.id]}
-          rubricComments={this.state.commentRubricComments}
-          readOnly={this.state.submission!.isFinalized}
-          file={this.state.selectedFile!}
-          activeCommentID={this.state.activeCommentID}
-          changeActive={this.changeActiveComment}
-          deleteComment={this.deleteComment}
-          saveComment={this.saveComment}
-          addUnsaved={this.addUnsaved}
-          removeUnsaved={this.removeUnsaved}
-          removeRubricComment={this.removeRubricComment}
-          oldCommentIDs={this.state.oldCommentIDs}
-          verticalOffset={this.state.codeVerticalOffset}
-        />
-      );
-
       content = (
-        <CodePanelLayout
-          comments={comments}
-          code={code}
-          file={this.state.selectedFile}
-          zoom={this.state.codeZoom}
-          splitBasis={this.state.codeSplitBasis}
-          updateVerticalOffset={this.setVerticalOffset}
+        <Empty
+          imageStyle={{
+            marginTop: '200px',
+            height: 60,
+          }}
+          description={
+            <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
+              {this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+                ? "Whoops! This submission doesn't exist...😔"
+                : "Whoops! Looks like you don't have access to this submission...😔"}
+            </span>
+          }
         />
       );
+    } else if (this.state.inDemoMode && !this.state.assignment) {
+      rightHeader = [
+        <ThemeToggle key="theme-toggle" small={true} />,
+        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+        <Magnifier key="zoom" updateZoom={this.setZoom} />,
+      ];
+    } else {
+      if (!this.state.assignment) {
+        return <div>We're not supposed to get here..</div>;
+      }
+
+      // At this stage, we're going to render the Code Review Console, so we can
+      // build the elements that are common between read-level and write-level
+
+      /*********************************************************
+      /* Build header
+      /*********************************************************/
+      const groupStyle = {
+        padding: '5px 20px',
+        lineHeight: '40px',
+        fontSize: '14px',
+        color: '#8d9298',
+        background: '#f4f4f4',
+        fontWeight: 600,
+        cursor: 'default',
+      };
+      const itemStyle = {
+        padding: '5px 20px',
+        lineHeight: '35px',
+        fontSize: '14px',
+        cursor: 'pointer',
+      };
+
+      const menu = (
+        <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
+          <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
+            Code Review Console
+          </Menu.Item>
+          <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+            Redo tutorial
+          </Menu.Item>
+          <Menu.Item key="setting:3" style={itemStyle} className="header-menu">
+            Help! (talk to a human from codePost)
+          </Menu.Item>
+          <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
+            Other
+          </Menu.Item>
+          <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
+            <a href="/">Home</a>
+          </Menu.Item>
+          <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+            <a href="/logout">Logout</a>
+          </Menu.Item>
+        </Menu>
+      );
+
+      middleHeader = [
+        <GradeButton
+          key="subheader-grade"
+          assignment={this.state.assignment!}
+          submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
+          calculateGrade={this.calculateGradeFromState}
+          rubricCategories={this.state.rubricCategories}
+          comments={this.state.comments}
+          commentRubricComments={this.state.commentRubricComments}
+        />,
+      ];
+
+      const fileMenuTitle = (
+        <span key="files">
+          Files{' '}
+          <span>
+            <Badge
+              style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset' }}
+              count={this.state.files.length}
+            />
+          </span>
+        </span>
+      );
+
+      if (this.state.inDemoMode) {
+        if (this.state.selectedFile) {
+          const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+            <GradeCode
+              key={this.state.selectedFile!.id}
+              file={this.state.selectedFile!}
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              readOnly={this.state.submission!.isFinalized}
+              addComment={this.addComment}
+              user={this.props.user.email}
+              codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
+            />
+          );
+
+          const demoComments = (
+            <GradeComments
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              rubricComments={this.state.commentRubricComments}
+              readOnly={this.state.submission!.isFinalized}
+              file={this.state.selectedFile!}
+              activeCommentID={this.state.activeCommentID}
+              changeActive={this.changeActiveComment}
+              deleteComment={this.deleteComment}
+              saveComment={this.saveComment}
+              addUnsaved={this.addUnsaved}
+              removeUnsaved={this.removeUnsaved}
+              removeRubricComment={this.removeRubricComment}
+              oldCommentIDs={this.state.oldCommentIDs}
+              verticalOffset={this.state.codeVerticalOffset}
+            />
+          );
+
+          content = (
+            <CodePanelLayout
+              comments={demoComments}
+              code={demoCode}
+              file={this.state.selectedFile}
+              zoom={this.state.codeZoom}
+              splitBasis={this.state.codeSplitBasis}
+              updateVerticalOffset={this.setVerticalOffset}
+            />
+          );
+        }
+
+        sider = [
+          <SubmissionInfo
+            key="submission-info"
+            title="Submission Info"
+            assignment={this.state.assignment!}
+            submission={this.state.submission!}
+            graders={this.state.graders}
+            isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
+            updateGrader={this.updateGrader}
+          />,
+          <FileMenu
+            key="file-menu"
+            title="Files"
+            files={this.state.files}
+            comments={this.state.comments}
+            selectedFile={this.state.selectedFile}
+            getPointsInFile={this.getPointsInFile}
+            changeSelectedFile={this.changeSelectedFile}
+            canChange={this.containsUnsavedComments}
+          />,
+          <RubricMenu
+            key="rubric-menu"
+            rubricCategories={this.state.rubricCategories}
+            rubricComments={this.state.rubricComments}
+            handleRubricCommentClick={this.onRubricCommentClick}
+          />,
+        ];
+
+        siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
+
+        leftHeader = [
+          <Dropdown overlay={menu} trigger={['click']} key="menu">
+            <Icon type="menu" twoToneColor="white" />
+          </Dropdown>,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+        ];
+
+        rightHeader = [
+          <ThemeToggle key="theme-toggle" small={true} />,
+          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+          <Magnifier key="zoom" updateZoom={this.setZoom} />,
+        ];
+      } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
+        if (this.state.selectedFile) {
+          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+            <StudentCode
+              key={this.state.selectedFile!.id}
+              file={this.state.selectedFile!}
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              readOnly={true}
+              user={this.props.user.email}
+              codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
+            />
+          );
+
+          const comments = (
+            <StudentComments
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              rubricComments={this.state.commentRubricComments}
+              file={this.state.selectedFile!}
+              verticalOffset={this.state.codeVerticalOffset}
+            />
+          );
+
+          content = (
+            <CodePanelLayout
+              comments={comments}
+              code={code}
+              file={this.state.selectedFile}
+              zoom={this.state.codeZoom}
+              splitBasis={this.state.codeSplitBasis}
+              updateVerticalOffset={this.setVerticalOffset}
+            />
+          );
+        }
+
+        leftHeader = [
+          <Dropdown overlay={menu} trigger={['click']} key="menu">
+            <Icon type="menu" twoToneColor="white" />
+          </Dropdown>,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+        ];
+
+        rightHeader = [
+          <ThemeToggle key="theme-toggle" small={true} />,
+          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+          <Magnifier key="zoom" updateZoom={this.setZoom} />,
+        ];
+
+        sider = [
+          <ReadOnlySubmissionInfo
+            key="submission-info"
+            title="Submission Info"
+            assignment={this.state.assignment}
+            readOnlySubmission={this.state.readOnlySubmission!}
+          />,
+          <FileMenu
+            key="file-menu"
+            title="Files"
+            files={this.state.files}
+            comments={this.state.comments}
+            selectedFile={this.state.selectedFile}
+            getPointsInFile={this.getPointsInFile}
+            changeSelectedFile={this.changeSelectedFile}
+            canChange={this.containsUnsavedComments}
+          />,
+        ];
+      } else {
+        leftHeader = [
+          <Dropdown overlay={menu} trigger={['click']} key="menu">
+            <Icon type="menu" twoToneColor="white" />
+          </Dropdown>,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          <StatusTags key="tag" assignment={this.state.assignment!} submission={this.state.submission!} />,
+        ];
+
+        rightHeader = [
+          <ThemeToggle key="theme-toggle" small={true} />,
+          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
+          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
+          <Magnifier key="zoom" updateZoom={this.setZoom} />,
+          <FinalizeButton
+            key="subheader-finalize"
+            submission={this.state.submission!}
+            canToggle={this.containsUnsavedComments}
+            toggleFinalized={this.toggleFinalized}
+          />,
+        ];
+
+        if (this.state.selectedFile) {
+          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+            <GradeCode
+              key={this.state.selectedFile!.id}
+              file={this.state.selectedFile!}
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              readOnly={this.state.submission!.isFinalized}
+              addComment={this.addComment}
+              user={this.props.user.email}
+              codeStyle={codeStyle}
+              highlightHeight={highlightHeight}
+              onHighlightClick={onHighlightClick}
+            />
+          );
+
+          const comments = (
+            <GradeComments
+              comments={this.state.comments[this.state.selectedFile!.id]}
+              rubricComments={this.state.commentRubricComments}
+              readOnly={this.state.submission!.isFinalized}
+              file={this.state.selectedFile!}
+              activeCommentID={this.state.activeCommentID}
+              changeActive={this.changeActiveComment}
+              deleteComment={this.deleteComment}
+              saveComment={this.saveComment}
+              addUnsaved={this.addUnsaved}
+              removeUnsaved={this.removeUnsaved}
+              removeRubricComment={this.removeRubricComment}
+              oldCommentIDs={this.state.oldCommentIDs}
+              verticalOffset={this.state.codeVerticalOffset}
+            />
+          );
+
+          content = (
+            <CodePanelLayout
+              comments={comments}
+              code={code}
+              file={this.state.selectedFile}
+              zoom={this.state.codeZoom}
+              splitBasis={this.state.codeSplitBasis}
+              updateVerticalOffset={this.setVerticalOffset}
+            />
+          );
+        }
+
+        sider = [
+          <SubmissionInfo
+            key="submission-info"
+            title="Submission Info"
+            assignment={this.state.assignment}
+            submission={this.state.submission!}
+            graders={this.state.graders}
+            isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
+            updateGrader={this.updateGrader}
+          />,
+          <FileMenu
+            key="file-menu"
+            title="Files"
+            files={this.state.files}
+            comments={this.state.comments}
+            selectedFile={this.state.selectedFile}
+            getPointsInFile={this.getPointsInFile}
+            changeSelectedFile={this.changeSelectedFile}
+            canChange={this.containsUnsavedComments}
+          />,
+          <RubricMenu
+            key="rubric-menu"
+            rubricCategories={this.state.rubricCategories}
+            rubricComments={this.state.rubricComments}
+            handleRubricCommentClick={this.onRubricCommentClick}
+          />,
+        ];
+
+        siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
+      }
     }
+
+    const cancelFunc = () => {
+      return;
+    };
 
     return (
       <div id="Grade">
+        <CodeConsoleOnboardingSelector
+          visible={this.state.inDemoMode && !this.state.assignment}
+          onUploadConfirm={this.loadDemoData}
+          onCancel={cancelFunc}
+        />
         <StandardConsoleLayout
           consoleTypes={['grade']}
-          header={header}
-          sider={[
-            <SubmissionInfo
-              key="submission-info"
-              title="Submission Info"
-              assignment={this.state.assignment}
-              submission={this.state.submission!}
-              graders={this.state.graders}
-              isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
-              updateGrader={this.updateGrader}
-            />,
-            <FileMenu
-              key="file-menu"
-              title="Files"
-              files={this.state.files}
-              comments={this.state.comments}
-              selectedFile={this.state.selectedFile}
-              getPointsInFile={this.getPointsInFile}
-              changeSelectedFile={this.changeSelectedFile}
-              canChange={this.containsUnsavedComments}
-            />,
-            <RubricMenu
-              key="rubric-menu"
-              rubricCategories={this.state.rubricCategories}
-              rubricComments={this.state.rubricComments}
-              handleRubricCommentClick={this.onRubricCommentClick}
-            />,
-          ]}
-          siderTitles={['Submission Info', fileMenuTitle, 'Rubric']}
+          header={
+            <CPFlex
+              style={{
+                padding: '0 15',
+                height: 49,
+                fontSize: 12,
+                overflow: 'initial',
+              }}
+              left={leftHeader}
+              right={rightHeader}
+              middle={middleHeader}
+              gutterSize={20}
+              className={theme}
+            />
+          }
+          sider={sider}
+          siderTitles={siderTitles}
           content={content}
         />
       </div>
