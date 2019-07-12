@@ -99,6 +99,9 @@ const panelStrings = [
   'settings/',
 ];
 
+// 5 minute interval for automatic reload
+const LOADING_INTERVAL = 300000;
+
 interface IAdminState {
   /**** UI control data ****/
   currentPanel: PANELS;
@@ -146,6 +149,8 @@ interface IAdminProps {
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
+  private interval: number;
+
   public constructor(props: IAdminProps) {
     super(props);
     const { course, panel } = this.setStateFromURL(this.props.user.courseadminCourses);
@@ -195,6 +200,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
+
+    this.interval = window.setInterval(() => {
+      if (this.state.currentCourse) {
+        this.loadAllCourseData(this.state.currentCourse);
+      }
+    }, LOADING_INTERVAL);
+  }
+
+  public componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   /***********************************************************************************
@@ -242,6 +257,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       return;
     }
 
+    // remove loading interval for existing course
+    window.clearInterval(this.interval);
+    window.clearTimeout(this.interval);
+
     this.setState(
       {
         currentCourse: newCourse,
@@ -275,6 +294,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       () => {
         this.changeURL(newCourse, this.state.currentPanel);
         this.loadAllCourseData(newCourse);
+
+        // add loading interval for new course
+        this.interval = window.setInterval(() => {
+          this.loadAllCourseData(newCourse);
+        }, LOADING_INTERVAL);
       },
     );
   };

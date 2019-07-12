@@ -388,7 +388,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           };
         } else {
           // Case 3: assignment is published, and student has a submission
-          const hasBeenViewed = this.state.viewsBySubmission[submission.id];
+
+          // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
+          const showGrade =
+            !(submission.id in this.state.viewsBySubmission) || this.state.viewsBySubmission[submission.id];
           return {
             ...toRet,
             partners:
@@ -399,7 +402,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                       return student !== this.props.user.email;
                     })
                     .join(', '),
-            grade: hasBeenViewed ? (
+            grade: showGrade ? (
               submission.grade !== null ? (
                 `${submission.grade}/${assignment.points}`
               ) : null
@@ -415,7 +418,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                 <Icon type="code" style={{ cursor: 'pointer' }} />
               </div>
             ),
-            statusType: hasBeenViewed ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
+            statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
           };
         }
       }

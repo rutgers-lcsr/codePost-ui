@@ -241,7 +241,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         const newState = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
-          if (value) {
+          if (value !== null) {
             newVal = parseFloat(value);
           } else {
             newVal = null;
@@ -258,6 +258,13 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   };
 
   public validateCategory = (name: string, helpText: string, pointLimit: number | null) => {
+    if (name.length === 0) {
+      return {
+        valid: false,
+        message: 'Category name cannot be blank.',
+      };
+    }
+
     if (name.length < 4) {
       return {
         valid: false,
@@ -580,9 +587,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           />
         </div>
         <InputNumber
-          value={this.state.pointLimit ? this.state.pointLimit : 0}
+          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
           onChange={this.setValue.bind(this, 'pointLimit')}
           onBlur={this.saveCategory}
+          min={0}
         />
       </div>
     );

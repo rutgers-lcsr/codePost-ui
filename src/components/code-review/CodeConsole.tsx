@@ -65,6 +65,7 @@ import recursion_student1 from '../utils/demo_subs/recursion/student1';
 
 /* f(logged in user, submission) */
 enum PERMISSION_LEVEL {
+  NOT_FOUND,
   NONE,
   READ,
   WRITE,
@@ -284,7 +285,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
           return rubricCategory.id === +category;
         });
-        const pointLimit = thisCategory ? (thisCategory.pointLimit ? thisCategory.pointLimit : 99999) : 99999;
+        const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
         pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
       }
     }
@@ -361,8 +362,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let course;
 
     switch (permissionLevel) {
+      case PERMISSION_LEVEL.NOT_FOUND:
       case PERMISSION_LEVEL.NONE:
-        // Will trigger 403 message in render
+        // Will trigger 403 or 404 message in render
         this.setState({ permissionLevel, isLoading: false });
         break;
       case PERMISSION_LEVEL.READ:
@@ -474,20 +476,27 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         Authorization: `JWT ${localStorage.getItem('token')}`,
       },
     })
-      .then((res) => {
+      .then(async (res) => {
         if (res.ok) {
           return res.json();
+        } else {
+          return Promise.reject(res);
         }
-        return Promise.reject();
       })
       .then((json) => {
-        console.log(json);
         if (json.write) {
           return PERMISSION_LEVEL.WRITE;
         } else if (json.read) {
           return PERMISSION_LEVEL.READ;
         } else {
           return PERMISSION_LEVEL.NONE;
+        }
+      })
+      .catch((error) => {
+        if (error.status === 404) {
+          return PERMISSION_LEVEL.NOT_FOUND;
+        } else {
+          return;
         }
       });
   };
@@ -900,7 +909,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactNode[] = [];
 
-    if (this.state.permissionLevel === PERMISSION_LEVEL.NONE) {
+    if (
+      this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
+      this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+    ) {
       rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
@@ -916,7 +928,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           }}
           description={
             <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
-              Whoops! Looks like you don't have access to this submission...😔
+              {this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+                ? "Whoops! This submission doesn't exist...😔"
+                : "Whoops! Looks like you don't have access to this submission...😔"}
             </span>
           }
         />
