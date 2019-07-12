@@ -96,14 +96,14 @@ const AdminOnboardingSelector = (props: IProps) => {
   const message = `Want to learn how codePost works in less
      than 5 minutes? Choose from one of the options below.`;
 
-  const footer = `If you want to get started on your own, you can always take these tutorials
-      by asking about the "intro tutorials" in the chat box on the bottom right of this screen`;
+  const footer = `If you want to get started by exploring on your own, you can always activate these tutorials
+      by typing "intro tutorials" into the chat box on the bottom right of this screen`;
 
   return (
     <OnboardingSelector
       title={
         <span>
-          Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+          Welcome to the codePost Admin Console! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
         </span>
       }
       options={[tour1, tour2]}
