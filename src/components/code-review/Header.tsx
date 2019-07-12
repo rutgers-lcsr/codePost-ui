@@ -150,8 +150,10 @@ export const Sizer = (props: ISizerProps) => {
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
       if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
         shrink();
       } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
         grow();
       }
     };
