@@ -65,6 +65,7 @@
     "react-textarea-autosize": "^7.1.0",
     "react-toggle-button": "^2.2.0",
     "react-tooltip": "^3.10.0",
+    "remark-disable-tokenizers": "^1.0.21",
     "resolve": "1.6.0",
     "sass-loader": "^7.1.0",
     "source-map-explorer": "^2.0.1",

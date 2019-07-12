@@ -21,11 +21,9 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
 import _Badge from '../../core/Badge';
-// import CPTooltip from '../../core/CPTooltip';
+import InlineMarkdown from '../../core/InlineMarkdown';
 
 /**********************************************************************************************************************/
-
-import InlineMarkdown from '../../core/InlineMarkdown';
 
 interface IRubricMenuProps {
   rubricCategories: RubricCategoryType[];

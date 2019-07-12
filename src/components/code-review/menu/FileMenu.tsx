@@ -19,7 +19,6 @@ import { IFileToCommentsMap } from '../../../types/common';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import _Badge from '../../core/Badge';
-import CPTooltip from '../../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -83,11 +82,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
         let commentCountBadge = null;
         if (commentCount > 0) {
-          commentCountBadge = (
-            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-              <_Badge count={commentCount} forcedStyle="neutral" faded={faded} />
-            </CPTooltip>
-          );
+          commentCountBadge = <_Badge count={commentCount} forcedStyle="neutral" faded={faded} />;
         }
 
         let deductionBadge = null;

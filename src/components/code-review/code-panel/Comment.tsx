@@ -8,6 +8,7 @@ const { TextArea } = Input;
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
+import InlineMarkdown from '../../core/InlineMarkdown';
 
 import _Badge from '../../core/Badge';
 
@@ -417,7 +418,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
-          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }} onClick={this.removeRubricComment}>
+          <span
+            style={{ position: 'absolute', right: '20px', top: '42px', cursor: 'pointer' }}
+            onClick={this.removeRubricComment}
+          >
             X
           </span>
         );
@@ -479,7 +483,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
-          <span className="cp-label--very-bold">{pointsString}</span> {this.props.rubricComment.text}
+          <span className="cp-label--very-bold">{pointsString}</span>
+          <InlineMarkdown source={this.props.rubricComment.text} />
           {commentElements.rubricCommentAction}
         </div>
       );
