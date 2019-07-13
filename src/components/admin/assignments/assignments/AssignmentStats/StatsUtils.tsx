@@ -12,10 +12,10 @@ import { openSubmission } from '../../../other/AdminUtils';
 type alignType = 'left' | 'right' | 'center';
 
 export interface IFullStats extends IGradingProgressStats {
-  median: number; // Median of all finalized submissions
-  mean: number; // Mean of all finalized submissions
-  max: number; // Max grade of all finalized submissions
-  min: number; // Min grade of all finalized submissions
+  median: number | null; // Median of all finalized submissions
+  mean: number | null; // Mean of all finalized submissions
+  max: number | null; // Max grade of all finalized submissions
+  min: number | null; // Min grade of all finalized submissions
 }
 
 // We have views where summary stats are not needed (ManageAssignments table)
@@ -91,22 +91,22 @@ export const calculateFullStats = (
   let totalScore = 0;
   // Calculate Summary statistics if includeSummaryStats is true.
   // We don't want to slow down the ManageAssignments stats calculations
-  let max = Number.NEGATIVE_INFINITY;
-  let min = Number.POSITIVE_INFINITY;
+  let max: number | null = null;
+  let min: number | null = null;
+  let mean: number | null = null;
+  let median: number | null = null;
 
   assignmentSubs.forEach((submission: SubmissionType) => {
     if (submission.isFinalized && submission.grade !== null) {
       totalScore += submission.grade;
-      if (submission.grade > max) max = submission.grade;
-      if (submission.grade < min) min = submission.grade;
+      if (max === null || submission.grade > max) max = submission.grade;
+      if (min === null || submission.grade < min) min = submission.grade;
     }
   });
 
   // Get Mean and Median stats. If the assignment is released, we take the mean and median calculated by the API
   // so that students will see the same stats that admins see.
   // If the assignment is not released, we want to calculate it across all finalized submissions.
-  let mean = 0;
-  let median = 0;
   if (typeof assignment.mean === 'number' && typeof assignment.median === 'number') {
     mean = assignment.mean;
     median = assignment.median;
