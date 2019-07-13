@@ -1,6 +1,5 @@
 import { Icon } from 'antd';
 import React from 'react';
-import { animated, useSpring } from 'react-spring';
 import { AbsoluteCircle, Circle, hexToRGB } from './Utils';
 
 // Definition of the position (on a 500x400 pixel grid), color, icon, and names of the auxillary circles
@@ -42,17 +41,6 @@ const circleMap = [
 ];
 
 export default function APIAnimation() {
-  // Creating the perpetual spring for the motion of the dashed paths
-  const f: any = async (next: any) => {
-    while (1) await next({ amt: 110 });
-  };
-  const { amt }: any = useSpring({
-    to: f,
-    from: { amt: 10 },
-    config: { duration: 3500 },
-    reset: true,
-  });
-
   // Definition of other constants (codePost central circle, and icons)
   const codePostText = (
     <div>
@@ -89,12 +77,7 @@ export default function APIAnimation() {
         );
       })}
       <div style={{ position: 'absolute', top: 0 }}>
-        <animated.svg
-          height="420"
-          width="500"
-          strokeDasharray={10}
-          strokeDashoffset={amt.interpolate((x: number) => x)}
-        >
+        <svg height="420" width="500" strokeDasharray={10} strokeDashoffset={10}>
           <circle
             cx="250"
             cy="200"
@@ -107,7 +90,7 @@ export default function APIAnimation() {
           <path d="M250 335 Q 50 350 130 145" stroke="grey" fill="transparent" />
           <path d="M370 145 Q 450 350 250 335" stroke="grey" fill="transparent" />
           <path d="M130 145 Q 250 -75 370 145" stroke="grey" fill="transparent" />
-        </animated.svg>
+        </svg>
       </div>
     </div>
   );
