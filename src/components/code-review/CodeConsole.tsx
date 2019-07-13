@@ -100,6 +100,9 @@ interface ICodeConsoleState {
 
   /* admin data */
   graders: string[];
+
+  /* demo data */
+  demoCommentCounter: number;
 }
 
 export interface ICodeConsoleProps {
@@ -335,6 +338,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     codeZoom: 1,
     codeSplitBasis: themeVars.grade.splitBasis,
     codeVerticalOffset: 0,
+
+    demoCommentCounter: 0,
   };
 
   /**********************************************************************************
@@ -582,8 +587,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         savedComment = await CommentIO.update(comment);
       }
     } else {
-      savedComment = { ...comment, id: Math.floor(Math.random() * 9999999) };
+      // In demo mode, we want to simulate the saving of a comment without actually saving anything.
+      // To do this, we need to make up a positive comment id for the comments we "save"
+      //
+      // Note that the id we use can collide with existing comment IDs, because we never
+      // make any API call to interact with the comment whose ID corresponds to the ID we assign here
+      savedComment = { ...comment, id: this.state.demoCommentCounter + 1 };
       oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+
+      // we want to keep track of the order in which demo comments are created, so we can highlight
+      // them precisely. For example, we may want to show one tooltip for the first comment made by
+      // a user participating in the demo, and a different tooltip for the second comment.
+      this.setState((oldState) => {
+        return {
+          demoCommentCounter: oldState.demoCommentCounter + 1,
+        };
+      });
     }
 
     let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
