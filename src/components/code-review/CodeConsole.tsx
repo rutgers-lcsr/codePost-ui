@@ -706,6 +706,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
+    if (this.state.inDemoMode) {
+      this.setState(
+        (oldState: ICodeConsoleState) => {
+          // We need to update the submission object in the same way it would be updated
+          // if update below was actually sent.
+          return {
+            submission: {
+              ...oldState.submission!,
+              isFinalized: !oldState.submission!.isFinalized,
+              grade: this.calculateGradeFromState()!,
+            },
+          };
+        },
+        () => {
+          if (this.state.submission!.isFinalized) {
+            message.success('Succcessfully finalized submission');
+          } else {
+            message.success('Succcessfully unfinalized submission');
+          }
+        },
+      );
+      return;
+    }
+
     const payload = {
       id: this.state.submission.id,
       isFinalized: !this.state.submission.isFinalized,
@@ -1132,6 +1156,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
           <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
           <Magnifier key="zoom" updateZoom={this.setZoom} />,
+          <FinalizeButton
+            key="subheader-finalize"
+            submission={this.state.submission!}
+            canToggle={this.containsUnsavedComments}
+            toggleFinalized={this.toggleFinalized}
+          />,
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
         if (this.state.selectedFile) {
