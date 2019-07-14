@@ -17,6 +17,8 @@ import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
 
+import { acceptedFilesString } from '../admin/assignments/assignments/AcceptedFileTypes';
+
 /**********************************************************************************************************************/
 
 interface IOnboardingSelectorProps {
@@ -207,7 +209,13 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     };
 
     const uploader = (
-      <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
+      <Upload
+        beforeUpload={beforeUpload}
+        listType="text"
+        multiple={true}
+        onChange={onChange}
+        accept={acceptedFilesString}
+      >
         <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
         </CPButton>
