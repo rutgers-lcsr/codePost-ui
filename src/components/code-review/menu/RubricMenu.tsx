@@ -101,18 +101,24 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       // @ts-ignore
       const info = (
         <div>
-          <div>
-            <b>Name: </b>
-            {rubricCategory.name}
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Name:</div>
+            <div style={{ display: 'inline-block', maxWidth: '300px' }}>{rubricCategory.name}</div>
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          <div>
-            <b>Point Limit: </b>
-            {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Point Limit: </div>
+            <div style={{ display: 'inline-block', maxWidth: '300px' }}>
+              {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
+            </div>
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          <b>Details: </b>
-          <div style={{ whiteSpace: 'pre-wrap' }}>{rubricCategory.helpText ? rubricCategory.helpText : ''}</div>
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Details:</div>
+            <div style={{ display: 'inline-block', maxWidth: '300px' }}>
+              {rubricCategory.helpText ? rubricCategory.helpText : ''}
+            </div>
+          </div>
         </div>
       );
 
@@ -200,11 +206,14 @@ interface IRubricMenuCommentElementProps {
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
   return (
     <div
       style={{
-        border: '1px solid #e3e3e3',
-        backgroundColor: '#fafafa',
+        border: `1px solid ${consoleTheme.codeHeaderBg}`, // #e3e3e3
+        backgroundColor: consoleTheme.commentTextArea, // #fafafa
+        color: consoleTheme.text,
         borderRadius: '8px',
         padding: '6px 14px 8px 8px',
         fontSize: '10.5px',
