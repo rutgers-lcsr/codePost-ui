@@ -85,18 +85,30 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
         let commentCountBadge = null;
         if (commentCount > 0) {
-          commentCountBadge = <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}><Badge count={commentCount} forcedStyle="neutral" faded={faded} /></CPTooltip>;
+          commentCountBadge = (
+            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+              <Badge count={commentCount} forcedStyle="neutral" faded={faded} />
+            </CPTooltip>
+          );
         }
 
         let deductionBadge = null;
         let bonusBadge = null;
 
         if (deductions > 0) {
-          deductionBadge = <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}><Badge count={deductions * -1} faded={faded} /></CPTooltip>;
+          deductionBadge = (
+            <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+              <Badge count={deductions * -1} faded={faded} />
+            </CPTooltip>
+          );
         }
 
         if (bonuses > 0) {
-          bonusBadge = <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}><Badge count={bonuses} faded={faded} /></CPTooltip>;
+          bonusBadge = (
+            <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+              <Badge count={bonuses} faded={faded} />
+            </CPTooltip>
+          );
         }
 
         return (
