@@ -4,6 +4,8 @@ import ReactMarkdown from 'react-markdown';
 
 import remarkDisableTokenizers from 'remark-disable-tokenizers';
 
+import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+
 interface IInlineMarkdownProps {
   source: string;
 }
@@ -43,14 +45,21 @@ const InlineMarkdown = (props: IInlineMarkdownProps) => {
 };
 
 const useInlineMarkdownRenderers = () => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
   const paragraphRenderer = (props: any) => {
     return <div style={{ marginBottom: '3px' }}>{props.children}</div>;
   };
 
   const inlineCodeRenderer = (props: any) => {
-    return (
-      <code style={{ backgroundColor: '#e3e3e3', padding: '0px 2px', borderRadius: '2px' }}>{props.children}</code>
-    );
+    const style = {
+      backgroundColor: consoleTheme.commentCode, // #e3e3e3
+      color: consoleTheme.text,
+      padding: '0px 2px',
+      borderRadius: '2px',
+    };
+
+    return <code style={style}>{props.children}</code>;
   };
 
   return {

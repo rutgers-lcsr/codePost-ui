@@ -18,6 +18,8 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import themeVars from '../../../styles/abstracts/_theme.js';
+
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
 import Badge from '../../core/Badge';
@@ -208,16 +210,28 @@ interface IRubricMenuCommentElementProps {
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  const [hovered, setHovered] = React.useState(false);
+
+  const onMouseEnter = () => {
+    setHovered(true);
+  };
+
+  const onMouseLeave = () => {
+    setHovered(false);
+  };
+
   return (
     <div
       style={{
-        border: `1px solid ${consoleTheme.codeHeaderBg}`, // #e3e3e3
-        backgroundColor: consoleTheme.commentTextArea, // #fafafa
-        color: consoleTheme.text,
+        border: `1px solid ${consoleTheme.codeHeaderBg}`,
+        backgroundColor: consoleTheme.commentTextArea,
+        color: hovered ? themeVars.theme.brandPrimary : consoleTheme.text,
         borderRadius: '8px',
         padding: '6px 14px 8px 8px',
         fontSize: '10.5px',
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <Badge count={props.rubricComment.pointDelta * -1} size="small" />
       <div style={{ paddingTop: '6px' }}>
