@@ -100,26 +100,21 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         );
       });
 
-      // @ts-ignore
       const info = (
         <div>
-          <div style={{ whiteSpace: 'pre-wrap' }}>
-            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Name:</div>
-            <div style={{ display: 'inline-block', maxWidth: '300px' }}>{rubricCategory.name}</div>
+          <div className="rubric-menu__info">
+            <div>Name:</div>
+            <div>{rubricCategory.name}</div>
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          <div style={{ whiteSpace: 'pre-wrap' }}>
-            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Point Limit: </div>
-            <div style={{ display: 'inline-block', maxWidth: '300px' }}>
-              {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
-            </div>
+          <div className="rubric-menu__info">
+            <div>Point Limit: </div>
+            <div>{rubricCategory.pointLimit === null ? 'None set' : rubricCategory.pointLimit}</div>
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          <div style={{ whiteSpace: 'pre-wrap' }}>
-            <div style={{ display: 'inline-block', minWidth: '100px', fontWeight: 600 }}>Details:</div>
-            <div style={{ display: 'inline-block', maxWidth: '300px' }}>
-              {rubricCategory.helpText ? rubricCategory.helpText : ''}
-            </div>
+          <div className="rubric-menu__info">
+            <div>Details:</div>
+            <div>{rubricCategory.helpText ? rubricCategory.helpText : 'None set'}</div>
           </div>
         </div>
       );
