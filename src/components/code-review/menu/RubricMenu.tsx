@@ -164,7 +164,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       <div style={{ marginTop: '8px' }}>
         <div id="rubric-menu-title" style={{ marginBottom: '5px', display: 'flex' }}>
           <Input
-            placeholder="Search rubric...(⌘ O)"
+            placeholder="Search rubric... (⌘ O)"
             id="rubric-search"
             onChange={this.onSearch}
             value={this.state.searchTerm}
