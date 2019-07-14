@@ -102,25 +102,25 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       const info = (
         <div>
           <div>
+            <b>Name: </b>
+            {rubricCategory.name}
+          </div>
+          <Divider style={{ margin: '10px 0px' }} />
+          <div>
             <b>Point Limit: </b>
             {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          {rubricCategory.helpText ? (
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              <b>Details: </b>
-              {rubricCategory.helpText}
-            </div>
-          ) : null}
+          <b>Details: </b>
+          <div style={{ whiteSpace: 'pre-wrap' }}>{rubricCategory.helpText ? rubricCategory.helpText : ''}</div>
         </div>
       );
 
-      const capTag =
-        rubricCategory.pointLimit !== null || rubricCategory.helpText !== null ? (
-          <Popover title="Category Details" content={info}>
-            <Tag>Details</Tag>
-          </Popover>
-        ) : null;
+      const capTag = (
+        <Popover title="Category Details" content={info}>
+          <Tag>Details</Tag>
+        </Popover>
+      );
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
