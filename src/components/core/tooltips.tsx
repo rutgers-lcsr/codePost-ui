@@ -5,25 +5,50 @@ import { Link } from 'react-router-dom';
 const CONSOLE_HEADER_DARKMODE = 'Switch to light mode';
 const CONSOLE_HEADER_LIGHTMODE = 'Switch to dark mode';
 const CONSOLE_FILEMENU_DEDUCTION = 'Points deducted in file';
-const CONSOLE_FILEMENU_ADDITION = 'Points added in file';
+const CONSOLE_FILEMENU_BONUS = 'Points added in file';
 const CONSOLE_FILEMENU_COMMENTS = 'Comments in file';
 
 // ************************ Student Tooltips ************************
 const STUDENT_SUBHEADER_ASSIGNMENT = 'Assignment name';
 
 // Grade Tooltips
-const GRADE_CODEBOX_ZOOMIN = 'Zoom in';
-const GRADE_CODEBOX_ZOOMOUT = 'Zoom out';
-const GRADE_CODEBOX_GROW = 'Increase width';
-const GRADE_CODEBOX_SHRINK = 'Decrease width';
-const GRADE_CODEBOX_ALIGNMENT = (
+const GRADE_HEADER_ZOOMIN = (
+  <div>
+    Magnify code
+    <br />
+    [⌘ +]
+  </div>
+);
+const GRADE_HEADER_ZOOMOUT = (
+  <div>
+    Shrink code
+    <br />
+    [⌘ -]
+  </div>
+);
+const GRADE_HEADER_GROW = (
+  <div>
+    Expand code window
+    <br />
+    [⌘ →]
+  </div>
+);
+const GRADE_HEADER_SHRINK = (
+  <div>
+    Shrink code window
+    <br />
+    [⌘ ←]
+  </div>
+);
+const GRADE_HEADER_ALIGNMENT = (
   <div>
     reset comment alignments
     <br />
-    [⌘+click highlights]
+    [⌘ click highlights]
   </div>
 );
-const GRADE_SUBHEADER_ASSIGNGRADER = 'Assign a grader to this submission.';
+const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
+const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Unfinalize this submission to edit its grader.';
 
 // ************************ Settings tooltips ************************
 const SETTINGS_TOKEN_COPY = 'Copy API token';
@@ -135,7 +160,7 @@ export const tooltips = {
     },
     fileMenu: {
       deductions: CONSOLE_FILEMENU_DEDUCTION,
-      additions: CONSOLE_FILEMENU_ADDITION,
+      bonuses: CONSOLE_FILEMENU_BONUS,
       comments: CONSOLE_FILEMENU_COMMENTS,
     },
   },
@@ -145,15 +170,16 @@ export const tooltips = {
     },
   },
   grade: {
-    codePanel: {
-      zoomIn: GRADE_CODEBOX_ZOOMIN,
-      zoomOut: GRADE_CODEBOX_ZOOMOUT,
-      grow: GRADE_CODEBOX_GROW,
-      shrink: GRADE_CODEBOX_SHRINK,
-      alignment: GRADE_CODEBOX_ALIGNMENT,
+    header: {
+      zoomIn: GRADE_HEADER_ZOOMIN,
+      zoomOut: GRADE_HEADER_ZOOMOUT,
+      grow: GRADE_HEADER_GROW,
+      shrink: GRADE_HEADER_SHRINK,
+      alignment: GRADE_HEADER_ALIGNMENT,
     },
-    subheader: {
-      assignGrader: GRADE_SUBHEADER_ASSIGNGRADER,
+    subInfo: {
+      assignGrader: GRADE_SUBINFO_ASSIGNGRADER,
+      unfinalizeToAssign: GRADE_SUBINFO_UNFINALIZETOASSIGN,
     },
   },
   settings: {

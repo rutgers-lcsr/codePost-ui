@@ -4,12 +4,13 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tag, Tooltip } from 'antd';
+import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
@@ -71,37 +72,19 @@ export const Magnifier = (props: IMagnifierProps) => {
 
   return (
     <ButtonGroup>
-      <Tooltip
-        placement="top"
-        title={
-          <div>
-            Shrink code
-            <br />
-            [⌘ -]
-          </div>
-        }
-      >
+      <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
         </CPButton>
-      </Tooltip>
+      </CPTooltip>
       <CPButton cpType={cpType} small>
         {(zoom * 100).toFixed(0)}%
       </CPButton>
-      <Tooltip
-        placement="top"
-        title={
-          <div>
-            Magnify code
-            <br />
-            [⌘ +]
-          </div>
-        }
-      >
+      <CPTooltip title={tooltips.grade.header.zoomIn} hideThisOnHideTips={true}>
         <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small={true}>
           <Icon type="zoom-in" />
         </CPButton>
-      </Tooltip>
+      </CPTooltip>
     </ButtonGroup>
   );
 };
@@ -150,8 +133,10 @@ export const Sizer = (props: ISizerProps) => {
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
       if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
         shrink();
       } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
         grow();
       }
     };
@@ -163,34 +148,16 @@ export const Sizer = (props: ISizerProps) => {
 
   return (
     <ButtonGroup>
-      <Tooltip
-        placement="top"
-        title={
-          <div>
-            Shrink code window
-            <br />
-            [⌘ ←]
-          </div>
-        }
-      >
+      <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
         <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
           <Icon type="double-left" />
         </CPButton>
-      </Tooltip>
-      <Tooltip
-        placement="top"
-        title={
-          <div>
-            Expand code window
-            <br />
-            [⌘ →]
-          </div>
-        }
-      >
+      </CPTooltip>
+      <CPTooltip title={tooltips.grade.header.grow} hideThisOnHideTips={true}>
         <CPButton id="grow" cpType={cpType} onClick={grow} small={true}>
           <Icon type="double-right" />
         </CPButton>
-      </Tooltip>
+      </CPTooltip>
     </ButtonGroup>
   );
 };
@@ -210,22 +177,13 @@ export const Reset = (props: IResetProps) => {
   }
 
   return (
-    <Tooltip
-      placement="top"
-      title={
-        <div>
-          reset comment alignments
-          <br />
-          [⌘ click highlights]
-        </div>
-      }
-    >
+    <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
       <ButtonGroup>
         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
           <Icon type="redo" />
         </CPButton>
       </ButtonGroup>
-    </Tooltip>
+    </CPTooltip>
   );
 };
 

@@ -32,11 +32,13 @@ const GetStartedColor = 'rgba(0,0,0,0)';
 const footerColor = '#EBEBEB';
 
 // Vertical Padding
-const panelVPaddingNormal = 50;
+const panelVPaddingNormal = 75;
 const panelVPaddingSmallScreen = 25;
 const headerVPaddingNormal = 35;
 const headerVPaddingSmallScreen = 20;
 const getStartedVPaddingNormal = 70;
+const heroVPaddingNormal = 50;
+const heroVPaddingSmallScreen = 25;
 
 // horizontal padding
 const testimonialHPadding = 25;
@@ -94,6 +96,8 @@ module.exports = {
     headerNormal: headerVPaddingNormal,
     headerSmallScreen: headerVPaddingSmallScreen,
     getStartedNormal: getStartedVPaddingNormal,
+    heroNormal: heroVPaddingNormal,
+    heroImgSmallScreen: heroVPaddingSmallScreen,
   },
   Hpadding: {
     testimonial: testimonialHPadding,

@@ -16,6 +16,9 @@ import { SelectParam } from 'antd/lib/menu';
 
 import { IFileToCommentsMap } from '../../../types/common';
 
+import CPTooltip from '../../core/CPTooltip';
+import { tooltips } from '../../core/tooltips';
+
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import Badge from '../../core/Badge';
@@ -82,18 +85,18 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
         let commentCountBadge = null;
         if (commentCount > 0) {
-          commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} />;
+          commentCountBadge = <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}><Badge count={commentCount} forcedStyle="neutral" faded={faded} /></CPTooltip>;
         }
 
         let deductionBadge = null;
         let bonusBadge = null;
 
         if (deductions > 0) {
-          deductionBadge = <Badge count={deductions * -1} faded={faded} />;
+          deductionBadge = <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}><Badge count={deductions * -1} faded={faded} /></CPTooltip>;
         }
 
         if (bonuses > 0) {
-          bonusBadge = <Badge count={bonuses} faded={faded} />;
+          bonusBadge = <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}><Badge count={bonuses} faded={faded} /></CPTooltip>;
         }
 
         return (

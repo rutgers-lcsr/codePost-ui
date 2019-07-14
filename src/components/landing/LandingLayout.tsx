@@ -35,6 +35,11 @@ const LandingLayout = (props: IProps) => {
       ? landingVars.Vpadding.panelSmallScreen
       : landingVars.Vpadding.panelNormal;
 
+  const verticalPaddingHero =
+    windowSize.width < landingVars.breakpoints.verticalPanels
+      ? landingVars.Vpadding.heroImgSmallScreen
+      : landingVars.Vpadding.heroNormal;
+
   const verticalPadddingHeader =
     windowSize.width < landingVars.breakpoints.header
       ? landingVars.Vpadding.headerSmallScreen
@@ -103,8 +108,8 @@ const LandingLayout = (props: IProps) => {
           <div
             style={{
               maxWidth: landingVars.maxWidths.panel,
-              paddingTop: verticalPaddingPanel,
-              paddingBottom: verticalPaddingPanel,
+              paddingTop: verticalPaddingHero,
+              paddingBottom: verticalPaddingHero,
               display: 'flex',
               justifyContent: 'space-between',
             }}
@@ -127,8 +132,8 @@ const LandingLayout = (props: IProps) => {
           />
           <div
             style={{
-              paddingTop: verticalPaddingPanel,
-              paddingBottom: verticalPaddingPanel,
+              paddingTop: verticalPaddingHero,
+              paddingBottom: verticalPaddingHero,
               paddingLeft: landingVars.Hpadding.testimonial,
               paddingRight: landingVars.Hpadding.testimonial,
               width: '100%',
