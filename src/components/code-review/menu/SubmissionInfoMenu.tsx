@@ -132,6 +132,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   function handleChange(grader: string) {
+    toggleModal();
     props.updateGrader(props.submission, grader).then(() => {
       message.success(`Successfully assigned to ${grader}`);
     });
@@ -155,11 +156,11 @@ export const GraderInfo = (props: IGraderInfoProps) => {
 
   const renderUnassign = (menu: any) => (
     <div>
-      {menu}
-      <Divider style={{ margin: '4px 0' }} />
       <div style={{ padding: '6px', cursor: 'pointer' }} onClick={unassign}>
         <Icon type="close" /> Unassign
       </div>
+      <Divider style={{ margin: '4px 0' }} />
+      {menu}
     </div>
   );
 
