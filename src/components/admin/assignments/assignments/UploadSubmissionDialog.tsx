@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, Modal, Progress, Upload } from 'antd';
+import { Button, Icon, Modal, Progress, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -44,7 +44,6 @@ interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
   files: any[];
-  foundCollision: boolean;
   status: STATUS;
 }
 
@@ -60,7 +59,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     files: [],
-    foundCollision: false,
     status: STATUS.NONE,
   };
 
@@ -87,6 +85,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public cancel = () => {
+    this.setState({ status: STATUS.NONE, files: [] });
     this.props.onCancel();
   };
 
@@ -158,7 +157,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public onCancel = () => {
-    this.setState({ files: [], foundCollision: false, status: STATUS.NONE });
+    this.setState({ files: [], status: STATUS.NONE });
     this.props.onCancel();
   };
 
@@ -175,17 +174,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       this.state.files.length > 0 &&
       this.state.selectedAssignment
     );
-
-    let errorText;
-    if (this.state.foundCollision) {
-      errorText = (
-        <Alert
-          message={`A submission already exists for one of
-            these students. You must delete it before uploading a new submission.`}
-          type="error"
-        />
-      );
-    }
 
     let content;
     switch (status) {
@@ -267,8 +255,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               options={studentOptions}
               onChange={this.changeStudents}
             />
-            <br />
-            {errorText}
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}

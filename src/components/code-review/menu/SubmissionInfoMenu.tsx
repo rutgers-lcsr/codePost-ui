@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, message, Modal, Select, Tag, Tooltip } from 'antd';
+import { Avatar, Divider, Icon, message, Modal, Select, Tag } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -16,6 +16,9 @@ import { AssignmentType } from '../../../infrastructure/assignment';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
+import CPTooltip from '../../core/CPTooltip';
+import { tooltips } from '../../core/tooltips';
 
 /**********************************************************************************************************************/
 
@@ -189,13 +192,13 @@ export const GraderInfo = (props: IGraderInfoProps) => {
             }}
           >
             {props.submission.isFinalized ? (
-              <Tooltip title="Unfinalize this submission to edit its grader" placement="right">
+              <CPTooltip title={tooltips.grade.subInfo.unfinalizeToAssign} placement="right">
                 {props.submission.grader}
-              </Tooltip>
+              </CPTooltip>
             ) : (
-              <Tooltip title="Click to reassign grader" placement="right">
+              <CPTooltip title={tooltips.grade.subInfo.assignGrader} placement="right" hideThisOnHideTips={true}>
                 {props.submission.grader}
-              </Tooltip>
+              </CPTooltip>
             )}
           </span>
         </div>

@@ -155,6 +155,20 @@ class ManageAssignments extends React.Component<IProps, IState> {
       },
     ];
 
+    const {
+      mean,
+      median,
+      max,
+      min,
+      numSubmissions,
+      numGraded,
+      numInProgress,
+      numUnclaimed,
+      numMissing,
+      numViewed,
+      numUnviewed,
+    } = statsForRow;
+
     const submissionData = [
       {
         key: 1,
@@ -169,7 +183,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
         ),
         data: (
           <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
-            {statsForRow.numSubmissions}
+            {numSubmissions}
           </span>
         ),
         children: [
@@ -186,7 +200,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
             ),
             data: (
               <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
-                {statsForRow.numGraded}
+                {numGraded}
               </span>
             ),
             children: [
@@ -206,7 +220,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unviewed)}
                     style={hoverStyle}
                   >
-                    {statsForRow.numUnviewed}
+                    {numUnviewed}
                   </span>
                 ),
               },
@@ -226,7 +240,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Viewed)}
                     style={hoverStyle}
                   >
-                    {statsForRow.numViewed}
+                    {numViewed}
                   </span>
                 ),
               },
@@ -245,7 +259,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
             ),
             data: (
               <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
-                {statsForRow.numInProgress}
+                {numInProgress}
               </span>
             ),
           },
@@ -265,7 +279,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unclaimed)}
                 style={hoverStyle}
               >
-                {statsForRow.numUnclaimed}
+                {numUnclaimed}
               </span>
             ),
           },
@@ -284,26 +298,25 @@ class ManageAssignments extends React.Component<IProps, IState> {
         ),
         data: (
           <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
-            {statsForRow.numMissing}
+            {numMissing}
           </span>
         ),
       },
     ];
-
     const summaryData = (
       <Card style={{ backgroundColor: '#F9F9F9', boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
         <Row gutter={0} style={{ width: 600, textAlign: 'center' }}>
           <Col span={6}>
-            <Statistic title="Mean" value={statsForRow.mean} suffix={`/ ${this.props.assignment.points}`} />
+            <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic title="Median" value={statsForRow.median} suffix={`/ ${this.props.assignment.points}`} />
+            <Statistic title="Median" value={median ? median : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic title="Max" value={statsForRow.max} suffix={`/ ${this.props.assignment.points}`} />
+            <Statistic title="Max" value={max ? max : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic title="Min" value={statsForRow.min} suffix={`/ ${this.props.assignment.points}`} />
+            <Statistic title="Min" value={min ? min : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
         </Row>
       </Card>
