@@ -62,7 +62,6 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
   public buildFileMenu = (files: FileType[]) => {
     return files.map((file: FileType, index: number) => {
-      // const totalPointsInFile = 10;
       const [deductions, bonuses] = this.props.getPointsInFile(file);
 
       let commentCount = 0;
@@ -109,7 +108,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
       return (
         <Menu.Item key={`file-${file.id}`}>
-          <span
+          <div
             style={{
               display: 'inline-block',
               maxWidth: '148px',
@@ -119,8 +118,18 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
               verticalAlign: 'middle',
             }}
           >
-            {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘ {index + 1}]</span>
-          </span>
+            <div
+              style={{
+                fontSize: '10.5px',
+                color: '#ccc',
+                position: 'absolute',
+                left: '3px',
+              }}
+            >
+              ⌘{index + 1}
+            </div>
+            {file.name}
+          </div>
           <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
           <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
           <span style={{ position: 'absolute', right: '15px' }}>
