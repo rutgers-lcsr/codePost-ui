@@ -244,7 +244,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
           onClick={onClick}
-          loading={isLoading && isFinalized}
+          isLoading={isLoading}
           small={true}
           disabled={!isFinalized}
         >
@@ -254,7 +254,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
           fallback="lock"
           onClick={onClick}
-          loading={isLoading && !isFinalized}
+          isLoading={isLoading}
           disabled={isFinalized}
           style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
           small={true}

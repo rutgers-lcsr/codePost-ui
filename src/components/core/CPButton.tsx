@@ -16,6 +16,7 @@ interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
   fallback?: string;
   small?: boolean;
+  isLoading?: boolean;
   fallbackWidth?: number; // Optional: window width when the button falls back to icon
 }
 
@@ -27,11 +28,6 @@ interface ICPButtonState {
 class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonState> {
   public constructor(props: ButtonProps & ICPButtonProps, context: any) {
     super(props, context);
-
-    // this.state = {
-    //   backgroundColor: this.background(),
-    //   border: this.border(),
-    // };
   }
 
   public background = () => {
@@ -51,25 +47,13 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
   };
 
   public render() {
-    const { cpType, fallback, windowwidth, windowheight, ...props } = this.props;
-
-    // let onMouseEnter;
-    // let onMouseLeave;
-
+    const { cpType, fallback, isLoading, small, windowwidth, windowheight, ...props } = this.props;
     const customProps = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;
-    // customProps['style'] = { backgroundColor: 'blue' };
 
     if (['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)) {
       customProps['type'] = cpType;
     }
-
-    // if (cpType === 'danger') {
-    //   customProps['style'] = {
-    //     backgroundColor: this.state.backgroundColor,
-    //     border: this.state.border,
-    //   };
-    // }
 
     if (cpType === 'danger') {
       customProps['style'] = {
@@ -100,6 +84,16 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
       customProps['shape'] = 'circle';
     } else if (!(this.props.small !== undefined && this.props.small)) {
       customProps['className'] = customProps['className'].concat(' ', 'cp-button--with-text');
+    }
+
+    if (this.props.isLoading !== undefined && this.props.isLoading) {
+      if (customProps.hasOwnProperty('style')) {
+        customProps['style'] = { ...customProps['style'], cursor: 'wait' };
+      } else {
+        customProps['style'] = {
+          cursor: 'wait',
+        };
+      }
     }
 
     return (
