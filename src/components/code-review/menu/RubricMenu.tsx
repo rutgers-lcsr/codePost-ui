@@ -18,11 +18,8 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
-
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
-import Badge from '../../core/Badge';
 import InlineMarkdown from '../../core/InlineMarkdown';
 
 /**********************************************************************************************************************/
@@ -81,6 +78,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     rubricCategories: RubricCategoryType[],
     rubricCommentMap: IRubricCategoryToRubricCommentsMap,
   ) => {
+    const showDetailTag =
+      rubricCategories.filter((rubricCategory: RubricCategoryType) => {
+        return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '';
+      }).length > 0;
+
     return rubricCategories.map((rubricCategory: RubricCategoryType) => {
       const rubricComments = rubricCommentMap[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
         return rubricComment.text.toUpperCase().includes(this.state.searchTerm.toUpperCase());
@@ -119,11 +121,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         </div>
       );
 
-      const capTag = (
+      const capTag = showDetailTag ? (
         <Popover title="Category Details" content={info}>
           <Tag>Details</Tag>
         </Popover>
-      );
+      ) : null;
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
@@ -136,15 +138,15 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               style={{
                 position: 'absolute',
                 width: '100%',
-                paddingLeft: '10px',
+                paddingLeft: '26px',
                 backgroundColor: this.context.consoleTheme.siderSubmenuTitleBg,
                 color: this.context.consoleTheme.siderSubmenuTitleColor,
-                // borderBottom: this.context.consoleTheme.siderSubmenuBorder,
+                borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
               <div style={{ paddingRight: '40px' }}>
-                <span className="cp-label" style={{ fontSize: '14px' }}>
-                  <span className="cp-label--success">></span> {rubricCategory.name}{' '}
+                <span>
+                  {rubricCategory.name}
                   <span style={{ float: 'right' }}>{capTag}</span>
                 </span>
               </div>
@@ -203,35 +205,24 @@ interface IRubricMenuCommentElementProps {
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-
-  const [hovered, setHovered] = React.useState(false);
-
-  const onMouseEnter = () => {
-    setHovered(true);
-  };
-
-  const onMouseLeave = () => {
-    setHovered(false);
-  };
+  let points = '';
+  if (props.rubricComment.pointDelta > 0) {
+    points = `-${props.rubricComment.pointDelta}`;
+  } else if (props.rubricComment.pointDelta < 0) {
+    points = `+${props.rubricComment.pointDelta * -1}`;
+  } else {
+    points = 'Ø';
+  }
 
   return (
     <div
       style={{
-        border: `1px solid ${consoleTheme.codeHeaderBg}`,
-        backgroundColor: consoleTheme.commentTextArea,
-        color: hovered ? themeVars.theme.brandPrimary : consoleTheme.text,
-        borderRadius: '8px',
-        padding: '6px 14px 8px 8px',
+        padding: '0px 10px',
         fontSize: '10.5px',
       }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
     >
-      <Badge count={props.rubricComment.pointDelta * -1} size="small" />
-      <div style={{ paddingTop: '6px' }}>
-        <InlineMarkdown source={props.rubricComment.text} />
-      </div>
+      <InlineMarkdown source={props.rubricComment.text} />
+      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
     </div>
   );
 };
