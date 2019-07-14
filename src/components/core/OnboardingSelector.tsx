@@ -17,6 +17,8 @@ import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
 
+import { acceptedFilesString } from '../admin/assignments/assignments/AcceptedFileTypes';
+
 /**********************************************************************************************************************/
 
 interface IOnboardingSelectorProps {
@@ -27,6 +29,7 @@ interface IOnboardingSelectorProps {
   visible: boolean;
   onCancel: () => void;
   footerButtons: React.ReactNode | null;
+  closable?: boolean;
 }
 
 const OnboardingSelector = (props: IOnboardingSelectorProps) => {
@@ -37,6 +40,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
       onCancel={props.onCancel}
       footer={props.footerButtons}
       width={600}
+      closable={props.closable === undefined ? true : props.closable}
     >
       {props.message}
       <br />
@@ -207,7 +211,13 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     };
 
     const uploader = (
-      <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
+      <Upload
+        beforeUpload={beforeUpload}
+        listType="text"
+        multiple={true}
+        onChange={onChange}
+        accept={acceptedFilesString}
+      >
         <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
         </CPButton>
@@ -288,6 +298,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       message={message}
       footer={footer}
       footerButtons={footerButtons}
+      closable={false}
     />
   );
 };
