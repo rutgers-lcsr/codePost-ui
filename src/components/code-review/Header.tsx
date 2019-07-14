@@ -237,6 +237,9 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const isFinalized = props.submission.isFinalized;
 
+  const finalizeNotice =
+    props.submission.grader === null ? 'Assign a grader to this submission before finalizing.' : null;
+
   return (
     <div ref={ref}>
       <ButtonGroup>
@@ -250,34 +253,35 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         >
           Edit
         </CPButton>
-        <CPButton
-          cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
-          fallback="lock"
-          onClick={onClick}
-          isLoading={isLoading}
-          disabled={isFinalized}
-          style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
-          small={true}
-        >
-          <Popconfirm
-            title={
-              <div>
-                <p>You have draft comments that will not be saved.</p>{' '}
-                <p>
-                  <b>Are you sure you want to continue?</b>
-                </p>
-              </div>
-            }
-            visible={popconfirmVisible}
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-            placement="bottomRight"
+        <CPTooltip title={finalizeNotice} placement="left">
+          <CPButton
+            cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
+            fallback="lock"
+            onClick={props.submission.grader === null ? undefined : onClick}
+            isLoading={isLoading}
+            disabled={isFinalized}
+            small={true}
           >
-            Done
-          </Popconfirm>
-        </CPButton>
+            <Popconfirm
+              title={
+                <div>
+                  <p>You have draft comments that will not be saved.</p>{' '}
+                  <p>
+                    <b>Are you sure you want to continue?</b>
+                  </p>
+                </div>
+              }
+              visible={popconfirmVisible}
+              onConfirm={confirm}
+              onCancel={cancel}
+              okText="Yes"
+              cancelText="No"
+              placement="bottomRight"
+            >
+              Done
+            </Popconfirm>
+          </CPButton>
+        </CPTooltip>
       </ButtonGroup>
     </div>
   );
