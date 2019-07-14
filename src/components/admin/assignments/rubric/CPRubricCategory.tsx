@@ -472,7 +472,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             <span onClick={this.props.activateCommentExplorer.bind(this, thisComment)}>
               <Badge
                 count={thisComment.comments.length}
-                className="cp-badge"
+                className="badge badge--standard"
                 style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
               />
             </span>

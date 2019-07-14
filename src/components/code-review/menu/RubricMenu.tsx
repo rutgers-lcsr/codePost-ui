@@ -20,6 +20,8 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 
 import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
 
+import InlineMarkdown from '../../core/InlineMarkdown';
+
 /**********************************************************************************************************************/
 
 interface IRubricMenuProps {
@@ -76,20 +78,16 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     rubricCategories: RubricCategoryType[],
     rubricCommentMap: IRubricCategoryToRubricCommentsMap,
   ) => {
+    const showDetailTag =
+      rubricCategories.filter((rubricCategory: RubricCategoryType) => {
+        return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '';
+      }).length > 0;
+
     return rubricCategories.map((rubricCategory: RubricCategoryType) => {
       const rubricComments = rubricCommentMap[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
         return rubricComment.text.toUpperCase().includes(this.state.searchTerm.toUpperCase());
       });
       const rows = rubricComments.map((rubricComment: RubricCommentType) => {
-        let points = '';
-        if (rubricComment.pointDelta > 0) {
-          points = `-${rubricComment.pointDelta}`;
-        } else if (rubricComment.pointDelta < 0) {
-          points = `+${rubricComment.pointDelta * -1}`;
-        } else {
-          points = `${rubricComment.pointDelta}`;
-        }
-
         return (
           <Menu.Item
             key={`comment-${rubricCategory.id}-${rubricComment.id}`}
@@ -99,36 +97,35 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               color: this.context.consoleTheme.siderMenuItemColor,
             }}
           >
-            <span>{rubricComment.text}</span>
-            <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
-              {points}
-            </span>
+            <RubricMenuCommentElement key={rubricComment.id} rubricComment={rubricComment} />
           </Menu.Item>
         );
       });
 
       const info = (
         <div>
-          <div>
-            <b>Point Limit: </b>
-            {rubricCategory.pointLimit === null ? 'n/a' : rubricCategory.pointLimit}
+          <div className="rubric-menu__info">
+            <div>Name:</div>
+            <div>{rubricCategory.name}</div>
           </div>
           <Divider style={{ margin: '10px 0px' }} />
-          {rubricCategory.helpText ? (
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              <b>Details: </b>
-              {rubricCategory.helpText}
-            </div>
-          ) : null}
+          <div className="rubric-menu__info">
+            <div>Point Limit: </div>
+            <div>{rubricCategory.pointLimit === null ? 'None set' : rubricCategory.pointLimit}</div>
+          </div>
+          <Divider style={{ margin: '10px 0px' }} />
+          <div className="rubric-menu__info">
+            <div>Details:</div>
+            <div>{rubricCategory.helpText ? rubricCategory.helpText : 'None set'}</div>
+          </div>
         </div>
       );
 
-      const capTag =
-        rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' ? (
-          <Popover title="Category Details" content={info}>
-            <Tag>Details</Tag>
-          </Popover>
-        ) : null;
+      const capTag = showDetailTag ? (
+        <Popover title="Category Details" content={info}>
+          <Tag>Details</Tag>
+        </Popover>
+      ) : null;
 
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
@@ -172,7 +169,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       <div style={{ marginTop: '8px' }}>
         <div id="rubric-menu-title" style={{ marginBottom: '5px', display: 'flex' }}>
           <Input
-            placeholder="Search rubric...(⌘ O)"
+            placeholder="Search rubric... (⌘ O)"
             id="rubric-search"
             onChange={this.onSearch}
             value={this.state.searchTerm}
@@ -202,5 +199,32 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   }
 }
 RubricMenu.contextType = ConsoleThemeContext;
+
+interface IRubricMenuCommentElementProps {
+  rubricComment: RubricCommentType;
+}
+
+const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
+  let points = '';
+  if (props.rubricComment.pointDelta > 0) {
+    points = `-${props.rubricComment.pointDelta}`;
+  } else if (props.rubricComment.pointDelta < 0) {
+    points = `+${props.rubricComment.pointDelta * -1}`;
+  } else {
+    points = 'Ø';
+  }
+
+  return (
+    <div
+      style={{
+        padding: '0px 10px',
+        fontSize: '10.5px',
+      }}
+    >
+      <InlineMarkdown source={props.rubricComment.text} />
+      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+    </div>
+  );
+};
 
 export default RubricMenu;

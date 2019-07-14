@@ -20,29 +20,45 @@
 
     padding-left: 0px !important;
 
+    margin: 0px !important;
+
     position: relative;
   }
 
   .ant-menu-item {
     width: 100%; // undoes an Ant hack
 
-    // height: 32px !important;
+    margin-bottom: 4px !important;
     height: auto !important;
-    line-height: 12px !important;
-
-    // padding-left: 26px !important;
-    // padding-right: 40px;
+    line-height: 15.75px !important;
+    letter-spacing: -0.05px !important;
 
     padding: 4px 40px 4px 26px !important;
 
-    font-size: 12px;
-
-    // text-overflow: clip;
     overflow: visible;
     white-space: pre-wrap;
 
     &:hover {
       color: $brandPrimary !important;
+    }
+  }
+
+  &__info {
+    display: table;
+    white-space: pre-wrap;
+
+    > div {
+      &:nth-of-type(1) {
+        display: table-cell;
+        min-width: 100px;
+        font-weight: 600;
+      }
+
+      &:nth-of-type(2) {
+        display: table-cell;
+        max-width: 300px;
+        line-height: 10px;
+      }
     }
   }
 }

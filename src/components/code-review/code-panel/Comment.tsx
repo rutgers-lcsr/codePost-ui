@@ -2,12 +2,17 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Badge, Input, message, Popover } from 'antd';
+import { Input, message, Popover } from 'antd';
 const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
+
+import BlockMarkdown from '../../core/BlockMarkdown';
+import InlineMarkdown from '../../core/InlineMarkdown';
+
+import Badge from '../../core/Badge';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
@@ -17,17 +22,11 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 import { wait } from '../../../infrastructure/animation';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
-
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
-
-import ReactMarkdown from 'react-markdown';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
-
-import SyntaxHighlighter from 'react-syntax-highlighter';
 
 interface ICommentProps {
   commentType: UICommentType;
@@ -240,65 +239,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
-  public markdownRenderers = () => {
-    const blockProps = () => {
-      return {
-        style: {
-          color: this.context.consoleTheme.text,
-        },
-      };
-    };
-
-    const rootRenderer = (props: any) => {
-      return (
-        <div className="comment__comment" style={{ color: this.context.consoleTheme.text }}>
-          {props.children}
-        </div>
-      );
-    };
-
-    const headingRenderer = (props: any) => {
-      return React.createElement(`h${props.level}`, blockProps(), props.children);
-    };
-
-    const codeRenderer = (props: any) => {
-      return (
-        <div
-          style={{
-            border: `1px solid ${this.context.consoleTheme.commentTitleBorder}`,
-            borderRadius: '4px',
-            backgroundColor: this.context.consoleTheme.commentCode,
-          }}
-        >
-          <SyntaxHighlighter language={props.language} style={this.context.consoleTheme.codeTheme}>
-            {props.value}
-          </SyntaxHighlighter>
-        </div>
-      );
-    };
-
-    const inlineCodeRenderer = (props: any) => {
-      const style = {
-        backgroundColor: this.context.consoleTheme.commentCode,
-        color: this.context.consoleTheme.text,
-      };
-
-      return <code style={style}>{props.children}</code>;
-    };
-
-    const thematicBreakRenderer = (props: any) => {
-      return <hr {...blockProps()}>{props.children}</hr>;
-    };
-
-    return {
-      root: rootRenderer,
-      heading: headingRenderer,
-      inlineCode: inlineCodeRenderer,
-      code: codeRenderer,
-      thematicBreak: thematicBreakRenderer,
-    };
-  };
-
   public render() {
     const className = `comment comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
 
@@ -344,22 +284,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const points: number = this.state.points;
 
-    let badge = null;
-    if (points > 0) {
-      badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: themeVars.theme.actionRed }} />;
-    } else if (points < 0) {
-      badge = (
-        <Badge
-          count={`+${points * -1}`}
-          className="cp-badge"
-          style={{ backgroundColor: themeVars.theme.actionGreen }}
-        />
-      );
-    } else {
-      badge = (
-        <Badge count={points} className="cp-badge" style={{ backgroundColor: themeVars.theme.neutralSecondaryText }} />
-      );
-    }
+    const badge = <Badge count={points * -1} />;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // ------------------------------------- author --------------------------------------- //
@@ -432,7 +357,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
-          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }} onClick={this.removeRubricComment}>
+          <span
+            style={{ position: 'absolute', right: '20px', top: '42px', cursor: 'pointer' }}
+            onClick={this.removeRubricComment}
+          >
             X
           </span>
         );
@@ -441,24 +369,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       shadow = { boxShadow: this.context.consoleTheme.commentShadow };
     }
 
-    const markdownRenderers = this.markdownRenderers();
-
     if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
-      // commentElements.comment = (
-      //   <Paragraph
-      //     className="comment__comment"
-      //     style={{
-      //       whiteSpace: 'pre-wrap',
-      //       wordWrap: 'break-word',
-      //       marginBottom: '0px',
-      //       color: this.context.consoleTheme.text,
-      //     }}
-      //   >
-      //     <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
-      //   </Paragraph>
-      // );
-      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
+      commentElements.comment = (
+        <div className="comment__comment" style={{ color: this.context.consoleTheme.text }}>
+          <BlockMarkdown source={this.state.text} />
+        </div>
+      );
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
       onClick = this.onCommentClick;
@@ -467,7 +384,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
-      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
+      commentElements.comment = (
+        <div className="comment__comment" style={{ color: this.context.consoleTheme.text }}>
+          <BlockMarkdown source={this.state.text} />
+        </div>
+      );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -494,7 +415,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
-          <span className="cp-label--very-bold">{pointsString}</span> {this.props.rubricComment.text}
+          <span className="cp-label--very-bold">{pointsString}</span>
+          <InlineMarkdown source={this.props.rubricComment.text} />
           {commentElements.rubricCommentAction}
         </div>
       );
