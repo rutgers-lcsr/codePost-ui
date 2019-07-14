@@ -29,6 +29,7 @@ interface IOnboardingSelectorProps {
   visible: boolean;
   onCancel: () => void;
   footerButtons: React.ReactNode | null;
+  closable?: boolean;
 }
 
 const OnboardingSelector = (props: IOnboardingSelectorProps) => {
@@ -39,6 +40,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
       onCancel={props.onCancel}
       footer={props.footerButtons}
       width={600}
+      closable={props.closable === undefined ? true : props.closable}
     >
       {props.message}
       <br />
@@ -296,6 +298,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       message={message}
       footer={footer}
       footerButtons={footerButtons}
+      closable={false}
     />
   );
 };
