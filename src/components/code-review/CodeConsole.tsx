@@ -382,6 +382,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ]);
         course = await Course.read(assignment.course);
 
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
         // then store it in state
         this.setState({
           assignment,
