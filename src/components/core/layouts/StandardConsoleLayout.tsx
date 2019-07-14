@@ -48,7 +48,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
 
-  useFixedWindow();
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();
   }
