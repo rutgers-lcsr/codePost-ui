@@ -79,8 +79,9 @@ const AdminOnboardingSelector = (props: IProps) => {
   const [loading, setLoading] = React.useState(false);
 
   // call prop function onClick which triggers tour
+  // FIXME: hard-coded product tour id
   const tour1 = (
-    <CPButton cpType="primary" block href="/code/1/?onboarding=true">
+    <CPButton cpType="primary" block href={'/code/1/?onboarding=true&product_tour_id=49817'}>
       Annotate some code!
     </CPButton>
   );
