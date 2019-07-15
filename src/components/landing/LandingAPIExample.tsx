@@ -17,48 +17,90 @@ const apiCodeExamples = [
   {
     title: 'Export grades',
     code:
-      'import requests as r\nimport csv\n\n\
-# Get all submissions for a given assignment\n\
-submissions = r.get("https://api.codepost.io/assignments/%s/submissions/" % str(assignmentID), \
-headers={"Authorization": "api_key"}).json()\n\n\
-# Identify graded submissions \n\
-grades = [(sub["students"][0], sub["grade"]) for sub in submissions if sub["grade"]]\n\n\
-# Export list of students and grades to a csv (alternatively, use your LMS\'s API to post \
-grades directly) \n\
+      'import csv\n\
+import codepost\n\
+\n\
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Get all submissions for an assignment with id of 1\n\
+submissions = codepost.assignment.list_submissions(id=1)\n\
+\n\
+# Identify graded submissions\n\
+grades = [\n\
+  (student, submission.grade)\n\
+  for submission in submissions\n\
+  for student in submission.students\n\
+  if not submission.grade is None\n\
+]\n\
+\n\
+# Export list of students and grades to a CSV\n\
+# (or use your LMS API to post grades directly)\n\
 with open("grades.csv", "w") as writeFile:\n\
-    writer = csv.writer(writeFile) \n\
-    writer.writerows(grades)',
+  writer = csv.writer(writeFile)\n\
+  writer.writerows(grades)',
   },
   {
     title: 'Assign submissions for review',
     code:
-      'import requests as r\n\
+      'import codepost\n\
 \n\
-# Let graderMap map student emails to the grader who should review their work\n\n\
-# Get all submissions for an assignment\n\
-submissions = r.get("https://api.codepost.io/assignments/%s/submissions/" % str(assignmentID), \
-headers={"Authorization": "api_key"})\n\n\
-for sub in submissions.json():\n\
-  # Who should grade should grade this assignment?\n\
-  graderEmail = graderMap[sub.students[0]]\n\
-  \n\
-  # Assign the submisison to the grader\n\
-  payload = {grader: graderEmail}\n\
-  r.post("http://api.codepost.io/submissions/" % str(sub.id), headers={"Authorization": "api_key"}, payload=payload)\n',
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Map for who grades what:\n\
+grader_map = {\n\
+  "student1@university.edu": "grader1@university.edu",\n\
+  "student2@university.edu": "grader1@university.edu",\n\
+  "student3@university.edu": "grader2@university.edu",\n\
+  "student4@university.edu": "grader1@university.edu",\n\
+  # ...\n\
+}\n\
+\n\
+# Get all submissions for an assignment with id of 1\n\
+submissions = codepost.assignment.list_submissions(id=1)\n\
+\n\
+# Assign the submissions to graders\n\
+for submission in submissions:\n\
+\n\
+# Determine who should grade this submission\n\
+grader_email = grader_map.get(submission.students[0],\n\
+  "defaultGrader@university.edu")\n\
+\n\
+# Assign grader to submission\n\
+codepost.submission.update(\n\
+  id=submission.id,\n\
+  grader=grader_email,\n\
+)',
   },
   {
     title: 'Identify common student errors',
     code:
-      'import requests as r\n\n\
-# Get an assignment\'s rubric\n\
-rubric = r.get("https://api.codepost.io/assignments/%s/rubric/" % str(assignmentID), headers=headers)\n\
-rubricComments = rubric.json()["rubricComments"]\n\n\
-# Create a list of (text, usage frequency) for every rubric comment\n\
-_list = [(i["text"], i["comments"].length) for i in rubricComments]\n\n\
-# Sort list by frequency\n\
-_list.sort((key=lambda tup: tup[1]))\n\
+      'import codepost\n\
 \n\
-print("Rubric comments sorted by  highest frequency: %s" % str(_list))',
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Get rubric of assignment with id of 1\n\
+assignment = codepost.assignment.retrieve(id=1)\n\
+rubric_categories = map(\n\
+  lambda id: codepost.rubric_categories.retrieve(id=id),\n\
+  assignment.rubricCategories\n\
+)\n\
+\n\
+# Print report for each category\n\
+for category in rubric_categories:\n\
+  rubric_comments = map(\n\
+    lambda id: codepost.rubric_comments.retrieve(id=id),\n\
+    category.rubricComments\n\
+  )\n\
+\n\
+  _freq_list = [\n\
+     (comment.text, comment.length)\n\
+     for comment in rubric_comments\n\
+  ]\n\
+  _freq_list.sort(key=lambda tup: tup[1])\n\
+\n\
+  print(category.name)\n\
+  print("Rubric comments sorted by highest frequency")\n\
+  print(_freq_list)',
   },
 ];
 
