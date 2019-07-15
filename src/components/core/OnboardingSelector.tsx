@@ -13,6 +13,8 @@ import { UploadChangeParam } from 'antd/lib/upload';
 import _ from 'lodash';
 
 /* codePost imports */
+import { CourseType } from '../../infrastructure/course';
+
 import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
@@ -70,6 +72,7 @@ interface IProps {
   visible: boolean;
   onCancel: () => void;
   email: string;
+  onDemoCreate: (course: CourseType) => void;
 }
 
 const AdminOnboardingSelector = (props: IProps) => {
@@ -77,15 +80,16 @@ const AdminOnboardingSelector = (props: IProps) => {
 
   // call prop function onClick which triggers tour
   const tour1 = (
-    <CPButton cpType="primary" block>
+    <CPButton cpType="primary" block href="/code/1/?onboarding=true">
       Annotate some code!
     </CPButton>
   );
 
   const handleDemoCourse = () => {
     setLoading(true);
-    createDemoCourse(`${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(() => {
+    createDemoCourse(`${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then((course) => {
       setLoading(false);
+      props.onDemoCreate(course);
     });
 
     // call prop function which triggers tour here
