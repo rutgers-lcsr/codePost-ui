@@ -62,7 +62,7 @@ const headerHeight = 64; // px
 // --------------- FONTS --------------- //
 
 const fontMain = 'Avenir Next, Lato, sans-serif';
-const fontCode = 'AndaleMono, PTMono, monospace';
+const fontCode = 'AndaleMono, PT Mono, monospace';
 const fontLogo = 'Muli, Lato, sans-serif';
 
 // --------------- GRADE CONSTANTS --------------- //
