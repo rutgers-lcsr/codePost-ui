@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Dropdown, Empty, Icon, Menu, message } from 'antd';
+import { Dropdown, Empty, Icon, Menu, message } from 'antd';
 
 /* other library imports */
 import queryString from 'query-string';
@@ -40,13 +40,14 @@ import { GradeComments, StudentComments } from '../code-review/code-panel/Commen
 
 import ThemeToggle from '../core/ThemeToggle';
 
-import FileMenu from './menu/FileMenu';
+import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 import RubricMenu from './menu/RubricMenu';
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import {
   FinalizeButton,
   GradeButton,
+  HeaderMenu,
   Magnifier,
   Reset,
   Sizer,
@@ -381,6 +382,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(submission),
         ]);
         course = await Course.read(assignment.course);
+
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
 
         // then store it in state
         this.setState({
@@ -1056,17 +1061,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         />,
       ];
 
-      const fileMenuTitle = (
-        <span key="files">
-          Files{' '}
-          <span>
-            <Badge
-              style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset' }}
-              count={this.state.files.length}
-            />
-          </span>
-        </span>
-      );
+      const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
 
       if (this.state.inDemoMode) {
         if (this.state.selectedFile) {
@@ -1146,7 +1141,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         leftHeader = [
           <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" twoToneColor="white" />
+            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
           </Dropdown>,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
@@ -1201,7 +1196,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         leftHeader = [
           <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" twoToneColor="white" />
+            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
           </Dropdown>,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
@@ -1233,9 +1228,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
       } else {
         leftHeader = [
-          <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" twoToneColor="white" />
-          </Dropdown>,
+          <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags key="tag" assignment={this.state.assignment!} submission={this.state.submission!} />,
         ];

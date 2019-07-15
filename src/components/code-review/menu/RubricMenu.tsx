@@ -123,7 +123,16 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
 
       const capTag = showDetailTag ? (
         <Popover title="Category Details" content={info}>
-          <Tag>Details</Tag>
+          <Tag
+            style={{
+              backgroundColor: this.context.consoleTheme.siderSubmenuTitleBg,
+              color: this.context.consoleTheme.siderSubmenuTitleColor,
+              borderColor: this.context.consoleTheme.siderSubmenuBorder,
+              fontSize: '10.5px',
+            }}
+          >
+            Details
+          </Tag>
         </Popover>
       ) : null;
 

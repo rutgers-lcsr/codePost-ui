@@ -263,8 +263,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
       const lastBlockHeight = CodePanelSizing.commentHeight(lastPlacement.commentID) + themeVars.grade.commentSpacing;
+      const intercomHeight = 60;
 
-      lowestCommentBottom = lastPlacement.placement + lastBlockHeight;
+      lowestCommentBottom = lastPlacement.placement + lastBlockHeight + intercomHeight;
     }
 
     const commentsHeight =

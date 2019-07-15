@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Menu, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -61,78 +61,83 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
   };
 
   public buildFileMenu = (files: FileType[]) => {
-    return files
-      .sort((a, b) => {
-        return a.name.localeCompare(b.name);
-      })
-      .map((file: FileType, index: number) => {
-        // const totalPointsInFile = 10;
-        const [deductions, bonuses] = this.props.getPointsInFile(file);
+    return files.map((file: FileType, index: number) => {
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
 
-        let commentCount = 0;
-        if (this.props.comments === undefined) {
-          commentCount = file.comments.length;
-        } else {
-          commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-            return comment.id > 0;
-          }).length;
-        }
+      let commentCount = 0;
+      if (this.props.comments === undefined) {
+        commentCount = file.comments.length;
+      } else {
+        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+          return comment.id > 0;
+        }).length;
+      }
 
-        let faded = true;
-        if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-          faded = false;
-        }
+      let faded = true;
+      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+        faded = false;
+      }
 
-        let commentCountBadge = null;
-        if (commentCount > 0) {
-          commentCountBadge = (
-            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-              <Badge count={commentCount} forcedStyle="neutral" faded={faded} />
-            </CPTooltip>
-          );
-        }
+      let commentCountBadge = null;
+      if (commentCount > 0) {
+        commentCountBadge = (
+          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+            <Badge count={commentCount} forcedStyle="neutral" faded={faded} />
+          </CPTooltip>
+        );
+      }
 
-        let deductionBadge = null;
-        let bonusBadge = null;
+      let deductionBadge = null;
+      let bonusBadge = null;
 
-        if (deductions > 0) {
-          deductionBadge = (
-            <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-              <Badge count={deductions * -1} faded={faded} />
-            </CPTooltip>
-          );
-        }
+      if (deductions > 0) {
+        deductionBadge = (
+          <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+            <Badge count={deductions * -1} faded={faded} />
+          </CPTooltip>
+        );
+      }
 
-        if (bonuses > 0) {
-          bonusBadge = (
-            <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-              <Badge count={bonuses} faded={faded} />
-            </CPTooltip>
-          );
-        }
+      if (bonuses > 0) {
+        bonusBadge = (
+          <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+            <Badge count={bonuses} faded={faded} />
+          </CPTooltip>
+        );
+      }
 
-        return (
-          <Menu.Item key={`file-${file.id}`}>
-            <span
+      return (
+        <Menu.Item key={`file-${file.id}`}>
+          <div
+            style={{
+              display: 'inline-block',
+              maxWidth: '148px',
+              wordWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+              lineHeight: '12px',
+              verticalAlign: 'middle',
+            }}
+          >
+            <div
               style={{
-                display: 'inline-block',
-                maxWidth: '148px',
-                wordWrap: 'break-word',
-                whiteSpace: 'pre-wrap',
-                lineHeight: '12px',
-                verticalAlign: 'middle',
+                fontSize: '10.5px',
+                color: '#ccc',
+                position: 'absolute',
+                left: '3px',
               }}
             >
-              {file.name} &nbsp; <span style={{ color: '#ccc' }}>[⌘ {index + 1}]</span>
-            </span>
-            <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
-            <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
-            <span style={{ position: 'absolute', right: '15px' }}>
-              {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
-            </span>
-          </Menu.Item>
-        );
-      });
+              ⌘{index + 1}
+            </div>
+            {file.name}
+          </div>
+          <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
+          <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
+          <span style={{ position: 'absolute', right: '15px' }}>
+            {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
+          </span>
+        </Menu.Item>
+      );
+    });
   };
 
   public render() {
@@ -220,5 +225,29 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
   );
 };
 FileMenu.contextType = ConsoleThemeContext;
+
+interface IFileMenuTitleProps {
+  files: FileType[];
+}
+
+export const FileMenuTitle = (props: IFileMenuTitleProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  return (
+    <span>
+      Files
+      <div style={{ display: 'inline-block', marginLeft: '8px', position: 'absolute', transform: 'translateY(-6%)' }}>
+        <AntBadge
+          style={{
+            backgroundColor: consoleTheme.siderBg,
+            color: consoleTheme.commentRubricCommentNeutral,
+            boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
+          }}
+          count={props.files.length}
+        />
+      </div>
+    </span>
+  );
+};
 
 export default FileMenu;
