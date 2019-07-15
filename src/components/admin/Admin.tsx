@@ -155,7 +155,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     super(props);
     const { course, panel } = this.setStateFromURL(this.props.user.courseadminCourses);
     if (course) {
-      this.changeURL(course, panel);
+      this.changeURL(course, panel, true);
       this.loadAllCourseData(course);
     }
 
@@ -292,7 +292,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         viewsBySubmission: {},
       },
       () => {
-        this.changeURL(newCourse, this.state.currentPanel);
+        this.changeURL(newCourse, this.state.currentPanel, false);
         this.loadAllCourseData(newCourse);
 
         // add loading interval for new course
@@ -332,10 +332,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     this.props.history.push(this.props.location.pathname);
   };
 
-  public changeURL = (course: CourseType, panel: number) => {
+  public changeURL = (course: CourseType, panel: number, keepQueryString: boolean) => {
     const formCourseName = course.name.replace(/ /g, '_');
     const formPeriod = course.period.replace(/ /g, '_');
-    this.props.history.push(`/admin/${formCourseName}/${formPeriod}/${panels[panel]}`);
+    this.props.history.push({
+      pathname: `/admin/${formCourseName}/${formPeriod}/${panels[panel]}`,
+      search: keepQueryString ? this.props.location.search : '',
+    });
   };
 
   public handleMenuClick = (e: ClickParam) => {
@@ -345,7 +348,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public changeTab = (panelNum: number) => {
     this.setState({ currentPanel: panelNum }, () => {
       if (this.state.currentCourse) {
-        this.changeURL(this.state.currentCourse!, this.state.currentPanel);
+        this.changeURL(this.state.currentCourse!, this.state.currentPanel, false);
       }
     });
   };
@@ -688,7 +691,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       // gracefully handle situations in which user changes course name
       // by automatically updating active URL
-      this.changeURL(newCourse, this.state.currentPanel);
+      this.changeURL(newCourse, this.state.currentPanel, false);
       return newCourse;
     });
   };
