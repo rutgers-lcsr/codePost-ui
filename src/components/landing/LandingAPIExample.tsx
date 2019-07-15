@@ -17,95 +17,90 @@ const apiCodeExamples = [
   {
     title: 'Export grades',
     code:
-    'import csv\n\
-    import codepost\n\
-    \n\
-    codepost.configure_api_key("<your API key>")\n\
-    \n\
-    # Get all submissions for a given assignment\n\
-    submissions = codepost.assignment.list_submissions(id=1)\n\
-    \n\
-    # Identify graded submissions\n\
-    grades = [\n\
-        (student, submission.grade)\n\
-        for submission in submissions\n\
-        for student in submission.students\n\
-        if not submission.grade is None\n\
-    ]\n\
-    \n\
-    # Export list of students and grades to a CSV\n\
-    # (or use your LMS API to post grades directly)\n\
-    with open("grades.csv", "w") as writeFile:\n\
-        writer = csv.writer(writeFile)\n\
-        writer.writerows(grades)\n\
-    ',
+      'import csv\n\
+import codepost\n\
+\n\
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Get all submissions for a given assignment\n\
+submissions = codepost.assignment.list_submissions(id=1)\n\
+\n\
+# Identify graded submissions\n\
+grades = [\n\
+  (student, submission.grade)\n\
+  for submission in submissions\n\
+  for student in submission.students\n\
+  if not submission.grade is None\n\
+]\n\
+\n\
+# Export list of students and grades to a CSV\n\
+# (or use your LMS API to post grades directly)\n\
+with open("grades.csv", "w") as writeFile:\n\
+  writer = csv.writer(writeFile)\n\
+  writer.writerows(grades)',
   },
   {
     title: 'Assign submissions for review',
     code:
       'import codepost\n\
-      \n\
-      codepost.configure_api_key("<your API key>")\n\
-      \n\
-      # Map for who grades what:\n\
-      grader_map = {\n\
-          "student1@university.edu": "grader1@codepost.io",\n\
-          "student2@university.edu": "grader1@codepost.io",\n\
-          "student3@university.edu": "grader2@codepost.io",\n\
-          "student4@university.edu": "grader1@codepost.io",\n\
-          # ...\n\
-      }\n\
-      \n\
-      # Get all submissions for an assignment\n\
-      submissions = codepost.assignment.list_submissions(id=assignment_id)\n\
-      \n\
-      # Assign the submissions to graders\n\
-      for submission in submissions:\n\
-      \n\
-          # Determine who should grade this submission\n\
-          grader_email = grader_map.get(submission.students[0],\n\
-              "defaultGrader@codepost.io")\n\
-      \n\
-          # Assign grader to submission\n\
-          codepost.submission.update(\n\
-              id=submission.id,\n\
-              grader=grader_email,\n\
-          )\n\
-      \n\
-      ',
+\n\
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Map for who grades what:\n\
+grader_map = {\n\
+  "student1@university.edu": "grader1@codepost.io",\n\
+  "student2@university.edu": "grader1@codepost.io",\n\
+  "student3@university.edu": "grader2@codepost.io",\n\
+  "student4@university.edu": "grader1@codepost.io",\n\
+  # ...\n\
+}\n\
+\n\
+# Get all submissions for an assignment\n\
+submissions = codepost.assignment.list_submissions(id=assignment_id)\n\
+\n\
+# Assign the submissions to graders\n\
+for submission in submissions:\n\
+\n\
+# Determine who should grade this submission\n\
+grader_email = grader_map.get(submission.students[0],\n\
+  "defaultGrader@codepost.io")\n\
+\n\
+# Assign grader to submission\n\
+codepost.submission.update(\n\
+  id=submission.id,\n\
+  grader=grader_email,\n\
+)',
   },
   {
     title: 'Identify common student errors',
     code:
       'import codepost\n\
-      \n\
-      codepost.configure_api_key("<your API key>")\n\
-      \n\
-      # Get an assignments rubric\n\
-      assignment = codepost.assignment.retrieve(id=assignment_id)\n\
-      rubric_categories = map(\n\
-          lambda id: codepost.rubric_categories.retrieve(id=id),\n\
-          assignment.rubricCategories\n\
-      )\n\
-      \n\
-      # Print report for each category\n\
-      for category in rubric_categories:\n\
-          rubric_comments = map(\n\
-              lambda id: codepost.rubric_comments.retrieve(id=id),\n\
-              category.rubricComments\n\
-          )\n\
-      \n\
-          _freq_list = [\n\
-              (comment.text, comment.length)\n\
-              for comment in rubric_comments\n\
-          ]\n\
-          _freq_list.sort(key=lambda tup: tup[1])\n\
-      \n\
-          print(category.name)\n\
-          print("Rubric comments sorted by highest frequency")\n\
-          print(_freq_list)\n\
-      \n\
-      ',
+\n\
+codepost.configure_api_key("<your API key>")\n\
+\n\
+# Get an assignments rubric\n\
+assignment = codepost.assignment.retrieve(id=assignment_id)\n\
+rubric_categories = map(\n\
+  lambda id: codepost.rubric_categories.retrieve(id=id),\n\
+  assignment.rubricCategories\n\
+)\n\
+\n\
+# Print report for each category\n\
+for category in rubric_categories:\n\
+  rubric_comments = map(\n\
+    lambda id: codepost.rubric_comments.retrieve(id=id),\n\
+    category.rubricComments\n\
+  )\n\
+\n\
+  _freq_list = [\n\
+     (comment.text, comment.length)\n\
+     for comment in rubric_comments\n\
+  ]\n\
+  _freq_list.sort(key=lambda tup: tup[1])\n\
+\n\
+  print(category.name)\n\
+  print("Rubric comments sorted by highest frequency")\n\
+  print(_freq_list)',
   },
 ];
 
