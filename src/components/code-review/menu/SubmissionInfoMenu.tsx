@@ -74,7 +74,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
       <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
-      <div style={{ fontSize: 12 }}>
+      <div style={{ fontSize: 12, overflowX: 'scroll' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
           <div>

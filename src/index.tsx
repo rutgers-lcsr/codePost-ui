@@ -7,7 +7,10 @@ import './styles/main.scss';
 
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
+
+import 'typeface-lato';
 import 'typeface-muli';
+import 'typeface-pt-mono';
 
 // @ts-ignore
 import CPLayoutGrade from './components/core/CPLayoutGrade';

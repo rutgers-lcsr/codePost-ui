@@ -21,11 +21,15 @@ import { tooltips } from '../../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import layoutVars from '../../../styles/layout/_layoutVars';
+
 import Badge from '../../core/Badge';
+
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 /**********************************************************************************************************************/
 
-interface IFileMenuProps {
+interface IFileMenuProps extends IWithWindowWatcherProps {
   title?: string;
   files: FileType[];
   comments?: IFileToCommentsMap;
@@ -61,6 +65,8 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
   };
 
   public buildFileMenu = (files: FileType[]) => {
+    const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
+
     return files.map((file: FileType, index: number) => {
       const [deductions, bonuses] = this.props.getPointsInFile(file);
 
@@ -107,11 +113,11 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       }
 
       return (
-        <Menu.Item key={`file-${file.id}`}>
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '90px' }}>
           <div
             style={{
               display: 'inline-block',
-              maxWidth: '148px',
+              maxWidth: !shrunkSider ? '148px' : '124px',
               wordWrap: 'break-word',
               whiteSpace: 'pre-wrap',
               lineHeight: '12px',
@@ -130,9 +136,19 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
             </div>
             {file.name}
           </div>
-          <span style={{ position: 'absolute', right: '95px' }}>{this.props.hidePoints ? '' : bonusBadge}</span>
-          <span style={{ position: 'absolute', right: '55px' }}>{this.props.hidePoints ? '' : deductionBadge}</span>
-          <span style={{ position: 'absolute', right: '15px' }}>
+          <span
+            style={{ position: 'absolute', right: !shrunkSider ? '95px' : '15px', top: !shrunkSider ? '0px' : '-4px' }}
+          >
+            {this.props.hidePoints ? '' : bonusBadge}
+          </span>
+          <span
+            style={{ position: 'absolute', right: !shrunkSider ? '55px' : '15px', top: !shrunkSider ? '0px' : '20px' }}
+          >
+            {this.props.hidePoints ? '' : deductionBadge}
+          </span>
+          <span
+            style={{ position: 'absolute', right: !shrunkSider ? '15px' : '15px', top: !shrunkSider ? '0px' : '44px' }}
+          >
             {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
           </span>
         </Menu.Item>
@@ -250,4 +266,4 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   );
 };
 
-export default FileMenu;
+export default withWindowWatcher(FileMenu);
