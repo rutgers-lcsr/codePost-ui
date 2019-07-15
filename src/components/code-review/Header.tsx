@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, Modal, Popconfirm, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
@@ -561,5 +561,18 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
     <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
       {props.assignment.name}
     </span>
+  );
+};
+
+interface IHeaderMenuProps {
+  menu: React.ReactNode;
+}
+
+export const HeaderMenu = (props: IHeaderMenuProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  return (
+    <Dropdown overlay={props.menu} trigger={['click']}>
+      <Icon type="menu" style={{ color: consoleTheme.text }} />
+    </Dropdown>
   );
 };

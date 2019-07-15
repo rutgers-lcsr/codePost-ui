@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Menu, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -225,5 +225,29 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
   );
 };
 FileMenu.contextType = ConsoleThemeContext;
+
+interface IFileMenuTitleProps {
+  files: FileType[];
+}
+
+export const FileMenuTitle = (props: IFileMenuTitleProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  return (
+    <span>
+      Files
+      <div style={{ display: 'inline-block', marginLeft: '8px', position: 'absolute', transform: 'translateY(-6%)' }}>
+        <AntBadge
+          style={{
+            backgroundColor: consoleTheme.siderBg,
+            color: consoleTheme.commentRubricCommentNeutral,
+            boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
+          }}
+          count={props.files.length}
+        />
+      </div>
+    </span>
+  );
+};
 
 export default FileMenu;
