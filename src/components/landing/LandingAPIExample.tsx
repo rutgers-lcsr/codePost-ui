@@ -48,10 +48,10 @@ codepost.configure_api_key("<your API key>")\n\
 \n\
 # Map for who grades what:\n\
 grader_map = {\n\
-  "student1@university.edu": "grader1@codepost.io",\n\
-  "student2@university.edu": "grader1@codepost.io",\n\
-  "student3@university.edu": "grader2@codepost.io",\n\
-  "student4@university.edu": "grader1@codepost.io",\n\
+  "student1@university.edu": "grader1@university.edu",\n\
+  "student2@university.edu": "grader1@university.edu",\n\
+  "student3@university.edu": "grader2@university.edu",\n\
+  "student4@university.edu": "grader1@university.edu",\n\
   # ...\n\
 }\n\
 \n\
@@ -63,7 +63,7 @@ for submission in submissions:\n\
 \n\
 # Determine who should grade this submission\n\
 grader_email = grader_map.get(submission.students[0],\n\
-  "defaultGrader@codepost.io")\n\
+  "defaultGrader@university.edu")\n\
 \n\
 # Assign grader to submission\n\
 codepost.submission.update(\n\
