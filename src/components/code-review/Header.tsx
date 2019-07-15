@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Icon, Modal, Popconfirm, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, Modal, Popconfirm, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
@@ -237,6 +237,9 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const isFinalized = props.submission.isFinalized;
 
+  const finalizeNotice =
+    props.submission.grader === null ? 'Assign a grader to this submission before finalizing.' : null;
+
   return (
     <div ref={ref}>
       <ButtonGroup>
@@ -244,40 +247,41 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
           onClick={onClick}
-          loading={isLoading && isFinalized}
+          isLoading={isLoading}
           small={true}
           disabled={!isFinalized}
         >
           Edit
         </CPButton>
-        <CPButton
-          cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
-          fallback="lock"
-          onClick={onClick}
-          loading={isLoading && !isFinalized}
-          disabled={isFinalized}
-          style={props.submission.grader === null ? { pointerEvents: 'none' } : undefined}
-          small={true}
-        >
-          <Popconfirm
-            title={
-              <div>
-                <p>You have draft comments that will not be saved.</p>{' '}
-                <p>
-                  <b>Are you sure you want to continue?</b>
-                </p>
-              </div>
-            }
-            visible={popconfirmVisible}
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-            placement="bottomRight"
+        <CPTooltip title={finalizeNotice} placement="left">
+          <CPButton
+            cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
+            fallback="lock"
+            onClick={props.submission.grader === null ? undefined : onClick}
+            isLoading={isLoading}
+            disabled={isFinalized}
+            small={true}
           >
-            Done
-          </Popconfirm>
-        </CPButton>
+            <Popconfirm
+              title={
+                <div>
+                  <p>You have draft comments that will not be saved.</p>{' '}
+                  <p>
+                    <b>Are you sure you want to continue?</b>
+                  </p>
+                </div>
+              }
+              visible={popconfirmVisible}
+              onConfirm={confirm}
+              onCancel={cancel}
+              okText="Yes"
+              cancelText="No"
+              placement="bottomRight"
+            >
+              Done
+            </Popconfirm>
+          </CPButton>
+        </CPTooltip>
       </ButtonGroup>
     </div>
   );
@@ -557,5 +561,18 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
     <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
       {props.assignment.name}
     </span>
+  );
+};
+
+interface IHeaderMenuProps {
+  menu: React.ReactNode;
+}
+
+export const HeaderMenu = (props: IHeaderMenuProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  return (
+    <Dropdown overlay={props.menu} trigger={['click']}>
+      <Icon type="menu" style={{ color: consoleTheme.text }} />
+    </Dropdown>
   );
 };

@@ -7,10 +7,12 @@ function getFileItem(name: string, points: number) {
   let pointsBadge;
 
   if (points < 0) {
-    pointsBadge = <Badge count={points} className="cp-badge" style={{ backgroundColor: '#f64852' }} />;
+    pointsBadge = <Badge count={points} className="badge badge--standard" style={{ backgroundColor: '#f64852' }} />;
   }
   if (points > 0) {
-    pointsBadge = <Badge count={`+${points}`} className="cp-badge" style={{ backgroundColor: '#24be85' }} />;
+    pointsBadge = (
+      <Badge count={`+${points}`} className="badge badge--standard" style={{ backgroundColor: '#24be85' }} />
+    );
   }
 
   return (

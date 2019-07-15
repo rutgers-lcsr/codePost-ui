@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Badge, Input, message, Popover, Typography } from 'antd';
+import { Input, message, Popover, Typography } from 'antd';
 const { TextArea } = Input;
 const { Paragraph } = Typography;
 
@@ -10,12 +10,12 @@ import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
 import CPPointInput from '../../../core/CPPointInput';
 
+import Badge from '../../../core/Badge';
+
 import { CommentType, UiComment } from '../../../../infrastructure/comment';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { wait } from '../../../../infrastructure/animation';
-
-import themeVars from '../../../../styles/abstracts/_theme.js';
 
 import ReactMarkdown from 'react-markdown';
 import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
@@ -280,23 +280,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     );
 
     const points: number = this.state.points;
-
-    let badge = null;
-    if (points > 0) {
-      badge = <Badge count={points * -1} className="cp-badge" style={{ backgroundColor: themeVars.theme.actionRed }} />;
-    } else if (points < 0) {
-      badge = (
-        <Badge
-          count={`+${points * -1}`}
-          className="cp-badge"
-          style={{ backgroundColor: themeVars.theme.actionGreen }}
-        />
-      );
-    } else {
-      badge = (
-        <Badge count={points} className="cp-badge" style={{ backgroundColor: themeVars.theme.neutralSecondaryText }} />
-      );
-    }
+    const badge = <Badge count={points * -1} />;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // ------------------------------------- author --------------------------------------- //
