@@ -22,7 +22,7 @@ import codepost\n\
 \n\
 codepost.configure_api_key("<your API key>")\n\
 \n\
-# Get all submissions for a given assignment\n\
+# Get all submissions for an assignment with id of 1\n\
 submissions = codepost.assignment.list_submissions(id=1)\n\
 \n\
 # Identify graded submissions\n\
@@ -55,8 +55,8 @@ grader_map = {\n\
   # ...\n\
 }\n\
 \n\
-# Get all submissions for an assignment\n\
-submissions = codepost.assignment.list_submissions(id=assignment_id)\n\
+# Get all submissions for an assignment with id of 1\n\
+submissions = codepost.assignment.list_submissions(id=1)\n\
 \n\
 # Assign the submissions to graders\n\
 for submission in submissions:\n\
@@ -78,8 +78,8 @@ codepost.submission.update(\n\
 \n\
 codepost.configure_api_key("<your API key>")\n\
 \n\
-# Get an assignments rubric\n\
-assignment = codepost.assignment.retrieve(id=assignment_id)\n\
+# Get rubric of assignment with id of 1\n\
+assignment = codepost.assignment.retrieve(id=1)\n\
 rubric_categories = map(\n\
   lambda id: codepost.rubric_categories.retrieve(id=id),\n\
   assignment.rubricCategories\n\
