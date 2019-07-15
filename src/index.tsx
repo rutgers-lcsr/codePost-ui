@@ -19,7 +19,7 @@ import CPLayoutGrade from './components/core/CPLayoutGrade';
 import CPLayoutAdmin from './components/core/CPLayoutAdmin';
 
 import App from './App';
-import unregister from './registerServiceWorker';
+import { unregister } from './registerServiceWorker';
 
 import ErrorBoundary from './components/core/ErrorBoundary';
 
