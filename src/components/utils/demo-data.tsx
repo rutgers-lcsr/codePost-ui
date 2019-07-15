@@ -172,7 +172,7 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Loops',
-      sortKey: 1,
+      sortKey: 0,
       points: 20,
       course: courseID,
       rubric: [
@@ -226,7 +226,7 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Recursion',
-      sortKey: 3,
+      sortKey: 0,
       points: 20,
       course: courseID,
       rubric: [

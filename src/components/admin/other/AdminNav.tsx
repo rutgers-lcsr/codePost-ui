@@ -20,15 +20,12 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   public constructor(props: IAdminNavProps) {
     super(props);
     this.state = {
-      openKeys: [],
+      openKeys: ['submissions', 'roster'],
       openKeysCollapsed: [],
     };
   }
 
   public componentDidMount() {
-    const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
-    this.setState({ openKeys: [selectedPanelKey] });
-
     /* set up Headway widget */
     try {
       (window as any).Headway.init({
