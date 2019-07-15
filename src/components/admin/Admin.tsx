@@ -316,11 +316,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public handleDemoCourse = (course: CourseType) => {
     const newCourses = this.state.courses;
     newCourses.push(course);
-    this.setState({ courses: newCourses }, () => {
+    this.setState({ courses: newCourses, onboardingModalVisible: false }, () => {
       this.props.addCourse(course);
       this.updateNewCourse(course);
     });
-    return;
+
+    // Trigger product tour after demo course is created
+    // FIXME: hard-coded product tour id
+    this.props.history.push({
+      search: '?product_tour_id=49547',
+    });
   };
 
   public openModal = () => {
@@ -1347,6 +1352,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           visible={this.state.onboardingModalVisible}
           onCancel={this.closeModal}
           email={this.props.user.email}
+          onDemoCreate={this.handleDemoCourse}
         />
       </span>
     );
