@@ -121,8 +121,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public onChangeFiles = (info: any) => {
-    this.setState({ files: info.fileList });
+  public onRemove = (file: any) => {
+    const newFiles = this.state.files.filter((el) => {
+      return el.name !== file.name;
+    });
+    const newFileList = this.state.fileList.filter((el) => {
+      return el.name !== file.name;
+    });
+    this.setState({ files: newFiles, fileList: newFileList });
   };
 
   public changeStatus = (newStatus: STATUS) => {
