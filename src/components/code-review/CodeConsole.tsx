@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Dropdown, Empty, Icon, Menu, message } from 'antd';
+import { Empty, Menu, message } from 'antd';
 
 /* other library imports */
 import queryString from 'query-string';
@@ -1030,6 +1030,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         (window as any).Intercom('show');
       };
 
+      // FIXME: hard-coded product tour id
       const menu = (
         <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
@@ -1144,9 +1145,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
-          </Dropdown>,
+          <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1199,9 +1198,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
-          </Dropdown>,
+          <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
