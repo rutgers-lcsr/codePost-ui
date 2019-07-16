@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Modal, Progress, Upload } from 'antd';
+import { Button, Icon, message, Modal, Progress, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -43,7 +43,11 @@ enum STATUS {
 interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
+  // List of files in codePost format for upload
   files: any[];
+  // List of files in ant format. Required to make make the dialog a controlled list so we
+  // can remove files from the list if they are not valid
+  fileList: any[];
   status: STATUS;
 }
 
@@ -59,6 +63,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     files: [],
+    fileList: [],
     status: STATUS.NONE,
   };
 
@@ -85,7 +90,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [] });
+    this.setState({ status: STATUS.NONE, files: [], fileList: [] });
     this.props.onCancel();
   };
 
@@ -99,6 +104,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               this.setState({
                 status: STATUS.COMPLETE,
                 files: [],
+                fileList: [],
                 selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
               });
@@ -164,7 +170,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public onCancel = () => {
-    this.setState({ files: [], status: STATUS.NONE });
+    this.setState({ files: [], fileList: [], status: STATUS.NONE });
     this.props.onCancel();
   };
 
@@ -210,6 +216,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               const newFiles = this.state.files.filter((el) => {
                 return el.name !== file.name;
               });
+              const newFileList = this.state.fileList.filter((el) => {
+                return el.name !== file.name;
+              });
               this.setState({
                 files: [
                   ...newFiles,
@@ -218,7 +227,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                     data: reader.result,
                   },
                 ],
+                fileList: [...newFileList, file],
               });
+            } else {
+              message.error(`${file.name} cannot be uploaded because it is empty.`);
             }
           };
           reader.readAsText(file);
@@ -270,7 +282,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 beforeUpload={beforeUpload}
                 listType="text"
                 multiple={true}
-                onChange={this.onChangeFiles}
+                onRemove={this.onRemove}
+                fileList={this.state.fileList}
                 accept={acceptedFilesString}
               >
                 <Button>
