@@ -74,12 +74,12 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 <h4>File ID: {this.props.file ? this.props.file.id : '?'}</h4>
                 <Collapse>
                   <Panel header="File Code" key="1">
-                    <p style={{ maxHeight: '280px', overflow: 'scroll' }}>
+                    <p style={{ maxHeight: '280px', overflow: 'auto' }}>
                       {this.props.file ? this.props.file.code : '?'}
                     </p>
                   </Panel>
                   <Panel header="Error Info" key="2">
-                    <p style={{ maxHeight: '280px', overflow: 'scroll' }}>
+                    <p style={{ maxHeight: '280px', overflow: 'auto' }}>
                       {this.state.error ? this.state.error.toString() : '...'}
                     </p>
                   </Panel>

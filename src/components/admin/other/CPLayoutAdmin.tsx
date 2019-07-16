@@ -48,7 +48,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
 
   // FIXME: Hardcoded height variables
   return (
-    <Layout id="Admin" className="layout--admin" style={{ overflowX: 'scroll' }}>
+    <Layout id="Admin" className="layout--admin" style={{ overflowX: 'auto' }}>
       {props.hasSider !== undefined && !props.hasSider ? null : (
         <Sider
           collapsible={props.collapsible ? props.collapsible : false}
@@ -67,7 +67,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
               </Link>
             )}
           </Header>
-          <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'scroll' }}>
+          <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'auto' }}>
             {props.navigation(collapsed)}
           </div>
         </Sider>
