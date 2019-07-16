@@ -49,7 +49,7 @@ const SimpleGraderRoster = () => {
         top: props1.top,
         left: props1.left,
         opacity: props1.opacity,
-        overflow: 'scroll',
+        overflow: 'auto',
         position: 'relative',
       }}
     >
@@ -62,7 +62,7 @@ const SimpleGraderRoster = () => {
           backgroundColor: '#FFFFFF',
           padding: 20,
           maxHeight: 500,
-          overflow: 'scroll',
+          overflow: 'auto',
         }}
       >
         <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>

@@ -242,7 +242,7 @@ class GraderEditRubric extends React.Component<IGraderEditRubricProps, IGraderEd
           >
             Rubric comments that have been linked to submissions are not editable. Ask an Admin to help.
           </div>
-          <div style={{ height: 'calc(100% - 260px', overflowY: 'scroll' }}>
+          <div style={{ height: 'calc(100% - 260px', overflowY: 'auto' }}>
             {this.props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
               return (
                 <RubricCategoryBlock

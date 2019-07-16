@@ -60,7 +60,7 @@ const SimpleCodeBox = (props: { code: string }) => {
             lineHeight: '20px',
           }}
         >
-          <div style={{ overflowY: 'scroll' }}>
+          <div style={{ overflowY: 'auto' }}>
             <SyntaxHighlighter
               className="simpleCodeBox"
               language={'java'}

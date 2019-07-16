@@ -73,7 +73,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         >
           {props.header}
         </Header>
-        <Layout style={{ overflowX: 'scroll' }}>
+        <Layout style={{ overflowX: 'auto' }}>
           <Sider
             width={siderWidth}
             className="layout--standard-console__sider"
