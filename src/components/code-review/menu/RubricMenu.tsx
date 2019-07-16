@@ -226,8 +226,8 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   return (
     <div
       style={{
-        padding: '0px 10px',
-        fontSize: '10.5px',
+        padding: '0px 10px 0px 0px',
+        fontSize: '12px',
       }}
     >
       <InlineMarkdown source={props.rubricComment.text} />
