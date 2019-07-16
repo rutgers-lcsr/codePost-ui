@@ -99,7 +99,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const comment = {
       ...this.props.comment,
       text: this.state.text,
-      pointDelta: this.state.points,
+      pointDelta: this.props.rubricComment ? null : this.state.points,
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
     };
 
