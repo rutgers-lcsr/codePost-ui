@@ -6,13 +6,14 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Collapse, Icon, Layout, notification } from 'antd';
+import { Collapse, Icon, Layout } from 'antd';
 const { Content, Header, Sider } = Layout;
 
 /* codePost imports */
 import themeVars from '../../../styles/abstracts/_theme.js';
 import layoutVars from '../../../styles/layout/_layoutVars';
 
+import useBrowserNotification from '../useBrowserNotification';
 import useFixedWindow from '../useFixedWindow';
 import useWindowSize from '../useWindowSize';
 
@@ -37,6 +38,7 @@ interface IStandardConsoleLayoutProps {
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
+  useBrowserNotification();
   const windowSize = useWindowSize();
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
@@ -57,22 +59,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     const iconType = isActive ? 'up' : 'down';
     return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
   };
-
-  const openNotificationWithIcon = (type: string) => {
-    notification[type]({
-      message: 'Browser Warning',
-      description: 'codePost has been primarly tested using Google Chrome. Please use Chrome, or tread carefully!',
-    });
-  };
-
-  React.useEffect(() => {
-    // @ts-ignore
-    if (!window.chrome) {
-      openNotificationWithIcon('warning');
-    }
-
-    return;
-  }, []);
 
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
