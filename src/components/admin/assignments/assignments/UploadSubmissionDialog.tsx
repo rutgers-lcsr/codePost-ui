@@ -102,6 +102,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
               });
+            })
+            .catch(() => {
+              message.error(
+                'Sorry, something went wrong. Please try uploading again.\
+                If the problem persists, contact the codePost tean.',
+              );
+              this.cancel();
             });
         }
       });
