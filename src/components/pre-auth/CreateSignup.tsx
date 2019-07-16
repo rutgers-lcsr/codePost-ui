@@ -134,13 +134,14 @@ class CreateSignup extends React.Component<IProps, IState> {
   };
 
   public validateNewUser = () => {
-    if (!this.state.selectedOrg) {
+    // If selected organization, make sure it is valid. If a new org was created, make sure it is valid.
+    if ((!this.state.createNewOrg && !this.state.selectedOrg) || (this.state.createNewOrg && !this.state.newOrg)) {
       return;
     }
 
     const payload = {
       email: this.state.email,
-      organization: this.state.selectedOrg.value,
+      organization: this.state.createNewOrg ? this.state.newOrg : this.state.selectedOrg!.value,
     };
 
     this.setState({ status: STATUS.PENDING_VALIDATION }, () => {
