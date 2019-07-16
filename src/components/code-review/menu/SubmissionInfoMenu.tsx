@@ -229,15 +229,20 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     );
   } else {
     return (
-      <div
-        style={{
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          width: '80%',
-        }}
-      >
-        {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+        <span style={{ width: '8px' }} />
+        <span
+          style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            width: '80%',
+            color: consoleTheme.siderMenuItemColor,
+          }}
+        >
+          {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
+        </span>
       </div>
     );
   }
