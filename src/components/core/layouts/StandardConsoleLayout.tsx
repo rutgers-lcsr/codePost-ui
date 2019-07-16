@@ -13,6 +13,7 @@ const { Content, Header, Sider } = Layout;
 import themeVars from '../../../styles/abstracts/_theme.js';
 import layoutVars from '../../../styles/layout/_layoutVars';
 
+import useBrowserNotification from '../useBrowserNotification';
 import useFixedWindow from '../useFixedWindow';
 import useWindowSize from '../useWindowSize';
 
@@ -37,6 +38,7 @@ interface IStandardConsoleLayoutProps {
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
+  useBrowserNotification();
   const windowSize = useWindowSize();
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
