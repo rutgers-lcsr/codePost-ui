@@ -84,7 +84,7 @@ export default function APIAnimation() {
             r="100"
             fill="transparent"
             stroke="#24be85"
-            stroke-width="3"
+            strokeWidth="3"
             transform="rotate(-25 250 200)"
           />
           <path d="M250 335 Q 50 350 130 145" stroke="grey" fill="transparent" />

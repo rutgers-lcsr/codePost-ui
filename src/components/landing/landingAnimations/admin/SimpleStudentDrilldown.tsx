@@ -70,6 +70,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
 
   const data = [
     {
+      key: '1',
       open: <Icon type="code" />,
       assignment: 'Hello World',
       status: (
@@ -85,6 +86,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
       actions: <Icon type="menu" />,
     },
     {
+      key: '2',
       open: <Icon type="code" />,
       assignment: 'Loops',
       status: (
@@ -100,6 +102,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
       actions: <Icon type="menu" />,
     },
     {
+      key: '3',
       open: <Icon type="code" />,
       assignment: 'TCP/IP',
       status: (
