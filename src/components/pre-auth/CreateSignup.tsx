@@ -36,7 +36,8 @@ enum STATUS {
   BAD_EMAIL,
   VALIDATION_SUCCESS,
   VALIDATION_ONGOING,
-  VALIDATION_FAILURE,
+  VALIDATION_REJECTED,
+  VALIDATION_ERROR,
 }
 
 // Standard Normal variate using Box-Muller transform.
@@ -186,7 +187,7 @@ class CreateSignup extends React.Component<IProps, IState> {
           }
         })
         .catch((err) => {
-          console.log(err);
+          this.setState({ status: STATUS.VALIDATION_SUCCESS, progress: 100 });
         });
     });
   };
@@ -217,7 +218,7 @@ class CreateSignup extends React.Component<IProps, IState> {
           if (json.status) {
             this.setState({ status: STATUS.VALIDATION_SUCCESS, progress: 100 });
           } else {
-            this.setState({ status: STATUS.VALIDATION_FAILURE });
+            this.setState({ status: STATUS.VALIDATION_REJECTED });
           }
         }
       });
@@ -386,7 +387,7 @@ class CreateSignup extends React.Component<IProps, IState> {
           </div>
         );
         break;
-      case STATUS.VALIDATION_FAILURE:
+      case STATUS.VALIDATION_REJECTED:
         content = (
           <div>
             <Progress percent={this.state.progress} status="exception" />
@@ -394,29 +395,25 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <Alert
               message="Whoops!"
-              description="We couldn't verify that you belong to the organization you selected. If you think this is a
-              mistake, please contact us at <b>team@codepost.io</b>"
+              description={`We need a little more time to validate your account.
+                Please contact us at team@codepost.io to continue setting up your account.`}
               type="error"
             />
           </div>
         );
         break;
-      case STATUS.BAD_EMAIL:
+      case STATUS.VALIDATION_ERROR:
         content = (
           <div>
+            <Progress percent={this.state.progress} status="exception" />
+            <br />
+            <br />
             <Alert
               message="Whoops!"
-              description={
-                <div>
-                  It looks like your email corresponds to a different organization than you selected. You selected{' '}
-                  <b>{this.state.selectedOrg!.label}</b> but your email corresponds to <b>{this.state.matchOrg}</b>.
-                </div>
-              }
+              description={`Something went wrong.
+                Please contact the codePost team at team@codepost.io to continue signing up.`}
               type="error"
             />
-            <br />
-            <CPButton cpType="secondary">Start over</CPButton> &nbsp;
-            <CPButton cpType="primary">Join {this.state.matchOrg}</CPButton>
           </div>
         );
         break;

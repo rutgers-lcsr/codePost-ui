@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Dropdown, Empty, Icon, Menu, message } from 'antd';
+import { Empty, Menu, message } from 'antd';
 
 /* other library imports */
 import queryString from 'query-string';
@@ -1026,15 +1026,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         cursor: 'pointer',
       };
 
+      const openIntercom = () => {
+        (window as any).Intercom('show');
+      };
+
+      // FIXME: hard-coded product tour id
       const menu = (
         <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
             Code Review Console
           </Menu.Item>
           <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            Redo tutorial
+            <a href={'/code/1/?onboarding=true&product_tour_id=49817'}>Redo tutorial</a>
           </Menu.Item>
-          <Menu.Item key="setting:3" style={itemStyle} className="header-menu">
+          <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
           </Menu.Item>
           <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
@@ -1140,9 +1145,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
-          </Dropdown>,
+          <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1195,9 +1198,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <Dropdown overlay={menu} trigger={['click']} key="menu">
-            <Icon type="menu" style={{ color: this.context.consoleTheme.text }} />
-          </Dropdown>,
+          <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
