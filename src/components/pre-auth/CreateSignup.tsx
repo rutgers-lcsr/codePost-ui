@@ -315,7 +315,7 @@ class CreateSignup extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.CONFIRM_AUTHORITY:
-        const orgName = selectedOrg ? selectedOrg.label : this.state.newOrg;
+        const orgName = selectedOrg && !this.state.createNewOrg ? selectedOrg.label : this.state.newOrg;
         content = (
           <div>
             <span>
