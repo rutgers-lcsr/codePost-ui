@@ -273,7 +273,7 @@ class CreateSignup extends React.Component<IProps, IState> {
               isDisabled={this.state.createNewOrg}
             />
             <br />
-            <Switch defaultChecked={this.state.check2} onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
+            <Switch onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
             <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
             {this.state.createNewOrg ? (
               <div>
