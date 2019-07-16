@@ -49,6 +49,23 @@ const randomNormal = () => {
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 };
 
+// Regex match for standard email rules
+// Source: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+// Source for formatting with typescript length restriction: https://stackoverflow.com/a/34755045
+const emailRegex = new RegExp(
+  [
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))/,
+    /@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+  ]
+    .map((r) => {
+      return r.source;
+    })
+    .join(''),
+);
+
+// Regex match for new organizations.
+const organizationRegex = /^[a-zA-Z]+[a-zA-Z\s\.\-\_]*$/;
+
 interface IState {
   email: string;
   selectedOrg?: IOption;
@@ -117,13 +134,14 @@ class CreateSignup extends React.Component<IProps, IState> {
   };
 
   public validateNewUser = () => {
-    if (!this.state.selectedOrg) {
+    // If selected organization, make sure it is valid. If a new org was created, make sure it is valid.
+    if ((!this.state.createNewOrg && !this.state.selectedOrg) || (this.state.createNewOrg && !this.state.newOrg)) {
       return;
     }
 
     const payload = {
       email: this.state.email,
-      organization: this.state.selectedOrg.value,
+      organization: this.state.createNewOrg ? this.state.newOrg : this.state.selectedOrg!.value,
     };
 
     this.setState({ status: STATUS.PENDING_VALIDATION }, () => {
@@ -256,12 +274,16 @@ class CreateSignup extends React.Component<IProps, IState> {
               isDisabled={this.state.createNewOrg}
             />
             <br />
-            <Switch defaultChecked={this.state.check2} onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
+            <Switch onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
             <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
             {this.state.createNewOrg ? (
               <div>
                 <br />
-                <Input placeholder="Your organization" onChange={this.handleChange.bind(this, 'newOrg')} />
+                <Input
+                  placeholder="Your organization"
+                  value={this.state.newOrg}
+                  onChange={this.handleChange.bind(this, 'newOrg')}
+                />
               </div>
             ) : null}
             {spacing}
@@ -274,8 +296,10 @@ class CreateSignup extends React.Component<IProps, IState> {
                 cpType="primary"
                 onClick={this.changeStatus.bind(this, STATUS.CONFIRM_AUTHORITY)}
                 disabled={
-                  !(this.state.selectedOrg || this.state.newOrg) ||
-                  (!this.state.newOrg && this.state.selectedOrg!.label === '')
+                  !(
+                    (this.state.createNewOrg && this.state.newOrg && organizationRegex.test(this.state.newOrg)) ||
+                    (!this.state.createNewOrg && this.state.selectedOrg && /\S/.test(this.state.selectedOrg.label))
+                  ) || !emailRegex.test(this.state.email)
                 }
               >
                 Continue
@@ -292,7 +316,7 @@ class CreateSignup extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.CONFIRM_AUTHORITY:
-        const orgName = selectedOrg ? selectedOrg.label : this.state.newOrg;
+        const orgName = selectedOrg && !this.state.createNewOrg ? selectedOrg.label : this.state.newOrg;
         content = (
           <div>
             <span>

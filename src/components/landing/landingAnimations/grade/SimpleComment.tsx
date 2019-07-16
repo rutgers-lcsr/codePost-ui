@@ -55,12 +55,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
   }
 
   public componentDidMount() {
-    console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
-  }
-
-  public componentWillUnmount() {
-    console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ISimpleCommentProps) {
