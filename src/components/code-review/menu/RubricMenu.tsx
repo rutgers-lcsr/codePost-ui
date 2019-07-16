@@ -191,7 +191,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
             }}
           />
         </div>
-        <div style={{ height: '100%', overflow: 'scroll' }}>
+        <div style={{ height: '100%', overflow: 'auto' }}>
           <Menu
             defaultOpenKeys={rubricKeys}
             selectedKeys={[]}

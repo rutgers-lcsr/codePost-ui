@@ -129,7 +129,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
         top: props1.top,
         left: props1.left,
         opacity: props1.opacity,
-        overflow: 'scroll',
+        overflow: 'auto',
         position: 'relative',
       }}
     >
@@ -142,7 +142,7 @@ const SimpleStudentDrilldown = (props: { student: string }) => {
           backgroundColor: '#FFFFFF',
           padding: 20,
           maxHeight: 500,
-          overflow: 'scroll',
+          overflow: 'auto',
         }}
       >
         <div key="title" className="cp-label cp-label--large cp-label--bold" style={{ marginBottom: 20 }}>
