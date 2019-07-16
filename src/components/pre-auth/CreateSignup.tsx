@@ -49,6 +49,23 @@ const randomNormal = () => {
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 };
 
+// Regex match for standard email rules
+// Source: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+// Source for formatting with typescript length restriction: https://stackoverflow.com/a/34755045
+const emailRegex = new RegExp(
+  [
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))/,
+    /@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+  ]
+    .map((r) => {
+      return r.source;
+    })
+    .join(''),
+);
+
+// Regex match for new organizations.
+const organizationRegex = /[a-zA-Z]+[a-zA-Z\s\.\-\_]/;
+
 interface IState {
   email: string;
   selectedOrg?: IOption;
@@ -274,8 +291,10 @@ class CreateSignup extends React.Component<IProps, IState> {
                 cpType="primary"
                 onClick={this.changeStatus.bind(this, STATUS.CONFIRM_AUTHORITY)}
                 disabled={
-                  !(this.state.selectedOrg || this.state.newOrg) ||
-                  (!this.state.newOrg && this.state.selectedOrg!.label === '')
+                  !(
+                    (this.state.createNewOrg && this.state.newOrg && organizationRegex.test(this.state.newOrg)) ||
+                    (!this.state.createNewOrg && this.state.selectedOrg && /\S/.test(this.state.selectedOrg.label))
+                  ) || !emailRegex.test(this.state.email)
                 }
               >
                 Continue
