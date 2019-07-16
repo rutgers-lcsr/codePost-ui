@@ -278,7 +278,11 @@ class CreateSignup extends React.Component<IProps, IState> {
             {this.state.createNewOrg ? (
               <div>
                 <br />
-                <Input placeholder="Your organization" onChange={this.handleChange.bind(this, 'newOrg')} />
+                <Input
+                  placeholder="Your organization"
+                  value={this.state.newOrg}
+                  onChange={this.handleChange.bind(this, 'newOrg')}
+                />
               </div>
             ) : null}
             {spacing}
