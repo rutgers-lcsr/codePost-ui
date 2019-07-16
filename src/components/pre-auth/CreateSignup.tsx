@@ -402,6 +402,21 @@ class CreateSignup extends React.Component<IProps, IState> {
           </div>
         );
         break;
+      case STATUS.VALIDATION_ERROR:
+        content = (
+          <div>
+            <Progress percent={this.state.progress} status="exception" />
+            <br />
+            <br />
+            <Alert
+              message="Whoops!"
+              description={`Something went wrong.
+                Please contact the codePost team at team@codepost.io to continue signing up.`}
+              type="error"
+            />
+          </div>
+        );
+        break;
       default:
         content = <span>Something went wrong...</span>;
     }
