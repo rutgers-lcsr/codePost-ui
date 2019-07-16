@@ -72,7 +72,8 @@ interface IProps {
   visible: boolean;
   onCancel: () => void;
   email: string;
-  onDemoCreate: (course: CourseType) => void;
+  onDemoCreate: (course?: CourseType) => void;
+  demoCourseExists: boolean;
 }
 
 const AdminOnboardingSelector = (props: IProps) => {
@@ -88,10 +89,15 @@ const AdminOnboardingSelector = (props: IProps) => {
 
   const handleDemoCourse = () => {
     setLoading(true);
-    createDemoCourse(`${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then((course) => {
+    if (!props.demoCourseExists) {
+      createDemoCourse(`${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then((course) => {
+        setLoading(false);
+        props.onDemoCreate(course);
+      });
+    } else {
       setLoading(false);
-      props.onDemoCreate(course);
-    });
+      props.onDemoCreate();
+    }
 
     // call prop function which triggers tour here
   };
