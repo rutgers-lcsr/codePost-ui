@@ -254,7 +254,7 @@ class App extends React.Component<{}, IState> {
     const demoRoute = (
       <Route
         exact={true}
-        path={'/demo/:submissionId'}
+        path={'/demo/'}
         render={(props: any) =>
           this.wrapTooltipContext(
             <AsyncGrade

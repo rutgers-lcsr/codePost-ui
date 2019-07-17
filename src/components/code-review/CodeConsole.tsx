@@ -349,13 +349,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     if (this.props.inDemoMode) {
+      document.title = 'codePost | Code Console Demo';
       this.setState({ isLoading: false });
       return;
     }
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `Submission - ${submissionID}`;
+    document.title = `codePost | Submission - ${submissionID}`;
 
     const permissionLevel = await this.detectPermissionType(submissionID);
 
