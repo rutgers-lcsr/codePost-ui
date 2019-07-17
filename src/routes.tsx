@@ -7,8 +7,12 @@ export const STUDENT = '/student';
 export const RESET = '/password-reset';
 export const RESET_TOKEN = '/password-reset/:uid/:token';
 export const LANDING = '/landing';
+export const CODE_DEMO = '/demo';
 
 export const COURSE_SELECTOR = ':courseName/:period';
+
+export const CODE_TOUR_ID = '49817';
+export const ADMIN_TOUR_ID = '49547';
 
 export type ROUTES =
   | typeof ADMIN
@@ -18,4 +22,6 @@ export type ROUTES =
   | typeof GRADER
   | typeof CODE
   | typeof RESET
-  | typeof RESET_TOKEN;
+  | typeof RESET_TOKEN
+  | typeof LANDING
+  | typeof CODE_DEMO;

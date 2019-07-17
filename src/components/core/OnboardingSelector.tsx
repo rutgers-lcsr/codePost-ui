@@ -21,12 +21,14 @@ import { createDemoCourse } from '../utils/DemoCourse';
 
 import { acceptedFiles } from '../admin/assignments/assignments/AcceptedFileTypes';
 
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+
 /**********************************************************************************************************************/
 
 interface IOnboardingSelectorProps {
   title: string | React.ReactNode;
   options: React.ReactNode[];
-  message: string;
+  message: string | React.ReactNode;
   footer: string;
   visible: boolean;
   onCancel: () => void;
@@ -80,9 +82,8 @@ const AdminOnboardingSelector = (props: IProps) => {
   const [loading, setLoading] = React.useState(false);
 
   // call prop function onClick which triggers tour
-  // FIXME: hard-coded product tour id
   const tour1 = (
-    <CPButton cpType="primary" block href={'/code/1/?onboarding=true&product_tour_id=49817'}>
+    <CPButton cpType="primary" block href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>
       Annotate some code!
     </CPButton>
   );
@@ -287,14 +288,14 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   } else {
     // call prop function onClick which triggers tour
     const uploadFile = (
-      <CPButton cpType="primary" block onClick={setUploading.bind(true)}>
-        Upload your own code
+      <CPButton cpType="secondary" block onClick={setUploading.bind(true)}>
+        Upload your own code to annotate
       </CPButton>
     );
 
     const useDefaultFile = (
-      <CPButton cpType="secondary" block onClick={props.onUploadConfirm.bind(true, [])}>
-        No code handy? Use some default files
+      <CPButton cpType="primary" block onClick={props.onUploadConfirm.bind(true, [])}>
+        Annotate some sample code
       </CPButton>
     );
 
@@ -303,8 +304,13 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
       </span>
     );
-    options = [uploadFile, useDefaultFile];
-    message = "In this tour, you'll learn the basics of the code review console.";
+    options = [useDefaultFile, uploadFile];
+    message = (
+      <span style={{ fontSize: '15px' }}>
+        We're going to show you how to annotate code in codePost. To get started,{' '}
+        <b>select one of the options below.</b>
+      </span>
+    );
   }
 
   return (

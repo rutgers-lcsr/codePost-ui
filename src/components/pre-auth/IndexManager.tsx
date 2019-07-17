@@ -25,6 +25,8 @@ import TermsOfService from './TermsOfService';
 
 import Logout from '../core/Logout';
 
+import { CODE_DEMO } from '../../routes';
+
 /**********************************************************************************************************************/
 
 const AsyncLanding = Loadable({
@@ -102,6 +104,9 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
                 <PasswordReset {...props} message={'activate'} isLoggedIn={this.props.isLoggedIn} />
               )}
             />
+
+            {/* prevents NoMatch from showing alongside component */}
+            <Route exact={true} path={`${CODE_DEMO}/`} component={null} />
 
             {/* Reminder: we used to offer an "upgrade" path */}
 
