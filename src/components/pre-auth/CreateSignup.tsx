@@ -171,7 +171,12 @@ class CreateSignup extends React.Component<{}, IState> {
   };
 
   public checkUserValidation = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/registration/checkStatusNewAdminUser?email=${this.state.email}`)
+    fetch(
+      `${process.env.REACT_APP_API_URL}/registration/checkStatusNewAdminUser?email=${this.state.email.replace(
+        /\+/g,
+        '%2B',
+      )}`,
+    )
       .then((res) => {
         if (res.status === 200) {
           return res.json();
