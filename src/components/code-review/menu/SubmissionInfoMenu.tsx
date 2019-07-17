@@ -74,7 +74,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
       <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
-      <div style={{ fontSize: 12, overflowX: 'scroll' }}>
+      <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
           <div>
@@ -229,15 +229,20 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     );
   } else {
     return (
-      <div
-        style={{
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          width: '80%',
-        }}
-      >
-        {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+        <span style={{ width: '8px' }} />
+        <span
+          style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            width: '80%',
+            color: consoleTheme.siderMenuItemColor,
+          }}
+        >
+          {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
+        </span>
       </div>
     );
   }

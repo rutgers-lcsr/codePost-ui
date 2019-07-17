@@ -1,6 +1,6 @@
 // Source: https://fileinfo.com/filetypes/developer-all; .rtf,.txt,.csv,.ipynp, .ts,.tsx,.jsx,.json added
 
-const acceptedFiles = [
+export const acceptedFiles = [
   '.rtf',
   '.txt',
   '.csv',

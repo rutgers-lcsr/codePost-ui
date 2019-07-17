@@ -118,7 +118,7 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
 
   const paragraphRenderer = (props: any) => {
     return (
-      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'scroll' }}>
+      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
         {props.children}
       </p>
     );

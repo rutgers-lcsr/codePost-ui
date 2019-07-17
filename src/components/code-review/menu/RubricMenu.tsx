@@ -191,7 +191,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
             }}
           />
         </div>
-        <div style={{ height: '100%', overflow: 'scroll' }}>
+        <div style={{ height: '100%', overflow: 'auto' }}>
           <Menu
             defaultOpenKeys={rubricKeys}
             selectedKeys={[]}
@@ -226,8 +226,8 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   return (
     <div
       style={{
-        padding: '0px 10px',
-        fontSize: '10.5px',
+        padding: '0px 10px 0px 0px',
+        fontSize: '12px',
       }}
     >
       <InlineMarkdown source={props.rubricComment.text} />

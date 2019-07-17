@@ -163,7 +163,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
     const className = theme === 'light' ? 'sider-menu sider-menu--light' : 'sider-menu sider-menu--dark';
 
     return (
-      <div id="file-menu" style={{ overflowY: 'scroll' }}>
+      <div id="file-menu" style={{ overflowY: 'auto' }}>
         <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}

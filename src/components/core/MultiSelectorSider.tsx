@@ -85,7 +85,7 @@ const MultiSelectorSider = (props: IProps) => {
         key="selector1"
         value={props.activeFirstSelector ? props.activeFirstSelector.label : 'Select...'}
         overlay={firstSelectorOverlay}
-        overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+        overlayStyle={{ maxHeight: '300px', overflowY: 'auto' }}
         placement="bottomLeft"
         theme={theme}
         justifyContent="space-between"
@@ -103,7 +103,7 @@ const MultiSelectorSider = (props: IProps) => {
           key="selector2"
           value={props.activeSecondSelector ? props.activeSecondSelector.label : 'Select...'}
           overlay={secondSelectorOverlay}
-          overlayStyle={{ maxHeight: '300px', overflowY: 'scroll' }}
+          overlayStyle={{ maxHeight: '300px', overflowY: 'auto' }}
           placement="bottomLeft"
           theme={theme}
           justifyContent="space-between"

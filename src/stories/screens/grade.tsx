@@ -125,7 +125,7 @@ const content = (
           fontSize: '12px',
         }}
       >
-        <div style={{ overflowY: 'scroll' }} id="cp-grade-code-container">
+        <div style={{ overflowY: 'auto' }} id="cp-grade-code-container">
           <SyntaxHighlighter language={'java'} style={googlecode} showLineNumbers={true} wrapLines={false}>
             {codeString}
           </SyntaxHighlighter>

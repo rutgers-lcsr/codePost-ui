@@ -292,7 +292,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         viewsBySubmission: {},
       },
       () => {
-        this.changeURL(newCourse, this.state.currentPanel, false);
+        this.changeURL(newCourse, this.state.currentPanel, true);
         this.loadAllCourseData(newCourse);
 
         // add loading interval for new course
@@ -313,19 +313,35 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
   };
 
-  public handleDemoCourse = (course: CourseType) => {
-    const newCourses = this.state.courses;
-    newCourses.push(course);
-    this.setState({ courses: newCourses, onboardingModalVisible: false }, () => {
-      this.props.addCourse(course);
-      this.updateNewCourse(course);
-    });
-
-    // Trigger product tour after demo course is created
+  public handleDemoCourse = (course?: CourseType) => {
     // FIXME: hard-coded product tour id
-    this.props.history.push({
-      search: '?product_tour_id=49547',
-    });
+    const searchParam = '?product_tour_id=49547';
+
+    if (course !== undefined) {
+      // Case 1: we just created the demo course, so add it to state
+      const newCourses = this.state.courses;
+      newCourses.push(course);
+      this.setState({ courses: newCourses, onboardingModalVisible: false }, () => {
+        this.props.addCourse(course);
+        this.updateNewCourse(course);
+        this.props.history.push({
+          search: searchParam,
+        });
+      });
+    } else {
+      // Case 2: try to find the demo course in our existing list of courses
+      const demoCourse = this.state.courses.find((el) => {
+        return el.period === 'demo';
+      });
+      if (demoCourse !== undefined) {
+        this.setState({ onboardingModalVisible: false }, () => {
+          this.updateNewCourse(demoCourse);
+          this.props.history.push({
+            search: searchParam,
+          });
+        });
+      }
+    }
   };
 
   public openModal = () => {
@@ -1170,7 +1186,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <CPDropdown
         value={selectorText}
         overlay={menu}
-        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'scroll' }}
+        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
       />
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
@@ -1353,6 +1369,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           onCancel={this.closeModal}
           email={this.props.user.email}
           onDemoCreate={this.handleDemoCourse}
+          demoCourseExists={this.state.courses.some((el) => {
+            return el.period === 'demo';
+          })}
         />
       </span>
     );
