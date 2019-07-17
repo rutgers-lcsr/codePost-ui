@@ -316,7 +316,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public handleDemoCourse = (course?: CourseType) => {
-    // FIXME: hard-coded product tour id
     const searchParam = `?product_tour_id=${ADMIN_TOUR_ID}`;
 
     if (course !== undefined) {

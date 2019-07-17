@@ -1032,7 +1032,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         (window as any).Intercom('show');
       };
 
-      // FIXME: hard-coded product tour id
       const menu = (
         <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
