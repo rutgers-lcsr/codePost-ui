@@ -8,9 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Empty, Menu, message } from 'antd';
 
-/* other library imports */
-import queryString from 'query-string';
-
 /* codePost imports */
 import Loading from '../core/Loading';
 
@@ -63,6 +60,8 @@ import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 import loops_student1 from '../utils/demo_subs/loops/student1';
 import recursion_student1 from '../utils/demo_subs/recursion/student1';
 
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -75,7 +74,6 @@ enum PERMISSION_LEVEL {
 
 interface ICodeConsoleState {
   /* UI control */
-  inDemoMode: boolean;
   permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
   selectedFile: FileType | undefined;
@@ -113,6 +111,7 @@ export interface ICodeConsoleProps {
   location: any;
   user: UserType;
   handleLogout: () => void;
+  inDemoMode: boolean;
 }
 
 class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
@@ -318,45 +317,48 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Component instance
   /***********************************************************************************************/
 
-  public state: Readonly<ICodeConsoleState> = {
-    inDemoMode: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding'),
-    permissionLevel: PERMISSION_LEVEL.READ,
-    activeCommentID: undefined,
-    assignment: undefined,
-    commentRubricComments: {},
-    comments: {},
-    files: [],
-    graders: [],
-    isLoading: true,
-    rubricCategories: [],
-    rubricComments: {},
-    submission: undefined,
-    allowGradersToEditRubric: false,
+  public constructor(props: ICodeConsoleProps) {
+    super(props);
+    this.state = {
+      permissionLevel: PERMISSION_LEVEL.READ,
+      activeCommentID: undefined,
+      assignment: undefined,
+      commentRubricComments: {},
+      comments: {},
+      files: [],
+      graders: [],
+      isLoading: true,
+      rubricCategories: [],
+      rubricComments: {},
+      submission: undefined,
+      allowGradersToEditRubric: false,
 
-    selectedFile: undefined,
-    unsavedComments: {},
-    oldCommentIDs: {},
+      selectedFile: undefined,
+      unsavedComments: {},
+      oldCommentIDs: {},
 
-    codeZoom: 1,
-    codeSplitBasis: themeVars.grade.splitBasis,
-    codeVerticalOffset: 0,
+      codeZoom: 1,
+      codeSplitBasis: themeVars.grade.splitBasis,
+      codeVerticalOffset: 0,
 
-    demoCommentCounter: 0,
-  };
+      demoCommentCounter: 0,
+    };
+  }
 
   /**********************************************************************************
   /* Lifecycle methods
   /**********************************************************************************/
 
   public async componentDidMount() {
-    if (this.state.inDemoMode) {
+    if (this.props.inDemoMode) {
+      document.title = 'codePost | Code Console Demo';
       this.setState({ isLoading: false });
       return;
     }
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `Submission - ${submissionID}`;
+    document.title = `codePost | Submission - ${submissionID}`;
 
     const permissionLevel = await this.detectPermissionType(submissionID);
 
@@ -585,7 +587,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (!this.state.inDemoMode) {
+    if (!this.props.inDemoMode) {
       if (comment.id < 0) {
         savedComment = await CommentIO.create(comment);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
@@ -620,7 +622,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0 && !this.state.inDemoMode) {
+    if (comment.id > 0 && !this.props.inDemoMode) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -711,7 +713,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.state.inDemoMode) {
+    if (this.props.inDemoMode) {
       this.setState(
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
@@ -992,7 +994,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           }
         />
       );
-    } else if (this.state.inDemoMode && !this.state.assignment) {
+    } else if (this.props.inDemoMode && !this.state.assignment) {
       rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
@@ -1030,14 +1032,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         (window as any).Intercom('show');
       };
 
-      // FIXME: hard-coded product tour id
       const menu = (
         <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
             Code Review Console
           </Menu.Item>
           <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={'/code/1/?onboarding=true&product_tour_id=49817'}>Redo tutorial</a>
+            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
           </Menu.Item>
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
@@ -1068,7 +1069,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
 
-      if (this.state.inDemoMode) {
+      if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
           const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
             <GradeCode
@@ -1331,7 +1332,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
-          visible={this.state.inDemoMode && !this.state.assignment}
+          visible={this.props.inDemoMode && !this.state.assignment}
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
