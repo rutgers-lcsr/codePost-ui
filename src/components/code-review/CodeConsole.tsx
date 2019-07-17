@@ -1037,7 +1037,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             Code Review Console
           </Menu.Item>
           <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={'/demo/1/?product_tour_id=49817'}>Redo tutorial</a>
+            <a href={'/demo/?product_tour_id=49817'}>Redo tutorial</a>
           </Menu.Item>
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
