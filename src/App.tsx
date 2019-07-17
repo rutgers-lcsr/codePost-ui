@@ -261,6 +261,7 @@ class App extends React.Component<{}, IState> {
               {...props}
               user={this.state.user === undefined ? anonymousUser : this.state.user}
               handleLogout={this.handleLogout}
+              inDemoMode={true}
             />,
           )
         }
@@ -361,7 +362,9 @@ class App extends React.Component<{}, IState> {
           exact={true}
           path={`${CODE}/:submissionId`}
           render={(props: any) =>
-            this.wrapTooltipContext(<AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} />)
+            this.wrapTooltipContext(
+              <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} inDemoMode={false} />,
+            )
           }
         />
       );

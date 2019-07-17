@@ -8,9 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Empty, Menu, message } from 'antd';
 
-/* other library imports */
-import queryString from 'query-string';
-
 /* codePost imports */
 import Loading from '../core/Loading';
 
@@ -75,7 +72,6 @@ enum PERMISSION_LEVEL {
 
 interface ICodeConsoleState {
   /* UI control */
-  inDemoMode: boolean;
   permissionLevel: PERMISSION_LEVEL;
   isLoading: boolean;
   selectedFile: FileType | undefined;
@@ -113,6 +109,7 @@ export interface ICodeConsoleProps {
   location: any;
   user: UserType;
   handleLogout: () => void;
+  inDemoMode: boolean;
 }
 
 class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
@@ -321,9 +318,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public constructor(props: ICodeConsoleProps) {
     super(props);
     this.state = {
-      inDemoMode:
-        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-        this.props.location.pathname.indexOf('demo') > -1,
       permissionLevel: PERMISSION_LEVEL.READ,
       activeCommentID: undefined,
       assignment: undefined,
@@ -354,7 +348,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public async componentDidMount() {
-    if (this.state.inDemoMode) {
+    if (this.props.inDemoMode) {
       this.setState({ isLoading: false });
       return;
     }
@@ -590,7 +584,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (!this.state.inDemoMode) {
+    if (!this.props.inDemoMode) {
       if (comment.id < 0) {
         savedComment = await CommentIO.create(comment);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
@@ -625,7 +619,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0 && !this.state.inDemoMode) {
+    if (comment.id > 0 && !this.props.inDemoMode) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -716,7 +710,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.state.inDemoMode) {
+    if (this.props.inDemoMode) {
       this.setState(
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
@@ -997,7 +991,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           }
         />
       );
-    } else if (this.state.inDemoMode && !this.state.assignment) {
+    } else if (this.props.inDemoMode && !this.state.assignment) {
       rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
@@ -1042,7 +1036,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             Code Review Console
           </Menu.Item>
           <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={'/code/1/?onboarding=true&product_tour_id=49817'}>Redo tutorial</a>
+            <a href={'/demo/1/?product_tour_id=49817'}>Redo tutorial</a>
           </Menu.Item>
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
@@ -1073,7 +1067,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
 
-      if (this.state.inDemoMode) {
+      if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
           const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
             <GradeCode
@@ -1336,7 +1330,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
-          visible={this.state.inDemoMode && !this.state.assignment}
+          visible={this.props.inDemoMode && !this.state.assignment}
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
