@@ -64,6 +64,8 @@ import { addToPayload } from '../../infrastructure/utils';
 
 import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 
+import { ADMIN_TOUR_ID } from '../../routes';
+
 /**********************************************************************************************************************/
 
 export enum PANELS {
@@ -315,7 +317,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
   public handleDemoCourse = (course?: CourseType) => {
     // FIXME: hard-coded product tour id
-    const searchParam = '?product_tour_id=49547';
+    const searchParam = `?product_tour_id=${ADMIN_TOUR_ID}`;
 
     if (course !== undefined) {
       // Case 1: we just created the demo course, so add it to state

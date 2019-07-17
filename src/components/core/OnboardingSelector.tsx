@@ -21,6 +21,8 @@ import { createDemoCourse } from '../utils/DemoCourse';
 
 import { acceptedFiles } from '../admin/assignments/assignments/AcceptedFileTypes';
 
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+
 /**********************************************************************************************************************/
 
 interface IOnboardingSelectorProps {
@@ -80,9 +82,8 @@ const AdminOnboardingSelector = (props: IProps) => {
   const [loading, setLoading] = React.useState(false);
 
   // call prop function onClick which triggers tour
-  // FIXME: hard-coded product tour id
   const tour1 = (
-    <CPButton cpType="primary" block href={'/demo/1/?product_tour_id=49817'}>
+    <CPButton cpType="primary" block href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>
       Annotate some code!
     </CPButton>
   );

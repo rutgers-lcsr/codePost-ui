@@ -15,7 +15,7 @@ import LogInAs from './components/core/LogInAs';
 
 import Home from './components/core/Home';
 
-import { ADMIN, CODE, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT } from './routes';
 
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
@@ -254,7 +254,7 @@ class App extends React.Component<{}, IState> {
     const demoRoute = (
       <Route
         exact={true}
-        path={'/demo/'}
+        path={`${CODE_DEMO}/`}
         render={(props: any) =>
           this.wrapTooltipContext(
             <AsyncGrade

@@ -60,6 +60,8 @@ import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 import loops_student1 from '../utils/demo_subs/loops/student1';
 import recursion_student1 from '../utils/demo_subs/recursion/student1';
 
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -1037,7 +1039,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             Code Review Console
           </Menu.Item>
           <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={'/demo/?product_tour_id=49817'}>Redo tutorial</a>
+            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
           </Menu.Item>
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
