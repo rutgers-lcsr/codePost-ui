@@ -318,31 +318,36 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Component instance
   /***********************************************************************************************/
 
-  public state: Readonly<ICodeConsoleState> = {
-    inDemoMode: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding'),
-    permissionLevel: PERMISSION_LEVEL.READ,
-    activeCommentID: undefined,
-    assignment: undefined,
-    commentRubricComments: {},
-    comments: {},
-    files: [],
-    graders: [],
-    isLoading: true,
-    rubricCategories: [],
-    rubricComments: {},
-    submission: undefined,
-    allowGradersToEditRubric: false,
+  public constructor(props: ICodeConsoleProps) {
+    super(props);
+    this.state = {
+      inDemoMode:
+        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+        this.props.location.pathname.indexOf('demo') > -1,
+      permissionLevel: PERMISSION_LEVEL.READ,
+      activeCommentID: undefined,
+      assignment: undefined,
+      commentRubricComments: {},
+      comments: {},
+      files: [],
+      graders: [],
+      isLoading: true,
+      rubricCategories: [],
+      rubricComments: {},
+      submission: undefined,
+      allowGradersToEditRubric: false,
 
-    selectedFile: undefined,
-    unsavedComments: {},
-    oldCommentIDs: {},
+      selectedFile: undefined,
+      unsavedComments: {},
+      oldCommentIDs: {},
 
-    codeZoom: 1,
-    codeSplitBasis: themeVars.grade.splitBasis,
-    codeVerticalOffset: 0,
+      codeZoom: 1,
+      codeSplitBasis: themeVars.grade.splitBasis,
+      codeVerticalOffset: 0,
 
-    demoCommentCounter: 0,
-  };
+      demoCommentCounter: 0,
+    };
+  }
 
   /**********************************************************************************
   /* Lifecycle methods

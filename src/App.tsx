@@ -58,6 +58,24 @@ const AsyncAdmin = Loadable({
 
 /*****************************************************************************/
 
+const anonymousUser: UserType = {
+  email: 'anonymous@university.edu',
+  id: -1,
+  token: '',
+  organization: 1,
+  canCreateCourses: false,
+  canModifyRosters: false,
+  api_token: null,
+  studentCourses: [],
+  graderCourses: [],
+  superGraderCourses: [],
+  courseadminCourses: [],
+  leaderSections: [],
+  showProductTips: true,
+};
+
+/*****************************************************************************/
+
 interface IState {
   error: string;
   has_token: boolean;
@@ -232,6 +250,23 @@ class App extends React.Component<{}, IState> {
       return <Redirect to={'/'} />;
     }
 
+    /* tslint:disable:jsx-no-lambda */
+    const demoRoute = (
+      <Route
+        exact={true}
+        path={'/demo/:submissionId'}
+        render={(props: any) =>
+          this.wrapTooltipContext(
+            <AsyncGrade
+              {...props}
+              user={this.state.user === undefined ? anonymousUser : this.state.user}
+              handleLogout={this.handleLogout}
+            />,
+          )
+        }
+      />
+    );
+
     if (typeof this.state.user !== 'undefined') {
       const { user } = this.state;
       const courseAdminCourses = user.courseadminCourses;
@@ -390,6 +425,7 @@ class App extends React.Component<{}, IState> {
           {graderRoute}
           {adminRoute}
           {gradeRoute}
+          {demoRoute}
           <IndexManager
             handleLogin={this.handleLogin}
             error={this.state.error}
@@ -403,6 +439,7 @@ class App extends React.Component<{}, IState> {
     if (this.state.triedLoading) {
       return (
         <div>
+          <Switch>{demoRoute}</Switch>
           <ForbiddenManager handleLogin={this.handleLogin} error={this.state.error} />
           <IndexManager
             handleLogin={this.handleLogin}

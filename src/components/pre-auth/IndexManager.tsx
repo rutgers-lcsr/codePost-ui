@@ -103,6 +103,9 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               )}
             />
 
+            {/* prevents NoMatch from showing alongside component */}
+            <Route exact={true} path={'/demo/:submissionID'} component={null} />
+
             {/* Reminder: we used to offer an "upgrade" path */}
 
             <Route component={NoMatch} isLoggedIn={this.props.isLoggedIn} />
