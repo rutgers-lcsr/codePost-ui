@@ -26,7 +26,7 @@ import { acceptedFiles } from '../admin/assignments/assignments/AcceptedFileType
 interface IOnboardingSelectorProps {
   title: string | React.ReactNode;
   options: React.ReactNode[];
-  message: string;
+  message: string | React.ReactNode;
   footer: string;
   visible: boolean;
   onCancel: () => void;
@@ -287,14 +287,14 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   } else {
     // call prop function onClick which triggers tour
     const uploadFile = (
-      <CPButton cpType="primary" block onClick={setUploading.bind(true)}>
-        Upload your own code
+      <CPButton cpType="secondary" block onClick={setUploading.bind(true)}>
+        Upload your own code to annotate
       </CPButton>
     );
 
     const useDefaultFile = (
-      <CPButton cpType="secondary" block onClick={props.onUploadConfirm.bind(true, [])}>
-        No code handy? Use some default files
+      <CPButton cpType="primary" block onClick={props.onUploadConfirm.bind(true, [])}>
+        Annotate some sample code
       </CPButton>
     );
 
@@ -303,8 +303,13 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
       </span>
     );
-    options = [uploadFile, useDefaultFile];
-    message = "In this tour, you'll learn the basics of the code review console.";
+    options = [useDefaultFile, uploadFile];
+    message = (
+      <span style={{ fontSize: '15px' }}>
+        We're going to show you how to annotate code in codePost. To get started,{' '}
+        <b>select one of the options below.</b>
+      </span>
+    );
   }
 
   return (
