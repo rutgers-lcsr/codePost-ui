@@ -149,7 +149,6 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item label="Points" extra="Total points possible for this assignment.">
               {getFieldDecorator('points', {
                 initialValue: this.props.assignment.points,
-                valuePropName: 'checked',
                 rules: [
                   { required: true, message: 'Please specify a point value' },
                   { validator: this.validatePoints },
@@ -174,8 +173,9 @@ const CollectionCreateForm: any = Form.create()(
               label="Hide grades from students"
               extra=" When enabled, students won't be able to view the grades associated with their submissions."
             >
-              {getFieldDecorator('hide-grades-from-students', {
+              {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
           </Form>
