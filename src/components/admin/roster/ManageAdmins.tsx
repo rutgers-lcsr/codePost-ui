@@ -104,7 +104,12 @@ class ManageAdmins extends React.Component<IProps, IState> {
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
         />,
-        <AddAdminDialog key={3} admins={this.props.admins} addAdmin={this.addAdmin} />,
+        <AddAdminDialog
+          key={3}
+          admins={this.props.admins}
+          addAdmin={this.addAdmin}
+          willEmailUser={this.props.currentCourse.emailNewUsers}
+        />,
       ];
 
       const aligner: 'left' | 'center' | 'right' = 'center';
