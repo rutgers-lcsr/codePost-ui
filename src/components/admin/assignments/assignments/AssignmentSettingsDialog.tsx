@@ -173,8 +173,9 @@ const CollectionCreateForm: any = Form.create()(
               label="Hide grades from students"
               extra=" When enabled, students won't be able to view the grades associated with their submissions."
             >
-              {getFieldDecorator('hide-grades-from-students', {
+              {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
           </Form>
