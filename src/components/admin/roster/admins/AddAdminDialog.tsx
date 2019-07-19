@@ -16,6 +16,7 @@ import CPButton from '../../../../components/core/CPButton';
 interface IProps {
   admins: string[];
   addAdmin: (email: string) => Promise<void>;
+  willEmailUser: boolean;
 }
 
 interface IState {
@@ -81,6 +82,7 @@ class AddAdminDialog extends React.Component<IProps, {}> {
           onCreate={this.handleCreate}
           admins={this.props.admins}
           loading={this.state.loading}
+          emailUser={this.props.willEmailUser}
         />
       </div>
     );
@@ -94,6 +96,7 @@ interface ISubProps {
   onCancel: any;
   admins: string[];
   loading: boolean;
+  emailUser: boolean;
 }
 
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
@@ -123,7 +126,15 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
           confirmLoading={this.props.loading}
         >
           <Form layout="vertical">
-            <Form.Item label="Email">
+            <Form.Item
+              label="Email"
+              extra={
+                <div>
+                  Based on your course settings, this admin {this.props.emailUser ? <b>will</b> : <b>won't</b>} be
+                  emailed when they are added to your course.
+                </div>
+              }
+            >
               {getFieldDecorator('email', {
                 validateFirst: true,
                 validate: [

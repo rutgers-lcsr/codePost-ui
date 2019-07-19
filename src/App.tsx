@@ -28,7 +28,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { runFSSetup } from './components/utils/Fullstory';
+import { identifyUserForFS, runFSSetup } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -104,7 +104,7 @@ class App extends React.Component<{}, IState> {
     // On login, initiate fullstory logging
     if (prevState.user !== this.state.user && this.state.user !== undefined) {
       if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
-        runFSSetup(this.state.user.email);
+        identifyUserForFS(this.state.user.email);
       }
     }
   }
@@ -122,6 +122,10 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
+    if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
+      runFSSetup();
+    }
+
     if (this.state.has_token && !this.state.user) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {

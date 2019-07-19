@@ -131,7 +131,12 @@ class ManageGraders extends React.Component<IProps, IState> {
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
         />,
-        <AddGraderDialog key={3} graders={this.props.graders} addGrader={this.addGrader} />,
+        <AddGraderDialog
+          key={3}
+          graders={this.props.graders}
+          addGrader={this.addGrader}
+          willEmailUser={this.props.currentCourse.emailNewUsers}
+        />,
       ];
 
       const aligner: 'left' | 'center' | 'right' = 'center';
@@ -220,7 +225,12 @@ class ManageGraders extends React.Component<IProps, IState> {
             }}
             description={<span>No graders yet</span>}
           >
-            <AddGraderDialog key={0} addGrader={this.addGrader} graders={this.props.graders} />
+            <AddGraderDialog
+              key={0}
+              addGrader={this.addGrader}
+              graders={this.props.graders}
+              willEmailUser={this.props.currentCourse.emailNewUsers}
+            />
             <br />
             <RosterFileUpload
               key={1}
