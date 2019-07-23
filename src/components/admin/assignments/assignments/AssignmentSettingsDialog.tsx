@@ -160,7 +160,11 @@ const CollectionCreateForm: any = Form.create()(
               extra={
                 <div>
                   When enabled, graders will not be able to see student emails associated with submissions. For more
-                  info, see <a href="https://help.codepost.io">our docs</a>.
+                  info, see{' '}
+                  <a href="https://help.codepost.io/en/articles/3164756-how-to-enable-anonymous-grading-mode">
+                    our docs
+                  </a>
+                  .
                 </div>
               }
             >
