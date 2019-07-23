@@ -14,6 +14,7 @@ import { tooltips } from '../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
+import layoutVars from '../../styles/layout/_layoutVars';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -23,6 +24,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
+// @ts-ignore
 import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
 
 /**********************************************************************************************************************/
@@ -93,25 +95,32 @@ export const Magnifier = (props: IMagnifierProps) => {
 
 interface ISizerProps {
   updateSplitBasis: (newSplitBasis: number) => void;
+  initialSplitBasis?: number;
 }
 
 export const Sizer = (props: ISizerProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
-  const [splitBasis, setSplitBasis] = React.useState(themeVars.grade.splitBasis);
+  const [splitBasis, setSplitBasis] = React.useState(
+    props.initialSplitBasis === undefined ? themeVars.grade.splitBasis : props.initialSplitBasis,
+  );
 
   // Track window width to prevent user from extending code too far to the right and
   // squishing comments
-  const [width, setWidth] = React.useState(window.innerWidth);
+  // @ts-ignore
+  // const [width, setWidth] = React.useState(window.innerWidth);
   React.useEffect(() => {
     const handleResize = () => {
-      setWidth(window.innerWidth);
+      const siderWidth = window.innerWidth < layoutVars.breakpoints.smallScreen.grade ? 200 : 300;
+      const estimateSplit = Math.max(Math.min(themeVars.grade.splitBasis, window.innerWidth - 340 - siderWidth), 400);
+      setSplitBasis(estimateSplit);
+      props.updateSplitBasis(estimateSplit);
     };
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  });
+  }, []);
 
   function shrink() {
     const newSplitBasis = Math.max(200, splitBasis - 100);
@@ -122,8 +131,9 @@ export const Sizer = (props: ISizerProps) => {
   function grow() {
     const codeContainer = document.getElementById('code-container');
     if (codeContainer !== null) {
-      const maxWidth = width - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
-      const newSplitBasis = Math.min(maxWidth, splitBasis + 100);
+      // const maxWidth = width - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
+      // const newSplitBasis = Math.min(maxWidth, splitBasis + 100);
+      const newSplitBasis = splitBasis + 100;
       setSplitBasis(newSplitBasis);
       props.updateSplitBasis(newSplitBasis);
     }

@@ -3,7 +3,7 @@
 // Breakpoints
 const studentMobileBreakpoint = 500;
 const peripheralMobileBreakpoint = 500;
-const gradeSmallScreenBreakpoint = 1000;
+const gradeSmallScreenBreakpoint = 1025;
 const adminSmallScreenBreakpoint = 1000;
 
 // maxWidths

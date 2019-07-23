@@ -47,13 +47,11 @@ import {
   HeaderMenu,
   Magnifier,
   Reset,
-  Sizer,
   StatusTags,
   SubheaderTitle,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-import themeVars from '../../styles/abstracts/_theme.js';
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
@@ -78,7 +76,6 @@ interface ICodeConsoleState {
   isLoading: boolean;
   selectedFile: FileType | undefined;
   codeZoom: number;
-  codeSplitBasis: number;
   codeVerticalOffset: number;
 
   /* submissions data for readers and writers */
@@ -338,7 +335,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       oldCommentIDs: {},
 
       codeZoom: 1,
-      codeSplitBasis: themeVars.grade.splitBasis,
       codeVerticalOffset: 0,
 
       demoCommentCounter: 0,
@@ -795,10 +791,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ codeZoom: newZoom });
   };
 
-  public setSplitBasis = (newSplitBasis: number) => {
-    this.setState({ codeSplitBasis: newSplitBasis });
-  };
-
   public setVerticalOffset = (oldToNew: (oldValue: number) => number) => {
     this.setState((oldState: ICodeConsoleState) => {
       return {
@@ -975,7 +967,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
         <Magnifier key="zoom" updateZoom={this.setZoom} />,
       ];
 
@@ -998,7 +989,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rightHeader = [
         <ThemeToggle key="theme-toggle" small={true} />,
         <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
         <Magnifier key="zoom" updateZoom={this.setZoom} />,
       ];
     } else {
@@ -1071,7 +1061,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
-          const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const demoCode = (codeStyle: React.CSSProperties, onHighlightClick: any, splitBasis: number) => (
             <GradeCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
@@ -1080,12 +1070,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               addComment={this.addComment}
               user={this.props.user.email}
               codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              splitBasis={splitBasis}
             />
           );
 
-          const demoComments = (
+          const demoComments = (commentsWidth: number) => (
             <GradeComments
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
@@ -1100,6 +1090,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
+              commentsWidth={commentsWidth}
             />
           );
 
@@ -1109,7 +1100,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               code={demoCode}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
@@ -1153,7 +1143,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
           <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
           <Magnifier key="zoom" updateZoom={this.setZoom} />,
           <FinalizeButton
             key="subheader-finalize"
@@ -1164,7 +1153,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
         if (this.state.selectedFile) {
-          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const code = (codeStyle: React.CSSProperties, onHighlightClick: any, splitBasis: number) => (
             <StudentCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
@@ -1172,17 +1161,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               readOnly={true}
               user={this.props.user.email}
               codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              splitBasis={splitBasis}
             />
           );
 
-          const comments = (
+          const comments = (commentsWidth: number) => (
             <StudentComments
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               file={this.state.selectedFile!}
               verticalOffset={this.state.codeVerticalOffset}
+              commentsWidth={commentsWidth}
             />
           );
 
@@ -1192,7 +1182,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               code={code}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
@@ -1206,7 +1195,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
           <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
           <Magnifier key="zoom" updateZoom={this.setZoom} />,
         ];
 
@@ -1238,7 +1226,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
           <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
           <Magnifier key="zoom" updateZoom={this.setZoom} />,
           <FinalizeButton
             key="subheader-finalize"
@@ -1249,7 +1236,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
 
         if (this.state.selectedFile) {
-          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const code = (codeStyle: React.CSSProperties, onHighlightClick: any, splitBasis: number) => (
             <GradeCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
@@ -1258,12 +1245,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               addComment={this.addComment}
               user={this.props.user.email}
               codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              splitBasis={splitBasis}
             />
           );
 
-          const comments = (
+          const comments = (commentsWidth: number) => (
             <GradeComments
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
@@ -1278,6 +1265,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
+              commentsWidth={commentsWidth}
             />
           );
 
@@ -1287,7 +1275,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               code={code}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );

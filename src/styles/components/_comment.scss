@@ -1,6 +1,10 @@
 .comment {
   width: 100%;
 
+  &--active {
+    left: -13px;
+  }
+
   .ant-popover-arrow {
     top: 34px !important;
   }

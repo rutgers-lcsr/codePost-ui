@@ -38,6 +38,8 @@ $lineHeightAccent: (24 / $fontSizeAccent);
 $lineHeightUppercase: (11 / $fontSizeUppercase);
 $lineHeightReset: 1;
 
+$highlightHeight: get('theme.highlightHeight');
+
 // Export for tsx
 :export {
   fontWeightLight: $fontWeightLight;
@@ -74,4 +76,6 @@ $lineHeightReset: 1;
   lineHeightAccent: $lineHeightAccent;
   lineHeightUppercase: $lineHeightUppercase;
   lineHeightReset: $lineHeightReset;
+
+  highlightHeight: $highlightHeight;
 }

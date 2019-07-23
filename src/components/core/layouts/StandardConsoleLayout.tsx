@@ -50,6 +50,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
 
+  console.log('calculating...', windowSize.width, layoutVars.breakpoints.smallScreen.grade);
+
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();
   }
@@ -80,6 +82,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             style={{
               backgroundColor: consoleTheme.siderBg,
               color: consoleTheme.siderTitle,
+              zIndex: 100,
             }}
           >
             {props.sider.length === 0 ? null : (

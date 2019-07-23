@@ -21,6 +21,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
   verticalOffset: number;
+  commentsWidth: number;
 }
 
 interface ICommentsEditProps {
@@ -114,10 +115,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       shrink.addEventListener('click', this.manualWait);
     }
 
-    const comments = document.getElementById('code-panel--comments');
-    if (comments !== null) {
-      comments.addEventListener('scroll', this.scrollFromComments);
-    }
+    // const comments = document.getElementById('code-panel--comments');
+    // if (comments !== null) {
+    //   comments.addEventListener('scroll', this.scrollFromComments);
+    // }
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -147,10 +148,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       shrink.removeEventListener('click', this.manualWait);
     }
 
-    const comments = document.getElementById('code-panel--comments');
-    if (comments !== null) {
-      comments.removeEventListener('scroll', this.scrollFromComments);
-    }
+    // const comments = document.getElementById('code-panel--comments');
+    // if (comments !== null) {
+    //   comments.removeEventListener('scroll', this.scrollFromComments);
+    // }
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
@@ -197,6 +198,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
 
     if (this.props.verticalOffset !== prevProps.verticalOffset) {
+      this.placeCommentsOnNextFrame();
+    }
+
+    if (this.props.commentsWidth !== prevProps.commentsWidth) {
       this.placeCommentsOnNextFrame();
     }
   };

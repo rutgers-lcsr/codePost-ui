@@ -3,6 +3,7 @@ import * as React from 'react';
 import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 
+// @ts-ignore
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
@@ -16,8 +17,8 @@ export interface ICodeContentCoreProps {
   readOnly: boolean;
   user: string;
   codeStyle: React.CSSProperties;
-  highlightHeight: string;
   onHighlightClick: (e: React.MouseEvent) => void;
+  splitBasis: number;
 }
 
 export interface ICodeContentEditProps {
@@ -26,6 +27,7 @@ export interface ICodeContentEditProps {
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [commentCounter, setCommentCounter] = React.useState(-1);
+  // @ts-ignore
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   React.useEffect(() => {
@@ -39,12 +41,12 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       }
     };
 
-    if (codeMain !== null) {
+    if (codeMain !== null && codeSyntax !== null) {
       codeMain.addEventListener('scroll', horizontalCodeScroll);
     }
 
     return () => {
-      if (codeMain !== null) {
+      if (codeMain !== null && codeSyntax !== null) {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
       }
     };
@@ -78,13 +80,17 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     );
   } else {
     const { addComment, ...codeProps } = { ...props };
+    // @ts-ignore
     const { paddingLeft, ...codeStyle } = props.codeStyle;
 
+    const codeWidth = `${props.splitBasis}px`;
+    console.log('width', codeWidth);
+
     return (
-      <div>
+      <div id="code-container" className="code-container" style={{ width: codeWidth, overflowX: 'hidden' }}>
         <SyntaxHighlighter
           id="code-syntax"
-          className="code code--syntax"
+          className="code--syntax"
           language={File.language(props.file)}
           style={consoleTheme.codeTheme}
           showLineNumbers={true}
@@ -98,7 +104,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             {...codeProps}
             commentCounter={commentCounter}
             addComment={addCommentAndIncrement}
-            highlightHeight={props.highlightHeight}
             onHighlightClick={props.onHighlightClick}
           />
         </div>
