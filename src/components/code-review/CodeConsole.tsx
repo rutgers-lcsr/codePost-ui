@@ -5,10 +5,8 @@
 /* react imports */
 import * as React from 'react';
 
-import hoistNonReactStatics from 'hoist-non-react-statics';
-
 /* antd imports */
-import { Empty, Icon, Menu, message, Popover } from 'antd';
+import { Empty, Menu, message } from 'antd';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -44,18 +42,8 @@ import RubricMenu from './menu/RubricMenu';
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
-import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
-import {
-  FinalizeButton,
-  GradeButton,
-  HeaderMenu,
-  Magnifier,
-  Reset,
-  Sizer,
-  StatusTags,
-  SubheaderTitle,
-} from '../code-review/Header';
+import { Controls, FinalizeButton, GradeButton, HeaderMenu, StatusTags, SubheaderTitle } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import themeVars from '../../styles/abstracts/_theme.js';
@@ -110,7 +98,7 @@ interface ICodeConsoleState {
   demoCommentCounter: number;
 }
 
-export interface ICodeConsoleProps extends IWithWindowWatcherProps {
+export interface ICodeConsoleProps {
   match: any;
   history: any;
   location: any;
@@ -973,16 +961,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactNode[] = [];
 
+    const controls = (
+      <Controls
+        updateVerticalOffset={this.setVerticalOffset}
+        updateSplitBases={this.setSplitBasis}
+        updateZoom={this.setZoom}
+        fallbackWidth={layoutVars.breakpoints.smallScreen.grade}
+      />
+    );
+
     if (
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
     ) {
-      rightHeader = [
-        <ThemeToggle key="theme-toggle" small={true} />,
-        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-        <Magnifier key="zoom" updateZoom={this.setZoom} />,
-      ];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
       content = (
         <Empty
@@ -1000,12 +992,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         />
       );
     } else if (this.props.inDemoMode && !this.state.assignment) {
-      rightHeader = [
-        <ThemeToggle key="theme-toggle" small={true} />,
-        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-        <Magnifier key="zoom" updateZoom={this.setZoom} />,
-      ];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
     } else {
       if (!this.state.assignment) {
         return <div>We're not supposed to get here..</div>;
@@ -1073,23 +1060,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       ];
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
-
-      const controls = (
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-          <Magnifier key="zoom" updateZoom={this.setZoom} />,
-        </div>
-      );
-      const controlPanel =
-        this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade ? (
-          <Popover content={controls} placement="bottom" trigger="click">
-            <Icon type="control" style={{ cursor: 'pointer' }} />
-          </Popover>
-        ) : (
-          controls
-        );
-
       if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
           const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
@@ -1173,7 +1143,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          controlPanel,
+          controls,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
@@ -1222,7 +1192,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
-        rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controlPanel];
+        rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
         sider = [
           <ReadOnlySubmissionInfo
@@ -1250,13 +1220,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="tag"
             assignment={this.state.assignment!}
             submission={this.state.submission!}
-            iconOnly={this.props.windowwidth < layoutVars.breakpoints.smallScreen.gradeHeader}
+            fallbackWidth={layoutVars.breakpoints.smallScreen.gradeHeader}
           />,
         ];
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          controlPanel,
+          controls,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
@@ -1380,8 +1350,4 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 }
 CodeConsole.contextType = ConsoleThemeContext;
 
-// We need to copy the Code Console static functions to the window watcher const
-// FIXME: It would be cleaner if did this within windowWatcher itself
-// Ran into ts issues whentrying to do so (requires converting windowWatcher to a function)
-const CodeConsoleWithWindowWatcher = withWindowWatcher(CodeConsole);
-export default hoistNonReactStatics(CodeConsoleWithWindowWatcher, CodeConsole);
+export default CodeConsole;

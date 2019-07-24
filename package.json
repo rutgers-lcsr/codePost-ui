@@ -5,7 +5,6 @@
   "dependencies": {
     "@svgr/webpack": "^4.3.0",
     "@types/codemirror": "0.0.72",
-    "@types/hoist-non-react-statics": "^3.3.1",
     "@types/lodash": "^4.14.123",
     "@types/memoize-one": "^4.1.1",
     "@types/react-codemirror": "^1.0.2",
@@ -29,7 +28,6 @@
     "file-loader": "1.1.5",
     "fork-ts-checker-webpack-plugin": "^0.2.8",
     "fs-extra": "3.0.1",
-    "hoist-non-react-statics": "^3.3.0",
     "html-webpack-plugin": "2.29.0",
     "i": "^0.3.6",
     "io-ts": "^1.5.1",
