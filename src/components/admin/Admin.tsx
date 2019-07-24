@@ -951,11 +951,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
-      const { submissions, assignments } = this.state;
+      const { submissions, assignments, submissionsByGrader } = this.state;
+
+      // Add empty list to each grader's assigned list
+      const newSubsByGrader = { ...submissionsByGrader };
+      this.state.graders.forEach((grader) => {
+        newSubsByGrader[grader][assignment.id] = [];
+      });
+
       currentCourse.assignments.push(assignment.id);
       submissions[assignment.id] = [];
       const newAssignments = [...assignments, assignment];
-      this.setState({ currentCourse, submissions, assignments: newAssignments });
+      this.setState({ currentCourse, submissions, assignments: newAssignments, submissionsByGrader: newSubsByGrader });
       return assignment;
     });
   };
