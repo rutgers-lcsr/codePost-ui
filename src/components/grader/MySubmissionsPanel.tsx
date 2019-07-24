@@ -454,7 +454,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         emptyMessage = (
           <span>
             This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}
-            <Link to={ADMIN}>Admin Console</Link>
+            <Link to={`${ADMIN}/${this.props.course.name}/${this.props.course.period}`}>Admin Console</Link>
           </span>
         );
       }
