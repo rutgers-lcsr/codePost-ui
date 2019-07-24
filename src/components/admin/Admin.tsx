@@ -649,40 +649,49 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
         return getData.then(([assignments, rubrics]) => {
           return Promise.all(
-            assignments.map((assignment: AssignmentType) => {
-              const oldAssignmentID = assignment.id;
-              assignment.id = -1;
-              assignment.course = course.id;
-              assignment.isReleased = false;
-              // Create Assignments
-              return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
-                const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
-                return Promise.all(
-                  rubric.rubricCategories.map((rubricCategory: any) => {
-                    const oldRubricCategoryId = rubricCategory.id;
-                    rubricCategory.id = -1;
-                    rubricCategory.assignment = newAssignment.id;
-                    rubricCategory.rubricComments = [];
-                    // Create Rubric Categories
-                    return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
-                      const rubricComments = rubric.rubricComments.filter(
-                        (c: any) => c.category === oldRubricCategoryId,
-                      );
-                      rubricComments.map((rubricComment: any) => {
-                        rubricComment.id = -1;
-                        rubricComment.category = newRubricCategory.id;
-                        rubricComment.comments = [];
-                        // Create Rubric Comments
-                        return RubricComment.create(rubricComment);
+            assignments
+              .sort((a: AssignmentType, b: AssignmentType) => {
+                if (a.sortKey === b.sortKey) {
+                  return a.id - b.id; // lower ids first
+                } else {
+                  return a.sortKey - b.sortKey; // lower sortKeys first
+                }
+              })
+              .map((assignment: AssignmentType, index: number) => {
+                const oldAssignmentID = assignment.id;
+                assignment.id = -1;
+                assignment.course = course.id;
+                assignment.isReleased = false;
+                assignment.sortKey = index;
+                // Create Assignments
+                return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
+                  const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
+                  return Promise.all(
+                    rubric.rubricCategories.map((rubricCategory: any) => {
+                      const oldRubricCategoryId = rubricCategory.id;
+                      rubricCategory.id = -1;
+                      rubricCategory.assignment = newAssignment.id;
+                      rubricCategory.rubricComments = [];
+                      // Create Rubric Categories
+                      return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
+                        const rubricComments = rubric.rubricComments.filter(
+                          (c: any) => c.category === oldRubricCategoryId,
+                        );
+                        rubricComments.map((rubricComment: any) => {
+                          rubricComment.id = -1;
+                          rubricComment.category = newRubricCategory.id;
+                          rubricComment.comments = [];
+                          // Create Rubric Comments
+                          return RubricComment.create(rubricComment);
+                        });
                       });
-                    });
-                  }),
-                ).then(() => {
-                  // Return the new assignment so that it can be assigned to the course
-                  return newAssignment;
+                    }),
+                  ).then(() => {
+                    // Return the new assignment so that it can be assigned to the course
+                    return newAssignment;
+                  });
                 });
-              });
-            }),
+              }),
           ).then((newAssignments) => {
             course.assignments = newAssignments.map((i: AssignmentType) => {
               return i.id;
