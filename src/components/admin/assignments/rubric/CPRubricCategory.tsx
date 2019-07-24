@@ -130,7 +130,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   /****************************************************************************
    Lifecycle methods
   *****************************************************************************/
-  private nameInput = React.createRef<Input>();
 
   public constructor(props: ICPRubricCategoryProps) {
     super(props);
@@ -146,24 +145,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       hasCommentError: false,
       commentErrorMessage: '',
     };
-  }
-
-  public componentDidMount() {
-    // If new category is being mounted for the first time, focus on the name
-    // Ant handles refs strangely (there are many github issues on this), and upon initial mount
-    // the element is not focusable, but is focusable shortly after
-    if (this.props.rubricCategory.id < 0) {
-      setTimeout(() => {
-        const node = this.nameInput.current;
-        if (node) {
-          try {
-            node.focus();
-          } catch {
-            return;
-          }
-        }
-      }, 100);
-    }
   }
 
   public componentDidUpdate(prevProps: ICPRubricCategoryProps) {
@@ -323,7 +304,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const { name, pointLimit, helpText } = this.state;
 
     if (
-      rubricCategory.id < 0 ||
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
       helpText !== rubricCategory.helpText
@@ -591,7 +571,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Name
         </div>
-        <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} ref={this.nameInput} />
+        <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} />
       </div>
     );
 

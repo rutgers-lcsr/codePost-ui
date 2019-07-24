@@ -4,7 +4,6 @@
 const studentMobileBreakpoint = 500;
 const peripheralMobileBreakpoint = 500;
 const gradeSmallScreenBreakpoint = 1000;
-const gradeHeaderSmallScreenBreakpoint = 750; //breakpoint at which gradeHeader goes to smallest possible view
 const adminSmallScreenBreakpoint = 1000;
 
 // maxWidths
@@ -27,7 +26,6 @@ module.exports = {
     },
     smallScreen: {
       grade: gradeSmallScreenBreakpoint,
-      gradeHeader: gradeHeaderSmallScreenBreakpoint,
       admin: adminSmallScreenBreakpoint,
     },
   },
