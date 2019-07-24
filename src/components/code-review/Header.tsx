@@ -71,7 +71,7 @@ export const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
@@ -147,7 +147,7 @@ export const Sizer = (props: ISizerProps) => {
   });
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
         <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
           <Icon type="double-left" />
@@ -242,7 +242,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   return (
     <div ref={ref}>
-      <ButtonGroup>
+      <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <CPButton
           cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
