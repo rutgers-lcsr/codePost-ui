@@ -964,7 +964,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const controls = (
       <Controls
         updateVerticalOffset={this.setVerticalOffset}
-        updateSplitBases={this.setSplitBasis}
+        updateSplitBasis={this.setSplitBasis}
         updateZoom={this.setZoom}
         fallbackWidth={layoutVars.breakpoints.smallScreen.grade}
       />

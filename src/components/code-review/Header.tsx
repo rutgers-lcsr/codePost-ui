@@ -193,7 +193,7 @@ const Reset = (props: IResetProps) => {
 
 interface IControlsProps {
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-  updateSplitBases: (newSplitBasis: number) => void;
+  updateSplitBasis: (newSplitBasis: number) => void;
   updateZoom: (newZoom: number) => void;
   fallbackWidth?: number;
 }
@@ -203,7 +203,7 @@ export const Controls = (props: IControlsProps) => {
   const controls = (
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />,
-      <Sizer key="sizer" updateSplitBasis={props.updateSplitBases} />,
+      <Sizer key="sizer" updateSplitBasis={props.updateSplitBasis} />,
       <Magnifier key="zoom" updateZoom={props.updateZoom} />,
     </div>
   );
