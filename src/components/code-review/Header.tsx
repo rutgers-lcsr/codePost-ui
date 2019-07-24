@@ -71,7 +71,7 @@ export const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
@@ -147,7 +147,7 @@ export const Sizer = (props: ISizerProps) => {
   });
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
         <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
           <Icon type="double-left" />
@@ -242,7 +242,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   return (
     <div ref={ref}>
-      <ButtonGroup>
+      <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <CPButton
           cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
@@ -478,6 +478,7 @@ export const GradeButton = (props: IGradeButtonProps) => {
 interface IStatusTagsProps {
   assignment: AssignmentType;
   submission: AnonymousSubmissionType;
+  iconOnly?: boolean; // Only show the icon (for small screens)
 }
 
 type StatusTagType = 0 | 1 | 2 | 3;
@@ -536,17 +537,16 @@ export const StatusTags = (props: IStatusTagsProps) => {
       break;
   }
 
+  const tagStyle = { marginRight: '0px', cursor: 'help' };
   return (
-    <CPTooltip title={tooltipText} placement="bottom">
-      <Tag
-        color={tagColor}
-        style={{
-          marginRight: '0px',
-          cursor: 'help',
-        }}
-      >
-        {tagText}
-      </Tag>
+    <CPTooltip title={props.iconOnly ? [tagText, tooltipText].join('\n') : tooltipText} placement="bottom">
+      {props.iconOnly ? (
+        <Icon theme="twoTone" style={{ color: tagColor, ...tagStyle }} type="tag" />
+      ) : (
+        <Tag color={tagColor} style={tagStyle}>
+          {tagText}
+        </Tag>
+      )}
     </CPTooltip>
   );
 };
