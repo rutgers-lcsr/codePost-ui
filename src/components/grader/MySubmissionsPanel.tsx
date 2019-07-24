@@ -9,6 +9,9 @@ import * as React from 'react';
 import { Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
 const { Option } = Select;
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
@@ -29,6 +32,8 @@ import { loadIDList } from '../../infrastructure/generics';
 
 type alignType = 'left' | 'right' | 'center';
 
+import { ADMIN } from '../../routes';
+
 /**********************************************************************************************************************/
 
 /* for type checking functions that operate on table rows */
@@ -48,6 +53,7 @@ interface IProps {
   course: CourseType;
   graderEmail: string;
   isAnonymous: boolean;
+  isAdmin: boolean;
 }
 
 interface IState {
@@ -250,17 +256,22 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       case BUTTON_STATE.Active:
         claimButton = (
           <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
-            <div>
-              <CPButton cpType="primary" key={2} icon="plus-circle" onClick={handleClick} fallback="plus-circle">
-                Claim
-              </CPButton>
-            </div>
+            <CPButton
+              cpType="primary"
+              key={2}
+              icon="plus-circle"
+              onClick={handleClick}
+              fallback="plus-circle"
+              style={{ display: 'inline-block' }}
+            >
+              Claim
+            </CPButton>
           </CPTooltip>
         );
         break;
       case BUTTON_STATE.Inactive:
         claimButton = (
-          <CPButton cpType="disabled" key={2} icon="inbox" fallback="inbox">
+          <CPButton cpType="disabled" key={2} icon="inbox" fallback="inbox" style={{ display: 'inline-block' }}>
             Queue empty
           </CPButton>
         );
@@ -273,11 +284,9 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         break;
       case BUTTON_STATE.Loading:
         claimButton = (
-          <div>
-            <CPButton cpType="primary" key={2} loading={true}>
-              Claim
-            </CPButton>
-          </div>
+          <CPButton cpType="primary" key={2} loading={true} style={{ display: 'inline-block' }}>
+            Claim
+          </CPButton>
         );
         break;
     }
@@ -319,7 +328,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     }
 
     return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'inline-block' }}>
         {claimButton} &nbsp; {refreshButton} &nbsp; {filterComponent}
       </div>
     );
@@ -439,12 +448,23 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       );
     } else {
       actions = [];
+
+      let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
+      if (this.props.isAdmin) {
+        emptyMessage = (
+          <span>
+            This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}
+            <Link to={ADMIN}>Admin Console</Link>
+          </span>
+        );
+      }
+
       content = (
         <Empty
           imageStyle={{
             height: 60,
           }}
-          description="No submissions yet. Click claim to start grading!"
+          description={emptyMessage}
         >
           {getAnotherSubmissionButton}
         </Empty>
