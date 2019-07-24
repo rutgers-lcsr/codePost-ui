@@ -254,7 +254,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <Divider type="horizontal" style={{ margin: '16px 0px' }} />
         <CPButton
           key="APIDocs"
-          href="http://help.codepost.io/reference"
+          href="http://docs.codepost.io/reference"
           target="_blank"
           cpType="link"
           ghost={true}
