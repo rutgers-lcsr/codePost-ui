@@ -128,9 +128,9 @@ const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
     if (a.sortKey === b.sortKey) {
-      return a.id - b.id;
+      return a.id - b.id; // lower ids first
     } else {
-      return a.sortKey - b.sortKey;
+      return a.sortKey - b.sortKey; // lower sortKeys first
     }
   };
 
