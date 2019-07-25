@@ -50,8 +50,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
 
-  console.log('calculating...', windowSize.width, layoutVars.breakpoints.smallScreen.grade);
-
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();
   }

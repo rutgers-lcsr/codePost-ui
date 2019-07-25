@@ -8,6 +8,7 @@ const Range = Slider.Range;
 
 import useWindowSize from '../../core/useWindowSize';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 enum RESIZER {
@@ -15,17 +16,29 @@ enum RESIZER {
   COMMENTS,
 }
 
+export type CodeConsoleDimensionsType = {
+  codeWidth: number;
+  commentsWidth: number;
+};
+
+export const getInitialDimensions = () => {
+  return {
+    codeWidth: Math.max(Math.min(themeVars.grade.splitBasis, window.innerWidth - 700), 400),
+    commentsWidth: 360,
+  };
+};
+
+const absoluteCodeWidthMinimum = 400;
+const absoluteCommentsWidthMinimum = 280;
+
 interface ILayoutResizerProps {
-  initialCodeWidth: number;
-  initialCommentsWidth: number;
+  initialDimensions: CodeConsoleDimensionsType;
   setDimensions: any;
 }
 
 const LayoutResizer = (props: ILayoutResizerProps) => {
   const windowSize = useWindowSize();
-
-  const absoluteCodeWidthMinimum = 400;
-  const absoluteCommentsWidthMinimum = 280;
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   // @ts-ignore
   const marks = {
@@ -36,10 +49,19 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
 
   const [ranges, setRanges] = React.useState([
     0,
-    props.initialCodeWidth,
-    props.initialCodeWidth + 20,
-    props.initialCodeWidth + 20 + (props.initialCommentsWidth - 20),
+    props.initialDimensions.codeWidth,
+    props.initialDimensions.codeWidth + 20,
+    props.initialDimensions.codeWidth + 20 + (props.initialDimensions.commentsWidth - 20),
   ]);
+
+  const [hovered, setHovered] = React.useState(false);
+  const onMouseEnter = () => {
+    setHovered(true);
+  };
+
+  const onMouseLeave = () => {
+    setHovered(false);
+  };
 
   const handleChange = (r: any) => {
     setRanges((prevRanges) => {
@@ -63,29 +85,35 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   };
 
   const afterChange = (r: any) => {
-    props.setDimensions(r[1], r[3] - r[2] + 20);
+    props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
 
   return (
-    <Range
-      className="layout-resizer"
-      value={ranges}
-      onChange={handleChange}
-      onAfterChange={afterChange}
-      min={0}
-      max={windowSize.width * 2}
-      handleStyle={[
-        { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-        { backgroundColor: '#f2f2f2', borderColor: themeVars.theme.actionGreen },
-        { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-        { backgroundColor: '#f2f2f2', borderColor: themeVars.theme.actionGreen },
-      ]}
-      trackStyle={[
-        { backgroundColor: themeVars.theme.actionGreenFade },
-        { backgroundColor: '#e9e9e9' },
-        { backgroundColor: themeVars.theme.actionGreenFade },
-      ]}
-    />
+    <div style={{ width: `${windowSize.width * 2}px` }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <Range
+        className="layout-resizer"
+        value={ranges}
+        onChange={handleChange}
+        onAfterChange={afterChange}
+        min={0}
+        max={windowSize.width * 2}
+        handleStyle={[
+          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
+          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          {
+            backgroundColor: hovered ? consoleTheme.resizerTrack : 'transparent',
+            borderColor: hovered ? consoleTheme.resizerTrackActive : 'transparent',
+          },
+        ]}
+        trackStyle={[
+          { backgroundColor: consoleTheme.resizerTrackActive },
+          { backgroundColor: consoleTheme.resizerTrack },
+          { backgroundColor: hovered ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack },
+        ]}
+        railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
+      />
+    </div>
   );
 };
 

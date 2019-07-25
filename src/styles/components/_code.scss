@@ -3,9 +3,6 @@
 
   border-radius: 3px;
 
-  // overflow-y: hidden;
-  background-color: white;
-  border: 1px solid $neutralBorder;
   box-shadow: rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
   margin: 0px 0px 14px 0px;
   padding: 30px 0px;
@@ -13,7 +10,6 @@
   .code {
     z-index: 0;
     position: relative;
-    // top: 25px;
 
     // FIXME: get rid of all these !importants
     border: 0px !important;
@@ -64,7 +60,7 @@
     .highlight {
       display: inline-block;
       opacity: 0.2;
-      height: $highlightHeight + 'px';
+      height: $highlightHeight + 0px;
 
       vertical-align: middle;
 

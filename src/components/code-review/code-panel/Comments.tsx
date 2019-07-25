@@ -16,12 +16,14 @@ import * as Animation from '../../../infrastructure/animation';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
+import { CodeConsoleDimensionsType } from './LayoutResizer';
+
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
   verticalOffset: number;
-  commentsWidth: number;
+  dimensions: CodeConsoleDimensionsType;
 }
 
 interface ICommentsEditProps {
@@ -100,25 +102,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleKeyPress);
-
-    const zoomIn = document.getElementById('zoom-in');
-    const zoomOut = document.getElementById('zoom-out');
-    if (zoomIn !== null && zoomOut !== null) {
-      zoomIn.addEventListener('click', this.placeCommentsOnNextFrame);
-      zoomOut.addEventListener('click', this.placeCommentsOnNextFrame);
-    }
-
-    const grow = document.getElementById('grow');
-    const shrink = document.getElementById('shrink');
-    if (grow !== null && shrink !== null) {
-      grow.addEventListener('click', this.manualWait);
-      shrink.addEventListener('click', this.manualWait);
-    }
-
-    // const comments = document.getElementById('code-panel--comments');
-    // if (comments !== null) {
-    //   comments.addEventListener('scroll', this.scrollFromComments);
-    // }
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -133,25 +116,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
     document.removeEventListener('keydown', this.handleKeyPress);
-
-    const zoomIn = document.getElementById('zoom-in');
-    const zoomOut = document.getElementById('zoom-out');
-    if (zoomIn !== null && zoomOut !== null) {
-      zoomIn.removeEventListener('click', this.placeCommentsOnNextFrame);
-      zoomOut.removeEventListener('click', this.placeCommentsOnNextFrame);
-    }
-
-    const grow = document.getElementById('grow');
-    const shrink = document.getElementById('shrink');
-    if (grow !== null && shrink !== null) {
-      grow.removeEventListener('click', this.manualWait);
-      shrink.removeEventListener('click', this.manualWait);
-    }
-
-    // const comments = document.getElementById('code-panel--comments');
-    // if (comments !== null) {
-    //   comments.removeEventListener('scroll', this.scrollFromComments);
-    // }
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
@@ -165,6 +129,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     return null;
   }
 
+  // FIXME: Reimplement rage scroll for updated scrolling behavior.
   public scrollFromComments = () => {
     const comments = document.getElementById('code-panel--comments');
     if (comments !== null) {
@@ -201,7 +166,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       this.placeCommentsOnNextFrame();
     }
 
-    if (this.props.commentsWidth !== prevProps.commentsWidth) {
+    if (this.props.dimensions.commentsWidth !== prevProps.dimensions.commentsWidth) {
       this.placeCommentsOnNextFrame();
     }
   };
