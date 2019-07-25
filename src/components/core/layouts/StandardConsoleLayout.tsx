@@ -69,6 +69,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             maxWidth: '100vw',
             overflowX: 'auto',
             overflowY: 'hidden',
+            lineHeight: '49px',
           }}
           className="layout--standard-console__header"
         >

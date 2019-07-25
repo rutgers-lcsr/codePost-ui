@@ -119,7 +119,6 @@ const Reset = (props: IResetProps) => {
 
 interface IControlsProps {
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-  updateSplitBasis: (newSplitBasis: number) => void;
   updateZoom: (newZoom: number) => void;
   fallbackWidth?: number;
 }
@@ -129,14 +128,16 @@ export const Controls = (props: IControlsProps) => {
   const controls = (
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />,
-      <Sizer key="sizer" updateSplitBasis={props.updateSplitBasis} />,
       <Magnifier key="zoom" updateZoom={props.updateZoom} />,
     </div>
   );
   const controlPanel =
     props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
       <Popover content={controls} placement="bottom" trigger="click">
-        <Icon type="control" style={{ cursor: 'pointer' }} />
+        <Icon
+          type="control"
+          style={{ fontSize: '20px', lineHeight: '20px', verticalAlign: '-7px', cursor: 'pointer' }}
+        />
       </Popover>
     ) : (
       controls

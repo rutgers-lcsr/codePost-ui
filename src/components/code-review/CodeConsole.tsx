@@ -961,7 +961,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactNode[] = [];
 
-
     const toolbarWidgets = [
       <LayoutResizer
         key="layout-resizer"
@@ -973,18 +972,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const controls = (
       <Controls
         updateVerticalOffset={this.setVerticalOffset}
-        updateSplitBasis={this.setSplitBasis}
         updateZoom={this.setZoom}
         fallbackWidth={layoutVars.breakpoints.smallScreen.grade}
       />
     );
 
-
     if (
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
     ) {
-
       rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
       content = (
@@ -1003,9 +999,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         />
       );
     } else if (this.props.inDemoMode && !this.state.assignment) {
-
       rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
-
     } else {
       if (!this.state.assignment) {
         return <div>We're not supposed to get here..</div>;
