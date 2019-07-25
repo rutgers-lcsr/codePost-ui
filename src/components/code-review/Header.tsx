@@ -251,7 +251,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           small={true}
           disabled={!isFinalized}
         >
-          Edit
+          Draft
         </CPButton>
         <CPTooltip title={finalizeNotice} placement="left">
           <CPButton
