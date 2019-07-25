@@ -109,8 +109,8 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
               </span>
             }
           >
-            <Menu.Item key="0">Students</Menu.Item>
-            <Menu.Item key="1">Graders</Menu.Item>
+            <Menu.Item key="0">By Student</Menu.Item>
+            <Menu.Item key="1">By Grader</Menu.Item>
           </SubMenu>
           <Menu.Item key="2">
             <Icon type="file-text" />

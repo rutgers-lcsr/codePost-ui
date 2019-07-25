@@ -22,7 +22,7 @@ import CPAdminDetail from '../other/CPAdminDetail';
 import memoizeOne from 'memoize-one';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
+import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 
@@ -363,116 +363,105 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           this.props.students,
         );
 
-        data = this.props.assignments
-          .sort((a, b) => {
-            if (a.sortKey === b.sortKey) {
-              return a.id - b.id; // lower ids first
-            } else {
-              return a.sortKey - b.sortKey; // lower sortKeys first
-            }
-          })
-          .map((assignment, i) => {
-            const statsForRow = assignmentStats[assignment.id];
-            const menu = (
-              <Menu>
-                <Menu.Item key="1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Rubric, assignment)}>
-                  <Icon type="ordered-list" />
-                  Edit rubric
+        data = sortAssignments(this.props.assignments).map((assignment, i) => {
+          const statsForRow = assignmentStats[assignment.id];
+          const menu = (
+            <Menu>
+              <Menu.Item key="1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Rubric, assignment)}>
+                <Icon type="ordered-list" />
+                Edit rubric
+              </Menu.Item>
+              <Menu.Item key="2" onClick={this.downloadGrades.bind(this, assignment)}>
+                <Icon type="download" />
+                Download grades
+              </Menu.Item>
+              <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
+                <Icon type="bar-chart" />
+                View Stats
+              </Menu.Item>
+              <SubMenu
+                key="4"
+                title={
+                  <span>
+                    <Icon type="upload" />
+                    <span>&nbsp;&nbsp;Upload submissions</span>
+                  </span>
+                }
+              >
+                <Menu.Item key="0.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Single, assignment)}>
+                  <Icon type="file" />
+                  Single submission
                 </Menu.Item>
-                <Menu.Item key="2" onClick={this.downloadGrades.bind(this, assignment)}>
-                  <Icon type="download" />
-                  Download grades
-                </Menu.Item>
-                <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
-                  <Icon type="bar-chart" />
-                  View Stats
-                </Menu.Item>
-                <SubMenu
-                  key="4"
-                  title={
-                    <span>
-                      <Icon type="upload" />
-                      <span>&nbsp;&nbsp;Upload submissions</span>
-                    </span>
-                  }
-                >
-                  <Menu.Item
-                    key="0.1"
-                    onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Single, assignment)}
-                  >
-                    <Icon type="file" />
-                    Single submission
-                  </Menu.Item>
-                  <Menu.Item
-                    key="0.2"
-                    onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Multiple, assignment)}
-                  >
-                    <Icon type="folder" />
-                    Multiple submissions
-                  </Menu.Item>
-                </SubMenu>
-                <Menu.Item key="5" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
-                  <Icon type="setting" />
-                  Settings
-                </Menu.Item>
-                <Menu.Divider />
                 <Menu.Item
-                  key="6"
-                  style={{ color: 'red' }}
-                  onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Delete, assignment)}
+                  key="0.2"
+                  onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Multiple, assignment)}
                 >
-                  <Icon type="delete" />
-                  Delete assignment
+                  <Icon type="folder" />
+                  Multiple submissions
                 </Menu.Item>
-              </Menu>
-            );
+              </SubMenu>
+              <Menu.Item key="5" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
+                <Icon type="setting" />
+                Settings
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item
+                key="6"
+                style={{ color: 'red' }}
+                onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Delete, assignment)}
+              >
+                <Icon type="delete" />
+                Delete assignment
+              </Menu.Item>
+            </Menu>
+          );
 
-            let publishToggleText = '';
-            if (assignment.isReleased) {
-              publishToggleText = 'Are you sure you want to un-publish this assignment?';
-            } else {
-              publishToggleText = 'Are you sure you want to publish this assignment?';
-            }
+          let publishToggleText = '';
+          if (assignment.isReleased) {
+            publishToggleText = 'Are you sure you want to un-publish this assignment?';
+          } else {
+            publishToggleText = 'Are you sure you want to publish this assignment?';
+          }
 
-            const hoverStyle = { cursor: 'pointer' };
+          const hoverStyle = { cursor: 'pointer' };
 
-            return {
-              key: assignment.id,
-              assignment: <Text strong>{assignment.name}</Text>,
-              published: (
-                <Popconfirm
-                  onConfirm={this.props.updateAssignment.bind(this, {
-                    id: assignment.id,
-                    isReleased: !assignment.isReleased,
-                  })}
-                  title={publishToggleText}
-                  icon={<Icon type="question-circle-o" />}
-                >
-                  <Switch checked={assignment.isReleased} />
-                </Popconfirm>
-              ),
-              submissions: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
-                  {statsForRow.numSubmissions}
-                </span>
-              ),
-              finalized: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
-                  {statsForRow.numGraded}
-                </span>
-              ),
-              missing: (
-                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
-                  {statsForRow.numMissing}
-                </span>
-              ),
-              actions: (
-                <Dropdown overlay={menu} trigger={['click']}>
-                  <Icon type="menu" />
-                </Dropdown>
-              ),
-            };
-          });
+          return {
+            key: assignment.id,
+            assignment: <Text strong>{assignment.name}</Text>,
+            published: (
+              <Popconfirm
+                onConfirm={this.props.updateAssignment.bind(this, {
+                  id: assignment.id,
+                  isReleased: !assignment.isReleased,
+                })}
+                title={publishToggleText}
+                icon={<Icon type="question-circle-o" />}
+              >
+                <Switch checked={assignment.isReleased} />
+              </Popconfirm>
+            ),
+            submissions: (
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
+                {statsForRow.numSubmissions}
+              </span>
+            ),
+            finalized: (
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
+                {statsForRow.numGraded}
+              </span>
+            ),
+            missing: (
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+                {statsForRow.numMissing}
+              </span>
+            ),
+            actions: (
+              <Dropdown overlay={menu} trigger={['click']}>
+                <Icon type="menu" />
+              </Dropdown>
+            ),
+          };
+        });
 
         let detailComponent;
         switch (this.state.detailType) {
