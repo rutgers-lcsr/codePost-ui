@@ -18,7 +18,7 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { RUBRIC_SEARCH_SHORTCUT } from '../Shortcuts';
+import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
@@ -48,8 +48,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   }
 
   public handleKeyDown = (e: any) => {
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
     // Keyboard shortcuts
-    if (e.which === RUBRIC_SEARCH_SHORTCUT && e.metaKey) {
+    if (e.which === O_KEY && triggerKey) {
       e.preventDefault();
       const el = document.getElementById('rubric-search');
       if (el !== null) {

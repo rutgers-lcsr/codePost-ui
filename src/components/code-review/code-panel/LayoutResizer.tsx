@@ -11,7 +11,7 @@ import useWindowSize from '../../core/useWindowSize';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import themeVars from '../../../styles/abstracts/_theme.js';
 
-import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT } from '../Shortcuts';
+import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
 
 enum RESIZER {
   CODE,
@@ -111,23 +111,8 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     afterChange(newRanges);
   };
 
-  React.useEffect(() => {
-    const handleKeydown = (e: any) => {
-      if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        shrink(80);
-      } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        grow(80);
-      }
-    };
-    document.addEventListener('keydown', handleKeydown);
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-    };
-  });
+  useHotkeys(LEFT_ARROW, () => shrink(80));
+  useHotkeys(RIGHT_ARROW, () => grow(80));
 
   return (
     <div style={{ width: `${windowSize.width * 2}px` }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>

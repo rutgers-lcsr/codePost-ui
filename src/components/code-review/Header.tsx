@@ -22,7 +22,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import { ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
+import useHotkeys, { MINUS_KEY, PLUS_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -49,23 +49,8 @@ const Magnifier = (props: IMagnifierProps) => {
     props.updateZoom(newZoom);
   }
 
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeydown = (e: any) => {
-      if (e.which === ZOOM_IN_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        zoomIn();
-      } else if (e.which === ZOOM_OUT_SHORTCUT && e.metaKey) {
-        // [⌘ + -]
-        e.preventDefault();
-        zoomOut();
-      }
-    };
-    document.addEventListener('keydown', handleKeydown);
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-    };
-  });
+  useHotkeys(MINUS_KEY, zoomOut);
+  useHotkeys(PLUS_KEY, zoomIn);
 
   // Note: would be nice to let the user set her zoom explicitly
   // Would need to replace the middle button with an input

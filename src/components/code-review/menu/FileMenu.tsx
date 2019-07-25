@@ -27,6 +27,8 @@ import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
+import { getOperatingSystem, OS } from '../useHotkeys';
+
 /**********************************************************************************************************************/
 
 interface IFileMenuProps extends IWithWindowWatcherProps {
@@ -50,8 +52,10 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
   }
 
   public handleKeyDown = (e: any) => {
-    // Keyboard shortcuts{
-    if (e.which >= 49 && e.which <= 57 && e.metaKey) {
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.which >= 49 && e.which <= 57 && triggerKey) {
       e.preventDefault();
       if (e.which - 49 < this.props.files.length) {
         this.props.changeSelectedFile(this.props.files[e.which - 49].id);
