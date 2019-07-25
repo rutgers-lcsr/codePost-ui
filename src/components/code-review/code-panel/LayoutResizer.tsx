@@ -11,6 +11,8 @@ import useWindowSize from '../../core/useWindowSize';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import themeVars from '../../../styles/abstracts/_theme.js';
 
+import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT } from '../Shortcuts';
+
 enum RESIZER {
   CODE,
   COMMENTS,
@@ -87,6 +89,44 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   const afterChange = (r: any) => {
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
+
+  const grow = (n: number) => {
+    const newRanges = [ranges[0], ranges[1] + n, ranges[2] + n, ranges[3] + n + n];
+
+    setRanges(newRanges);
+    afterChange(newRanges);
+  };
+
+  const shrink = (n: number) => {
+    const n0 = 0;
+    const n1 = Math.max(ranges[1] - n, absoluteCodeWidthMinimum);
+    const n2 = n1 + 20;
+    const n3 =
+      ranges[3] - n - n - n2 > absoluteCommentsWidthMinimum ? ranges[3] - n - n : n2 + absoluteCommentsWidthMinimum;
+
+    const newRanges = [n0, n1, n2, n3];
+
+    setRanges(newRanges);
+    afterChange(newRanges);
+  };
+
+  React.useEffect(() => {
+    const handleKeydown = (e: any) => {
+      if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        shrink(80);
+      } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        grow(80);
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
 
   return (
     <div style={{ width: `${windowSize.width * 2}px` }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
