@@ -220,7 +220,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   } else if (props.rubricComment.pointDelta < 0) {
     points = `+${props.rubricComment.pointDelta * -1}`;
   } else {
-    points = 'Ø';
+    points = '0';
   }
 
   return (

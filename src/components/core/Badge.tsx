@@ -18,6 +18,8 @@ const Badge = (props: IBadgeProps) => {
 
   const _size = size === undefined ? 'standard' : size;
 
+  let showZero = false;
+
   let label = `${count}`;
   let className = `badge badge--${_size}`;
   if (count < 0) {
@@ -27,7 +29,8 @@ const Badge = (props: IBadgeProps) => {
     label = `+${count}`;
     className += ' badge--positive';
   } else {
-    label = 'Ø';
+    showZero = true;
+    label = '0';
     className += ' badge--neutral';
   }
 
@@ -42,7 +45,7 @@ const Badge = (props: IBadgeProps) => {
     className += ' badge--normal';
   }
 
-  return <AntBadge count={label} className={className} {...extraProps} />;
+  return <AntBadge count={label} className={className} showZero={showZero} {...extraProps} />;
 };
 
 export default Badge;

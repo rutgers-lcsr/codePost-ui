@@ -23,11 +23,12 @@ export type CodeConsoleDimensionsType = {
   commentsWidth: number;
 };
 
-export const getInitialDimensions = () => {
-  return {
+export const getInitialDimensions = (): CodeConsoleDimensionsType => {
+  const dimensions = {
     codeWidth: Math.max(Math.min(themeVars.grade.splitBasis, window.innerWidth - 700), 400),
     commentsWidth: 360,
   };
+  return dimensions;
 };
 
 const absoluteCodeWidthMinimum = 400;
