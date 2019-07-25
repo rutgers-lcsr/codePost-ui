@@ -91,9 +91,12 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       } else {
         return (
           <div style={{ padding: '40px' }}>
-            <h1>😬 Something went wrong</h1>
+            <h1>😬 Something went wrong.</h1>
             <h2>🕑 We will investigate the issue as soon as possible.</h2>
-            <h2>🙏 Feel free to try again or email us at team@codepost.io.</h2>
+            <h2>
+              🙏 Try refreshing the page to get back to codePost! Or email us at team@codepost.io if the problem
+              persists.
+            </h2>
           </div>
         );
       }
