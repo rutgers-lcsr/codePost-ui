@@ -12,6 +12,7 @@ export const CODE_DEMO = '/demo';
 export const COURSE_SELECTOR = ':courseName/:period';
 
 export const CODE_TOUR_ID = '49817';
+export const CODE_TOUR_DEMO_ID = '53617';
 export const ADMIN_TOUR_ID = '49547';
 
 export type ROUTES =

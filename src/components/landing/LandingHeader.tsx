@@ -37,7 +37,7 @@ const LandingHeader = () => {
     </Link>
   );
   const docs = (
-    <a style={{ ...linkStyle }} className="link--header" href="https://help.codepost.io/docs">
+    <a style={{ ...linkStyle }} className="link--header" href="https://help.codepost.io">
       Docs
     </a>
   );

@@ -1,5 +1,5 @@
 /* tslint:disable */
-export const runFSSetup = (userEmail) => {
+export const runFSSetup = () => {
   window['_fs_debug'] = false;
   window['_fs_host'] = 'fullstory.com';
   window['_fs_org'] = 'MFFNS';
@@ -15,7 +15,9 @@ export const runFSSetup = (userEmail) => {
       g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
       g.clearUserCookie=function(){};
   })(window,document,window['_fs_namespace'],'script','user');
+}
 
+export const identifyUserForFS = (userEmail) => {
   /* set fullstory ID */
   FS.identify(userEmail, {
     displayName: userEmail,

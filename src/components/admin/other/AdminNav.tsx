@@ -109,8 +109,8 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
               </span>
             }
           >
-            <Menu.Item key="0">Students</Menu.Item>
-            <Menu.Item key="1">Graders</Menu.Item>
+            <Menu.Item key="0">By Student</Menu.Item>
+            <Menu.Item key="1">By Grader</Menu.Item>
           </SubMenu>
           <Menu.Item key="2">
             <Icon type="file-text" />
@@ -141,7 +141,7 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
               <Icon type="pushpin" />
               <span>Docs</span>
             </Menu.Item>
-            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://help.codepost.io/reference')}>
+            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
               <Icon type="api" />
               <span>API Reference</span>
             </Menu.Item>

@@ -155,11 +155,11 @@ interface IFileType {
 const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   const [uploading, setUploading] = React.useState(false);
   const [files, setFiles] = React.useState([] as IFileType[]);
+  const [errorText, setErrorText] = React.useState('');
 
   let title;
   let options = [];
   let message;
-  const footer = '';
   let footerButtons = null;
   if (uploading) {
     const onChange = (info: UploadChangeParam) => {
@@ -189,10 +189,10 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
-            if (typeof reader.result === 'string') {
+            if (typeof reader.result === 'string' && reader.result.length > 0) {
               resolve({ name: toRead.name, data: reader.result });
             } else {
-              reject();
+              reject(toRead);
             }
           };
           reader.readAsText(toRead);
@@ -201,12 +201,17 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
       if (fileList.length === 1) {
         // Case 1: If a user uploads one file, then read that file individually
-        readFile(file).then((beenRead: IFileType) => {
-          const newFiles = files.filter((el) => {
-            return el.name !== beenRead.name;
+        readFile(file)
+          .then((beenRead: IFileType) => {
+            const newFiles = files.filter((el) => {
+              return el.name !== beenRead.name;
+            });
+            setFiles([...newFiles, { name: beenRead.name, data: beenRead.data }]);
+          })
+          .catch((triedToRead) => {
+            const errorString = `${triedToRead.name} is empty. This demo requires non-empty files.`;
+            setErrorText(errorString);
           });
-          setFiles([...newFiles, { name: beenRead.name, data: beenRead.data }]);
-        });
       } else {
         // Case 2: If a user uploads multiple files at once, make sure we read all of them
         const fileNames = fileList.map((el) => {
@@ -217,12 +222,20 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         fileList.forEach((listFile) => {
           promises.push(readFile(listFile));
         });
-        Promise.all(promises).then((beenReadFiles) => {
-          const newFiles = files.filter((el) => {
-            return fileNames.indexOf(el.name) === -1;
+        Promise.all(promises)
+          .then((beenReadFiles) => {
+            const toAdd = beenReadFiles.filter((el) => {
+              return el.data.length > 0;
+            });
+            const newFiles = files.filter((el) => {
+              return fileNames.indexOf(el.name) === -1;
+            });
+            setFiles([...newFiles, ...toAdd]);
+          })
+          .catch(() => {
+            const errorString = 'This demo requires non-empty files.';
+            setErrorText(errorString);
           });
-          setFiles([...newFiles, ...beenReadFiles]);
-        });
       }
 
       // prevent upload
@@ -320,7 +333,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
       visible={props.visible}
       onCancel={props.onCancel}
       message={message}
-      footer={footer}
+      footer={errorText}
       footerButtons={footerButtons}
       closable={false}
     />

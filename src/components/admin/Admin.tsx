@@ -80,8 +80,8 @@ export enum PANELS {
 }
 
 const panels = {
-  [PANELS.SUBMISSION_STUDENTS]: 'submissions/students',
-  [PANELS.SUBMISSION_GRADERS]: 'submissions/graders',
+  [PANELS.SUBMISSION_STUDENTS]: 'submissions/by_student',
+  [PANELS.SUBMISSION_GRADERS]: 'submissions/by_grader',
   [PANELS.ASSIGNMENTS]: 'assignments/',
   [PANELS.ROSTER_STUDENTS]: 'roster/students',
   [PANELS.ROSTER_GRADERS]: 'roster/graders',
@@ -91,8 +91,8 @@ const panels = {
 };
 
 const panelStrings = [
-  'submissions/students',
-  'submissions/graders',
+  'submissions/by_student',
+  'submissions/by_grader',
   'assignments/',
   'roster/students',
   'roster/graders',
@@ -648,12 +648,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         });
 
         return getData.then(([assignments, rubrics]) => {
+          const sortedAssignments: AssignmentType[] = sortAssignments(assignments);
           return Promise.all(
-            assignments.map((assignment: AssignmentType) => {
+            sortedAssignments.map((assignment: AssignmentType, index: number) => {
               const oldAssignmentID = assignment.id;
               assignment.id = -1;
               assignment.course = course.id;
               assignment.isReleased = false;
+              assignment.sortKey = index;
               // Create Assignments
               return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
                 const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
@@ -951,11 +953,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
-      const { submissions, assignments } = this.state;
+      const { submissions, assignments, submissionsByGrader } = this.state;
+
+      // Add empty list to each grader's assigned list
+      const newSubsByGrader = { ...submissionsByGrader };
+      this.state.graders.forEach((grader) => {
+        newSubsByGrader[grader][assignment.id] = [];
+      });
+
       currentCourse.assignments.push(assignment.id);
       submissions[assignment.id] = [];
       const newAssignments = [...assignments, assignment];
-      this.setState({ currentCourse, submissions, assignments: newAssignments });
+      this.setState({ currentCourse, submissions, assignments: newAssignments, submissionsByGrader: newSubsByGrader });
       return assignment;
     });
   };

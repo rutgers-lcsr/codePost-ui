@@ -302,9 +302,9 @@ export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
     case DRAWER_TYPE.Submitted:
       return `Total Submissions (${contentLength})`;
     case DRAWER_TYPE.Graded:
-      return `Finalized Submissions (${contentLength})`;
+      return `Done Submissions (${contentLength})`;
     case DRAWER_TYPE.InProgress:
-      return `Ungraded Submissions (${contentLength})`;
+      return `Draft Submissions (${contentLength})`;
     case DRAWER_TYPE.Unclaimed:
       return `Unclaimed Submissions (${contentLength})`;
     case DRAWER_TYPE.Missing:

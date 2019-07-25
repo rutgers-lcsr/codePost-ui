@@ -31,18 +31,18 @@ class GraderNav extends React.Component<IProps, {}> {
           >
             <Menu.Item key="0">
               <Icon type="container" />
-              <span>My submissions</span>
+              <span>Claimed by Me</span>
             </Menu.Item>
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
                 <Icon type="cluster" />
-                <span>My sections</span>
+                <span>My Sections</span>
               </Menu.Item>
             ) : null}
             {this.props.isSuperGrader ? (
               <Menu.Item key="2">
                 <Icon type="inbox" />
-                <span>All submissions</span>
+                <span>All Submissions</span>
               </Menu.Item>
             ) : null}
           </Menu>
