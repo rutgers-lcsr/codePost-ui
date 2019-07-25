@@ -141,7 +141,7 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
               <Icon type="pushpin" />
               <span>Docs</span>
             </Menu.Item>
-            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://help.codepost.io/reference')}>
+            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
               <Icon type="api" />
               <span>API Reference</span>
             </Menu.Item>
