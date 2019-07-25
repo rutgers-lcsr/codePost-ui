@@ -44,7 +44,6 @@ const Badge = (props: IBadgeProps) => {
   } else {
     className += ' badge--normal';
   }
-
   return <AntBadge count={label} className={className} showZero={showZero} {...extraProps} />;
 };
 

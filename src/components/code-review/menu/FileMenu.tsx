@@ -110,12 +110,16 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
         bonusBadge = <Badge count={'+1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
       }
 
+      const badgesStyle: React.CSSProperties = !shrunkSider
+        ? { position: 'absolute', right: '8px', top: '0px', width: '96px' }
+        : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+
       return (
         <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px' }}>
           <div
             style={{
               display: 'inline-block',
-              maxWidth: !shrunkSider ? '152px' : '124px',
+              maxWidth: !shrunkSider ? '136px' : '124px',
               lineHeight: '12px',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
@@ -129,45 +133,30 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
               fontSize: '10.5px',
               color: '#ccc',
               position: 'absolute',
-              right: !shrunkSider ? '92px' : '15px',
+              right: !shrunkSider ? '112px' : '15px',
               top: !shrunkSider ? '1px' : '0px',
             }}
           >
             [⌘{index + 1}]
           </span>
-          <span
-            style={{ position: 'absolute', right: !shrunkSider ? '61px' : '150px', top: !shrunkSider ? '0px' : '16px' }}
-          >
-            {this.props.hidePoints ? (
-              ''
-            ) : (
-              <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-                {bonusBadge}
-              </CPTooltip>
-            )}
-          </span>
-          <span
-            style={{ position: 'absolute', right: !shrunkSider ? '34px' : '123px', top: !shrunkSider ? '0px' : '16px' }}
-          >
-            {this.props.hidePoints ? (
-              ''
-            ) : (
-              <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-                {deductionBadge}
-              </CPTooltip>
-            )}
-          </span>
-          <span
-            style={{ position: 'absolute', right: !shrunkSider ? '8px' : '97px', top: !shrunkSider ? '0px' : '16px' }}
-          >
-            {this.props.hidePoints && commentCount > 0 ? (
-              <div>Comments: {commentCountBadge}</div>
-            ) : (
+
+          <div style={badgesStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {!this.props.hidePoints ? (
+                <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+                  {bonusBadge}
+                </CPTooltip>
+              ) : null}
+              {!this.props.hidePoints ? (
+                <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+                  {deductionBadge}
+                </CPTooltip>
+              ) : null}
               <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
                 {commentCountBadge}
               </CPTooltip>
-            )}
-          </span>
+            </div>
+          </div>
         </Menu.Item>
       );
     });
