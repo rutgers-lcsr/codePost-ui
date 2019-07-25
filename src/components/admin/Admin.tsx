@@ -80,8 +80,8 @@ export enum PANELS {
 }
 
 const panels = {
-  [PANELS.SUBMISSION_STUDENTS]: 'submissions/students',
-  [PANELS.SUBMISSION_GRADERS]: 'submissions/graders',
+  [PANELS.SUBMISSION_STUDENTS]: 'submissions/by_student',
+  [PANELS.SUBMISSION_GRADERS]: 'submissions/by_grader',
   [PANELS.ASSIGNMENTS]: 'assignments/',
   [PANELS.ROSTER_STUDENTS]: 'roster/students',
   [PANELS.ROSTER_GRADERS]: 'roster/graders',
@@ -91,8 +91,8 @@ const panels = {
 };
 
 const panelStrings = [
-  'submissions/students',
-  'submissions/graders',
+  'submissions/by_student',
+  'submissions/by_grader',
   'assignments/',
   'roster/students',
   'roster/graders',
