@@ -107,15 +107,15 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       }
 
       return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '90px' }}>
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px' }}>
           <div
             style={{
               display: 'inline-block',
-              maxWidth: !shrunkSider ? '150px' : '124px',
-              wordWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
+              maxWidth: !shrunkSider ? '152px' : '124px',
               lineHeight: '12px',
-              verticalAlign: 'middle',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
             }}
           >
             {file.name}
@@ -132,7 +132,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
             [⌘{index + 1}]
           </span>
           <span
-            style={{ position: 'absolute', right: !shrunkSider ? '61px' : '15px', top: !shrunkSider ? '0px' : '-4px' }}
+            style={{ position: 'absolute', right: !shrunkSider ? '61px' : '150px', top: !shrunkSider ? '0px' : '16px' }}
           >
             {this.props.hidePoints ? (
               ''
@@ -143,7 +143,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
             )}
           </span>
           <span
-            style={{ position: 'absolute', right: !shrunkSider ? '34px' : '15px', top: !shrunkSider ? '0px' : '20px' }}
+            style={{ position: 'absolute', right: !shrunkSider ? '34px' : '123px', top: !shrunkSider ? '0px' : '16px' }}
           >
             {this.props.hidePoints ? (
               ''
@@ -154,7 +154,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
             )}
           </span>
           <span
-            style={{ position: 'absolute', right: !shrunkSider ? '8px' : '15px', top: !shrunkSider ? '0px' : '44px' }}
+            style={{ position: 'absolute', right: !shrunkSider ? '8px' : '97px', top: !shrunkSider ? '0px' : '16px' }}
           >
             {this.props.hidePoints && commentCount > 0 ? (
               <div>Comments: {commentCountBadge}</div>
