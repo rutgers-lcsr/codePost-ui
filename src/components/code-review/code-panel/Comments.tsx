@@ -120,9 +120,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     if (prevProps.comments.length < this.props.comments.length) {
-      const comments = document.getElementById('code-panel--comments');
-      if (comments !== null) {
-        return comments.scrollTop;
+      const codePanel = document.getElementById('code-panel');
+      if (codePanel !== null) {
+        return codePanel.scrollTop;
       }
     }
 
@@ -148,9 +148,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     snapshot: any,
   ) => {
     if (snapshot !== null) {
-      const comments = document.getElementById('code-panel--comments');
-      if (comments !== null) {
-        comments.scrollTop = snapshot;
+      const codePanel = document.getElementById('code-panel');
+      if (codePanel !== null) {
+        codePanel.scrollTop = snapshot;
       }
     }
 
