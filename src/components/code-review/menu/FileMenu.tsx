@@ -87,6 +87,8 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       let commentCountBadge = null;
       if (commentCount > 0) {
         commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
+      } else {
+        commentCountBadge = <Badge count={'-'} forcedStyle="neutral" placeholder={true} faded={faded} size="small" />;
       }
 
       let deductionBadge = null;
@@ -95,13 +97,13 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       if (deductions > 0) {
         deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
       } else {
-        deductionBadge = <Badge count={'-'} forcedStyle="negative" placeholder={true} faded={faded} size="small" />;
+        deductionBadge = <Badge count={'-1'} forcedStyle="negative" placeholder={true} faded={faded} size="small" />;
       }
 
       if (bonuses > 0) {
         bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
       } else {
-        bonusBadge = <Badge count={'-'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
+        bonusBadge = <Badge count={'+1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
       }
 
       return (
@@ -109,25 +111,26 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           <div
             style={{
               display: 'inline-block',
-              maxWidth: !shrunkSider ? '148px' : '124px',
+              maxWidth: !shrunkSider ? '150px' : '124px',
               wordWrap: 'break-word',
               whiteSpace: 'pre-wrap',
               lineHeight: '12px',
               verticalAlign: 'middle',
             }}
           >
-            <div
-              style={{
-                fontSize: '10.5px',
-                color: '#ccc',
-                position: 'absolute',
-                left: '3px',
-              }}
-            >
-              ⌘{index + 1}
-            </div>
             {file.name}
           </div>
+          <span
+            style={{
+              fontSize: '10.5px',
+              color: '#ccc',
+              position: 'absolute',
+              right: !shrunkSider ? '92px' : '15px',
+              top: !shrunkSider ? '1px' : '0px',
+            }}
+          >
+            [⌘{index + 1}]
+          </span>
           <span
             style={{ position: 'absolute', right: !shrunkSider ? '61px' : '15px', top: !shrunkSider ? '0px' : '-4px' }}
           >

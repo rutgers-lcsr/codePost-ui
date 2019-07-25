@@ -36,7 +36,7 @@ const Badge = (props: IBadgeProps) => {
 
   if (forcedStyle !== undefined) {
     label = `${count}`;
-    className = `badge badge--${_size} badge--${forcedStyle}${placeholder ? '--placeholder' : ''}`;
+    className = `badge badge--${_size} badge--${forcedStyle} ${placeholder ? 'badge--placeholder' : ''}`;
   }
 
   if (faded !== undefined && faded) {

@@ -21,38 +21,22 @@
     .ant-badge-count {
       background-color: $neutralSecondaryText;
     }
-    &--placeholder {
-      .ant-badge-count {
-        background-color: transparent;
-        color: transparent;
-        border: 1px solid $neutralSecondaryText;
-      }
-    }
   }
 
   &--negative {
     .ant-badge-count {
       background-color: $actionRed;
     }
-    &--placeholder {
-      .ant-badge-count {
-        background-color: transparent;
-        color: transparent;
-        border: 1px solid $actionRed;
-      }
+  }
+  &--placeholder {
+    .ant-badge-count {
+      color: transparent;
     }
   }
 
   &--positive {
     .ant-badge-count {
       background-color: $actionGreen;
-    }
-    &--placeholder {
-      .ant-badge-count {
-        background-color: transparent;
-        color: transparent;
-        border: 1px solid $actionGreen;
-      }
     }
   }
 
