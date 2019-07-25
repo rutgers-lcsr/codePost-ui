@@ -158,6 +158,7 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
               borderRadius: '4px',
               fontFamily: 'monospace',
               padding: '4px',
+              wordBreak: 'break-word',
             }}
           >
             {props.value ? props.value : ' '}

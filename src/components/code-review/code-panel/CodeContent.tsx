@@ -64,23 +64,34 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     const { addComment, ...codeProps } = { ...props };
     return (
       <div
-        id="code-main"
-        className="code code--markdown"
+        id="code-container"
+        className="code-container"
         style={{
-          lineHeight: `${themeVars.grade.codeLineHeight}px`,
-          fontSize: `${themeVars.grade.codeFontSize}px`,
-          paddingLeft: '20px',
-          backgroundColor: 'white',
-          paddingTop: '3px',
-          paddingRight: '20px',
+          width: `${props.dimensions.codeWidth}px`,
+          overflowX: 'hidden',
+          backgroundColor: consoleTheme.codeBg,
+          border: `1px solid ${consoleTheme.codeBorder}`,
         }}
       >
-        <Markdown
-          key={props.file.id}
-          {...codeProps}
-          commentCounter={commentCounter}
-          addComment={addCommentAndIncrement}
-        />
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: '20px',
+            backgroundColor: 'white',
+            paddingTop: '3px',
+            paddingRight: '20px',
+          }}
+        >
+          <Markdown
+            key={props.file.id}
+            {...codeProps}
+            commentCounter={commentCounter}
+            addComment={addCommentAndIncrement}
+          />
+        </div>
       </div>
     );
   } else {
