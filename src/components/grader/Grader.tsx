@@ -328,6 +328,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
               course={currentCourse}
               isAnonymous={currentAssignment.anonymousGrading}
               graderEmail={this.props.user.email}
+              isAdmin={this.props.user.courseadminCourses.some((el) => {
+                return el.id === currentCourse.id;
+              })}
             />
           );
           break;

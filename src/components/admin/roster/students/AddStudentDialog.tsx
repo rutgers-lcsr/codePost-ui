@@ -165,21 +165,23 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 ],
               })(<Input />)}
             </Form.Item>
-            <Form.Item label="Section" extra={"Leave blank to leave the student's section unassigned."}>
-              {getFieldDecorator('section', {
-                rules: [{ required: false }],
-              })(
-                <Select allowClear={true}>
-                  {this.props.sections.map((section) => {
-                    return (
-                      <Select.Option key={section.id} value={section.id}>
-                        {section.name}
-                      </Select.Option>
-                    );
-                  })}
-                </Select>,
-              )}
-            </Form.Item>
+            {this.props.sections.length > 0 ? (
+              <Form.Item label="Section" extra={"Leave blank to leave the student's section unassigned."}>
+                {getFieldDecorator('section', {
+                  rules: [{ required: false }],
+                })(
+                  <Select allowClear={true}>
+                    {this.props.sections.map((section) => {
+                      return (
+                        <Select.Option key={section.id} value={section.id}>
+                          {section.name}
+                        </Select.Option>
+                      );
+                    })}
+                  </Select>,
+                )}
+              </Form.Item>
+            ) : null}
           </Form>
         </Modal>
       );
