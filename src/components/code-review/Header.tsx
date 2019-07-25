@@ -13,8 +13,6 @@ import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-import themeVars from '../../styles/abstracts/_theme.js';
-import layoutVars from '../../styles/layout/_layoutVars';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -24,8 +22,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-// @ts-ignore
-import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
+import { ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
 
 /**********************************************************************************************************************/
 
@@ -85,87 +82,6 @@ export const Magnifier = (props: IMagnifierProps) => {
       <CPTooltip title={tooltips.grade.header.zoomIn} hideThisOnHideTips={true}>
         <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small={true}>
           <Icon type="zoom-in" />
-        </CPButton>
-      </CPTooltip>
-    </ButtonGroup>
-  );
-};
-
-/**********************************************************************************************************************/
-
-interface ISizerProps {
-  updateSplitBasis: (newSplitBasis: number) => void;
-  initialSplitBasis?: number;
-}
-
-export const Sizer = (props: ISizerProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
-  const [splitBasis, setSplitBasis] = React.useState(
-    props.initialSplitBasis === undefined ? themeVars.grade.splitBasis : props.initialSplitBasis,
-  );
-
-  // Track window width to prevent user from extending code too far to the right and
-  // squishing comments
-  // @ts-ignore
-  // const [width, setWidth] = React.useState(window.innerWidth);
-  React.useEffect(() => {
-    const handleResize = () => {
-      const siderWidth = window.innerWidth < layoutVars.breakpoints.smallScreen.grade ? 200 : 300;
-      const estimateSplit = Math.max(Math.min(themeVars.grade.splitBasis, window.innerWidth - 340 - siderWidth), 400);
-      setSplitBasis(estimateSplit);
-      props.updateSplitBasis(estimateSplit);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  function shrink() {
-    const newSplitBasis = Math.max(200, splitBasis - 100);
-    setSplitBasis(newSplitBasis);
-    props.updateSplitBasis(newSplitBasis);
-  }
-
-  function grow() {
-    const codeContainer = document.getElementById('code-container');
-    if (codeContainer !== null) {
-      // const maxWidth = width - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
-      // const newSplitBasis = Math.min(maxWidth, splitBasis + 100);
-      const newSplitBasis = splitBasis + 100;
-      setSplitBasis(newSplitBasis);
-      props.updateSplitBasis(newSplitBasis);
-    }
-  }
-
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeydown = (e: any) => {
-      if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        shrink();
-      } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        grow();
-      }
-    };
-    document.addEventListener('keydown', handleKeydown);
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-    };
-  });
-
-  return (
-    <ButtonGroup>
-      <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
-        <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
-          <Icon type="double-left" />
-        </CPButton>
-      </CPTooltip>
-      <CPTooltip title={tooltips.grade.header.grow} hideThisOnHideTips={true}>
-        <CPButton id="grow" cpType={cpType} onClick={grow} small={true}>
-          <Icon type="double-right" />
         </CPButton>
       </CPTooltip>
     </ButtonGroup>

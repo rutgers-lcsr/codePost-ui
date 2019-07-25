@@ -94,9 +94,8 @@ const arrowDisplacement = 32; // px
 const commentSpacing = 10; // px
 const intercomDisplacement = 90; // px
 
-const commentMinWidth = 250; // px
-
-const splitBasis = 775; // px
+const codeTargetWidth = 775; // px
+const commentsTargetWidth = 360; // px
 
 // --------------- EXPORTS --------------- //
 
@@ -214,9 +213,8 @@ module.exports = {
     commentSpacing: commentSpacing,
     intercomDisplacement: intercomDisplacement,
 
-    commentMinWidth: commentMinWidth,
-
-    splitBasis: splitBasis,
+    codeTargetWidth: codeTargetWidth,
+    commentsTargetWidth: commentsTargetWidth,
   }
 };
 

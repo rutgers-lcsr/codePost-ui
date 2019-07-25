@@ -25,8 +25,8 @@ export type CodeConsoleDimensionsType = {
 
 export const getInitialDimensions = (): CodeConsoleDimensionsType => {
   const dimensions = {
-    codeWidth: Math.max(Math.min(themeVars.grade.splitBasis, window.innerWidth - 700), 400),
-    commentsWidth: 360,
+    codeWidth: Math.max(Math.min(themeVars.grade.codeTargetWidth, window.innerWidth - 700), 400),
+    commentsWidth: themeVars.grade.commentsTargetWidth,
   };
   return dimensions;
 };
