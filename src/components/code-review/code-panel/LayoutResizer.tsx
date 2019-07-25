@@ -36,7 +36,8 @@ const absoluteCommentsWidthMinimum = 280;
 
 interface ILayoutResizerProps {
   initialDimensions: CodeConsoleDimensionsType;
-  setDimensions: any;
+  setDimensions: (dimensions: CodeConsoleDimensionsType) => void;
+  hasComments: boolean;
 }
 
 const LayoutResizer = (props: ILayoutResizerProps) => {
@@ -59,7 +60,9 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
 
   const [hovered, setHovered] = React.useState(false);
   const onMouseEnter = () => {
-    setHovered(true);
+    if (props.hasComments) {
+      setHovered(true);
+    }
   };
 
   const onMouseLeave = () => {
