@@ -67,7 +67,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           style={{
             backgroundColor: consoleTheme.subheaderBg,
             maxWidth: '100vw',
-            minWidth: '900px',
+            overflowX: 'auto',
+            overflowY: 'hidden',
           }}
           className="layout--standard-console__header"
         >

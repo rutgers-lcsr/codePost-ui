@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, Modal, Popconfirm, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, Modal, Popconfirm, Popover, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
@@ -25,13 +25,15 @@ import CodeConsole from './CodeConsole';
 
 import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
 
+import useWindowSize from '../core/useWindowSize';
+
 /**********************************************************************************************************************/
 
 interface IMagnifierProps {
   updateZoom: (newZoom: number) => void;
 }
 
-export const Magnifier = (props: IMagnifierProps) => {
+const Magnifier = (props: IMagnifierProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
   const [zoom, setZoom] = React.useState(1);
@@ -71,7 +73,7 @@ export const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
@@ -95,7 +97,7 @@ interface ISizerProps {
   updateSplitBasis: (newSplitBasis: number) => void;
 }
 
-export const Sizer = (props: ISizerProps) => {
+const Sizer = (props: ISizerProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
   const [splitBasis, setSplitBasis] = React.useState(themeVars.grade.splitBasis);
@@ -147,7 +149,7 @@ export const Sizer = (props: ISizerProps) => {
   });
 
   return (
-    <ButtonGroup>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
         <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
           <Icon type="double-left" />
@@ -168,7 +170,7 @@ interface IResetProps {
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
 }
 
-export const Reset = (props: IResetProps) => {
+const Reset = (props: IResetProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
@@ -189,6 +191,34 @@ export const Reset = (props: IResetProps) => {
 
 /**********************************************************************************************************************/
 
+interface IControlsProps {
+  updateVerticalOffset: (updater: (oldValue: number) => number) => void;
+  updateSplitBasis: (newSplitBasis: number) => void;
+  updateZoom: (newZoom: number) => void;
+  fallbackWidth?: number;
+}
+
+export const Controls = (props: IControlsProps) => {
+  const windowSize = useWindowSize();
+  const controls = (
+    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />,
+      <Sizer key="sizer" updateSplitBasis={props.updateSplitBasis} />,
+      <Magnifier key="zoom" updateZoom={props.updateZoom} />,
+    </div>
+  );
+  const controlPanel =
+    props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
+      <Popover content={controls} placement="bottom" trigger="click">
+        <Icon type="control" style={{ cursor: 'pointer' }} />
+      </Popover>
+    ) : (
+      controls
+    );
+  return controlPanel;
+};
+
+/**********************************************************************************************/
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
   canToggle: () => boolean;
@@ -242,7 +272,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   return (
     <div ref={ref}>
-      <ButtonGroup>
+      <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <CPButton
           cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
           fallback="unlock"
@@ -478,12 +508,14 @@ export const GradeButton = (props: IGradeButtonProps) => {
 interface IStatusTagsProps {
   assignment: AssignmentType;
   submission: AnonymousSubmissionType;
+  fallbackWidth?: number;
 }
 
 type StatusTagType = 0 | 1 | 2 | 3;
 
 export const StatusTags = (props: IStatusTagsProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const windowSize = useWindowSize();
   const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
   const subStatus = (finalized: boolean, published: boolean): StatusTagType => {
@@ -536,17 +568,21 @@ export const StatusTags = (props: IStatusTagsProps) => {
       break;
   }
 
+  const tagStyle = { marginRight: '0px', cursor: 'help' };
   return (
-    <CPTooltip title={tooltipText} placement="bottom">
-      <Tag
-        color={tagColor}
-        style={{
-          marginRight: '0px',
-          cursor: 'help',
-        }}
-      >
-        {tagText}
-      </Tag>
+    <CPTooltip
+      title={
+        props.fallbackWidth && windowSize.width < props.fallbackWidth ? [tagText, tooltipText].join('\n') : tooltipText
+      }
+      placement="bottom"
+    >
+      {props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
+        <Icon theme="twoTone" style={{ color: tagColor, ...tagStyle }} type="tag" />
+      ) : (
+        <Tag color={tagColor} style={tagStyle}>
+          {tagText}
+        </Tag>
+      )}
     </CPTooltip>
   );
 };
