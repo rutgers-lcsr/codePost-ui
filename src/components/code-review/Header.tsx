@@ -112,8 +112,9 @@ export const Controls = (props: IControlsProps) => {
   const windowSize = useWindowSize();
   const controls = (
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />,
-      <Magnifier key="zoom" updateZoom={props.updateZoom} />,
+      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
+      <div style={{ width: '20px' }} />
+      <Magnifier key="zoom" updateZoom={props.updateZoom} />
     </div>
   );
   const controlPanel =
