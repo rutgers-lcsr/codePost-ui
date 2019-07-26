@@ -9,6 +9,9 @@ const Range = createSliderWithTooltip(Slider.Range);
 import useWindowSize from '../../core/useWindowSize';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
+import { ShowTooltipContext } from '../../core/tooltips';
+
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
@@ -43,6 +46,7 @@ interface ILayoutResizerProps {
 const LayoutResizer = (props: ILayoutResizerProps) => {
   const windowSize = useWindowSize();
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const showTooltips = React.useContext(ShowTooltipContext);
 
   // not used
   // @ts-ignore
@@ -166,6 +170,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         el.blur();
       }
     }
+    setActiveHandle(null);
     document.documentElement.style.userSelect = 'auto';
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
@@ -205,9 +210,11 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     return tooltip;
   };
 
+  const prefixCls =
+    activeHandle === null && showTooltips ? 'rc-slider-tooltip' : 'rc-slider-tooltip rc-slider-tooltip-hidden';
   const tipProps = {
     placement: 'bottom',
-    prefixCls: 'rc-slider-tooltip',
+    prefixCls,
   };
 
   return (
@@ -225,14 +232,17 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
           { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
           { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
           {
-            backgroundColor: hovered ? consoleTheme.resizerTrack : 'transparent',
-            borderColor: hovered ? consoleTheme.resizerTrackActive : 'transparent',
+            backgroundColor: hovered || activeHandle !== null ? consoleTheme.resizerTrack : 'transparent',
+            borderColor: hovered || activeHandle !== null ? consoleTheme.resizerTrackActive : 'transparent',
           },
         ]}
         trackStyle={[
           { backgroundColor: consoleTheme.resizerTrackActive },
           { backgroundColor: consoleTheme.resizerTrack },
-          { backgroundColor: hovered ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack },
+          {
+            backgroundColor:
+              hovered || activeHandle !== null ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack,
+          },
         ]}
         railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
         tipFormatter={tipFormatter}
