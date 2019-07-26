@@ -111,7 +111,7 @@ class Landing extends React.PureComponent<{}, {}> {
           the codePost API. It allows you to
           <ul>
             <li>
-              <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS, autograders, and
+              <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS, autograder, and
               version control systems,
             </li>
             <li>
@@ -123,7 +123,7 @@ class Landing extends React.PureComponent<{}, {}> {
               against your goals.
             </li>
           </ul>
-          It's actually easy to use - you can write useful scripts in 10 minutes.
+          It's actually easy to use - you can write useful, short scripts in 10 minutes.
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
           Our users have connected codePost with tools such as{' '}
