@@ -56,6 +56,11 @@ class NewCourseDialog extends React.Component<IProps, IState> {
         this.props.createCourse(name, period, cloneCourse).then(() => {
           this.setState({ loading: false });
           this.toggleDialog();
+
+          // clear form in case user opens it again in the same session
+          const formRefCast: any = this.formRef;
+          const form = formRefCast.props.form;
+          form.resetFields();
         });
       });
     }
