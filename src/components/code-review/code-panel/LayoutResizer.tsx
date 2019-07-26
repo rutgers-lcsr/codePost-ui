@@ -46,6 +46,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   const windowSize = useWindowSize();
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  // not used
   // @ts-ignore
   const marks = {
     630: '80char',
