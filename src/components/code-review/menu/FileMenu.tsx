@@ -27,6 +27,8 @@ import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
+import { getOperatingSystem, OS } from '../useHotkeys';
+
 /**********************************************************************************************************************/
 
 interface IFileMenuProps extends IWithWindowWatcherProps {
@@ -50,8 +52,10 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
   }
 
   public handleKeyDown = (e: any) => {
-    // Keyboard shortcuts{
-    if (e.which >= 49 && e.which <= 57 && e.metaKey) {
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.which >= 49 && e.which <= 57 && triggerKey) {
       e.preventDefault();
       if (e.which - 49 < this.props.files.length) {
         this.props.changeSelectedFile(this.props.files[e.which - 49].id);
@@ -86,71 +90,73 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
 
       let commentCountBadge = null;
       if (commentCount > 0) {
-        commentCountBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-            <Badge count={commentCount} forcedStyle="neutral" faded={faded} />
-          </CPTooltip>
-        );
+        commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
+      } else {
+        commentCountBadge = <Badge count={'-'} forcedStyle="neutral" placeholder={true} faded={faded} size="small" />;
       }
 
       let deductionBadge = null;
       let bonusBadge = null;
 
       if (deductions > 0) {
-        deductionBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-            <Badge count={deductions * -1} faded={faded} />
-          </CPTooltip>
-        );
+        deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
+      } else {
+        deductionBadge = <Badge count={'-1'} forcedStyle="negative" placeholder={true} faded={faded} size="small" />;
       }
 
       if (bonuses > 0) {
-        bonusBadge = (
-          <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-            <Badge count={bonuses} faded={faded} />
-          </CPTooltip>
-        );
+        bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
+      } else {
+        bonusBadge = <Badge count={'+1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
       }
 
+      const badgesStyle: React.CSSProperties = !shrunkSider
+        ? { position: 'absolute', right: '8px', top: '0px', width: '96px' }
+        : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+
       return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '90px' }}>
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px' }}>
           <div
             style={{
               display: 'inline-block',
-              maxWidth: !shrunkSider ? '148px' : '124px',
-              wordWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
+              maxWidth: !shrunkSider ? '136px' : '124px',
               lineHeight: '12px',
-              verticalAlign: 'middle',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
             }}
           >
-            <div
-              style={{
-                fontSize: '10.5px',
-                color: '#ccc',
-                position: 'absolute',
-                left: '3px',
-              }}
-            >
-              ⌘{index + 1}
-            </div>
             {file.name}
           </div>
           <span
-            style={{ position: 'absolute', right: !shrunkSider ? '95px' : '15px', top: !shrunkSider ? '0px' : '-4px' }}
+            style={{
+              fontSize: '10.5px',
+              color: '#ccc',
+              position: 'absolute',
+              right: !shrunkSider ? '112px' : '15px',
+              top: !shrunkSider ? '1px' : '0px',
+            }}
           >
-            {this.props.hidePoints ? '' : bonusBadge}
+            [⌘{index + 1}]
           </span>
-          <span
-            style={{ position: 'absolute', right: !shrunkSider ? '55px' : '15px', top: !shrunkSider ? '0px' : '20px' }}
-          >
-            {this.props.hidePoints ? '' : deductionBadge}
-          </span>
-          <span
-            style={{ position: 'absolute', right: !shrunkSider ? '15px' : '15px', top: !shrunkSider ? '0px' : '44px' }}
-          >
-            {this.props.hidePoints && commentCount > 0 ? <div>Comments: {commentCountBadge}</div> : commentCountBadge}
-          </span>
+
+          <div style={badgesStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {!this.props.hidePoints ? (
+                <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+                  {bonusBadge}
+                </CPTooltip>
+              ) : null}
+              {!this.props.hidePoints ? (
+                <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+                  {deductionBadge}
+                </CPTooltip>
+              ) : null}
+              <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+                {commentCountBadge}
+              </CPTooltip>
+            </div>
+          </div>
         </Menu.Item>
       );
     });

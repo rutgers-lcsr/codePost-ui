@@ -1,38 +1,36 @@
 .code-panel {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 14px 0px;
+
+  flex: 1;
+  overflow: auto;
+  white-space: nowrap;
 
   &--code {
-    // flex: 0 1 600px;
+    display: inline-block;
+    vertical-align: top;
   }
 
   &--comments {
-    flex: 1 0 auto;
-    min-width: 250px;
+    vertical-align: top;
+    display: inline-block;
+
     position: relative;
 
-    overflow-y: scroll;
     padding-right: 10px;
 
-    // /* width */
-    // &::-webkit-scrollbar {
-    //   width: 8px;
-    // }
+    overflow-x: visible;
+  }
+}
 
-    // /* Track */
-    // &::-webkit-scrollbar-track {
-    //   background: #f2f2f2;
-    // }
+.layout-resizer {
+  .rc-slider-handle {
+    &:active {
+      box-shadow: 0 0 5px $brandPrimary;
+    }
 
-    // /* Handle */
-    // &::-webkit-scrollbar-thumb {
-    //   background: $actionGreenFade;
-    // }
-
-    // /* Handle on hover */
-    // &::-webkit-scrollbar-thumb:hover {
-    //   background: $actionGreen;
-    // }
+    &:focus {
+      box-shadow: 0 0 5px $brandPrimary;
+    }
   }
 }

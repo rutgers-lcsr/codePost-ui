@@ -13,7 +13,6 @@ import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-import themeVars from '../../styles/abstracts/_theme.js';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -23,7 +22,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import { EXPAND_CODE_SHORTCUT, SHRINK_CODE_SHORTCUT, ZOOM_IN_SHORTCUT, ZOOM_OUT_SHORTCUT } from './Shortcuts';
+import useHotkeys, { MINUS_KEY, PLUS_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -50,23 +49,8 @@ const Magnifier = (props: IMagnifierProps) => {
     props.updateZoom(newZoom);
   }
 
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeydown = (e: any) => {
-      if (e.which === ZOOM_IN_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        zoomIn();
-      } else if (e.which === ZOOM_OUT_SHORTCUT && e.metaKey) {
-        // [⌘ + -]
-        e.preventDefault();
-        zoomOut();
-      }
-    };
-    document.addEventListener('keydown', handleKeydown);
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-    };
-  });
+  useHotkeys(MINUS_KEY, zoomOut);
+  useHotkeys(PLUS_KEY, zoomIn);
 
   // Note: would be nice to let the user set her zoom explicitly
   // Would need to replace the middle button with an input
@@ -85,79 +69,6 @@ const Magnifier = (props: IMagnifierProps) => {
       <CPTooltip title={tooltips.grade.header.zoomIn} hideThisOnHideTips={true}>
         <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small={true}>
           <Icon type="zoom-in" />
-        </CPButton>
-      </CPTooltip>
-    </ButtonGroup>
-  );
-};
-
-/**********************************************************************************************************************/
-
-interface ISizerProps {
-  updateSplitBasis: (newSplitBasis: number) => void;
-}
-
-const Sizer = (props: ISizerProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
-  const [splitBasis, setSplitBasis] = React.useState(themeVars.grade.splitBasis);
-
-  // Track window width to prevent user from extending code too far to the right and
-  // squishing comments
-  const [width, setWidth] = React.useState(window.innerWidth);
-  React.useEffect(() => {
-    const handleResize = () => {
-      setWidth(window.innerWidth);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  });
-
-  function shrink() {
-    const newSplitBasis = Math.max(200, splitBasis - 100);
-    setSplitBasis(newSplitBasis);
-    props.updateSplitBasis(newSplitBasis);
-  }
-
-  function grow() {
-    const codeContainer = document.getElementById('code-container');
-    if (codeContainer !== null) {
-      const maxWidth = width - codeContainer.offsetLeft - themeVars.grade.commentMinWidth;
-      const newSplitBasis = Math.min(maxWidth, splitBasis + 100);
-      setSplitBasis(newSplitBasis);
-      props.updateSplitBasis(newSplitBasis);
-    }
-  }
-
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeydown = (e: any) => {
-      if (e.which === SHRINK_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        shrink();
-      } else if (e.which === EXPAND_CODE_SHORTCUT && e.metaKey) {
-        e.preventDefault();
-        grow();
-      }
-    };
-    document.addEventListener('keydown', handleKeydown);
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-    };
-  });
-
-  return (
-    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <CPTooltip title={tooltips.grade.header.shrink} hideThisOnHideTips={true}>
-        <CPButton id="shrink" cpType={cpType} onClick={shrink} small={true}>
-          <Icon type="double-left" />
-        </CPButton>
-      </CPTooltip>
-      <CPTooltip title={tooltips.grade.header.grow} hideThisOnHideTips={true}>
-        <CPButton id="grow" cpType={cpType} onClick={grow} small={true}>
-          <Icon type="double-right" />
         </CPButton>
       </CPTooltip>
     </ButtonGroup>
@@ -193,7 +104,6 @@ const Reset = (props: IResetProps) => {
 
 interface IControlsProps {
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-  updateSplitBasis: (newSplitBasis: number) => void;
   updateZoom: (newZoom: number) => void;
   fallbackWidth?: number;
 }
@@ -202,15 +112,18 @@ export const Controls = (props: IControlsProps) => {
   const windowSize = useWindowSize();
   const controls = (
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />,
-      <Sizer key="sizer" updateSplitBasis={props.updateSplitBasis} />,
-      <Magnifier key="zoom" updateZoom={props.updateZoom} />,
+      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
+      <div style={{ width: '20px' }} />
+      <Magnifier key="zoom" updateZoom={props.updateZoom} />
     </div>
   );
   const controlPanel =
     props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
       <Popover content={controls} placement="bottom" trigger="click">
-        <Icon type="control" style={{ cursor: 'pointer' }} />
+        <Icon
+          type="control"
+          style={{ fontSize: '20px', lineHeight: '20px', verticalAlign: '-7px', cursor: 'pointer' }}
+        />
       </Popover>
     ) : (
       controls

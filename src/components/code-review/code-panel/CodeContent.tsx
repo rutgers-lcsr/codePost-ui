@@ -3,21 +3,26 @@ import * as React from 'react';
 import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 
+// @ts-ignore
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { CodeConsoleDimensionsType } from './LayoutResizer';
+
+import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import Markdown from './Markdown';
+
+import CodePanelSizing from './CodePanelSizing';
 
 export interface ICodeContentCoreProps {
   file: FileType;
   comments: CommentType[];
   readOnly: boolean;
   user: string;
-  codeStyle: React.CSSProperties;
-  highlightHeight: string;
   onHighlightClick: (e: React.MouseEvent) => void;
+  dimensions: CodeConsoleDimensionsType;
 }
 
 export interface ICodeContentEditProps {
@@ -39,12 +44,12 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       }
     };
 
-    if (codeMain !== null) {
+    if (codeMain !== null && codeSyntax !== null) {
       codeMain.addEventListener('scroll', horizontalCodeScroll);
     }
 
     return () => {
-      if (codeMain !== null) {
+      if (codeMain !== null && codeSyntax !== null) {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
       }
     };
@@ -59,46 +64,80 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     const { addComment, ...codeProps } = { ...props };
     return (
       <div
-        id="code-main"
-        className="code code--markdown"
+        id="code-container"
+        className="code-container"
         style={{
-          ...props.codeStyle,
-          backgroundColor: 'white',
-          paddingTop: '3px',
-          paddingRight: '20px',
+          width: `${props.dimensions.codeWidth}px`,
+          overflowX: 'hidden',
+          backgroundColor: consoleTheme.codeBg,
+          border: `1px solid ${consoleTheme.codeBorder}`,
         }}
       >
-        <Markdown
-          key={props.file.id}
-          {...codeProps}
-          commentCounter={commentCounter}
-          addComment={addCommentAndIncrement}
-        />
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: '20px',
+            backgroundColor: 'white',
+            paddingTop: '3px',
+            paddingRight: '20px',
+          }}
+        >
+          <Markdown
+            key={props.file.id}
+            {...codeProps}
+            commentCounter={commentCounter}
+            addComment={addCommentAndIncrement}
+          />
+        </div>
       </div>
     );
   } else {
     const { addComment, ...codeProps } = { ...props };
-    const { paddingLeft, ...codeStyle } = props.codeStyle;
 
     return (
-      <div>
+      <div
+        id="code-container"
+        className="code-container"
+        style={{
+          width: `${props.dimensions.codeWidth}px`,
+          overflowX: 'hidden',
+          backgroundColor: consoleTheme.codeBg,
+          border: `1px solid ${consoleTheme.codeBorder}`,
+        }}
+      >
         <SyntaxHighlighter
           id="code-syntax"
-          className="code code--syntax"
+          className="code--syntax"
           language={File.language(props.file)}
           style={consoleTheme.codeTheme}
           showLineNumbers={true}
           wrapLines={false}
-          customStyle={{ ...codeStyle, padding: '0px 0px 0px 20px', backgroundColor: consoleTheme.codeBg }}
+          customStyle={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            padding: '0px 0px 10px 20px',
+            backgroundColor: consoleTheme.codeBg,
+          }}
         >
           {props.file.code}
         </SyntaxHighlighter>
-        <div id="code-main" className="code code--underlay" style={props.codeStyle}>
+        <div
+          id="code-main"
+          className="code code--underlay"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+            paddingBottom: '10px',
+          }}
+        >
           <Code
             {...codeProps}
             commentCounter={commentCounter}
             addComment={addCommentAndIncrement}
-            highlightHeight={props.highlightHeight}
             onHighlightClick={props.onHighlightClick}
           />
         </div>

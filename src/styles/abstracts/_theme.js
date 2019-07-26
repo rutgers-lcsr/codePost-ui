@@ -80,12 +80,12 @@ const highlightActive = '#c0ff00';
 
 const marginBottom = 20; // px
 
-const codeContainerMarginTop = 28; // px
-const codeContainerMarginBottom = 16; // px
+const codeContainerMarginTop = 0; // px
+const codeContainerMarginBottom = 0; // px
 const codeContainerMarginLeft = 29; // px
 
-const codeContainerPaddingTop = 25; // px
-const codeContainerPaddingBottom = 20; // px
+const codeContainerPaddingTop = 30; // px
+const codeContainerPaddingBottom = 30; // px
 const codeContainerPaddingRight = 0; // px
 const codeContainerPaddingLeft = 0; // px
 
@@ -94,9 +94,8 @@ const arrowDisplacement = 32; // px
 const commentSpacing = 10; // px
 const intercomDisplacement = 90; // px
 
-const commentMinWidth = 250; // px
-
-const splitBasis = 600; // px
+const codeTargetWidth = 775; // px
+const commentsTargetWidth = 360; // px
 
 // --------------- EXPORTS --------------- //
 
@@ -214,9 +213,8 @@ module.exports = {
     commentSpacing: commentSpacing,
     intercomDisplacement: intercomDisplacement,
 
-    commentMinWidth: commentMinWidth,
-
-    splitBasis: splitBasis,
+    codeTargetWidth: codeTargetWidth,
+    commentsTargetWidth: commentsTargetWidth,
   }
 };
 

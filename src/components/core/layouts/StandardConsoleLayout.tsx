@@ -69,6 +69,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             maxWidth: '100vw',
             overflowX: 'auto',
             overflowY: 'hidden',
+            lineHeight: '49px',
           }}
           className="layout--standard-console__header"
         >
@@ -81,6 +82,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             style={{
               backgroundColor: consoleTheme.siderBg,
               color: consoleTheme.siderTitle,
+              zIndex: 100,
             }}
           >
             {props.sider.length === 0 ? null : (

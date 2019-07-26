@@ -28,6 +28,11 @@
       background-color: $actionRed;
     }
   }
+  &--placeholder {
+    .ant-badge-count {
+      color: transparent;
+    }
+  }
 
   &--positive {
     .ant-badge-count {
