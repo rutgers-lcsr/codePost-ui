@@ -146,6 +146,17 @@ class CodeReview extends React.Component<{}, IState> {
         <div>
           <div style={{ float: 'left', marginBottom: 35, width: 335, maxHeight: 550 }}>{badCodeMirror}</div>
           <div style={{ width: 350, position: 'relative', float: 'right' }}>
+            <div
+              style={{
+                opacity: this.state.showComments ? 0 : 1,
+                transition: 'opacity .3s ease',
+                paddingLeft: 30,
+                top: 175,
+                position: 'absolute',
+              }}
+            >
+              <img src={require('./../../img/landing/compressed/confused_student.png')} width="225" />
+            </div>
             <div style={{ position: 'absolute', top: 40 }}>
               <div
                 style={{
