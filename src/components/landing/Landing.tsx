@@ -108,11 +108,22 @@ class Landing extends React.PureComponent<{}, {}> {
       <div>
         <div style={{ paddingBottom: 15 }}>
           Integrating tools is a big pain. We also think the best run courses are managed with code. That's why we built
-          the codePost API. It allows you to <span style={{ fontWeight: 600 }}>automate common tasks</span> (like
-          syncing rosters with your registrar),
-          <span style={{ fontWeight: 600 }}> integrate with other software</span> (like an LMS), and{' '}
-          <span style={{ fontWeight: 600 }}>analyze your course data</span>. It's actually easy to use - you can write
-          useful scripts in 10 minutes.
+          the codePost API. It allows you to
+          <ul>
+            <li>
+              <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS, autograders, and
+              version control systems,
+            </li>
+            <li>
+              <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as synchronizing rosters from your
+              Registrar or LMS, and
+            </li>
+            <li>
+              <span style={{ fontWeight: 600 }}>analyze your course data</span>, so that you can find and track insights
+              against your goals.
+            </li>
+          </ul>
+          It's actually easy to use - you can write useful scripts in 10 minutes.
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
           Our users have connected codePost with tools such as{' '}
