@@ -6,6 +6,8 @@ import { Dropdown, Icon, Menu } from 'antd';
 import { UserType } from '../../infrastructure/user';
 import { USER_TYPE } from '../../types/common';
 
+import CPTooltip from './CPTooltip';
+
 type ThemeType = 'light' | 'dark';
 
 interface IProps {
@@ -51,8 +53,10 @@ const RoleMenu = (props: IProps) => {
     </Menu>
   );
   return (
-    <Dropdown overlay={roleMenu}>
-      <Icon type="switcher" style={{ color: props.theme === 'light' ? 'black' : 'white' }} />
+    <Dropdown overlay={roleMenu} trigger={['click']}>
+      <CPTooltip title="Switch Roles" placement="left">
+        <Icon type="team" style={{ color: props.theme === 'light' ? 'black' : 'white' }} />
+      </CPTooltip>
     </Dropdown>
   );
 };
