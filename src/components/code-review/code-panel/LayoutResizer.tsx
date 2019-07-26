@@ -77,10 +77,6 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
       setActiveHandle(RESIZER.COMMENTS);
     };
 
-    const handleMouseUp = () => {
-      setActiveHandle(null);
-    };
-
     const codeHandle =
       document.getElementsByClassName('rc-slider-handle-2').length > 0
         ? document.getElementsByClassName('rc-slider-handle-2')[0]
@@ -97,8 +93,6 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
       commentsHandle.addEventListener('mousedown', handleCommentsHandle);
     }
 
-    document.addEventListener('mouseup', handleMouseUp);
-
     return () => {
       if (codeHandle !== null) {
         codeHandle.removeEventListener('mousedown', handleCodeHandle);
@@ -107,13 +101,11 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
       if (commentsHandle !== null) {
         commentsHandle.removeEventListener('mousedown', handleCommentsHandle);
       }
-
-      document.removeEventListener('mouseup', handleMouseUp);
     };
   });
 
   const onMouseLeave = () => {
-    setHovered(true);
+    setHovered(false);
   };
 
   const handleChange = (r: number[]) => {
@@ -169,6 +161,11 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   };
 
   const afterChange = (r: number[]) => {
+    if (document.getElementsByClassName('rc-slider-handle').length > 0) {
+      for (const el of document.getElementsByClassName('rc-slider-handle') as any) {
+        el.blur();
+      }
+    }
     document.documentElement.style.userSelect = 'auto';
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
