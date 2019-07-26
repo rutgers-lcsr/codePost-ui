@@ -72,14 +72,14 @@ const LandingLayout = (props: IProps) => {
 
   const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.jpg');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/panelThree.jpg');
-  const whyPanelBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelThree-MOBILE.jpg');
-  const panelOneBackground = require('../../img/landing/compressed/backgrounds/whyPanel.jpg');
-  const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
-  const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelOne.jpg');
-  const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
-  const panelThreeBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
-  const panelThreeBackgroundMobile = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
+  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/whyPanel.jpg');
+  const whyPanelBackgroundMobile = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
+  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.jpg');
+  const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
+  const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
+  const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
+  const panelThreeBackground = require('../../img/landing/compressed/backgrounds/panelThree.jpg');
+  const panelThreeBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelThree-MOBILE.jpg');
 
   return (
     <div
