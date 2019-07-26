@@ -50,8 +50,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
-import loops_student1 from '../utils/demo_subs/loops/student1';
-import recursion_student1 from '../utils/demo_subs/recursion/student1';
+import { demoFiles } from './demoCode';
 
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
@@ -852,26 +851,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         commentMap[index] = [];
       });
     } else {
-      const loopsFile = loops_student1('example.edu').files[0];
-      fileList.push({
-        id: 0,
-        code: loopsFile.code,
-        comments: [],
-        extension: loopsFile.name.split('.')[1],
-        name: loopsFile.name,
-        submission: 1,
-      });
+      fileList[0] = demoFiles[0];
+      fileList[1] = demoFiles[1];
       commentMap[0] = [];
-
-      const recursionFile = recursion_student1('example.edu').files[0];
-      fileList.push({
-        id: 1,
-        code: recursionFile.code,
-        comments: [],
-        extension: recursionFile.name.split('.')[1],
-        name: recursionFile.name,
-        submission: 1,
-      });
       commentMap[1] = [];
     }
 
