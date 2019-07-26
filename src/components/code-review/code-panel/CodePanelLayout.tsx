@@ -134,12 +134,20 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                   position: 'relative',
                 }}
               >
+                <div
+                  id="code-tour-target"
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: `${this.props.windowheight - 78}px`,
+                  }}
+                />
                 {this.props.code(this.onHighlightClick)}
               </div>
               <div
                 id="code-panel--comments"
                 className="code-panel--comments"
-                style={{ minWidth: `${this.props.dimensions.commentsWidth}px` }}
+                style={{ minWidth: `${this.props.dimensions.commentsWidth} px` }}
               >
                 {this.props.comments}
               </div>
