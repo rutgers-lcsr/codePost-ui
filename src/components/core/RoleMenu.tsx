@@ -54,7 +54,7 @@ const RoleMenu = (props: IProps) => {
   );
   return (
     <Dropdown overlay={roleMenu} trigger={['click']}>
-      <CPTooltip title="Switch Roles" placement="left">
+      <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
         <Icon type="team" style={{ color: props.theme === 'light' ? 'black' : 'white' }} />
       </CPTooltip>
     </Dropdown>

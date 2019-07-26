@@ -15,6 +15,9 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';
 
+import { USER_TYPE } from '../../../types/common';
+
+import themeVars from '../../../styles/abstracts/_theme.js';
 import layoutVars from '../../../styles/layout/_layoutVars';
 
 import useBrowserNotification from '../../core/useBrowserNotification';
@@ -29,6 +32,7 @@ interface ICPLayoutAdminProps {
   navigation: (collapsed: boolean) => React.ReactNode;
   collapsible?: boolean;
   hasSider?: boolean;
+  role: USER_TYPE;
 }
 
 const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
@@ -56,15 +60,25 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           collapsed={collapsed}
           onCollapse={onCollapse}
         >
-          <Header className="layout--admin__sider__header">
+          <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
             {collapsed ? (
               <Link to="/">
                 <CPLogo cpType="icon" />
               </Link>
             ) : (
-              <Link to="/">
-                <CPLogo cpType="main" />
-              </Link>
+              <div>
+                <Link to="/">
+                  <CPLogo cpType="main" />
+                </Link>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    color: themeVars.theme.green4,
+                    lineHeight: 1,
+                    paddingTop: 10,
+                  }}
+                >{`${props.role} Console`}</div>
+              </div>
             )}
           </Header>
           <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'auto' }}>
