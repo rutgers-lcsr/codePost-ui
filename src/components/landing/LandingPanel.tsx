@@ -18,10 +18,11 @@ interface IProps {
   moduleMaxHeight: number;
   removeModelSmallScreen: boolean;
   bevel: boolean;
+  gutterSize: number;
 }
 
 const leftBevelStyle = {
-  transform: 'scale(0.9) perspective(2000px) rotateY(20deg) rotateX(-1deg) rotate(-2deg)',
+  transform: 'scale(0.9) perspective(2000px) rotateY(10deg) rotateX(-1deg) rotate(-1deg)',
   boxShadow:
     '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
   borderRadius: 5,
@@ -29,7 +30,7 @@ const leftBevelStyle = {
 };
 
 const rightBevelStyle = {
-  transform: 'scale(0.9) perspective(2000px) rotateY(-20deg) rotateX(1deg) rotate(2deg)',
+  transform: 'scale(0.9) perspective(2000px) rotateY(-10deg) rotateX(1deg) rotate(1deg)',
   boxShadow:
     '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
   borderRadius: 5,
@@ -84,7 +85,9 @@ const LandingPanel = (props: IProps) => {
       }}
     >
       <div style={{ color: brandColor, fontSize: titleSize, paddingBottom: 20, fontWeight: 600 }}>{props.title}</div>
-      <div style={{ color: textColor, fontSize: subTitleSize, paddingBottom: 20 }}>{props.subTitle}</div>
+      <div style={{ color: textColor, fontSize: subTitleSize, paddingBottom: props.subTitle ? 20 : 0 }}>
+        {props.subTitle}
+      </div>
       <div style={{ color: textColor, fontSize: textSize, lineHeight: 1.7 }}>{props.text}</div>
     </div>
   );
@@ -106,7 +109,7 @@ const LandingPanel = (props: IProps) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div>{props.type === 'right' ? moduleDiv : textDiv}</div>
-        <div style={{ minWidth: 50 }} />
+        <div style={{ minWidth: props.gutterSize }} />
         <div>{props.type === 'left' ? moduleDiv : textDiv}</div>
       </div>
     );

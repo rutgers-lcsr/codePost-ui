@@ -29,14 +29,14 @@ function GradeAnimation() {
   // const [counter, setCounter] = useState(0);
   // Comment growth toggle
   const commentSpring = useSpring({
-    width: 80,
+    width: 102,
     from: { width: 0 },
     delay: 2000,
     ref: commentRef,
   });
   // Comment creation
   const commentBoxSpring = useSpring({
-    width: 250,
+    width: 230,
     opacity: 1,
     from: { width: 0, opacity: 0 },
     config: config.slow,
@@ -44,23 +44,23 @@ function GradeAnimation() {
   });
   // Text input
   const { length } = useSpring({
-    length: 37,
+    length: 90,
     from: { length: 0 },
-    config: config.molasses,
+    config: { duration: 3500 },
     ref: textRef,
   });
   // Spring to save the comment
   const saveCommentSpring = useSpring({
     index: 1,
     from: { index: 0 },
-    config: config.slow,
+    config: config.molasses,
     ref: savedCommentRef,
   });
   // Spring to delete comment
   const deleteCommentSpring = useSpring({
     index: 1,
     from: { index: 0 },
-    config: config.slow,
+    config: config.molasses,
     delay: 1000,
     ref: deleteCommentRef,
   });
@@ -132,8 +132,8 @@ function GradeAnimation() {
         width: 32,
         height: 32,
         borderRadius: 16,
-        top: 335,
-        left: 156,
+        top: 175,
+        left: 153,
         zIndex: 2,
         background: 'grey',
         position: 'absolute',
@@ -149,8 +149,8 @@ function GradeAnimation() {
         width: 32,
         height: 32,
         borderRadius: 16,
-        top: 330,
-        left: 198,
+        top: 170,
+        left: 178,
         zIndex: 2,
         background: 'red',
         position: 'absolute',
@@ -180,15 +180,15 @@ function GradeAnimation() {
           </Header>
           <Layout style={{ padding: 20 }}>
             <Content>
-              <SimpleCodeHighlight top={365} left={305} width={commentSpring.width} />
+              <SimpleCodeHighlight top={166} left={360} width={commentSpring.width} />
               <animated.div
                 style={{
-                  top: 364,
+                  top: 164,
                   left: commentSpring.width.interpolate((x) => {
-                    return Number(x) + 300;
+                    return Number(x) + 350;
                   }),
                   opacity: commentSpring.width.interpolate((x) => {
-                    return x === 0 || x === 80 ? 0 : 1;
+                    return x === 0 || x === 102 ? 0 : 1;
                   }),
                   position: 'absolute',
                 }}
@@ -200,37 +200,43 @@ function GradeAnimation() {
             <Sider width={250} style={{ background: 'rgba(0,0,0,0)' }}>
               {saveShadow}
               {deleteShadow}
-              <div style={{ position: 'absolute', top: 255 }}>
-                <animated.div
-                  id="animation"
-                  style={{
-                    position: 'relative',
-                    width: commentBoxSpring.width,
-                    height: 120,
-                    opacity: commentBoxSpring.opacity,
-                    overflowX: 'hidden',
-                    transform: commentBoxSpring.opacity.interpolate((x) => {
-                      return `translateY(${Number(x) * 30 - 30}px)`;
-                    }),
-                    boxShadow: saveCommentSpring.index.interpolate((x) => {
-                      return Math.round(x) === 1 ? '' : '4px 0px 8px -4px rgba(0, 0, 0, 0.15)';
-                    }),
-                  }}
-                >
-                  <div style={{ minWidth: 250, minHeight: 250, width: 250, position: 'relative' }}>
-                    <AnimatedComment
-                      text={length.interpolate((l) => {
-                        return textAnimation('Try to name your functions better!', l);
-                      })}
-                      line={13}
-                      points={1}
-                      top={0}
-                      classType={saveCommentSpring.index.interpolate((x) => {
-                        return Math.round(x) === 1 ? 'inactive' : 'active';
-                      })}
-                    />
-                  </div>
-                </animated.div>
+              <div style={{ position: 'absolute', top: 55 }}>
+                <div style={{ position: 'relative' }}>
+                  <animated.div
+                    id="animation"
+                    style={{
+                      position: 'relative',
+                      width: 230,
+                      minWidth: 230,
+                      height: 160,
+                      opacity: commentBoxSpring.opacity,
+                      overflowX: 'hidden',
+                      transform: commentBoxSpring.opacity.interpolate((x) => {
+                        return `translateY(${Number(x) * 30 - 30}px)`;
+                      }),
+                      display: 'inline-block',
+                    }}
+                  >
+                    <div style={{ position: 'absolute', float: 'left' }}>
+                      <div style={{ minWidth: 230, minHeight: 250, width: 230, position: 'absolute' }}>
+                        <AnimatedComment
+                          text={length.interpolate((l) => {
+                            return textAnimation(
+                              '*Variable naming*: How about `arr` and `el` instead of `x` and `y`?',
+                              l,
+                            );
+                          })}
+                          line={3}
+                          points={1}
+                          top={0}
+                          classType={saveCommentSpring.index.interpolate((x) => {
+                            return Math.round(x) === 1 ? 'inactive' : 'active';
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </animated.div>
+                </div>
               </div>
             </Sider>
           </Layout>

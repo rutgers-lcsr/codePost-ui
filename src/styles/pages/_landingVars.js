@@ -11,9 +11,9 @@ const getStartedBreakpoint = 625; //point at which buttons and text become a col
 const faqBreakpoint = 700; // point at which FAQ turns into one column
 
 // Maximum Widths
-const panelMaxWidth = 1100; // Maximum width for the panels to keep narrow look
+const panelMaxWidth = 1150; // Maximum width for the panels to keep narrow look
 const headerMaxWidth = 1200; // Maximum width for the header
-const whyPanelMaxWidth = 1250; // The why panel is a bit larger and needs more space than other panels
+const whyPanelMaxWidth = 1125;
 const footerMaxWidth = 1200;
 const backgroundImageWidthNormal = 1750; // This is the width of the images normally
 const backgroundImageWidthMobile = 450; // This is the width of the images on mobile (when  mobileBreakpoint is triggered)
@@ -34,6 +34,8 @@ const footerColor = '#EBEBEB';
 // Vertical Padding
 const panelVPaddingNormal = 75;
 const panelVPaddingSmallScreen = 25;
+const whyPanelVPaddingNormal = 25;
+const whyPanelVPaddingSmallScreen = 25;
 const headerVPaddingNormal = 35;
 const headerVPaddingSmallScreen = 20;
 const getStartedVPaddingNormal = 70;
@@ -48,14 +50,14 @@ const panelHPaddingMobile = 25;
 // Background Image offsets -- These are the vertical offsets for the background images,
 // in number of pixels relative to the start of their respective panel
 const testimonialImgOffset = 25;
-const whyPanelImgOffset = 175;
-const panelOneImgOffset = 100;
-const panelTwoImgOffset = 300;
+const whyPanelImgOffset = 300;
+const panelOneImgOffset = 125;
+const panelTwoImgOffset = 225;
 const panelThreeImgOffset = 200;
 const testimonialImgOffsetMobile = 25;
 const whyPanelImgOffsetMobile = 50;
-const panelOneImgOffsetMobile = 325;
-const panelTwoImgOffsetMobile = 515;
+const panelOneImgOffsetMobile = 545;
+const panelTwoImgOffsetMobile = 450;
 const panelThreeImgOffsetMobile = 250;
 
 module.exports = {
@@ -98,6 +100,8 @@ module.exports = {
     getStartedNormal: getStartedVPaddingNormal,
     heroNormal: heroVPaddingNormal,
     heroImgSmallScreen: heroVPaddingSmallScreen,
+    whyPanelNormal: whyPanelVPaddingNormal,
+    whyPanelSmallScreen: whyPanelVPaddingSmallScreen,
   },
   Hpadding: {
     testimonial: testimonialHPadding,

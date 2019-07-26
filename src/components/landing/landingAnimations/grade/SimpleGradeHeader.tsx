@@ -21,7 +21,6 @@ const SimpleGradeHeader = (props: { grade: string }) => {
         <Divider type="vertical" />
         <span className="cp-label">student@myschool.edu</span>
       </div>
-      <Divider type="vertical" />
     </div>
   );
 };

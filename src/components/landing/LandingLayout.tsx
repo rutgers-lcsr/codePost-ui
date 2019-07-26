@@ -78,8 +78,6 @@ const LandingLayout = (props: IProps) => {
   const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
   const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
   const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
-  const panelThreeBackground = require('../../img/landing/compressed/backgrounds/panelThree.jpg');
-  const panelThreeBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelThree-MOBILE.jpg');
 
   return (
     <div
@@ -144,6 +142,19 @@ const LandingLayout = (props: IProps) => {
           </div>
         </div>
       </div>
+      <div style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}>
+        <img
+          src={windowSize.width < landingVars.breakpoints.mobile ? panelOneBackgroundMobile : panelOneBackground}
+          style={{
+            ...backgroundImageStyle,
+            paddingTop:
+              windowSize.width < landingVars.breakpoints.mobile
+                ? landingVars.backgroundOffsets.panelOneMobile
+                : landingVars.backgroundOffsets.panelOne,
+          }}
+        />
+        <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
+      </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.whyPanel }}>
         <img
           src={windowSize.width < landingVars.breakpoints.mobile ? whyPanelBackgroundMobile : whyPanelBackground}
@@ -155,20 +166,15 @@ const LandingLayout = (props: IProps) => {
                 : landingVars.backgroundOffsets.whyPanel,
           }}
         />
-        <div style={{ ...panelStyle, maxWidth: landingVars.maxWidths.whyPanel }}>{props.whyPanel}</div>
-      </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelOne }}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? panelOneBackgroundMobile : panelOneBackground}
+        <div
           style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.panelOneMobile
-                : landingVars.backgroundOffsets.panelOne,
+            ...panelStyle,
+            paddingTop: 35,
+            maxWidth: landingVars.maxWidths.whyPanel,
           }}
-        />
-        <div style={panelStyle}>{props.panelOne}</div>
+        >
+          {props.whyPanel}
+        </div>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelTwo }}>
         <img
@@ -184,16 +190,6 @@ const LandingLayout = (props: IProps) => {
         <div style={panelStyle}>{props.panelTwo}</div>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? panelThreeBackgroundMobile : panelThreeBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.panelThreeMobile
-                : landingVars.backgroundOffsets.panelThree,
-          }}
-        />
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
       <div>
