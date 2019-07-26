@@ -18,6 +18,7 @@ interface IProps {
   moduleMaxHeight: number;
   removeModelSmallScreen: boolean;
   bevel: boolean;
+  gutterSize: number;
 }
 
 const leftBevelStyle = {
@@ -84,7 +85,9 @@ const LandingPanel = (props: IProps) => {
       }}
     >
       <div style={{ color: brandColor, fontSize: titleSize, paddingBottom: 20, fontWeight: 600 }}>{props.title}</div>
-      <div style={{ color: textColor, fontSize: subTitleSize, paddingBottom: 20 }}>{props.subTitle}</div>
+      <div style={{ color: textColor, fontSize: subTitleSize, paddingBottom: props.subTitle ? 20 : 0 }}>
+        {props.subTitle}
+      </div>
       <div style={{ color: textColor, fontSize: textSize, lineHeight: 1.7 }}>{props.text}</div>
     </div>
   );
@@ -106,7 +109,7 @@ const LandingPanel = (props: IProps) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div>{props.type === 'right' ? moduleDiv : textDiv}</div>
-        <div style={{ minWidth: 50 }} />
+        <div style={{ minWidth: props.gutterSize }} />
         <div>{props.type === 'left' ? moduleDiv : textDiv}</div>
       </div>
     );

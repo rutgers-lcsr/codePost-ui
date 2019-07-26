@@ -6,24 +6,26 @@ import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
-const exampleCode1 = `/*************************************
-* Student: student@myschool.edu
-* Section: Section 1
-*
-* Partner: none
-* Partner section: N/A
-*
-* Description:
-*   Prints 'Hello, World'.
-*   This is everyone's first program.
-*
-*************************************/
+const exampleCode1 = `// Student: student@myschool.edu
 
-public class homework {
-  public static void main(String[] args) {
-    System.out.print("Hello, World");
+// Test whether array contains an item
+public boolean some(int[] x, int y) {
+  boolean foundItem = false;
+  for (int i = 0; i < x.length; i++) {
+    if (x[i] == y) {
+      foundItem = !foundItem;
+    }
   }
-}`;
+  return foundItem;
+}
+
+/********************************************/
+// Passed 1/2 Tests.
+// Test 1: array = [1, 2, 3], target = 2
+// PASSED
+// Test 2: array = [1, 2, 2], target = 2
+// FAILED'
+`;
 
 const exampleCode2 = `
 /***********************************
@@ -55,7 +57,8 @@ const SimpleCodeBox = (props: { code: string }) => {
           style={{
             backgroundColor: '#fff',
             border: '1px solid #e3e3e3',
-            borderRadius: '5px',
+            borderRadius: '3px',
+            boxShadow: 'rgba(60, 64, 67, 0.15) 0px 1px 3px 1px',
             padding: '15px 25px 15px 15px',
             lineHeight: '20px',
           }}

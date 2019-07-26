@@ -37,12 +37,7 @@ public boolean some(int[] x, int y) {\n\n\
      foundItem = !foundItem;\n\
    }\n\
   }\n\n\
-  // Return finding \n\
-  if (foundItem) {\n\
-    return true;\n\
-  } else {\n\
-    return false;\n\
-  }\n\
+  return foundItem;\n\
 }\n\n\
 /********************************************/\n\
 // Passed 1/2 Tests.\n\
@@ -62,7 +57,7 @@ const comment1: CommentType = {
   startLine: 3,
   endLine: 3,
   pointDelta: 0,
-  text: 'What about arr and el instead of x and y?',
+  text: 'What about `arr` and `el` instead of x and y?',
   file: -1,
   rubricComment: null,
 };
@@ -79,19 +74,19 @@ const comment2: CommentType = {
   rubricComment: null,
 };
 
-const comment3: CommentType = {
-  id: -2,
-  startChar: 1,
-  endChar: 5,
-  startLine: 13,
-  endLine: 13,
-  pointDelta: 0,
-  text: 'You can just return foundItem (in fact, you can return it from within the for loop).',
-  file: -1,
-  rubricComment: null,
-};
+// const comment3: CommentType = {
+//   id: -2,
+//   startChar: 1,
+//   endChar: 5,
+//   startLine: 13,
+//   endLine: 13,
+//   pointDelta: 0,
+//   text: 'You can just return `foundItem` (in fact, you can return it from within the for loop).',
+//   file: -1,
+//   rubricComment: null,
+// };
 
-const commentStyle = { boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.11)', minWidth: 350, marginLeft: 10 };
+const commentStyle = { boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.11)', minWidth: 330, marginLeft: 10 };
 
 interface IState {
   showComments: boolean;
@@ -146,10 +141,10 @@ class CodeReview extends React.Component<{}, IState> {
     return (
       <div
         className="module--codeReview"
-        style={{ width: 725, display: 'flex', flexDirection: 'column', paddingTop: 50 }}
+        style={{ width: 685, display: 'flex', flexDirection: 'column', paddingTop: 50 }}
       >
         <div>
-          <div style={{ float: 'left', marginBottom: 35, width: 375, maxHeight: 550 }}>{badCodeMirror}</div>
+          <div style={{ float: 'left', marginBottom: 35, width: 335, maxHeight: 550 }}>{badCodeMirror}</div>
           <div style={{ width: 350, position: 'relative', float: 'right' }}>
             <div style={{ position: 'absolute', top: 40 }}>
               <div
@@ -186,29 +181,6 @@ class CodeReview extends React.Component<{}, IState> {
                 <Comment
                   commentType="readonly"
                   comment={comment2}
-                  placement={0}
-                  changeActive={dummyFunction}
-                  onSave={dummyFunction}
-                  onDelete={dummyFunction}
-                  addUnsaved={dummyFunction}
-                  removeUnsaved={dummyFunction}
-                  removeRubricComment={dummyFunction}
-                  setCommentPlacements={dummyFunction}
-                />
-              </div>
-            </div>
-            <div style={{ position: 'absolute', top: 240 }}>
-              <div
-                style={{
-                  ...commentStyle,
-                  opacity: this.state.showComments ? 1 : 0,
-                  transition: 'opacity .3s ease',
-                  minHeight: 94,
-                }}
-              >
-                <Comment
-                  commentType="readonly"
-                  comment={comment3}
                   placement={0}
                   changeActive={dummyFunction}
                   onSave={dummyFunction}

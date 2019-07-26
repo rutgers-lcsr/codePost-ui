@@ -54,20 +54,26 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
         </div>
       </div>
       <Menu defaultOpenKeys={['1', '2']} selectedKeys={[]} mode="inline" className="rubric-menu" id="rubric-menu">
-        <SubMenu key="1" title={<span>Category 1 - General</span>}>
+        <SubMenu key="1" title={<span>1. General</span>} style={{ paddingLeft: 10 }}>
           <Menu.Item key="A">
-            <span>Readme is incomplete</span>
-            <span style={{ position: 'absolute', right: '20px' }}>{-1}</span>
+            <div style={{ alignItems: 'center', display: 'flex', left: 10 }}>
+              <span style={{ fontSize: 12 }}>No Readme</span>
+              <span style={{ position: 'absolute', right: '20px', fontSize: 12 }}>{-1}</span>
+            </div>
           </Menu.Item>
           <Menu.Item key="B">
-            <span>File doesn't compile</span>
-            <span style={{ position: 'absolute', right: '20px' }}>{-2}</span>
+            <div style={{ alignItems: 'center', display: 'flex' }}>
+              <span style={{ fontSize: 12 }}>Doesn't compile</span>
+              <span style={{ position: 'absolute', right: '20px', fontSize: 12 }}>{-2}</span>
+            </div>
           </Menu.Item>
         </SubMenu>
-        <SubMenu key="2" title={<span>Category 2 - Algorithms</span>}>
+        <SubMenu key="2" title={<span>{'  '}2. Algorithms</span>} style={{ paddingLeft: 10 }}>
           <Menu.Item key="C">
-            <span>File2 runs in O(N^2) time </span>
-            <span style={{ position: 'absolute', right: '20px' }}>{-1}</span>
+            <div style={{ alignItems: 'center', display: 'flex' }}>
+              <span style={{ fontSize: 12 }}>O(N^2) time </span>
+              <span style={{ position: 'absolute', right: '20px', fontSize: 12 }}>{-1}</span>
+            </div>
           </Menu.Item>
         </SubMenu>
       </Menu>

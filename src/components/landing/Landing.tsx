@@ -58,20 +58,25 @@ class Landing extends React.PureComponent<{}, {}> {
   public render() {
     const whyText = (
       <div>
-        <div style={{ paddingBottom: 15 }}>
-          codePost integrates with your existing tools to make it easy to do code review, so you can give students
-          better feedback without the hassle.
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          Code review is the process of manually reviewing student code and making comments to explain errors and
+          improvement opportunities.
         </div>
-        Autograding can tell your students whether their code is correct, but
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ul style={{ maxWidth: 400, textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
-            <li> 🧐 Autograder output without context is confusing</li>
-            <li> 👎 Bad code can still pass correctness tests</li>
+        <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 20, fontSize: 15 }}>
+          codePost makes it really easy to do code review in your course.
+        </div>
+        <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 10, fontSize: 15, color: '#24be85' }}>
+          Autograder + codePost >> Autograder
+        </div>
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          If you use autograders, codePost complements your tool so that you can explain autograder output and give
+          feedback on everything an autograder can’t evaluate.
+        </div>
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          <ul style={{ textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
+            <li> 🧐 Autograder output without context is confusing.</li>
+            <li> 👎 Bad code can still pass correctness tests!</li>
           </ul>
-        </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          With codePost, you can explain autograder output so your students learn more, &amp; give feedback on
-          everything an autograder can’t evaluate.
         </div>
       </div>
     );
@@ -122,15 +127,16 @@ class Landing extends React.PureComponent<{}, {}> {
     const whyPanel = (
       <LandingPanel
         text={whyText}
-        title="Code Review = Better Feedback"
+        title="What is code review?"
         subTitle=""
         module={<div>{<CodeReview />}</div>}
         type="left"
-        moduleMaxWidth={725}
-        moduleMaxHeight={1000}
-        textSize="big"
+        moduleMaxWidth={600}
+        moduleMaxHeight={800}
+        textSize="normal"
         removeModelSmallScreen={true}
         bevel={false}
+        gutterSize={75}
       />
     );
     const panelOne = (
@@ -139,12 +145,13 @@ class Landing extends React.PureComponent<{}, {}> {
         title="1. ANNOTATE STUDENT CODE"
         subTitle="Effortlessly annotate and grade programming assignments"
         module={<GradeAnimationVideo width={610} height={390} controls={500} />}
-        type="right"
+        type="left"
         moduleMaxWidth={610}
         moduleMaxHeight={380}
         textSize="normal"
         removeModelSmallScreen={false}
         bevel={true}
+        gutterSize={50}
       />
     );
     const panelTwo = (
@@ -153,12 +160,13 @@ class Landing extends React.PureComponent<{}, {}> {
         title="2. MANAGE YOUR COURSE"
         subTitle="Less time configuring software, more time teaching"
         module={<AdminAnimation />}
-        type="left"
+        type="right"
         moduleMaxWidth={610}
         moduleMaxHeight={375}
         textSize="normal"
         removeModelSmallScreen={false}
         bevel={true}
+        gutterSize={50}
       />
     );
     const panelThree = (
@@ -169,12 +177,13 @@ class Landing extends React.PureComponent<{}, {}> {
             title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
             subTitle="Run your course with codePost’s API"
             module={<APIAnimation />}
-            type="right"
+            type="left"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
             textSize="normal"
             removeModelSmallScreen={true}
             bevel={false}
+            gutterSize={50}
           />
         </div>
         <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
