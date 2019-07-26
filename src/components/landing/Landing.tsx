@@ -58,25 +58,24 @@ class Landing extends React.PureComponent<{}, {}> {
   public render() {
     const whyText = (
       <div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          Code review is the process of manually reviewing student code and making comments to explain errors and
-          improvement opportunities.
-        </div>
-        <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 20, fontSize: 15 }}>
-          codePost makes it really easy to do code review in your course.
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 20, fontSize: 14 }}>
+          Code review is the process of manually reviewing student code and making comments to explain errors and make
+          suggestions.
         </div>
         <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 10, fontSize: 15, color: '#24be85' }}>
-          Autograder + codePost >> Autograder
+          Can I still use my autograder?
         </div>
         <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          If you use autograders, codePost complements your tool so that you can explain autograder output and give
-          feedback on everything an autograder can’t evaluate.
+          Yes! If you use an autograder, you can make it more effective by incorporating code review.
         </div>
         <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          <ul style={{ textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
-            <li> 🧐 Autograder output without context is confusing.</li>
-            <li> 👎 Bad code can still pass correctness tests!</li>
-          </ul>
+          Autograding can tell your students whether their code is correct, but, by itself,{' '}
+          <span style={{ fontWeight: 600 }}>the output can be confusing</span>, and{' '}
+          <span style={{ fontWeight: 600 }}>bad code can still pass correctness tests.</span>
+        </div>
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          With code review, you can explain autograder output and give feedback on everything an autograder can't
+          evaluate.
         </div>
       </div>
     );
@@ -108,17 +107,16 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelThreeText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          We know that every CS course has unique requirements, tools, and processes. We also think the best run courses
-          are managed with code. In that spirit, we've built the codePost API. It allows you to{' '}
-          <span style={{ fontWeight: 600 }}>automate common tasks</span>
-          {''} (like syncing rosters with your registrar),{' '}
-          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or autograder), and{' '}
-          <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data. It's also easy to use - you
-          can start building powerful scripts in less than 10 minutes (actually).
+          Integrating tools is a big pain. We also think the best run courses are managed with code. That's why we built
+          the codePost API. It allows you to <span style={{ fontWeight: 600 }}>automate common tasks</span> (like
+          syncing rosters with your registrar),
+          <span style={{ fontWeight: 600 }}> integrate with other software</span> (like an LMS), and{' '}
+          <span style={{ fontWeight: 600 }}>analyze your course data</span>. It's actually easy to use - you can write
+          useful scripts in 10 minutes.
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our users have integrated with tools such as{' '}
-          <span style={{ fontWeight: 600 }}>Github, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span> and more using
+          Our users have connected codePost with tools such as{' '}
+          <span style={{ fontWeight: 600 }}>GitHub, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span>, and more using
           the codePost API!
         </div>
       </div>
@@ -146,7 +144,7 @@ class Landing extends React.PureComponent<{}, {}> {
         subTitle="Effortlessly annotate and grade programming assignments"
         module={<GradeAnimationVideo width={610} height={390} controls={500} />}
         type="left"
-        moduleMaxWidth={610}
+        moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
         removeModelSmallScreen={false}
