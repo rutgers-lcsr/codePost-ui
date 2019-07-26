@@ -78,8 +78,6 @@ const LandingLayout = (props: IProps) => {
   const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
   const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
   const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
-  const panelThreeBackground = require('../../img/landing/compressed/backgrounds/panelThree.jpg');
-  const panelThreeBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelThree-MOBILE.jpg');
 
   return (
     <div
@@ -192,16 +190,6 @@ const LandingLayout = (props: IProps) => {
         <div style={panelStyle}>{props.panelTwo}</div>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? panelThreeBackgroundMobile : panelThreeBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.panelThreeMobile
-                : landingVars.backgroundOffsets.panelThree,
-          }}
-        />
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
       <div>
