@@ -3,10 +3,8 @@ import * as React from 'react';
 import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
-
-import CPTooltip from '../../core/CPTooltip';
-
-const Range = Slider.Range;
+const createSliderWithTooltip = Slider.createSliderWithTooltip;
+const Range = createSliderWithTooltip(Slider.Range);
 
 import useWindowSize from '../../core/useWindowSize';
 
@@ -128,33 +126,42 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     </div>
   );
 
+  const tipFormatter = (value: any) => {
+    return tooltip;
+  };
+
+  const tipProps = {
+    placement: 'bottom',
+    prefixCls: 'rc-slider-tooltip',
+  };
+
   return (
     <div style={{ width: `${windowSize.width * 2}px` }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <CPTooltip title={tooltip} hideThisOnHideTips={true} placement="top">
-        <Range
-          className="layout-resizer"
-          value={ranges}
-          onChange={handleChange}
-          onAfterChange={afterChange}
-          min={0}
-          max={windowSize.width * 2}
-          handleStyle={[
-            { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-            { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
-            { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-            {
-              backgroundColor: hovered ? consoleTheme.resizerTrack : 'transparent',
-              borderColor: hovered ? consoleTheme.resizerTrackActive : 'transparent',
-            },
-          ]}
-          trackStyle={[
-            { backgroundColor: consoleTheme.resizerTrackActive },
-            { backgroundColor: consoleTheme.resizerTrack },
-            { backgroundColor: hovered ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack },
-          ]}
-          railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
-        />
-      </CPTooltip>
+      <Range
+        className="layout-resizer"
+        value={ranges}
+        onChange={handleChange}
+        onAfterChange={afterChange}
+        min={0}
+        max={windowSize.width * 2}
+        handleStyle={[
+          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
+          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          {
+            backgroundColor: hovered ? consoleTheme.resizerTrack : 'transparent',
+            borderColor: hovered ? consoleTheme.resizerTrackActive : 'transparent',
+          },
+        ]}
+        trackStyle={[
+          { backgroundColor: consoleTheme.resizerTrackActive },
+          { backgroundColor: consoleTheme.resizerTrack },
+          { backgroundColor: hovered ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack },
+        ]}
+        railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
+        tipFormatter={tipFormatter}
+        tipProps={tipProps}
+      />
     </div>
   );
 };
