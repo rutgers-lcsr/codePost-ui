@@ -134,7 +134,7 @@ class Landing extends React.PureComponent<{}, {}> {
         textSize="normal"
         removeModelSmallScreen={true}
         bevel={false}
-        gutterSize={75}
+        gutterSize={85}
       />
     );
     const panelOne = (

@@ -56,8 +56,8 @@ const panelTwoImgOffset = 175;
 const panelThreeImgOffset = 200;
 const testimonialImgOffsetMobile = 25;
 const whyPanelImgOffsetMobile = 50;
-const panelOneImgOffsetMobile = 325;
-const panelTwoImgOffsetMobile = 515;
+const panelOneImgOffsetMobile = 545;
+const panelTwoImgOffsetMobile = 450;
 const panelThreeImgOffsetMobile = 250;
 
 module.exports = {
