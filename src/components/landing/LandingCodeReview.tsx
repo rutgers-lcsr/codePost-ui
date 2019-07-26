@@ -150,8 +150,8 @@ class CodeReview extends React.Component<{}, IState> {
               style={{
                 opacity: this.state.showComments ? 0 : 1,
                 transition: 'opacity .3s ease',
-                paddingLeft: 30,
-                top: 175,
+                paddingLeft: 75,
+                top: 115,
                 position: 'absolute',
               }}
             >
