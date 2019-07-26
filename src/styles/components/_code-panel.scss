@@ -35,13 +35,18 @@
   }
 }
 
-.rc-slider-tooltip-inner {
-  padding: 6px 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  background-color: rgba(0, 0, 0, 0.75) !important;
-  border-radius: 4px !important;
-  font-size: 14px !important;
-  line-height: 21px !important;
-  min-height: 32px !important;
-  height: auto !important;
+// clone of antd-tooltip
+.rc-slider-tooltip {
+  z-index: 1000 !important;
+
+  .rc-slider-tooltip-inner {
+    padding: 6px 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    line-height: 21px !important;
+    min-height: 32px !important;
+    height: auto !important;
+  }
 }

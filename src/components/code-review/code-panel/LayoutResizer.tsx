@@ -66,32 +66,110 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     }
   };
 
-  const onMouseLeave = () => {
-    setHovered(false);
-  };
+  const [activeHandle, setActiveHandle] = React.useState<number | null>(null);
 
-  const handleChange = (r: any) => {
-    setRanges((prevRanges) => {
-      const activeResizer = prevRanges[1] === r[1] ? RESIZER.COMMENTS : RESIZER.CODE;
+  React.useEffect(() => {
+    const handleCodeHandle = () => {
+      setActiveHandle(RESIZER.CODE);
+    };
 
-      const n0 = 0; // code start
+    const handleCommentsHandle = () => {
+      setActiveHandle(RESIZER.COMMENTS);
+    };
 
-      const n1 = r[1] < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : r[1]; // code end
+    const handleMouseUp = () => {
+      setActiveHandle(null);
+    };
 
-      const n2 = n1 + 20; // comments start
+    const codeHandle =
+      document.getElementsByClassName('rc-slider-handle-2').length > 0
+        ? document.getElementsByClassName('rc-slider-handle-2')[0]
+        : null;
+    if (codeHandle !== null) {
+      codeHandle.addEventListener('mousedown', handleCodeHandle);
+    }
 
-      let n3; // comments end
-      if (activeResizer === RESIZER.COMMENTS) {
-        n3 = r[3] - n2 > absoluteCommentsWidthMinimum ? r[3] : n2 + absoluteCommentsWidthMinimum;
-      } else {
-        n3 = n2 + (prevRanges[3] - prevRanges[2]);
+    const commentsHandle =
+      document.getElementsByClassName('rc-slider-handle-4').length > 0
+        ? document.getElementsByClassName('rc-slider-handle-4')[0]
+        : null;
+    if (commentsHandle !== null) {
+      commentsHandle.addEventListener('mousedown', handleCommentsHandle);
+    }
+
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      if (codeHandle !== null) {
+        codeHandle.removeEventListener('mousedown', handleCodeHandle);
       }
 
-      return [n0, n1, n2, n3];
+      if (commentsHandle !== null) {
+        commentsHandle.removeEventListener('mousedown', handleCommentsHandle);
+      }
+
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  });
+
+  const onMouseLeave = () => {
+    setHovered(true);
+  };
+
+  const handleChange = (r: number[]) => {
+    setRanges((prevRanges) => {
+      if (activeHandle === null) {
+        return prevRanges;
+      }
+
+      if (activeHandle === RESIZER.CODE) {
+        let changedValue = r[1];
+        if (prevRanges[1] === r[1]) {
+          if (prevRanges[2] !== r[2]) {
+            changedValue = r[2];
+          } else if (prevRanges[3] !== r[3]) {
+            changedValue = r[3];
+          } else if (prevRanges[0] !== r[0]) {
+            changedValue = r[0];
+          }
+        }
+
+        // [codeStart, codeEnd, commentsStart, commentsEnd]
+        // [n0, n1, n2, n3]
+        const n0 = 0;
+        const n1 = changedValue < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : changedValue;
+        const n2 = n1 + 20;
+        const n3 = n2 + (prevRanges[3] - prevRanges[2]);
+        return [n0, n1, n2, n3];
+      } else {
+        let changedValue = r[3];
+        if (prevRanges[3] === r[3]) {
+          if (prevRanges[2] !== r[2]) {
+            changedValue = r[2];
+          } else if (prevRanges[1] !== r[1]) {
+            changedValue = r[1];
+          } else if (prevRanges[0] !== r[0]) {
+            changedValue = r[0];
+          }
+        }
+
+        // [codeStart, codeEnd, commentsStart, commentsEnd]
+        // [n0, n1, n2, n3]
+        const n0 = 0;
+        const n1 = r[1] < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : r[1];
+        const n2 = n1 + 20;
+        const n3 = changedValue - n2 > absoluteCommentsWidthMinimum ? changedValue : n2 + absoluteCommentsWidthMinimum;
+        return [n0, n1, n2, n3];
+      }
     });
   };
 
-  const afterChange = (r: any) => {
+  const beforeChange = (r: number[]) => {
+    document.documentElement.style.userSelect = 'none';
+  };
+
+  const afterChange = (r: number[]) => {
+    document.documentElement.style.userSelect = 'auto';
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
 
@@ -141,6 +219,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         className="layout-resizer"
         value={ranges}
         onChange={handleChange}
+        onBeforeChange={beforeChange}
         onAfterChange={afterChange}
         min={0}
         max={windowSize.width * 2}
