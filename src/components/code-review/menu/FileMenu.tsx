@@ -107,38 +107,48 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       if (bonuses > 0) {
         bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
       } else {
-        bonusBadge = <Badge count={'+1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
+        bonusBadge = <Badge count={'-1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
       }
 
       const badgesStyle: React.CSSProperties = !shrunkSider
         ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
         : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
 
+      /* tslint:disable */
+      const shortcutStyle: React.CSSProperties = !shrunkSider
+        ? { fontSize: '9px', color: '#ccc', verticalAlign: 'middle' }
+        : {
+            fontSize: '9px',
+            color: '#ccc',
+            position: 'absolute',
+            right: '15px',
+            top: '17px',
+          };
+      /* tslint:enable */
+
       return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px' }}>
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
           <div
             style={{
               display: 'inline-block',
-              maxWidth: !shrunkSider ? '136px' : '124px',
               lineHeight: '12px',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
             }}
           >
-            {file.name}
+            <span style={shortcutStyle}>[⌘{index + 1}]</span>
+            <div style={{ display: 'inline-block', width: '8px' }} />
+            <div
+              style={{
+                display: 'inline-block',
+                maxWidth: !shrunkSider ? '134px' : '124px',
+                verticalAlign: 'middle',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {file.name}
+            </div>
           </div>
-          <span
-            style={{
-              fontSize: '10.5px',
-              color: '#ccc',
-              position: 'absolute',
-              right: !shrunkSider ? '112px' : '15px',
-              top: !shrunkSider ? '1px' : '0px',
-            }}
-          >
-            [⌘{index + 1}]
-          </span>
 
           <div style={badgesStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
