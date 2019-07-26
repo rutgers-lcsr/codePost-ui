@@ -200,7 +200,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
 
   const tooltip = (
     <div>
-      Resize code window
+      Resize window
       <br />
       [⌘ + left / right arrow]
     </div>
@@ -232,8 +232,10 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
           { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
           { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
           {
-            backgroundColor: hovered || activeHandle !== null ? consoleTheme.resizerTrack : 'transparent',
-            borderColor: hovered || activeHandle !== null ? consoleTheme.resizerTrackActive : 'transparent',
+            backgroundColor:
+              hovered || (activeHandle !== null && props.hasComments) ? consoleTheme.resizerTrack : 'transparent',
+            borderColor:
+              hovered || (activeHandle !== null && props.hasComments) ? consoleTheme.resizerTrackActive : 'transparent',
           },
         ]}
         trackStyle={[
@@ -241,7 +243,9 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
           { backgroundColor: consoleTheme.resizerTrack },
           {
             backgroundColor:
-              hovered || activeHandle !== null ? consoleTheme.resizerTrackActive : consoleTheme.resizerTrack,
+              hovered || (activeHandle !== null && props.hasComments)
+                ? consoleTheme.resizerTrackActive
+                : consoleTheme.resizerTrack,
           },
         ]}
         railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
