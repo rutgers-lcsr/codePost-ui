@@ -111,7 +111,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       }
 
       const badgesStyle: React.CSSProperties = !shrunkSider
-        ? { position: 'absolute', right: '8px', top: '0px', width: '96px' }
+        ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
         : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
 
       return (
