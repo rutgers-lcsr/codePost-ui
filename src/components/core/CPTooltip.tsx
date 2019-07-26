@@ -52,11 +52,19 @@ const CPTooltip = (props: IProps) => {
   const tooltipState = getTooltipState(showTooltips, hideThisOnHideTips, hideChildrenOnHideTips);
 
   switch (tooltipState) {
-    case TOOLTIP_STATE.Show:
+    case TOOLTIP_STATE.Show && icon:
       return (
         <Tooltip title={props.title} {...antprops}>
           {props.children}
           {icon}
+        </Tooltip>
+      );
+    case TOOLTIP_STATE.Show:
+      // Don't want to include an undefined icon variable, as it might affect styling
+      // One example of styling affected is if the child element is a span element and there is a line-height defined
+      return (
+        <Tooltip title={props.title} {...antprops}>
+          {props.children}
         </Tooltip>
       );
     case TOOLTIP_STATE.HideText:

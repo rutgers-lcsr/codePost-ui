@@ -144,16 +144,16 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               {!this.props.hidePoints ? (
                 <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-                  {bonusBadge}
+                  <div>{bonusBadge}</div>
                 </CPTooltip>
               ) : null}
               {!this.props.hidePoints ? (
                 <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-                  {deductionBadge}
+                  <div>{deductionBadge}</div>
                 </CPTooltip>
               ) : null}
               <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-                {commentCountBadge}
+                <div>{commentCountBadge}</div>
               </CPTooltip>
             </div>
           </div>
