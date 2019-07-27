@@ -434,7 +434,12 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
       <div
         className={className}
         id={`comment-${this.props.comment.id}`}
-        style={{ top: `${this.props.placement}px`, cursor }}
+        style={{
+          top: `${this.props.placement}px`,
+          cursor,
+          marginBottom: 0,
+          boxShadow: this.props.commentType === 'active' ? '4px 0px 8px -4px rgba(0, 0, 0, 0.15)' : '',
+        }}
         onClick={onClick}
         data-status={this.state.status}
       >
@@ -451,7 +456,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
               >
                 <CPFlex left={titleLeft} right={titleRight} gutterSize={14} />
               </div>
-              <div className="ant-popover-inner-content">
+              <div className="ant-popover-inner-content" style={{ padding: 0 }}>
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>

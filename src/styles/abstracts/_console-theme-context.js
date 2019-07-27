@@ -44,6 +44,8 @@ export const consoleThemes = {
     siderSubmenuTitleColor: themeVars.theme.neutralMainText,
     siderSubmenuBorder: '1px solid #e8e8e8',
     avatarBackground: '#ccc',
+    resizerTrack: '#e9e9e9',
+    resizerTrackActive: themeVars.theme.neutralBackground,
   },
   dark: {
     text: themeVars.theme.neutralDarkMainText,
@@ -84,6 +86,8 @@ export const consoleThemes = {
     siderSubmenuTitleColor: themeVars.theme.neutralDarkMainText,
     siderSubmenuBorder: '1px solid #323435',
     avatarBackground: '#24be85',
+    resizerTrack: '#323435',
+    resizerTrackActive: '#17181a',
   },
 };
 

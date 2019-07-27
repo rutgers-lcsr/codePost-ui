@@ -58,20 +58,24 @@ class Landing extends React.PureComponent<{}, {}> {
   public render() {
     const whyText = (
       <div>
-        <div style={{ paddingBottom: 15 }}>
-          codePost integrates with your existing tools to make it easy to do code review, so you can give students
-          better feedback without the hassle.
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 20, fontSize: 14 }}>
+          Code review is the process of manually reviewing student code and making comments to explain errors and make
+          suggestions.
         </div>
-        Autograding can tell your students whether their code is correct, but
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ul style={{ maxWidth: 400, textAlign: 'start', listStyle: 'none', paddingLeft: 0 }}>
-            <li> 🧐 Autograder output without context is confusing</li>
-            <li> 👎 Bad code can still pass correctness tests</li>
-          </ul>
+        <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 10, fontSize: 15, color: '#24be85' }}>
+          Can I still use my autograder?
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          With codePost, you can explain autograder output so your students learn more, &amp; give feedback on
-          everything an autograder can’t evaluate.
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          Yes! If you use an autograder, you can make it more effective by incorporating code review.
+        </div>
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          Autograding can tell your students whether their code is correct, but, by itself,{' '}
+          <span style={{ fontWeight: 600 }}>the output can be confusing</span>, and{' '}
+          <span style={{ fontWeight: 600 }}>bad code can still pass correctness tests.</span>
+        </div>
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
+          With code review, you can explain autograder output and give feedback on everything an autograder can't
+          evaluate.
         </div>
       </div>
     );
@@ -103,17 +107,16 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelThreeText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          We know that every CS course has unique requirements, tools, and processes. We also think the best run courses
-          are managed with code. In that spirit, we've built the codePost API. It allows you to{' '}
-          <span style={{ fontWeight: 600 }}>automate common tasks</span>
-          {''} (like syncing rosters with your registrar),{' '}
-          <span style={{ fontWeight: 600 }}>integrate with other software</span> (like an LMS or autograder), and{' '}
-          <span style={{ fontWeight: 600 }}>perform analytics</span> on your course data. It's also easy to use - you
-          can start building powerful scripts in less than 10 minutes (actually).
+          Integrating tools is a big pain. We also think the best run courses are managed with code. That's why we built
+          the codePost API. It allows you to <span style={{ fontWeight: 600 }}>automate common tasks</span> (like
+          syncing rosters with your registrar),
+          <span style={{ fontWeight: 600 }}> integrate with other software</span> (like an LMS), and{' '}
+          <span style={{ fontWeight: 600 }}>analyze your course data</span>. It's actually easy to use - you can write
+          useful scripts in 10 minutes.
         </div>
         <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our users have integrated with tools such as{' '}
-          <span style={{ fontWeight: 600 }}>Github, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span> and more using
+          Our users have connected codePost with tools such as{' '}
+          <span style={{ fontWeight: 600 }}>GitHub, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span>, and more using
           the codePost API!
         </div>
       </div>
@@ -122,15 +125,16 @@ class Landing extends React.PureComponent<{}, {}> {
     const whyPanel = (
       <LandingPanel
         text={whyText}
-        title="Code Review = Better Feedback"
+        title="What is code review?"
         subTitle=""
         module={<div>{<CodeReview />}</div>}
         type="left"
-        moduleMaxWidth={725}
-        moduleMaxHeight={1000}
-        textSize="big"
+        moduleMaxWidth={600}
+        moduleMaxHeight={800}
+        textSize="normal"
         removeModelSmallScreen={true}
         bevel={false}
+        gutterSize={85}
       />
     );
     const panelOne = (
@@ -139,12 +143,13 @@ class Landing extends React.PureComponent<{}, {}> {
         title="1. ANNOTATE STUDENT CODE"
         subTitle="Effortlessly annotate and grade programming assignments"
         module={<GradeAnimationVideo width={610} height={390} controls={500} />}
-        type="right"
-        moduleMaxWidth={610}
+        type="left"
+        moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
         removeModelSmallScreen={false}
         bevel={true}
+        gutterSize={50}
       />
     );
     const panelTwo = (
@@ -153,12 +158,13 @@ class Landing extends React.PureComponent<{}, {}> {
         title="2. MANAGE YOUR COURSE"
         subTitle="Less time configuring software, more time teaching"
         module={<AdminAnimation />}
-        type="left"
+        type="right"
         moduleMaxWidth={610}
         moduleMaxHeight={375}
         textSize="normal"
         removeModelSmallScreen={false}
         bevel={true}
+        gutterSize={50}
       />
     );
     const panelThree = (
@@ -169,12 +175,13 @@ class Landing extends React.PureComponent<{}, {}> {
             title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
             subTitle="Run your course with codePost’s API"
             module={<APIAnimation />}
-            type="right"
+            type="left"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
             textSize="normal"
             removeModelSmallScreen={true}
             bevel={false}
+            gutterSize={50}
           />
         </div>
         <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>

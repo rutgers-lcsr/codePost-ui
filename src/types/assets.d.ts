@@ -26,6 +26,7 @@ declare module 'react-highlight-words';
 declare module 'react-toggle-button';
 declare module 'react-addons-css-transition-group';
 declare module 'remark-disable-tokenizers';
+declare module 'rc-slider';
 
 declare module '*.scss' {
   const content: { [className: string]: string };

@@ -1,8 +1,6 @@
 import * as React from 'react';
 
-import { File, FileType } from '../../../infrastructure/file';
-
-import CodePanelSizing from './CodePanelSizing';
+import { FileType } from '../../../infrastructure/file';
 
 import * as Animation from '../../../infrastructure/animation';
 
@@ -14,31 +12,20 @@ import ErrorBoundary from '../../core/ErrorBoundary';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { CodeConsoleDimensionsType } from './LayoutResizer';
+
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
-  code: (
-    codeStyle: React.CSSProperties,
-    highlightHeight: string,
-    onHighlightClick: (e: React.MouseEvent) => void,
-  ) => React.ReactNode;
+  toolbarWidgets: React.ReactNode[];
+  code: (onHighlightClick: (e: React.MouseEvent) => void) => React.ReactNode;
   comments: React.ReactNode;
   zoom: number;
-  splitBasis: number;
+  dimensions: CodeConsoleDimensionsType;
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
 }
 
-interface ICodePanelLayoutState {
-  adjustmentsVisible: boolean;
-  lineNumberPadding: number;
-}
-
-class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelLayoutState> {
+class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
   public nextFrameActionId: number;
-
-  public state: Readonly<ICodePanelLayoutState> = {
-    adjustmentsVisible: false,
-    lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code),
-  };
 
   public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
     if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
@@ -50,71 +37,14 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       this.resizeOnNextFrame();
     }
 
-    if (this.props.splitBasis !== prevProps.splitBasis) {
+    if (this.props.dimensions !== prevProps.dimensions) {
       this.resizeComponents();
     }
   };
 
   public componentDidMount() {
     this.resizeOnNextFrame();
-
-    const comments = document.getElementById('code-panel--comments');
-    if (comments !== null) {
-      comments.addEventListener('scroll', this.scrollFromComments);
-    }
-
-    const codeContainer = document.getElementById('code-container');
-    if (codeContainer !== null) {
-      codeContainer.addEventListener('wheel', this.scrollFromCodeContainer);
-    }
   }
-
-  public componentWillUnmount() {
-    const comments = document.getElementById('code-panel--comments');
-    if (comments !== null) {
-      comments.removeEventListener('scroll', this.scrollFromComments);
-    }
-
-    const codeContainer = document.getElementById('code-container');
-    if (codeContainer !== null) {
-      codeContainer.removeEventListener('wheel', this.scrollFromCodeContainer);
-    }
-  }
-
-  public scrollFromCodeContainer = (e: WheelEvent) => {
-    const comments = document.getElementById('code-panel--comments');
-
-    // Scroll vertically
-    if (comments !== null) {
-      comments.scrollTop = comments.scrollTop + e.deltaY;
-    }
-
-    this.horizontalCodeScroll();
-  };
-
-  public horizontalCodeScroll = () => {
-    const codeMain = document.getElementById('code-main');
-    const codeSyntax = document.getElementById('code-syntax');
-
-    // Scroll horizontally
-    if (codeMain !== null && codeSyntax !== null) {
-      codeSyntax.scrollLeft = codeMain.scrollLeft;
-    }
-  };
-
-  public scrollFromComments = () => {
-    const comments = document.getElementById('code-panel--comments');
-    const codeMain = document.getElementById('code-main');
-    const codeSyntax = document.getElementById('code-syntax');
-
-    if (comments !== null && codeMain !== null) {
-      codeMain.scrollTop = comments.scrollTop;
-
-      if (codeSyntax !== null) {
-        codeSyntax.scrollTop = codeMain.scrollTop;
-      }
-    }
-  };
 
   // Browser optimization to facilitate smoother animations
   public resizeOnNextFrame = () => {
@@ -133,74 +63,18 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
       const comments = document.getElementById('comments');
 
       if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
-        const codeMainWidth =
-          codeContainer.offsetWidth -
-          themeVars.grade.codeContainer.paddingLeft -
-          themeVars.grade.codeContainer.paddingRight;
+        const codeMainWidth = codeContainer.offsetWidth;
         codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {
           codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
-        }
-
-        // We need to wait until after updating the width to calculate the height
-        // This is mostly for Markdown files which will have wrapping text (height dependent on width)
-        const codeHeight = CodePanelSizing.codeHeight(this.props.file.code);
-
-        const codeContainerMaxHeight =
-          this.props.windowheight -
-          codeContainer.getBoundingClientRect().top -
-          themeVars.grade.codeContainer.marginBottom -
-          themeVars.grade.marginBottom;
-
-        const codeContainerHeight = Math.min(
-          codeContainerMaxHeight,
-          codeHeight + themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.paddingBottom,
-        );
-
-        const codeMainHeight =
-          codeContainerHeight - themeVars.grade.codeContainer.paddingTop - themeVars.grade.codeContainer.paddingBottom;
-
-        codeContainer.style.setProperty('height', `${codeContainerHeight}px`);
-        codeMain.style.setProperty('height', `${codeMainHeight}px`);
-        if (codeSyntax !== null) {
-          codeSyntax.style.setProperty('height', `${codeMainHeight}px`);
         }
 
         const commentsContainerHeight =
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
       }
-
-      this.setState({ lineNumberPadding: CodePanelSizing.lineNumberPadding(this.props.file.code) });
     }
   };
-
-  public getCodeStyle = () => {
-    return {
-      lineHeight: `${themeVars.grade.codeLineHeight * this.props.zoom}px`,
-      fontSize: `${themeVars.grade.codeFontSize * this.props.zoom}px`,
-      paddingLeft: ['markdown', 'jupyter'].includes(File.codeType(this.props.file))
-        ? '20px'
-        : `${this.state.lineNumberPadding + 20}px`,
-    };
-  };
-
-  public onMouseEnter = () => {
-    this.setState({ adjustmentsVisible: true });
-  };
-
-  public onMouseLeave = () => {
-    this.setState({ adjustmentsVisible: false });
-  };
-
-  public resizeHighlights = () => {
-    const highlights = document.getElementsByClassName('highlight');
-    const highlightHeight = `${themeVars.grade.highlightHeight * this.props.zoom}px`;
-    [].forEach.call(highlights, (highlight: any) => {
-      highlight.style.setProperty('height', highlightHeight);
-    });
-  };
-
   public onHighlightClick = (e: React.MouseEvent) => {
     let commentID;
     if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
@@ -223,48 +97,60 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, ICodePanelL
   };
 
   public render() {
-    const codeStyle = this.getCodeStyle();
-    const highlightHeight = `${themeVars.grade.highlightHeight * this.props.zoom}px`;
-    const consoleTheme = this.context.consoleTheme;
-
-    // FIXME: This only catches existing highlights.
-    //        New highlights will start with the template height and adjust after render
-    // UPDATE: Imperfect solution by trigerring a resize after adding a new comment
-    this.resizeHighlights();
-    const padding = `${themeVars.grade.codeContainer.paddingTop}px ${themeVars.grade.codeContainer.paddingRight}px ${
-      themeVars.grade.codeContainer.paddingBottom
-    }px ${themeVars.grade.codeContainer.paddingLeft}px`;
+    const zoomStyles = {
+      transform: `scale(${this.props.zoom})`,
+      transformOrigin: '0 0',
+      width: `${100 / this.props.zoom}%`,
+      height: `${100 / this.props.zoom}%`,
+    };
 
     return (
       <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
-        <div className="code-panel-container" style={{ margin: '14px 11px 0px 0px' }}>
-          <div className="code-panel">
-            <div
-              className="code-panel--code"
-              style={{
-                margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
-                  themeVars.grade.codeContainer.marginLeft
-                }px`,
-                flex: `0 1 ${this.props.splitBasis}px`,
-              }}
-            >
+        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+          <div
+            style={{
+              ...{
+                position: 'absolute',
+                display: 'flex',
+                flexDirection: 'column',
+              },
+              ...zoomStyles,
+            }}
+          >
+            <div className="code-panel" id="code-panel">
               <div
-                id="code-container"
-                className="code-container"
                 style={{
-                  backgroundColor: consoleTheme.codeHeaderBg,
-                  border: `1px solid ${consoleTheme.codeBorder}`,
-                  padding,
-                  overflowX: 'hidden',
+                  margin: `4px 0px 4px ${themeVars.grade.codeContainer.marginLeft}px`,
                 }}
-                onMouseEnter={this.onMouseEnter}
-                onMouseLeave={this.onMouseLeave}
               >
-                {this.props.code(codeStyle, highlightHeight, this.onHighlightClick)}
+                {this.props.toolbarWidgets}
               </div>
-            </div>
-            <div id="code-panel--comments" className="code-panel--comments">
-              {this.props.comments}
+              <div
+                className="code-panel--code"
+                style={{
+                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
+                    themeVars.grade.codeContainer.marginLeft
+                  }px`,
+                  position: 'relative',
+                }}
+              >
+                <div
+                  id="code-tour-target"
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: `${this.props.windowheight - 78}px`,
+                  }}
+                />
+                {this.props.code(this.onHighlightClick)}
+              </div>
+              <div
+                id="code-panel--comments"
+                className="code-panel--comments"
+                style={{ minWidth: `${this.props.dimensions.commentsWidth}px` }}
+              >
+                {this.props.comments}
+              </div>
             </div>
           </div>
         </div>

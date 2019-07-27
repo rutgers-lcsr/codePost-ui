@@ -35,6 +35,13 @@ const Highlight = (props: IHighlightProps) => {
     style = { cursor: 'auto', backgroundColor: consoleTheme.highlight };
     CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
   }
+
+  //   <div
+  //   style={{
+  //     ...style,
+  //     ...{ position: 'absolute', border: '1px solid red', height: '16px', width: '100%', top: '2px', opacity: 0.2 },
+  //   }}
+  // />
   return (
     <span
       key={`${props.line}-${props.commentID}`}

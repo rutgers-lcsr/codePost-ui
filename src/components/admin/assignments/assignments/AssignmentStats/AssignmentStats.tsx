@@ -189,7 +189,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
         children: [
           {
             key: 11,
-            category: 'Finalized',
+            category: 'Done',
             tooltip: (
               <CPTooltip
                 title={tooltips.admin.assignments.finalized}
@@ -248,7 +248,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
           },
           {
             key: 12,
-            category: 'In Progress',
+            category: 'Drafts',
             tooltip: (
               <CPTooltip
                 title={tooltips.admin.assignments.inProgress}
@@ -376,9 +376,9 @@ class ManageAssignments extends React.Component<IProps, IState> {
                   type="dashboard"
                 />
                 <Typography.Text style={{ paddingBottom: 10 }}>
-                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} in progress / ${
+                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${
                     statsForRow.numUnclaimed
-                  } left to grade`}
+                  } unclaimed`}
                 </Typography.Text>
               </div>
             </div>

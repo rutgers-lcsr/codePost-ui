@@ -31,9 +31,10 @@ import { UserType } from '../../infrastructure/user';
 import CPFlex from '../core/CPFlex';
 import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
-import { GradeCode, StudentCode } from '../code-review/code-panel/CodeContent';
-import CodePanelLayout from '../code-review/code-panel/CodePanelLayout';
-import { GradeComments, StudentComments } from '../code-review/code-panel/Comments';
+import { GradeCode, StudentCode } from './code-panel/CodeContent';
+import CodePanelLayout from './code-panel/CodePanelLayout';
+import { GradeComments, StudentComments } from './code-panel/Comments';
+import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from './code-panel/LayoutResizer';
 
 import ThemeToggle from '../core/ThemeToggle';
 
@@ -41,24 +42,15 @@ import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 import RubricMenu from './menu/RubricMenu';
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
-import {
-  FinalizeButton,
-  GradeButton,
-  HeaderMenu,
-  Magnifier,
-  Reset,
-  Sizer,
-  StatusTags,
-  SubheaderTitle,
-} from '../code-review/Header';
+import layoutVars from '../../styles/layout/_layoutVars';
+
+import { Controls, FinalizeButton, GradeButton, HeaderMenu, StatusTags, SubheaderTitle } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-import themeVars from '../../styles/abstracts/_theme.js';
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
-import loops_student1 from '../utils/demo_subs/loops/student1';
-import recursion_student1 from '../utils/demo_subs/recursion/student1';
+import { demoFiles } from './demoCode';
 
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
@@ -78,8 +70,8 @@ interface ICodeConsoleState {
   isLoading: boolean;
   selectedFile: FileType | undefined;
   codeZoom: number;
-  codeSplitBasis: number;
   codeVerticalOffset: number;
+  dimensions: CodeConsoleDimensionsType;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -338,8 +330,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       oldCommentIDs: {},
 
       codeZoom: 1,
-      codeSplitBasis: themeVars.grade.splitBasis,
       codeVerticalOffset: 0,
+      dimensions: getInitialDimensions(),
 
       demoCommentCounter: 0,
     };
@@ -795,10 +787,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ codeZoom: newZoom });
   };
 
-  public setSplitBasis = (newSplitBasis: number) => {
-    this.setState({ codeSplitBasis: newSplitBasis });
-  };
-
   public setVerticalOffset = (oldToNew: (oldValue: number) => number) => {
     this.setState((oldState: ICodeConsoleState) => {
       return {
@@ -863,26 +851,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         commentMap[index] = [];
       });
     } else {
-      const loopsFile = loops_student1('example.edu').files[0];
-      fileList.push({
-        id: 0,
-        code: loopsFile.code,
-        comments: [],
-        extension: loopsFile.name.split('.')[1],
-        name: loopsFile.name,
-        submission: 1,
-      });
+      fileList[0] = demoFiles[0];
+      fileList[1] = demoFiles[1];
       commentMap[0] = [];
-
-      const recursionFile = recursion_student1('example.edu').files[0];
-      fileList.push({
-        id: 1,
-        code: recursionFile.code,
-        comments: [],
-        extension: recursionFile.name.split('.')[1],
-        name: recursionFile.name,
-        submission: 1,
-      });
       commentMap[1] = [];
     }
 
@@ -950,6 +921,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     });
   };
 
+  public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
+    this.setState({ dimensions });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -968,16 +943,31 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactNode[] = [];
 
+    const hasComments =
+      this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
+
+    const toolbarWidgets = [
+      <LayoutResizer
+        key="layout-resizer"
+        initialDimensions={this.state.dimensions}
+        setDimensions={this.setDimensions}
+        hasComments={hasComments}
+      />,
+    ];
+
+    const controls = (
+      <Controls
+        updateVerticalOffset={this.setVerticalOffset}
+        updateZoom={this.setZoom}
+        fallbackWidth={layoutVars.breakpoints.smallScreen.grade}
+      />
+    );
+
     if (
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
     ) {
-      rightHeader = [
-        <ThemeToggle key="theme-toggle" small={true} />,
-        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-        <Magnifier key="zoom" updateZoom={this.setZoom} />,
-      ];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
       content = (
         <Empty
@@ -995,12 +985,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         />
       );
     } else if (this.props.inDemoMode && !this.state.assignment) {
-      rightHeader = [
-        <ThemeToggle key="theme-toggle" small={true} />,
-        <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-        <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-        <Magnifier key="zoom" updateZoom={this.setZoom} />,
-      ];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
     } else {
       if (!this.state.assignment) {
         return <div>We're not supposed to get here..</div>;
@@ -1068,10 +1053,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       ];
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
-
       if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
-          const demoCode = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const demoCode = (onHighlightClick: any) => (
             <GradeCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
@@ -1079,9 +1063,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               readOnly={this.state.submission!.isFinalized}
               addComment={this.addComment}
               user={this.props.user.email}
-              codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1100,6 +1083,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1107,9 +1091,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             <CodePanelLayout
               comments={demoComments}
               code={demoCode}
+              toolbarWidgets={toolbarWidgets}
+              dimensions={this.state.dimensions}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
@@ -1152,9 +1137,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-          <Magnifier key="zoom" updateZoom={this.setZoom} />,
+          controls,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
@@ -1164,16 +1147,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
         if (this.state.selectedFile) {
-          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const code = (onHighlightClick: any) => (
             <StudentCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
               comments={this.state.comments[this.state.selectedFile!.id]}
               readOnly={true}
               user={this.props.user.email}
-              codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1183,6 +1165,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricComments={this.state.commentRubricComments}
               file={this.state.selectedFile!}
               verticalOffset={this.state.codeVerticalOffset}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1190,9 +1173,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             <CodePanelLayout
               comments={comments}
               code={code}
+              toolbarWidgets={toolbarWidgets}
+              dimensions={this.state.dimensions}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
@@ -1203,12 +1187,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
-        rightHeader = [
-          <ThemeToggle key="theme-toggle" small={true} />,
-          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-          <Magnifier key="zoom" updateZoom={this.setZoom} />,
-        ];
+        rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
         sider = [
           <ReadOnlySubmissionInfo
@@ -1232,14 +1211,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         leftHeader = [
           <HeaderMenu menu={menu} key="menu" />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
-          <StatusTags key="tag" assignment={this.state.assignment!} submission={this.state.submission!} />,
+          <StatusTags
+            key="tag"
+            assignment={this.state.assignment!}
+            submission={this.state.submission!}
+            fallbackWidth={layoutVars.breakpoints.smallScreen.gradeHeader}
+          />,
         ];
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          <Reset key="reset" updateVerticalOffset={this.setVerticalOffset} />,
-          <Sizer key="sizer" updateSplitBasis={this.setSplitBasis} />,
-          <Magnifier key="zoom" updateZoom={this.setZoom} />,
+          controls,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
@@ -1249,7 +1231,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
 
         if (this.state.selectedFile) {
-          const code = (codeStyle: React.CSSProperties, highlightHeight: string, onHighlightClick: any) => (
+          const code = (onHighlightClick: any) => (
             <GradeCode
               key={this.state.selectedFile!.id}
               file={this.state.selectedFile!}
@@ -1257,9 +1239,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               readOnly={this.state.submission!.isFinalized}
               addComment={this.addComment}
               user={this.props.user.email}
-              codeStyle={codeStyle}
-              highlightHeight={highlightHeight}
               onHighlightClick={onHighlightClick}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1278,6 +1259,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
+              dimensions={this.state.dimensions}
             />
           );
 
@@ -1285,9 +1267,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             <CodePanelLayout
               comments={comments}
               code={code}
+              toolbarWidgets={toolbarWidgets}
+              dimensions={this.state.dimensions}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
-              splitBasis={this.state.codeSplitBasis}
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
