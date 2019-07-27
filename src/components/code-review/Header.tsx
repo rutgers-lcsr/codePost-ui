@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
@@ -142,15 +142,14 @@ interface IFinalizeButtonProps {
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const showTooltips = React.useContext(ShowTooltipContext);
-
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async () => {
     setNudge(true);
-    message.warning("Click 'Draft' to modify this submission →");
+    message.warning('Unfinalize to modify this submission →');
     await wait(1200); // two wiggles
     setNudge(false);
   };
@@ -191,8 +190,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     [props.submission],
   );
 
-  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
-
   const onClick = async () => {
     setIsLoading(true);
     if (!props.submission.isFinalized && !props.canToggle()) {
@@ -210,14 +207,14 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   const cancel = () => {
-    setIsLoading(false);
     setPopconfirmVisible(false);
+    setIsLoading(false);
   };
 
   const isFinalized = props.submission.isFinalized;
 
   const finalizeNotice =
-    props.submission.grader === null ? 'Assign a grader to this submission before marking it as Done.' : null;
+    props.submission.grader === null ? 'Assign a grader to this submission before finalizing it.' : null;
 
   const toggleNotice =
     finalizeNotice !== null
@@ -225,51 +222,37 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       : !showTooltips
       ? null
       : props.submission.isFinalized
-      ? "This submission is marked as Done. Click 'Draft' to modify it."
-      : "This submission is in Draft mode. Click 'Done' to mark it as done.";
+      ? 'This submission is finalized. Unfinalize to modify it.'
+      : 'This submission is unfinalized. Finalize it to mark it as complete.';
 
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
       <CPTooltip title={toggleNotice} placement="left">
-        <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <CPButton
-            cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
-            fallback="unlock"
+        <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
+        &nbsp;
+        <Popconfirm
+          title={
+            <div>
+              <p>You have draft comments that will not be saved.</p>{' '}
+              <p>
+                <b>Are you sure you want to continue?</b>
+              </p>
+            </div>
+          }
+          visible={popconfirmVisible}
+          onConfirm={confirm}
+          onCancel={cancel}
+          okText="Yes"
+          cancelText="No"
+          placement="bottomRight"
+        >
+          <Switch
+            checked={isFinalized}
             onClick={onClick}
-            isLoading={isLoading}
-            small={true}
-            disabled={!isFinalized}
-          >
-            Draft
-          </CPButton>
-          <CPButton
-            cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
-            fallback="lock"
-            onClick={props.submission.grader === null ? undefined : onClick}
-            isLoading={isLoading}
-            disabled={isFinalized}
-            small={true}
-          >
-            <Popconfirm
-              title={
-                <div>
-                  <p>You have draft comments that will not be saved.</p>{' '}
-                  <p>
-                    <b>Are you sure you want to continue?</b>
-                  </p>
-                </div>
-              }
-              visible={popconfirmVisible}
-              onConfirm={confirm}
-              onCancel={cancel}
-              okText="Yes"
-              cancelText="No"
-              placement="bottomRight"
-            >
-              Done
-            </Popconfirm>
-          </CPButton>
-        </ButtonGroup>
+            disabled={!isFinalized && props.submission.grader === null}
+            loading={isLoading}
+          />
+        </Popconfirm>
       </CPTooltip>
     </div>
   );
