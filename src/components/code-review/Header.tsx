@@ -4,7 +4,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, Modal, Popconfirm, Popover, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Tag } from 'antd';
 const ButtonGroup = Button.Group;
 
 /* codePost imports */
@@ -150,7 +150,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async () => {
     setNudge(true);
-    await wait(600);
+    message.warning("Click 'Draft' to modify this submission →");
+    await wait(1200); // two wiggles
     setNudge(false);
   };
 
