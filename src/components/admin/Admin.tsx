@@ -1386,7 +1386,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       </span>
     );
 
-    return <CPLayoutAdmin header={header} detail={detail} navigation={navigation} collapsible={true} />;
+    return (
+      <CPLayoutAdmin
+        header={header}
+        detail={detail}
+        navigation={navigation}
+        collapsible={true}
+        role={USER_TYPE.ADMIN}
+      />
+    );
   }
 }
 

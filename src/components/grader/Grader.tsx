@@ -407,7 +407,15 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       />
     );
 
-    return <CPLayoutAdmin header={header} detail={graderPanelContent} navigation={navigation} collapsible={true} />;
+    return (
+      <CPLayoutAdmin
+        header={header}
+        detail={graderPanelContent}
+        navigation={navigation}
+        collapsible={true}
+        role={USER_TYPE.GRADER}
+      />
+    );
   }
 }
 
