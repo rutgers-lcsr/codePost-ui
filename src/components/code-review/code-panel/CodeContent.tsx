@@ -106,6 +106,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           overflowX: 'hidden',
           backgroundColor: consoleTheme.codeBg,
           border: `1px solid ${consoleTheme.codeBorder}`,
+          userSelect: props.readOnly ? 'none' : 'auto',
         }}
       >
         <SyntaxHighlighter

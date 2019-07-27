@@ -10,10 +10,11 @@ const ButtonGroup = Button.Group;
 /* codePost imports */
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
-import { tooltips } from '../core/tooltips';
+import { ShowTooltipContext, tooltips } from '../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
+import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
@@ -142,18 +143,52 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const showTooltips = React.useContext(ShowTooltipContext);
+
   const [isLoading, setIsLoading] = React.useState(false);
 
-  // FIXME: discuss this feature as a team
-  // const [notice, setNotice] = React.useState(false);
-  // useOnClickOutside(ref, async (e: any) => {
-  //   const fileMenu = document.getElementById('file-menu');
-  //   if (ref && ref.current && fileMenu !== null && !fileMenu.contains(e.target)) {
-  //     setNotice(true);
-  //     await wait(250);
-  //     setNotice(false);
-  //   }
-  // });
+  const [nudge, setNudge] = React.useState(false);
+  const triggerNudge = async () => {
+    setNudge(true);
+    await wait(600);
+    setNudge(false);
+  };
+
+  React.useEffect(
+    () => {
+      const codeContainer = document.getElementById('code-container');
+      const comments = document.getElementById('comments');
+      const grader = document.getElementById('submission-grader');
+      if (props.submission.isFinalized) {
+        if (codeContainer !== null) {
+          codeContainer.addEventListener('click', triggerNudge);
+        }
+
+        if (comments !== null) {
+          comments.addEventListener('click', triggerNudge);
+        }
+
+        if (grader !== null) {
+          grader.addEventListener('click', triggerNudge);
+        }
+      }
+
+      return () => {
+        if (codeContainer !== null) {
+          codeContainer.removeEventListener('click', triggerNudge);
+        }
+
+        if (comments !== null) {
+          comments.removeEventListener('click', triggerNudge);
+        }
+
+        if (grader !== null) {
+          grader.removeEventListener('click', triggerNudge);
+        }
+      };
+    },
+    [props.submission],
+  );
 
   const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
 
@@ -181,22 +216,31 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const isFinalized = props.submission.isFinalized;
 
   const finalizeNotice =
-    props.submission.grader === null ? 'Assign a grader to this submission before finalizing.' : null;
+    props.submission.grader === null ? 'Assign a grader to this submission before marking it as Done.' : null;
+
+  const toggleNotice =
+    finalizeNotice !== null
+      ? finalizeNotice
+      : !showTooltips
+      ? null
+      : props.submission.isFinalized
+      ? "This submission is marked as Done. Click 'Draft' to modify it."
+      : "This submission is in Draft mode. Click 'Done' to mark it as done.";
 
   return (
-    <div ref={ref}>
-      <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-        <CPButton
-          cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
-          fallback="unlock"
-          onClick={onClick}
-          isLoading={isLoading}
-          small={true}
-          disabled={!isFinalized}
-        >
-          Draft
-        </CPButton>
-        <CPTooltip title={finalizeNotice} placement="left">
+    <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
+      <CPTooltip title={toggleNotice} placement="left">
+        <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <CPButton
+            cpType={theme === 'light' ? 'primary' : isFinalized ? 'primary' : 'dark'}
+            fallback="unlock"
+            onClick={onClick}
+            isLoading={isLoading}
+            small={true}
+            disabled={!isFinalized}
+          >
+            Draft
+          </CPButton>
           <CPButton
             cpType={theme === 'light' ? 'primary' : !isFinalized ? 'primary' : 'dark'}
             fallback="lock"
@@ -224,8 +268,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
               Done
             </Popconfirm>
           </CPButton>
-        </CPTooltip>
-      </ButtonGroup>
+        </ButtonGroup>
+      </CPTooltip>
     </div>
   );
 };
