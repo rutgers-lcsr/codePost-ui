@@ -48,7 +48,7 @@ const GRADE_HEADER_ALIGNMENT = (
   </div>
 );
 const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
-const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Unfinalize this submission to edit its grader.';
+const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Mark this submission as Done to edit its grader.';
 
 // ************************ Settings tooltips ************************
 const SETTINGS_TOKEN_COPY = 'Copy API token';

@@ -509,6 +509,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           navigation={navigation}
           collapsible={true}
           hasSider={false}
+          role={USER_TYPE.STUDENT}
         />
       </div>
     );

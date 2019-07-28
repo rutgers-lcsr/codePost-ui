@@ -13,9 +13,9 @@ export type IdMapType = {
 };
 
 export enum USER_TYPE {
-  STUDENT,
-  GRADER,
-  ADMIN,
+  STUDENT = 'Student',
+  GRADER = 'Grader',
+  ADMIN = 'Admin',
 }
 
 export enum USER_APP {

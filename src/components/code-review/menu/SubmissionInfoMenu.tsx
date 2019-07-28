@@ -77,7 +77,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
-          <div>
+          <div id="submission-grader">
             <br />
             <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
             <GraderInfo

@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Dropdown, Icon, Menu } from 'antd';
+import { Divider, Dropdown, Icon, Menu } from 'antd';
 
 import { UserType } from '../../infrastructure/user';
 import { USER_TYPE } from '../../types/common';
+
+import CPTooltip from './CPTooltip';
 
 type ThemeType = 'light' | 'dark';
 
@@ -48,11 +50,43 @@ const RoleMenu = (props: IProps) => {
           </Link>
         </Menu.Item>
       ) : null}
+      <div>
+        <CPTooltip
+          title={
+            <div>
+              Each role in codePost has its own console. To learn more about roles, click{' '}
+              <a href="https://help.codepost.io/en/articles/3182075-roles-in-codepost" target="_blank">
+                here
+              </a>
+              .
+            </div>
+          }
+          placement="bottom"
+          hideThisOnHideTips={true}
+          hideChildrenOnHideTips={true}
+        >
+          <Divider style={{ margin: '4px 0px' }} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: 10,
+              paddingRight: 10,
+              paddingBottom: 2,
+            }}
+          >
+            <Icon type="info-circle" style={{ paddingRight: 7, color: 'grey' }} />
+            <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>Learn more about roles</div>
+          </div>
+        </CPTooltip>
+      </div>
     </Menu>
   );
   return (
-    <Dropdown overlay={roleMenu}>
-      <Icon type="switcher" style={{ color: props.theme === 'light' ? 'black' : 'white' }} />
+    <Dropdown overlay={roleMenu} trigger={['click']}>
+      <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
+        <Icon type="team" style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
+      </CPTooltip>
     </Dropdown>
   );
 };
