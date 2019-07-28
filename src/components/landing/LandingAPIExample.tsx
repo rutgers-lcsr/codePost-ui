@@ -273,7 +273,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           <Panel
             header={
               <div className="apiexample__header" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>Think we were kidding about short scripts?</div>
+                <div>Think we were joking about short scripts? Click here</div>
                 <Icon type="api" className="apiexample__header__icon" />
               </div>
             }
