@@ -8,6 +8,8 @@ import CPButton from '../core/CPButton';
 
 import landingVars from '../../styles/pages/_landingVars';
 
+import { CODE_TOUR_DEMO_ID } from '../../routes';
+
 const LandingHero = () => {
   const windowSize = useWindowSize();
   const hero = (
@@ -57,12 +59,10 @@ const LandingHero = () => {
           </CPButton>
         </Link>
         &nbsp; &nbsp;
-        <CPButton
-          style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
-          id="calendly-button-top"
-          cpType="secondary"
-        >
-          Schedule demo
+        <CPButton style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }} cpType="secondary">
+          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank">
+            Try it out!
+          </a>
         </CPButton>
       </div>
     </div>
