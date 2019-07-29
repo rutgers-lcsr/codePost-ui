@@ -1136,12 +1136,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
+        const signupButton =
+          this.props.user.id === -1 ? (
+            <CPButton key="sign-up" cpType="primary">
+              <a href="/signup/create" target="_blank">
+                Sign up!
+              </a>
+            </CPButton>
+          ) : null;
+
         rightHeader = [
-          <CPButton key="sign-up" cpType="primary">
-            <a href="/signup/create" target="_blank">
-              Sign up!
-            </a>
-          </CPButton>,
+          signupButton,
           <ThemeToggle key="theme-toggle" small={true} />,
           controls,
           <FinalizeButton
