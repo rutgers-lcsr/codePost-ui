@@ -151,13 +151,15 @@ class App extends React.Component<{}, IState> {
     }
   }
 
-  public addCourseToAdminList = (course: CourseType) => {
+  // Adds a newly created course to the user's admin and grader course lists
+  public addCreatedCourse = (course: CourseType) => {
     if (!this.state.user) {
       return;
     }
 
     const newUser = this.state.user;
     newUser.courseadminCourses.push(course);
+    newUser.graderCourses.push(course);
     this.setState({ user: newUser });
   };
 
@@ -350,7 +352,7 @@ class App extends React.Component<{}, IState> {
               this.wrapTooltipContext(
                 <AsyncAdmin
                   {...props}
-                  addCourse={this.addCourseToAdminList}
+                  addCourse={this.addCreatedCourse}
                   user={this.state.user}
                   initialCourses={courseAdminCourses}
                   logout={this.handleLogout}
