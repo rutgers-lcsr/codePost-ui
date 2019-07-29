@@ -156,9 +156,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   React.useEffect(
     () => {
+      // Activate the nudge when these elements are clicked
       const codeContainer = document.getElementById('code-container');
       const comments = document.getElementById('comments');
       const grader = document.getElementById('submission-grader');
+      const rubricMenu = document.getElementById('rubric-menu');
+
       if (props.submission.isFinalized) {
         if (codeContainer !== null) {
           codeContainer.addEventListener('click', triggerNudge);
@@ -170,6 +173,10 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
         if (grader !== null) {
           grader.addEventListener('click', triggerNudge);
+        }
+
+        if (rubricMenu !== null) {
+          rubricMenu.addEventListener('click', triggerNudge);
         }
       }
 
@@ -184,6 +191,10 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
         if (grader !== null) {
           grader.removeEventListener('click', triggerNudge);
+        }
+
+        if (rubricMenu !== null) {
+          rubricMenu.removeEventListener('click', triggerNudge);
         }
       };
     },
