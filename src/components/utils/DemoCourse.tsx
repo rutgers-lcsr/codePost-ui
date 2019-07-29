@@ -13,7 +13,7 @@ import { Submission } from '../../infrastructure/submission';
 /* Import demo course data */
 import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions } from './demo-data';
 
-const createDemoCourse = (username: string, org: string) => {
+const createDemoCourse = (email: string, username: string, org: string) => {
   const payload = demoCourse(username);
   return Course.create(payload).then((course) => {
     // Create assignments
@@ -25,6 +25,8 @@ const createDemoCourse = (username: string, org: string) => {
     return Promise.all(makeAssignmnets).then((assignments: AssignmentType[]) => {
       // Set roster
       const roster = demoRoster(org, course.id);
+      // Add self to graders
+      roster.graders = [...roster.graders, email];
       return Course.updateRoster(roster, {}).then((rosterObj) => {
         // Make sections
         const sections = demoSections(org, roster.id);

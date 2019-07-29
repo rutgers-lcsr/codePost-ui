@@ -91,10 +91,12 @@ const AdminOnboardingSelector = (props: IProps) => {
   const handleDemoCourse = () => {
     setLoading(true);
     if (!props.demoCourseExists) {
-      createDemoCourse(`${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then((course) => {
-        setLoading(false);
-        props.onDemoCreate(course);
-      });
+      createDemoCourse(props.email, `${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(
+        (course) => {
+          setLoading(false);
+          props.onDemoCreate(course);
+        },
+      );
     } else {
       setLoading(false);
       props.onDemoCreate();
