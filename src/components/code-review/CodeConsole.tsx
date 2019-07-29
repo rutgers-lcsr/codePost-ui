@@ -28,6 +28,7 @@ import { RubricComment, RubricCommentType } from '../../infrastructure/rubricCom
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
+import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';
 import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 
@@ -1136,6 +1137,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
 
         rightHeader = [
+          <CPButton key="sign-up" cpType="primary">
+            <a href="/signup/create" target="_blank">
+              Sign up!
+            </a>
+          </CPButton>,
           <ThemeToggle key="theme-toggle" small={true} />,
           controls,
           <FinalizeButton
