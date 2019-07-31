@@ -27,6 +27,8 @@ import { Testimonials } from './Testimonial';
 import APIExample from './LandingAPIExample';
 import CodeReview from './LandingCodeReview';
 
+import Integrations from './Integrations';
+
 /**********************************************************************************************************************/
 
 class Landing extends React.PureComponent<{}, {}> {
@@ -177,6 +179,17 @@ class Landing extends React.PureComponent<{}, {}> {
         gutterSize={50}
       />
     );
+
+    const panelThreeModule = (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'inline-block' }}>
+          <APIAnimation />
+        </div>
+        <div style={{ display: 'inline-block', width: '210px' }}>
+          <Integrations integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'more']} />
+        </div>
+      </div>
+    );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <div style={{ marginBottom: 50, width: '100%' }}>
@@ -184,7 +197,7 @@ class Landing extends React.PureComponent<{}, {}> {
             text={panelThreeText}
             title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
             subTitle="Run your course with codePost’s API"
-            module={<APIAnimation />}
+            module={panelThreeModule}
             type="left"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
