@@ -25,11 +25,15 @@ const LandingHero = () => {
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
-          The easy, free{' '}
+          The easiest way to{' '}
           <Typography.Text mark className="codePost-title-highlight">
-            code review
+            grade
           </Typography.Text>{' '}
-          tool for CS courses
+          and{' '}
+          <Typography.Text mark className="codePost-title-highlight">
+            comment on
+          </Typography.Text>{' '}
+          student code
         </span>
       </div>
       <div
@@ -42,7 +46,8 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Give better feedback on programming assignments, so you can teach CS better and train good programmers
+        Give better feedback on programming assignments, so you can teach CS better and train good programmers.{' '}
+        <span style={{ fontWeight: 600, color: '#24be85' }}>Free for universities.</span>
       </div>
       <div
         style={{
