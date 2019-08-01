@@ -17,7 +17,6 @@ import LandingPanel from './LandingPanel';
 
 // Animations
 import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
-import APIAnimation from './landingAnimations/api/APIAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
@@ -126,11 +125,6 @@ class Landing extends React.PureComponent<{}, {}> {
           </ul>
           It's actually easy to use - you can write useful, short scripts in 10 minutes.
         </div>
-        <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our users have connected codePost with tools such as{' '}
-          <span style={{ fontWeight: 600 }}>GitHub, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span>, and more using
-          the codePost API!
-        </div>
       </div>
     );
 
@@ -182,11 +176,10 @@ class Landing extends React.PureComponent<{}, {}> {
 
     const panelThreeModule = (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ display: 'inline-block' }}>
-          <APIAnimation />
-        </div>
-        <div style={{ display: 'inline-block', width: '210px' }}>
-          <Integrations integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'more']} />
+        <div style={{ display: 'inline-block', width: '500px' }}>
+          <Integrations
+            integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'moodle', 'homegrown', 'more']}
+          />
         </div>
       </div>
     );
