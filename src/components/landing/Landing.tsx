@@ -157,7 +157,7 @@ class Landing extends React.PureComponent<{}, {}> {
         moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
-        removeModelSmallScreen={false}
+        removeModelSmallScreen={true}
         bevel={true}
         gutterSize={50}
       />
