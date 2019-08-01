@@ -31,7 +31,6 @@ import { Testimonial } from '../landing/Testimonial';
 
 enum STATUS {
   INPUT,
-  CONFIRM_AUTHORITY,
   PENDING_VALIDATION,
   BAD_EMAIL,
   VALIDATION_SUCCESS,
@@ -236,13 +235,11 @@ class CreateSignup extends React.Component<IProps, IState> {
   /*
    * Sign up flow:
    * - Enter email and select organization
-   * - Confirm authority
    * - Await validation
    * - Respond to email
    *
    */
   public render() {
-    const { selectedOrg } = this.state;
     const spacing = <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 40 }} />;
 
     let content;
@@ -292,6 +289,12 @@ class CreateSignup extends React.Component<IProps, IState> {
                 />
               </div>
             ) : null}
+            <div>
+              <br />
+              <br />
+              <Checkbox value={this.state.check2} onChange={this.toggleCheck.bind(this, 'check2')} /> I agree to the
+              codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+            </div>
             {spacing}
             <div style={{ display: 'flex' }}>
               <Link to="/signup">
@@ -300,12 +303,14 @@ class CreateSignup extends React.Component<IProps, IState> {
               &nbsp; &nbsp; &nbsp; &nbsp;
               <CPButton
                 cpType="primary"
-                onClick={this.changeStatus.bind(this, STATUS.CONFIRM_AUTHORITY)}
+                onClick={this.validateNewUser}
                 disabled={
                   !(
                     (this.state.createNewOrg && this.state.newOrg && organizationRegex.test(this.state.newOrg)) ||
                     (!this.state.createNewOrg && this.state.selectedOrg && /\S/.test(this.state.selectedOrg.label))
-                  ) || !emailRegex.test(this.state.email)
+                  ) ||
+                  !emailRegex.test(this.state.email) ||
+                  !this.state.check2
                 }
               >
                 Continue
@@ -318,41 +323,6 @@ class CreateSignup extends React.Component<IProps, IState> {
               <Link to="/signup/join">Want to join a course instead?</Link>
               <br />
             </span>
-          </div>
-        );
-        break;
-      case STATUS.CONFIRM_AUTHORITY:
-        const orgName = selectedOrg && !this.state.createNewOrg ? selectedOrg.label : this.state.newOrg;
-        content = (
-          <div>
-            <span>
-              You selected <b>{orgName}</b>. Please review the following before proceeding.
-            </span>
-            <br />
-            <br />
-            <span>
-              <Checkbox value={this.state.check1} onChange={this.toggleCheck.bind(this, 'check1')} /> I confirm that I
-              have the authority to create a course for&nbsp;<b>{orgName}</b>.
-            </span>
-            <br />
-            <br />
-            <span>
-              <Checkbox value={this.state.check2} onChange={this.toggleCheck.bind(this, 'check2')} /> I agree to the
-              codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
-            </span>
-            <br />
-            <br />
-            <CPButton cpType="secondary" onClick={this.changeStatus.bind(this, STATUS.INPUT)}>
-              Back
-            </CPButton>
-            &nbsp; &nbsp; &nbsp; &nbsp;
-            <CPButton
-              cpType="primary"
-              disabled={!this.state.check1 || !this.state.check2}
-              onClick={this.validateNewUser}
-            >
-              Continue
-            </CPButton>
           </div>
         );
         break;
