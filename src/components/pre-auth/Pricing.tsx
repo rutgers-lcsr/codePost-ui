@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Divider, Icon } from 'antd';
+import { Button, Icon } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -40,8 +40,8 @@ const optionStyle = {
 
 const freeButtonStyle = {
   borderRadius: 5,
-  backgroundColor: '#24be85',
-  color: '#fff',
+  backgroundColor: '#fff',
+  color: '#24be85',
 };
 
 const premiumButtonStyle = {
@@ -54,47 +54,53 @@ const Pricing = (props: IProps) => {
   const breakpoint = 700;
   const windowSize = useWindowSize();
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
+  const featureBoxPositioning = windowSize.width < breakpoint ? 'relative' : 'absolute';
 
   const freeStyle = {
     ...optionStyle,
-    maxWidth: 409,
-    backgroundColor: '#fff',
-    marginTop: 60,
-    padding: '35px 35px',
+    maxWidth: 237,
+    width: 250,
+    backgroundColor: '#24be85',
+    padding: '35px 35px 35px 35px',
+    color: '#fff',
   } as React.CSSProperties;
 
   const premiumStyle = {
     ...optionStyle,
-    maxWidth: 391,
+    marginTop: windowSize.width < breakpoint ? -10 : 25,
+    maxWidth: 250,
     backgroundColor: '#1b1b1b',
-    marginTop: 50,
-    padding: windowSize.width < breakpoint ? '35px 35px' : '20px 35px',
+    marginLeft: windowSize.width < breakpoint ? 0 : 50,
+    padding: '35px 35px 35px 35px',
     color: '#fff',
   } as React.CSSProperties;
 
-  const freeTextPadding = windowSize.width < breakpoint ? '0 20px 10px 20px' : '0 20px 30px 20px';
-  const premiumTextPadding = windowSize.width < breakpoint ? '0 20px 10px 20px' : '0 20px 10px 20px';
+  const featureStyle = {
+    ...optionStyle,
+    zIndex: 2,
+    backgroundColor: '#fff',
+    width: 600,
+    maxWidth: windowSize.width < breakpoint ? 250 : 600,
+    padding: windowSize.width < breakpoint ? '25px 15px' : '35px',
+    display: 'flex',
+    justifyContent: 'center',
+  };
+
+  // const freeTextPadding = windowSize.width < breakpoint ? '0 20px 10px 20px' : '0 20px 30px 20px';
 
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div>
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <span style={textStyle}>codePost is free for all the courses and people you need.</span>
+            <span style={textStyle}>codePost is 100% free for universities. No credit card required.</span>
           </div>
-          <div style={{ display: 'flex', flexDirection, justifyContent: 'center', alignItems: 'center' }}>
+          <div
+            style={{ display: 'flex', flexDirection, justifyContent: 'center', alignItems: 'center', paddingTop: 50 }}
+          >
             <div style={freeStyle}>
-              <h3 style={{ fontWeight: 'bold', fontSize: 24 }}>Free</h3>
-              <p style={{ fontSize: '18px' }}>$0</p>
-              <p>Full access to codePost for free.</p>
-              <Divider />
-              <ul style={{ padding: freeTextPadding }}>
-                <li>Unlimited students</li>
-                <li>Unlimited course staff</li>
-                <li>Unlimited submissions</li>
-                <li>Full API access: up to 1000 requests/day</li>
-                <li>&lt;48 hour support response time</li>
-              </ul>
+              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Universities</h3>
+              <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
               <Link to="/signup/create">
                 <Button style={freeButtonStyle}>
                   Get started <Icon type="arrow-right" />
@@ -102,24 +108,41 @@ const Pricing = (props: IProps) => {
               </Link>
             </div>
             <div style={premiumStyle}>
-              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>Pro</h3>
+              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>For-profits</h3>
               <p style={{ fontSize: '18px' }}>$5 / student / month </p>
-              <p>Ideal for large departments that want enterprise-grade support.</p>
-              <Divider />
-              <ul style={{ padding: premiumTextPadding }}>
-                <li>Unlimited students</li>
-                <li>Unlimited course staff</li>
-                <li>Unlimited submissions</li>
-                <li>
-                  Full API access: <span style={{ color: '#24be85' }}>unlimited requests</span>
-                </li>
-                <li>
-                  <span style={{ color: '#24be85' }}>&lt;12 hour</span> support response time
-                </li>
-              </ul>
               <Button style={premiumButtonStyle}>
                 Get in touch <Icon type="arrow-right" />
               </Button>
+            </div>
+          </div>
+        </div>
+        <div style={{ width: '100%' }}>
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                position: featureBoxPositioning,
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                top: -15,
+              }}
+            >
+              <div style={featureStyle}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 'bold' }}>Features:</p>
+                  <div style={{ display: 'flex', flexDirection, justifyContent: 'center' }}>
+                    <ul style={{ maxWidth: 210, marginBottom: 0 }}>
+                      <li>Unlimited students</li>
+                      <li>Unlimited course staff</li>
+                      <li>Unlimited submissions</li>
+                    </ul>
+                    <ul style={{ maxWidth: 210, marginLeft: windowSize.width < breakpoint ? 0 : 20 }}>
+                      <li>Full API access: Unlimited requests</li>
+                      <li>&lt;48 hour support response time</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
