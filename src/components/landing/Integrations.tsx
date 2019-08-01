@@ -46,6 +46,24 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
     description: `Submitty is an open-source student submission system \
     developed by the Rensselaer Center for Open Source Software.`,
   },
+  revel: {
+    name: 'Pearson|Revel',
+    logo: require('./../../img/integrations/revel.png'),
+    description: `Revel provides interactive programming \
+    exercises`,
+  },
+  replit: {
+    name: 'Repl.it',
+    logo: require('./../../img/integrations/replit.png'),
+    description: `Repl.it is an online compiler and \
+    IDE.`,
+  },
+  moodle: {
+    name: 'Moodle',
+    logo: require('./../../img/integrations/moodle.png'),
+    description: `Moodle is an open source \
+    LMS.`,
+  },
 };
 
 export type IntegrationType = {
@@ -56,13 +74,20 @@ export type IntegrationType = {
 
 interface IIntegrationsProps {
   integrations: string[];
+  onClick?: any;
 }
 
 const Integrations = (props: IIntegrationsProps) => {
   const cards = props.integrations
     .map((integration: string) => {
       if (INTEGRATIONS[integration]) {
-        return <IntegrationCard key={integration} integration={INTEGRATIONS[integration]} />;
+        const onClick = () => {
+          if (props.onClick !== undefined) {
+            props.onClick(integration);
+          }
+        };
+
+        return <IntegrationCard key={integration} integration={INTEGRATIONS[integration]} onClick={onClick} />;
       } else {
         return null;
       }
@@ -76,6 +101,7 @@ const Integrations = (props: IIntegrationsProps) => {
 
 interface IIntegrationCardProps {
   integration: IntegrationType;
+  onClick: any;
 }
 
 const IntegrationCard = (props: IIntegrationCardProps) => {
@@ -83,25 +109,28 @@ const IntegrationCard = (props: IIntegrationCardProps) => {
     <Link to="/integrations">
       <Card hoverable={true} className="integration">
         <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
-          <tr>
-            <td style={{ verticalAlign: 'middle', textAlign: 'center' }}>
-              <img src={props.integration.logo} style={{ width: '55px' }} />
-            </td>
-          </tr>
-          <tr style={{ height: '30px' }}>
-            <td
-              style={{
-                verticalAlign: 'middle',
-                textAlign: 'center',
-                color: '#7f7f7f',
-                fontSize: '14px',
-                fontWeight: 600,
-                overflowX: 'hidden',
-              }}
-            >
-              {props.integration.name}
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={props.onClick}>
+                <img src={props.integration.logo} style={{ width: '55px' }} />
+              </td>
+            </tr>
+            <tr style={{ height: '30px' }}>
+              <td
+                style={{
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                  color: '#7f7f7f',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  overflowX: 'hidden',
+                }}
+                onClick={props.onClick}
+              >
+                {props.integration.name}
+              </td>
+            </tr>
+          </tbody>
         </table>
       </Card>
     </Link>
@@ -118,7 +147,7 @@ export const IntegrationDescription = (props: IIntegrationDescriptionProps) => {
       <div style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 600, color: '#7f7f7f' }}>
         {props.integration.name}
       </div>
-      <div>{props.integration.description}</div>
+      <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{props.integration.description}</div>
     </div>
   );
 };
