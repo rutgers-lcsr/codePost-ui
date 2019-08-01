@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Card } from 'antd';
 
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 
 export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   github: {
@@ -106,34 +106,32 @@ interface IIntegrationCardProps {
 
 const IntegrationCard = (props: IIntegrationCardProps) => {
   return (
-    <Link to="/integrations">
-      <Card hoverable={true} className="integration">
-        <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
-          <tbody>
-            <tr>
-              <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={props.onClick}>
-                <img src={props.integration.logo} style={{ width: '55px' }} />
-              </td>
-            </tr>
-            <tr style={{ height: '30px' }}>
-              <td
-                style={{
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                  color: '#7f7f7f',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  overflowX: 'hidden',
-                }}
-                onClick={props.onClick}
-              >
-                {props.integration.name}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </Card>
-    </Link>
+    <Card hoverable={true} className="integration">
+      <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
+        <tbody>
+          <tr>
+            <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={props.onClick}>
+              <img src={props.integration.logo} style={{ width: '55px' }} />
+            </td>
+          </tr>
+          <tr style={{ height: '30px' }}>
+            <td
+              style={{
+                verticalAlign: 'middle',
+                textAlign: 'center',
+                color: '#7f7f7f',
+                fontSize: '14px',
+                fontWeight: 600,
+                overflowX: 'hidden',
+              }}
+              onClick={props.onClick}
+            >
+              {props.integration.name}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   );
 };
 
