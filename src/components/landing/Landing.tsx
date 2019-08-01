@@ -17,7 +17,6 @@ import LandingPanel from './LandingPanel';
 
 // Animations
 import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
-import APIAnimation from './landingAnimations/api/APIAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
@@ -26,6 +25,8 @@ import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
 import CodeReview from './LandingCodeReview';
+
+import Integrations from './Integrations';
 
 /**********************************************************************************************************************/
 
@@ -93,9 +94,10 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelTwoText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Don't let course management take time away from teaching. Manage your course and make sure everything gets
-          graded within a lightweight, intuitive interface. Dive into your course data anytime to understand how your
-          students are doing, audit grading, and mine for pedagogical insights.
+          Setting up a course in codePost is easy: upload submissions to review and return graded work to students with
+          a few clicks. <span style={{ fontWeight: 600 }}>Managing a team of graders?</span> codePost lets you dispatch
+          work to graders, perfrom quality control on their work, and set up a rubric that lets you track what errors
+          students are making.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
           Easy course management, so you can spend more time teaching
@@ -106,8 +108,7 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelThreeText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
-          Integrating tools is a big pain. We also think the best run courses are managed with code. That's why we built
-          the codePost API. It allows you to
+          Integrating tools is a big pain. That's why we built the codePost API. It allows you to
           <ul>
             <li>
               <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS, autograder, and
@@ -124,18 +125,13 @@ class Landing extends React.PureComponent<{}, {}> {
           </ul>
           It's actually easy to use - you can write useful, short scripts in 10 minutes.
         </div>
-        <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our users have connected codePost with tools such as{' '}
-          <span style={{ fontWeight: 600 }}>GitHub, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span>, and more using
-          the codePost API!
-        </div>
       </div>
     );
 
     const whyPanel = (
       <LandingPanel
         text={whyText}
-        title="What is code review?"
+        title="Annotations = code review"
         subTitle=""
         module={<div>{<CodeReview />}</div>}
         type="left"
@@ -157,7 +153,7 @@ class Landing extends React.PureComponent<{}, {}> {
         moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
-        removeModelSmallScreen={false}
+        removeModelSmallScreen={true}
         bevel={true}
         gutterSize={50}
       />
@@ -177,14 +173,24 @@ class Landing extends React.PureComponent<{}, {}> {
         gutterSize={50}
       />
     );
+
+    const panelThreeModule = (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'inline-block', width: '500px' }}>
+          <Integrations
+            integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'moodle', 'homegrown', 'more']}
+          />
+        </div>
+      </div>
+    );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
-            title="3. CUSTOMIZE + AUTOMATE EVERYTHING"
-            subTitle="Run your course with codePost’s API"
-            module={<APIAnimation />}
+            title="3. INTEGRATE WITH ANYTHING"
+            subTitle="Write short scripts with the codePost API"
+            module={panelThreeModule}
             type="left"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
