@@ -10,8 +10,13 @@ import landingVars from '../../styles/pages/_landingVars';
 
 import { CODE_TOUR_DEMO_ID } from '../../routes';
 
+import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
+
 const LandingHero = () => {
   const windowSize = useWindowSize();
+  const MAX_WIDTH = 595;
+  const MAX_HEIGHT = 385;
+
   const hero = (
     <div
       style={{
@@ -25,11 +30,15 @@ const LandingHero = () => {
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
-          The easy, free{' '}
+          The easiest way to{' '}
           <Typography.Text mark className="codePost-title-highlight">
-            code review
+            grade
           </Typography.Text>{' '}
-          tool for CS courses
+          and{' '}
+          <Typography.Text mark className="codePost-title-highlight">
+            comment on
+          </Typography.Text>{' '}
+          student code
         </span>
       </div>
       <div
@@ -42,7 +51,8 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Give better feedback on programming assignments, so you can teach CS better and train good programmers
+        Give better feedback on programming assignments, so you can teach CS better and train good programmers.{' '}
+        <span style={{ fontWeight: 600, color: '#24be85' }}>Free for universities.</span>
       </div>
       <div
         style={{
@@ -68,6 +78,12 @@ const LandingHero = () => {
     </div>
   );
 
+  const boxShadow =
+    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)';
+
+  // FIX ME -- FIX constants
+  const transformSmallScreen = windowSize.width > MAX_WIDTH + 20 ? 1 : windowSize.width / (610 + 20);
+
   return (
     <div
       style={{
@@ -79,14 +95,19 @@ const LandingHero = () => {
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>
       <div
         style={{
-          maxWidth:
-            windowSize.width < landingVars.breakpoints.hero
-              ? landingVars.maxWidths.heroImgSmallScreen
-              : landingVars.maxWidths.heroImgNormal,
+          maxWidth: MAX_WIDTH,
+          maxHeight: MAX_HEIGHT,
+          minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 5,
+          overflow: 'hidden',
+          boxShadow,
+          transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
         }}
-        className="landing__heroImg"
       >
-        <img style={{ maxWidth: '100%' }} src={require('../../img/landing/compressed/landing_illustration.jpg')} />
+        <GradeAnimationVideo width={610} height={390} controls={500} />
       </div>
     </div>
   );
