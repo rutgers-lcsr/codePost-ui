@@ -90,6 +90,7 @@ const LandingHero = () => {
         display: 'flex',
         flexDirection: windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row',
         alignItems: 'center',
+        width: '100%',
       }}
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>

@@ -110,6 +110,7 @@ const LandingLayout = (props: IProps) => {
               paddingBottom: verticalPaddingHero,
               display: 'flex',
               justifyContent: 'space-between',
+              width: '100%',
             }}
           >
             {props.hero}

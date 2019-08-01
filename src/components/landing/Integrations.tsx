@@ -106,7 +106,7 @@ interface IIntegrationCardProps {
 
 const IntegrationCard = (props: IIntegrationCardProps) => {
   return (
-    <Card hoverable={true} className="integration">
+    <Card hoverable={true} style={{ cursor: 'default' }} className="integration">
       <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
         <tbody>
           <tr>
