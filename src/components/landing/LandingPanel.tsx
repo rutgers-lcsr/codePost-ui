@@ -107,7 +107,7 @@ const LandingPanel = (props: IProps) => {
     );
   } else {
     return (
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <div>{props.type === 'right' ? moduleDiv : textDiv}</div>
         <div style={{ minWidth: props.gutterSize }} />
         <div>{props.type === 'left' ? moduleDiv : textDiv}</div>

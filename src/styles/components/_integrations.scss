@@ -1,0 +1,20 @@
+.integrations {
+  display: grid;
+  grid-gap: 20px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, 95px);
+
+  .integration {
+    width: 95px;
+    background: linear-gradient(135deg, #fff, #fafafa);
+    height: 120px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+
+    .ant-card-body {
+      padding: 0px;
+      height: 100%;
+    }
+  }
+}

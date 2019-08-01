@@ -17,7 +17,6 @@ import LandingPanel from './LandingPanel';
 
 // Animations
 import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
-import APIAnimation from './landingAnimations/api/APIAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
@@ -26,6 +25,8 @@ import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
 import CodeReview from './LandingCodeReview';
+
+import Integrations from './Integrations';
 
 /**********************************************************************************************************************/
 
@@ -124,11 +125,6 @@ class Landing extends React.PureComponent<{}, {}> {
           </ul>
           It's actually easy to use - you can write useful, short scripts in 10 minutes.
         </div>
-        <div style={{ paddingBottom: 15, lineHeight: 1.5 }}>
-          Our users have connected codePost with tools such as{' '}
-          <span style={{ fontWeight: 600 }}>GitHub, JupyterHub, MOSS, Blackboard, Canvas, Moodle</span>, and more using
-          the codePost API!
-        </div>
       </div>
     );
 
@@ -177,14 +173,24 @@ class Landing extends React.PureComponent<{}, {}> {
         gutterSize={50}
       />
     );
+
+    const panelThreeModule = (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'inline-block', width: '500px' }}>
+          <Integrations
+            integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'moodle', 'homegrown', 'more']}
+          />
+        </div>
+      </div>
+    );
     const panelThree = (
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
             title="3. INTEGRATE WITH ANYTHING"
-            subTitle="Write short scripts to pull and push codePost data"
-            module={<APIAnimation />}
+            subTitle="Write short scripts with the codePost API"
+            module={panelThreeModule}
             type="left"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
