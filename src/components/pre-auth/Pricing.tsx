@@ -54,7 +54,6 @@ const Pricing = (props: IProps) => {
   const breakpoint = 700;
   const windowSize = useWindowSize();
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
-  const featureBoxPositioning = windowSize.width < breakpoint ? 'relative' : 'absolute';
 
   const freeStyle = {
     ...optionStyle,
@@ -122,7 +121,7 @@ const Pricing = (props: IProps) => {
           <div style={{ position: 'relative' }}>
             <div
               style={{
-                position: featureBoxPositioning,
+                marginTop: -15,
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
