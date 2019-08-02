@@ -626,7 +626,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     );
     const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
-    this.setState({ comments, unsavedComments, commentRubricComments });
+    this.setState({ comments, unsavedComments, commentRubricComments }, () => {
+      // We will never be in a situation in which we have an active comment immediately after
+      // deleting a comment. Either
+      // (1) we deleted the active comment, so it's no longer active
+      // (2) we deleted a different comment, which closed any previously active comment
+      this.changeActiveComment(undefined);
+    });
   };
 
   public addUnsaved = (commentID: number) => {
@@ -652,6 +658,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public onRubricCommentClick = (rubricComment: RubricCommentType): void => {
     if (!this.state.activeCommentID) {
+      message.warning(
+        `You must open a comment before applying a rubric comment. Click an existing comment,
+        or highlight some code to create a new one.`,
+        5,
+      );
       return;
     }
 
