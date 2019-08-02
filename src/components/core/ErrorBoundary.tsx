@@ -94,8 +94,9 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
             <h1>😬 Something went wrong.</h1>
             <h2>🕑 We will investigate the issue as soon as possible.</h2>
             <h2>
-              🙏 Try refreshing the page to get back to codePost! Or email us at team@codepost.io if the problem
-              persists.
+              🙏 Try refreshing the page to get back to codePost! Or,{' '}
+              <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at
+              <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
             </h2>
           </div>
         );

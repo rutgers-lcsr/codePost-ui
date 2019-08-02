@@ -944,17 +944,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactNode[] = [];
 
-    const hasComments =
-      this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
+    const toolbarWidgets = [];
+    if (!this.props.inDemoMode) {
+      const hasComments =
+        this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
 
-    const toolbarWidgets = [
-      <LayoutResizer
-        key="layout-resizer"
-        initialDimensions={this.state.dimensions}
-        setDimensions={this.setDimensions}
-        hasComments={hasComments}
-      />,
-    ];
+      toolbarWidgets.push(
+        <LayoutResizer
+          key="layout-resizer"
+          initialDimensions={this.state.dimensions}
+          setDimensions={this.setDimensions}
+          hasComments={hasComments}
+        />,
+      );
+    }
 
     const controls = (
       <Controls
