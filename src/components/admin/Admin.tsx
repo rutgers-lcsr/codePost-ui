@@ -1258,6 +1258,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             <GraderData
               loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
               assignments={this.state.assignments}
+              submissionsByAssignment={this.state.submissions}
               submissionsByGrader={this.state.submissionsByGrader}
               deleteSubmission={this.deleteSubmission}
               graders={this.state.graders}

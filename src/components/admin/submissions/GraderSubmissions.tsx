@@ -12,7 +12,7 @@ import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
 import Highlighter from 'react-highlight-words';
 
 /* codePost imports  */
-import { IGraderSubmissionsDataTable } from '../../../types/common';
+import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
@@ -35,6 +35,7 @@ interface IProps {
 
   /* submissions data */
   assignments: AssignmentType[];
+  submissionsByAssignment: IAssignmentToSubmissionsMap;
   submissionsByGrader: IGraderSubmissionsDataTable;
   graders: string[];
   inactiveGraders: string[];
@@ -49,10 +50,33 @@ interface IState {
   activeGrader?: string;
   showInactive: boolean;
   showActive: boolean;
+  means: { [assignmentID: number]: string | null };
 }
 
 class GraderData extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = { showActive: true, showInactive: false };
+  public state: Readonly<IState> = { showActive: true, showInactive: false, means: {} };
+
+  public componentDidMount() {
+    const newMeans = {};
+    for (const key of Object.keys(this.props.submissionsByAssignment)) {
+      const submissions: SubmissionType[] = this.props.submissionsByAssignment[key];
+      let scoreSum = 0;
+      let numFinalized = 0;
+      for (const submission of submissions) {
+        if (submission.isFinalized) {
+          scoreSum = scoreSum + submission.grade!;
+          numFinalized = numFinalized + 1;
+        }
+      }
+
+      if (numFinalized > 0) {
+        newMeans[key] = (scoreSum / numFinalized).toFixed(1);
+      } else {
+        newMeans[key] = null;
+      }
+    }
+    this.setState({ means: newMeans });
+  }
 
   public componentDidUpdate(oldProps: IProps, oldState: IState) {
     if (oldProps.loadComplete && !this.props.loadComplete) {
@@ -268,6 +292,7 @@ class GraderData extends React.Component<IProps, IState> {
           graders={this.props.graders}
           viewsBySubmission={this.props.viewsBySubmission}
           deleteSubmission={this.props.deleteSubmission}
+          means={this.state.means}
         />
       );
     }
