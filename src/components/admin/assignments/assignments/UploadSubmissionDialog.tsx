@@ -338,7 +338,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.SAVING:
         goForwardButton = (
-          <Button key="submit" type="primary" disabled={disableUpload} loading={true}>
+          <Button key="submit" type="primary" disabled={true} loading={true}>
             Upload
           </Button>
         );
