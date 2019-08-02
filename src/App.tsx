@@ -17,6 +17,7 @@ import Home from './components/core/Home';
 
 import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT } from './routes';
 
+import { AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
@@ -171,6 +172,42 @@ class App extends React.Component<{}, IState> {
       toRedirect: true,
       triedLoading: true,
     });
+  };
+
+  // Adds a newly created assignment to the appropriate course object
+  public addAssignment = (assignment: AssignmentType) => {
+    // User might also be a grader and/or student of course
+    const courseLists = [this.state.user!.graderCourses, this.state.user!.studentCourses];
+
+    for (const courseList of courseLists) {
+      const toChange = courseList.find((el) => {
+        return el.id === assignment.course;
+      });
+
+      // Update via mutation
+      if (toChange) {
+        toChange.assignments = [...toChange.assignments, assignment.id];
+      }
+    }
+  };
+
+  // Removes a deleted assignment from the appropriate course object
+  public deleteAssignment = (assignment: AssignmentType) => {
+    // User might also be a grader and/or student of course
+    const courseLists = [this.state.user!.graderCourses, this.state.user!.studentCourses];
+
+    for (const courseList of courseLists) {
+      const toChange = courseList.find((el) => {
+        return el.id === assignment.course;
+      });
+
+      // Update via mutation
+      if (toChange) {
+        toChange.assignments = toChange.assignments.filter((el) => {
+          return el !== assignment.id;
+        });
+      }
+    }
   };
 
   // Used to implement sliding session for JWT authenticated session
@@ -353,6 +390,8 @@ class App extends React.Component<{}, IState> {
                 <AsyncAdmin
                   {...props}
                   addCourse={this.addCreatedCourse}
+                  addAssignment={this.addAssignment}
+                  deleteAssignment={this.deleteAssignment}
                   user={this.state.user}
                   initialCourses={courseAdminCourses}
                   logout={this.handleLogout}
