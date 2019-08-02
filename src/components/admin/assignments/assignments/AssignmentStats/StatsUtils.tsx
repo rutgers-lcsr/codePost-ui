@@ -225,6 +225,7 @@ export const filterDataByStat = (
   type: DRAWER_TYPE,
   subs: SubmissionType[],
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
+  studentList: string[],
 ) => {
   switch (type) {
     case DRAWER_TYPE.Submitted:
@@ -255,7 +256,7 @@ export const filterDataByStat = (
     case DRAWER_TYPE.Missing:
       return Object.keys(submissionsByStudent).reduce(
         (students: Array<{ email: string; subID: number | null }>, student: string) => {
-          if (!submissionsByStudent[student][assignment.id]) {
+          if (studentList.indexOf(student) > -1 && !submissionsByStudent[student][assignment.id]) {
             students.push({ email: student, subID: null });
           }
           return students;
