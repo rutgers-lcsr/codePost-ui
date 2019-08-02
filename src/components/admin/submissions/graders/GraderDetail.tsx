@@ -35,6 +35,7 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  means: { [assignmentID: number]: string | null };
 }
 
 interface IState {
@@ -224,7 +225,11 @@ class GraderDetail extends React.Component<IProps, IState> {
           finalized: numFinalized,
           unfinalized: numUnfinalized,
           graderAverage: numFinalized > 0 ? `${avgGrade.toFixed(1)}/${assignment.points}` : '--',
-          assignmentAverage: assignment.mean ? `${assignment.mean.toFixed(1)}/${assignment.points}` : '--',
+          assignmentAverage: assignment.mean
+            ? `${assignment.mean.toFixed(1)}/${assignment.points}`
+            : this.props.means[assignment.id]
+            ? `${this.props.means[assignment.id]}/${assignment.points}`
+            : '--',
           actions: (
             <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
               <Icon type="menu" />

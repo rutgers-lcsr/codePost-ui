@@ -90,6 +90,7 @@ const LandingHero = () => {
         display: 'flex',
         flexDirection: windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         width: '100%',
       }}
     >

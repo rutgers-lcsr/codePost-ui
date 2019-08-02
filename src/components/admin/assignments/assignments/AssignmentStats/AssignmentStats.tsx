@@ -90,6 +90,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
       type,
       this.props.submissions,
       this.props.viewsBySubmission,
+      this.props.students,
     );
 
     const title = getDrawerTitle(type, newContent.length);
