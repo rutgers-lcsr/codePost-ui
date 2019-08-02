@@ -658,6 +658,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public onRubricCommentClick = (rubricComment: RubricCommentType): void => {
     if (!this.state.activeCommentID) {
+      message.warning(
+        `You must open a comment before applying a rubric comment. Click an existing comment,
+        or highlight some code to create a new one.`,
+        5,
+      );
       return;
     }
 
