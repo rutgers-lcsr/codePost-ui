@@ -626,7 +626,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     );
     const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
-    this.setState({ comments, unsavedComments, commentRubricComments });
+    this.setState({ comments, unsavedComments, commentRubricComments }, () => {
+      // We will never be in a situation in which we have an active comment immediately after
+      // deleting a comment. Either
+      // (1) we deleted the active comment, so it's no longer active
+      // (2) we deleted a different comment, which closed any previously active comment
+      this.changeActiveComment(undefined);
+    });
   };
 
   public addUnsaved = (commentID: number) => {
