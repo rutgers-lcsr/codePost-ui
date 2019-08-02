@@ -142,6 +142,8 @@ interface IAdminState {
 
 interface IAdminProps {
   initialCourses: CourseType[];
+  addAssignment: (assignment: AssignmentType) => void;
+  deleteAssignment: (assignment: AssignmentType) => void;
   addCourse: (newCourse: CourseType) => void;
   user: UserType;
   match: any;
@@ -965,6 +967,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       submissions[assignment.id] = [];
       const newAssignments = [...assignments, assignment];
       this.setState({ currentCourse, submissions, assignments: newAssignments, submissionsByGrader: newSubsByGrader });
+
+      // Add assignment to course representations held in top-level state
+      this.props.addAssignment(assignment);
+
       return assignment;
     });
   };
@@ -988,6 +994,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       const newCurrentCourse = currentCourse;
       newCurrentCourse.assignments = newAssignmentIDs;
+
+      // Remove assignment from course representations held in top-level state
+      this.props.deleteAssignment(toDelete);
 
       this.setState(
         {
