@@ -131,24 +131,24 @@ export const GraderInfo = (props: IGraderInfoProps) => {
 
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  function handleChange(grader: string) {
+  const handleChange = (grader: string) => {
     toggleModal();
     props.updateGrader(props.submission, grader).then(() => {
       message.success(`Successfully assigned to ${grader}`);
     });
-  }
+  };
 
-  function unassign() {
+  const unassign = (e: any) => {
     props.updateGrader(props.submission, '').then(() => {
       message.success('Successfully unassigned submission');
     });
-  }
+  };
 
-  function toggleModal() {
+  const toggleModal = () => {
     if (!props.submission.isFinalized) {
       setModalVisible(!modalVisible);
     }
-  }
+  };
 
   const menuItems = props.graders.map((grader: string, index: number) => {
     return <Select.Option key={grader}>{grader}</Select.Option>;
@@ -156,7 +156,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
 
   const renderUnassign = (menu: any) => (
     <div>
-      <div style={{ padding: '6px', cursor: 'pointer' }} onClick={unassign}>
+      <div style={{ padding: '6px', cursor: 'pointer' }} onMouseDown={unassign}>
         <Icon type="close" /> Unassign
       </div>
       <Divider style={{ margin: '4px 0' }} />
