@@ -13,6 +13,8 @@ import Loadable from 'react-loadable';
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 
+import Dashboard from './components/codepost-admin/Dashboard';
+
 import Home from './components/core/Home';
 
 import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT } from './routes';
@@ -129,6 +131,7 @@ class App extends React.Component<{}, IState> {
     }
 
     if (this.state.has_token && !this.state.user) {
+      console.log('didmount', this.state.has_token, this.state.user);
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
@@ -149,6 +152,7 @@ class App extends React.Component<{}, IState> {
           this.handleLogout();
         });
     } else {
+      console.log('triedloading');
       this.setState({ triedLoading: true });
     }
   }
@@ -291,6 +295,7 @@ class App extends React.Component<{}, IState> {
 
   public render() {
     if (this.state.toRedirect) {
+      console.log('redirect');
       return <Redirect to={'/'} />;
     }
 
@@ -323,6 +328,20 @@ class App extends React.Component<{}, IState> {
       const isStudent = user ? user.studentCourses.length > 0 : false;
       const isGrader = user ? user.graderCourses.length > 0 : false;
       const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
+      const isCodePostAdmin = user ? user.codePostAdmin : false;
+
+      let loginasRoute;
+      let dashboardRoute;
+      if (isCodePostAdmin) {
+        loginasRoute = (
+          <Route
+            exact={true}
+            path={'/loginAs/:email'}
+            render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
+          />
+        );
+        dashboardRoute = <Route exact={true} path={'/dashboard'} render={(props: any) => <Dashboard {...props} />} />;
+      }
 
       if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
@@ -444,15 +463,10 @@ class App extends React.Component<{}, IState> {
         );
       }
 
-      // const isChromeBrowser = window.hasOwnProperty('chrome');
-
       return (
         <Switch>
-          <Route
-            exact={true}
-            path={'/loginAs/:email'}
-            render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-          />
+          {loginasRoute}
+          {dashboardRoute}
 
           <Route
             exact={true}
