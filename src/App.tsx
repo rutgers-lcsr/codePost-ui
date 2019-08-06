@@ -340,7 +340,15 @@ class App extends React.Component<{}, IState> {
             render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
           />
         );
-        dashboardRoute = <Route exact={true} path={'/dashboard'} render={(props: any) => <Dashboard {...props} />} />;
+        dashboardRoute = (
+          <Route
+            exact={true}
+            path={'/dashboard'}
+            render={(props: any) => (
+              <Dashboard {...props} isLoggedIn={true} handleLogout={this.handleLogout} user={this.state.user} />
+            )}
+          />
+        );
       }
 
       if (isAdmin || isGrader) {
