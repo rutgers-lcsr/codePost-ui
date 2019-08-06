@@ -266,7 +266,7 @@ export const Students = (props: {
       <div style={{ color: consoleTheme.subheaderStudents }}>
         {props.submission.students!.map((student) => {
           return (
-            <div key={student} style={{ display: 'flex', alignItems: 'center' }}>
+            <div key={student} style={{ display: 'flex', alignItems: 'center', paddingBottom: '2px' }}>
               <Avatar
                 size="small"
                 icon="user"
