@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { FileType } from '../../infrastructure/file';
 
+import { slack } from './slack';
+
 import { Collapse } from 'antd';
 
 const { Panel } = Collapse;
@@ -37,25 +39,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       url: window.location.href,
     };
 
-    // Log errors to server
-    fetch(`${process.env.REACT_APP_API_URL}/logs/logError/`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          return Promise.reject(res.status);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
   }
 
   public render() {

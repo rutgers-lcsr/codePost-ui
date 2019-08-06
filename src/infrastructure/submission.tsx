@@ -17,6 +17,8 @@ import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 
+import { slack } from '../components/core/slack';
+
 import { message } from 'antd';
 
 /*****************************************************************************/
@@ -157,6 +159,14 @@ class Submission {
       );
       return [files, comments, commentRubricComments];
     } catch (err) {
+      const payload = {
+        error: `Error loading submission ${submission.id}`,
+        errorDetail: JSON.stringify(err),
+        url: window.location.href,
+      };
+
+      slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+
       message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
       return [[], {}, {}];
     }
