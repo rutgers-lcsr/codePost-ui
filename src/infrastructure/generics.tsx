@@ -142,6 +142,7 @@ function readObjectDetail<T, O, I>(
         }
       });
     }
+    urlString = urlString.replace(/\+/g, '%2B');
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
@@ -181,6 +182,7 @@ function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
         }
       });
     }
+    urlString = urlString.replace(/\+/g, '%2B');
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
