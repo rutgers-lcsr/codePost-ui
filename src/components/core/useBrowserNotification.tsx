@@ -11,8 +11,9 @@ const useBrowserNotification = () => {
   };
 
   React.useEffect(() => {
-    // @ts-ignore
-    if (!window.chrome) {
+    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+    if (!isChrome) {
       openNotificationWithIcon('warning');
     }
 
