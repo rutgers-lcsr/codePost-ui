@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Typography } from 'antd';
+import { Modal, Typography } from 'antd';
+
 import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
@@ -16,6 +17,11 @@ const LandingHero = () => {
   const windowSize = useWindowSize();
   const MAX_WIDTH = 595;
   const MAX_HEIGHT = 385;
+  const [modalShowing, setModalShowing] = React.useState(false);
+
+  const tryItClick = () => {
+    setModalShowing(true);
+  };
 
   const hero = (
     <div
@@ -69,12 +75,33 @@ const LandingHero = () => {
           </CPButton>
         </Link>
         &nbsp; &nbsp;
-        <CPButton style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }} cpType="secondary">
-          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank">
-            Try it out!
-          </a>
+        <CPButton
+          style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
+          cpType="secondary"
+          onClick={tryItClick}
+        >
+          Try it out!
         </CPButton>
       </div>
+      <Modal
+        visible={modalShowing}
+        onCancel={setModalShowing.bind(false, false)}
+        footer={null}
+        title="Try out codePost!"
+      >
+        <CPButton cpType="primary" block>
+          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank">
+            See how code annotation works
+          </a>
+        </CPButton>
+        <br />
+        <br />
+        <CPButton cpType="secondary" block>
+          <a href="https://codepost.wistia.com/medias/n0ja8jbpny" target="_blank">
+            Watch a video overview
+          </a>
+        </CPButton>
+      </Modal>
     </div>
   );
 
