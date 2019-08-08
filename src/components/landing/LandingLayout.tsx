@@ -5,8 +5,6 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-// import { LandingVideo } from './LandingVideo';
-
 import WistiaVideo from './WistiaVideo';
 
 interface IProps {
