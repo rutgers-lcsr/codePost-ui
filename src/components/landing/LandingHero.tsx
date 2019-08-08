@@ -91,7 +91,7 @@ const LandingHero = () => {
       >
         <CPButton cpType="primary" block>
           <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank">
-            See how code annotation works
+            Interactive code annotation demo
           </a>
         </CPButton>
         <br />
