@@ -1,5 +1,9 @@
 import * as React from 'react';
 
+import useWindowSize from '../core/useWindowSize';
+
+import landingVars from '../../styles/pages/_landingVars';
+
 const overlayStyle: React.CSSProperties = {
   height: '100%',
   background: 'rgba(0,0,10,.65)',
@@ -36,24 +40,30 @@ const playButtonStyle: React.CSSProperties = {
   margin: '0 auto',
   transition: '.15s',
   border: '7px solid rgba(63,141,232,0)',
-  display: 'grid',
   alignItems: 'center',
   textAlign: 'center',
-  cursor: 'pointer',
 };
 
 const arrowStyle: React.CSSProperties = {
   fill: '#24be85',
   width: '35%',
   margin: '0 auto',
-  cursor: 'pointer',
 };
 
 const LandingVideo = () => {
   const [wasClicked, setWasClicked] = React.useState(false);
+  const windowSize = useWindowSize();
+
+  const turnOnOverlay = () => {
+    setWasClicked(false);
+  };
+
+  const turnOffOverlay = () => {
+    setWasClicked(true);
+  };
 
   return (
-    <div style={{ position: 'relative' }} onClick={setWasClicked.bind(false, true)}>
+    <div style={{ position: 'relative', cursor: 'pointer' }}>
       <div className="video-overlay" style={{ ...overlayStyle, display: wasClicked ? 'none' : 'flex' }}>
         <div className="overlay-content-wrapper">
           <div className="video-title" style={titleStyle}>
@@ -62,7 +72,13 @@ const LandingVideo = () => {
           <div className="video-subtitle" style={subTitleStyle}>
             6 minutes
           </div>
-          <div className="play-button" style={playButtonStyle}>
+          <div
+            className="play-button"
+            style={{
+              ...playButtonStyle,
+              display: windowSize.width < landingVars.breakpoints.verticalPanels ? 'none' : 'grid',
+            }}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="play-icon" style={arrowStyle}>
               <path
                 d="M7.74,31.44C5.67,32.69,4,31.74,4,29.32V2.67C4,
@@ -72,7 +88,7 @@ const LandingVideo = () => {
           </div>
         </div>
       </div>
-      <video width="100%" height="100%" controls id="player" onPlay={setWasClicked.bind(false, true)}>
+      <video width="100%" height="100%" controls id="player" onPlay={turnOffOverlay} onPause={turnOnOverlay}>
         <source src="https://codepost-videos.s3.us-east-2.amazonaws.com/codepost_overview.mp4" type="video/mp4" />
       </video>
     </div>
