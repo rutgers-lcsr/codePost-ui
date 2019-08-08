@@ -5,6 +5,8 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
+import { LandingVideo } from './LandingVideo';
+
 interface IProps {
   topBar: React.ReactNode;
   hero: React.ReactNode;
@@ -192,6 +194,12 @@ const LandingLayout = (props: IProps) => {
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }}>
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
+      </div>
+      <Divider style={{ margin: 0 }} />
+      <div style={{ ...sectionStyle }}>
+        <div style={{ ...panelStyle }}>
+          <LandingVideo />
+        </div>
       </div>
       <div>
         <Divider style={{ margin: 0 }} />
