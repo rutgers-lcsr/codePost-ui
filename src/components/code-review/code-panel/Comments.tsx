@@ -24,10 +24,13 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   file: FileType;
   verticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
+  isStudent: boolean;
+  updateFeedback: (commentID: number, feedback: number) => void;
 }
 
 interface ICommentsEditProps {
   readOnly: boolean;
+
   activeCommentID?: number;
   changeActive: (id: number | undefined) => void;
   saveComment: (comment: CommentType) => void;
@@ -285,6 +288,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       return (
         <Comment
           key={key}
+          isStudent={this.props.isStudent}
           commentType={commentType}
           comment={comment}
           file={this.props.file}
@@ -297,6 +301,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           removeUnsaved={this.props.removeUnsaved}
           setCommentPlacements={this.placeCommentsOnNextFrame}
           removeRubricComment={this.props.removeRubricComment}
+          updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
         />
       );
     });

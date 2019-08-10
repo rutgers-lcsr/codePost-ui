@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Input, message, Popover } from 'antd';
+import { Button, Input, message, Popover } from 'antd';
 const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
@@ -34,6 +34,8 @@ interface ICommentProps {
   file: FileType;
   rubricComment?: RubricCommentType;
 
+  isStudent: boolean;
+
   placement: number;
 
   changeActive: (id: number | undefined) => void;
@@ -45,6 +47,8 @@ interface ICommentProps {
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   setCommentPlacements: () => void;
+
+  updateFeedback: (feedback: number) => void;
 }
 
 interface ICommentState {
@@ -60,12 +64,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
-    // console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
-  }
-
-  public componentWillUnmount() {
-    // console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -113,12 +112,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public edited = () => {
-    // this.props.addUnsaved(this.props.comment.id);
     this.setState({ status: 'edited' });
   };
 
   public idle = () => {
-    // this.props.removeUnsaved(this.props.comment.id);
     this.setState({ status: 'idle' });
   };
 
@@ -423,6 +420,38 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
+    // --------------------------------- feedback      ------------------------------------ //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    let feedback = null;
+    if (this.props.isStudent && this.props.rubricComment) {
+      const setFeedback = (feedbackNum: number) => {
+        this.props.updateFeedback(feedbackNum);
+      };
+
+      const feedbackScore = this.props.comment.feedback;
+
+      feedback = (
+        <Button.Group style={{ width: '100%' }}>
+          <CPButton
+            style={{ width: '50%' }}
+            cpType={feedbackScore === -1 ? 'primary' : 'secondary'}
+            onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
+          >
+            👎
+          </CPButton>
+          <CPButton
+            style={{ width: '50%' }}
+            cpType={feedbackScore === 1 ? 'primary' : 'secondary'}
+            onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
+          >
+            👍
+          </CPButton>
+        </Button.Group>
+      );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
     // ---------------------------------- Components -------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,6 +506,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             </div>
           </div>
         </div>
+        {feedback}
       </div>
     );
   }

@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 
 import { RubricCommentType } from './rubricComment';
 
-import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject, updateObjectDetail } from './generics';
 
 const CommentV = t.intersection(
   [
