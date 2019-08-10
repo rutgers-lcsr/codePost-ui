@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Button, Input, message, Popover } from 'antd';
+import { Button, Input, message, Popover, Tooltip } from 'antd';
 const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
@@ -433,20 +433,24 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       feedback = (
         <Button.Group style={{ width: '100%' }}>
-          <CPButton
-            style={{ width: '50%' }}
-            cpType={feedbackScore === -1 ? 'primary' : 'secondary'}
-            onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
-          >
-            👎
-          </CPButton>
-          <CPButton
-            style={{ width: '50%' }}
-            cpType={feedbackScore === 1 ? 'primary' : 'secondary'}
-            onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
-          >
-            👍
-          </CPButton>
+          <Tooltip title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}>
+            <CPButton
+              style={{ width: '50%' }}
+              cpType={feedbackScore === -1 ? 'primary' : 'secondary'}
+              onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
+            >
+              👎
+            </CPButton>
+          </Tooltip>
+          <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
+            <CPButton
+              style={{ width: '50%' }}
+              cpType={feedbackScore === 1 ? 'primary' : 'secondary'}
+              onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
+            >
+              👍
+            </CPButton>
+          </Tooltip>
         </Button.Group>
       );
     }
