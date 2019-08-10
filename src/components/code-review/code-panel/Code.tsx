@@ -98,6 +98,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       text: '',
       rubricComment: null,
       author: props.user,
+      feedback: 0,
     };
 
     props.addComment(newComment, props.file);

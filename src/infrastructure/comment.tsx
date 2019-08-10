@@ -16,6 +16,7 @@ const CommentV = t.intersection(
       text: t.union([t.string, t.null]),
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
+      feedback: t.number,
     }),
     t.partial({
       author: t.string,
@@ -43,6 +44,13 @@ const CommentVPatch = t.intersection(
   'CommentVPatch',
 );
 
+const CommentVFeedback = t.intersection([
+  GenericObject,
+  t.type({
+    feedback: t.number,
+  }),
+]);
+
 type CommentType = t.TypeOf<typeof CommentV>;
 
 class CommentIO {
@@ -50,6 +58,8 @@ class CommentIO {
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
+
+  public static updateFeedback = updateObjectDetail(CommentV, CommentVFeedback, 'comments', 'feedback');
 
   public static sortComments = (comments: CommentType[]): CommentType[] => {
     return comments.sort((a: CommentType, b: CommentType) => {
@@ -119,6 +129,7 @@ const CommentMock: CommentType = {
   file: 1,
   rubricComment: 1,
   author: 'grader@myschool.edu',
+  feedback: 0,
 };
 
 export { CommentType, CommentIO, CommentMock, UiComment };
