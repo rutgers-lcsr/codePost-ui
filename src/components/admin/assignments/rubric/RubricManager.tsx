@@ -900,6 +900,7 @@ class RubricManager extends React.Component<IProps, IState> {
               numCategories={this.state.rubricCategories.length}
               otherCategories={this.state.rubricCategories}
               feedbackScores={this.state.feedbackScores}
+              commentFeedbackOn={this.props.assignment.commentFeedback}
             />
           );
         });

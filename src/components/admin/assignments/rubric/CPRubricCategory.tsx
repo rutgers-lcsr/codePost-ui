@@ -62,6 +62,7 @@ interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
   onCommentDragEnd: any;
   otherCategories: RubricCategoryType[];
   feedbackScores?: { [commentID: number]: IFeedbackScore };
+  commentFeedbackOn: boolean;
 }
 
 interface IState {
@@ -519,12 +520,15 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               />
             </span>
           ),
-          feedback:
-            thisFeedback === undefined ? (
-              <Spin />
-            ) : (
-              `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
-            ),
+          feedback: !this.props.commentFeedbackOn ? (
+            <Tag color="volcano" key="disabled">
+              DISABLED
+            </Tag>
+          ) : thisFeedback === undefined ? (
+            <Spin />
+          ) : (
+            `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
+          ),
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
               <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
