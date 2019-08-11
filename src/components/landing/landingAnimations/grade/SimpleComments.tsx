@@ -48,6 +48,7 @@ const SimpleComment = (props: {
       placement={1}
       file={FileMock}
       updateFeedback={empty}
+      studentFeedbackOn={false}
     />
   );
 };

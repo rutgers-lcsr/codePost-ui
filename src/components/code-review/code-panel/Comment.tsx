@@ -49,6 +49,7 @@ interface ICommentProps {
   setCommentPlacements: () => void;
 
   updateFeedback: (feedback: number) => void;
+  studentFeedbackOn: boolean;
 }
 
 interface ICommentState {
@@ -424,7 +425,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     let feedback = null;
-    if (this.props.isStudent && this.props.rubricComment) {
+    if (this.props.isStudent && this.props.rubricComment && this.props.studentFeedbackOn) {
       const setFeedback = (feedbackNum: number) => {
         this.props.updateFeedback(feedbackNum);
       };

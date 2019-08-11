@@ -1121,6 +1121,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 
@@ -1215,6 +1216,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 
@@ -1311,6 +1313,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 

@@ -26,6 +26,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
   updateFeedback: (commentID: number, feedback: number) => void;
+  studentFeedbackOn: boolean;
 }
 
 interface ICommentsEditProps {
@@ -302,6 +303,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           setCommentPlacements={this.placeCommentsOnNextFrame}
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
+          studentFeedbackOn={this.props.studentFeedbackOn}
         />
       );
     });
