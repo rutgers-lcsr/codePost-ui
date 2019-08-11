@@ -839,6 +839,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       mean: null,
       median: null,
       points: 20,
+      commentFeedback: true,
     };
 
     const demoCourse: CourseType = {
