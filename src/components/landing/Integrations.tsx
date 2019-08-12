@@ -1,64 +1,75 @@
 import * as React from 'react';
 
-import { Card } from 'antd';
+import { Card, Tooltip } from 'antd';
 
 // import { Link } from 'react-router-dom';
 
 export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   github: {
+    key: 'github',
     name: 'Github',
     logo: require('./../../img/integrations/github.png'),
     description: 'Github does source control.',
   },
   jupyter: {
+    key: 'jupyter',
     name: 'Jupyter',
     logo: require('./../../img/integrations/jupyter.png'),
     description: 'Jupyter does IPython Notebooks. Typically used in data science courses.',
   },
   canvas: {
+    key: 'canvas',
     name: 'Canvas',
     logo: require('./../../img/integrations/canvas.png'),
     description: 'Canvas is an LMS.',
   },
   blackboard: {
+    key: 'blackboard',
     name: 'Blackboard',
     logo: require('./../../img/integrations/blackboard.jpeg'),
     description: 'Blackboard is an LMS.',
   },
   moss: {
+    key: 'moss',
     name: 'Moss',
     logo: require('./../../img/integrations/moss.png'),
     description: 'MOSS is an open-source plagiarism detection service.',
   },
   homegrown: {
+    key: 'homegrown',
     name: 'Homegrown',
     logo: require('./../../img/integrations/homegrown.png'),
     description: 'Lots of schools have their own software.',
   },
   more: {
+    key: 'more',
     name: '+ more',
     logo: require('./../../img/integrations/more.png'),
     description: 'See more integrations...',
   },
   submitty: {
+    key: 'submitty',
     name: 'Submitty',
     logo: require('./../../img/integrations/submitty.png'),
     description: `Submitty is an open-source student submission system \
     developed by the Rensselaer Center for Open Source Software.`,
   },
   revel: {
+    key: 'revel',
     name: 'Pearson|Revel',
     logo: require('./../../img/integrations/revel.png'),
     description: `Revel provides interactive programming \
     exercises`,
   },
   replit: {
+    key: 'replit',
     name: 'Repl.it',
     logo: require('./../../img/integrations/replit.png'),
     description: `Repl.it is an online compiler and \
     IDE.`,
   },
   moodle: {
+    key: 'moodle',
     name: 'Moodle',
     logo: require('./../../img/integrations/moodle.png'),
     description: `Moodle is an open source \
@@ -67,6 +78,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
 };
 
 export type IntegrationType = {
+  key: string;
   name: string;
   logo: any;
   description: string;
@@ -106,7 +118,7 @@ interface IIntegrationCardProps {
 
 const IntegrationCard = (props: IIntegrationCardProps) => {
   return (
-    <Card hoverable={true} style={{ cursor: 'default' }} className="integration">
+    <Card hoverable={true} className="integration integration--card">
       <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
         <tbody>
           <tr>
@@ -132,6 +144,38 @@ const IntegrationCard = (props: IIntegrationCardProps) => {
         </tbody>
       </table>
     </Card>
+  );
+};
+
+interface IIntegrationButtonProps {
+  integration: IntegrationType;
+  active: boolean;
+  onClick: any;
+}
+
+export const IntegrationButton = (props: IIntegrationButtonProps) => {
+  const onClick = () => {
+    props.onClick(props.integration.key);
+  };
+
+  return (
+    <Tooltip title={props.integration.name}>
+      <Card
+        hoverable={true}
+        className={`integration integration--button ${props.active ? 'integration--active' : null}`}
+        onClick={onClick}
+      >
+        <table style={{ height: '100%', width: '100%', margin: 0, padding: 0, border: 0 }}>
+          <tbody>
+            <tr>
+              <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={onClick}>
+                <img src={props.integration.logo} style={{ width: '45px' }} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Card>
+    </Tooltip>
   );
 };
 
