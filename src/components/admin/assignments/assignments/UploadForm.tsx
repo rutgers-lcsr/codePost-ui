@@ -119,55 +119,35 @@ const Canvas = (props: IUploadFormProps) => {
 
   const instructions = `# Process
 
-1. Download the script and install dependencies
+See the 2 minute process in action [here](https://cl.ly/3945935491cc)!
+
+1. Download the script (
+[here](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/canvasToCodePost.py)) and install dependencies
 
 \`\`\`
 pip install pandas
-git clone ... canvasToCodePost
-cd canvasToCodePost
 \`\`\`
 
-2. Run the script
+2. Place all the files in the same directory. Run the script
 
 \`\`\`
 python3 canvasToCodePost.py submissions roster.csv partners.csv
 \`\`\`
 
-3. Drag the newly created 'codePost_upload' folder here
+3. Drag the newly created 'codePost_upload' folder in the box below!
 
 # What you'll need
 
 1. **The downloaded submissions from Canvas** (From Canvas, go to the Assignment page
 and click "Download Submissions" – see [here](https://cl.ly/d5fc112207d1))
 
-2. **The course roster** (\`roster.csv\`)
+2. **The course roster** (\`roster.csv\`,
+[template](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/roster_template.csv))
 
-3. **(optional) The assignment partner list** (\`partneres.csv\`)
+3. **(optional) The assignment partner list** (\`partners.csv\`,
+[template](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/partners_template.csv))
 
 Make sure each upload is in the correct format.
-
-#### (1) Canvas submissions format
-
-Canvas defaults to the following filenaming convention:
-
-\`{last_name}{first_name}_{assignmentID}_{submissionID}_{filename}.{extension}\`
-
-#### (2) Roster format
-
-The roster will allow us to map names to emails (codePost usernames). The \`.CSV\` file should be these headers:
-
-\`first_name, last_name, email\`
-
-#### (3) Partners format
-
-Each row will represent partners in a submission. Leaving out a student assumes they won't
-have a partner for this assignment.
-
-\`\`\`
-partner1@university.edu, partner2@university.edu
-solo1@university.edu
-partner3@university.edu,partner4@university.edu,partner5@university.edu
-\`\`\`
 `;
 
   const codePostFormat = `\`\`\`
@@ -187,6 +167,27 @@ partner3@university.edu,partner4@university.edu,partner5@university.edu
     studenttwo_123456_54323_file1.java
     studenttwo_123456_54324_file2.txt
   \`\`\``;
+
+  const formatPanel1 = `Canvas defaults to the following filenaming convention:
+
+\`{last_name}{first_name}_{assignmentID}_{submissionID}_{filename}.{extension}\`
+`;
+
+  const formatPanel2 = `The roster will allow us to map names to emails (codePost usernames).
+ The \`.csv\` file should have the following headers:
+
+\`first_name, last_name, email\`
+`;
+
+  const formatPanel3 = `Each row will represent partners in a submission. Leaving out a student assumes they won't
+have a partner for this assignment.
+
+\`\`\`
+partner1@university.edu, partner2@university.edu
+solo1@university.edu
+partner3@university.edu,partner4@university.edu,partner5@university.edu
+\`\`\`
+`;
 
   return (
     <div>
@@ -245,6 +246,17 @@ partner3@university.edu,partner4@university.edu,partner5@university.edu
           </div>
           <br />
           <BlockMarkdown source={instructions} />
+          <Collapse>
+            <Panel header="(1) Canvas submissions format" key="1">
+              <ReactMarkdown source={formatPanel1} />
+            </Panel>
+            <Panel header="(2) Roster format" key="2">
+              <ReactMarkdown source={formatPanel2} />
+            </Panel>
+            <Panel header="(3) Partners format" key="3">
+              <ReactMarkdown source={formatPanel3} />
+            </Panel>
+          </Collapse>
         </Panel>
       </Collapse>
       <br />
@@ -265,113 +277,7 @@ partner3@university.edu,partner4@university.edu,partner5@university.edu
 };
 
 const Blackboard = (props: IUploadFormProps) => {
-  const exampleText = `### What you'll need
-
-1. The downloaded submissions from Blackboard
-2. A \`.CSV\` file with the course roster
-3. (optional) A \`.CSV\` file with any partners for the assignment
-
-Make sure each upload is in the correct format.
-
-#### (1) Blackboard submissions format
-
-Blackboard defaults to the following filenaming convention:
-
-\`{last_name}{first_name}_{assignmentID}_{submissionID}_{filename}.{extension}\`
-
-#### (2) Roster format
-
-The roster will allow us to map names to emails (codePost usernames). The \`.CSV\` file should be these headers:
-
-\`first_name, last_name, email\`
-
-#### (3) Partners format
-
-Each row will represent partners in a submission. Leaving out a student assumes they won't
-have a partner for this assignment.
-
-\`\`\`
-partner1@university.edu, partner2@university.edu
-solo1@university.edu
-partner3@university.edu,partner4@university.edu,partner5@university.edu
-\`\`\`
-
-`;
-
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
-
-    // prevent upload
-    return false;
-  };
-
-  return (
-    <div>
-      <Collapse defaultActiveKey={['1']}>
-        <Panel header="Instructions" key="1">
-          This upload form is intended to make the Blackboard upload as seamless as possible. Questions? Please email
-          team@codepost.io.
-          <br />
-          <br />
-          <ReactMarkdown source={exampleText} />
-        </Panel>
-      </Collapse>
-      <br />
-      <br />
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div>
-          <div className="cp-label cp-label--large cp-label--bold">Submissions</div>
-          <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-            <p className="ant-upload-drag-icon">
-              <Icon type="inbox" />
-            </p>
-            <p className="ant-upload-text">Click or drag a folder to upload</p>
-            <p className="ant-upload-hint">Folder of submissions.</p>
-          </Dragger>
-        </div>
-        <div>
-          <div className="cp-label cp-label--large cp-label--bold">Roster</div>
-          <Dragger showUploadList={false} directory={false} beforeUpload={beforeUpload}>
-            <p className="ant-upload-drag-icon">
-              <Icon type="inbox" />
-            </p>
-            <p className="ant-upload-text">Click or drag a file to upload</p>
-            <p className="ant-upload-hint">CSV of the course roster.</p>
-          </Dragger>
-        </div>
-        <div>
-          <div className="cp-label cp-label--large cp-label--bold">Partners (optional)</div>
-          <Dragger showUploadList={false} directory={false} beforeUpload={beforeUpload}>
-            <p className="ant-upload-drag-icon">
-              <Icon type="inbox" />
-            </p>
-            <p className="ant-upload-text">Click or drag a file to upload</p>
-            <p className="ant-upload-hint">CSV of the partner list for this assignment.</p>
-          </Dragger>
-        </div>
-      </div>
-      <br />
-      <br />
-      <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
-    </div>
-  );
+  return <div>coming soon!</div>;
 };
 
 export default UploadForm;
