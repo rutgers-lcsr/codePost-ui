@@ -88,7 +88,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public init = () => {
     const text: string = this.props.comment.text ? this.props.comment.text : '';
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
-    const status: CommentStatus = text === '' && points === 0 ? 'edited' : 'idle';
+    const status: CommentStatus =
+      text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
 
     return { text, points, status };
   };
