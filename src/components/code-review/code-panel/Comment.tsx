@@ -22,7 +22,7 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 import { wait } from '../../../infrastructure/animation';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
@@ -432,12 +432,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
       const feedbackScore = this.props.comment.feedback;
 
+      const negTheme =
+        feedbackScore === -1 ? 'primary' : this.context.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+      const posTheme =
+        feedbackScore === 1 ? 'primary' : this.context.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
       feedback = (
         <Button.Group style={{ width: '100%' }}>
           <Tooltip title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}>
             <CPButton
               style={{ width: '50%', borderTopLeftRadius: '0px' }}
-              cpType={feedbackScore === -1 ? 'primary' : 'secondary'}
+              cpType={negTheme}
               onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
             >
               👎
@@ -446,7 +452,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
             <CPButton
               style={{ width: '50%', borderTopRightRadius: '0px' }}
-              cpType={feedbackScore === 1 ? 'primary' : 'secondary'}
+              cpType={posTheme}
               onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
             >
               👍
