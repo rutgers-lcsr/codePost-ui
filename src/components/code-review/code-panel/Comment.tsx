@@ -436,7 +436,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <Button.Group style={{ width: '100%' }}>
           <Tooltip title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}>
             <CPButton
-              style={{ width: '50%' }}
+              style={{ width: '50%', borderTopLeftRadius: '0px' }}
               cpType={feedbackScore === -1 ? 'primary' : 'secondary'}
               onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
             >
@@ -445,7 +445,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           </Tooltip>
           <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
             <CPButton
-              style={{ width: '50%' }}
+              style={{ width: '50%', borderTopRightRadius: '0px' }}
               cpType={feedbackScore === 1 ? 'primary' : 'secondary'}
               onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
             >
