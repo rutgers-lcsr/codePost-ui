@@ -33,16 +33,20 @@ const useBlockMarkdownRenderers = () => {
 
   const codeRenderer = (props: any) => {
     return (
-      <div
-        style={{
-          border: `1px solid ${consoleTheme.commentTitleBorder}`,
-          borderRadius: '4px',
-          backgroundColor: consoleTheme.commentCode,
-        }}
-      >
-        <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
-          {props.value}
-        </SyntaxHighlighter>
+      <div>
+        <div
+          style={{
+            border: `1px solid ${consoleTheme.commentTitleBorder}`,
+            borderRadius: '4px',
+            backgroundColor: consoleTheme.commentCode,
+          }}
+          className="markdown-code"
+        >
+          <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
+            {props.value}
+          </SyntaxHighlighter>
+        </div>
+        <div style={{ height: '14px' }} />
       </div>
     );
   };

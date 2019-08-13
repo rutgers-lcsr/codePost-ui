@@ -68,3 +68,10 @@ th {
   white-space: pre-wrap;
   border-bottom: 1px solid #f2f2f2;
 }
+
+.markdown-code {
+  pre {
+    margin: 0px;
+    background-color: transparent !important;
+  }
+}
