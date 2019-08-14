@@ -60,14 +60,9 @@ const sections = [
         height="344"
         key="1"
       />,
-      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/jupyter.mp4" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="3" />,
-      <img
-        src="https://cl.ly/5e8d9b9f695d/Screen%252520Recording%2525202019-08-12%252520at%25252005.48%252520PM.gif"
-        width="550"
-        height="344"
-        key="4"
-      />,
+      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
+      <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
+      <Video key="4" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4" />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -78,6 +73,8 @@ const sections = [
       see results while reviewing.`,
       `codePost supports text-only formats as well as code. If your students upload .txt files or .md files,
       you can annotate those just like you would annotate code. We'll render the .md files for you, too.`,
+      `When grading with codePost, you and your graders can apply rubrics. You can also track how rubrics are applied,
+      and even retroactively alter rubric items after they've been used.`,
     ],
   },
   {
@@ -85,15 +82,21 @@ const sections = [
     features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback'],
     spotlights: [
       <img
-        src="https://codepost-videos.s3.us-east-2.amazonaws.com/feedback_on_feedback.png"
+        src="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback_on_feedback.png"
         width="550"
         height="344"
         key="0"
       />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="1" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="2" />,
+      <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4" />,
+      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4" />,
     ],
-    captions: [],
+    captions: [
+      `In codePost, students can leave feedback on the feedback they receive. Course leaders can use this
+      information to fine-tune their rubrics, as well as evaluate graders.`,
+      `You can take advantage in peer grading with codePost. Just make your students "graders" and enable anonymous
+      grading mode.`,
+      'Students use codePost to access their scores and feedback.',
+    ],
   },
   {
     title: 'For instructors',
@@ -112,13 +115,28 @@ const sections = [
         height="344"
         key="0"
       />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="1" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="2" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="3" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="4" />,
-      <div style={{ width: 500, height: 312.5, background: 'red' }} key="5" />,
+      <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4" />,
+      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4" />,
+      <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/distribute-work.mp4" />,
+      <Video
+        key="4"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/grader-consistency.mp4"
+      />,
+      <Video key="5" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback-views.mp4" />,
     ],
-    captions: [],
+    captions: [
+      `codePost gives course leaders a dashboard that helps track the progress of grading, so no submission
+    slips through the cracks.`,
+      `Anonymous Grading Mode hides student identity from graders, preventing conflicts of interest or implicit
+      bias to influence grading.`,
+      `Changes made to rubrics after grading propagate to all submissions to which the rubric has been applied.
+      So you can easily change a deduction or fix a typo.`,
+      `codePost's queue-based work distribution system removes the need for instructors to assign submissions
+      to graders for review. You can also order the queue however you want`,
+      `Some graders can be harsher score-wise than others. This isn't fair to students. codePost lets you audit
+    grader work to ensure consistency.`,
+      'See whether students are viewing the feedback you spend so much time giving!',
+    ],
   },
 ];
 
