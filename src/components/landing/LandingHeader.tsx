@@ -56,6 +56,11 @@ const LandingHeader = () => {
       Login
     </Link>
   );
+  const features = (
+    <Link style={{ ...linkStyle }} className="link--header" to="/why-use-codePost">
+      Features
+    </Link>
+  );
 
   if (windowSize.width < landingVars.breakpoints.header) {
     // Small Screen View
@@ -73,6 +78,7 @@ const LandingHeader = () => {
             {docs}
             {pricing}
             {faqs}
+            {features}
             {login}
             <Link style={{ ...linkStyle, background: '#24be85', color: 'white' }} className="link--header" to="/signup">
               Sign Up
@@ -104,6 +110,7 @@ const LandingHeader = () => {
             {docs}
             {pricing}
             {faqs}
+            {features}
           </div>
           <div style={{ paddingBottom: 4 }}>
             {login}
