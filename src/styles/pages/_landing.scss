@@ -95,6 +95,17 @@
   }
 }
 
+#WhyUse {
+  .whyUse__link {
+    transition: 0.3s;
+    color: black;
+    &:hover {
+      color: #24be85 !important;
+      transition: 0.3s;
+    }
+  }
+}
+
 // Testimonial highlights
 .codePost-highlight {
   mark {
