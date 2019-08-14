@@ -168,23 +168,21 @@ const SectionRow = (props: IProps) => {
     <div
       style={{
         ...columnStyle,
-        textAlign: windowSize.width < midBreakPoint ? 'center' : props.isFlipped ? 'right' : undefined,
+        textAlign: windowSize.width < midBreakPoint ? 'center' : undefined,
+        marginRight: !props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
+        marginLeft: props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
       }}
     >
       <div
         style={{
           fontWeight: 600,
-          fontSize: '32px',
+          fontSize: '36px',
+          marginBottom: 20,
         }}
       >
         {props.title}
       </div>
-      <div
-        style={{
-          marginRight: !props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
-          marginLeft: props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
-        }}
-      >
+      <div>
         {props.features.map((feature, i) => {
           return (
             <div
@@ -192,10 +190,11 @@ const SectionRow = (props: IProps) => {
               style={{
                 fontSize: '16px',
                 margin: '5px 0',
-                background: activeFeature === i ? '#47cc9724' : 'none',
-                borderRadius: '5px',
+                background: activeFeature === i ? '#24be85' : 'none',
+                color: activeFeature === i ? 'white' : 'black',
+                borderRadius: '2px',
                 cursor: 'pointer',
-                padding: '5px',
+                padding: '10px',
                 transition: '0.3s ease',
                 fontWeight: activeFeature === i ? 500 : 400,
                 textAlign: windowSize.width < midBreakPoint ? 'center' : 'left',
@@ -213,6 +212,8 @@ const SectionRow = (props: IProps) => {
   // Section where we show a picture or GIF demonstrating the active feature
   const scaleFactor =
     windowSize.width < props.maxPictureWidth ? `scale(${windowSize.width / props.maxPictureWidth})` : '';
+  const boxShadow =
+    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)';
   const pictureSection = (
     <div
       style={{
@@ -227,9 +228,22 @@ const SectionRow = (props: IProps) => {
           flexDirection: 'column',
           maxWidth: '100%',
           alignItems: 'center',
+          fontSize: 18,
+          fontWeight: 300,
+          color: 'grey',
+          fontStyle: 'italic',
         }}
       >
-        <div style={{ transform: scaleFactor }}>{props.spotlights[activeFeature]}</div>
+        <div
+          style={{
+            transform: scaleFactor,
+            boxShadow,
+            borderRadius: 8,
+            overflow: 'hidden',
+          }}
+        >
+          {props.spotlights[activeFeature]}
+        </div>
         <div style={{ height: '15px' }} /> {props.captions[activeFeature]}
       </div>
     </div>
@@ -237,7 +251,7 @@ const SectionRow = (props: IProps) => {
 
   return (
     <div key="wrapper">
-      {!props.isFlipped ? (
+      {!props.isFlipped || windowSize.width < midBreakPoint ? (
         <div style={rowStyle}>
           {textSection}
           {pictureSection}
@@ -277,8 +291,20 @@ const WhyUse = (props: IPageProps) => {
 
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
-      <div>
-        <Typography.Title level={4}>Why use codePost?</Typography.Title>
+      <div id="WhyUse">
+        <div style={{ marginBottom: 75, textAlign: 'center' }}>
+          <Typography.Title level={1} style={{ fontSize: 40, color: 'black' }}>
+            Our users asked for these features. <span style={{ color: '#24be85' }}>So we built them.</span>{' '}
+            <a
+              className="whyUse__link"
+              href="mailto:team@codepost.io"
+              style={{ borderBottom: '4px solid #24be85', textDecoration: 'none' }}
+            >
+              Tell us
+            </a>{' '}
+            what features you want.
+          </Typography.Title>
+        </div>
         {content}
       </div>
     </PreAuthLayout>

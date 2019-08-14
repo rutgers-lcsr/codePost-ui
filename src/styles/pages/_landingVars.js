@@ -2,7 +2,7 @@
 
 // Breakpoints
 const mobileBreakpont = 450;
-const headerBreakPoint = 750; // point at which header switches to collapsible panel
+const headerBreakPoint = 850; // point at which header switches to collapsible panel
 const heroBreakPoint = 1000; // point at which hero switches to vertical
 const verticalPanelsBreakpoint = 1000; // point at which horizontal panels change to vertical
 const removeModuleBreakpoint = 600; // point at which modules specified for removal on small screens are removed
@@ -37,7 +37,7 @@ const panelVPaddingNormal = 75;
 const panelVPaddingSmallScreen = 25;
 const whyPanelVPaddingNormal = 25;
 const whyPanelVPaddingSmallScreen = 25;
-const headerVPaddingNormal = 35;
+const headerVPaddingNormal = 0;
 const headerVPaddingSmallScreen = 20;
 const getStartedVPaddingNormal = 70;
 const heroVPaddingNormal = 50;
