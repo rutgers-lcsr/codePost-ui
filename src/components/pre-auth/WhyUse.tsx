@@ -8,6 +8,8 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
+const midBreakPoint = landingVars.breakpoints.whyUse;
+
 import PreAuthLayout from './PreAuthLayout';
 
 interface IPageProps {
@@ -20,6 +22,7 @@ interface IProps {
   captions: Array<string | React.ReactElement>;
   spotlights: any[];
   isFlipped: boolean;
+  maxPictureWidth: number;
 }
 
 const Video = (props: { url: string }) => {
@@ -142,14 +145,22 @@ const sections = [
 
 const SectionRow = (props: IProps) => {
   const [activeFeature, setActiveFeature] = React.useState(0);
+  const windowSize = useWindowSize();
 
   // Inline styles
-  const columnStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', flexBasis: '100%', flex: '1' };
+  const columnStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    maxWidth: '100%',
+    flexBasis: '100%',
+    flex: '1',
+  };
   const rowStyle: React.CSSProperties = {
     display: 'flex',
-    flexDirection: 'row' as 'row',
+    flexDirection: windowSize.width < midBreakPoint ? 'column' : ('row' as 'row'),
     flexWrap: 'wrap',
     width: '100%',
+    justifyContent: 'center',
   };
 
   // Section where we list features
@@ -157,7 +168,7 @@ const SectionRow = (props: IProps) => {
     <div
       style={{
         ...columnStyle,
-        textAlign: props.isFlipped ? 'right' : undefined,
+        textAlign: windowSize.width < midBreakPoint ? 'center' : props.isFlipped ? 'right' : undefined,
       }}
     >
       <div
@@ -168,31 +179,40 @@ const SectionRow = (props: IProps) => {
       >
         {props.title}
       </div>
-      {props.features.map((feature, i) => {
-        return (
-          <div
-            key={i.toString()}
-            style={{
-              fontSize: '16px',
-              margin: '5px 0',
-              background: activeFeature === i ? '#47cc9724' : 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              padding: '5px',
-              border: activeFeature === i ? '1px solid gray' : undefined,
-              marginRight: props.isFlipped ? undefined : '50px',
-              marginLeft: props.isFlipped ? '50px' : undefined,
-            }}
-            onClick={setActiveFeature.bind(false, i)}
-          >
-            {feature}
-          </div>
-        );
-      })}
+      <div
+        style={{
+          marginRight: !props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
+          marginLeft: props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
+        }}
+      >
+        {props.features.map((feature, i) => {
+          return (
+            <div
+              key={i.toString()}
+              style={{
+                fontSize: '16px',
+                margin: '5px 0',
+                background: activeFeature === i ? '#47cc9724' : 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                padding: '5px',
+                transition: '0.3s ease',
+                fontWeight: activeFeature === i ? 500 : 400,
+                textAlign: windowSize.width < midBreakPoint ? 'center' : 'left',
+              }}
+              onClick={setActiveFeature.bind(false, i)}
+            >
+              {feature}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 
   // Section where we show a picture or GIF demonstrating the active feature
+  const scaleFactor =
+    windowSize.width < props.maxPictureWidth ? `scale(${windowSize.width / props.maxPictureWidth})` : '';
   const pictureSection = (
     <div
       style={{
@@ -200,8 +220,17 @@ const SectionRow = (props: IProps) => {
         textAlign: !props.isFlipped ? 'right' : undefined,
       }}
     >
-      <div style={{ textAlign: 'center' }}>
-        {props.spotlights[activeFeature]} <div style={{ height: '15px' }} /> {props.captions[activeFeature]}
+      <div
+        style={{
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: '100%',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ transform: scaleFactor }}>{props.spotlights[activeFeature]}</div>
+        <div style={{ height: '15px' }} /> {props.captions[activeFeature]}
       </div>
     </div>
   );
@@ -224,33 +253,27 @@ const SectionRow = (props: IProps) => {
 };
 
 const WhyUse = (props: IPageProps) => {
-  const breakpoint = landingVars.breakpoints.faq;
-  const windowSize = useWindowSize();
-
   let content;
 
-  if (windowSize.width < breakpoint) {
-    content = <div style={{ maxWidth: 500 }}>{'content goes here'}</div>;
-  } else {
-    content = (
-      <div>
-        {sections.map((section, i) => {
-          return (
-            <div key={i.toString()}>
-              <SectionRow
-                features={section.features}
-                title={section.title}
-                spotlights={section.spotlights}
-                captions={section.captions}
-                isFlipped={i % 2 === 1}
-              />
-              {i !== sections.length - 1 ? <Divider style={{ margin: '75px 0' }} /> : null}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
+  content = (
+    <div>
+      {sections.map((section, i) => {
+        return (
+          <div key={i.toString()}>
+            <SectionRow
+              features={section.features}
+              title={section.title}
+              spotlights={section.spotlights}
+              captions={section.captions}
+              isFlipped={i % 2 === 1}
+              maxPictureWidth={600}
+            />
+            {i !== sections.length - 1 ? <Divider style={{ margin: '75px 0' }} /> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>

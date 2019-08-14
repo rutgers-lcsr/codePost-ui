@@ -9,6 +9,7 @@ const removeModuleBreakpoint = 600; // point at which modules specified for remo
 const testimonialBreakPoint = 900;
 const getStartedBreakpoint = 625; //point at which buttons and text become a column
 const faqBreakpoint = 700; // point at which FAQ turns into one column
+const whyUseBreakPont = 900;
 
 // Maximum Widths
 const panelMaxWidth = 1150; // Maximum width for the panels to keep narrow look
@@ -70,6 +71,7 @@ module.exports = {
     testimonial: testimonialBreakPoint,
     getStarted: getStartedBreakpoint,
     faq: faqBreakpoint,
+    whyUse: whyUseBreakPont,
   },
   backgrounds: {
     hero: heroColor,
