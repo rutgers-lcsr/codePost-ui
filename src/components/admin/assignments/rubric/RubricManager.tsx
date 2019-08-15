@@ -56,6 +56,11 @@ export interface IRubric {
   comments: RubricCommentType[];
 }
 
+export interface IFeedbackScore {
+  negative: number;
+  positive: number;
+}
+
 export interface IState {
   // status cache
   loadComplete: boolean;
@@ -89,6 +94,7 @@ export interface IState {
 
   // misc
   newObjectCounter: number;
+  feedbackScores?: { [commentID: number]: IFeedbackScore };
 }
 
 /**********************************************************************************************************************/
@@ -129,17 +135,49 @@ class RubricManager extends React.Component<IProps, IState> {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
-        this.setState({
-          rubricCategories: rubric.rubricCategories,
-          rubricComments: commentMap,
-          savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
-          savedRubricComments: _.cloneDeep(commentMap),
-          loadComplete: true,
-        });
+        this.setState(
+          {
+            rubricCategories: rubric.rubricCategories,
+            rubricComments: commentMap,
+            savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
+            savedRubricComments: _.cloneDeep(commentMap),
+            loadComplete: true,
+          },
+          () => {
+            this.loadFeedbackScores(rubric.rubricComments);
+          },
+        );
       })
       .catch((errors) => {
         return Promise.reject(errors);
       });
+  };
+
+  public loadFeedbackScores = async (rubricComments: RubricCommentType[]) => {
+    const newMap = {};
+    for (const rComment of rubricComments) {
+      // feedback scores
+      let numNegative = 0;
+      let numPositive = 0;
+      const totalComments = rComment.comments.length;
+
+      if (totalComments === 0) {
+        newMap[rComment.id] = { negative: 0, positive: 0 };
+      } else {
+        for (const commentID of rComment.comments) {
+          const loadedComment = await CommentIO.read(commentID);
+          if (loadedComment.feedback === -1) {
+            numNegative = numNegative + 1;
+          } else if (loadedComment.feedback === 1) {
+            numPositive = numPositive + 1;
+          }
+        }
+
+        newMap[rComment.id] = { negative: numNegative / totalComments, positive: numPositive / totalComments };
+      }
+    }
+
+    this.setState({ feedbackScores: newMap });
   };
 
   public componentDidMount() {
@@ -861,6 +899,8 @@ class RubricManager extends React.Component<IProps, IState> {
               index={catIndex}
               numCategories={this.state.rubricCategories.length}
               otherCategories={this.state.rubricCategories}
+              feedbackScores={this.state.feedbackScores}
+              commentFeedbackOn={this.props.assignment.commentFeedback}
             />
           );
         });

@@ -24,14 +24,17 @@ const SimpleComment = (props: {
     file: 1,
     rubricComment: null,
     author: 'grader@myschool.edu',
+    feedback: 0,
   };
 
-  const empty = () => {
+  const empty = (arg?: any) => {
     return;
   };
+
   const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
+      isStudent={false}
       commentType={props.classType}
       comment={data}
       rubricComment={undefined}
@@ -44,6 +47,8 @@ const SimpleComment = (props: {
       removeRubricComment={empty}
       placement={1}
       file={FileMock}
+      updateFeedback={empty}
+      studentFeedbackOn={false}
     />
   );
 };

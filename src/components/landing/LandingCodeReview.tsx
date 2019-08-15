@@ -60,6 +60,7 @@ const comment1: CommentType = {
   text: 'What about `arr` and `el` instead of x and y?',
   file: -1,
   rubricComment: null,
+  feedback: 0,
 };
 
 const comment2: CommentType = {
@@ -72,6 +73,7 @@ const comment2: CommentType = {
   text: "This is why you're failing test 2. You can stop looking through the array once you've found the target!",
   file: -1,
   rubricComment: null,
+  feedback: 0,
 };
 
 // const comment3: CommentType = {

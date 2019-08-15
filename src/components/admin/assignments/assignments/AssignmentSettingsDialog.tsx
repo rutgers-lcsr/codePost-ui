@@ -25,14 +25,15 @@ interface IProps {
 class AssignmentSettingsDialog extends React.Component<IProps, {}> {
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
 
-  public updateSettings = (name: string, points: number, anonymousGrading: boolean, hideGrades: boolean) => {
+  public updateSettings = (values: IFormValues) => {
     const { currentAssignment } = this.props;
     const payload = {
       id: currentAssignment.id,
-      name,
-      points,
-      anonymousGrading,
-      hideGrades,
+      name: values.name,
+      points: values.points,
+      anonymousGrading: values.anonymousGrading,
+      hideGrades: values.hideGrades,
+      commentFeedback: values.commentFeedback,
     };
 
     this.props.onSave(payload).then(() => {
@@ -52,7 +53,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
         return;
       }
 
-      this.updateSettings(values.name, values.points, values.anonymousGrading, values.hideGrades);
+      this.updateSettings(values);
     });
   };
 
@@ -91,6 +92,7 @@ interface IFormValues {
   points: number;
   anonymousGrading: boolean;
   hideGrades: boolean;
+  commentFeedback: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -170,6 +172,15 @@ const CollectionCreateForm: any = Form.create()(
             >
               {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Student feedback enabled"
+              extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
+            >
+              {getFieldDecorator('commentFeedback', {
+                initialValue: this.props.assignment.commentFeedback,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>

@@ -73,6 +73,7 @@ interface ICodeConsoleState {
   codeZoom: number;
   codeVerticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
+  isStudent: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -335,6 +336,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       dimensions: getInitialDimensions(),
 
       demoCommentCounter: 0,
+
+      isStudent: false,
     };
   }
 
@@ -393,6 +396,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
+          isStudent: submission.students.indexOf(this.props.user.email) > -1,
         });
         break;
 
@@ -645,6 +649,21 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ unsavedComments });
   };
 
+  public updateFeedback = (fileID: number, commentID: number, feedbackNum: number) => {
+    CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then((newComment) => {
+      this.setState((oldState) => {
+        const newMap = { ...oldState.comments };
+        newMap[fileID] = [
+          ...newMap[fileID].filter((el) => {
+            return el.id !== commentID;
+          }),
+          newComment,
+        ];
+        return { comments: newMap };
+      });
+    });
+  };
+
   public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
     const comments = CodeConsole.unlinkRubricComment(this.state.comments, comment, rubricComment);
     const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
@@ -820,6 +839,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       mean: null,
       median: null,
       points: 20,
+      commentFeedback: true,
     };
 
     const demoCourse: CourseType = {
@@ -1085,6 +1105,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
           const demoComments = (
             <GradeComments
+              isStudent={this.state.isStudent}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1099,6 +1120,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 
@@ -1186,11 +1209,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
           const comments = (
             <StudentComments
+              isStudent={this.state.isStudent}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               file={this.state.selectedFile!}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 
@@ -1271,6 +1297,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
           const comments = (
             <GradeComments
+              isStudent={this.state.isStudent}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1285,6 +1312,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+              studentFeedbackOn={this.state.assignment.commentFeedback}
             />
           );
 

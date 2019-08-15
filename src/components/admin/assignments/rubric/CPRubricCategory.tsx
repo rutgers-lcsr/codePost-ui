@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -27,6 +27,8 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 import { STATUS, statusChange } from './RubricUtils';
 
 import { DIRECTION } from '../../../../types/common';
+
+import { IFeedbackScore } from './RubricManager';
 
 /**********************************************************************************************************************/
 
@@ -59,6 +61,8 @@ interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
   onCommentUndo: (obj: RubricCommentType) => void;
   onCommentDragEnd: any;
   otherCategories: RubricCategoryType[];
+  feedbackScores?: { [commentID: number]: IFeedbackScore };
+  commentFeedbackOn: boolean;
 }
 
 interface IState {
@@ -116,6 +120,22 @@ const commentTableColumns = [
     ),
     key: 'linked',
     dataIndex: 'linked',
+    align: aligner,
+  },
+  {
+    title: (
+      <div>
+        Feedback
+        <CPTooltip
+          title={'Comprehension scores from students.'}
+          infoIcon={true}
+          hideThisOnHideTips={true}
+          iconStyle={{ paddingLeft: 5 }}
+        />
+      </div>
+    ),
+    key: 'feedback',
+    dataIndex: 'feedback',
     align: aligner,
   },
   {
@@ -470,6 +490,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   ) => {
     return rubricComments.map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
+      const thisFeedback =
+        this.props.feedbackScores === undefined ? undefined : this.props.feedbackScores[thisComment.id];
+
       if (thisComment) {
         return {
           key: thisComment.id,
@@ -496,6 +519,15 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
                 style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
               />
             </span>
+          ),
+          feedback: !this.props.commentFeedbackOn ? (
+            <Tag color="volcano" key="disabled">
+              DISABLED
+            </Tag>
+          ) : thisFeedback === undefined ? (
+            <Spin />
+          ) : (
+            `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
           ),
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>

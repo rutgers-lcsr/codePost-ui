@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Input, message, Popover } from 'antd';
+import { Button, Input, message, Popover, Tooltip } from 'antd';
 const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
@@ -22,7 +22,7 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 import { wait } from '../../../infrastructure/animation';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
@@ -33,6 +33,8 @@ interface ICommentProps {
   comment: CommentType;
   file: FileType;
   rubricComment?: RubricCommentType;
+
+  isStudent: boolean;
 
   placement: number;
 
@@ -45,6 +47,9 @@ interface ICommentProps {
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   setCommentPlacements: () => void;
+
+  updateFeedback: (feedback: number) => void;
+  studentFeedbackOn: boolean;
 }
 
 interface ICommentState {
@@ -60,12 +65,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
-    // console.log(`Mounted: ${this.props.comment.id}`);
     this.props.setCommentPlacements();
-  }
-
-  public componentWillUnmount() {
-    // console.log(`Unmounting: ${this.props.comment.id}`);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -88,7 +88,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public init = () => {
     const text: string = this.props.comment.text ? this.props.comment.text : '';
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
-    const status: CommentStatus = text === '' && points === 0 ? 'edited' : 'idle';
+    const status: CommentStatus =
+      text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
 
     return { text, points, status };
   };
@@ -113,12 +114,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public edited = () => {
-    // this.props.addUnsaved(this.props.comment.id);
     this.setState({ status: 'edited' });
   };
 
   public idle = () => {
-    // this.props.removeUnsaved(this.props.comment.id);
     this.setState({ status: 'idle' });
   };
 
@@ -423,6 +422,48 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
+    // --------------------------------- feedback      ------------------------------------ //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    let feedback = null;
+    if (this.props.isStudent && this.props.rubricComment && this.props.studentFeedbackOn) {
+      const setFeedback = (feedbackNum: number) => {
+        this.props.updateFeedback(feedbackNum);
+      };
+
+      const feedbackScore = this.props.comment.feedback;
+
+      const negTheme =
+        feedbackScore === -1 ? 'primary' : this.context.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+      const posTheme =
+        feedbackScore === 1 ? 'primary' : this.context.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+      feedback = (
+        <Button.Group style={{ width: '100%' }}>
+          <Tooltip title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}>
+            <CPButton
+              style={{ width: '50%', borderTopLeftRadius: '0px' }}
+              cpType={negTheme}
+              onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
+            >
+              👎
+            </CPButton>
+          </Tooltip>
+          <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
+            <CPButton
+              style={{ width: '50%', borderTopRightRadius: '0px' }}
+              cpType={posTheme}
+              onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
+            >
+              👍
+            </CPButton>
+          </Tooltip>
+        </Button.Group>
+      );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
     // ---------------------------------- Components -------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,6 +518,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             </div>
           </div>
         </div>
+        {feedback}
       </div>
     );
   }

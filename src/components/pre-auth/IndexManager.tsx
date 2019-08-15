@@ -23,6 +23,7 @@ import Pricing from './Pricing';
 import PrivacyPolicy from './PrivacyPolicy';
 import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
+import WhyUse from './WhyUse';
 
 import Logout from '../core/Logout';
 
@@ -93,6 +94,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/privacy'}
               render={(props: any) => <PrivacyPolicy {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/why-use-codepost'}
+              render={(props: any) => <WhyUse {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             <Route

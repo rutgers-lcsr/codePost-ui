@@ -155,6 +155,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
                 file: fileObj.id,
                 rubricComment: rubricID,
                 author: commentT.author,
+                feedback: 0,
               };
 
               return CommentIO.create(commentPayload);

@@ -14,6 +14,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 3,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
       {
         id: 2,
@@ -25,6 +26,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 4,
         file: 2,
         rubricComment: null,
+        feedback: 0,
       },
       {
         id: 3,
@@ -36,6 +38,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 3,
         file: 2,
         rubricComment: null,
+        feedback: 0,
       },
       {
         id: 4,
@@ -47,6 +50,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 1,
         file: 2,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
@@ -81,6 +85,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 3,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
@@ -102,6 +107,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 3,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
@@ -124,6 +130,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 2,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
@@ -146,6 +153,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 3,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
@@ -168,6 +176,7 @@ describe('CodePanelHighlighting', () => {
         endLine: 2,
         file: 1,
         rubricComment: null,
+        feedback: 0,
       },
     ];
 
