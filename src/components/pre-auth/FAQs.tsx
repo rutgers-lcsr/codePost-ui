@@ -121,14 +121,21 @@ const dontreviewFAQ = (
 );
 
 const securityFAQ = (
-  <ScrollableAnchor id="FAQ-security">
+  <ScrollableAnchor id="FAQ-FERPA">
     <div style={questionStyle}>
-      <b>Is codePost secure?</b>
+      <b>Is codePost FERPA compliant?</b>
       <br />
       <span>
-        Security and data privacy are priorities for us. Check out our <Link to="/terms">Terms</Link> and{' '}
-        <Link to="/privacy"> Privacy</Link> pages for details on our policies and infrastructure. If you have questions,
-        please <a href="mailto:team@codepost.io">reach out to us</a>.
+        We take security and students' privacy very seriously. codePost is compliant with Family Educational Rights and
+        Privacy Act (FERPA) regulations. Most importantly, we commit to never share data with 3rd parties without the
+        consent of the student or university and to delete all related data upon request. Please see our{' '}
+        <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy</Link> pages for details on our policies and
+        infrastructure.
+      </span>
+      <br />
+      <br />
+      <span>
+        If you have questions, please <a href="mailto:team@codepost.io">reach out to us</a>.
       </span>
     </div>
   </ScrollableAnchor>
