@@ -117,146 +117,38 @@ const Canvas = (props: IUploadFormProps) => {
     return false;
   };
 
-  const instructions = `# Process
+  const instructions = `Follow
+[these instructions on Github](https://github.com/codepost-io/integration-canvas)
+to import Canvas submissions into codePost.
 
-See the 2 minute process in action [here](https://cl.ly/3945935491cc)!
-
-1. Download the script (
-[here](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/canvasToCodePost.py)) and install dependencies
-
-\`\`\`
-pip install pandas
-\`\`\`
-
-2. Place all the files in the same directory. Run the script
+The python script will use the Canvas API to download assignment submissions to your local
+machine in a file structure that codePost will recognize.
 
 \`\`\`
-python3 canvasToCodePost.py submissions roster.csv partners.csv
-\`\`\`
-
-3. Drag the newly created 'codePost_upload' folder in the box below!
-
-# What you'll need
-
-1. **The downloaded submissions from Canvas** (From Canvas, go to the Assignment page
-and click "Download Submissions" – see [here](https://cl.ly/d5fc112207d1))
-
-2. **The course roster** (\`roster.csv\`,
-[template](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/roster_template.csv))
-
-3. **(optional) The assignment partner list** (\`partners.csv\`,
-[template](https://raw.githubusercontent.com/codepost-io/Canvas-Import/master/partners_template.csv))
-
-Make sure each upload is in the correct format.
-`;
-
-  const codePostFormat = `\`\`\`
-  assignmentFolder/
+  codepost_upload/
     student1@university.edu/
       file1.java
       file2.txt
     student2@university.edu,student3@university.edu/
       file1.java
       file2.txt
-  \`\`\``;
-
-  const canvasFormat = `\`\`\`
-  assignmentFolder/
-    studentone_123456_54321_file1.java
-    studentone_123456_54322_file2.txt
-    studenttwo_123456_54323_file1.java
-    studenttwo_123456_54324_file2.txt
-  \`\`\``;
-
-  const formatPanel1 = `Canvas defaults to the following filenaming convention:
-
-\`{last_name}{first_name}_{assignmentID}_{submissionID}_{filename}.{extension}\`
-`;
-
-  const formatPanel2 = `The roster will allow us to map names to emails (codePost usernames).
- The \`.csv\` file should have the following headers:
-
-\`first_name, last_name, email\`
-`;
-
-  const formatPanel3 = `Each row will represent partners in a submission. Leaving out a student assumes they won't
-have a partner for this assignment.
-
 \`\`\`
-partner1@university.edu, partner2@university.edu
-solo1@university.edu
-partner3@university.edu,partner4@university.edu,partner5@university.edu
-\`\`\`
+
+The script will create a folder called \`codepost_upload\` which you can drag into this modal below.
+
+----------
+
+**Need help?** Shoot us an email at team@codepost.io
+
+**Eager to automate?** Checkout the codePost upload [command line tool](https://github.com/codepost-io/codepost-tools)
+and the [Python SDK](https://github.com/codepost-io/codepost-python)
 `;
 
   return (
     <div>
       <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
-          Follow these instructions to import Canvas submissions into codePost.
-          <br />
-          <br />
-          Our goal is to turn the Canvas folder structure into one that codePost recognizes.
-          <br />
-          <br />
-          <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%' }}>
-            <div
-              style={{
-                padding: '10px',
-                maxWidth: '360px',
-              }}
-            >
-              <div className="cp-label cp-label--medium cp-label--bold">Canvas Format</div>
-            </div>
-            <div
-              style={{
-                padding: '10px',
-                maxWidth: '360px',
-              }}
-            >
-              <div className="cp-label cp-label--medium cp-label--bold">codePost Format</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', width: '100%' }}>
-            <div
-              style={{
-                border: '1px solid rgba(0, 0, 0, 0.2)',
-                borderRadius: '5px',
-                padding: '10px',
-                backgroundColor: '#fafafa',
-                maxWidth: '360px',
-              }}
-            >
-              <ReactMarkdown source={canvasFormat} />
-            </div>
-            <div>
-              <Icon type="arrow-right" />
-            </div>
-            <div
-              style={{
-                border: '1px solid rgba(0, 0, 0, 0.2)',
-                borderRadius: '5px',
-                backgroundColor: '#fafafa',
-                padding: '10px',
-                maxWidth: '360px',
-              }}
-            >
-              <ReactMarkdown source={codePostFormat} />
-            </div>
-          </div>
-          <br />
           <BlockMarkdown source={instructions} />
-          <Collapse>
-            <Panel header="(1) Canvas submissions format" key="1">
-              <ReactMarkdown source={formatPanel1} />
-            </Panel>
-            <Panel header="(2) Roster format" key="2">
-              <ReactMarkdown source={formatPanel2} />
-            </Panel>
-            <Panel header="(3) Partners format" key="3">
-              <ReactMarkdown source={formatPanel3} />
-            </Panel>
-          </Collapse>
         </Panel>
       </Collapse>
       <br />
@@ -277,7 +169,24 @@ partner3@university.edu,partner4@university.edu,partner5@university.edu
 };
 
 const Blackboard = (props: IUploadFormProps) => {
-  return <div>coming soon!</div>;
+  const instructions = `Email team@codepost.io for details
+on how current codePost users import submissions from Blackboard.
+
+Or... **DIY!**
+
+The codePost upload [command line tool](https://github.com/codepost-io/codepost-tools)
+and the [Python SDK](https://github.com/codepost-io/codepost-python) have everything you need
+to get submissions into codePost using one short script.
+
+You can download submissions manually from Blackboard and then upload them. Or, you can automate
+the whole process by authenticating to the Blackboard API.
+  `;
+
+  return (
+    <div>
+      <BlockMarkdown source={instructions} />
+    </div>
+  );
 };
 
 export default UploadForm;
