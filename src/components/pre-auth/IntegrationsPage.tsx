@@ -30,51 +30,37 @@ const IntegrationsPage = (props: IProps) => {
   };
 
   let content;
+
+  const integrations = (
+    <Integrations
+      integrations={[
+        'canvas',
+        'blackboard',
+        'jupyter',
+        'moss',
+        'github',
+        'jsfiddle',
+        'codepen',
+        'replit',
+        'revel',
+        'homegrown',
+      ]}
+      onClick={onClick}
+    />
+  );
   if (windowSize.width < 1060) {
     content = (
       <div style={{ margin: '0px 0px' }}>
         <div style={{ marginBottom: '20px' }}>
           <IntegrationDescription integration={currentIntegration} />
         </div>
-        <div style={{ maxWidth: '659px' }}>
-          <Integrations
-            integrations={[
-              'github',
-              'blackboard',
-              'jupyter',
-              'moss',
-              'canvas',
-              'submitty',
-              'moodle',
-              'replit',
-              'revel',
-              'homegrown',
-            ]}
-            onClick={onClick}
-          />
-        </div>
+        <div style={{ maxWidth: '659px' }}>{integrations}</div>
       </div>
     );
   } else {
     content = (
       <div style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center', margin: '0px 100px' }}>
-        <div style={{ flexGrow: 1, paddingRight: '20px' }}>
-          <Integrations
-            integrations={[
-              'github',
-              'blackboard',
-              'jupyter',
-              'moss',
-              'canvas',
-              'submitty',
-              'moodle',
-              'replit',
-              'revel',
-              'homegrown',
-            ]}
-            onClick={onClick}
-          />
-        </div>
+        <div style={{ flexGrow: 1, paddingRight: '20px' }}>{integrations}</div>
         <div style={{ borderLeft: '2px solid #eaeaea', paddingLeft: '35px', width: '375px' }}>
           <IntegrationDescription integration={currentIntegration} />
         </div>
