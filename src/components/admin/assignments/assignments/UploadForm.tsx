@@ -24,6 +24,9 @@ const UploadForm = (props: IUploadFormProps) => {
     case 'blackboard':
       content = <Blackboard {...props} />;
       break;
+    case 'jupyter':
+      content = <Jupyter {...props} />;
+      break;
     case 'more':
       content = <div>Can't find what you're looking for? Let us know at team@codepost.io.</div>;
       break;
@@ -185,6 +188,66 @@ the whole process by authenticating to the Blackboard API.
   return (
     <div>
       <BlockMarkdown source={instructions} />
+    </div>
+  );
+};
+
+const Jupyter = (props: IUploadFormProps) => {
+  const instructions = `Importing Jupyter Notebook files works just like any other files.
+
+Upload a folder with the following file structure.
+
+\`\`\`
+  folder/
+    student1@university.edu/
+      file1.ipynb
+      file2.ipynb
+    student2@university.edu,student3@university.edu/
+      file1.ipynb
+      file2.ipynb
+  \`\`\``;
+
+  const beforeUpload = (file: File, fileList: File[]) => {
+    if (fileList.length > 1) {
+      // Case 1: use has selected a folder via menu, which will place all files into
+      // fileList
+      props.setRawFiles(
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
+      );
+    } else {
+      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
+      // contains only one file at a time. So add these files one-by-one to state.rawFiles
+      if (file.name[0] !== '.') {
+        // ignore system files
+        const newList = [...props.rawFiles, file];
+        props.setRawFiles(newList);
+      }
+    }
+
+    // prevent upload
+    return false;
+  };
+
+  return (
+    <div>
+      <Collapse defaultActiveKey={['1']}>
+        <Panel header="Instructions" key="1">
+          <BlockMarkdown source={instructions} />
+        </Panel>
+      </Collapse>
+      <br />
+      <br />
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+        <p className="ant-upload-drag-icon">
+          <Icon type="inbox" />
+        </p>
+        <p className="ant-upload-text">Click or drag a folder to upload</p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+      </Dragger>
+      <br />
+      <Statistic title="Uploaded files" value={props.rawFiles.length} />
     </div>
   );
 };
