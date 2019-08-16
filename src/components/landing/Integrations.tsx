@@ -57,7 +57,7 @@ Courses using both codePost and Canvas often use this grading workflow:
 to codePost using codePost's native Canvas import feature.
 3. Instructors / TAs review and grade submissions in codePost.
 4. Students receive their feedback through codePost.
-5. \[Optional\] An instructor can export scores back to Canvas.
+5. (Optional) An instructor can export scores back to Canvas.
 
 See more detailed instructions for how to
 [import submissions here](https://github.com/codepost-io/integration-canvas).
@@ -83,7 +83,7 @@ Courses using both codePost and Canvas often use this grading workflow:
 to codePost using codePost's native Blackboard import feature.
 3. Instructors / TAs review and grade submissions in codePost.
 4. Students receive their feedback through codePost.
-5. \[Optional\] An instructor can export scores back to Blackboard.
+5. (Optional) An instructor can export scores back to Blackboard.
 `,
   },
   moss: {
