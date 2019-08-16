@@ -120,31 +120,33 @@ const Canvas = (props: IUploadFormProps) => {
     return false;
   };
 
-  const instructions = `Follow
-[these instructions on Github](https://github.com/codepost-io/integration-canvas)
-to import Canvas submissions into codePost.
+  const instructions = `These instructions will allow you to import submissions from Canvas to codePost.
 
-The python script will use the Canvas API to download assignment submissions to your local
-machine in a file structure that codePost will recognize.
+0. Save [this script]
+(https://raw.githubusercontent.com/codepost-io/integration-canvas/master/canvas-to-codepost.py) locally.
 
+1. Open up \`canvas-to-codePost.py\` and replace \`<API_KEY>\` with your Canvas API Key.
+
+2. Run the following. You can find your \`COURSE_ID\` and
+\`ASSIGNMENT_ID\` by navigating to your assignment page on Canvas (something like
+[https://canvas.instructure.com/courses/<COURSE_ID>/assignments/<ASSIGNMENT_ID>]
+(https://canvas.instructure.com/courses/<COURSE_ID>/assignments/<ASSIGNMENT_ID>)).
 \`\`\`
-  codepost_upload/
-    student1@university.edu/
-      file1.java
-      file2.txt
-    student2@university.edu,student3@university.edu/
-      file1.java
-      file2.txt
+python3 canvas-to-codePost.py <COURSE_ID> <ASSIGNMENT_ID>
 \`\`\`
 
-The script will create a folder called \`codepost_upload\` which you can drag into this modal below.
+
+3. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
 
 ----------
 
-**Need help?** Shoot us an email at team@codepost.io
+**Can't find your Canvas API key?** Try asking your organization's Canvas admin.
 
-**Eager to automate?** Checkout the codePost upload [command line tool](https://github.com/codepost-io/codepost-tools)
-and the [Python SDK](https://github.com/codepost-io/codepost-python)
+**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
+or shoot us an email at team@codepost.io
+
+**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+You can also fork \`canvas-to-codePosy.py\` [here](https://github.com/codepost-io/integration-canvas).
 `;
 
   return (
