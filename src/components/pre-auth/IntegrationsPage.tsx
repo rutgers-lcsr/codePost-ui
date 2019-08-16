@@ -86,8 +86,10 @@ const IntegrationsPage = (props: IProps) => {
             wordBreak: 'break-word',
           }}
         >
-          codePost users use it alongside all sorts of various administrative and technical tools. Here are some
-          examples.
+          <div style={{ maxWidth: '675px', margin: '0 auto' }}>
+            codePost integrates natively with many common educational tools, so you can get data into codePost easily
+            and export to wherever you need.
+          </div>
         </div>
         {content}
       </div>

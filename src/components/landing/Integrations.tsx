@@ -11,14 +11,14 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
     key: 'github',
     name: 'Github',
     logo: require('./../../img/integrations/github.png'),
-    description: `[Github](https://github.com) is a development platform
-that provides hosting for software version control using Git.
+    description: `[GitHub](https://github.com) is a development platform
+that provides version-controlled software hosting using git.
 
-Courses that use Github for student submissions can get all the value of
-codePost course management and standardized code feedback by cloning the
-repositories and uploading them to codePost.
+Do your students use GitHub for version control and to submit their work?
+You can import student work from GitHub to codePost for code review and
+higher resolution feedback.
 
-Email team@codepost.io for details on how to automate this process.
+Email team@codepost.io to learn how to set up this integration.
 `,
   },
   jupyter: {
@@ -28,13 +28,14 @@ Email team@codepost.io for details on how to automate this process.
     description: `[Project Jupyter](https://jupyter.org/) is a non-profit, open-source project
 born out of the [IPython Project](https://ipython.org/) in 2014. It provides
 an open standard for interactive computing, and Jupyter Notebooks have become
-an especially popular tool in university data science courses.
+especially popular in university data science courses.
 
-codePost provides an intuitive way to give inline feedback on fully-rendered
-Jupyter Notebooks. You can include \`.ipynb\` files in submissions just
+codePost allows instructors to annotate fully-rendered
+Jupyter Notebooks. You can include \`.ipynb\` files in codePost submissions, just
 like any other code file.
 
-See the commenting in action [here](https://codepost.io/why-use-codePost).
+See how easy it is to comment on a Jupyter notebook in codePost
+[here](https://codepost.io/why-use-codePost).
 `,
   },
   canvas: {
@@ -45,18 +46,18 @@ See the commenting in action [here](https://codepost.io/why-use-codePost).
 is a learning management system (LMS) used widely in higher ed.
 
 codePost makes it easy to:
-- Import course rosters from Canvas and keep rosters in sync
-- Import submissions uploaded to Canvas into codePost
-- Export grades from codePost back to Canvas
+- Import course rosters from Canvas, and subsequently keep rosters in sync;
+- Import submissions uploaded to Canvas into codePost;
+- and export grades from codePost back to Canvas.
 
-Here is a summary of a typical process:
+Courses using both codePost and Canvas often use this grading workflow:
 
-1. Students will submit their programming assignments on
-Canvas
-2. An Admin will run tests and import the submissions and test output to codePost
-3. Code will be graded and reviewed on codePost
-4. Students will receive their feedback on codePost
-5. An Admin will export final grades back to Canvas
+1. Students submit their programming assignments through Canvas.
+2. An instructor runs correctness tests, and then imports submissions and test output (as .txts)
+to codePost using codePost's native Canvas import feature.
+3. Instructors / TAs review and grade submissions in codePost.
+4. Students receive their feedback through codePost.
+5. \[Optional\] An instructor can export scores back to Canvas.
 
 See more detailed instructions for how to
 [import submissions here](https://github.com/codepost-io/integration-canvas).
@@ -70,18 +71,19 @@ See more detailed instructions for how to
 is a learning management system (LMS) used widely in higher ed.
 
 codePost makes it easy to:
-- Import course rosters from Blackboard and keep rosters in sync
-- Import submissions uploaded to Blackboard into codePost
-- Export grades from codePost back to Blackboard
+- Import course rosters from Blackboard, and subsequently keep rosters in sync;
+- Import submissions uploaded to Blackboard into codePost;
+- and export grades from codePost back to Blackboard.
 
-Here is a summary of a typical process:
 
-1. Students will submit their programming assignments on
-Blackboard
-2. An Admin will run tests and import the submissions and test output to codePost
-3. Code will be graded and reviewed on Blackboard
-4. Students will receive their feedback on Blackboard
-5. An Admin will export final grades back to Blackboard
+Courses using both codePost and Canvas often use this grading workflow:
+
+1. Students submit their programming assignments through Blackboard.
+2. An instructor runs correctness tests, and then imports submissions and test output (as .txts)
+to codePost using codePost's native Blackboard import feature.
+3. Instructors / TAs review and grade submissions in codePost.
+4. Students receive their feedback through codePost.
+5. \[Optional\] An instructor can export scores back to Blackboard.
 `,
   },
   moss: {
@@ -90,12 +92,11 @@ Blackboard
     logo: require('./../../img/integrations/moss.png'),
     description: `[Moss](https://theory.stanford.edu/~aiken/moss/)
 (for a Measure Of Software Similarity) is a system for determining
-the similarity of programs and detecting plagiarism in programming classes. It was
+the similarity of programs and detecting plagiarism in programming courses. It was
 developed at Stanford in 1994.
 
-codePost can integrate student submissions with the Moss servers at the
-run of a script. The codePost API can then automatically flag submissions-in-question.
-See the [full instructions on Github](https://github.com/codepost-io/Moss-Integration).
+Out of the box, codePost can  send submissions to Moss for similarity assessment.
+To learn how, see the [full instructions on GitHub](https://github.com/codepost-io/Moss-Integration).
 
 And watch the full process in action [here](https://codepost.wistia.com/medias/4fe8oc5ijg).
 `,
@@ -104,13 +105,13 @@ And watch the full process in action [here](https://codepost.wistia.com/medias/4
     key: 'homegrown',
     name: 'Homegrown',
     logo: require('./../../img/integrations/homegrown.png'),
-    description: `Many courses have their own homegrown tools that are part of the
-grading and review process. Whether the tools are for automated testing or structured quizzing
-or otherwise, the tools can neatly integrate with the codePost review process.
+    description: `Many courses have built their own tools that are part of the
+grading and review process. Whatever the tools do -- automated testing, structured quizzing
+or anything else -- you can use the codePost API to integrate what you've built with codePost.
 
-Common use cases are:
+Common use cases include:
 
-- Including tool outputs as \`.txt\` or \`.md\` files in a submission, and
+- Including tool output as \`.txt\` or \`.md\` file in a codePost submission (making it available during grading)
 - [Programmatically placing comments](https://docs.codepost.io/docs/programmatically-place-comments)
 on code
 `,
@@ -135,7 +136,7 @@ on code
     description: `[Revel](https://www.pearsonhighered.com/revel/)
 provides interactive programming exercises.
 
-Email team@codepost.io for details on how to integrate with codePost.
+Email team@codepost.io to learn how to integrate Revel with codePost.
 `,
   },
   replit: {
@@ -145,7 +146,7 @@ Email team@codepost.io for details on how to integrate with codePost.
     description: `[Repl.it](https://repl.it) is an online compiler and
 IDE.
 
-Email team@codepost.io for details on how to integrate with codePost.
+Email team@codepost.io to learn how to integrate Repl.it with codePost.
 `,
   },
   moodle: {
@@ -162,10 +163,10 @@ Email team@codepost.io for details on how to integrate with codePost.
     description: `[JS Fiddle](https://jsfiddle.net/) is a lightweight
 code playground for running and sharing code.
 
-Import the code snippets into codePost to allow graders and peer
+Import code snippets from JS Fiddle into codePost to allow graders and peer
 reviewers to give inline feedback.
 
-Email team@codepost.io for details on how to integrate with codePost.
+Email team@codepost.io to learn how to integrate JS Fiddle with codePost.
  `,
   },
   codepen: {
@@ -175,10 +176,10 @@ Email team@codepost.io for details on how to integrate with codePost.
     description: `[CodePen](https://codepen.io) is a lightweight
 code playground for running and sharing code.
 
-Import the code snippets into codePost to allow graders and peer
+Import code from Codepen into codePost to allow graders and peer
 reviewers to give inline feedback.
 
-Email team@codepost.io for details on how to integrate with codePost.
+Email team@codepost.io to learn how to integrate Codepen with codePost.
 `,
   },
   codio: {
