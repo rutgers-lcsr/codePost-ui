@@ -490,8 +490,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   ) => {
     return rubricComments.map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
-      const thisFeedback =
-        this.props.feedbackScores === undefined ? undefined : this.props.feedbackScores[thisComment.id];
+      let thisFeedback;
+      if (thisComment && this.props.feedbackScores && thisComment.id in this.props.feedbackScores) {
+        thisFeedback = this.props.feedbackScores[thisComment.id];
+      }
 
       if (thisComment) {
         return {
@@ -525,7 +527,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               DISABLED
             </Tag>
           ) : thisFeedback === undefined ? (
-            <Spin />
+            rubricComment.id < 0 ? (
+              '--'
+            ) : (
+              <Spin />
+            )
           ) : (
             `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
           ),
