@@ -137,6 +137,10 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
         </Menu>
         <div style={{ height: '100%' }}>
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
+            <Menu.Item key="features" onClick={this.openLink.bind(this, 'https://codepost.io/why-use-codePost')}>
+              <Icon type="star" />
+              <span>Features</span>
+            </Menu.Item>
             <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
               <Icon type="pushpin" />
               <span>Docs</span>
