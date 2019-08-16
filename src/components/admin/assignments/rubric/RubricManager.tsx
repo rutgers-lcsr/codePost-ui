@@ -347,7 +347,7 @@ class RubricManager extends React.Component<IProps, IState> {
           }
         });
 
-        return Promise.all([...commentPromises, categoryPromise]);
+        return Promise.all([...commentPromises, categoryPromise]).then();
       }
     });
 
@@ -388,6 +388,9 @@ class RubricManager extends React.Component<IProps, IState> {
             newRubric.rubricCategories,
             newRubric.rubricComments,
           );
+
+          this.loadFeedbackScores(newRubric.rubricComments);
+
           return {
             newCategories: newRubric.rubricCategories,
             newComments: commentMap,
