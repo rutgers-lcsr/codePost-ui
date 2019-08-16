@@ -6,27 +6,11 @@
 import React from 'react';
 
 /* ant imports */
-import {
-  Button,
-  Collapse,
-  Divider,
-  Icon,
-  Modal,
-  Progress,
-  Statistic,
-  Steps,
-  Switch,
-  Table,
-  Tag,
-  Typography,
-  Upload,
-} from 'antd';
+import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, Typography } from 'antd';
 const Panel = Collapse.Panel;
-const Dragger = Upload.Dragger;
 const { Step } = Steps;
 
 /* other library imports */
-import ReactMarkdown from 'react-markdown';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
@@ -38,6 +22,10 @@ import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { acceptedFilesSet } from './AcceptedFileTypes';
+
+import UploadForm from './UploadForm';
+
+import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
 /**********************************************************************************************************************/
 
@@ -61,6 +49,7 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  showImportOptions?: boolean;
 }
 
 interface IProtoSubmission {
@@ -120,6 +109,12 @@ interface IState {
 
   /* files with an invalid path */
   errorPaths: string[];
+
+  /* track current upload mode (normal or with integration) */
+  mode?: string;
+
+  /* show import options */
+  showImportOptions: boolean;
 }
 
 class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
@@ -136,6 +131,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       numUploaded: 0,
       rawFiles: [],
       uploadMap: {},
+      mode: undefined,
+      showImportOptions: props.showImportOptions === undefined ? false : props.showImportOptions,
     };
   }
 
@@ -498,6 +495,22 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
   };
 
+  public onIntegrationClick = (mode?: string) => {
+    if (mode === this.state.mode) {
+      this.setState({ mode: undefined });
+    } else {
+      this.setState({ mode });
+    }
+  };
+
+  public setRawFiles = (rawFiles: File[]) => {
+    this.setState({ rawFiles });
+  };
+
+  public showImportOptions = () => {
+    this.setState({ showImportOptions: true });
+  };
+
   /***************************************************************************************/
   /* Render
   /***************************************************************************************/
@@ -523,58 +536,52 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     let numToUpload = 0;
     switch (this.state.status) {
       case STATUS.NONE:
-        const exampleText =
-          '    folder/\n\
-        student1@university.edu/\n\
-          file1.java\n\
-          file2.txt\n\
-        student2@university.edu,student3@university.edu/\n\
-          file1.java\n\
-          file2.txt\n ';
-
-        const beforeUpload = (file: File, fileList: File[]) => {
-          if (fileList.length > 1) {
-            // Case 1: use has selected a folder via menu, which will place all files into
-            // fileList
-            this.setState({
-              rawFiles: fileList.filter((el) => {
-                return el.name[0] !== '.'; // filter our system files
-              }),
-            });
-          } else {
-            // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-            // contains only one file at a time. So add these files one-by-one to state.rawFiles
-            if (file.name[0] !== '.') {
-              // ignore system files
-              const newList = [...this.state.rawFiles, file];
-              this.setState({ rawFiles: newList });
-            }
-          }
-
-          // prevent upload
-          return false;
-        };
-
         content = (
           <div>
-            <Collapse>
-              <Panel header="Instructions" key="1">
-                Upload a folder with the following file structure.
-                <br />
-                <ReactMarkdown source={exampleText} />
-              </Panel>
-            </Collapse>
-            <br />
-            <br />
-            <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-              <p className="ant-upload-drag-icon">
-                <Icon type="inbox" />
-              </p>
-              <p className="ant-upload-text">Click or drag a folder to upload</p>
-              <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
-            </Dragger>
-            <br />
-            <Statistic title="Uploaded files" value={this.state.rawFiles.length} />
+            {!this.state.showImportOptions ? (
+              <div style={{ margin: '15px 0px' }}>
+                Looking to import submissions from a third-party service?{' '}
+                <span>
+                  <Button size="small" onClick={this.showImportOptions}>
+                    Click here
+                  </Button>
+                </span>
+              </div>
+            ) : (
+              <div
+                style={{
+                  margin: '15px 0px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <IntegrationButton
+                  integration={INTEGRATIONS['canvas']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'canvas'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
+                  integration={INTEGRATIONS['blackboard']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'blackboard'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
+                  integration={INTEGRATIONS['jupyter']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'jupyter'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
+                  integration={INTEGRATIONS['more']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'more'}
+                />
+              </div>
+            )}
+
+            <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
           </div>
         );
         break;
@@ -936,7 +943,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             return <Step key={item.title} title={item.title} />;
           })}
         </Steps>
-        <br />
         <br />
         {content}
       </Modal>
