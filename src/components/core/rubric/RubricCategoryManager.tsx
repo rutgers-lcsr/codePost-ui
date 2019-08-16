@@ -1,13 +1,12 @@
-/**********************************************************************************************************************/
+/***********************************************************************************************/
 /* Imports
-/**********************************************************************************************************************/
+/*******************************************************************************************************/
 
 /* react imports */
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
-const { TextArea } = Input;
+import { Input } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -15,24 +14,20 @@ import _ from 'lodash';
 // import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 
 /* codePost imports */
-import CPButton from '../../../core/CPButton';
-import CPFlex from '../../../core/CPFlex';
-import CPTooltip from '../../../core/CPTooltip';
-import { tooltips } from '../../../core/tooltips';
-import withWindowWatcher, { IWithWindowWatcherProps } from '../../../core/withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../withWindowWatcher';
 
-import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import { STATUS, statusChange } from './RubricUtils';
+import { STATUS, statusChange } from '../../admin/assignments/rubric/RubricUtils';
 
-import { DIRECTION } from '../../../../types/common';
+import { DIRECTION } from '../../../types/common';
 
 import { IFeedbackScore } from './RubricManager';
 
-/**********************************************************************************************************************/
+/************************************************************************/
 
-interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
+export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   // data
   rubricCategory: RubricCategoryType;
   rubricComments: RubricCommentType[];
@@ -63,9 +58,11 @@ interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
   otherCategories: RubricCategoryType[];
   feedbackScores?: { [commentID: number]: IFeedbackScore };
   commentFeedbackOn: boolean;
+
+  children: React.ReactNode;
 }
 
-interface IState {
+interface IRubricCategoryManagerState {
   /* local rubric category data */
   name: string;
   pointLimit: number | null;
@@ -83,76 +80,13 @@ interface IState {
   commentErrorMessage: string;
 }
 
-const aligner: 'left' | 'center' | 'right' = 'center';
-const commentTableColumns = [
-  {
-    title: 'Comment Text',
-    dataIndex: 'text',
-    key: 'text',
-  },
-  {
-    title: (
-      <div>
-        Deduction
-        <CPTooltip
-          title={tooltips.admin.rubric.deduction}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: 5 }}
-        />
-      </div>
-    ),
-    dataIndex: 'deduction',
-    key: 'deduction',
-    align: aligner,
-  },
-  {
-    title: (
-      <div>
-        Instances
-        <CPTooltip
-          title={tooltips.admin.rubric.instances}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: 5 }}
-        />
-      </div>
-    ),
-    key: 'linked',
-    dataIndex: 'linked',
-    align: aligner,
-  },
-  {
-    title: (
-      <div>
-        Feedback
-        <CPTooltip
-          title={'Comprehension scores from students.'}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: 5 }}
-        />
-      </div>
-    ),
-    key: 'feedback',
-    dataIndex: 'feedback',
-    align: aligner,
-  },
-  {
-    title: '',
-    dataIndex: 'delete',
-    key: 'delete',
-    align: aligner,
-  },
-];
-
-class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
+class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps, IRubricCategoryManagerState> {
   /****************************************************************************
    Lifecycle methods
   *****************************************************************************/
   private nameInput = React.createRef<Input>();
 
-  public constructor(props: ICPRubricCategoryProps) {
+  public constructor(props: IRubricCategoryManagerProps) {
     super(props);
     this.state = {
       name: props.rubricCategory.name,
@@ -186,7 +120,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     }
   }
 
-  public componentDidUpdate(prevProps: ICPRubricCategoryProps) {
+  public componentDidUpdate(prevProps: IRubricCategoryManagerProps) {
     /* Update status when rubric is saved */
     if (this.props.savedRubricCategory !== prevProps.savedRubricCategory) {
       this.updateCategoryStatus();
@@ -484,233 +418,36 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     });
   };
 
-  public buildCommentTableData = (
-    rubricComments: RubricCommentType[],
-    commentMap: { [id: number]: RubricCommentType },
-  ) => {
-    return rubricComments.map((rubricComment) => {
-      const thisComment = commentMap[rubricComment.id];
-      let thisFeedback;
-      if (thisComment && this.props.feedbackScores && thisComment.id in this.props.feedbackScores) {
-        thisFeedback = this.props.feedbackScores[thisComment.id];
-      }
-
-      if (thisComment) {
-        return {
-          key: thisComment.id,
-          text: (
-            <TextArea
-              autosize
-              value={thisComment.text}
-              onChange={this.updateRubricComment.bind(this, thisComment.id, 'text')}
-              onBlur={this.saveComment.bind(this, thisComment.id)}
-            />
-          ),
-          deduction: (
-            <InputNumber
-              value={thisComment.pointDelta}
-              onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, thisComment.id)}
-            />
-          ),
-          linked: (
-            <span onClick={this.props.activateCommentExplorer.bind(this, thisComment)}>
-              <Badge
-                count={thisComment.comments.length}
-                className="badge badge--standard"
-                style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-              />
-            </span>
-          ),
-          feedback: !this.props.commentFeedbackOn ? (
-            <Tag color="volcano" key="disabled">
-              DISABLED
-            </Tag>
-          ) : thisFeedback === undefined ? (
-            rubricComment.id < 0 ? (
-              '--'
-            ) : (
-              <Spin />
-            )
-          ) : (
-            `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
-          ),
-          delete: (
-            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
-            </CPTooltip>
-          ),
-        };
-      } else {
-        return {
-          key: rubricComment.id,
-          text: (
-            <TextArea
-              autosize
-              value={''}
-              onChange={this.updateRubricComment.bind(this, rubricComment.id, 'text')}
-              onBlur={this.saveComment.bind(this, rubricComment.id)}
-            />
-          ),
-          deduction: (
-            <InputNumber
-              value={0}
-              onChange={this.updateRubricComment.bind(this, rubricComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, rubricComment.id)}
-            />
-          ),
-          linked: null,
-          delete: (
-            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
-            </CPTooltip>
-          ),
-        };
-      }
-    });
+  public collectClass = () => {
+    return {
+      propz: this.props,
+      statez: this.state,
+      helperz: {
+        buildLocalRubricCommentsStructure: this.buildLocalRubricCommentsStructure,
+        initializeRubricCommentStatus: this.initializeRubricCommentStatus,
+        updateCategoryStatus: this.updateCategoryStatus,
+        setValue: this.setValue,
+        validateCategory: this.validateCategory,
+        saveCategory: this.saveCategory,
+        changeName: this.changeName,
+        changeHelpText: this.changeHelpText,
+        addComment: this.addComment,
+        deleteComment: this.deleteComment,
+        validateComments: this.validateComments,
+        saveComment: this.saveComment,
+        updateCommentStatus: this.updateCommentStatus,
+        updateRubricComment: this.updateRubricComment,
+      },
+    };
   };
 
-  /****************************************************************************
-   Lifecycle methods
-  *****************************************************************************/
-
   public render() {
-    const data = this.buildCommentTableData(this.props.rubricComments, this.state.rubricComments);
-
-    const titleLeft = [
-      <span key="title" className="cp-label cp-label--plus cp-label--bold">
-        Category: {this.props.rubricCategory.name}
-      </span>,
-      <span key="buttons">
-        <CPTooltip title={this.props.index === 0 ? '' : tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
-          <Button
-            icon="caret-up"
-            size="small"
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
-            disabled={this.props.index === 0}
-          />
-        </CPTooltip>
-        <CPTooltip
-          title={this.props.index === this.props.numCategories - 1 ? '' : tooltips.admin.rubric.categoryDown}
-          hideThisOnHideTips={true}
-        >
-          <Button
-            icon="caret-down"
-            size="small"
-            disabled={this.props.index === this.props.numCategories - 1}
-            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
-          />
-        </CPTooltip>
-      </span>,
-      this.state.hasError ? (
-        <Tag color="volcano" key="warning">
-          Error: {this.state.errorMessage}
-        </Tag>
-      ) : this.state.hasCommentError ? (
-        <Tag color="volcano" key="warning">
-          Error: {this.state.commentErrorMessage}
-        </Tag>
-      ) : null,
-    ];
-    const titleRight = [
-      <Popconfirm
-        key="delete"
-        title="Are you sure you want to delete this category?"
-        onConfirm={this.props.deleteCategory.bind(this, this.props.rubricCategory)}
-      >
-        <CPButton cpType="danger" fallback="delete">
-          Delete
-        </CPButton>
-      </Popconfirm>,
-    ];
-
-    const categoryName = (
-      <div key="name">
-        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Name
-        </div>
-        <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} ref={this.nameInput} />
-      </div>
-    );
-
-    const categoryPoints = (
-      <div key="points">
-        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Point Limit
-          <CPTooltip
-            title={tooltips.admin.rubric.categoryPointLimit}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-        <InputNumber
-          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
-          onChange={this.setValue.bind(this, 'pointLimit')}
-          onBlur={this.saveCategory}
-          min={0}
-        />
-      </div>
-    );
-
-    const helpText = (
-      <div key="help-text" style={{ maxWidth: 300 }}>
-        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-          Category Help Text
-          <CPTooltip
-            title={tooltips.admin.rubric.categoryHelpText}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-        <Input.TextArea
-          style={{ width: 350 }}
-          value={this.state.helpText}
-          onChange={this.changeHelpText}
-          onBlur={this.saveCategory}
-          autosize={true}
-        />
-      </div>
-    );
-
-    const contentLeft =
-      this.props.windowwidth < 1200 ? (
-        <div>
-          <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
-        </div>
-      ) : (
-        <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
-      );
-
-    return (
-      <div className="cp-rubric-category">
-        <div className="cp-rubric-category__title ">
-          <CPFlex left={titleLeft} right={titleRight} gutterSize={10} />
-        </div>
-        <div className="cp-rubric-category__content">
-          {contentLeft}
-          <div style={{ height: '40px' }} />
-          <Table
-            columns={commentTableColumns}
-            dataSource={data}
-            pagination={false}
-            locale={{ emptyText: 'No comments yet' }}
-          />
-          <div className="cp-rubric-category__add-new-comment">
-            <CPButton cpType="primary" icon="plus" onClick={this.addComment} />
-            <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
-              ADD NEW COMMENT
-            </span>
-          </div>
-        </div>
-      </div>
-    );
+    // @ts-ignore
+    return this.props.children(this.collectClass());
   }
 }
 
-/**********************************************************************************************************************/
+/*****************************************************************************************/
 
 // let draggingIndex = -1;
 
@@ -782,4 +519,4 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 //   }))(BodyRow),
 // );
 
-export default withWindowWatcher(CPRubricCategory);
+export default withWindowWatcher(RubricCategoryManager);

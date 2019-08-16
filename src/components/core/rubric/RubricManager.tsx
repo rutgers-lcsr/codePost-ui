@@ -6,35 +6,19 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty, message } from 'antd';
+import { message } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
 import _ from 'lodash';
 
-/* codePost imports */
-import RubricCommentExplorer from './RubricCommentExplorer';
+import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
+import { CommentIO } from '../../../infrastructure/comment';
+import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
-import { LinkedCommentsAlert, LinkedCommentsConfirm } from './LinkedCommentsAlert';
-
-import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
-import RubricFileDownload from './RubricFileDownload';
-import RubricFileUpload from './RubricFileUpload';
-
-import { Assignment, AssignmentType, RubricType } from '../../../../infrastructure/assignment';
-import { CommentIO } from '../../../../infrastructure/comment';
-import { RubricCategory, RubricCategoryType } from '../../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
-import { SubmissionType } from '../../../../infrastructure/submission';
-
-import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
-
-import CPButton from '../../../../components/core/CPButton';
-import Loading from '../../../../components/core/Loading';
-import { tooltips } from '../../../../components/core/tooltips';
-
-import CPAdminRubric from './CPAdminRubric';
-import CPRubricCategory from './CPRubricCategory';
+import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
 /**********************************************************************************************************************/
 
@@ -43,7 +27,7 @@ export enum RESOLUTION {
   UNLINK,
 }
 
-export interface IProps {
+export interface IRubricManagerProps {
   /* assignment data */
   assignment: AssignmentType;
   submissions: SubmissionType[];
@@ -61,7 +45,7 @@ export interface IFeedbackScore {
   positive: number;
 }
 
-export interface IState {
+export interface IRubricManagerState {
   // status cache
   loadComplete: boolean;
   changeLock: boolean;
@@ -99,8 +83,8 @@ export interface IState {
 
 /**********************************************************************************************************************/
 
-class RubricManager extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
+class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerState> {
+  constructor(props: IRubricManagerProps) {
     super(props);
     this.state = {
       loadComplete: false,
@@ -867,161 +851,51 @@ class RubricManager extends React.Component<IProps, IState> {
   /* Render
   /***********************************************************************/
 
+  public collectClass = () => {
+    return {
+      props: this.props,
+      state: this.state,
+      helpers: {
+        loadAssignmentRubric: this.loadAssignmentRubric,
+        loadFeedbackScores: this.loadFeedbackScores,
+        resetRubric: this.resetRubric,
+        setNewRubric: this.setNewRubric,
+        replaceRubric: this.replaceRubric,
+        onCategoryEdit: this.onCategoryEdit,
+        onCategoryUndo: this.onCategoryUndo,
+        onCommentEdit: this.onCommentEdit,
+        onCommentUndo: this.onCommentUndo,
+        saveRubric: this.saveRubric,
+        deleteLinkedComments: this.deleteLinkedComments,
+        unlinkLinkedComments: this.unlinkLinkedComments,
+        buildLinkedList: this.buildLinkedList,
+        onSave: this.onSave,
+        buildCommentMap: this.buildCommentMap,
+        moveCategory: this.moveCategory,
+        updateRubricCategory: this.updateRubricCategory,
+        deleteRubricCategory: this.deleteRubricCategory,
+        addRubricCategory: this.addRubricCategory,
+        updateRubricComment: this.updateRubricComment,
+        deleteRubricComment: this.deleteRubricComment,
+        addRubricComment: this.addRubricComment,
+        onLinkedAlertCancel: this.onLinkedAlertCancel,
+        onLinkedCommentsResolve: this.onLinkedCommentsResolve,
+        onLinkedConfirmCancel: this.onLinkedConfirmCancel,
+        onLinkedConfirmAccept: this.onLinkedConfirmAccept,
+        onBack: this.onBack,
+        onUnload: this.onUnload,
+        toggleLock: this.toggleLock,
+        changesMade: this.changesMade,
+        activateCommentExplorer: this.activateCommentExplorer,
+        clearCommentExplorer: this.clearCommentExplorer,
+        onCommentDragEnd: this.onCommentDragEnd,
+      },
+    };
+  };
+
   public render() {
-    const { rubricCategories, rubricComments, loadComplete } = this.state;
-
-    if (loadComplete) {
-      const changesMade = this.changesMade();
-
-      const categoryTables = rubricCategories
-        .sort(RubricCategory.compare)
-        .map((cat: RubricCategoryType, catIndex: number) => {
-          const savedCategory = this.state.savedRubricCategories.find((el) => {
-            return el.id === cat.id;
-          });
-
-          return (
-            <CPRubricCategory
-              key={cat.id}
-              rubricCategory={cat}
-              savedRubricCategory={savedCategory}
-              rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
-              savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
-              updateCategory={this.updateRubricCategory}
-              deleteCategory={this.deleteRubricCategory}
-              addComment={this.addRubricComment}
-              updateComment={this.updateRubricComment}
-              deleteComment={this.deleteRubricComment}
-              onEdit={this.onCategoryEdit}
-              onUndo={this.onCategoryUndo}
-              onCommentEdit={this.onCommentEdit}
-              onCommentUndo={this.onCommentUndo}
-              activateCommentExplorer={this.activateCommentExplorer}
-              onCommentDragEnd={this.onCommentDragEnd}
-              moveCategory={this.moveCategory}
-              index={catIndex}
-              numCategories={this.state.rubricCategories.length}
-              otherCategories={this.state.rubricCategories}
-              feedbackScores={this.state.feedbackScores}
-              commentFeedbackOn={this.props.assignment.commentFeedback}
-            />
-          );
-        });
-
-      const actions = [
-        <RubricFileUpload
-          key="2"
-          assignment={this.props.assignment}
-          rubricComments={this.state.rubricComments}
-          rubricCategories={this.state.rubricCategories}
-          onRubricUpload={this.replaceRubric}
-          isDisabled={false}
-        />,
-        <RubricFileDownload
-          key="download"
-          assignment={this.props.assignment}
-          rubricComments={this.state.rubricComments}
-          rubricCategories={this.state.rubricCategories}
-          isDisabled={false}
-        />,
-        <MergeRubricCommentsDialog
-          key="3"
-          isDisabled={false}
-          rubricCategories={this.state.rubricCategories}
-          rubricComments={this.state.rubricComments}
-          assignment={this.props.assignment}
-          reloadRubric={this.loadAssignmentRubric}
-        />,
-        <CPButton
-          key="0"
-          onClick={this.resetRubric}
-          cpType="secondary"
-          disabled={!changesMade}
-          icon="undo"
-          fallback="undo"
-          fallbackWidth={1250}
-        >
-          Undo changes
-        </CPButton>,
-        <CPButton
-          key="1"
-          onClick={this.onSave.bind(this, undefined)}
-          disabled={!changesMade}
-          cpType="primary"
-          icon="save"
-          fallback="save"
-          fallbackWidth={500}
-          loading={this.state.isSaving}
-        >
-          Save
-        </CPButton>,
-      ];
-
-      const content = (
-        <div>
-          {categoryTables}
-          <CPButton cpType="primary" onClick={this.addRubricCategory.bind(this, undefined)}>
-            Add New Category
-          </CPButton>
-          {this.state.activeComment ? (
-            <RubricCommentExplorer
-              rubricComment={this.state.activeComment}
-              isVisible={typeof this.state.activeComment !== 'undefined'}
-              closeCommentExplorer={this.clearCommentExplorer}
-              submissions={this.props.submissions}
-            />
-          ) : null}
-          <LinkedCommentsAlert
-            rubricComment={this.state.linkedComments[0]}
-            onDelete={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.DELETE)}
-            onUnLink={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.UNLINK)}
-            onCancel={this.onLinkedAlertCancel}
-            isVisible={this.state.linkedComments.length > 0}
-          />
-          <LinkedCommentsConfirm
-            onAccept={this.onLinkedConfirmAccept}
-            onCancel={this.onLinkedConfirmCancel}
-            isVisible={this.state.showConfirmDialog}
-            unsavedComments={this.state.unsavedComments}
-            savedRubricComments={this.state.rubricComments}
-          />
-        </div>
-      );
-
-      return (
-        <CPAdminRubric
-          actions={actions}
-          title="Rubric"
-          content={content}
-          goBack={null}
-          isEmpty={this.state.rubricCategories.length === 0}
-          emptyNode={
-            <Empty
-              imageStyle={{
-                height: 60,
-              }}
-              description={<span>No rubric yet</span>}
-            >
-              <CPButton cpType="primary" onClick={this.addRubricCategory}>
-                Create a category
-              </CPButton>
-            </Empty>
-          }
-          breadcrumbs={
-            <Breadcrumb>
-              <Breadcrumb.Item onClick={this.props.onCancel}>
-                <a>Assignments</a>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-              <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
-            </Breadcrumb>
-          }
-          titleInfo={tooltips.admin.rubric.title}
-        />
-      );
-    } else {
-      return <Loading />;
-    }
+    // @ts-ignore
+    return this.props.children(this.collectClass());
   }
 }
 
