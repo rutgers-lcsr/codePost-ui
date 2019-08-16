@@ -3,18 +3,32 @@
   grid-gap: 20px;
   width: 100%;
   grid-template-columns: repeat(auto-fill, 95px);
+}
 
-  .integration {
-    width: 95px;
+.integration {
+  background: linear-gradient(135deg, #fff, #fafafa);
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  .ant-card-body {
+    padding: 0px;
+    height: 100%;
+  }
+
+  &--card {
     background: linear-gradient(135deg, #fff, #fafafa);
+    width: 95px;
     height: 120px;
-    cursor: pointer;
-    border-radius: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    cursor: default;
+  }
 
-    .ant-card-body {
-      padding: 0px;
-      height: 100%;
-    }
+  &--button {
+    width: 75px;
+    height: 75px;
+    cursor: pointer;
+  }
+
+  &--active {
+    background: linear-gradient(135deg, #fff, rgba(0, 0, 0, 0.1)) !important;
   }
 }

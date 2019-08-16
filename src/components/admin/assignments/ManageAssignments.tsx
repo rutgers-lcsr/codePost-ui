@@ -81,6 +81,7 @@ export enum DETAIL_TYPE {
   Rubric,
   Upload_Single,
   Upload_Multiple,
+  Upload_Import,
   Settings,
   Delete,
   Drawer,
@@ -400,6 +401,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   <Icon type="folder" />
                   Multiple submissions
                 </Menu.Item>
+                <Menu.Item key="0.3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Import, assignment)}>
+                  <Icon type="import" />
+                  Import
+                </Menu.Item>
               </SubMenu>
               <Menu.Item key="5" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
                 <Icon type="setting" />
@@ -502,6 +507,22 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 uploadSubmission={this.props.uploadSubmission}
                 updateSubmission={this.props.updateSubmission}
                 deleteSubmission={this.props.deleteSubmission}
+                showImportOptions={false}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Upload_Import:
+            detailComponent = (
+              <UploadSubmissionBulkDialog
+                isVisible={true}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                students={this.props.students}
+                uploadSubmission={this.props.uploadSubmission}
+                updateSubmission={this.props.updateSubmission}
+                deleteSubmission={this.props.deleteSubmission}
+                showImportOptions={true}
               />
             );
             break;

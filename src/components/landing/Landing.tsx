@@ -178,7 +178,7 @@ class Landing extends React.PureComponent<{}, {}> {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'inline-block', width: '500px' }}>
           <Integrations
-            integrations={['github', 'blackboard', 'jupyter', 'moss', 'canvas', 'moodle', 'homegrown', 'more']}
+            integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
           />
         </div>
       </div>
