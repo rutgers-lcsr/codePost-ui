@@ -175,7 +175,7 @@ class Landing extends React.PureComponent<{}, {}> {
     );
 
     const panelThreeModule = (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div className="display-flex align-items-center">
         <div style={{ display: 'inline-block', width: '500px' }}>
           <Integrations
             integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
@@ -184,7 +184,7 @@ class Landing extends React.PureComponent<{}, {}> {
       </div>
     );
     const panelThree = (
-      <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      <div className="display-flex align-items-center flex-direction-column">
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
