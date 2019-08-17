@@ -21,29 +21,6 @@ interface IProps {
   gutterSize: number;
 }
 
-const leftBevelStyle = {
-  transform: 'scale(0.9) perspective(2000px) rotateY(10deg) rotateX(-1deg) rotate(-1deg)',
-  boxShadow:
-    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
-  borderRadius: 5,
-  overflow: 'hidden',
-};
-
-const rightBevelStyle = {
-  transform: 'scale(0.9) perspective(2000px) rotateY(-10deg) rotateX(1deg) rotate(1deg)',
-  boxShadow:
-    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
-  borderRadius: 5,
-  overflow: 'hidden',
-};
-
-const flatBevelStyle = {
-  borderRadius: 5,
-  overflow: 'hidden',
-  boxShadow:
-    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)',
-};
-
 const LandingPanel = (props: IProps) => {
   const brandColor = '#24be85';
   const textColor = '#7F7F7F';
@@ -53,23 +30,21 @@ const LandingPanel = (props: IProps) => {
 
   const windowSize = useWindowSize();
 
-  const moduleStyle = props.bevel
+  const moduleClass = props.bevel
     ? windowSize.width < landingVars.breakpoints.verticalPanels
-      ? flatBevelStyle
+      ? 'bevel'
       : props.type === 'right'
-      ? leftBevelStyle
-      : rightBevelStyle
-    : {};
+      ? 'bevel bevel--left'
+      : 'bevel bevel--right'
+    : '';
+
   const moduleDiv = (
     <div
       style={{
         maxWidth: props.moduleMaxWidth,
         maxHeight: props.moduleMaxHeight,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...moduleStyle,
       }}
+      className={`display-flex justify-content-center align-items-center ${moduleClass}`}
     >
       {props.module}
     </div>
@@ -77,12 +52,10 @@ const LandingPanel = (props: IProps) => {
   const textDiv = (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
         height: '100%',
-        justifyContent: 'center',
         textAlign: windowSize.width < landingVars.breakpoints.verticalPanels ? 'center' : 'start',
       }}
+      className="display-flex flex-direction-column justify-content-center"
     >
       <div style={{ color: brandColor, fontSize: titleSize, paddingBottom: 20, fontWeight: 600 }}>{props.title}</div>
       <div style={{ color: textColor, fontSize: subTitleSize, paddingBottom: props.subTitle ? 20 : 0 }}>
@@ -96,7 +69,7 @@ const LandingPanel = (props: IProps) => {
     // We add an amount to the maxWidth for the scaling in order to make sure the animations have padding
     const transform = windowSize.width > props.moduleMaxWidth + 20 ? 1 : windowSize.width / (props.moduleMaxWidth + 20);
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="display-flex flex-direction-column align-items-center">
         <div style={{ marginBottom: 25 }}>{textDiv}</div>
         {props.removeModelSmallScreen && windowSize.width < landingVars.breakpoints.removeModule ? (
           <div />
@@ -107,7 +80,7 @@ const LandingPanel = (props: IProps) => {
     );
   } else {
     return (
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+      <div className="display-flex flex-direction-row align-items-center">
         <div>{props.type === 'right' ? moduleDiv : textDiv}</div>
         <div style={{ minWidth: props.gutterSize }} />
         <div>{props.type === 'left' ? moduleDiv : textDiv}</div>

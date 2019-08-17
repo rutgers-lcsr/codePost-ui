@@ -33,12 +33,9 @@ const PreAuthFooter = () => {
           paddingLeft: horizontalPadding,
           paddingRight: horizontalPadding,
           paddingBottom: bottomPadding,
-          display: 'flex',
-          flexDirection,
-          alignItems: 'center',
-          justifyContent: 'space-between',
         }}
-        className="footer"
+        className={`footer display-flex \
+          align-items-center justify-content-space-between flex-direction-${flexDirection}`}
       >
         <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>codePost</span>
         <span style={{ marginTop: 6, ...mobileFlexStyle }}>
