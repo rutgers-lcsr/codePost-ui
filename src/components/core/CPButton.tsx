@@ -47,7 +47,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
   };
 
   public render() {
-    const { cpType, fallback, isLoading, small, windowwidth, windowheight, ...props } = this.props;
+    const { cpType, fallback, fallbackWidth, isLoading, small, windowwidth, windowheight, ...props } = this.props;
     const customProps = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;
 
@@ -70,8 +70,11 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
     }
 
     // Optionally resize a button to an icon button if it has fallback defined
-    const fallbackWidth = this.props.fallbackWidth ? this.props.fallbackWidth : 900;
-    if (this.props.windowwidth < fallbackWidth && fallback) {
+    // const fallbackWidthCalculated = this.props.fallbackWidth ? this.props.fallbackWidth : 900;
+    if (
+      this.props.windowwidth < (this.props.fallbackWidth !== undefined ? this.props.fallbackWidth : 900) &&
+      fallback
+    ) {
       const { children, ...withoutChildren } = props;
       return (
         <CPTooltip title={children}>

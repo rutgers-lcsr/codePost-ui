@@ -1167,6 +1167,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             handleRubricCommentClick={this.onRubricCommentClick}
+            hasActiveComment={this.state.activeCommentID !== undefined}
           />,
         ];
 
@@ -1359,6 +1360,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             handleRubricCommentClick={this.onRubricCommentClick}
+            hasActiveComment={this.state.activeCommentID !== undefined}
           />,
         ];
 
