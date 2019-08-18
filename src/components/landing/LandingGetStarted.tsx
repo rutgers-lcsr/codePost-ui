@@ -15,26 +15,22 @@ const LandingGetStarted = () => {
   return (
     <div
       style={{
-        display: 'flex',
         width: '100%',
-        justifyContent: 'space-between',
         paddingLeft: 25,
         paddingRight: 25,
-        flexDirection,
       }}
+      className={`display-flex justify-content-space-between flex-direction-${flexDirection}`}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div className="display-flex flex-direction-column justify-content-center">
         <div style={{ fontSize: 30, color: '#707070', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
         <div style={{ fontSize: 24, color: '#A3A3A3' }}>Get started using codePost in minutes.</div>
       </div>
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
           paddingTop: windowSize.width < landingVars.breakpoints.getStarted ? 25 : 0,
           paddingLeft: windowSize.width < landingVars.breakpoints.getStarted ? 0 : 20,
-          justifyContent: 'center',
         }}
+        className="display-flex justify-content-center align-items-center"
       >
         <CPButton href="/signup" cpType="primary" style={{ width: 160, height: 40, fontSize: 17, lineHeight: 2.2 }}>
           Sign up

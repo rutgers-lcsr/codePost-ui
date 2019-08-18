@@ -338,14 +338,12 @@ class ManageAssignments extends React.Component<IProps, IState> {
     const divStyle = { padding: '20px 40px' };
     content = (
       <div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 50 }}>
+        <div className="display-flex flex-direction-column align-items-center" style={{ paddingBottom: 50 }}>
           <div style={{ ...divStyle, paddingBottom: 50 }}>{summaryData}</div>
           <div style={{ boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
             <div
+              className="display-flex justify-content-space-between align-items-center"
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
                 ...divStyle,
                 paddingBottom: 10,
                 padddingTop: 30,
@@ -358,7 +356,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 Refresh Data
               </CPButton>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', ...divStyle }}>
+            <div className="display-flex align-items-center" style={{ ...divStyle }}>
               <Table
                 pagination={false}
                 columns={columns}
@@ -368,7 +366,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 style={{ width: 450, paddingRight: 50 }}
                 defaultExpandAllRows={true}
               />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="display-flex flex-direction-column align-items-center">
                 <Progress
                   percent={Math.floor(
                     ((statsForRow.numGraded + statsForRow.numInProgress) / statsForRow.numSubmissions) * 100,

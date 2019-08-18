@@ -24,13 +24,11 @@ const LandingLayout = (props: IProps) => {
 
   const maxWidth = landingVars.maxWidths.panel;
 
-  const flexDirection: any = 'row';
   const sectionStyle = {
     width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    flexDirection,
   };
+
+  const sectionClass = 'display-flex flex-direction-row justify-content-center';
 
   const verticalPaddingPanel =
     windowSize.width < landingVars.breakpoints.verticalPanels
@@ -92,7 +90,7 @@ const LandingLayout = (props: IProps) => {
       }}
       id="LandingLayout"
     >
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }}>
+      <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
           style={{
             width: '100%',
@@ -104,21 +102,23 @@ const LandingLayout = (props: IProps) => {
         </div>
       </div>
       <div>
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero, paddingLeft: 75, paddingRight: 75 }}>
+        <div
+          style={{ ...sectionStyle, background: landingVars.backgrounds.hero, paddingLeft: 75, paddingRight: 75 }}
+          className={sectionClass}
+        >
           <div
             style={{
               maxWidth: landingVars.maxWidths.panel,
               paddingTop: verticalPaddingHero,
               paddingBottom: verticalPaddingHero,
-              display: 'flex',
-              justifyContent: 'space-between',
               width: '100%',
             }}
+            className="display-flex justify-content-space-between"
           >
             {props.hero}
           </div>
         </div>
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }}>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
           <img
             src={
               windowSize.width < landingVars.breakpoints.mobile ? testimonialBackgroundMobile : testimonialBackground
@@ -145,7 +145,10 @@ const LandingLayout = (props: IProps) => {
           </div>
         </div>
       </div>
-      <div style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}>
+      <div
+        style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}
+        className={sectionClass}
+      >
         <img
           src={windowSize.width < landingVars.breakpoints.mobile ? panelOneBackgroundMobile : panelOneBackground}
           style={{
@@ -158,7 +161,7 @@ const LandingLayout = (props: IProps) => {
         />
         <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
       </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.whyPanel }}>
+      <div style={{ ...sectionStyle, background: landingVars.backgrounds.whyPanel }} className={sectionClass}>
         <img
           src={windowSize.width < landingVars.breakpoints.mobile ? whyPanelBackgroundMobile : whyPanelBackground}
           style={{
@@ -179,7 +182,7 @@ const LandingLayout = (props: IProps) => {
           {props.whyPanel}
         </div>
       </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelTwo }}>
+      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelTwo }} className={sectionClass}>
         <img
           src={windowSize.width < landingVars.breakpoints.mobile ? panelTwoBackgroundMobile : panelTwoBackground}
           style={{
@@ -192,11 +195,11 @@ const LandingLayout = (props: IProps) => {
         />
         <div style={panelStyle}>{props.panelTwo}</div>
       </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }}>
+      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
       <Divider style={{ margin: 0 }} />
-      <div style={{ ...sectionStyle }}>
+      <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle }}>
           <WistiaVideo />
         </div>
@@ -204,7 +207,7 @@ const LandingLayout = (props: IProps) => {
 
       <div>
         <Divider style={{ margin: 0 }} />
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }}>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>
           <div
             style={{
               maxWidth,
@@ -216,7 +219,7 @@ const LandingLayout = (props: IProps) => {
             {props.getStarted}
           </div>
         </div>
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }}>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
           <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
         </div>
       </div>

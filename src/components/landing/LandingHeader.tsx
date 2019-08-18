@@ -67,14 +67,7 @@ const LandingHeader = () => {
     return (
       <Collapse bordered={false} expandIconPosition="right" expandIcon={expandIcon}>
         <Panel header={logo} style={{ paddingBottom: 5, paddingTop: 5 }} key="1">
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'left',
-              justifyContent: 'space-between',
-            }}
-          >
+          <div className="display-flex flex-direction-column align-items-left justify-content-space-between">
             {docs}
             {pricing}
             {faqs}
@@ -90,22 +83,20 @@ const LandingHeader = () => {
   } else {
     // Normal View
     return (
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ width: '100%' }} className="display-flex justify-content-center">
         <div
           style={{
             background: 'none',
-            display: 'flex',
             maxWidth: landingVars.maxWidths.header,
             width: '100%',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
             paddingRight: 40,
             paddingLeft: 40,
             paddingTop: 35,
             paddingBottom: 35,
           }}
+          className="display-flex justify-content-space-between align-items-flex-end"
         >
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div className="display-flex align-items-flex-end">
             {logo}
             {docs}
             {pricing}
