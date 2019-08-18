@@ -169,6 +169,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
     const toRet: IUserMap = {};
     csvLines.forEach((line, i) => {
+      // skip empty lines and lines containing only space chars
+      if (line.replace(/\s/g, '').length === 0) {
+        return;
+      }
+
       const tokens = line.replace(/['"]+/g, '').split(',');
       switch (this.props.roleType) {
         case 'student':
