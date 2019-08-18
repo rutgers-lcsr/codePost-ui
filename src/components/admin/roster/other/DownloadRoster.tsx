@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Button, Checkbox, Collapse, Modal } from 'antd';
+import { Button, Checkbox, Collapse, Modal, Typography } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -160,8 +160,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
     switch (this.props.downloadType) {
       case USER_TYPE.STUDENT:
         if (this.state.includeSections) {
-          previewItems.push('    email,section\n');
-          previewItems.push(`    student,${student0},${section0}\n    student,${student1},${section1}\n     ...\n`);
+          previewItems.push(`    ${student0},${section0}\n    ${student1},${section1}\n     ...\n`);
         } else {
           previewItems.push(`    ${student0}\n    ${student1}\n    ...\n`);
         }
@@ -203,7 +202,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
         <Modal
           visible={this.state.dialogVisible}
           onCancel={this.toggleDialog}
-          title="Download roster"
+          title={`Download roster: ${this.props.downloadType}s`}
           okText="Download"
           width={600}
           footer={[
@@ -215,7 +214,8 @@ class DownloadRoster extends React.Component<IProps, IState> {
             </Button>,
           ]}
         >
-          Click <b>Download</b> to save a copy of your <b>{this.props.downloadType.toLowerCase()}</b> roster to a .csv
+          Click <b>Download</b> to save a copy of your <b>{this.props.downloadType.toLowerCase()}</b> roster to a{' '}
+          <Typography.Text code>.csv</Typography.Text>
           file.
           <br />
           <br />

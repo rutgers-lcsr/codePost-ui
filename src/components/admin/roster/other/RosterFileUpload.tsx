@@ -120,7 +120,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     ...\n\ `;
 
   private studentCSVWithSections = `
-    email,section\n\
     student1@myschool.edu,P01\n\
     student2@myschool.edu,null\n\
     ...\n\ `;
@@ -137,11 +136,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       this.setState({
         uploadErrors: [],
         status: UPLOAD_STATUS.UPLOAD,
-        updates: {
-          students: { deleted: {}, changed: {}, added: {} },
-          graders: { deleted: {}, changed: {}, added: {} },
-          admins: { deleted: {}, changed: {}, added: {} },
-        },
+        updates: { deleted: {}, changed: {}, added: {} },
         updatingRoster: false,
         fileName: '',
       });
@@ -182,7 +177,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               toRet[tokens[0]] = {};
               break;
             case 2:
-              toRet[tokens[0]] = { section: tokens[1] === 'null' || tokens[1] === '' ? null : tokens[1] };
+              let sectionName = null;
+              if (tokens[1] !== 'null' && tokens[1] !== '') {
+                // remove leading and trailing whitespace
+                sectionName = tokens[1].trim();
+              }
+              toRet[tokens[0]] = { section: sectionName };
               break;
             default:
               throw new Error(`Incorrect row detected: row ${i}`);
@@ -234,9 +234,27 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             // build new sections
             const sectionMap = {};
             const innerPromises: Array<Promise<any>> = [];
+            const addedStudents = Object.keys(diff.added);
+            const changedStudents = Object.keys(diff.changed);
+
+            // Pre-fill sections to account for students whose sections we aren't
+            // updating.
+            for (const student of newStudents) {
+              if (addedStudents.indexOf(student) === -1 && changedStudents.indexOf(student) === -1) {
+                const section = this.props.sectionsByStudent[student];
+                const sectionValue = section ? section.name : undefined;
+                if (sectionValue !== null && sectionValue !== undefined) {
+                  if (sectionMap[sectionValue] === undefined) {
+                    sectionMap[sectionValue] = [student];
+                  } else {
+                    sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+                  }
+                }
+              }
+            }
 
             // Pull information from added students
-            for (const student of Object.keys(diff.added)) {
+            for (const student of addedStudents) {
               const sectionValue = diff.added[student]['section'];
               if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
@@ -248,7 +266,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             }
 
             // Pull information from changed students
-            for (const student of Object.keys(diff.changed)) {
+            for (const student of changedStudents) {
               const sectionValue = diff.changed[student].new['section'];
               if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
@@ -344,6 +362,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         deletedList[user] = oldRoster[user];
       } else {
         if (this.props.roleType === 'student') {
+          console.log(newRoster[user].section);
           if (newRoster[user].section !== undefined) {
             if (newRoster[user].section !== oldRoster[user].section) {
               changedList[user] = {
@@ -654,19 +673,28 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       case UPLOAD_STATUS.UPLOAD:
         content = (
           <div>
-            {' '}
             To upload your <b>{this.props.roleType}</b> roster, upload either a{' '}
             <Typography.Text code>.txt</Typography.Text> or a <Typography.Text code>.csv</Typography.Text> file in the
             format described below. You'll have the chance to review any changes before they are made after uploading
             your file.
             <br />
             <br />
-            <Collapse bordered={true} accordion={true}>
-              <Collapse.Panel header=".csv or .txt" key="1">
+            <Collapse bordered={true} accordion={true} defaultActiveKey={['1']}>
+              <Collapse.Panel
+                header={
+                  this.props.roleType === 'student' && this.props.sections.length > 0
+                    ? 'Without sections'
+                    : '.csv or .txt'
+                }
+                key="1"
+              >
                 <ReactMarkdown source={this.props.roleType === 'student' ? this.studentCSV : this.notStudentCSV} />
               </Collapse.Panel>
               {this.props.roleType === 'student' && this.props.sections.length > 0 ? (
                 <Collapse.Panel header="With sections" key="2">
+                  To remove a student from any section, set the student's section to "null" in your uploaded file. To
+                  leave a student's section unchanged, include only the student's email. <br />
+                  <br />
                   <ReactMarkdown source={this.studentCSVWithSections} />
                 </Collapse.Panel>
               ) : null}
@@ -801,7 +829,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         <Modal
           visible={this.state.dialogVisible}
           onCancel={this.toggleDialog}
-          title={`Upload roster: ${this.props.roleType}s`}
+          title={`Upload roster: ${this.props.roleType[0].toUpperCase() + this.props.roleType.slice(1)}s`}
           width={700}
           footer={[goBackButton, goForwardButton]}
         >
