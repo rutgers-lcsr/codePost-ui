@@ -199,7 +199,10 @@
   "browserslist": {
     "production": [
       ">0.2%",
-      "not dead",
+      "ie <= 10",
+      "ie_mob <= 10",
+      "bb <= 10",
+      "op_mob <= 12.1",
       "not op_mini all"
     ],
     "development": [
