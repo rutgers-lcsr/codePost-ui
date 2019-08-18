@@ -117,9 +117,11 @@ class ManageGraders extends React.Component<IProps, IState> {
           admins={this.props.admins}
           course={this.props.currentCourse}
           isDisabled={false}
+          downloadType={USER_TYPE.GRADER}
         />,
         <RosterFileUpload
           key={1}
+          roleType="grader"
           students={this.props.students}
           graders={this.props.graders}
           admins={this.props.admins}
@@ -234,6 +236,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             <br />
             <RosterFileUpload
               key={1}
+              roleType="grader"
               students={this.props.students}
               graders={this.props.graders}
               admins={this.props.admins}

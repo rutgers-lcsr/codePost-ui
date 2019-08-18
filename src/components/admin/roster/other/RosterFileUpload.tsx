@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Badge, Button, Collapse, Divider, Icon, Modal, Spin, Steps, Table, Typography, Upload } from 'antd';
+import { Alert, Button, Collapse, Divider, Icon, Modal, Spin, Steps, Table, Typography, Upload } from 'antd';
 const { Step } = Steps;
 
 /* other library imports */
@@ -39,42 +39,25 @@ enum UPLOAD_STATUS {
   SAVE,
 }
 
-/* format in which we expect student roster to be uploaded */
-interface IStudentUpload {
-  email: string;
-  section: string | null;
+interface IUserProperties {
+  section?: string | null; // null = No section, undefined = not set
 }
 
-/* format in which we expect student roster to be uploaded */
-interface IUserUpload {
-  email: string;
+interface IUserMap {
+  [email: string]: IUserProperties;
 }
 
 /* format in which we store information about the difference between two rosters:
  * the one uploaded by the user, and the one currently saved in codePost.
  */
 interface IChangeType {
-  deleted: { [studentEmail: string]: { properties: object } };
-  added: { [studentEmail: string]: { properties: object } };
+  deleted: IUserMap;
+  added: IUserMap;
 
   /* old and new keys map to objects which can store arbitrary properties of
    * users, which have changed. For now, the object corresponds to {section: sectionName}
    */
-  changed: { [studentEmail: string]: { old: object; new: object } };
-}
-
-/* format which we expect uploaded roster to take */
-interface IUploadType {
-  students?: IStudentUpload[];
-  graders?: IUserUpload[];
-  admins?: IUserUpload[];
-}
-
-/* format which we transform the old and new roster into to facilitate comparison */
-interface IRosterType {
-  students?: Map<string, object>;
-  graders?: Map<string, object>;
-  admins?: Map<string, object>;
+  changed: { [studentEmail: string]: { old: IUserProperties; new: IUserProperties } };
 }
 
 interface IProps {
@@ -93,6 +76,9 @@ interface IProps {
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
   updateSection: (section: SectionType) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
+
+  /* role type we are editing through this component */
+  roleType: 'student' | 'grader' | 'admin';
 }
 
 interface IState {
@@ -106,7 +92,7 @@ interface IState {
   updatingRoster: boolean;
 
   /* updates that will be made if uploaded roster is confirmed by user */
-  updates: { students: IChangeType; graders: IChangeType; admins: IChangeType };
+  updates: IChangeType;
 
   /* name of the uploaded file (to display back to the user for comfort) */
   fileName: string;
@@ -115,39 +101,33 @@ interface IState {
   status: UPLOAD_STATUS;
 
   /* new roster from uploaded file */
-  newRoster?: IRosterType;
+  newRoster?: IUserMap;
 }
 
 class RosterFileUpload extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
     uploadErrors: [],
-    updates: {
-      students: { deleted: {}, changed: {}, added: {} },
-      graders: { deleted: {}, changed: {}, added: {} },
-      admins: { deleted: {}, changed: {}, added: {} },
-    },
+    updates: { deleted: {}, changed: {}, added: {} },
     updatingRoster: false,
     status: UPLOAD_STATUS.UPLOAD,
     fileName: '',
   };
 
-  private exampleJSON = `    students: [\n    \t{"email": "student0@myschool.edu", "section": "P01"},\n\
-    \t{"email": "student1@myschool.edu", "section": "null"},\n    \t...\n    ],
-    graders: [\n    \t{"email": "grader0@myschool.edu"},\n\
-    \t{"email": "grader1@myschool.edu"},\n    \t...\n    ],
-    admins: [\n    \t{"email": "admin0@myschool.edu"},\n\
-    \t{"email": "admin1@myschool.edu"},\n    \t...\n    ]`;
+  private studentCSV = `
+    student1@myschool.edu\n\
+    student2@myschool.edu\n\
+    ...\n\ `;
 
-  private exampleCSV = `    role,email,section\n\
-    student,student0@myschool.edu,P01\n\
-    student,student0@myschool.edu,null\n\
-    ...\n\
-    grader,grader0@myschool.edu,\n\
-    grader,grader0@myschool.edu,\n\
-    ...\n\
-    admin,admin0@myschool.edu,\n\
-    admin,admin10@myschool.edu,\n\
+  private studentCSVWithSections = `
+    email,section\n\
+    student1@myschool.edu,P01\n\
+    student2@myschool.edu,null\n\
+    ...\n\ `;
+
+  private notStudentCSV = `
+    ${this.props.roleType}1@myschool.edu\n\
+    ${this.props.roleType}2@myschool.edu\n\
     ...\n\ `;
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
@@ -180,58 +160,38 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   };
 
   public convertCSVtoJSON = (csv: string) => {
-    /*
-     * Schema:
-     * role,email,section
-     * note: section only appears if role=student
-     */
-    const columns = 'role,email,section';
     const csvLines = csv.split('\n');
 
     /* is file empty */
     if (csvLines.length === 0) {
-      throw new Error('CSV is empty');
+      throw new Error('Uploaded file is empty');
     }
 
-    /* does first row have the format we would expect of a CSV? */
-    if (csvLines[0].trim() !== columns) {
-      throw new Error('First line has an incorrect format.');
-    }
-
-    const toRet: IUploadType = {
-      students: [],
-      graders: [],
-      admins: [],
-    };
-    for (const line of csvLines) {
+    const toRet: IUserMap = {};
+    csvLines.forEach((line, i) => {
       const tokens = line.replace(/['"]+/g, '').split(',');
-      if (tokens.length !== 3) {
-        throw new Error('Incorrect row detected');
-      } else {
-        switch (tokens[0]) {
-          case 'student':
-            // make sure to handle case where "null" string corresponds to no section
-            toRet.students!.push({ email: tokens[1], section: tokens[2] === 'null' ? null : tokens[2] });
-            break;
-          case 'grader':
-            toRet.graders!.push({ email: tokens[1] });
-            break;
-          case 'admin':
-            toRet.admins!.push({ email: tokens[1] });
-            break;
-        }
+      switch (this.props.roleType) {
+        case 'student':
+          switch (tokens.length) {
+            case 1:
+              toRet[tokens[0]] = {};
+              break;
+            case 2:
+              toRet[tokens[0]] = { section: tokens[1] === 'null' || tokens[1] === '' ? null : tokens[1] };
+              break;
+            default:
+              throw new Error(`Incorrect row detected: row ${i}`);
+          }
+          break;
+        case 'grader':
+        case 'admin':
+          if (tokens.length > 1) {
+            throw new Error(`Incorrect row detected: row ${i}`);
+          }
+          toRet[tokens[0]] = {};
+          break;
       }
-    }
-
-    if (toRet.students!.length === 0) {
-      delete toRet.students;
-    }
-    if (toRet.graders!.length === 0) {
-      delete toRet.graders;
-    }
-    if (toRet.admins!.length === 0) {
-      delete toRet.admins;
-    }
+    });
 
     return toRet;
   };
@@ -255,13 +215,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       // we don't want to declare success until all the work below completes
       const promises: Array<Promise<any>> = [];
 
-      if ('students' in diff) {
+      if (this.props.roleType === 'student') {
         /* remove and add users */
         const newStudents = [
           ...students.filter((student) => {
-            return !Object.keys(diff.students.deleted).includes(student);
+            return !Object.keys(diff.deleted).includes(student);
           }),
-          ...Object.keys(diff.students.added),
+          ...Object.keys(diff.added),
         ];
 
         promises.push(
@@ -271,9 +231,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             const innerPromises: Array<Promise<any>> = [];
 
             // Pull information from added students
-            for (const student of Object.keys(diff.students.added)) {
-              const sectionValue = diff.students.added[student]['section'];
-              if (sectionValue !== null) {
+            for (const student of Object.keys(diff.added)) {
+              const sectionValue = diff.added[student]['section'];
+              if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
                   sectionMap[sectionValue] = [student];
                 } else {
@@ -283,9 +243,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             }
 
             // Pull information from changed students
-            for (const student of Object.keys(diff.students.changed)) {
-              const sectionValue = diff.students.changed[student].new['section'];
-              if (sectionValue !== null) {
+            for (const student of Object.keys(diff.changed)) {
+              const sectionValue = diff.changed[student].new['section'];
+              if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
                   sectionMap[sectionValue] = [student];
                 } else {
@@ -340,22 +300,22 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         );
       }
 
-      if ('graders' in diff) {
+      if (this.props.roleType === 'grader') {
         const newGraders = [
           ...graders.filter((grader) => {
-            return !Object.keys(diff.graders.deleted).includes(grader);
+            return !Object.keys(diff.deleted).includes(grader);
           }),
-          ...Object.keys(diff.graders.added),
+          ...Object.keys(diff.added),
         ];
         promises.push(this.props.changeRoster(newGraders, USER_APP.Grader));
       }
 
-      if ('admins' in diff) {
+      if (this.props.roleType === 'admin') {
         const newAdmins = [
           ...admins.filter((admin) => {
-            return !Object.keys(diff.admins.deleted).includes(admin);
+            return !Object.keys(diff.deleted).includes(admin);
           }),
-          ...Object.keys(diff.admins.added),
+          ...Object.keys(diff.added),
         ];
         promises.push(this.props.changeRoster(newAdmins, USER_APP.CourseAdmin));
       }
@@ -367,67 +327,52 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     });
   };
 
-  public rosterDiff = (oldRoster: IRosterType, newRoster: IRosterType) => {
-    /* used for determining whether a user's details have changed */
-    const shallowCompare = (obj1: any, obj2: any) =>
-      Object.keys(obj1).length === Object.keys(obj2).length &&
-      Object.keys(obj1).every((key) => {
-        return obj2.hasOwnProperty(key) && obj1[key] === obj2[key];
-      });
+  public rosterDiff = (oldRoster: IUserMap, newRoster: IUserMap) => {
+    const oldList: string[] = Array.from(Object.keys(oldRoster));
+    const newList: string[] = Array.from(Object.keys(newRoster));
 
-    const keys = Object.keys(newRoster);
-    const toRet = {};
-    for (const key of keys) {
-      const oldList: string[] = Array.from(oldRoster[key].keys());
-      const newList: string[] = Array.from(newRoster[key].keys());
-
-      /* calculate changed users and removed users */
-      const deletedList = {};
-      const changedList = {};
-      for (const user of oldList) {
-        if (!newList.includes(user)) {
-          deletedList[user] = oldRoster[key].get(user);
-        } else {
-          if (!shallowCompare(oldRoster[key].get(user), newRoster[key].get(user))) {
-            changedList[user] = {
-              old: oldRoster[key].get(user),
-              new: newRoster[key].get(user),
-            };
+    /* calculate changed users and removed users */
+    const deletedList = {};
+    const changedList = {};
+    for (const user of oldList) {
+      if (!newList.includes(user)) {
+        deletedList[user] = oldRoster[user];
+      } else {
+        if (this.props.roleType === 'student') {
+          if (newRoster[user].section !== undefined) {
+            if (newRoster[user].section !== oldRoster[user].section) {
+              changedList[user] = {
+                old: oldRoster[user],
+                new: newRoster[user],
+              };
+            }
           }
         }
       }
-
-      /* calculate added users */
-      const addedList = {};
-      for (const user of newList) {
-        if (!oldList.includes(user)) {
-          addedList[user] = newRoster[key].get(user);
-        }
-      }
-      toRet[key] = {
-        deleted: deletedList,
-        added: addedList,
-        changed: changedList,
-      };
     }
 
-    return toRet;
+    /* calculate added users */
+    const addedList = {};
+    for (const user of newList) {
+      if (!oldList.includes(user)) {
+        addedList[user] = newRoster[user];
+      }
+    }
+
+    return {
+      deleted: deletedList,
+      added: addedList,
+      changed: changedList,
+    };
   };
 
   // Check to make sure the uploaded file is a valid roster
-  public checkRoster = (roster: IRosterType) => {
+  public checkRoster = (roster: IUserMap) => {
     const uploadErrors: string[] = [];
     const keys = Object.keys(roster);
 
     /* check to make sure uploaded roster isn't empty */
-    let isEmpty = true;
-    for (const key of keys) {
-      if (key in roster && roster[key].size > 0) {
-        isEmpty = false;
-        break;
-      }
-    }
-    if (isEmpty) {
+    if (keys.length === 0) {
       uploadErrors.push('Uploaded roster is empty.');
       return uploadErrors;
     }
@@ -437,85 +382,42 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     return uploadErrors;
   };
 
-  public transformNewRoster = (newRoster: IUploadType): IRosterType => {
-    const keys = ['students', 'graders', 'admins'];
-    const transformed = keys.map((key) => {
-      const toRet = new Map();
-      if (key in newRoster) {
-        const users = newRoster[key];
-        for (const user of users) {
-          const { ['email']: emailString, ...userProperties } = user;
-          toRet.set(emailString, userProperties);
-        }
+  public transformOldRoster = (
+    userType: string,
+    users: string[],
+    sectionsByStudent: { [studentEmail: string]: SectionType },
+  ): IUserMap => {
+    const userMap = {};
+    users.forEach((user) => {
+      switch (userType) {
+        case 'student':
+          userMap[user] = { section: sectionsByStudent[user] ? sectionsByStudent[user].name : null };
+          break;
+        case 'grader':
+        case 'admin':
+          userMap[user] = {};
       }
-      return toRet;
     });
 
-    const transformedRoster = {};
-    if ('students' in newRoster) {
-      transformedRoster['students'] = transformed[0];
-    }
-    if ('graders' in newRoster) {
-      transformedRoster['graders'] = transformed[1];
-    }
-    if ('admins' in newRoster) {
-      transformedRoster['admins'] = transformed[2];
-    }
-    return transformedRoster;
-  };
-
-  public transformOldRoster = (
-    students: string[],
-    graders: string[],
-    admins: string[],
-    sectionsByStudent: { [studentEmail: string]: SectionType },
-  ): IRosterType => {
-    const studentMap = new Map();
-    for (const student of students) {
-      studentMap.set(student, {
-        section: sectionsByStudent[student] ? sectionsByStudent[student].name : null,
-      });
-    }
-
-    const graderMap = new Map();
-    for (const grader of graders) {
-      graderMap.set(grader, {});
-    }
-
-    const adminMap = new Map();
-    for (const admin of admins) {
-      adminMap.set(admin, {});
-    }
-
-    return {
-      students: studentMap,
-      graders: graderMap,
-      admins: adminMap,
-    };
+    return userMap;
   };
 
   // Function called immediately after an uploaded file is read
   public onRosterUpload = (file: File, result: string) => {
     this.setState(
       {
-        updates: {
-          students: { deleted: [], changed: {}, added: [] },
-          graders: { deleted: [], changed: {}, added: [] },
-          admins: { deleted: [], changed: {}, added: [] },
-        },
+        updates: { deleted: [], changed: {}, added: [] },
         fileName: file.name,
         newRoster: undefined,
       },
       () => {
-        let roster;
+        let newRoster;
 
         try {
           switch (file.name.split('.')[1]) {
-            case 'json':
-              roster = JSON.parse(result);
-              break;
+            case 'txt':
             case 'csv':
-              roster = this.convertCSVtoJSON(result);
+              newRoster = this.convertCSVtoJSON(result);
               break;
             default:
               throw new Error('Unsupported file format.');
@@ -529,10 +431,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           return;
         }
 
-        /* transform roster object into a more flexible data structure */
-        /* Map(email, other information) */
-        const newRoster = this.transformNewRoster(roster);
-
         /* make sure newRoster is free of errors */
         const uploadErrors = this.checkRoster(newRoster);
         if (uploadErrors.length > 0) {
@@ -540,12 +438,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         }
 
         /* calculate diff between old and new roster */
-        const oldRoster = this.transformOldRoster(
-          this.props.students,
-          this.props.graders,
-          this.props.admins,
-          this.props.sectionsByStudent,
-        );
+        let oldRoster = {};
+        switch (this.props.roleType) {
+          case 'student':
+            oldRoster = this.transformOldRoster('student', this.props.students, this.props.sectionsByStudent);
+            break;
+          case 'grader':
+            oldRoster = this.transformOldRoster('grader', this.props.graders, {});
+            break;
+          case 'admin':
+            oldRoster = this.transformOldRoster('admin', this.props.admins, {});
+            break;
+        }
         const diff = this.rosterDiff(oldRoster, newRoster);
         this.setState({ status: UPLOAD_STATUS.REVIEW, updates: diff, newRoster, uploadErrors: [] });
       },
@@ -580,8 +484,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           if (diffItem.items.length === 0) {
             return (
               <div key={i}>
-                <br />
-                <h5>{diffItem.title}</h5>
+                <h4>{diffItem.title}</h4>
               </div>
             );
           }
@@ -621,8 +524,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           const dataSource = diffItem.items.map((el: any, j: number) => {
             if (diffItem.title === 'Changed: ') {
-              let toSectionName = changes.changed[el].new['section'];
-              if (toSectionName === null) {
+              let toSectionName = changes.changed[el].new.section;
+              if (toSectionName === null || toSectionName === undefined) {
                 toSectionName = 'No section';
               } else if (!this.getSectionIDFromName(toSectionName)) {
                 toSectionName = `${toSectionName}*`;
@@ -641,7 +544,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               };
             } else {
               let sectionName = changes[diffItem.key][el].section;
-              if (sectionName === null) {
+              if (sectionName === null || sectionName === undefined) {
                 sectionName = 'No section';
               } else if (!this.getSectionIDFromName(sectionName)) {
                 sectionName = `${sectionName}*`;
@@ -654,7 +557,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           return (
             <div key={i}>
               <br />
-              <h5>{diffItem.title}</h5>
+              <h4>{diffItem.title}</h4>
               <Table pagination={false} style={{ lineHeight: 1 }} dataSource={dataSource} columns={columns} />
             </div>
           );
@@ -681,11 +584,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         title: 'Added: ',
         items: Object.keys(changes.added),
       },
-      {
-        title: 'Changed: ',
-        items: Object.keys(changes.changed),
-        changedKey: 'sections',
-      },
     ];
 
     return (
@@ -710,7 +608,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           return (
             <div key={i}>
               <br />
-              <h5>{diffItem.title}</h5>
+              <h4>{diffItem.title}</h4>
               <Table pagination={false} style={{ lineHeight: 1 }} dataSource={dataSource} columns={columns} />
             </div>
           );
@@ -752,22 +650,21 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         content = (
           <div>
             {' '}
-            To upload your roster, upload either a <Typography.Text code>.json</Typography.Text> or a{' '}
-            <Typography.Text code>.csv</Typography.Text> file in the format described below. You'll have the chance to
-            review any changes before they are made after uploading your file.
-            <br />
-            <br />
-            If you exclude a user group(s), the excluded group(s) will be left unchanged. For example, if you upload a
-            roster that includes only students (with no graders or admins), the graders and admins won't be changed.
+            To upload your <b>{this.props.roleType}</b> roster, upload either a{' '}
+            <Typography.Text code>.txt</Typography.Text> or a <Typography.Text code>.csv</Typography.Text> file in the
+            format described below. You'll have the chance to review any changes before they are made after uploading
+            your file.
             <br />
             <br />
             <Collapse bordered={true} accordion={true}>
-              <Collapse.Panel header="JSON" key="1">
-                <ReactMarkdown source={this.exampleJSON} />
+              <Collapse.Panel header=".csv or .txt" key="1">
+                <ReactMarkdown source={this.props.roleType === 'student' ? this.studentCSV : this.notStudentCSV} />
               </Collapse.Panel>
-              <Collapse.Panel header="CSV" key="2">
-                <ReactMarkdown source={this.exampleCSV} />
-              </Collapse.Panel>
+              {this.props.roleType === 'student' && this.props.sections.length > 0 ? (
+                <Collapse.Panel header="With sections" key="2">
+                  <ReactMarkdown source={this.studentCSVWithSections} />
+                </Collapse.Panel>
+              ) : null}
             </Collapse>
             <br />
             <Upload beforeUpload={this.beforeUpload} showUploadList={false}>
@@ -780,27 +677,17 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         break;
       case UPLOAD_STATUS.REVIEW:
         if (this.state.uploadErrors.length === 0) {
-          const uploadedStudents = 'students' in this.state.newRoster!;
-          const uploadedGraders = 'graders' in this.state.newRoster!;
-          const uploadedAdmins = 'admins' in this.state.newRoster!;
-
-          const sections = [
-            {
-              title: 'Students',
-              key: 'students',
-              present: uploadedStudents,
-            },
-            {
-              title: 'Graders',
-              key: 'graders',
-              present: uploadedGraders,
-            },
-            {
-              title: 'Admins',
-              key: 'admins',
-              present: uploadedAdmins,
-            },
-          ];
+          const uploadedUsers = this.state.newRoster;
+          let sectionContent: React.ReactNode;
+          switch (this.props.roleType) {
+            case 'student':
+              sectionContent = this.changedStudentsToJSX(this.state.updates);
+              break;
+            case 'grader':
+            case 'admin':
+              sectionContent = this.changesToJSX(this.state.updates);
+              break;
+          }
 
           content = (
             <div>
@@ -809,57 +696,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               <Divider orientation="left">Status</Divider>
               <b>Uploaded file:</b> <em>{this.state.fileName}</em>
               <br />
-              <b>Users parsed in uploaded file:</b>
-              <ul>
-                <li>
-                  Students:{' '}
-                  {uploadedStudents ? this.state.newRoster!.students!.size : 'No students detected in uploaded roster'}
-                </li>
-                <li>
-                  Graders:{' '}
-                  {uploadedGraders ? this.state.newRoster!.graders!.size : 'No graders detected in uploaded roster'}
-                </li>
-                <li>
-                  Admins:{' '}
-                  {uploadedAdmins ? this.state.newRoster!.admins!.size : 'No admins detected in uploaded roster'}
-                </li>
-              </ul>
+              <b>{this.props.roleType}s parsed in uploaded file: </b>
+              <em>{Object.keys(uploadedUsers!).length}</em>
               <Divider orientation="left">Changes</Divider>
-              <Collapse accordion bordered={true}>
-                {sections
-                  .filter((section, i) => section.present)
-                  .map((section, i) => {
-                    let sectionContent;
-
-                    if (section.key === 'students') {
-                      sectionContent = this.changedStudentsToJSX(this.state.updates[section.key]);
-                    } else {
-                      sectionContent = this.changesToJSX(this.state.updates[section.key]);
-                    }
-
-                    return (
-                      <Collapse.Panel
-                        header={
-                          <div>
-                            {section.title} &nbsp;
-                            <Badge count={this.state.updates[section.key].deleted.length} />
-                            <Badge
-                              style={{ backgroundColor: '#f4d942' }}
-                              count={Object.keys(this.state.updates[section.key].changed).length}
-                            />
-                            <Badge
-                              style={{ backgroundColor: '#52c41a' }}
-                              count={this.state.updates[section.key].added.length}
-                            />
-                          </div>
-                        }
-                        key={i.toString()}
-                      >
-                        {sectionContent}
-                      </Collapse.Panel>
-                    );
-                  })}
-              </Collapse>
+              {sectionContent}
             </div>
           );
         } else {
@@ -956,7 +796,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         <Modal
           visible={this.state.dialogVisible}
           onCancel={this.toggleDialog}
-          title={'Upload roster'}
+          title={`Upload roster: ${this.props.roleType}s`}
           width={700}
           footer={[goBackButton, goForwardButton]}
         >
