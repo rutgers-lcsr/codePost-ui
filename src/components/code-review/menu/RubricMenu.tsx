@@ -38,11 +38,19 @@ interface IRubricMenuProps {
 
 interface IRubricMenuState {
   searchTerm: string;
+  tmpRubricCategories: RubricCategoryType[];
+  tmpRubricComments: IRubricCategoryToRubricCommentsMap;
+  tmpEditing: number[];
+  counter: number;
 }
 
 class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   public state: Readonly<IRubricMenuState> = {
     searchTerm: '',
+    tmpRubricCategories: this.props.rubricCategories,
+    tmpRubricComments: this.props.rubricComments,
+    tmpEditing: [],
+    counter: -1,
   };
 
   public componentDidMount() {
@@ -111,6 +119,9 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               rubricComment={rubricComment}
               linkToComment={this.linkToComment}
               hasActiveComment={this.props.hasActiveComment}
+              editing={this.state.tmpEditing.includes(rubricComment.id)}
+              addEditing={this.addEditing}
+              removeEditing={this.removeEditing}
             />
           </Menu.Item>
         );
@@ -150,6 +161,9 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         </Popover>
       ) : null;
 
+      const onClick = () => {
+        this.addRubricComment(rubricCategory.id);
+      };
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
       // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
@@ -185,7 +199,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               textAlign: 'center',
             }}
           >
-            <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }}>
+            <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={onClick}>
               Add
             </Button>
           </Menu.Item>
@@ -194,9 +208,45 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     });
   };
 
+  public addRubricComment = (rubricCategoryID: number) => {
+    const emptyRubricComment: RubricCommentType = {
+      id: this.state.counter,
+      text: '',
+      pointDelta: 0,
+      category: rubricCategoryID,
+      comments: [],
+      sortKey: 0,
+    };
+
+    const appended = this.state.tmpRubricComments[rubricCategoryID].concat([emptyRubricComment]);
+
+    const updated = { ...this.state.tmpRubricComments, [rubricCategoryID]: appended };
+    this.addEditing(this.state.counter);
+    this.setState({ tmpRubricComments: updated, counter: this.state.counter - 1 });
+  };
+
+  public addEditing = (id: number) => {
+    if (!this.state.tmpEditing.includes(id)) {
+      this.setState({ tmpEditing: this.state.tmpEditing.concat([id]) });
+    }
+  };
+
+  public removeEditing = (id: number) => {
+    if (this.state.tmpEditing.includes(id)) {
+      const rem = this.state.tmpEditing.filter((i: number) => {
+        return i !== id;
+      });
+      this.setState({ tmpEditing: rem });
+    }
+  };
+
+  public onSave = () => {
+    this.setState({ tmpEditing: [] });
+  };
+
   public render() {
-    const rubricMenu = this.buildRubricMenu(this.props.rubricCategories, this.props.rubricComments);
-    const rubricKeys = this.props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+    const rubricMenu = this.buildRubricMenu(this.state.tmpRubricCategories, this.state.tmpRubricComments);
+    const rubricKeys = this.state.tmpRubricCategories.map((rubricCategory: RubricCategoryType) => {
       return `category-${rubricCategory.id}`;
     });
 
@@ -210,11 +260,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         icon="save"
         loading={false}
         style={{ minWidth: '80px' }}
+        onClick={this.onSave}
       >
         Save
       </CPButton>,
     ];
-    console.log(controls);
 
     return (
       <div style={{ marginTop: '8px' }}>
@@ -257,37 +307,46 @@ interface IRubricMenuCommentElementProps {
   rubricComment: RubricCommentType;
   hasActiveComment: boolean;
   linkToComment: any;
+  editing: boolean;
+  addEditing: any;
+  removeEditing: any;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
+  const [pointDelta, setPointDelta] = React.useState(props.rubricComment.pointDelta);
+
   let points = '';
-  if (props.rubricComment.pointDelta > 0) {
-    points = `-${props.rubricComment.pointDelta}`;
-  } else if (props.rubricComment.pointDelta < 0) {
-    points = `+${props.rubricComment.pointDelta * -1}`;
+  if (pointDelta > 0) {
+    points = `-${pointDelta}`;
+  } else if (pointDelta < 0) {
+    points = `+${pointDelta * -1}`;
   } else {
     points = '0';
   }
 
-  const [editing, setEditing] = React.useState(false);
+  const [text, setText] = React.useState(props.rubricComment.text);
 
   const onClick = () => {
     props.linkToComment(props.rubricComment);
   };
 
-  const startEditing = () => {
-    setEditing(true);
+  const addEditing = () => {
+    props.addEditing(props.rubricComment.id);
   };
 
-  // const endEditing = () => {
-  //   setEditing(false);
-  // };
+  const onChangeText = (e: any) => {
+    setText(e.target.value);
+  };
 
-  if (editing) {
+  const onChangePoints = (e: any) => {
+    setPointDelta(e);
+  };
+
+  if (props.editing) {
     return (
       <InputGroup>
-        <TextArea style={{ width: '76%' }} value={props.rubricComment.text} autosize={true} />
-        <InputNumber style={{ width: '20%' }} value={props.rubricComment.pointDelta} />
+        <TextArea style={{ width: '76%' }} value={text} onChange={onChangeText} autosize={true} />
+        <InputNumber style={{ width: '20%' }} value={pointDelta} onChange={onChangePoints} />
       </InputGroup>
     );
   } else {
@@ -298,9 +357,9 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           fontSize: '12px',
         }}
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'}`}
-        onClick={props.hasActiveComment ? onClick : startEditing}
+        onClick={props.hasActiveComment ? onClick : addEditing}
       >
-        <InlineMarkdown source={props.rubricComment.text} />
+        <InlineMarkdown source={text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">
