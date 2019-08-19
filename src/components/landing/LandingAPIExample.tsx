@@ -200,11 +200,9 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           marginTop: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
           marginBottom: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
           position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
           width: '100%',
-          alignItems: 'flex-start',
         }}
+        className="display-flex flex-direction-column align-items-flex-start"
       >
         <span
           style={{
@@ -272,7 +270,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         <Collapse bordered={false}>
           <Panel
             header={
-              <div className="apiexample__header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="apiexample__header display-flex justify-content-space-between">
                 <div>Think we were joking about short scripts? Click here</div>
                 <Icon type="api" className="apiexample__header__icon" />
               </div>
@@ -283,10 +281,10 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             <div
               style={{
                 fontSize: 12,
-                display: 'flex',
-                flexDirection: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row',
-                alignItems: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start',
               }}
+              className={`display-flex flex-direction-${
+                this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
+              } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
             >
               {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
               {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}

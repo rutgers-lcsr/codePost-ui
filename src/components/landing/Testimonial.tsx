@@ -49,11 +49,10 @@ const Testimonials = () => {
     <div
       style={{
         width: '100%',
-        display: 'flex',
-        justifyContent: 'space-between',
-        flexDirection: windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row',
-        alignItems: windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start',
       }}
+      className={`display-flex justify-content-space-between flex-direction-${
+        windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row'
+      } align-items-${windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start'}`}
     >
       <Testimonial text={<div>{adamText}</div>} name="Adam Blank" thumbnail={adamImg} school="Caltech" />
       <Testimonial
@@ -80,18 +79,16 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
       style={{
         fontSize: 16,
         lineHeight: 1.57,
-        display: 'flex',
-        flexDirection: 'column',
         maxWidth: windowSize.width < landingVars.breakpoints.testimonial ? 600 : 300,
-        justifyContent: 'flex-start',
         marginLeft: 15,
         marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
         marginTop: windowSize.width < landingVars.breakpoints.testimonial ? 20 : 0,
       }}
+      className="display-flex flex-direction-column justify-content-flex-start"
     >
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+      <div className="display-flex flex-direction-row justify-content-flex-start align-items-center">
         <img src={props.thumbnail} style={{ width: 40, borderRadius: 20, marginRight: 15 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', fontSize: 17, lineHeight: 1.18 }}>
+        <div className="display-flex flex-direction-column" style={{ fontSize: 17, lineHeight: 1.18 }}>
           <div style={{ fontWeight: 600 }}>{props.name}</div>
           <div>{props.school}</div>
         </div>
