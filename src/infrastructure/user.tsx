@@ -21,6 +21,7 @@ const UserV = t.intersection(
       courseadminCourses: t.array(CourseV),
       leaderSections: t.array(SectionV),
       showProductTips: t.boolean,
+      codePostAdmin: t.boolean,
     }),
     t.partial({}),
   ],
