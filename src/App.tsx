@@ -73,6 +73,7 @@ const anonymousUser: UserType = {
   courseadminCourses: [],
   leaderSections: [],
   showProductTips: true,
+  codePostAdmin: false,
 };
 
 /*****************************************************************************/
