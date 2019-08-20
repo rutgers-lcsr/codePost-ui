@@ -106,6 +106,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       actions = [
         <DownloadRoster
           key={0}
+          downloadType={USER_TYPE.STUDENT}
           sectionsByStudent={this.props.sectionsByStudent}
           startingPage={USER_TYPE.STUDENT}
           students={this.props.students}
@@ -116,6 +117,7 @@ class ManageStudents extends React.Component<IProps, IState> {
         />,
         <RosterFileUpload
           key={1}
+          roleType="student"
           students={this.props.students}
           graders={this.props.graders}
           admins={this.props.admins}
@@ -266,6 +268,7 @@ class ManageStudents extends React.Component<IProps, IState> {
             <br />
             <RosterFileUpload
               key={1}
+              roleType="student"
               students={this.props.students}
               graders={this.props.graders}
               admins={this.props.admins}
