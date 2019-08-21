@@ -132,7 +132,7 @@ class App extends React.Component<{}, IState> {
     }
 
     if (this.state.has_token && !this.state.user) {
-      fetch(`${process.env.REACT_APP_API_URL} /registration/current_user / `, {
+      fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')} `,
         },
@@ -227,7 +227,7 @@ class App extends React.Component<{}, IState> {
     const REFRESH_MIN = 30; // should define this in a settings file somewhere
     const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
 
-    fetch(`${process.env.REACT_APP_API_URL} /token-refresh/`, {
+    fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
       body: JSON.stringify({ token: localStorage.getItem('token') }),
       headers: {
         'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ class App extends React.Component<{}, IState> {
 
   public handleLogin = (username: string, password: string, toRedirect: boolean) => {
     this.setState({ error: '' });
-    return fetch(`${process.env.REACT_APP_API_URL} /token-auth/`, {
+    return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
       body: JSON.stringify({ username, password }),
       headers: {
         'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ class App extends React.Component<{}, IState> {
     const demoRoute = (
       <Route
         exact={true}
-        path={`${CODE_DEMO} /`}
+        path={`${CODE_DEMO}/`}
         render={(props: any) =>
           this.wrapTooltipContext(
             <AsyncGrade
