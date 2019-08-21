@@ -90,55 +90,60 @@ const Pricing = (props: IProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div>
-         className="display-flex flex-direction-column" style={{ textAlign: 'center', position: 'relative' }}>
-      <div className="display-flex justify-content-center" style={{ width: '100%' }}>
-        <span style={textStyle}>codePost is 100% free for universities. No credit card required.</span>
-                    </div>
-             assName={`display-flex justify-content-center align-items-center flex-direction-${flexDirection}`}
-          e={{ paddingTop: 50 }}
-                 style={freeStyle}>
-        <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Colleges</h3>
-        <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
-          <Link to="/signup/create">
-            <Button style={freeButtonStyle}>
-              Get started <Icon type="arrow-right" />
-            </Button>
-            Link>
-              
-             style={premiumStyle}>
-          <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>For-profits</h3>
-          <p style={{ fontSize: '18px' }}>$5 / student / month </p>
-          <a href="mailto:team@codepost.io">
+        <div className="display-flex flex-direction-column" style={{ textAlign: 'center', position: 'relative' }}>
+          <div className="display-flex justify-content-center" style={{ width: '100%' }}>
+            <span style={textStyle}>codePost is 100% free for universities. No credit card required.</span>
+          </div>
+          <div
+            className={`display-flex justify-content-center align-items-center flex-direction-${flexDirection}`}
+            style={{ paddingTop: 50 }}
+          >
+            <div style={freeStyle}>
+              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Universities</h3>
+              <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
+              <Link to="/signup/create">
+                <Button style={freeButtonStyle}>
+                  Get started <Icon type="arrow-right" />
+                </Button>
+              </Link>
+            </div>
+            <div style={premiumStyle}>
+              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>For-profits</h3>
+              <p style={{ fontSize: '18px' }}>$5 / student / month </p>
+              <a href="mailto:team@codepost.io">
                 <Button style={premiumButtonStyle}>
-              Get in touch <Icon type="arrow-right" />
-            </Button>
-          </a>
-          div>
-            
-                       le={{ width: '100%' }}>
-            tyle={{ position: 'relative' }}>
-            
-          style={{
-            marginTop: -15,
-            width: '100%',
-            top: -15,
-                           sName="display-flex justify-content-center"
-                            le={featureStyle}>
-                  lassName="display-flex flex-direction-column">
-                  tyle={{ fontSize: '16px', fontWeight: 'bold' }}>Features:</p>
-                iv className={`display-flex justify-content-center flex-direction-${flexDirection}`}>
-                <ul style={{ maxWidth: 210, marginBottom: 0 }}>
-                  <li>Unlimited students</li>
-                  <li>Unlimited course staff</li>
-                  <li>Unlimited submissions</li>
-                </ul>
-                <ul style={{ maxWidth: 210, marginLeft: windowSize.width < breakpoint ? 0 : 20 }}>
-                  <li>Full API access: Unlimited requests</li>
-                  <li>&lt;48 hour support response time</li>
-                </ul>
+                  Get in touch <Icon type="arrow-right" />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div style={{ width: '100%' }}>
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                marginTop: -15,
+                width: '100%',
+                top: -15,
+              }}
+              className="display-flex justify-content-center"
+            >
+              <div style={featureStyle}>
+                <div className="display-flex flex-direction-column">
+                  <p style={{ fontSize: '16px', fontWeight: 'bold' }}>Features:</p>
+                  <div className={`display-flex justify-content-center flex-direction-${flexDirection}`}>
+                    <ul style={{ maxWidth: 210, marginBottom: 0 }}>
+                      <li>Unlimited students</li>
+                      <li>Unlimited course staff</li>
+                      <li>Unlimited submissions</li>
+                    </ul>
+                    <ul style={{ maxWidth: 210, marginLeft: windowSize.width < breakpoint ? 0 : 20 }}>
+                      <li>Full API access: Unlimited requests</li>
+                      <li>&lt;48 hour support response time</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-                 </div>
-              </div >
             </div>
           </div>
         </div>
