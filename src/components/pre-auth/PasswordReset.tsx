@@ -179,7 +179,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
           case 'activate':
             newLinkMessage = (
               <span>
-                Request a new account acvtiation link <Link to="/signup/student/">here</Link>.
+                Request a new account activation link <Link to="/signup/join/">here</Link>.
               </span>
             );
             break;
