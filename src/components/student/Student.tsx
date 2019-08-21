@@ -165,7 +165,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadSubmissions = async (assignments: AssignmentType[]) => {
     const submissions = {};
     for (const assignment of assignments) {
-      if (assignment.isReleased) {
+      if (assignment.isReleased || assignment.allowStudentUpload) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
         });
