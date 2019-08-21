@@ -6,10 +6,12 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Tag } from 'antd';
+import { Button, Icon, Menu, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
+const { Text } = Typography;
 
 /* other library imports */
+import * as moment from 'moment';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -17,7 +19,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWa
 
 import CPFlex from '../core/CPFlex';
 
-import { IAssignmentToSubmissionsMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
+import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
 import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -40,17 +42,24 @@ import CPLogo from '../core/CPLogo';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
+
+import ViewUpload from './ViewUpload';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
   currentCourse?: CourseType;
   assignments: ICourseToAssignmentMap;
-  submissions: IAssignmentToSubmissionsMap;
+  submissions: IAssignmentToSubmissionStudentMap;
   viewsBySubmission: { [submissionID: number]: boolean };
 
   // Loading variables
   isLoadingAssignments: boolean;
   isLoadingSubmissions: boolean;
+
+  currentPanel: CURRENT_PANEL;
+  detailAssignment?: AssignmentType;
 }
 
 enum SUBMISSION_STATUS {
@@ -58,6 +67,12 @@ enum SUBMISSION_STATUS {
   NO_SUBMISSION,
   SUBMISSION_VIEWED,
   SUBMISSION_UNVIEWED,
+}
+
+enum CURRENT_PANEL {
+  TABLE,
+  VIEWFILES,
+  UPLOADFILES,
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -80,6 +95,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       viewsBySubmission: {},
       isLoadingAssignments: true,
       isLoadingSubmissions: true,
+      currentPanel: CURRENT_PANEL.TABLE,
+      detailAssignment: undefined,
     };
   }
 
@@ -175,7 +192,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return submissions;
   };
 
-  public loadHistories = async (submissions: IAssignmentToSubmissionsMap, email: string) => {
+  public loadHistories = async (submissions: IAssignmentToSubmissionStudentMap, email: string) => {
     const toRet = {};
     const keys = Object.keys(submissions);
     for (const key of keys) {
@@ -438,11 +455,20 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
         }),
       },
+      {
+        title: 'Upload',
+        dataIndex: 'upload',
+        key: 'upload',
+        align: aligner,
+      },
     ];
 
     const data = assignments.map((assignment) => {
+      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+      const uploadContent = this.getUploadContent(assignment, submission);
+
       if (!assignment.isReleased) {
-        // Case 1: assignment isn't published
+        // Case 1: assignment is not published
         return {
           key: assignment.name,
           assignment: assignment.name,
@@ -454,10 +480,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             </div>
           ),
           disabled: true,
+          upload: uploadContent,
         };
       } else {
-        const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
-
         const hasStats = assignment.mean || assignment.median;
         let statsContent;
         if (hasStats) {
@@ -564,18 +589,35 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       };
 
       studentContent = (
-        <TableDetail
-          loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
-          isEmpty={assignmentList.length === 0}
-          title={`${currentCourse.name} | ${currentCourse.period}`}
-          emptyNode={<div>Empty...</div>}
-          actions={[]}
-          columns={columns}
-          data={data}
-          pagination={false}
-          hideSearch={true}
-          tableProps={{ rowClassName, bordered: true }}
-        />
+        <div>
+          <TableDetail
+            loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
+            isEmpty={assignmentList.length === 0}
+            title={`${currentCourse.name} | ${currentCourse.period}`}
+            emptyNode={<div>Empty...</div>}
+            actions={[]}
+            columns={columns}
+            data={data}
+            pagination={false}
+            hideSearch={true}
+            tableProps={{ rowClassName, bordered: true }}
+          />
+          <UploadSubmissionDialog
+            isVisible={this.state.currentPanel === CURRENT_PANEL.UPLOADFILES}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+            assignments={[]}
+            selectedAssignment={this.state.detailAssignment}
+            students={[]}
+            selectedStudents={[this.props.user.email]}
+            submissions={{}}
+            uploadSubmission={this.uploadSubmission}
+          />
+          <ViewUpload
+            isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
+            assignment={this.state.detailAssignment}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+          />
+        </div>
       );
     }
 
