@@ -249,7 +249,7 @@ class CreateSignup extends React.Component<IProps, IState> {
           <div>
             Tier: &nbsp; &nbsp;
             <Radio.Group defaultValue={1}>
-              <Radio value={1}>University</Radio>
+              <Radio value={1}>College</Radio>
               <Radio value={2} disabled={true}>
                 For-profit
               </Radio>

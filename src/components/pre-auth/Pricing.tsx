@@ -92,13 +92,13 @@ const Pricing = (props: IProps) => {
       <div>
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <span style={textStyle}>codePost is 100% free for universities. No credit card required.</span>
+            <span style={textStyle}>codePost is 100% free for colleges. No credit card required.</span>
           </div>
           <div
             style={{ display: 'flex', flexDirection, justifyContent: 'center', alignItems: 'center', paddingTop: 50 }}
           >
             <div style={freeStyle}>
-              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Universities</h3>
+              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Colleges</h3>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
               <Link to="/signup/create">
                 <Button style={freeButtonStyle}>
