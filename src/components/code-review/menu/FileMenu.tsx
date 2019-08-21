@@ -92,7 +92,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       if (commentCount > 0) {
         commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
       } else {
-        commentCountBadge = <Badge count={'-'} forcedStyle="neutral" placeholder={true} faded={faded} size="small" />;
+        commentCountBadge = null;
       }
 
       let deductionBadge = null;
@@ -101,13 +101,13 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
       if (deductions > 0) {
         deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
       } else {
-        deductionBadge = <Badge count={'-1'} forcedStyle="negative" placeholder={true} faded={faded} size="small" />;
+        deductionBadge = null;
       }
 
       if (bonuses > 0) {
         bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
       } else {
-        bonusBadge = <Badge count={'-1'} forcedStyle="positive" placeholder={true} faded={faded} size="small" />;
+        bonusBadge = null;
       }
 
       const badgesStyle: React.CSSProperties = !shrunkSider
