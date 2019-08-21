@@ -840,6 +840,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       median: null,
       points: 20,
       commentFeedback: true,
+      allowStudentUpload: false,
+      allowMultipleUploads: false,
+      uploadDueDate: '',
     };
 
     const demoCourse: CourseType = {
@@ -863,6 +866,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       students: ['student1@example.edu'],
       assignment: -1,
       dateEdited: '',
+      dateUploaded: '',
       grade: null,
       grader: this.props.user.email,
     };
