@@ -266,11 +266,121 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return { value: this.getCourseValue(currentCourse), label: this.getCourseName(currentCourse) };
   };
 
+  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType) => {
+    this.setState({ currentPanel: newPanel, detailAssignment: assignment });
+  };
+
+  public getFileExtension = (fileName: string): string => {
+    const split = fileName.split('.');
+    return split.length === 1 ? 'txt' : split[split.length - 1];
+  };
+
+  // Upload a submission as a student
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    if (partners.length === 0) {
+      return Promise.reject();
+    }
+
+    const formattedFiles = files.map((file) => {
+      return { name: file.name, code: file.data, extension: this.getFileExtension(file.name) };
+    });
+
+    const payload = {
+      id: assignment.id,
+      files: formattedFiles,
+    };
+
+    const submission = AssignmentStudent.updateStudentUpload(payload).then((sub) => {
+      const submissions = this.state.submissions;
+      submissions[assignment.id] = [sub];
+      this.setState({ submissions });
+    });
+
+    return submission;
+  };
+
+  public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
+    if (!assignment.allowStudentUpload) {
+      // Case 0: Student upload not allowed
+      return <div />;
+    }
+
+    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDateText = <Text type="warning">{dueDate}</Text>;
+
+    const uploadButton = (text: string) => {
+      return (
+        <Button
+          icon="upload"
+          type="primary"
+          style={{ maxWidth: 180 }}
+          onClick={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment)}
+        >
+          {text}
+        </Button>
+      );
+    };
+
+    const viewButton = (
+      <Button
+        icon="eye"
+        style={{ maxWidth: 160 }}
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment)}
+      >
+        View submission
+      </Button>
+    );
+
+    if (!submission) {
+      if (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now()) {
+        // Case 1: No submission has been uploaded and due date has passed
+        return <div>{dueDateText}</div>;
+      } else {
+        // Case 2: No submission has been uploaded and due date has not passed
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+            {dueDateText}
+            {uploadButton('Upload Submission')}
+          </div>
+        );
+      }
+    } else {
+      if (
+        submission.isFinalized ||
+        !assignment.allowMultipleUploads ||
+        (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
+      ) {
+        // Case 3: Submission exists, and cannot be replaced, either because
+        // it's finalized, re-sbumitting is not allowed, or the due date has passed
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+            <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
+            {dueDateText}
+            {viewButton}
+          </div>
+        );
+      } else {
+        // Case 4: Submission exists, and can be replaced
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2 }}>
+            <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
+            {dueDateText}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              {viewButton}
+              <div style={{ marginLeft: 15 }} />
+              {uploadButton('Replace Submission')}
+            </div>
+          </div>
+        );
+      }
+    }
+  };
+
   /***********************************************************************************
   /* Content area
   /**********************************************************************************/
 
-  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionsMap) => {
+  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionStudentMap) => {
     const modifyIf = (modMap: { [statusTarget: number]: number }) => {
       return (value: any, row: any, index: number) => {
         const obj = {
