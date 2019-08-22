@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Checkbox, DatePicker, Form, Input, InputNumber, message, Modal, Switch } from 'antd';
+import { Checkbox, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 import * as moment from 'moment';
@@ -39,6 +39,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       allowStudentUpload: values.allowStudentUpload,
       allowMultipleUploads: values.allowMultipleUploads,
       uploadDueDate: values.uploadDueDate,
+      liveFeedbackMode: values.liveFeedbackMode,
     };
 
     this.props.onSave(payload).then(() => {
@@ -101,6 +102,7 @@ interface IFormValues {
   allowStudentUpload: boolean;
   allowMultipleUploads: boolean;
   uploadDueDate: string;
+  liveFeedbackMode: boolean;
 }
 
 interface IFormState {
@@ -234,7 +236,11 @@ const CollectionCreateForm: any = Form.create()(
             </Form.Item>
             <Form.Item
               label="Allow student upload"
-              extra=" When enabled, students can upload submissions before the given due date."
+              extra={
+                <div>
+                  <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
+                </div>
+              }
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
@@ -270,6 +276,22 @@ const CollectionCreateForm: any = Form.create()(
                   },
                 ],
               })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
+            </Form.Item>
+            <Form.Item
+              label="Live Feedback mode"
+              extra={
+                <div>
+                  <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
+                  published.\ Ideal for office hours or ungraded feedback.
+                </div>
+              }
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('liveFeedbackMode', {
+                initialValue: this.props.assignment.liveFeedbackMode,
+                valuePropName: 'checked',
+              })(<Switch />)}
             </Form.Item>
           </Form>
         </Modal>
