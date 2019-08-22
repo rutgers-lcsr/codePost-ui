@@ -843,6 +843,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowStudentUpload: false,
       allowMultipleUploads: false,
       uploadDueDate: '',
+      liveFeedbackMode: false,
     };
 
     const demoCourse: CourseType = {

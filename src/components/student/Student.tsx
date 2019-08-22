@@ -338,13 +338,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       );
     };
 
-    const viewButton = (
+    // If live feedback mode is on, we don't want to show the view files button
+    const viewButton = assignment.liveFeedbackMode ? (
+      <div />
+    ) : (
       <Button
         icon="eye"
         style={{ maxWidth: 160 }}
         onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment)}
       >
-        View submission
+        View files
       </Button>
     );
 
@@ -357,7 +360,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
             {dueDateText}
-            {uploadButton('Upload Submission')}
+            {uploadButton('Upload Files')}
           </div>
         );
       }
@@ -385,7 +388,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               {viewButton}
               <div style={{ marginLeft: 15 }} />
-              {uploadButton('Replace Submission')}
+              {uploadButton('Replace Files')}
             </div>
           </div>
         );
@@ -467,8 +470,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
       const uploadContent = this.getUploadContent(assignment, submission);
 
-      if (!assignment.isReleased) {
-        // Case 1: assignment is not published
+      if (!assignment.isReleased && !assignment.liveFeedbackMode) {
+        // Case 1: assignment is not published and is not in live feedback mode
         return {
           key: assignment.name,
           assignment: assignment.name,
@@ -510,7 +513,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
           };
-        } else if (!submission.isFinalized) {
+        } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           return {
             ...toRet,
@@ -554,6 +557,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               </div>
             ),
             statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
+            upload: uploadContent,
           };
         }
       }
