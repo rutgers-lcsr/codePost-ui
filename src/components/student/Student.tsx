@@ -417,7 +417,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    const columns = [
+    let columns = [
       {
         title: 'Assignment',
         dataIndex: 'assignment',
@@ -458,13 +458,22 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
         }),
       },
-      {
-        title: 'Upload',
-        dataIndex: 'upload',
-        key: 'upload',
-        align: aligner,
-      },
     ];
+
+    // Optional upload column
+    const uploadColumn = {
+      title: 'Upload',
+      dataIndex: 'upload',
+      key: 'upload',
+      align: aligner,
+    };
+
+    // If one assignment has studentUpload, add the uploadColumn to the columns
+    columns = assignments.some((assn) => {
+      return assn.allowStudentUpload;
+    })
+      ? [...columns, uploadColumn]
+      : columns;
 
     const data = assignments.map((assignment) => {
       const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
