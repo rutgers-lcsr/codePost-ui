@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Collapse, Icon, Statistic, Upload } from 'antd';
+import { Collapse, Icon, Radio, Statistic, Upload } from 'antd';
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
@@ -120,21 +120,30 @@ const Canvas = (props: IUploadFormProps) => {
     return false;
   };
 
-  const instructions = `These instructions will allow you to import submissions from Canvas to codePost.
+  const [selection, setSelection] = React.useState<boolean | undefined>(undefined);
+
+  const yesKey = () => {
+    setSelection(true);
+  };
+
+  const noKey = () => {
+    setSelection(false);
+  };
+
+  let instructions;
+
+  if (selection) {
+    instructions = `
+See [Github]() for more details.
+
+These instructions will download submissions from Canvas which you can upload to codePost.
 
 0. Save [this script]
 (https://raw.githubusercontent.com/codepost-io/integration-canvas/master/canvas-to-codepost.py) locally.
 
-1. Open up \`canvas-to-codePost.py\` and replace \`<API_KEY>\` with your Canvas API Key.
+1. Open \`canvas_to_codePost_api.py\` and replace \`<API_KEY>\` with your Canvas API Key.
 
-2. Run the following. You can find your \`COURSE_ID\` and
-\`ASSIGNMENT_ID\` by navigating to your assignment page on Canvas (something like
-[https://canvas.instructure.com/courses/<COURSE_ID>/assignments/<ASSIGNMENT_ID>]
-(https://canvas.instructure.com/courses/<COURSE_ID>/assignments/<ASSIGNMENT_ID>)).
-\`\`\`
-python3 canvas-to-codePost.py <COURSE_ID> <ASSIGNMENT_ID>
-\`\`\`
-
+2. From the command line, run \`python3 canvas_to_codePost_api.py <COURSE_ID> <ASSIGNMENT_ID>\`
 
 3. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
 
@@ -146,29 +155,70 @@ python3 canvas-to-codePost.py <COURSE_ID> <ASSIGNMENT_ID>
 or shoot us an email at team@codepost.io
 
 **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
-You can also fork \`canvas-to-codePosy.py\` [here](https://github.com/codepost-io/integration-canvas).
+You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepost-io/integration-canvas).
 `;
+  } else {
+    instructions = `
+See [Github]() for more details.
+
+These instructions will provision the Canvas downloaded submissions into a file structure that codePost will recognize.
+
+0. Download submissions from Canvas (Course -> Assignments -> Assignment -> Download Submissions)
+
+1. Create a \`roster.csv\`
+
+3. Download this [script]()
+
+3. From the command line, run \`python3 canvas_to_codePost_manual.py submissions roster.csv\`
+
+4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
+
+----------
+
+**Can't find your Canvas API key?** Try asking your organization's Canvas admin.
+
+**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
+or shoot us an email at team@codepost.io
+
+**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/codepost-io/integration-canvas).
+`;
+  }
 
   return (
     <div>
-      <Collapse defaultActiveKey={['1']}>
-        <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} />
-        </Panel>
-      </Collapse>
+      <Radio.Group buttonStyle="solid" style={{ width: '100%', textAlign: 'center' }} value={selection}>
+        <Radio.Button value={true} style={{ width: '40%', textAlign: 'center' }} onClick={yesKey}>
+          I have a Canvas API Key
+        </Radio.Button>
+        <Radio.Button value={false} style={{ width: '40%', textAlign: 'center' }} onClick={noKey}>
+          I do not have a Canvas API Key
+        </Radio.Button>
+      </Radio.Group>
       <br />
       <br />
-      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-        <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
-        </p>
-        <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
-      </Dragger>
-      <br />
-      <br />
-      <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {selection !== undefined ? (
+        <div>
+          <Collapse defaultActiveKey={['1']}>
+            <Panel header="Instructions" key="1">
+              <BlockMarkdown source={instructions} />
+            </Panel>
+          </Collapse>
+          <br />
+          <br />
+          <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+            <p className="ant-upload-drag-icon">
+              <Icon type="inbox" />
+            </p>
+            <p className="ant-upload-text">Click or drag a folder to upload</p>
+            <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+          </Dragger>
+          <br />
+          <br />
+          <br />
+          <Statistic title="Uploaded files" value={props.rawFiles.length} />
+        </div>
+      ) : null}
     </div>
   );
 };
