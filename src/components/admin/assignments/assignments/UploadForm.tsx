@@ -133,13 +133,13 @@ const Canvas = (props: IUploadFormProps) => {
   let instructions;
 
   if (selection) {
+    const scriptUrl = 'https://cutt.ly/IwdSB6X';
     instructions = `
-See [Github]() for more details.
+See [Github](https://github.com/codepost-io/integration-canvas) for more details.
 
-These instructions will download submissions from Canvas which you can upload to codePost.
+These instructions will help you download submissions from Canvas and upload them to codePost.
 
-0. Save [this script]
-(https://raw.githubusercontent.com/codepost-io/integration-canvas/master/canvas-to-codepost.py) locally.
+0. Save [this script](${scriptUrl}) locally.
 
 1. Open \`canvas_to_codePost_api.py\` and replace \`<API_KEY>\` with your Canvas API Key.
 
@@ -159,15 +159,15 @@ You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepo
 `;
   } else {
     instructions = `
-See [Github]() for more details.
+See [Github](https://github.com/codepost-io/integration-canvas) for more details.
 
-These instructions will provision the Canvas downloaded submissions into a file structure that codePost will recognize.
+These instructions will turn submissions downloaded from Canvas into a folder that you can drag into codePost.
 
 0. Download submissions from Canvas (Course -> Assignments -> Assignment -> Download Submissions)
 
 1. Create a \`roster.csv\`
 
-3. Download this [script]()
+3. Download this [script](https://cutt.ly/8wdSNEG)
 
 3. From the command line, run \`python3 canvas_to_codePost_manual.py submissions roster.csv\`
 
