@@ -135,7 +135,7 @@ const Canvas = (props: IUploadFormProps) => {
   if (selection) {
     const scriptUrl = 'https://cutt.ly/IwdSB6X';
     instructions = `
-See [Github](https://github.com/codepost-io/integration-canvas) for more details.
+See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
 These instructions will help you download submissions from Canvas and upload them to codePost.
 
@@ -159,7 +159,7 @@ You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepo
 `;
   } else {
     instructions = `
-See [Github](https://github.com/codepost-io/integration-canvas) for more details.
+See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
 These instructions will turn submissions downloaded from Canvas into a folder that you can drag into codePost.
 
@@ -248,7 +248,7 @@ const Blackboard = (props: IUploadFormProps) => {
   };
 
   const instructions = `
-See [Github](https://github.com/codepost-io/integration-blackboard) for more details.
+See [GitHub](https://github.com/codepost-io/integration-blackboard) for more details.
 
 These instructions will turn submissions downloaded from Blackboard into a folder that you can drag into codePost.
 

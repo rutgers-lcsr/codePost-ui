@@ -9,7 +9,7 @@ import BlockMarkdown from '../core/BlockMarkdown';
 export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   github: {
     key: 'github',
-    name: 'Github',
+    name: 'GitHub',
     logo: require('./../../img/integrations/github.png'),
     description: `[GitHub](https://github.com) is a development platform
 that provides version-controlled software hosting using git.
