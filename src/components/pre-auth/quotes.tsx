@@ -51,6 +51,16 @@ const quotes = [
       </a>
     ),
   },
+  {
+    author: 'Hal Abelson',
+    website: 'http://groups.csail.mit.edu/mac/users/hal/hal.html',
+    quote: 'Programs must be written for people to read, and only incidentally for machines to execute.',
+    source: (
+      <a href="https://en.wikipedia.org/wiki/Structure_and_Interpretation_of_Computer_Programs">
+        Structure and Interpretation of Computer Programs
+      </a>
+    ),
+  },
 ];
 // tslint:enable
 

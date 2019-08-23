@@ -10,7 +10,7 @@ const PreAuthFooter = () => {
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
   const logoTextAlign = windowSize.width < breakpoint ? 'center' : 'left';
   const mobileFlexStyle = windowSize.width < breakpoint ? { display: 'flex', fontSize: 10 } : {};
-  const horizontalPadding = windowSize.width < breakpoint ? 0 : 75; // For mobile view we want less horizontal padding
+  const horizontalPadding = windowSize.width < breakpoint ? 0 : 65; // For mobile view we want less horizontal padding
 
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
   const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
@@ -33,14 +33,19 @@ const PreAuthFooter = () => {
           paddingLeft: horizontalPadding,
           paddingRight: horizontalPadding,
           paddingBottom: bottomPadding,
-          display: 'flex',
-          flexDirection,
-          alignItems: 'center',
-          justifyContent: 'space-between',
         }}
-        className="footer"
+        className={`footer display-flex \
+          align-items-center justify-content-space-between flex-direction-${flexDirection}`}
       >
-        <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>codePost</span>
+        <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>
+          <img
+            src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
+            height="42"
+            width="42"
+            style={{ marginRight: '20px' }}
+          />{' '}
+          codePost
+        </span>
         <span style={{ marginTop: 6, ...mobileFlexStyle }}>
           <a style={linkStyle} href="https://help.codepost.io">
             Docs
