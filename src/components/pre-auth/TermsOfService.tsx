@@ -56,7 +56,7 @@ class TermsOfService extends React.Component<IProps, {}> {
             been modified, you are indicating to us that you agree to be bound by the modified Terms, and to license our
             Services as further discussed below.
           </Typography.Paragraph>
-          <Typography.Title level={4}>2. Your Rite to use the Site</Typography.Title>
+          <Typography.Title level={4}>2. Your Right to use the Site</Typography.Title>
           <Typography.Paragraph>
             <ol type="a">
               <li>

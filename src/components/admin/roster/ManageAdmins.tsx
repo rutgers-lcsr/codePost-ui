@@ -82,6 +82,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
     if (this.props.loadComplete) {
       actions = [
         <DownloadRoster
+          downloadType={USER_TYPE.ADMIN}
           sectionsByStudent={this.props.sectionsByStudent}
           key={0}
           startingPage={USER_TYPE.ADMIN}
@@ -93,6 +94,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
         />,
         <RosterFileUpload
           key={1}
+          roleType="admin"
           students={this.props.students}
           graders={this.props.graders}
           admins={this.props.admins}

@@ -49,6 +49,7 @@ const sections = [
         <Typography.Text code>.md</Typography.Text>)
       </span>,
       'Apply rubric items while grading',
+      'Collaboratively create the rubric',
     ],
     spotlights: [
       <img
@@ -66,6 +67,10 @@ const sections = [
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
       <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
       <Video key="4" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4" />,
+      <Video
+        key="5"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
+      />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -78,6 +83,8 @@ const sections = [
       you can annotate those just like you would annotate code. We'll render the .md files for you, too.`,
       `When grading with codePost, you and your graders can apply rubrics. You can also track how rubrics are applied,
       and even retroactively alter rubric items after they've been used.`,
+      `With this optional setting, admins can allow graders to participate in writing the rubric while grading.
+      Easily create new rubric comments when discovering common issues in the submissions.`,
     ],
   },
   {

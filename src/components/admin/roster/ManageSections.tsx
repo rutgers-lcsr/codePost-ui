@@ -13,7 +13,7 @@ const confirm = Modal.confirm;
 import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
-import { USER_APP, USER_TYPE } from '../../../types/common';
+import { USER_APP } from '../../../types/common';
 
 import { CourseType } from '../../../infrastructure/course';
 import { SectionType } from '../../../infrastructure/section';
@@ -21,9 +21,6 @@ import { SectionType } from '../../../infrastructure/section';
 import AddSectionDialog from './sections/AddSectionDialog';
 
 import { tooltips } from '../../../components/core/tooltips';
-
-import DownloadRoster from './other/DownloadRoster';
-import RosterFileUpload from './other/RosterFileUpload';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -110,32 +107,7 @@ class ManageSections extends React.Component<IProps, IState> {
     let data: any[] = [];
 
     if (this.props.loadComplete) {
-      actions = [
-        <DownloadRoster
-          sectionsByStudent={this.props.sectionsByStudent}
-          key={0}
-          startingPage={USER_TYPE.ADMIN}
-          students={this.props.students}
-          graders={this.props.graders}
-          admins={this.props.admins}
-          course={this.props.currentCourse}
-          isDisabled={false}
-        />,
-        <RosterFileUpload
-          key={1}
-          students={this.props.students}
-          graders={this.props.graders}
-          admins={this.props.admins}
-          sections={this.props.sections}
-          sectionsByStudent={this.props.sectionsByStudent}
-          changeRoster={this.props.updateRoster}
-          isDisabled={false}
-          updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-          createSection={this.props.createSection}
-        />,
-        <AddSectionDialog key={2} sections={this.props.sections} addSection={this.props.createSection} />,
-      ];
+      actions = [<AddSectionDialog key={2} sections={this.props.sections} addSection={this.props.createSection} />];
 
       const aligner: 'left' | 'center' | 'right' = 'center';
       columns = [
@@ -277,21 +249,6 @@ class ManageSections extends React.Component<IProps, IState> {
             description={<span>No sections yet</span>}
           >
             <AddSectionDialog key={0} addSection={this.props.createSection} sections={this.props.sections} />
-            <br />
-            <RosterFileUpload
-              key={1}
-              students={this.props.students}
-              graders={this.props.graders}
-              admins={this.props.admins}
-              sections={this.props.sections}
-              sectionsByStudent={this.props.sectionsByStudent}
-              changeRoster={this.props.updateRoster}
-              isDisabled={false}
-              updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-              createSection={this.props.createSection}
-            />
-            ,
           </Empty>
         }
         columns={columns}

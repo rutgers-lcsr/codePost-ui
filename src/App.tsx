@@ -33,6 +33,8 @@ import { identifyUserForFS, runFSSetup } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
+import { consoleArt } from './components/utils/consoleArt';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -73,6 +75,7 @@ const anonymousUser: UserType = {
   courseadminCourses: [],
   leaderSections: [],
   showProductTips: true,
+  codePostAdmin: false,
 };
 
 /*****************************************************************************/
@@ -89,6 +92,7 @@ interface IState {
 class App extends React.Component<{}, IState> {
   public constructor(props: any) {
     super(props);
+    console.log(...consoleArt);
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
@@ -130,7 +134,7 @@ class App extends React.Component<{}, IState> {
     if (this.state.has_token && !this.state.user) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
+          Authorization: `JWT ${localStorage.getItem('token')} `,
         },
       })
         .then((res) => {
