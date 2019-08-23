@@ -37,10 +37,6 @@ const UploadForm = (props: IUploadFormProps) => {
   return content;
 };
 
-const linkRenderer = (props: any) => {
-  return <a {...props} target="_blank" />;
-};
-
 const Normal = (props: IUploadFormProps) => {
   const exampleText = `\`\`\`
   folder/
@@ -211,7 +207,7 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
         <div>
           <Collapse defaultActiveKey={['1']}>
             <Panel header="Instructions" key="1">
-              <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
+              <BlockMarkdown source={instructions} />
             </Panel>
           </Collapse>
           <br />
@@ -287,7 +283,7 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
     <div>
       <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
+          <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />
@@ -349,7 +345,7 @@ Upload a folder with the following file structure.
     <div>
       <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
+          <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />

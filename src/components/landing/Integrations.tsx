@@ -75,8 +75,7 @@ codePost makes it easy to:
 - Import submissions uploaded to Blackboard into codePost;
 - and export grades from codePost back to Blackboard.
 
-
-Courses using both codePost and Canvas often use this grading workflow:
+Courses using both codePost and Blackboard often use this grading workflow:
 
 1. Students submit their programming assignments through Blackboard.
 2. An instructor runs correctness tests, and then imports submissions and test output (as .txts)
@@ -84,6 +83,9 @@ to codePost using codePost's native Blackboard import feature.
 3. Instructors / TAs review and grade submissions in codePost.
 4. Students receive their feedback through codePost.
 5. (Optional) An instructor can export scores back to Blackboard.
+
+See more detailed instructions for how to
+[import submissions here](https://github.com/codepost-io/integration-blackboard).
 `,
   },
   moss: {

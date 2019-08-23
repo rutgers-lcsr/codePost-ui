@@ -35,6 +35,10 @@ const useBlockMarkdownRenderers = () => {
     return React.createElement(`h${props.level}`, blockProps(), props.children);
   };
 
+  const linkRenderer = (props: any) => {
+    return <a {...props} target="_blank" />;
+  };
+
   const codeRenderer = (props: any) => {
     return (
       <div>
@@ -75,6 +79,7 @@ const useBlockMarkdownRenderers = () => {
     inlineCode: inlineCodeRenderer,
     code: codeRenderer,
     thematicBreak: thematicBreakRenderer,
+    link: linkRenderer,
   };
 };
 
