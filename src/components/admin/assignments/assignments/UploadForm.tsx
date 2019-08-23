@@ -37,6 +37,10 @@ const UploadForm = (props: IUploadFormProps) => {
   return content;
 };
 
+const linkRenderer = (props: any) => {
+  return <a {...props} target="_blank" />;
+};
+
 const Normal = (props: IUploadFormProps) => {
   const exampleText = `\`\`\`
   folder/
@@ -133,7 +137,9 @@ const Canvas = (props: IUploadFormProps) => {
   let instructions;
 
   if (selection) {
-    const scriptUrl = 'https://cutt.ly/IwdSB6X';
+    const scriptUrl =
+      // tslint:disable-next-line:max-line-length
+      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/A_ImportingWithAPIKey/canvas_to_codepost_api.py';
     instructions = `
 See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
@@ -158,6 +164,9 @@ or shoot us an email at team@codepost.io
 You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepost-io/integration-canvas).
 `;
   } else {
+    const scriptUrl =
+      // tslint:disable-next-line:max-line-length
+      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/canvas_to_codepost_manual.py';
     instructions = `
 See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
@@ -165,9 +174,10 @@ These instructions will turn submissions downloaded from Canvas into a folder th
 
 0. Download submissions from Canvas (Course -> Assignments -> Assignment -> Download Submissions)
 
-1. Create a \`roster.csv\`
+1. Create a [roster.csv]
+(https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/sample_roster.csv)
 
-3. Download this [script](https://cutt.ly/8wdSNEG)
+3. Download this [script](${scriptUrl})
 
 3. From the command line, run \`python3 canvas_to_codepost_manual.py submissions roster.csv\`
 
@@ -201,7 +211,7 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
         <div>
           <Collapse defaultActiveKey={['1']}>
             <Panel header="Instructions" key="1">
-              <BlockMarkdown source={instructions} />
+              <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
             </Panel>
           </Collapse>
           <br />
@@ -254,7 +264,8 @@ These instructions will turn submissions downloaded from Blackboard into a folde
 
 0. Download submissions from Blackboard (Course -> Grade Center -> <Assignment Column> -> Assignment File Download)
 
-1. Create a \`roster.csv\`
+1. Create a [roster.csv]
+(https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/sample_roster.csv)
 
 3. Download this [script]
 (https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/blackboard_to_codepost_manual.py)
@@ -276,7 +287,7 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
     <div>
       <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} />
+          <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
         </Panel>
       </Collapse>
       <br />
@@ -338,7 +349,7 @@ Upload a folder with the following file structure.
     <div>
       <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} />
+          <BlockMarkdown source={instructions} extraRenderers={{ link: linkRenderer }} />
         </Panel>
       </Collapse>
       <br />
