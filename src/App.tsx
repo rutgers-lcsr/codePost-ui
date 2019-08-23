@@ -131,7 +131,6 @@ class App extends React.Component<{}, IState> {
     }
 
     if (this.state.has_token && !this.state.user) {
-      console.log('didmount', this.state.has_token, this.state.user);
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`,
