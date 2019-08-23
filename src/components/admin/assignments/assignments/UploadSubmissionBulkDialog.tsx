@@ -937,6 +937,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         width={900}
         onCancel={this.props.onCancel}
         footer={[goBackButton, goForwardButton]}
+        style={{ top: 20 }}
       >
         <Steps size="small" current={panelNumber}>
           {steps.map((item) => {
