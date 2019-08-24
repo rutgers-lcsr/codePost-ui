@@ -83,7 +83,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   ) => {
     const showDetailTag =
       rubricCategories.filter((rubricCategory: RubricCategoryType) => {
-        return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '';
+        // UI handles 35 characters at the moment for rubric category Name
+        return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' || rubricCategory.name.length > 35;
       }).length > 0;
 
     return rubricCategories.map((rubricCategory: RubricCategoryType) => {
@@ -150,17 +151,17 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               style={{
                 position: 'absolute',
                 width: '100%',
-                paddingLeft: '26px',
+                paddingLeft: '20px',
                 backgroundColor: this.context.consoleTheme.siderSubmenuTitleBg,
                 color: this.context.consoleTheme.siderSubmenuTitleColor,
                 borderBottom: this.context.consoleTheme.siderSubmenuBorder,
               }}
             >
-              <div style={{ paddingRight: '40px' }}>
-                <span>
-                  {rubricCategory.name}
+              <div style={{ paddingRight: '30px' }}>
+                <div className="display-flex justify-content-space-between">
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{rubricCategory.name}</span>
                   <span style={{ float: 'right' }}>{capTag}</span>
-                </span>
+                </div>
               </div>
             </div>
           }
