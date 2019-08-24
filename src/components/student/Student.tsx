@@ -365,11 +365,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         );
       }
     } else {
-      if (
-        submission.isFinalized ||
-        !assignment.allowMultipleUploads ||
-        (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
-      ) {
+      if (submission.isFinalized || (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())) {
         // Case 3: Submission exists, and cannot be replaced, either because
         // it's finalized, re-sbumitting is not allowed, or the due date has passed
         return (

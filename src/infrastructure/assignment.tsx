@@ -24,7 +24,6 @@ const AssignmentV = t.intersection(
       hideGrades: t.boolean,
       commentFeedback: t.boolean,
       allowStudentUpload: t.boolean,
-      allowMultipleUploads: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       rubricCategories: t.array(t.number),
@@ -50,7 +49,6 @@ const AssignmentVStudent = t.intersection(
     t.partial({
       hideGrades: t.boolean,
       allowStudentUpload: t.boolean,
-      allowMultipleUploads: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       sortKey: t.number,
@@ -94,7 +92,6 @@ const AssignmentVPatch = t.intersection(
       anonymousGrading: t.boolean,
       commentFeedback: t.boolean,
       allowStudentUpload: t.boolean,
-      allowMultipleUploads: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
     }),

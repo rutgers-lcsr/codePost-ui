@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Checkbox, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
+import { DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 import * as moment from 'moment';
@@ -37,7 +37,6 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
       allowStudentUpload: values.allowStudentUpload,
-      allowMultipleUploads: values.allowMultipleUploads,
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
     };
@@ -100,7 +99,6 @@ interface IFormValues {
   hideGrades: boolean;
   commentFeedback: boolean;
   allowStudentUpload: boolean;
-  allowMultipleUploads: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
 }
@@ -248,17 +246,6 @@ const CollectionCreateForm: any = Form.create()(
                 initialValue: this.props.assignment.allowStudentUpload,
                 valuePropName: 'checked',
               })(<Switch onClick={this.handleStudentUploadCheck} />)}
-            </Form.Item>
-            <Form.Item
-              label="Allow re-submits"
-              extra=" When student uploads are enabled, this allows students to re-submit before the due date."
-              labelCol={{ span: 9 }}
-              wrapperCol={{ span: 12 }}
-            >
-              {getFieldDecorator('allowMultipleUploads', {
-                initialValue: this.props.assignment.allowMultipleUploads,
-                valuePropName: 'checked',
-              })(<Checkbox disabled={!this.state.studentUploadEnabled} />)}
             </Form.Item>
             <Form.Item
               label="Due Date"

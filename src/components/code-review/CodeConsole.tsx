@@ -841,7 +841,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       points: 20,
       commentFeedback: true,
       allowStudentUpload: false,
-      allowMultipleUploads: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
     };
