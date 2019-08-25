@@ -156,7 +156,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       const tokens = line.replace(/['"]+/g, '').split(',');
 
       if (!this.validateEmail(tokens[0])) {
-        throw new Error(`Invalid email detected: row ${i}, value ${tokens[0]}`);
+        throw new Error(`Invalid email detected: row ${i}, value [${tokens[0]}]`);
       }
 
       switch (this.props.roleType) {
@@ -174,13 +174,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               toRet[tokens[0]] = { section: sectionName };
               break;
             default:
-              throw new Error(`Invalid row detected: row ${i}, value ${line}`);
+              throw new Error(`Invalid row detected: row ${i}, [value ${line}]`);
           }
           break;
         case 'grader':
         case 'admin':
           if (tokens.length > 1) {
-            throw new Error(`Invalid row detected: row ${i}, value ${line}`);
+            throw new Error(`Invalid row detected: row ${i}, [value ${line}]`);
           }
           toRet[tokens[0]] = {};
           break;
