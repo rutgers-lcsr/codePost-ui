@@ -133,6 +133,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     this.setState({ status: newStatus });
   };
 
+  public validateEmail = (email: string) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
+
   public convertCSVtoJSON = (csv: string) => {
     const csvLines = csv.split('\n');
 
@@ -149,6 +154,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       }
 
       const tokens = line.replace(/['"]+/g, '').split(',');
+
+      if (!this.validateEmail(tokens[0])) {
+        throw new Error(`Invalid email detected: row ${i}, value ${tokens[0]}`);
+      }
+
       switch (this.props.roleType) {
         case 'student':
           switch (tokens.length) {
@@ -164,19 +174,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               toRet[tokens[0]] = { section: sectionName };
               break;
             default:
-              throw new Error(`Incorrect row detected: row ${i}`);
+              throw new Error(`Invalid row detected: row ${i}, value ${line}`);
           }
           break;
         case 'grader':
         case 'admin':
           if (tokens.length > 1) {
-            throw new Error(`Incorrect row detected: row ${i}`);
+            throw new Error(`Invalid row detected: row ${i}, value ${line}`);
           }
           toRet[tokens[0]] = {};
           break;
       }
     });
-
     return toRet;
   };
 
