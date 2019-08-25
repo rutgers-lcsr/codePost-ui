@@ -311,10 +311,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       };
     }
 
-    if (name.length > 48) {
+    if (name.length > 72) {
       return {
         valid: false,
-        message: 'Category name cannot exceed 48 characters',
+        message: 'Category name cannot exceed 72 characters',
       };
     }
 
