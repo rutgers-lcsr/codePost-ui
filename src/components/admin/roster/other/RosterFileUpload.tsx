@@ -6,13 +6,12 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Button, Collapse, Divider, Icon, Modal, Spin, Steps, Table, Typography, Upload } from 'antd';
+import { Alert, Button, Divider, Modal, Spin, Steps, Table } from 'antd';
 const { Step } = Steps;
 
-/* other library imports */
-import ReactMarkdown from 'react-markdown';
-
 /* codePost imports */
+
+import RosterInput from './RosterInput';
 
 // type definitions
 import { SectionType } from '../../../../infrastructure/section';
@@ -94,9 +93,6 @@ interface IState {
   /* updates that will be made if uploaded roster is confirmed by user */
   updates: IChangeType;
 
-  /* name of the uploaded file (to display back to the user for comfort) */
-  fileName: string;
-
   /* which step of the upload process are we on? */
   status: UPLOAD_STATUS;
 
@@ -111,23 +107,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     updates: { deleted: {}, changed: {}, added: {} },
     updatingRoster: false,
     status: UPLOAD_STATUS.UPLOAD,
-    fileName: '',
   };
-
-  private studentCSV = `
-    student1@myschool.edu\n\
-    student2@myschool.edu\n\
-    ...\n\ `;
-
-  private studentCSVWithSections = `
-    student1@myschool.edu,P01\n\
-    student2@myschool.edu,null\n\
-    ...\n\ `;
-
-  private notStudentCSV = `
-    ${this.props.roleType}1@myschool.edu\n\
-    ${this.props.roleType}2@myschool.edu\n\
-    ...\n\ `;
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
     // clear information from modal after it is unmounted, so appearance
@@ -138,7 +118,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         status: UPLOAD_STATUS.UPLOAD,
         updates: { deleted: {}, changed: {}, added: {} },
         updatingRoster: false,
-        fileName: '',
       });
     }
   }
@@ -362,7 +341,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         deletedList[user] = oldRoster[user];
       } else {
         if (this.props.roleType === 'student') {
-          console.log(newRoster[user].section);
           if (newRoster[user].section !== undefined) {
             if (newRoster[user].section !== oldRoster[user].section) {
               changedList[user] = {
@@ -427,30 +405,20 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   };
 
   // Function called immediately after an uploaded file is read
-  public onRosterUpload = (file: File, result: string) => {
+  public onRosterUpload = (result: string) => {
     this.setState(
       {
         updates: { deleted: [], changed: {}, added: [] },
-        fileName: file.name,
         newRoster: undefined,
       },
       () => {
         let newRoster;
-
         try {
-          switch (file.name.split('.')[1]) {
-            case 'txt':
-            case 'csv':
-              newRoster = this.convertCSVtoJSON(result);
-              break;
-            default:
-              throw new Error('Unsupported file format.');
-          }
+          newRoster = this.convertCSVtoJSON(result);
         } catch (error) {
           this.setState({
             uploadErrors: [error.toString()],
             status: UPLOAD_STATUS.REVIEW,
-            fileName: file.name,
           });
           return;
         }
@@ -475,6 +443,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             break;
         }
         const diff = this.rosterDiff(oldRoster, newRoster);
+
         this.setState({ status: UPLOAD_STATUS.REVIEW, updates: diff, newRoster, uploadErrors: [] });
       },
     );
@@ -641,19 +610,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     );
   };
 
-  public beforeUpload = (file: any, fileList: any) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        this.onRosterUpload(file, reader.result);
-      }
-    };
-    reader.readAsText(file);
-
-    // prevent Ant upload component from trying to post file
-    return false;
-  };
-
   public render() {
     const steps = [
       {
@@ -672,40 +628,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     switch (this.state.status) {
       case UPLOAD_STATUS.UPLOAD:
         content = (
-          <div>
-            To upload your <b>{this.props.roleType}</b> roster, upload either a{' '}
-            <Typography.Text code>.txt</Typography.Text> or a <Typography.Text code>.csv</Typography.Text> file in the
-            format described below. You'll have the chance to review any changes before they are made after uploading
-            your file.
-            <br />
-            <br />
-            <Collapse bordered={true} accordion={true} defaultActiveKey={['1']}>
-              <Collapse.Panel
-                header={
-                  this.props.roleType === 'student' && this.props.sections.length > 0
-                    ? 'Without sections'
-                    : '.csv or .txt'
-                }
-                key="1"
-              >
-                <ReactMarkdown source={this.props.roleType === 'student' ? this.studentCSV : this.notStudentCSV} />
-              </Collapse.Panel>
-              {this.props.roleType === 'student' && this.props.sections.length > 0 ? (
-                <Collapse.Panel header="With sections" key="2">
-                  To remove a student from any section, set the student's section to "null" in your uploaded file. To
-                  leave a student's section unchanged, include only the student's email. <br />
-                  <br />
-                  <ReactMarkdown source={this.studentCSVWithSections} />
-                </Collapse.Panel>
-              ) : null}
-            </Collapse>
-            <br />
-            <Upload beforeUpload={this.beforeUpload} showUploadList={false}>
-              <Button>
-                <Icon type="upload" /> Click to Upload
-              </Button>
-            </Upload>
-          </div>
+          <RosterInput
+            onRosterUpload={this.onRosterUpload}
+            roleType={this.props.roleType}
+            sections={this.props.sections}
+          />
         );
         break;
       case UPLOAD_STATUS.REVIEW:
@@ -727,8 +654,6 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               <Alert message="Your roster was parsed successfully!" type="success" />
               <br />
               <Divider orientation="left">Status</Divider>
-              <b>Uploaded file:</b> <em>{this.state.fileName}</em>
-              <br />
               <b>{this.props.roleType}s parsed in uploaded file: </b>
               <em>{Object.keys(uploadedUsers!).length}</em>
               <Divider orientation="left">Changes</Divider>
@@ -743,21 +668,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 type="error"
               />
               <br />
-              <b>Uploaded file:</b> <em>{this.state.fileName}</em>
-              <br />
               <b>Errors:</b>
               <ul>
                 {this.state.uploadErrors.map((el, i) => {
                   return <li key={i}>{el}</li>;
                 })}
               </ul>
-              <br />
-              <br />
-              <Upload beforeUpload={this.beforeUpload} showUploadList={false}>
-                <Button>
-                  <Icon type="upload" /> Click to upload again
-                </Button>
-              </Upload>
             </div>
           );
         }
