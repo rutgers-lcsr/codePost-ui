@@ -16,7 +16,13 @@ const SummaryCard = (props: ISummaryCardProps) => {
     props.onClick(props.title);
   };
   return (
-    <Card title={props.title} bordered={false} style={{ width: 300, cursor: 'pointer' }} onClick={onClick}>
+    <Card
+      title={props.title}
+      bordered={false}
+      style={{ width: 300, marginBottom: '20px', cursor: 'pointer' }}
+      onClick={onClick}
+      hoverable={true}
+    >
       <Statistic title="Total" value={props.objects.length} />
     </Card>
   );

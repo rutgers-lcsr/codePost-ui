@@ -13,7 +13,7 @@ import Loadable from 'react-loadable';
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 
-import Dashboard from './components/codepost-admin/Dashboard';
+import DashboardLayout from './components/codepost-admin/DashboardLayout';
 
 import Home from './components/core/Home';
 
@@ -344,7 +344,7 @@ class App extends React.Component<{}, IState> {
             exact={true}
             path={'/dashboard'}
             render={(props: any) => (
-              <Dashboard {...props} isLoggedIn={true} handleLogout={this.handleLogout} user={this.state.user} />
+              <DashboardLayout {...props} isLoggedIn={true} handleLogout={this.handleLogout} user={this.state.user} />
             )}
           />
         );

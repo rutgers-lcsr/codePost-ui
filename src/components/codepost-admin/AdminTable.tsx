@@ -1,85 +1,87 @@
 import * as React from 'react';
 
-import { Card, Divider, Table, Tag } from 'antd';
+import { Card, Input, Table } from 'antd';
 
-const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (text: any) => <a>{text}</a>,
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (tags: any) => (
-      <span>
-        {tags.map((tag: any) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </span>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (text: any, record: any) => (
-      <span>
-        <a>Invite {record.name}</a>
-        <Divider type="vertical" />
-        <a>Delete</a>
-      </span>
-    ),
-  },
-];
+const { Search } = Input;
 
-const data = [
+import { Link } from 'react-router-dom';
+
+import { OrganizationType } from '../../infrastructure/organization';
+
+const fullstoryQuery = (email: string) => {
+  // tslint:disable-next-line
+  return `https://app.fullstory.com/ui/MFFNS/segments/everyone/people:search:((NOW%2FDAY-29DAY:NOW%2FDAY%2B1DAY):((UserEmail:==:%22${email}%22)):():():():)/0`;
+};
+
+const cols = [
   {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
+    title: 'Email',
+    dataIndex: 'email',
+    key: 'email',
+    render: (email: string) => {
+      return email;
+    },
   },
   {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
+    title: 'Organization',
+    dataIndex: 'organization',
+    key: 'organization',
+    render: (organization: OrganizationType) => {
+      return `${organization.name} (${organization.shortname})`;
+    },
   },
   {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
+    title: 'Course',
+    dataIndex: 'course',
+    key: 'course',
+    render: (course: any, record: any) => {
+      return `${record['course_name']} | ${record['course_period']}`;
+    },
+  },
+  {
+    title: 'Actions',
+    dataIndex: 'actions',
+    key: 'actions',
+    render: (actions: string, record: any) => {
+      return (
+        <span>
+          <Link to={`/loginas/${record['email']}`} target="_blank">
+            loginas
+          </Link>{' '}
+          |{' '}
+          <a href={fullstoryQuery(record['email'])} target="_blank">
+            fullstory
+          </a>
+        </span>
+      );
+    },
   },
 ];
 
 const AdminTable = (props: any) => {
+  const [filteredAdmins, setFilteredAdmins] = React.useState(props.admins);
+
+  const onSearch = (value: string) => {
+    const v = value.toLowerCase();
+    setFilteredAdmins(
+      props.admins.filter((admin: any) => {
+        return (
+          admin['email'].toLowerCase().includes(v) ||
+          admin['course_name'].toLowerCase().includes(v) ||
+          admin['course_period'].toLowerCase().includes(v) ||
+          admin['organization']['name'].toLowerCase().includes(v)
+        );
+      }),
+    );
+  };
+
   return (
     <Card title="Admins" bordered={false} style={{ width: '100%' }}>
-      <Table columns={columns} dataSource={data} />
+      <div style={{ padding: '14px 0px', width: '400px' }}>
+        <Search placeholder="search..." onSearch={onSearch} enterButton />
+      </div>
+      <div style={{ padding: '14px 0px' }}>Admin Count: {filteredAdmins.length}</div>
+      <Table columns={cols} dataSource={filteredAdmins} size="small" />
     </Card>
   );
 };

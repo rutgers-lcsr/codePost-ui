@@ -1,15 +1,11 @@
 import * as React from 'react';
 
-import { Icon, Layout, Menu, Spin } from 'antd';
+import { Spin } from 'antd';
 
-const { Content, Sider } = Layout;
-
-import { Link } from 'react-router-dom';
-
-import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
 
 import AdminTable from './AdminTable';
+import OrganizationTable from './OrganizationTable';
 import SummaryCard from './SummaryCard';
 
 import { Course, CourseType, RosterType } from '../../infrastructure/course';
@@ -22,16 +18,17 @@ const Dashboard = (props: any) => {
   const [rosters, setRosters] = React.useState<RosterType[]>([]);
   const [organizations, setOrganizations] = React.useState<OrganizationType[]>([]);
 
-  const [current, setCurrent] = React.useState('Admins');
+  const [current, setCurrent] = React.useState('Organizations');
 
   const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]) => {
     return _rosters
-      .map((roster: RosterType) => {
+      .map((roster: RosterType, index: number) => {
         return roster.courseAdmins.map((email: string) => {
           const org = _organizations.find((_org: OrganizationType) => {
             return _org['id'] === roster['organization'];
           });
           return {
+            key: index,
             organization: org,
             course_name: roster['name'],
             course_period: roster['period'],
@@ -64,10 +61,10 @@ const Dashboard = (props: any) => {
     fetchData();
   }, []);
 
-  console.log('courses', courses);
-  console.log('organizations', organizations);
-  console.log('rosters', rosters);
-  console.log('admins', admins);
+  // console.log('courses', courses);
+  // console.log('organizations', organizations);
+  // console.log('rosters', rosters);
+  // console.log('admins', admins);
 
   const isLoading = courses.length === 0 || organizations.length === 0 || rosters.length === 0 || admins.length === 0;
 
@@ -82,63 +79,29 @@ const Dashboard = (props: any) => {
   let content;
   switch (current) {
     case 'Admins':
-      content = <AdminTable />;
+      content = <AdminTable admins={admins} />;
       break;
     case 'Courses':
       content = <div>not implemented</div>;
       break;
     case 'Organizations':
-      content = <div>not implemented</div>;
+      content = <OrganizationTable organizations={organizations} rosters={rosters} />;
       break;
     default:
       content = <div>not implemented</div>;
   }
 
   return (
-    <Layout>
-      <Sider
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-        }}
-      >
-        <div style={{ padding: '10px 0px' }}>
-          <Link to="/">
-            <CPLogo cpType="main" />
-          </Link>
-          <div
-            style={{
-              textAlign: 'center',
-              color: '#24be85',
-              lineHeight: 1,
-              paddingTop: 10,
-            }}
-          >
-            SuperAdmin Console
-          </div>
-        </div>
-        <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-          <Menu.Item key="1">
-            <Icon type="dashboard" />
-            <span className="nav-text">dashboard</span>
-          </Menu.Item>
-        </Menu>
-      </Sider>
-      <Layout style={{ marginLeft: 200 }}>
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial', minHeight: '100vh' }}>
-          <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', marginBottom: '20px' }}>
-            <SummaryCard objects={organizations} title="Organizations" onClick={setCurrent} />
-            <div style={{ width: '20px' }} />
-            <SummaryCard objects={courses} title="Courses" onClick={setCurrent} />
-            <div style={{ width: '20px' }} />
-            <SummaryCard objects={admins} title="Admins" onClick={setCurrent} />
-          </div>
-          {content}
-        </Content>
-      </Layout>
-    </Layout>
+    <div style={{ margin: '0px 0px 90px' }}>
+      <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', marginBottom: '20px' }}>
+        <SummaryCard objects={organizations} title="Organizations" onClick={setCurrent} />
+        <div style={{ width: '20px' }} />
+        <SummaryCard objects={courses} title="Courses" onClick={setCurrent} />
+        <div style={{ width: '20px' }} />
+        <SummaryCard objects={admins} title="Admins" onClick={setCurrent} />
+      </div>
+      {content}
+    </div>
   );
 };
 
