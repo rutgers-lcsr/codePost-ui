@@ -75,6 +75,42 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((arg0: number)
   return foo;
 }
 
+function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): (() => Promise<T[]>) {
+  const foo = async () => {
+    let objects: T[] = [];
+    let url: string | null = `${process.env.REACT_APP_API_URL}/${obj}/`;
+    while (url !== null) {
+      const res: any = await fetch(url, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'GET',
+      });
+
+      if ((await res.status) === 200) {
+        const data = await res.json();
+        if (data.hasOwnProperty('results')) {
+          objects = objects.concat(data['results']);
+        }
+
+        if (data.hasOwnProperty('next')) {
+          url = data['next'];
+        } else {
+          url = null;
+        }
+      } else {
+        const data = await res.json();
+        message.error(JSON.stringify(data));
+        url = null;
+      }
+    }
+    return objects;
+  };
+
+  return foo;
+}
+
 function updateObject<T, O, I, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
   input: t.Type<Q, O, I>,
@@ -228,6 +264,7 @@ async function loadIDList(ids: number[], klass: any, method: string = 'read', ur
 export {
   createObject,
   readObject,
+  listObject,
   updateObject,
   deleteObject,
   GenericObject,
