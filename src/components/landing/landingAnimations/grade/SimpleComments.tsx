@@ -49,6 +49,7 @@ const SimpleComment = (props: {
       file={FileMock}
       updateFeedback={empty}
       studentFeedbackOn={false}
+      hideAuthor={true}
     />
   );
 };

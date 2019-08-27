@@ -50,6 +50,8 @@ interface ICommentProps {
 
   updateFeedback: (feedback: number) => void;
   studentFeedbackOn: boolean;
+
+  hideAuthor: boolean;
 }
 
 interface ICommentState {
@@ -504,7 +506,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              {this.props.commentType !== 'readonly' ? (
+              {this.props.commentType === 'readonly' && this.props.hideAuthor ? null : (
                 <div
                   style={{
                     margin: '0px 20px 0px 20px',
@@ -514,7 +516,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 >
                   <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>

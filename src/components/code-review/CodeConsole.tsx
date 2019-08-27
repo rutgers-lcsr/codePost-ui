@@ -836,6 +836,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       course: -1,
       sortKey: 0,
       anonymousGrading: false,
+      hideGradersFromStudents: false,
       mean: null,
       median: null,
       points: 20,
@@ -1122,6 +1123,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
             />
           );
 
@@ -1217,6 +1219,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
             />
           );
 
@@ -1314,6 +1317,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
             />
           );
 
