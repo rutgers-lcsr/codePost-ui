@@ -162,7 +162,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       throw new Error('Uploaded file is empty');
     }
 
-    const toRet: IUserMap = {};
+    const newRoster: IUserMap = {};
+    const errors: string[] = [];
     csvLines.forEach((line, i) => {
       // skip empty lines and lines containing only space chars
       if (line.replace(/\s/g, '').length === 0) {
@@ -172,14 +173,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       const tokens = line.replace(/['"]+/g, '').split(',');
 
       if (!this.validateEmail(tokens[0])) {
-        throw new Error(`Invalid email detected: row ${i}| ${tokens[0]}`);
+        errors.push(`Invalid email detected: row ${i}| ${tokens[0]}`);
       }
 
       switch (this.props.roleType) {
         case 'student':
           switch (tokens.length) {
             case 1:
-              toRet[tokens[0]] = {};
+              newRoster[tokens[0]] = {};
               break;
             case 2:
               let sectionName = null;
@@ -187,22 +188,22 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 // remove leading and trailing whitespace
                 sectionName = tokens[1].trim();
               }
-              toRet[tokens[0]] = { section: sectionName };
+              newRoster[tokens[0]] = { section: sectionName };
               break;
             default:
-              throw new Error(`Invalid row detected: row ${i}| ${line}`);
+              errors.push(`Invalid row detected: row ${i}| ${line}`);
           }
           break;
         case 'grader':
         case 'admin':
           if (tokens.length > 1) {
-            throw new Error(`Invalid row detected: row ${i}| ${line}`);
+            errors.push(`Invalid row detected: row ${i}| ${line}`);
           }
-          toRet[tokens[0]] = {};
+          newRoster[tokens[0]] = {};
           break;
       }
     });
-    return toRet;
+    return { newRoster, errors };
   };
 
   public getSectionIDFromName = (sectionName: string) => {
@@ -400,8 +401,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
     /* check to make sure uploaded roster isn't empty */
     if (keys.length === 0) {
-      uploadErrors.push('Uploaded roster is empty.');
-      return uploadErrors;
+      return ['Uploaded roster is empty.'];
     }
 
     // FIXME: add more tests here
@@ -438,21 +438,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         newRoster: undefined,
       },
       () => {
-        let newRoster;
-        try {
-          newRoster = this.convertCSVtoJSON(result);
-        } catch (error) {
-          this.setState({
-            uploadErrors: [error.toString()],
-            status: UPLOAD_STATUS.REVIEW,
-          });
-          return;
-        }
+        const { newRoster, errors } = this.convertCSVtoJSON(result);
 
         /* make sure newRoster is free of errors */
-        const uploadErrors = this.checkRoster(newRoster);
+        const uploadErrors = errors.concat(this.checkRoster(newRoster));
+
         if (uploadErrors.length > 0) {
           this.setState({ status: UPLOAD_STATUS.REVIEW, uploadErrors });
+          return;
         }
 
         /* calculate diff between old and new roster */
