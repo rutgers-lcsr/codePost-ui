@@ -505,6 +505,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           key: assignment.name,
           assignment: assignment.name,
           stats: hasStats ? statsContent : '--',
+          upload: uploadContent,
         };
 
         if (submission === undefined) {
@@ -546,7 +547,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                     })
                     .join(', '),
             grade: showGrade ? (
-              submission.grade !== null ? (
+              submission.grade !== null && submission.grade !== undefined ? (
                 `${submission.grade}/${assignment.points}`
               ) : null
             ) : this.props.windowwidth > layoutVars.breakpoints.mobile.student ? (
@@ -562,7 +563,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               </div>
             ),
             statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
-            upload: uploadContent,
           };
         }
       }
