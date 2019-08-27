@@ -30,11 +30,23 @@ ${props.roleType}3@myschool.edu,P02
   const [currentTab, setCurrentTab] = React.useState('without');
   const [formatSample, setFormatSample] = React.useState(formatSamples.without);
 
-  const [rosterString, setRosterString] = React.useState(props.rosterInput);
+  const rosterStringWithoutSections = (input: string) => {
+    return input
+      .split('\n')
+      .map((row: string) => {
+        return row.split(',')[0];
+      })
+      .join('\n');
+  };
+
+  const [rosterString, setRosterString] = React.useState(
+    currentTab === 'without' ? rosterStringWithoutSections(props.rosterInput) : props.rosterInput,
+  );
 
   const onTabChange = (key: string) => {
     setCurrentTab(key);
     setFormatSample(formatSamples[key]);
+    setRosterString(key === 'without' ? rosterStringWithoutSections(rosterString) : props.rosterInput);
   };
 
   const onChange = (e: any) => {
