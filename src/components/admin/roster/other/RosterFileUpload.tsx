@@ -792,6 +792,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           title={`Upload roster: ${this.props.roleType[0].toUpperCase() + this.props.roleType.slice(1)}s`}
           width={700}
           footer={[goBackButton, goForwardButton]}
+          destroyOnClose={true}
         >
           <Steps size="small" current={this.state.status}>
             {steps.map((item) => {
