@@ -154,7 +154,6 @@ class App extends React.Component<{}, IState> {
           this.handleLogout();
         });
     } else {
-      console.log('triedloading');
       this.setState({ triedLoading: true });
     }
   }
@@ -297,7 +296,6 @@ class App extends React.Component<{}, IState> {
 
   public render() {
     if (this.state.toRedirect) {
-      console.log('redirect');
       return <Redirect to={'/'} />;
     }
 
