@@ -96,28 +96,32 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           <br />
           <br />
           <Typography.Title level={1}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
-          <Input
-            prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-            placeholder="Email address"
-            value={this.state.email}
-            onChange={this.handleChange.bind(this, 'email')}
-            onKeyDown={this.handleKeyPress}
-          />
-          <br />
-          <br />
-          <Input.Password
-            prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
-            placeholder="Password"
-            value={this.state.password}
-            onChange={this.handleChange.bind(this, 'password')}
-            onKeyDown={this.handleKeyPress}
-          />
-          {this.renderError(this.props.error)}
-          <br />
-          <br />
-          <CPButton onClick={this.handleLogin} cpType="primary" loading={this.state.loading}>
-            Continue
-          </CPButton>
+          <form>
+            <Input
+              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="Email address"
+              autoComplete="email"
+              value={this.state.email}
+              onChange={this.handleChange.bind(this, 'email')}
+              onKeyDown={this.handleKeyPress}
+            />
+            <br />
+            <br />
+            <Input.Password
+              prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="Password"
+              autoComplete="current-password"
+              value={this.state.password}
+              onChange={this.handleChange.bind(this, 'password')}
+              onKeyDown={this.handleKeyPress}
+            />
+            {this.renderError(this.props.error)}
+            <br />
+            <br />
+            <CPButton onClick={this.handleLogin} cpType="primary" loading={this.state.loading}>
+              Continue
+            </CPButton>
+          </form>
           <br />
           <br />
           <Link to="/forgot-password">Forgot password?</Link>
