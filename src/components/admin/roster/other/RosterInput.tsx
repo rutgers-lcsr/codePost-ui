@@ -8,6 +8,7 @@ interface IRosterInputProps {
   onRosterUpload: any;
   roleType: any;
   sections: any;
+  rosterInput: string;
 }
 
 const RosterInput = (props: IRosterInputProps) => {
@@ -29,7 +30,7 @@ ${props.roleType}3@myschool.edu,P02
   const [currentTab, setCurrentTab] = React.useState('without');
   const [formatSample, setFormatSample] = React.useState(formatSamples.without);
 
-  const [rosterString, setRosterString] = React.useState('');
+  const [rosterString, setRosterString] = React.useState(props.rosterInput);
 
   const onTabChange = (key: string) => {
     setCurrentTab(key);
@@ -98,7 +99,7 @@ ${props.roleType}3@myschool.edu,P02
             </span>
           </div>
         ) : null}
-        <div>
+        <div style={{ paddingBottom: '6px' }}>
           Enter the <b>{props.roleType}</b> emails, <b>one per line</b>
         </div>
         <TextArea rows={6} placeholder={formatSample} value={rosterString} onChange={onChange} />

@@ -11,11 +11,13 @@ const { Step } = Steps;
 
 /* codePost imports */
 
+import { rosterToCsv } from './DownloadRoster';
+
 import RosterInput from './RosterInput';
 
 // type definitions
 import { SectionType } from '../../../../infrastructure/section';
-import { USER_APP } from '../../../../types/common';
+import { USER_APP, USER_TYPE } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
 import CPTooltip from '../../../../components/core/CPTooltip';
@@ -98,6 +100,8 @@ interface IState {
 
   /* new roster from uploaded file */
   newRoster?: IUserMap;
+
+  rosterInput: string;
 }
 
 class RosterFileUpload extends React.Component<IProps, {}> {
@@ -107,6 +111,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     updates: { deleted: {}, changed: {}, added: {} },
     updatingRoster: false,
     status: UPLOAD_STATUS.UPLOAD,
+    rosterInput: rosterToCsv(
+      this.props.sectionsByStudent,
+      true,
+      this.props.roleType === 'student'
+        ? USER_TYPE.STUDENT
+        : this.props.roleType === 'grader'
+        ? USER_TYPE.GRADER
+        : USER_TYPE.ADMIN,
+      this.props.admins,
+      this.props.graders,
+      this.props.students,
+    ).join('\n'),
   };
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
@@ -156,7 +172,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       const tokens = line.replace(/['"]+/g, '').split(',');
 
       if (!this.validateEmail(tokens[0])) {
-        throw new Error(`Invalid email detected: row ${i}, value [${tokens[0]}]`);
+        throw new Error(`Invalid email detected: row ${i}| ${tokens[0]}`);
       }
 
       switch (this.props.roleType) {
@@ -174,13 +190,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               toRet[tokens[0]] = { section: sectionName };
               break;
             default:
-              throw new Error(`Invalid row detected: row ${i}, [value ${line}]`);
+              throw new Error(`Invalid row detected: row ${i}| ${line}`);
           }
           break;
         case 'grader':
         case 'admin':
           if (tokens.length > 1) {
-            throw new Error(`Invalid row detected: row ${i}, [value ${line}]`);
+            throw new Error(`Invalid row detected: row ${i}| ${line}`);
           }
           toRet[tokens[0]] = {};
           break;
@@ -417,6 +433,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public onRosterUpload = (result: string) => {
     this.setState(
       {
+        rosterInput: result,
         updates: { deleted: [], changed: {}, added: [] },
         newRoster: undefined,
       },
@@ -647,6 +664,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             onRosterUpload={this.onRosterUpload}
             roleType={this.props.roleType}
             sections={this.props.sections}
+            rosterInput={this.state.rosterInput}
           />
         );
         break;
@@ -679,13 +697,31 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           content = (
             <div>
               <Alert
-                message="The roster you uploaded could not be parsed correctly due to the errors below"
+                message="Your roster contains some errors. Check out the area below to get them fixed."
                 type="error"
               />
               <br />
               <b>Errors:</b>
               <ul>
                 {this.state.uploadErrors.map((el, i) => {
+                  if (el.split('|').length > 1) {
+                    return (
+                      <li key={i}>
+                        {el.split('|')[0]}
+                        {' | '}
+                        <span
+                          style={{
+                            fontFamily: 'monospace',
+                            fontWeight: 500,
+                            backgroundColor: '#ececec',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {el.split('|')[1]}
+                        </span>
+                      </li>
+                    );
+                  }
                   return <li key={i}>{el}</li>;
                 })}
               </ul>
