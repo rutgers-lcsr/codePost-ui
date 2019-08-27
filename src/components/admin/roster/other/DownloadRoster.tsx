@@ -53,6 +53,45 @@ interface IState {
   includeSections: boolean;
 }
 
+export const rosterToCsv = (
+  sectionsByStudent: { [studentEmail: string]: SectionType },
+  includeSections: boolean,
+  downloadType: USER_TYPE,
+  admins: string[],
+  graders: string[],
+  students: string[],
+) => {
+  // Build JSON object to output
+  let dataToDownload: string[] = [];
+
+  switch (downloadType) {
+    case USER_TYPE.STUDENT:
+      if (includeSections) {
+        dataToDownload = students.map((student) => {
+          const thisSection = sectionsByStudent[student] ? sectionsByStudent[student].name : null;
+          if (thisSection === null) {
+            return `${student},null`;
+          } else {
+            return `${student},${thisSection}`;
+          }
+        });
+      } else {
+        dataToDownload = students;
+      }
+
+      break;
+    case USER_TYPE.GRADER:
+      dataToDownload = graders;
+      break;
+    case USER_TYPE.ADMIN:
+      dataToDownload = admins;
+      break;
+  }
+
+  console.log(dataToDownload);
+  return dataToDownload;
+};
+
 class DownloadRoster extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
     super(props);
@@ -70,36 +109,14 @@ class DownloadRoster extends React.Component<IProps, IState> {
   };
 
   public downloadRoster = () => {
-    const { sectionsByStudent } = this.props;
-
-    // Build JSON object to output
-    let dataToDownload: string[] = [];
-
-    switch (this.props.downloadType) {
-      case USER_TYPE.STUDENT:
-        if (this.state.includeSections) {
-          dataToDownload = this.props.students.map((student) => {
-            const thisSection = sectionsByStudent[student] ? sectionsByStudent[student].name : null;
-            if (thisSection === null) {
-              return `${student},null`;
-            } else {
-              return `${student},${thisSection}`;
-            }
-          });
-        } else {
-          dataToDownload = this.props.students;
-        }
-
-        break;
-      case USER_TYPE.GRADER:
-        dataToDownload = this.props.graders;
-        break;
-      case USER_TYPE.ADMIN:
-        dataToDownload = this.props.admins;
-        break;
-    }
-
-    console.log(dataToDownload);
+    const dataToDownload = rosterToCsv(
+      this.props.sectionsByStudent,
+      this.state.includeSections,
+      this.props.downloadType,
+      this.props.admins,
+      this.props.graders,
+      this.props.students,
+    );
 
     /* execute download */
     const a = document.createElement('a');
