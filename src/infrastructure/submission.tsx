@@ -141,7 +141,7 @@ class Submission {
   );
 
   public static updateRegradeRequest = updateObjectDetail(
-    SubmissionV,
+    StudentSubmissionV,
     SubmissionVPatch,
     'submissions',
     'requestRegrade',

@@ -201,9 +201,9 @@ function readObjectDetail<T, O, I>(
   return foo;
 }
 
-function updateObjectDetail<T, O, I, Q extends GenericObjectType>(
+function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, O, I>,
+  input: t.Type<Q, J, K>,
   url: string,
   detail: string,
 ): ((object: Q, urlArgs?: { [arg: string]: string }) => Promise<T>) {
