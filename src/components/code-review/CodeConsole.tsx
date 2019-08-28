@@ -836,6 +836,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       course: -1,
       sortKey: 0,
       anonymousGrading: false,
+      allowRegradeRequests: false,
       mean: null,
       median: null,
       points: 20,

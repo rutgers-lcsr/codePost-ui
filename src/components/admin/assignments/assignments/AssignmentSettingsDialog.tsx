@@ -34,6 +34,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       anonymousGrading: values.anonymousGrading,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
+      allowRegradeRequests: values.allowRegradeRequests,
     };
 
     this.props.onSave(payload).then(() => {
@@ -93,6 +94,7 @@ interface IFormValues {
   anonymousGrading: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
+  allowRegradeRequests: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -190,6 +192,15 @@ const CollectionCreateForm: any = Form.create()(
             >
               {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Allow Regrade Requests"
+              extra=" When enabled, students can submit a regrade request on their finalized + published submision."
+            >
+              {getFieldDecorator('allowRegradeRequests', {
+                initialValue: this.props.assignment.allowRegradeRequests,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
