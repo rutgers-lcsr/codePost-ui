@@ -41,6 +41,10 @@ import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
+import AssignmentRegrades from './assignments/AssignmentRegrades';
+
+import { UserType } from '../../../infrastructure/user';
+
 import {
   calculateMultipleAssignmentProgressStats,
   DRAWER_TYPE,
@@ -75,6 +79,8 @@ export interface IManageAssignmentsProps {
 
   /* Refresh course */
   refreshCourseData: () => void;
+
+  user: UserType;
 }
 
 export enum DETAIL_TYPE {
@@ -86,6 +92,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
+  Regrades,
 }
 
 interface IManageAssignmentsState {
@@ -381,6 +388,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
+              {assignment.allowRegradeRequests ? (
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
+                  <Icon type="setting" />
+                  View Regrades
+                </Menu.Item>
+              ) : (
+                <div />
+              )}
               <SubMenu
                 key="4"
                 title={
@@ -555,6 +570,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 viewsBySubmission={this.props.viewsBySubmission}
                 refreshCourseData={this.props.refreshCourseData}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Regrades:
+            return (
+              <AssignmentRegrades
+                assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                user={this.props.user}
+                updateSubmission={this.props.updateSubmission}
               />
             );
             break;
