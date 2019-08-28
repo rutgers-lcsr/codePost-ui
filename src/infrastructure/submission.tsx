@@ -36,6 +36,10 @@ const SubmissionV = t.intersection(
       dateEdited: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      regradeIsOpen: t.boolean,
+      regradeRequest: t.union([t.string, t.null]),
+      regradeGrader: t.union([t.string, t.null]),
+      regradeResponse: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
@@ -52,6 +56,10 @@ const StudentSubmissionV = t.intersection(
     t.partial({
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
+      regradeIsOpen: t.boolean,
+      regradeRequest: t.union([t.string, t.null]),
+      regradeGrader: t.union([t.string, t.null]),
+      regradeResponse: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
@@ -82,6 +90,10 @@ const SubmissionVPatch = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       grader: t.union([t.string, t.null]),
+      regradeIsOpen: t.boolean,
+      regradeRequest: t.union([t.string, t.null]),
+      regradeGrader: t.union([t.string, t.null]),
+      regradeResponse: t.union([t.string, t.null]),
     }),
   ],
   'SubmissionPatch',
@@ -126,6 +138,13 @@ class Submission {
     SubmissionHistoryVPatch,
     'submissions',
     'history',
+  );
+
+  public static updateRegradeRequest = updateObjectDetail(
+    SubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'requestRegrade',
   );
 
   // FIXME, duplicate
