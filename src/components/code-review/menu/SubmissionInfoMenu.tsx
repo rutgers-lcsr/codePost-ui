@@ -320,6 +320,8 @@ enum REGRADE_STATUS {
   RESPONDED,
 }
 
+/******************************* Student Regrade Request option ******************************************************/
+
 const RegradeRequest = (props: IRegradeRequestProps) => {
   const [modalVisible, setModal] = useState(false);
   const [regradeText, setText] = useState(props.submission.regradeRequest ? props.submission.regradeRequest : '');
@@ -342,6 +344,7 @@ const RegradeRequest = (props: IRegradeRequestProps) => {
       regradeRequest: regradeText,
     };
     Submission.updateRegradeRequest(payload);
+    closeModal();
   };
 
   const regradeStatus: REGRADE_STATUS = !props.submission.regradeRequest
