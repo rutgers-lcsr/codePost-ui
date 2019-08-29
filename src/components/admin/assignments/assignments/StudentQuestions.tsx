@@ -50,12 +50,17 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       title: 'Student(s)',
       dataIndex: 'students',
       key: 'students',
+      sorter: (a: any, b: any) => {
+        console.log(a);
+        return a.students.localeCompare(b.students);
+      },
     },
     {
       title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'statusTag',
+      key: 'statusTag',
       align: aligner,
+      sorter: (a: any, b: any) => a.status.localeCompare(b.status),
     },
     {
       title: 'Text',
@@ -73,6 +78,16 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       dataIndex: 'responder',
       key: 'responder',
       align: aligner,
+      sorter: (a: any, b: any) => {
+        if (!a.responder && b.responder) {
+          return -1;
+        } else if (a.responder && !b.responder) {
+          return 1;
+        } else if (!a.responder && !b.responder) {
+          return 0;
+        }
+        return a.responder.localeCompare(b.responder);
+      },
     },
     {
       title: 'Response',
@@ -159,13 +174,14 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
     return {
       key: submission.id,
       code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
-      students: submission.students,
-      status:
+      students: submission.students.toString(),
+      statusTag:
         submission.questionText && !submission.questionIsOpen ? (
           <Tag color="green">Closed</Tag>
         ) : (
           <Tag color="orange">Open</Tag>
         ),
+      status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
       text: submission.questionText,
@@ -175,7 +191,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
         ) : responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
           <div style={{ display: 'flex', justifyCotnent: 'space-between', alignItems: 'center' }}>
             {submission.questionResponse}
-            <div style={{ float: 'right' }}>
+            <div style={{ float: 'right', marginLeft: 10 }}>
               <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
             </div>
           </div>
