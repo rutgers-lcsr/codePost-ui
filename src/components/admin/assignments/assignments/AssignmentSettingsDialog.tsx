@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Form, Input, InputNumber, message, Modal, Switch } from 'antd';
+import { Form, Input, InputNumber, message, Modal, Radio, Switch } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost imports */
@@ -34,7 +34,8 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       anonymousGrading: values.anonymousGrading,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
-      allowRegradeRequests: values.allowRegradeRequests,
+      allowRegradeRequests: values.studentResponse === 'allowRegradeRequests',
+      allowQuestions: values.studentResponse === 'allowQuestions',
     };
 
     this.props.onSave(payload).then(() => {
@@ -94,7 +95,7 @@ interface IFormValues {
   anonymousGrading: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
-  allowRegradeRequests: boolean;
+  studentResponse: string;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -196,13 +197,22 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
-              label="Allow Regrade Requests"
-              extra=" When enabled, students can submit a regrade request on their finalized + published submision."
+              label="Allow Questions"
+              extra=" When enabled, students can submit a question on their graded submission."
             >
-              {getFieldDecorator('allowRegradeRequests', {
-                initialValue: this.props.assignment.allowRegradeRequests,
-                valuePropName: 'checked',
-              })(<Switch />)}
+              {getFieldDecorator('studentResponse', {
+                initialValue: this.props.assignment.allowRegradeRequests
+                  ? 'allowRegradeRequests'
+                  : this.props.assignment.allowQuestions
+                  ? 'allowQuestions'
+                  : 'noQuestions',
+              })(
+                <Radio.Group>
+                  <Radio value="noQuestions">No response allowed</Radio>
+                  <Radio value="allowQuestions">Questions allowed</Radio>
+                  <Radio value="allowRegradeRequests">Questions and regrade requests allowed</Radio>
+                </Radio.Group>,
+              )}
             </Form.Item>
           </Form>
         </Modal>
