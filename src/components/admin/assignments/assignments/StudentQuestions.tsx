@@ -34,10 +34,69 @@ enum RESPONSE_STATUS {
 }
 
 const StudentQuestions = (props: IStudentQuestionsProps) => {
+  // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
   const [responseText, setResponseText] = useState('');
 
+  // *********************** STATE CHANGE FUNCTIONS *************************
+  const toggleModal = (submission?: SubmissionType) => {
+    setActiveSubmission(submission);
+    setModalVisibility(!modalVisible);
+    setResponseText(submission && submission.questionResponse ? submission.questionResponse : '');
+  };
+
+  const changeRegradeText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setResponseText(event.target.value);
+  };
+
+  const submitResponse = () => {
+    if (activeSubmission) {
+      updateSubmissionField(activeSubmission, 'questionResponse', responseText);
+    }
+    toggleModal(undefined);
+  };
+
+  const updateSubmissionField = (submission: SubmissionType, field: string, newValue: any) => {
+    const newSubmission = JSON.parse(JSON.stringify(submission));
+    newSubmission[field] = newValue;
+    props.updateSubmission(newSubmission);
+  };
+
+  // *********************** TABLE HELPER FUNCTIONS *************************
+  const getResponseStatus = (submission: SubmissionType) => {
+    if (submission.questionResponder !== props.user.email || !submission.questionIsOpen) {
+      return RESPONSE_STATUS.EDIT_NOT_ALLOWED;
+    } else if (submission.questionResponse) {
+      return RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE;
+    } else return RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE;
+  };
+
+  const getResponseContent = (submission: SubmissionType) => {
+    const responseStatus = getResponseStatus(submission);
+
+    switch (responseStatus) {
+      case RESPONSE_STATUS.EDIT_NOT_ALLOWED:
+        return submission.questionResponse;
+      case RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE:
+        return (
+          <div style={{ display: 'flex', justifyCotnent: 'space-between', alignItems: 'center' }}>
+            {submission.questionResponse}
+            <div style={{ float: 'right', marginLeft: 10 }}>
+              <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
+            </div>
+          </div>
+        );
+      case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE:
+        return (
+          <CPButton cpType="primary" onClick={toggleModal.bind({}, submission)}>
+            Respond
+          </CPButton>
+        );
+    }
+  };
+
+  // *********************** TABLE CONTENT *************************
   const aligner: 'left' | 'center' | 'right' = 'center';
   const columns = [
     {
@@ -99,29 +158,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
     },
   ];
 
-  const toggleModal = (submission?: SubmissionType) => {
-    setActiveSubmission(submission);
-    setModalVisibility(!modalVisible);
-    setResponseText(submission && submission.questionResponse ? submission.questionResponse : '');
-  };
-
-  const updateSubmissionField = (submission: SubmissionType, field: string, newValue: any) => {
-    const newSubmission = JSON.parse(JSON.stringify(submission));
-    newSubmission[field] = newValue;
-    props.updateSubmission(newSubmission);
-  };
-
-  const changeRegradeText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setResponseText(event.target.value);
-  };
-
-  const submitResponse = () => {
-    if (activeSubmission) {
-      updateSubmissionField(activeSubmission, 'questionResponse', responseText);
-    }
-    toggleModal(undefined);
-  };
-
+  // Filtering for relevant submissions
   const regradeSubmissions = props.submissions.filter((submission) => {
     return (
       submission.questionIsOpen ||
@@ -130,14 +167,6 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       submission.questionResponse
     );
   });
-
-  const getResponseStatus = (submission: SubmissionType) => {
-    if (submission.questionResponder !== props.user.email || !submission.questionIsOpen) {
-      return RESPONSE_STATUS.EDIT_NOT_ALLOWED;
-    } else if (submission.questionResponse) {
-      return RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE;
-    } else return RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE;
-  };
 
   const rows = regradeSubmissions.map((submission) => {
     const menu = (
@@ -166,7 +195,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       </Menu>
     );
 
-    const responseStatus = getResponseStatus(submission);
+    const responseContent = getResponseContent(submission);
 
     return {
       key: submission.id,
@@ -182,21 +211,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
       text: submission.questionText,
-      response:
-        responseStatus === RESPONSE_STATUS.EDIT_NOT_ALLOWED ? (
-          submission.questionResponse
-        ) : responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
-          <div style={{ display: 'flex', justifyCotnent: 'space-between', alignItems: 'center' }}>
-            {submission.questionResponse}
-            <div style={{ float: 'right', marginLeft: 10 }}>
-              <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
-            </div>
-          </div>
-        ) : (
-          <CPButton cpType="primary" onClick={toggleModal.bind({}, submission)}>
-            Respond
-          </CPButton>
-        ),
+      response: responseContent,
       actions: (
         <Dropdown overlay={menu} trigger={['click']}>
           <Icon type="menu" />
@@ -204,6 +219,8 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       ),
     };
   });
+
+  // *********************** RENDER *************************
 
   const content = (
     <div>
