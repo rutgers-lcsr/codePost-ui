@@ -41,7 +41,7 @@ import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
-import AssignmentRegrades from './assignments/AssignmentRegrades';
+import StudentQuestions from './assignments/StudentQuestions';
 
 import { UserType } from '../../../infrastructure/user';
 
@@ -92,7 +92,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
-  Regrades,
+  Questions,
 }
 
 interface IManageAssignmentsState {
@@ -388,10 +388,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
-              {assignment.allowRegradeRequests ? (
-                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
+              {assignment.allowRegradeRequests || assignment.allowQuestions ? (
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Questions, assignment)}>
                   <Icon type="setting" />
-                  View Regrades
+                  {`View Questions${assignment.allowRegradeRequests ? ' & Regrades' : ''}`}
                 </Menu.Item>
               ) : (
                 <div />
@@ -573,9 +573,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
             );
             break;
-          case DETAIL_TYPE.Regrades:
+          case DETAIL_TYPE.Questions:
             return (
-              <AssignmentRegrades
+              <StudentQuestions
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 refreshCourseData={this.props.refreshCourseData}
