@@ -202,6 +202,7 @@ class GraderData extends React.Component<IProps, IState> {
           const expandFn = () => {
             this.setState({ activeGrader: graderEmail });
           };
+
           const toRet = {
             expand: (
               <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
@@ -214,7 +215,11 @@ class GraderData extends React.Component<IProps, IState> {
           for (const assignment of this.props.assignments) {
             const graded = this.props.submissionsByGrader[graderEmail][assignment.id];
             if (graded) {
-              toRet[assignment.name] = graded.length;
+              toRet[assignment.name] = (
+                <span style={{ cursor: 'pointer' }} onClick={expandFn}>
+                  {graded.length}
+                </span>
+              );
             } else {
               toRet[assignment.name] = 0;
             }
@@ -227,7 +232,7 @@ class GraderData extends React.Component<IProps, IState> {
       return (
         <TableDetail
           loadComplete={this.props.loadComplete}
-          title={'Grader Submissions'}
+          title={'Submissions by Grader'}
           isEmpty={numGraders === 0 || this.props.assignments.length === 0}
           emptyNode={
             <Empty
@@ -276,7 +281,7 @@ class GraderData extends React.Component<IProps, IState> {
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item>Submissions</Breadcrumb.Item>
-              <Breadcrumb.Item>Graders</Breadcrumb.Item>
+              <Breadcrumb.Item>By Grader</Breadcrumb.Item>
             </Breadcrumb>
           }
           titleInfo={tooltips.admin.graderSubmissions.title}
