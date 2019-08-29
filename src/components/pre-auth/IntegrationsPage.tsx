@@ -40,6 +40,7 @@ const IntegrationsPage = (props: IProps) => {
         'moss',
         'github',
         'jsfiddle',
+        'brightspace',
         'codepen',
         'replit',
         'revel',
