@@ -14,6 +14,8 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports  */
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
+import { openSubmission } from '../other/AdminUtils';
+
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
@@ -199,7 +201,11 @@ class StudentData extends React.Component<IProps, IState> {
           for (const assignment of this.props.assignments) {
             const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
             if (submission && submission.isFinalized) {
-              toRet[assignment.name] = submission.grade;
+              toRet[assignment.name] = (
+                <span style={{ cursor: 'pointer' }} onClick={openSubmission.bind(this, submission.id)}>
+                  {submission.grade}
+                </span>
+              );
             } else if (submission) {
               toRet[assignment.name] = 'Unfinalized';
             } else {
