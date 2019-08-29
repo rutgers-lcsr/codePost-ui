@@ -341,11 +341,13 @@ enum QUESTION_STATUS {
 }
 
 const StudentQuestion = (props: IStudentQuestionProps) => {
+  // *********************** STATE VARIABLES *************************
   const [isModalVisible, setModalVisible] = useState(false);
   const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
   const [questionIsRegrade, setQuestionIsRegrade] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
+  // *********************** STATE CHANGE FUNCTIONS *************************
   const closeModal = () => {
     setModalVisible(false);
   };
@@ -364,6 +366,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     }
   };
 
+  // *********************** RENDER *************************
   const questionStatus = isLoading
     ? QUESTION_STATUS.SUBMITTING
     : !props.submission.questionText
