@@ -197,7 +197,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
-              label="Allow Questions"
+              label="Allow Student Questions and Regrades"
               extra=" When enabled, students can submit a question on their graded submission."
             >
               {getFieldDecorator('studentResponse', {
@@ -208,9 +208,15 @@ const CollectionCreateForm: any = Form.create()(
                   : 'noQuestions',
               })(
                 <Radio.Group>
-                  <Radio value="noQuestions">No response allowed</Radio>
-                  <Radio value="allowQuestions">Questions allowed</Radio>
-                  <Radio value="allowRegradeRequests">Questions and regrade requests allowed</Radio>
+                  <Radio style={{ display: 'block' }} value="noQuestions">
+                    No response allowed
+                  </Radio>
+                  <Radio style={{ display: 'block' }} value="allowQuestions">
+                    Questions allowed
+                  </Radio>
+                  <Radio style={{ display: 'block' }} value="allowRegradeRequests">
+                    Questions and Regrade requests allowed
+                  </Radio>
                 </Radio.Group>,
               )}
             </Form.Item>

@@ -15,7 +15,7 @@ import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
-import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../../infrastructure/submission';
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -30,7 +30,11 @@ interface ISubmissionReadProps {
   assignment: AssignmentType;
   submission?: AnonymousSubmissionType;
   readOnlySubmission?: StudentSubmissionType;
-  submitStudentQuestion?: (submission: StudentSubmissionType, text: string, isRegrade: boolean) => void;
+  submitStudentQuestion?: (
+    submission: StudentSubmissionType,
+    text: string,
+    isRegrade: boolean,
+  ) => Promise<StudentSubmissionType>;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -320,21 +324,27 @@ export const Students = (props: {
 interface IRegradeRequestProps {
   submission: StudentSubmissionType;
   assignment: AssignmentType;
-  submitStudentQuestion: (submission: StudentSubmissionType, text: string, isRegrade: boolean) => void;
+  submitStudentQuestion?: (
+    submission: StudentSubmissionType,
+    text: string,
+    isRegrade: boolean,
+  ) => Promise<StudentSubmissionType>;
 }
 
 enum QUESTION_STATUS {
   NOT_SUBMITTED,
+  SUBMITTING,
   IN_PROGRESS,
   RESPONDED,
 }
 
-/******************************* Student Regrade Request option ******************************************************/
+/******************************* Student Question and Regrade option *******************************************/
 
 const StudentQuestion = (props: IRegradeRequestProps) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
   const [questionIsRegrade, setQuestionIsRegrade] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const closeModal = () => {
     setModalVisible(false);
@@ -345,39 +355,35 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
   };
 
   const submitRegradeRequest = () => {
-    const payload = {
-      id: props.submission.id,
-      questionText,
-      questionIsRegrade,
-    };
-    Submission.updateQuestion(payload);
-    closeModal();
+    if (props.submitStudentQuestion) {
+      setLoading(true);
+      closeModal();
+      props.submitStudentQuestion(props.submission, questionText, questionIsRegrade).then(() => {
+        setLoading(false);
+      });
+    }
   };
+  console.log(props.submission);
 
-  const questionStatus = !props.submission.questionText
+  const questionStatus = isLoading
+    ? QUESTION_STATUS.SUBMITTING
+    : !props.submission.questionText
     ? QUESTION_STATUS.NOT_SUBMITTED
     : props.submission.questionResponse
     ? QUESTION_STATUS.RESPONDED
     : QUESTION_STATUS.IN_PROGRESS;
 
-  const setRegradeButton = (disabled: boolean) => {
-    return props.assignment.allowRegradeRequests ? (
-      <div style={{ float: 'right', paddingTop: 20, paddingBottom: 20 }}>
-        Ask for a regrade: <Switch disabled={disabled} onChange={setQuestionIsRegrade.bind({}, true)} />
-      </div>
-    ) : (
-      <div />
-    );
-  };
-
   switch (questionStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED:
       return (
         <div>
-          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
-            Submit a question
-          </CPButton>
-
+          <div style={{ float: 'right', paddingRight: 15 }}>
+            <CPTooltip
+              title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
+            >
+              <CPButton cpType="secondary" icon="message" onClick={setModalVisible.bind({}, true)} />
+            </CPTooltip>
+          </div>
           <Modal
             onCancel={closeModal}
             visible={isModalVisible}
@@ -385,35 +391,69 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
             onOk={submitRegradeRequest}
           >
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
-            <Divider />
-            {setRegradeButton(false)}
+            {props.assignment.allowRegradeRequests ? (
+              <div style={{ paddingTop: 10 }}>
+                Ask for a regrade: <Switch disabled={false} onChange={setQuestionIsRegrade.bind({}, true)} />
+              </div>
+            ) : (
+              <div />
+            )}
           </Modal>
+        </div>
+      );
+    case QUESTION_STATUS.SUBMITTING:
+      return (
+        <div style={{ float: 'right', paddingRight: 15 }}>
+          <CPTooltip title="Submitting...">
+            <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind({}, true)} />
+          </CPTooltip>
         </div>
       );
     case QUESTION_STATUS.IN_PROGRESS:
       return (
         <div>
-          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
-            View Request
-          </CPButton>
-          <Modal onCancel={closeModal} visible={isModalVisible} title="Regrade Review in progress...">
-            <Text>{props.submission.questionText}</Text>
-            {setRegradeButton(true)}
+          <div style={{ float: 'right', paddingRight: 15 }}>
+            <CPTooltip
+              title={`View submitted question ${props.assignment.allowRegradeRequests ? 'or regrade request' : ''}`}
+            >
+              <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind({}, true)} />
+            </CPTooltip>
+          </div>
+          <Modal onCancel={closeModal} visible={isModalVisible} title="The review of your question is in progress...">
+            <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
+            {props.assignment.allowRegradeRequests ? (
+              <div style={{ paddingTop: 10, fontWeight: 500 }}>
+                {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
+              </div>
+            ) : (
+              <div />
+            )}
           </Modal>
         </div>
       );
     case QUESTION_STATUS.RESPONDED:
       return (
         <div>
-          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
-            View Response
-          </CPButton>
-          <Modal onCancel={closeModal} visible={isModalVisible} title="View Regrade response">
-            Request: <Text>{props.submission.questionText}</Text>
-            {setRegradeButton(true)}
+          <div style={{ float: 'right', paddingRight: 15 }}>
+            <CPTooltip title="View response">
+              <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind({}, true)} />
+            </CPTooltip>
+          </div>
+          <Modal onCancel={closeModal} visible={isModalVisible} title="View Question Response">
+            <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
+            {props.assignment.allowRegradeRequests ? (
+              <div style={{ paddingTop: 10 }}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
+            ) : (
+              <div />
+            )}
+            <Divider />
             <div>
-              Reviewer: <Text>{props.submission.questionResponder}</Text>
-              Response: <Text>{props.submission.questionResponse}</Text>
+              <div>
+                <b>Reviewer: </b> <Text>{props.submission.questionResponder}</Text>
+              </div>
+              <div style={{ paddingTop: 15 }}>
+                <b>Response: </b> <Text>{props.submission.questionResponse}</Text>
+              </div>
             </div>
           </Modal>
         </div>

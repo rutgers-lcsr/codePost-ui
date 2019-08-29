@@ -173,7 +173,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
         responseStatus === RESPONSE_STATUS.EDIT_NOT_ALLOWED ? (
           submission.questionResponse
         ) : responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
-          <div>
+          <div style={{ display: 'flex', justifyCotnent: 'space-between', alignItems: 'center' }}>
             {submission.questionResponse}
             <div style={{ float: 'right' }}>
               <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
@@ -214,7 +214,9 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
             <a>Assignments</a>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Regrade Requests</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            `Student Questions${props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''}`
+          </Breadcrumb.Item>
         </Breadcrumb>
       }
       goBack={null}

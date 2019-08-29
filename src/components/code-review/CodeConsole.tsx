@@ -561,8 +561,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       questionText: text,
       questionIsRegrade: isRegrade,
     };
+
     const newSubmission = await Submission.updateQuestion(payload);
     this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
   };
 
   // Usually adds a blank comment to the submission state
