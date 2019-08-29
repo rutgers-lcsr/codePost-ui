@@ -37,6 +37,8 @@ import { UserType } from '../../infrastructure/user';
 
 import GraderNav from './GraderNav';
 
+import StudentQuestionsPanel from './StudentQuestionsPanel';
+
 import RoleMenu from '../core/RoleMenu';
 
 /**********************************************************************************************************************/
@@ -45,14 +47,16 @@ export enum PANELS {
   MY_SUBMISSIONS,
   MY_SECTIONS,
   VIEW_ALL,
+  QUESTIONS_AND_REGRADES,
 }
 
-const panelStrings = ['my_submissions', 'my_sections', 'view_all'];
+const panelStrings = ['my_submissions', 'my_sections', 'view_all', 'questions'];
 
 const panels = {
   [PANELS.MY_SUBMISSIONS]: panelStrings[PANELS.MY_SUBMISSIONS],
   [PANELS.MY_SECTIONS]: panelStrings[PANELS.MY_SECTIONS],
   [PANELS.VIEW_ALL]: panelStrings[PANELS.VIEW_ALL],
+  [PANELS.QUESTIONS_AND_REGRADES]: panelStrings[PANELS.QUESTIONS_AND_REGRADES],
 };
 
 interface IGraderState {
@@ -298,6 +302,26 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
   };
 
+  public getStudentQuestionsComponent = () => {
+    if (
+      !this.state.currentCourse ||
+      !this.state.currentAssignment ||
+      !(this.state.currentAssignment.allowQuestions || this.state.currentAssignment.allowRegradeRequests)
+    ) {
+      return null;
+    }
+    return (
+      <StudentQuestionsPanel
+        assignment={this.state.currentAssignment}
+        isAnonymous={this.state.currentAssignment.anonymousGrading}
+        user={this.props.user}
+        isAdmin={this.props.user.courseadminCourses.some((el) => {
+          return el.id === this.state.currentCourse!.id;
+        })}
+      />
+    );
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -340,6 +364,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         case PANELS.VIEW_ALL:
           graderPanelContent = this.getViewAllComponent();
           break;
+        case PANELS.QUESTIONS_AND_REGRADES:
+          graderPanelContent = this.getStudentQuestionsComponent();
       }
     }
 
@@ -404,6 +430,10 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         onClick={this.handleTabClick}
         isSuperGrader={this.state.isSuperGrader}
         isSectionLeader={this.state.sectionsLed.length > 0}
+        questionsAllowed={
+          this.state.currentAssignment !== undefined &&
+          (this.state.currentAssignment.allowQuestions || this.state.currentAssignment.allowRegradeRequests)
+        }
       />
     );
 
