@@ -375,7 +375,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     ? QUESTION_STATUS.RESPONDED
     : QUESTION_STATUS.IN_PROGRESS;
 
-  const buttonStyle = { float: 'left' as 'left', paddingLeft: 15, paddingTop: 15 };
+  const buttonStyle = { float: 'left' as 'left', paddingTop: 15 };
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
 
   switch (questionStatus) {
@@ -386,6 +386,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
           <div style={buttonStyle}>
             <CPTooltip
               title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
+              placement="right"
             >
               <CPButton cpType="secondary" icon="message" onClick={setModalVisible.bind({}, true)} />
             </CPTooltip>
@@ -411,7 +412,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       // Case 1: Student has submitted, but no API response yet
       return (
         <div style={buttonStyle}>
-          <CPTooltip title="Submitting...">
+          <CPTooltip title="Submitting..." placement="right">
             <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind({}, true)} />
           </CPTooltip>
         </div>
@@ -423,6 +424,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
           <div style={buttonStyle}>
             <CPTooltip
               title={`View submitted question ${props.assignment.allowRegradeRequests ? 'or regrade request' : ''}`}
+              placement="right"
             >
               <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind({}, true)} />
             </CPTooltip>
@@ -438,7 +440,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip title="View response">
+            <CPTooltip title="View response" placement="right">
               <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind({}, true)} />
             </CPTooltip>
           </div>

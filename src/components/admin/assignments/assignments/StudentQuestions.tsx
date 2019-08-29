@@ -12,6 +12,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 
 import CPButton from '../../../../components/core/CPButton';
+import CPTooltip from '../../../../components/core/CPTooltip';
 
 import { openSubmission } from '../../other/AdminUtils';
 
@@ -224,6 +225,11 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
 
   const content = (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 10 }}>
+        <CPTooltip title="Refresh Data" placement="left">
+          <CPButton cpType="secondary" icon="reload" onClick={props.refreshCourseData} />
+        </CPTooltip>
+      </div>
       <Table columns={columns} dataSource={rows} />{' '}
       <Modal
         onCancel={toggleModal.bind({}, null)}

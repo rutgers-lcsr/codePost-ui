@@ -147,7 +147,7 @@ class Submission {
     StudentSubmissionV,
     SubmissionVPatch,
     'submissions',
-    'requestRegrade',
+    'submitQuestion',
   );
 
   // FIXME, duplicate
