@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, Input, message, Modal, Select, Tag, Typography } from 'antd';
+import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
 const { TextArea } = Input;
 const { Text } = Typography;
 
@@ -30,6 +30,7 @@ interface ISubmissionReadProps {
   assignment: AssignmentType;
   submission?: AnonymousSubmissionType;
   readOnlySubmission?: StudentSubmissionType;
+  submitStudentQuestion?: (submission: StudentSubmissionType, text: string, isRegrade: boolean) => void;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -91,8 +92,14 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             />
           </div>
         ) : null}
-        {props.readOnlySubmission !== undefined && props.assignment.allowRegradeRequests ? (
-          <RegradeRequest submission={props.readOnlySubmission} />
+        {props.readOnlySubmission !== undefined &&
+        props.submitStudentQuestion &&
+        (props.assignment.allowRegradeRequests || props.assignment.allowQuestions) ? (
+          <StudentQuestion
+            submission={props.readOnlySubmission}
+            assignment={props.assignment}
+            submitStudentQuestion={props.submitStudentQuestion}
+          />
         ) : (
           <div />
         )}
@@ -312,9 +319,11 @@ export const Students = (props: {
 
 interface IRegradeRequestProps {
   submission: StudentSubmissionType;
+  assignment: AssignmentType;
+  submitStudentQuestion: (submission: StudentSubmissionType, text: string, isRegrade: boolean) => void;
 }
 
-enum REGRADE_STATUS {
+enum QUESTION_STATUS {
   NOT_SUBMITTED,
   IN_PROGRESS,
   RESPONDED,
@@ -322,76 +331,90 @@ enum REGRADE_STATUS {
 
 /******************************* Student Regrade Request option ******************************************************/
 
-const RegradeRequest = (props: IRegradeRequestProps) => {
-  const [modalVisible, setModal] = useState(false);
-  const [regradeText, setText] = useState(props.submission.regradeRequest ? props.submission.regradeRequest : '');
-
-  const setModalVisibility = (visible: boolean) => {
-    setModal(visible);
-  };
+const StudentQuestion = (props: IRegradeRequestProps) => {
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
+  const [questionIsRegrade, setQuestionIsRegrade] = useState(false);
 
   const closeModal = () => {
-    setModalVisibility(false);
+    setModalVisible(false);
   };
 
-  const changeRegradeText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(event.target.value);
+  const changeQuestionText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setQuestionText(event.target.value);
   };
 
   const submitRegradeRequest = () => {
     const payload = {
       id: props.submission.id,
-      regradeRequest: regradeText,
+      questionText,
+      questionIsRegrade,
     };
-    Submission.updateRegradeRequest(payload);
+    Submission.updateQuestion(payload);
     closeModal();
   };
 
-  const regradeStatus: REGRADE_STATUS = !props.submission.regradeRequest
-    ? REGRADE_STATUS.NOT_SUBMITTED
-    : props.submission.regradeResponse
-    ? REGRADE_STATUS.RESPONDED
-    : REGRADE_STATUS.IN_PROGRESS;
+  const questionStatus = !props.submission.questionText
+    ? QUESTION_STATUS.NOT_SUBMITTED
+    : props.submission.questionResponse
+    ? QUESTION_STATUS.RESPONDED
+    : QUESTION_STATUS.IN_PROGRESS;
 
-  switch (regradeStatus) {
-    case REGRADE_STATUS.NOT_SUBMITTED:
+  const setRegradeButton = (disabled: boolean) => {
+    return props.assignment.allowRegradeRequests ? (
+      <div style={{ float: 'right', paddingTop: 20, paddingBottom: 20 }}>
+        Ask for a regrade: <Switch disabled={disabled} onChange={setQuestionIsRegrade.bind({}, true)} />
+      </div>
+    ) : (
+      <div />
+    );
+  };
+
+  switch (questionStatus) {
+    case QUESTION_STATUS.NOT_SUBMITTED:
       return (
         <div>
-          <CPButton cpType="secondary" onClick={setModalVisibility.bind(true)}>
-            Submit a regrade request
+          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
+            Submit a question
           </CPButton>
+
           <Modal
             onCancel={closeModal}
-            visible={modalVisible}
-            title="Submit a regrade request"
+            visible={isModalVisible}
+            title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
             onOk={submitRegradeRequest}
           >
-            <TextArea autosize value={regradeText} onChange={changeRegradeText} />
-          </Modal>
-        </div>
-      );
-    case REGRADE_STATUS.IN_PROGRESS:
-      return (
-        <div>
-          <CPButton cpType="secondary" onClick={setModalVisibility.bind(true)}>
-            [Regrade review in Progress] View Request
-          </CPButton>
-          <Modal onCancel={closeModal} visible={modalVisible} title="Regrade Review in progress...">
-            <Text>{props.submission.regradeRequest}</Text>
-          </Modal>
-        </div>
-      );
-    case REGRADE_STATUS.RESPONDED:
-      return (
-        <div>
-          <CPButton cpType="secondary" onClick={setModalVisibility.bind(true)}>
-            View Regrade Response
-          </CPButton>
-          <Modal onCancel={closeModal} visible={modalVisible} title="View Regrade response">
-            Request: <Text>{props.submission.regradeRequest}</Text>
+            <TextArea autosize value={questionText} onChange={changeQuestionText} />
             <Divider />
-            Reviewer: <Text>{props.submission.regradeGrader}</Text>
-            Response: <Text>{props.submission.regradeResponse}</Text>
+            {setRegradeButton(false)}
+          </Modal>
+        </div>
+      );
+    case QUESTION_STATUS.IN_PROGRESS:
+      return (
+        <div>
+          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
+            View Request
+          </CPButton>
+          <Modal onCancel={closeModal} visible={isModalVisible} title="Regrade Review in progress...">
+            <Text>{props.submission.questionText}</Text>
+            {setRegradeButton(true)}
+          </Modal>
+        </div>
+      );
+    case QUESTION_STATUS.RESPONDED:
+      return (
+        <div>
+          <CPButton cpType="secondary" onClick={setModalVisible.bind({}, true)}>
+            View Response
+          </CPButton>
+          <Modal onCancel={closeModal} visible={isModalVisible} title="View Regrade response">
+            Request: <Text>{props.submission.questionText}</Text>
+            {setRegradeButton(true)}
+            <div>
+              Reviewer: <Text>{props.submission.questionResponder}</Text>
+              Response: <Text>{props.submission.questionResponse}</Text>
+            </div>
           </Modal>
         </div>
       );

@@ -555,6 +555,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Helper functions
   /**********************************************************************************/
 
+  public submitStudentQuestion = async (submission: StudentSubmissionType, text: string, isRegrade: boolean) => {
+    const payload = {
+      id: submission.id,
+      questionText: text,
+      questionIsRegrade: isRegrade,
+    };
+    const newSubmission = await Submission.updateQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -837,6 +847,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       sortKey: 0,
       anonymousGrading: false,
       allowRegradeRequests: false,
+      allowQuestions: false,
       mean: null,
       median: null,
       points: 20,
@@ -1247,6 +1258,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             title="Submission Info"
             assignment={this.state.assignment}
             readOnlySubmission={this.state.readOnlySubmission!}
+            submitStudentQuestion={this.submitStudentQuestion}
           />,
           <FileMenu
             key="file-menu"
