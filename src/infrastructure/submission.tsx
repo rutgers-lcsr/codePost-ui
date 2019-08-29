@@ -112,6 +112,11 @@ const AnonymousSubmissionV = t.intersection(
       dateEdited: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
     }),
     t.partial({
       students: t.array(t.string),
