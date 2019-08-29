@@ -50,10 +50,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       title: 'Student(s)',
       dataIndex: 'students',
       key: 'students',
-      sorter: (a: any, b: any) => {
-        console.log(a);
-        return a.students.localeCompare(b.students);
-      },
+      sorter: (a: any, b: any) => a.students.localeCompare(b.students),
     },
     {
       title: 'Status',

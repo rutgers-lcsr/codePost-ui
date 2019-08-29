@@ -321,7 +321,9 @@ export const Students = (props: {
   }
 };
 
-interface IRegradeRequestProps {
+/******************************* Student Question and Regrade option *******************************************/
+
+interface IStudentQuestionProps {
   submission: StudentSubmissionType;
   assignment: AssignmentType;
   submitStudentQuestion?: (
@@ -338,9 +340,7 @@ enum QUESTION_STATUS {
   RESPONDED,
 }
 
-/******************************* Student Question and Regrade option *******************************************/
-
-const StudentQuestion = (props: IRegradeRequestProps) => {
+const StudentQuestion = (props: IStudentQuestionProps) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
   const [questionIsRegrade, setQuestionIsRegrade] = useState(false);
@@ -354,7 +354,7 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
     setQuestionText(event.target.value);
   };
 
-  const submitRegradeRequest = () => {
+  const submitQuestion = () => {
     if (props.submitStudentQuestion) {
       setLoading(true);
       closeModal();
@@ -363,7 +363,6 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
       });
     }
   };
-  console.log(props.submission);
 
   const questionStatus = isLoading
     ? QUESTION_STATUS.SUBMITTING
@@ -373,11 +372,15 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
     ? QUESTION_STATUS.RESPONDED
     : QUESTION_STATUS.IN_PROGRESS;
 
+  const buttonStyle = { float: 'left' as 'left', paddingLeft: 15, paddingTop: 15 };
+  const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
+
   switch (questionStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED:
+      // Case 0: Student has not submitted a question or regrade request
       return (
         <div>
-          <div style={{ float: 'right', paddingRight: 15 }}>
+          <div style={buttonStyle}>
             <CPTooltip
               title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
             >
@@ -388,11 +391,11 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
             onCancel={closeModal}
             visible={isModalVisible}
             title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
-            onOk={submitRegradeRequest}
+            onOk={submitQuestion}
           >
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
-              <div style={{ paddingTop: 10 }}>
+              <div style={regradeTextStyle}>
                 Ask for a regrade: <Switch disabled={false} onChange={setQuestionIsRegrade.bind({}, true)} />
               </div>
             ) : (
@@ -402,17 +405,19 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
         </div>
       );
     case QUESTION_STATUS.SUBMITTING:
+      // Case 1: Student has submitted, but no API response yet
       return (
-        <div style={{ float: 'right', paddingRight: 15 }}>
+        <div style={buttonStyle}>
           <CPTooltip title="Submitting...">
             <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind({}, true)} />
           </CPTooltip>
         </div>
       );
     case QUESTION_STATUS.IN_PROGRESS:
+      // Case 2: Student has submitted. No response yet.
       return (
         <div>
-          <div style={{ float: 'right', paddingRight: 15 }}>
+          <div style={buttonStyle}>
             <CPTooltip
               title={`View submitted question ${props.assignment.allowRegradeRequests ? 'or regrade request' : ''}`}
             >
@@ -421,31 +426,22 @@ const StudentQuestion = (props: IRegradeRequestProps) => {
           </div>
           <Modal onCancel={closeModal} visible={isModalVisible} title="The review of your question is in progress...">
             <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
-            {props.assignment.allowRegradeRequests ? (
-              <div style={{ paddingTop: 10, fontWeight: 500 }}>
-                {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
-              </div>
-            ) : (
-              <div />
-            )}
+            <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
           </Modal>
         </div>
       );
     case QUESTION_STATUS.RESPONDED:
+      // Case 3: Student has submitted and there is a response.
       return (
         <div>
-          <div style={{ float: 'right', paddingRight: 15 }}>
+          <div style={buttonStyle}>
             <CPTooltip title="View response">
               <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind({}, true)} />
             </CPTooltip>
           </div>
           <Modal onCancel={closeModal} visible={isModalVisible} title="View Question Response">
             <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
-            {props.assignment.allowRegradeRequests ? (
-              <div style={{ paddingTop: 10 }}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
-            ) : (
-              <div />
-            )}
+            <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
             <Divider />
             <div>
               <div>
