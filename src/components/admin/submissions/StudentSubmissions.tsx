@@ -215,7 +215,7 @@ class StudentData extends React.Component<IProps, IState> {
       return (
         <TableDetail
           loadComplete={this.props.loadComplete}
-          title={'Student Submissions'}
+          title={'Submissions by Student'}
           isEmpty={this.props.assignments.length === 0 || numStudents === 0}
           emptyNode={
             <Empty
@@ -264,7 +264,7 @@ class StudentData extends React.Component<IProps, IState> {
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item>Submissions</Breadcrumb.Item>
-              <Breadcrumb.Item>Students</Breadcrumb.Item>
+              <Breadcrumb.Item>By Student</Breadcrumb.Item>
             </Breadcrumb>
           }
           titleInfo={tooltips.admin.studentSubmissions.title}
