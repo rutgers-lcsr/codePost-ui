@@ -1,31 +1,33 @@
 import React, { useState } from 'react';
 
-import { Breadcrumb, Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag } from 'antd';
+import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
-import CPAdminDetail from '../../other/CPAdminDetail';
-
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { AnonymousSubmissionType, SubmissionType } from '../../../../../infrastructure/submission';
 
-import { UserType } from '../../../../infrastructure/user';
+import { UserType } from '../../../../../infrastructure/user';
 
-import CPButton from '../../../../components/core/CPButton';
-import CPTooltip from '../../../../components/core/CPTooltip';
+import CPButton from '../../../../../components/core/CPButton';
+import CPTooltip from '../../../../../components/core/CPTooltip';
 
-import { openSubmission } from '../../other/AdminUtils';
+import { openSubmission } from '../../../other/AdminUtils';
 
 interface IStudentQuestionsProps {
   /* assignment data */
   assignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionType[] | AnonymousSubmissionType[];
 
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
-  onCancel: () => void;
+
   user: UserType;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
+
+  isAnonymous?: boolean;
+
+  isLoading?: boolean;
 }
 
 enum RESPONSE_STATUS {
@@ -34,7 +36,7 @@ enum RESPONSE_STATUS {
   EDIT_ALLOWED_NEW_RESPONSE,
 }
 
-const StudentQuestions = (props: IStudentQuestionsProps) => {
+const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
@@ -65,7 +67,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
   };
 
   // *********************** TABLE HELPER FUNCTIONS *************************
-  const getResponseStatus = (submission: SubmissionType) => {
+  const getResponseStatus = (submission: SubmissionType | AnonymousSubmissionType) => {
     if (submission.questionResponder !== props.user.email || !submission.questionIsOpen) {
       return RESPONSE_STATUS.EDIT_NOT_ALLOWED;
     } else if (submission.questionResponse) {
@@ -73,7 +75,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
     } else return RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE;
   };
 
-  const getResponseContent = (submission: SubmissionType) => {
+  const getResponseContent = (submission: SubmissionType | AnonymousSubmissionType) => {
     const responseStatus = getResponseStatus(submission);
 
     switch (responseStatus) {
@@ -201,7 +203,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
     return {
       key: submission.id,
       code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
-      students: submission.students.toString(),
+      students: submission.students && !props.isAnonymous ? submission.students.toString() : submission.id,
       statusTag:
         submission.questionText && !submission.questionIsOpen ? (
           <Tag color="green">Closed</Tag>
@@ -223,14 +225,14 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
 
   // *********************** RENDER *************************
 
-  const content = (
+  return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 10 }}>
         <CPTooltip title="Refresh Data" placement="left">
           <CPButton cpType="secondary" icon="reload" onClick={props.refreshCourseData} />
         </CPTooltip>
       </div>
-      <Table columns={columns} dataSource={rows} />{' '}
+      <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
       <Modal
         onCancel={toggleModal.bind({}, null)}
         visible={modalVisible}
@@ -241,28 +243,6 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       </Modal>
     </div>
   );
-
-  return (
-    <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            <a>Assignments</a>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>
-            `Student Questions${props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''}`
-          </Breadcrumb.Item>
-        </Breadcrumb>
-      }
-      goBack={null}
-      title={`${props.assignment.name} | Student Questions${
-        props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''
-      }`}
-      actions={[]}
-      content={content}
-    />
-  );
 };
 
-export default StudentQuestions;
+export default StudentQuestionsTable;

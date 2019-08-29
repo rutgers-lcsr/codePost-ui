@@ -41,7 +41,7 @@ import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
-import StudentQuestions from './assignments/StudentQuestions';
+import AssignmentStudentQuestions from './assignments/AssignmentStudentQuestions';
 
 import { UserType } from '../../../infrastructure/user';
 
@@ -575,7 +575,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             break;
           case DETAIL_TYPE.Questions:
             return (
-              <StudentQuestions
+              <AssignmentStudentQuestions
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 refreshCourseData={this.props.refreshCourseData}
