@@ -390,7 +390,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               </Menu.Item>
               {assignment.allowRegradeRequests || assignment.allowQuestions ? (
                 <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Questions, assignment)}>
-                  <Icon type="setting" />
+                  <Icon type={assignment.allowRegradeRequests ? 'form' : 'question-circle'} />
                   {`View Questions${assignment.allowRegradeRequests ? ' & Regrades' : ''}`}
                 </Menu.Item>
               ) : (

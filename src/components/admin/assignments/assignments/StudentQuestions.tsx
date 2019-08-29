@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Breadcrumb, Dropdown, Icon, Input, Menu, Modal, Table } from 'antd';
+import { Breadcrumb, Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 import CPAdminDetail from '../../other/CPAdminDetail';
@@ -38,11 +38,13 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
   const [responseText, setResponseText] = useState('');
 
+  const aligner: 'left' | 'center' | 'right' = 'center';
   const columns = [
     {
       title: 'Code',
       dataIndex: 'code',
       key: 'code',
+      align: aligner,
     },
     {
       title: 'Student(s)',
@@ -53,16 +55,24 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      align: aligner,
     },
     {
-      title: 'Grader',
-      dataIndex: 'grader',
-      key: 'grader',
+      title: 'Text',
+      dataIndex: 'text',
+      key: 'text',
     },
     {
-      title: 'Request',
-      dataIndex: 'request',
-      key: 'request',
+      title: 'Regrade Requested?',
+      dataIndex: 'regrade',
+      key: 'regrade',
+      align: aligner,
+    },
+    {
+      title: 'Responder',
+      dataIndex: 'responder',
+      key: 'responder',
+      align: aligner,
     },
     {
       title: 'Response',
@@ -73,6 +83,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
+      align: aligner,
     },
   ];
 
@@ -121,6 +132,7 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       <Menu>
         <Menu.Item
           key="1"
+          disabled={!submission.questionIsOpen}
           onClick={updateSubmissionField.bind(
             {},
             submission,
@@ -128,15 +140,16 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
             submission.questionResponder === props.user.email ? null : props.user.email,
           )}
         >
-          <Icon type="user-delete" />
-          {submission.questionResponder === props.user.email ? 'Release regrade' : 'Claim regrade'}
+          <Icon type={submission.questionResponder === props.user.email ? 'minus-circle' : 'plus-circle'} />
+          {submission.questionResponder === props.user.email ? 'Release' : 'Claim'}
         </Menu.Item>
+        <Divider style={{ marginBottom: 10, marginTop: 10 }} />
         <Menu.Item
           key="2"
           onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
         >
-          <Icon type="user-delete" />
-          {submission.questionIsOpen ? 'Close regrade' : 'Reopen regrade'}
+          <Icon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
+          {submission.questionIsOpen ? 'Close' : 'Re-open'}
         </Menu.Item>
       </Menu>
     );
@@ -147,18 +160,24 @@ const StudentQuestions = (props: IStudentQuestionsProps) => {
       key: submission.id,
       code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
       students: submission.students,
-      status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
-      grader: submission.questionResponder,
-      request: submission.questionText,
+      status:
+        submission.questionText && !submission.questionIsOpen ? (
+          <Tag color="green">Closed</Tag>
+        ) : (
+          <Tag color="orange">Open</Tag>
+        ),
+      responder: submission.questionResponder,
+      regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
+      text: submission.questionText,
       response:
         responseStatus === RESPONSE_STATUS.EDIT_NOT_ALLOWED ? (
           submission.questionResponse
         ) : responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
           <div>
             {submission.questionResponse}
-            <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)}>
-              Edit response
-            </CPButton>
+            <div style={{ float: 'right' }}>
+              <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
+            </div>
           </div>
         ) : (
           <CPButton cpType="primary" onClick={toggleModal.bind({}, submission)}>
