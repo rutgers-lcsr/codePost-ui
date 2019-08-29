@@ -27,6 +27,9 @@ const UploadForm = (props: IUploadFormProps) => {
     case 'brightspace':
       content = <Brightspace {...props} />;
       break;
+    case 'github':
+      content = <GitHub {...props} />;
+      break;
     case 'jupyter':
       content = <Jupyter {...props} />;
       break;
@@ -354,6 +357,69 @@ or shoot us an email at team@codepost.io
 
 **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
 You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com/codepost-io/integration-blackboard).
+`;
+
+  return (
+    <div>
+      <Collapse defaultActiveKey={['1']}>
+        <Panel header="Instructions" key="1">
+          <BlockMarkdown source={instructions} />
+        </Panel>
+      </Collapse>
+      <br />
+      <br />
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+        <p className="ant-upload-drag-icon">
+          <Icon type="inbox" />
+        </p>
+        <p className="ant-upload-text">Click or drag a folder to upload</p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+      </Dragger>
+      <br />
+      <br />
+      <br />
+      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+    </div>
+  );
+};
+
+const GitHub = (props: IUploadFormProps) => {
+  const beforeUpload = (file: File, fileList: File[]) => {
+    if (fileList.length > 1) {
+      // Case 1: use has selected a folder via menu, which will place all files into
+      // fileList
+      props.setRawFiles(
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
+      );
+    } else {
+      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
+      // contains only one file at a time. So add these files one-by-one to state.rawFiles
+      if (file.name[0] !== '.') {
+        // ignore system files
+        const newList = [...props.rawFiles, file];
+        props.setRawFiles(newList);
+      }
+    }
+
+    // prevent upload
+    return false;
+  };
+
+  const instructions = `
+See [GitHub](https://github.com/codepost-io/integration-github) for more details.
+
+Choose the instructions that best apply to your GitHub course configuration.
+
+These instructions will turn submissions downloaded from GitHub into a folder that you can drag into codePost.
+
+----------
+
+**Need help?** Shoot us an email at team@codepost.io
+
+**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+You can also fork the scripts included [here](https://github.com/codepost-io/integration-github).
 `;
 
   return (
