@@ -6,10 +6,12 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Tag } from 'antd';
+import { Button, Icon, Menu, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
+const { Text } = Typography;
 
 /* other library imports */
+import * as moment from 'moment';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -17,7 +19,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWa
 
 import CPFlex from '../core/CPFlex';
 
-import { IAssignmentToSubmissionsMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
+import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
 import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -40,17 +42,24 @@ import CPLogo from '../core/CPLogo';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
+
+import ViewUpload from './ViewUpload';
+
 /**********************************************************************************************************************/
 
 interface IStudentState {
   currentCourse?: CourseType;
   assignments: ICourseToAssignmentMap;
-  submissions: IAssignmentToSubmissionsMap;
+  submissions: IAssignmentToSubmissionStudentMap;
   viewsBySubmission: { [submissionID: number]: boolean };
 
   // Loading variables
   isLoadingAssignments: boolean;
   isLoadingSubmissions: boolean;
+
+  currentPanel: CURRENT_PANEL;
+  detailAssignment?: AssignmentType;
 }
 
 enum SUBMISSION_STATUS {
@@ -58,6 +67,12 @@ enum SUBMISSION_STATUS {
   NO_SUBMISSION,
   SUBMISSION_VIEWED,
   SUBMISSION_UNVIEWED,
+}
+
+enum CURRENT_PANEL {
+  TABLE,
+  VIEWFILES,
+  UPLOADFILES,
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -80,6 +95,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       viewsBySubmission: {},
       isLoadingAssignments: true,
       isLoadingSubmissions: true,
+      currentPanel: CURRENT_PANEL.TABLE,
+      detailAssignment: undefined,
     };
   }
 
@@ -165,7 +182,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadSubmissions = async (assignments: AssignmentType[]) => {
     const submissions = {};
     for (const assignment of assignments) {
-      if (assignment.isReleased) {
+      if (assignment.isReleased || assignment.allowStudentUpload) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
         });
@@ -175,7 +192,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return submissions;
   };
 
-  public loadHistories = async (submissions: IAssignmentToSubmissionsMap, email: string) => {
+  public loadHistories = async (submissions: IAssignmentToSubmissionStudentMap, email: string) => {
     const toRet = {};
     const keys = Object.keys(submissions);
     for (const key of keys) {
@@ -266,11 +283,120 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     return { value: this.getCourseValue(currentCourse), label: this.getCourseName(currentCourse) };
   };
 
+  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType) => {
+    this.setState({ currentPanel: newPanel, detailAssignment: assignment });
+  };
+
+  public getFileExtension = (fileName: string): string => {
+    const split = fileName.split('.');
+    return split.length === 1 ? 'txt' : split[split.length - 1];
+  };
+
+  // Upload a submission as a student
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    if (partners.length === 0) {
+      return Promise.reject();
+    }
+
+    const formattedFiles = files.map((file) => {
+      return { name: file.name, code: file.data, extension: this.getFileExtension(file.name) };
+    });
+
+    const payload = {
+      id: assignment.id,
+      files: formattedFiles,
+    };
+
+    const submission = AssignmentStudent.updateStudentUpload(payload).then((sub) => {
+      const submissions = this.state.submissions;
+      submissions[assignment.id] = [sub];
+      this.setState({ submissions });
+    });
+
+    return submission;
+  };
+
+  public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
+    if (!assignment.allowStudentUpload) {
+      // Case 0: Student upload not allowed
+      return <div />;
+    }
+
+    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDateText = <Text type="warning">{dueDate}</Text>;
+
+    const uploadButton = (text: string) => {
+      return (
+        <Button
+          icon="upload"
+          type="primary"
+          style={{ maxWidth: 180 }}
+          onClick={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment)}
+        >
+          {text}
+        </Button>
+      );
+    };
+
+    // If live feedback mode is on, we don't want to show the view files button
+    const viewButton = assignment.liveFeedbackMode ? (
+      <div />
+    ) : (
+      <Button
+        icon="eye"
+        style={{ maxWidth: 160 }}
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment)}
+      >
+        View files
+      </Button>
+    );
+
+    if (!submission) {
+      if (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now()) {
+        // Case 1: No submission has been uploaded and due date has passed
+        return <div>{dueDateText}</div>;
+      } else {
+        // Case 2: No submission has been uploaded and due date has not passed
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+            {dueDateText}
+            {uploadButton('Upload Files')}
+          </div>
+        );
+      }
+    } else {
+      if (submission.isFinalized || (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())) {
+        // Case 3: Submission exists, and cannot be replaced, either because
+        // it's finalized, re-sbumitting is not allowed, or the due date has passed
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+            <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
+            {dueDateText}
+            {viewButton}
+          </div>
+        );
+      } else {
+        // Case 4: Submission exists, and can be replaced
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2 }}>
+            <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
+            {dueDateText}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              {viewButton}
+              <div style={{ marginLeft: 15 }} />
+              {uploadButton('Replace Files')}
+            </div>
+          </div>
+        );
+      }
+    }
+  };
+
   /***********************************************************************************
   /* Content area
   /**********************************************************************************/
 
-  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionsMap) => {
+  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionStudentMap) => {
     const modifyIf = (modMap: { [statusTarget: number]: number }) => {
       return (value: any, row: any, index: number) => {
         const obj = {
@@ -287,7 +413,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    const columns = [
+    let columns = [
       {
         title: 'Assignment',
         dataIndex: 'assignment',
@@ -330,9 +456,27 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       },
     ];
 
+    // Optional upload column
+    const uploadColumn = {
+      title: 'Upload',
+      dataIndex: 'upload',
+      key: 'upload',
+      align: aligner,
+    };
+
+    // If one assignment has studentUpload, add the uploadColumn to the columns
+    columns = assignments.some((assn) => {
+      return assn.allowStudentUpload;
+    })
+      ? [...columns, uploadColumn]
+      : columns;
+
     const data = assignments.map((assignment) => {
-      if (!assignment.isReleased) {
-        // Case 1: assignment isn't published
+      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+      const uploadContent = this.getUploadContent(assignment, submission);
+
+      if (!assignment.isReleased && !assignment.liveFeedbackMode) {
+        // Case 1: assignment is not published and is not in live feedback mode
         return {
           key: assignment.name,
           assignment: assignment.name,
@@ -344,10 +488,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             </div>
           ),
           disabled: true,
+          upload: uploadContent,
         };
       } else {
-        const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
-
         const hasStats = assignment.mean || assignment.median;
         let statsContent;
         if (hasStats) {
@@ -362,6 +505,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           key: assignment.name,
           assignment: assignment.name,
           stats: hasStats ? statsContent : '--',
+          upload: uploadContent,
         };
 
         if (submission === undefined) {
@@ -375,7 +519,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
           };
-        } else if (!submission.isFinalized) {
+        } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           return {
             ...toRet,
@@ -403,7 +547,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
                     })
                     .join(', '),
             grade: showGrade ? (
-              submission.grade !== null ? (
+              submission.grade !== null && submission.grade !== undefined ? (
                 `${submission.grade}/${assignment.points}`
               ) : null
             ) : this.props.windowwidth > layoutVars.breakpoints.mobile.student ? (
@@ -454,18 +598,35 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       };
 
       studentContent = (
-        <TableDetail
-          loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
-          isEmpty={assignmentList.length === 0}
-          title={`${currentCourse.name} | ${currentCourse.period}`}
-          emptyNode={<div>Empty...</div>}
-          actions={[]}
-          columns={columns}
-          data={data}
-          pagination={false}
-          hideSearch={true}
-          tableProps={{ rowClassName, bordered: true }}
-        />
+        <div>
+          <TableDetail
+            loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
+            isEmpty={assignmentList.length === 0}
+            title={`${currentCourse.name} | ${currentCourse.period}`}
+            emptyNode={<div>Empty...</div>}
+            actions={[]}
+            columns={columns}
+            data={data}
+            pagination={false}
+            hideSearch={true}
+            tableProps={{ rowClassName, bordered: true }}
+          />
+          <UploadSubmissionDialog
+            isVisible={this.state.currentPanel === CURRENT_PANEL.UPLOADFILES}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+            assignments={[]}
+            selectedAssignment={this.state.detailAssignment}
+            students={[]}
+            selectedStudents={[this.props.user.email]}
+            submissions={{}}
+            uploadSubmission={this.uploadSubmission}
+          />
+          <ViewUpload
+            isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
+            assignment={this.state.detailAssignment}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+          />
+        </div>
       );
     }
 

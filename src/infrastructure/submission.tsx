@@ -34,6 +34,7 @@ const SubmissionV = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       dateEdited: t.string,
+      dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
     }),
@@ -52,6 +53,7 @@ const StudentSubmissionV = t.intersection(
     t.partial({
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
+      dateUploaded: t.string,
     }),
   ],
   'Submission',
@@ -95,6 +97,7 @@ const AnonymousSubmissionV = t.intersection(
       files: t.array(t.number),
       assignment: t.number,
       dateEdited: t.string,
+      dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
     }),
