@@ -35,7 +35,7 @@ const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
           </Breadcrumb.Item>
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
           <Breadcrumb.Item>
-            `Student Questions${props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''}`
+            {`Student Questions${props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''}`}
           </Breadcrumb.Item>
         </Breadcrumb>
       }
