@@ -10,7 +10,6 @@ import { AnonymousSubmissionType, SubmissionType } from '../../../../../infrastr
 import { UserType } from '../../../../../infrastructure/user';
 
 import CPButton from '../../../../../components/core/CPButton';
-import CPTooltip from '../../../../../components/core/CPTooltip';
 
 import { openSubmission } from '../../../other/AdminUtils';
 
@@ -228,9 +227,9 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 10 }}>
-        <CPTooltip title="Refresh Data" placement="left">
-          <CPButton cpType="secondary" icon="reload" onClick={props.refreshCourseData} />
-        </CPTooltip>
+        <CPButton cpType="secondary" icon="reload" onClick={props.refreshCourseData}>
+          Refresh Data
+        </CPButton>
       </div>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
       <Modal
