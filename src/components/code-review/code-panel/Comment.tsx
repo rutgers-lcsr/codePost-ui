@@ -83,6 +83,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
       this.setState(this.init());
     }
+
+    // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
+    if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
+      if (this.state.text.length === 0 && this.state.points === 0) {
+        this.props.onDelete(this.props.comment);
+      }
+    }
   }
 
   public init = () => {
