@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Tag, Typography } from 'antd';
+import { Button, Icon, Menu, Spin, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 const { Text } = Typography;
 
@@ -588,6 +588,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <div>Select course</div>
         </div>
       );
+    } else if (!assignments[currentCourse.id]) {
+      // Assignments haven't finished loading
+      studentContent = <Spin />;
     } else {
       const assignmentList = assignments[currentCourse.id];
       const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
