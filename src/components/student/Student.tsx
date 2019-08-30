@@ -465,11 +465,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
 
     // If one assignment has studentUpload, add the uploadColumn to the columns
-    columns = assignments.some((assn) => {
-      return assn.allowStudentUpload;
-    })
-      ? [...columns, uploadColumn]
-      : columns;
+    if (assignments) {
+      columns = assignments.some((assn) => {
+        return assn.allowStudentUpload;
+      })
+        ? [...columns, uploadColumn]
+        : columns;
+    }
 
     const data = assignments.map((assignment) => {
       const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
