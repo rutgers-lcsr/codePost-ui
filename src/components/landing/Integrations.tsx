@@ -18,7 +18,8 @@ Do your students use GitHub for version control and to submit their work?
 You can import student work from GitHub to codePost for code review and
 higher resolution feedback.
 
-Email team@codepost.io to learn how to set up this integration.
+See more detailed instructions for how to
+[import submissions here](https://github.com/codepost-io/integration-github).
 `,
   },
   jupyter: {

@@ -574,6 +574,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                 />
                 <div style={{ width: '20px' }} />
                 <IntegrationButton
+                  integration={INTEGRATIONS['github']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'github'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
                   integration={INTEGRATIONS['jupyter']}
                   onClick={this.onIntegrationClick}
                   active={this.state.mode === 'jupyter'}
