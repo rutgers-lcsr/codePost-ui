@@ -41,7 +41,7 @@ const sections = [
     features: [
       'Make inline comments easily, with markdown',
       <span key="template">
-        Gray out template code &nbsp; <Tag>NEW</Tag>
+        Gray out template code &nbsp; <Tag>BETA</Tag>
       </span>,
       'Annotate IPython / Jupyter notebooks',
       <span key="text">
@@ -49,7 +49,10 @@ const sections = [
         <Typography.Text code>.md</Typography.Text>)
       </span>,
       'Apply rubric items while grading',
-      'Collaboratively create the rubric',
+      <span key="template">
+        Collaboratively create the rubric &nbsp; <Tag>BETA</Tag>
+      </span>,
+      'Dark Mode!',
     ],
     spotlights: [
       <img
@@ -71,6 +74,7 @@ const sections = [
         key="5"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
       />,
+      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
