@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { Popover } from 'antd';
+
 import useWindowSize from '../core/useWindowSize';
 
 const PreAuthFooter = () => {
@@ -16,6 +18,18 @@ const PreAuthFooter = () => {
   const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
 
   const linkStyle = { fontSize: 17, paddingLeft: 8, paddingRight: 8 };
+
+  const content = (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ color: '4d4d4d', fontSize: '14px' }}>Share on Snapchat!</div>
+      <img
+        src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
+        height="144"
+        width="144"
+        style={{ cursor: 'pointer' }}
+      />
+    </div>
+  );
 
   return (
     <div
@@ -38,12 +52,14 @@ const PreAuthFooter = () => {
           align-items-center justify-content-space-between flex-direction-${flexDirection}`}
       >
         <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>
-          <img
-            src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
-            height="42"
-            width="42"
-            style={{ marginRight: '20px' }}
-          />{' '}
+          <Popover content={content}>
+            <img
+              src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
+              height="24"
+              width="24"
+              style={{ marginRight: '20px', cursor: 'pointer' }}
+            />
+          </Popover>{' '}
           codePost
         </span>
         <span style={{ marginTop: 6, ...mobileFlexStyle }}>
