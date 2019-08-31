@@ -39,6 +39,7 @@
     "react-syntax-highlighter": "^11.0.2",
     "react-toggle-button": "^2.2.0",
     "remark-disable-tokenizers": "^1.0.23",
+    "source-map-explorer": "^2.0.1",
     "turndown": "^5.0.3",
     "turndown-plugin-gfm": "^1.0.2",
     "typeface-lato": "^0.0.75",
@@ -53,6 +54,7 @@
     ]
   },
   "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
