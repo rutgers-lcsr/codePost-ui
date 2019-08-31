@@ -40,13 +40,20 @@ ${props.roleType}3@myschool.edu,P02
   };
 
   const [rosterString, setRosterString] = React.useState(
-    currentTab === 'without' ? rosterStringWithoutSections(props.rosterInput) : props.rosterInput,
+    currentTab === 'without'
+      ? rosterStringWithoutSections(props.rosterInput)
+      : props.rosterInput,
   );
 
   const onTabChange = (key: string) => {
     setCurrentTab(key);
+    // @ts-ignore
     setFormatSample(formatSamples[key]);
-    setRosterString(key === 'without' ? rosterStringWithoutSections(rosterString) : props.rosterInput);
+    setRosterString(
+      key === 'without'
+        ? rosterStringWithoutSections(rosterString)
+        : props.rosterInput,
+    );
   };
 
   const onChange = (e: any) => {
@@ -82,39 +89,53 @@ ${props.roleType}3@myschool.edu,P02
   const uploadButton = (
     <Upload beforeUpload={beforeUpload} showUploadList={false}>
       <Button>
-        <Icon type="upload" /> Upload a CSV or text file
+        <Icon type='upload' /> Upload a CSV or text file
       </Button>
     </Upload>
   );
 
-  const tabProps = props.roleType === 'student' ? { tabList, activeTabKey: currentTab, onTabChange } : {};
+  const tabProps =
+    props.roleType === 'student'
+      ? { tabList, activeTabKey: currentTab, onTabChange }
+      : {};
 
   const reviewButton = (
-    <Button type="primary" onClick={onRosterUpload}>
+    <Button type='primary' onClick={onRosterUpload}>
       Review Roster Changes
     </Button>
   );
 
   return (
-    <div className="roster-input">
-      Follow the instructions below to update the course roster. You'll have the chance to review any changes before
-      they are made after uploading your file.
+    <div className='roster-input'>
+      Follow the instructions below to update the course roster. You'll have the
+      chance to review any changes before they are made after uploading your
+      file.
       <br />
       <br />
-      <Card {...tabProps} size="small" actions={[uploadButton, reviewButton]}>
+      <Card {...tabProps} size='small' actions={[uploadButton, reviewButton]}>
         {currentTab === 'with' ? (
           <div style={{ marginBottom: '10px' }}>
-            <Icon type="info-circle" theme="filled" style={{ color: '#ffd129' }} />
+            <Icon
+              type='info-circle'
+              theme='filled'
+              style={{ color: '#ffd129' }}
+            />
             <span>
-              {'  '} To remove a student from any section, set the student's section to "null". To leave a student's
-              section unchanged, include only the student's email.
+              {'  '} To remove a student from any section, set the student's
+              section to "null". To leave a student's section unchanged, include
+              only the student's email.
             </span>
           </div>
         ) : null}
         <div style={{ paddingBottom: '6px' }}>
           Enter the <b>{props.roleType}</b> emails, <b>one per line</b>
         </div>
-        <TextArea rows={6} placeholder={formatSample} value={rosterString} onChange={onChange} />
+        <TextArea
+          rows={6}
+          placeholder={formatSample}
+          value={rosterString}
+          onChange={onChange}
+        />
       </Card>
     </div>
   );

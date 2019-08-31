@@ -1,8 +1,8 @@
 // Fonts
 
-$fontMain: get('theme.fontMain');
-$fontCode: get('theme.fontCode');
-$fontLogo: get('theme.fontLogo');
+$fontMain: Avenir Next, Lato, sans-serif;
+$fontCode: AndaleMono, PT Mono, monospace;
+$fontLogo: Muli, Lato, sans-serif;
 
 // Export for tsx
 :export {

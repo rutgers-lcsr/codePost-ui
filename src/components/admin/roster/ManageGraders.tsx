@@ -3,27 +3,37 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
-const confirm = Modal.confirm;
+import {
+  Breadcrumb,
+  Dropdown,
+  Empty,
+  Icon,
+  Menu,
+  message,
+  Modal,
+  Switch
+} from "antd";
 
 /* codePost imports */
-import { USER_APP, USER_TYPE } from '../../../types/common';
+import { USER_APP, USER_TYPE } from "../../../types/common";
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { CourseType } from "../../../infrastructure/course";
+import { SectionType } from "../../../infrastructure/section";
 
-import DownloadRoster from './other/DownloadRoster';
-import RosterFileUpload from './other/RosterFileUpload';
+import DownloadRoster from "./other/DownloadRoster";
+import RosterFileUpload from "./other/RosterFileUpload";
 
-import CPTooltip from '../../../components/core/CPTooltip';
-import { tooltips } from '../../../components/core/tooltips';
+import CPTooltip from "../../../components/core/CPTooltip";
+import { tooltips } from "../../../components/core/tooltips";
 
-import AddGraderDialog from './graders/AddGraderDialog';
+import AddGraderDialog from "./graders/AddGraderDialog";
 
-import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from "../other/TableDetail";
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -54,7 +64,7 @@ class ManageGraders extends React.Component<IProps, IState> {
   public constructor(props: any) {
     super(props);
     this.state = {
-      activeGrader: '',
+      activeGrader: ""
     };
   }
 
@@ -64,12 +74,12 @@ class ManageGraders extends React.Component<IProps, IState> {
       content: `All of their work (graded submissions) won't be impacted, but the
       grader won't be able to access this course any longer. You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.graders.filter((student) => {
+        const newRoster = this.props.graders.filter(student => {
           return student !== toRemove;
         });
         return this.props.updateRoster(newRoster, USER_APP.Grader);
       },
-      okText: 'Remove',
+      okText: "Remove"
     });
   };
 
@@ -84,16 +94,21 @@ class ManageGraders extends React.Component<IProps, IState> {
 
   public toggleSuperGrader = (grader: string, include: boolean) => {
     if (include) {
-      this.props.updateRoster([...this.props.superGraders, grader], USER_APP.SuperGrader).then(() => {
-        message.success(`${grader} is now a supergrader`);
-      });
+      this.props
+        .updateRoster(
+          [...this.props.superGraders, grader],
+          USER_APP.SuperGrader
+        )
+        .then(() => {
+          message.success(`${grader} is now a supergrader`);
+        });
     } else {
       this.props
         .updateRoster(
-          this.props.superGraders.filter((el) => {
+          this.props.superGraders.filter(el => {
             return el !== grader;
           }),
-          USER_APP.SuperGrader,
+          USER_APP.SuperGrader
         )
         .then(() => {
           message.success(`${grader} is no longer a supergrader`);
@@ -130,7 +145,11 @@ class ManageGraders extends React.Component<IProps, IState> {
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailUsers={
+            this.props.currentCourse
+              ? this.props.currentCourse.emailNewUsers
+              : false
+          }
           createSection={this.props.createSection}
         />,
         <AddGraderDialog
@@ -138,35 +157,40 @@ class ManageGraders extends React.Component<IProps, IState> {
           graders={this.props.graders}
           addGrader={this.addGrader}
           willEmailUser={this.props.currentCourse.emailNewUsers}
-        />,
+        />
       ];
 
-      const aligner: 'left' | 'center' | 'right' = 'center';
+      const aligner: "left" | "center" | "right" = "center";
       columns = [
         {
-          title: 'Grader',
-          dataIndex: 'grader',
-          key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          title: "Grader",
+          dataIndex: "grader",
+          key: "primary",
+          sorter: (a: any, b: any) => a.key.localeCompare(b.key)
         },
         {
           title: (
             <div>
-              Supergrader Status{' '}
-              <CPTooltip title={tooltips.admin.graderRoster.supergrader} infoIcon={true} hideThisOnHideTips={true} />
+              Supergrader Status{" "}
+              <CPTooltip
+                title={tooltips.admin.graderRoster.supergrader}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+              />
             </div>
           ),
-          dataIndex: 'status',
-          key: 'status',
+          dataIndex: "status",
+          key: "status",
           align: aligner,
-          sorter: (a: any, b: any) => (a.superGrader === b.superGrader ? 0 : a.superGrader ? -1 : 1),
+          sorter: (a: any, b: any) =>
+            a.superGrader === b.superGrader ? 0 : a.superGrader ? -1 : 1
         },
         {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          align: aligner,
-        },
+          title: "Actions",
+          dataIndex: "actions",
+          key: "actions",
+          align: aligner
+        }
       ];
 
       data = this.props.graders.map((grader, i) => {
@@ -179,15 +203,21 @@ class ManageGraders extends React.Component<IProps, IState> {
                 onChange={this.toggleSuperGrader.bind(this, grader)}
               />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, '')} />
+              <Icon type="edit" onClick={this.setActiveGrader.bind(this, "")} />
             </div>
           );
         } else {
           statusElement = (
             <div>
-              <Switch checked={this.props.superGraders.includes(grader)} disabled={true} />
+              <Switch
+                checked={this.props.superGraders.includes(grader)}
+                disabled={true}
+              />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, grader)} />
+              <Icon
+                type="edit"
+                onClick={this.setActiveGrader.bind(this, grader)}
+              />
             </div>
           );
         }
@@ -207,23 +237,23 @@ class ManageGraders extends React.Component<IProps, IState> {
           status: statusElement,
           superGrader: this.props.superGraders.includes(grader),
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown overlay={menu} trigger={["click"]}>
               <Icon type="menu" />
             </Dropdown>
-          ),
+          )
         };
       });
     }
 
     return (
       <TableDetail
-        title={'Graders'}
+        title={"Graders"}
         loadComplete={this.props.loadComplete}
         isEmpty={this.props.graders.length === 0}
         emptyNode={
           <Empty
             imageStyle={{
-              height: 60,
+              height: 60
             }}
             description={<span>No graders yet</span>}
           >
@@ -245,7 +275,11 @@ class ManageGraders extends React.Component<IProps, IState> {
               changeRoster={this.props.updateRoster}
               isDisabled={false}
               updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              emailUsers={
+                this.props.currentCourse
+                  ? this.props.currentCourse.emailNewUsers
+                  : false
+              }
               createSection={this.props.createSection}
             />
             ,

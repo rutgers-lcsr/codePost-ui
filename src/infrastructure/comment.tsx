@@ -2,7 +2,14 @@ import * as t from 'io-ts';
 
 import { RubricCommentType } from './rubricComment';
 
-import { createObject, deleteObject, GenericObject, readObject, updateObject, updateObjectDetail } from './generics';
+import {
+  createObject,
+  deleteObject,
+  GenericObject,
+  readObject,
+  updateObject,
+  updateObjectDetail,
+} from './generics';
 
 const CommentV = t.intersection(
   [
@@ -51,15 +58,20 @@ const CommentVFeedback = t.intersection([
   }),
 ]);
 
-type CommentType = t.TypeOf<typeof CommentV>;
+export type CommentType = t.TypeOf<typeof CommentV>;
 
-class CommentIO {
+export class CommentIO {
   public static create = createObject(CommentV, CommentV, 'comments');
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
 
-  public static updateFeedback = updateObjectDetail(CommentV, CommentVFeedback, 'comments', 'feedback');
+  public static updateFeedback = updateObjectDetail(
+    CommentV,
+    CommentVFeedback,
+    'comments',
+    'feedback',
+  );
 
   public static sortComments = (comments: CommentType[]): CommentType[] => {
     return comments.sort((a: CommentType, b: CommentType) => {
@@ -104,12 +116,15 @@ class CommentIO {
 }
 
 /* tslint:disable:max-classes-per-file */
-class UiComment {
+export class UiComment {
   public static isNew = (comment: CommentType) => {
     return comment.id < 0;
   };
 
-  public static points = (comment: CommentType, rubricComment?: RubricCommentType): number => {
+  public static points = (
+    comment: CommentType,
+    rubricComment?: RubricCommentType,
+  ): number => {
     if (rubricComment) {
       return rubricComment.pointDelta ? rubricComment.pointDelta : 0;
     } else {
@@ -118,7 +133,7 @@ class UiComment {
   };
 }
 
-const CommentMock: CommentType = {
+export const CommentMock: CommentType = {
   id: 1,
   text: 'This is a mocked comment',
   pointDelta: null,
@@ -132,4 +147,4 @@ const CommentMock: CommentType = {
   feedback: 0,
 };
 
-export { CommentType, CommentIO, CommentMock, UiComment };
+// export { CommentType, CommentIO, CommentMock, UiComment };

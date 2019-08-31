@@ -1,31 +1,53 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
-const ButtonGroup = Button.Group;
+import {
+  Button,
+  Descriptions,
+  Divider,
+  Dropdown,
+  Icon,
+  message,
+  Modal,
+  Popconfirm,
+  Popover,
+  Switch,
+  Tag
+} from "antd";
 
 /* codePost imports */
-import CPButton from '../core/CPButton';
-import CPTooltip from '../core/CPTooltip';
-import { ShowTooltipContext, tooltips } from '../core/tooltips';
+import CPButton from "../core/CPButton";
+import CPTooltip from "../core/CPTooltip";
+import { ShowTooltipContext, tooltips } from "../core/tooltips";
 
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+import {
+  ConsoleThemeContext,
+  consoleThemes
+} from "../../styles/abstracts/_console-theme-context";
 
-import { wait } from '../../infrastructure/animation';
-import { AssignmentType } from '../../infrastructure/assignment';
-import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+import { wait } from "../../infrastructure/animation";
+import { AssignmentType } from "../../infrastructure/assignment";
+import { RubricCategoryType } from "../../infrastructure/rubricCategory";
+import {
+  AnonymousSubmissionType,
+  StudentSubmissionType
+} from "../../infrastructure/submission";
 
-import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
+import {
+  ICommentToRubricCommentMap,
+  IFileToCommentsMap
+} from "../../types/common";
 
-import CodeConsole from './CodeConsole';
+import CodeConsole from "./CodeConsole";
 
-import useHotkeys, { MINUS_KEY, PLUS_KEY } from './useHotkeys';
+import useHotkeys, { MINUS_KEY, PLUS_KEY } from "./useHotkeys";
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from "../core/useWindowSize";
+
+const ButtonGroup = Button.Group;
 
 /**********************************************************************************************************************/
 
@@ -35,7 +57,7 @@ interface IMagnifierProps {
 
 const Magnifier = (props: IMagnifierProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+  const cpType = consoleTheme === consoleThemes.light ? "secondary" : "dark";
   const [zoom, setZoom] = React.useState(1);
 
   function zoomOut() {
@@ -58,8 +80,13 @@ const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
+    <ButtonGroup
+      style={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+    >
+      <CPTooltip
+        title={tooltips.grade.header.zoomOut}
+        hideThisOnHideTips={true}
+      >
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
         </CPButton>
@@ -84,14 +111,17 @@ interface IResetProps {
 
 const Reset = (props: IResetProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+  const cpType = consoleTheme === consoleThemes.light ? "secondary" : "dark";
 
   function onClick() {
     props.updateVerticalOffset(() => 0);
   }
 
   return (
-    <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
+    <CPTooltip
+      title={tooltips.grade.header.alignment}
+      hideThisOnHideTips={true}
+    >
       <ButtonGroup>
         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
           <Icon type="redo" />
@@ -112,9 +142,11 @@ interface IControlsProps {
 export const Controls = (props: IControlsProps) => {
   const windowSize = useWindowSize();
   const controls = (
-    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+    <div
+      style={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+    >
       <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
-      <div style={{ width: '20px' }} />
+      <div style={{ width: "20px" }} />
       <Magnifier key="zoom" updateZoom={props.updateZoom} />
     </div>
   );
@@ -123,12 +155,17 @@ export const Controls = (props: IControlsProps) => {
       <Popover content={controls} placement="bottom" trigger="click">
         <Icon
           type="control"
-          style={{ fontSize: '20px', lineHeight: '20px', verticalAlign: '-7px', cursor: 'pointer' }}
+          style={{
+            fontSize: "20px",
+            lineHeight: "20px",
+            verticalAlign: "-7px",
+            cursor: "pointer"
+          }}
         />
       </Popover>
     ) : (
-      controls
-    );
+        controls
+      );
   return controlPanel;
 };
 
@@ -149,57 +186,54 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async () => {
     setNudge(true);
-    message.warning('Unfinalize to modify this submission →');
+    message.warning("Unfinalize to modify this submission →");
     await wait(1200); // two wiggles
     setNudge(false);
   };
 
-  React.useEffect(
-    () => {
-      // Activate the nudge when these elements are clicked
-      const codeContainer = document.getElementById('code-container');
-      const comments = document.getElementById('comments');
-      const grader = document.getElementById('submission-grader');
-      const rubricMenu = document.getElementById('rubric-menu');
+  React.useEffect(() => {
+    // Activate the nudge when these elements are clicked
+    const codeContainer = document.getElementById("code-container");
+    const comments = document.getElementById("comments");
+    const grader = document.getElementById("submission-grader");
+    const rubricMenu = document.getElementById("rubric-menu");
 
-      if (props.submission.isFinalized) {
-        if (codeContainer !== null) {
-          codeContainer.addEventListener('click', triggerNudge);
-        }
-
-        if (comments !== null) {
-          comments.addEventListener('click', triggerNudge);
-        }
-
-        if (grader !== null) {
-          grader.addEventListener('click', triggerNudge);
-        }
-
-        if (rubricMenu !== null) {
-          rubricMenu.addEventListener('click', triggerNudge);
-        }
+    if (props.submission.isFinalized) {
+      if (codeContainer !== null) {
+        codeContainer.addEventListener("click", triggerNudge);
       }
 
-      return () => {
-        if (codeContainer !== null) {
-          codeContainer.removeEventListener('click', triggerNudge);
-        }
+      if (comments !== null) {
+        comments.addEventListener("click", triggerNudge);
+      }
 
-        if (comments !== null) {
-          comments.removeEventListener('click', triggerNudge);
-        }
+      if (grader !== null) {
+        grader.addEventListener("click", triggerNudge);
+      }
 
-        if (grader !== null) {
-          grader.removeEventListener('click', triggerNudge);
-        }
+      if (rubricMenu !== null) {
+        rubricMenu.addEventListener("click", triggerNudge);
+      }
+    }
 
-        if (rubricMenu !== null) {
-          rubricMenu.removeEventListener('click', triggerNudge);
-        }
-      };
-    },
-    [props.submission],
-  );
+    return () => {
+      if (codeContainer !== null) {
+        codeContainer.removeEventListener("click", triggerNudge);
+      }
+
+      if (comments !== null) {
+        comments.removeEventListener("click", triggerNudge);
+      }
+
+      if (grader !== null) {
+        grader.removeEventListener("click", triggerNudge);
+      }
+
+      if (rubricMenu !== null) {
+        rubricMenu.removeEventListener("click", triggerNudge);
+      }
+    };
+  }, [props.submission]);
 
   const onClick = async () => {
     setIsLoading(true);
@@ -225,26 +259,34 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const isFinalized = props.submission.isFinalized;
 
   const finalizeNotice =
-    props.submission.grader === null ? 'Assign a grader to this submission before finalizing it.' : null;
+    props.submission.grader === null
+      ? "Assign a grader to this submission before finalizing it."
+      : null;
 
   const toggleNotice =
     finalizeNotice !== null
       ? finalizeNotice
       : !showTooltips
-      ? null
-      : props.submission.isFinalized
-      ? 'This submission is finalized. Unfinalize to modify it.'
-      : 'This submission is unfinalized. Finalize it to mark it as complete.';
+        ? null
+        : props.submission.isFinalized
+          ? "This submission is finalized. Unfinalize to modify it."
+          : "This submission is unfinalized. Finalize it to mark it as complete.";
 
   return (
-    <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
+    <div
+      ref={ref}
+      id="submission-status-toggle"
+      className={nudge ? "wiggle" : ""}
+    >
       <CPTooltip title={toggleNotice} placement="left">
-        <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
+        <span style={{ color: consoleTheme.siderMenuItemColor }}>
+          Finalized:
+        </span>
         &nbsp;
         <Popconfirm
           title={
             <div>
-              <p>You have draft comments that will not be saved.</p>{' '}
+              <p>You have draft comments that will not be saved.</p>{" "}
               <p>
                 <b>Are you sure you want to continue?</b>
               </p>
@@ -284,34 +326,42 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments);
-  const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
+  const pointsPerCategory = CodeConsole.pointsPerCategory(
+    props.commentRubricComments
+  );
+  const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(
+    pointsPerCategory,
+    props.rubricCategories
+  );
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);
 
-  const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
-    return accumulator + current;
-  }, 0);
+  const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce(
+    (accumulator: number, current: number) => {
+      return accumulator + current;
+    },
+    0
+  );
 
   const styledLabel = (n: number, excluded?: boolean) => {
     let points = n;
     let style = {};
-    let className = 'cp-label';
+    let className = "cp-label";
     let modifier = null;
 
     if (n > 0) {
-      modifier = '-';
-      className = 'cp-label cp-label--bold cp-label--error';
+      modifier = "-";
+      className = "cp-label cp-label--bold cp-label--error";
     } else if (n < 0) {
-      modifier = '+';
+      modifier = "+";
       points = n * -1;
-      className = 'cp-label cp-label--bold cp-label--success';
+      className = "cp-label cp-label--bold cp-label--success";
     } else {
-      className = 'cp-label cp-label--bold cp-label--neutral';
+      className = "cp-label cp-label--bold cp-label--neutral";
     }
 
     if (excluded) {
-      style = { ...style, textDecoration: 'line-through' };
-      className = 'cp-label cp-label--neutral';
+      style = { ...style, textDecoration: "line-through" };
+      className = "cp-label cp-label--neutral";
     }
 
     return (
@@ -322,48 +372,65 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     );
   };
 
-  let categories = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-    const uncappedPoints = pointsPerCategory.hasOwnProperty(rubricCategory.id)
-      ? pointsPerCategory[rubricCategory.id]
-      : null;
+  let categories = props.rubricCategories.map(
+    (rubricCategory: RubricCategoryType) => {
+      const uncappedPoints = pointsPerCategory.hasOwnProperty(rubricCategory.id)
+        ? pointsPerCategory[rubricCategory.id]
+        : null;
 
-    const cappedPoints = pointsPerCategoryWithCaps.hasOwnProperty(rubricCategory.id)
-      ? pointsPerCategoryWithCaps[rubricCategory.id]
-      : null;
+      const cappedPoints = pointsPerCategoryWithCaps.hasOwnProperty(
+        rubricCategory.id
+      )
+        ? pointsPerCategoryWithCaps[rubricCategory.id]
+        : null;
 
-    let exceededBy = null;
-    if (uncappedPoints !== null && cappedPoints !== null && uncappedPoints !== cappedPoints) {
-      const diff = uncappedPoints - cappedPoints;
-      exceededBy = <span className="cp-label cp-label--italic cp-label--bold">(exceeded limit by {diff})</span>;
+      let exceededBy = null;
+      if (
+        uncappedPoints !== null &&
+        cappedPoints !== null &&
+        uncappedPoints !== cappedPoints
+      ) {
+        const diff = uncappedPoints - cappedPoints;
+        exceededBy = (
+          <span className="cp-label cp-label--italic cp-label--bold">
+            (exceeded limit by {diff})
+          </span>
+        );
+      }
+
+      let points;
+      if (
+        exceededBy !== null &&
+        uncappedPoints !== null &&
+        cappedPoints !== null
+      ) {
+        points = (
+          <span className="cp-label">
+            {styledLabel(uncappedPoints, true)} <Icon type="caret-right" />{" "}
+            {styledLabel(cappedPoints)}
+          </span>
+        );
+      } else if (cappedPoints !== null) {
+        points = <span className="cp-label">{styledLabel(cappedPoints)}</span>;
+      }
+
+      return {
+        description: (
+          <span className="cp-label cp-label--italic">
+            {rubricCategory.name} {exceededBy}
+          </span>
+        ),
+        value: <span className="cp-label">{points}</span>
+      };
     }
-
-    let points;
-    if (exceededBy !== null && uncappedPoints !== null && cappedPoints !== null) {
-      points = (
-        <span className="cp-label">
-          {styledLabel(uncappedPoints, true)} <Icon type="caret-right" /> {styledLabel(cappedPoints)}
-        </span>
-      );
-    } else if (cappedPoints !== null) {
-      points = <span className="cp-label">{styledLabel(cappedPoints)}</span>;
-    }
-
-    return {
-      description: (
-        <span className="cp-label cp-label--italic">
-          {rubricCategory.name} {exceededBy}
-        </span>
-      ),
-      value: <span className="cp-label">{points}</span>,
-    };
-  });
+  );
 
   categories = [
     ...categories,
     {
       description: <span className="cp-label cp-label--italic">other</span>,
-      value: styledLabel(genericPoints),
-    },
+      value: styledLabel(genericPoints)
+    }
   ];
 
   const categoriesTable = (
@@ -381,18 +448,22 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   const summary = [
     {
       description: <span className="cp-label">Assignment Total</span>,
-      value: <span>{props.assignment.points}</span>,
+      value: <span>{props.assignment.points}</span>
     },
     {
       description: <span className="cp-label">Net Point Delta</span>,
-      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>
     },
     {
-      description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
-      value: (
-        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
+      description: (
+        <span className="cp-label cp-label--very-bold">Final Grade</span>
       ),
-    },
+      value: (
+        <span className="cp-label cp-label--very-bold">
+          {props.assignment.points - categoryPoints - genericPoints}
+        </span>
+      )
+    }
   ];
 
   const summaryTable = (
@@ -408,7 +479,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   );
 
   return (
-    <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+    <div style={{ maxHeight: "80vh", overflowY: "auto" }}>
       {categoriesTable}
       <Divider />
       {summaryTable}
@@ -430,8 +501,10 @@ interface IGradeButtonProps {
 export const GradeButton = (props: IGradeButtonProps) => {
   const [breakdownVisible, setBreakdownVisible] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const gradeNum = props.submission.isFinalized ? (props.submission.grade as number) : props.calculateGrade();
-  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+  const gradeNum = props.submission.isFinalized
+    ? (props.submission.grade as number)
+    : props.calculateGrade();
+  const theme = consoleThemes.light === consoleTheme ? "light" : "dark";
 
   function handleClick() {
     setBreakdownVisible(!breakdownVisible);
@@ -439,10 +512,18 @@ export const GradeButton = (props: IGradeButtonProps) => {
 
   return (
     <div>
-      <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
+      <CPButton
+        cpType={theme === "light" ? "secondary" : "dark"}
+        onClick={handleClick}
+      >
         Grade: {gradeNum} / {props.assignment.points}
       </CPButton>
-      <Modal title={'Grade breakdown'} visible={breakdownVisible} onCancel={handleClick} footer={null}>
+      <Modal
+        title={"Grade breakdown"}
+        visible={breakdownVisible}
+        onCancel={handleClick}
+        footer={null}
+      >
         <GradeBreakdown
           submission={props.submission}
           assignment={props.assignment}
@@ -468,7 +549,7 @@ type StatusTagType = 0 | 1 | 2 | 3;
 export const StatusTags = (props: IStatusTagsProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const windowSize = useWindowSize();
-  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+  const theme = consoleThemes.light === consoleTheme ? "light" : "dark";
 
   const subStatus = (finalized: boolean, published: boolean): StatusTagType => {
     if (!finalized && !published) {
@@ -491,7 +572,10 @@ export const StatusTags = (props: IStatusTagsProps) => {
     return 0;
   };
 
-  const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.isReleased);
+  const statusTagType: StatusTagType = subStatus(
+    props.submission.isFinalized,
+    props.assignment.isReleased
+  );
 
   // @ts-ignore
   let tagColor;
@@ -499,42 +583,48 @@ export const StatusTags = (props: IStatusTagsProps) => {
   let tooltipText;
   switch (statusTagType) {
     case 0:
-      tagColor = theme === 'light' ? 'blue' : '#1890ff';
-      tagText = 'not finalized and not published';
-      tooltipText = 'student cannot view';
+      tagColor = theme === "light" ? "blue" : "#1890ff";
+      tagText = "not finalized and not published";
+      tooltipText = "student cannot view";
       break;
     case 1:
-      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
-      tagText = 'finalized but not published';
-      tooltipText = 'student cannot view';
+      tagColor = theme === "light" ? "orange" : "#fa8c16";
+      tagText = "finalized but not published";
+      tooltipText = "student cannot view";
       break;
     case 2:
-      tagColor = theme === 'light' ? 'red' : '#f5222d';
-      tagText = 'published but not finalized';
-      tooltipText = 'student cannot view';
+      tagColor = theme === "light" ? "red" : "#f5222d";
+      tagText = "published but not finalized";
+      tooltipText = "student cannot view";
       break;
     case 3:
-      tagColor = theme === 'light' ? 'gold' : '#faad14';
-      tagText = 'finalized and published';
-      tooltipText = 'student can view';
+      tagColor = theme === "light" ? "gold" : "#faad14";
+      tagText = "finalized and published";
+      tooltipText = "student can view";
       break;
   }
 
-  const tagStyle = { marginRight: '0px', cursor: 'help' };
+  const tagStyle = { marginRight: "0px", cursor: "help" };
   return (
     <CPTooltip
       title={
-        props.fallbackWidth && windowSize.width < props.fallbackWidth ? [tagText, tooltipText].join('\n') : tooltipText
+        props.fallbackWidth && windowSize.width < props.fallbackWidth
+          ? [tagText, tooltipText].join("\n")
+          : tooltipText
       }
       placement="bottom"
     >
       {props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
-        <Icon theme="twoTone" style={{ color: tagColor, ...tagStyle }} type="tag" />
+        <Icon
+          theme="twoTone"
+          style={{ color: tagColor, ...tagStyle }}
+          type="tag"
+        />
       ) : (
-        <Tag color={tagColor} style={tagStyle}>
-          {tagText}
-        </Tag>
-      )}
+          <Tag color={tagColor} style={tagStyle}>
+            {tagText}
+          </Tag>
+        )}
     </CPTooltip>
   );
 };
@@ -546,7 +636,10 @@ interface ISubheaderTitleProps {
 export const SubheaderTitle = (props: ISubheaderTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
-    <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
+    <span
+      className=" cp-label cp-label--very-bold cp-label--medium"
+      style={{ color: consoleTheme.subheaderTitle }}
+    >
       {props.assignment.name}
     </span>
   );
@@ -559,7 +652,7 @@ interface IHeaderMenuProps {
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
-    <Dropdown overlay={props.menu} trigger={['click']}>
+    <Dropdown overlay={props.menu} trigger={["click"]}>
       <Icon type="menu" style={{ color: consoleTheme.text }} />
     </Dropdown>
   );

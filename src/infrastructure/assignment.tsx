@@ -11,7 +11,11 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
+import {
+  AnonymousSubmissionV,
+  StudentSubmissionV,
+  SubmissionV,
+} from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 
 const AssignmentV = t.intersection(
@@ -99,8 +103,8 @@ const AssignmentVPatch = t.intersection(
   'AssignmentPatch',
 );
 
-type AssignmentType = t.TypeOf<typeof AssignmentV>;
-type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
+export type AssignmentType = t.TypeOf<typeof AssignmentV>;
+export type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
 
 const RubricV = t.intersection(
   [
@@ -114,22 +118,38 @@ const RubricV = t.intersection(
   'Roster',
 );
 
-type RubricType = t.TypeOf<typeof RubricV>;
+export type RubricType = t.TypeOf<typeof RubricV>;
 
-class Assignment {
-  public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
+export class Assignment {
+  public static create = createObject(
+    AssignmentV,
+    AssignmentVPost,
+    'assignments',
+  );
   public static read = readObject(AssignmentV, 'assignments');
-  public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
+  public static update = updateObject(
+    AssignmentV,
+    AssignmentVPatch,
+    'assignments',
+  );
   public static delete = deleteObject(AssignmentV, 'assignments');
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
-  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissions = readObjectDetail(
+    t.array(SubmissionV),
+    'assignments',
+    'submissions',
+  );
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionV),
     'assignments',
     'submissions',
   );
-  public static readSubmissionsStudent = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static readSubmissionsStudent = readObjectDetail(
+    t.array(StudentSubmissionV),
+    'assignments',
+    'submissions',
+  );
   public static readSubmissionHistories = readObjectDetail(
     t.array(SubmissionHistoryV),
     'assignments',
@@ -158,19 +178,29 @@ const StudentUploadData = t.intersection([
 ]);
 
 // tslint:disable
-class AssignmentStudent {
+export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
-  public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static readSubmissions = readObjectDetail(
+    t.array(StudentSubmissionV),
+    'assignments',
+    'submissions',
+  );
   public static updateStudentUpload = updateObjectDetail(
     StudentSubmissionV,
     StudentUploadData,
     'assignments',
     'studentUpload',
   );
-  public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
+  public static readStudentUpload = readObjectDetail(
+    StudentUploadData,
+    'assignments',
+    'studentUpload',
+  );
 }
 
-const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
+export const sortAssignments = (
+  assignments: AssignmentType[],
+): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
     if (a.sortKey === b.sortKey) {
@@ -183,4 +213,4 @@ const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   return assignments.sort(compareAssignments);
 };
 
-export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };
+// export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };

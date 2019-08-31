@@ -1,16 +1,16 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { Divider, Tag, Typography } from 'antd';
+import { Divider, Tag, Typography } from "antd";
 
-import _ from 'lodash';
+import _ from "lodash";
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from "../core/useWindowSize";
 
-import landingVars from '../../styles/pages/_landingVars';
+import landingVars from "../../styles/pages/_landingVars";
+
+import PreAuthLayout from "./PreAuthLayout";
 
 const midBreakPoint = landingVars.breakpoints.whyUse;
-
-import PreAuthLayout from './PreAuthLayout';
 
 interface IPageProps {
   isLoggedIn: boolean;
@@ -27,7 +27,7 @@ interface IProps {
 
 const Video = (props: { url: string }) => {
   return (
-    <div style={{ width: '550px', height: '344px' }}>
+    <div style={{ width: "550px", height: "344px" }}>
       <video controls width="100%" height="100%">
         <source type="video/mp4" src={props.url} />
       </video>
@@ -37,22 +37,23 @@ const Video = (props: { url: string }) => {
 
 const sections = [
   {
-    title: 'Annotate code',
+    title: "Annotate code",
     features: [
-      'Make inline comments easily, with markdown',
+      "Make inline comments easily, with markdown",
       <span key="template">
         Gray out template code &nbsp; <Tag>BETA</Tag>
       </span>,
-      'Annotate IPython / Jupyter notebooks',
+      "Annotate IPython / Jupyter notebooks",
       <span key="text">
-        Annotate short-answer questions (<Typography.Text code>.txt</Typography.Text> or{' '}
+        Annotate short-answer questions (
+        <Typography.Text code>.txt</Typography.Text> or{" "}
         <Typography.Text code>.md</Typography.Text>)
       </span>,
-      'Apply rubric items while grading',
+      "Apply rubric items while grading",
       <span key="template">
         Collaboratively create the rubric &nbsp; <Tag>BETA</Tag>
       </span>,
-      'Dark Mode!',
+      "Dark Mode!"
     ],
     spotlights: [
       <img
@@ -67,14 +68,28 @@ const sections = [
         height="344"
         key="1"
       />,
-      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
-      <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
-      <Video key="4" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4" />,
+      <Video
+        key="2"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4"
+      />,
+      <Video
+        key="3"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4"
+      />,
+      <Video
+        key="4"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4"
+      />,
       <Video
         key="5"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
       />,
-      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" />,
+      <img
+        src="https://cl.ly/40709b6a88c4/DarkMode.png"
+        width="550"
+        height="344"
+        key="6"
+      />
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -88,12 +103,16 @@ const sections = [
       `When grading with codePost, you and your graders can apply rubrics. You can also track how rubrics are applied,
       and even retroactively alter rubric items after they've been used.`,
       `With this optional setting, admins can allow graders to participate in writing the rubric while grading.
-      Easily create new rubric comments when discovering common issues in the submissions.`,
-    ],
+      Easily create new rubric comments when discovering common issues in the submissions.`
+    ]
   },
   {
-    title: 'For students',
-    features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback'],
+    title: "For students",
+    features: [
+      "Leave feedback on feedback",
+      "Peer grading",
+      "Access scores and feedback"
+    ],
     spotlights: [
       <img
         src="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback_on_feedback.png"
@@ -101,26 +120,32 @@ const sections = [
         height="344"
         key="0"
       />,
-      <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4" />,
-      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4" />,
+      <Video
+        key="1"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4"
+      />,
+      <Video
+        key="2"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4"
+      />
     ],
     captions: [
       `In codePost, students can leave feedback on the feedback they receive. Course leaders can use this
       information to fine-tune their rubrics, as well as evaluate graders.`,
       `You can take advantage in peer grading with codePost. Just make your students "graders" and enable anonymous
       grading mode.`,
-      'Students use codePost to access their scores and feedback.',
-    ],
+      "Students use codePost to access their scores and feedback."
+    ]
   },
   {
-    title: 'For instructors',
+    title: "For instructors",
     features: [
-      'Make sure everything gets graded',
-      'Grade student work anonymously',
-      'Make changes to rubrics after grading',
-      'Distribute work to a team of graders',
-      'Audit grader consistency',
-      'Learn whether students view their feedback',
+      "Make sure everything gets graded",
+      "Grade student work anonymously",
+      "Make changes to rubrics after grading",
+      "Distribute work to a team of graders",
+      "Audit grader consistency",
+      "Learn whether students view their feedback"
     ],
     spotlights: [
       <img
@@ -129,14 +154,26 @@ const sections = [
         height="344"
         key="0"
       />,
-      <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4" />,
-      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4" />,
-      <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/distribute-work.mp4" />,
+      <Video
+        key="1"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4"
+      />,
+      <Video
+        key="2"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4"
+      />,
+      <Video
+        key="3"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/distribute-work.mp4"
+      />,
       <Video
         key="4"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/grader-consistency.mp4"
       />,
-      <Video key="5" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback-views.mp4" />,
+      <Video
+        key="5"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback-views.mp4"
+      />
     ],
     captions: [
       `codePost gives course leaders a dashboard that helps track the progress of grading, so no submission
@@ -149,9 +186,9 @@ const sections = [
       to graders for review. You can also order the queue however you want`,
       `Some graders can be harsher score-wise than others. This isn't fair to students. codePost lets you audit
     grader work to ensure consistency.`,
-      'See whether students are viewing the feedback you spend so much time giving!',
-    ],
-  },
+      "See whether students are viewing the feedback you spend so much time giving!"
+    ]
+  }
 ];
 
 const SectionRow = (props: IProps) => {
@@ -160,18 +197,19 @@ const SectionRow = (props: IProps) => {
 
   // Inline styles
   const columnStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    maxWidth: '100%',
-    flexBasis: '100%',
-    flex: '1',
+    display: "flex",
+    flexDirection: "column",
+    maxWidth: "100%",
+    flexBasis: "100%",
+    flex: "1"
   };
   const rowStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: windowSize.width < midBreakPoint ? 'column' : ('row' as 'row'),
-    flexWrap: 'wrap',
-    width: '100%',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection:
+      windowSize.width < midBreakPoint ? "column" : ("row" as "row"),
+    flexWrap: "wrap",
+    width: "100%",
+    justifyContent: "center"
   };
 
   // Section where we list features
@@ -179,16 +217,22 @@ const SectionRow = (props: IProps) => {
     <div
       style={{
         ...columnStyle,
-        textAlign: windowSize.width < midBreakPoint ? 'center' : undefined,
-        marginRight: !props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
-        marginLeft: props.isFlipped && windowSize.width > midBreakPoint ? '50px' : undefined,
+        textAlign: windowSize.width < midBreakPoint ? "center" : undefined,
+        marginRight:
+          !props.isFlipped && windowSize.width > midBreakPoint
+            ? "50px"
+            : undefined,
+        marginLeft:
+          props.isFlipped && windowSize.width > midBreakPoint
+            ? "50px"
+            : undefined
       }}
     >
       <div
         style={{
           fontWeight: 600,
-          fontSize: '36px',
-          marginBottom: 20,
+          fontSize: "36px",
+          marginBottom: 20
         }}
       >
         {props.title}
@@ -199,16 +243,16 @@ const SectionRow = (props: IProps) => {
             <div
               key={i.toString()}
               style={{
-                fontSize: '16px',
-                margin: '5px 0',
-                background: activeFeature === i ? '#24be85' : 'none',
-                color: activeFeature === i ? 'white' : 'black',
-                borderRadius: '2px',
-                cursor: 'pointer',
-                padding: '10px',
-                transition: '0.3s ease',
+                fontSize: "16px",
+                margin: "5px 0",
+                background: activeFeature === i ? "#24be85" : "none",
+                color: activeFeature === i ? "white" : "black",
+                borderRadius: "2px",
+                cursor: "pointer",
+                padding: "10px",
+                transition: "0.3s ease",
                 fontWeight: activeFeature === i ? 500 : 400,
-                textAlign: windowSize.width < midBreakPoint ? 'center' : 'left',
+                textAlign: windowSize.width < midBreakPoint ? "center" : "left"
               }}
               onClick={setActiveFeature.bind(false, i)}
             >
@@ -222,27 +266,29 @@ const SectionRow = (props: IProps) => {
 
   // Section where we show a picture or GIF demonstrating the active feature
   const scaleFactor =
-    windowSize.width < props.maxPictureWidth ? `scale(${windowSize.width / props.maxPictureWidth})` : '';
+    windowSize.width < props.maxPictureWidth
+      ? `scale(${windowSize.width / props.maxPictureWidth})`
+      : "";
   const boxShadow =
-    '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)';
+    "8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)";
   const pictureSection = (
     <div
       style={{
         ...columnStyle,
-        textAlign: !props.isFlipped ? 'right' : undefined,
+        textAlign: !props.isFlipped ? "right" : undefined
       }}
     >
       <div
         style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          maxWidth: '100%',
-          alignItems: 'center',
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          maxWidth: "100%",
+          alignItems: "center",
           fontSize: 18,
           fontWeight: 300,
-          color: 'grey',
-          fontStyle: 'italic',
+          color: "grey",
+          fontStyle: "italic"
         }}
       >
         <div
@@ -250,12 +296,12 @@ const SectionRow = (props: IProps) => {
             transform: scaleFactor,
             boxShadow,
             borderRadius: 8,
-            overflow: 'hidden',
+            overflow: "hidden"
           }}
         >
           {props.spotlights[activeFeature]}
         </div>
-        <div style={{ height: '15px' }} /> {props.captions[activeFeature]}
+        <div style={{ height: "15px" }} /> {props.captions[activeFeature]}
       </div>
     </div>
   );
@@ -268,11 +314,11 @@ const SectionRow = (props: IProps) => {
           {pictureSection}
         </div>
       ) : (
-        <div style={rowStyle}>
-          {pictureSection}
-          {textSection}
-        </div>
-      )}
+          <div style={rowStyle}>
+            {pictureSection}
+            {textSection}
+          </div>
+        )}
     </div>
   );
 };
@@ -293,7 +339,9 @@ const WhyUse = (props: IPageProps) => {
               isFlipped={i % 2 === 1}
               maxPictureWidth={600}
             />
-            {i !== sections.length - 1 ? <Divider style={{ margin: '75px 0' }} /> : null}
+            {i !== sections.length - 1 ? (
+              <Divider style={{ margin: "75px 0" }} />
+            ) : null}
           </div>
         );
       })}
@@ -303,16 +351,20 @@ const WhyUse = (props: IPageProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div id="WhyUse">
-        <div style={{ marginBottom: 75, textAlign: 'center' }}>
-          <Typography.Title level={1} style={{ fontSize: 40, color: 'black' }}>
-            Our users asked for these features. <span style={{ color: '#24be85' }}>So we built them.</span>{' '}
+        <div style={{ marginBottom: 75, textAlign: "center" }}>
+          <Typography.Title level={1} style={{ fontSize: 40, color: "black" }}>
+            Our users asked for these features.{" "}
+            <span style={{ color: "#24be85" }}>So we built them.</span>{" "}
             <a
               className="whyUse__link"
               href="mailto:team@codepost.io"
-              style={{ borderBottom: '4px solid #24be85', textDecoration: 'none' }}
+              style={{
+                borderBottom: "4px solid #24be85",
+                textDecoration: "none"
+              }}
             >
               Tell us
-            </a>{' '}
+            </a>{" "}
             what features you want.
           </Typography.Title>
         </div>

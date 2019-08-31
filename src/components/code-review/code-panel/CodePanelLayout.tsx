@@ -4,7 +4,9 @@ import { FileType } from '../../../infrastructure/file';
 
 import * as Animation from '../../../infrastructure/animation';
 
-import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
+import withWindowWatcher, {
+  IWithWindowWatcherProps,
+} from '../../core/withWindowWatcher';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
@@ -25,10 +27,14 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
 }
 
 class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
+  // @ts-ignore
   public nextFrameActionId: number;
 
   public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
-    if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
+    if (
+      this.props.windowheight !== prevProps.windowheight ||
+      this.props.windowwidth !== prevProps.windowwidth
+    ) {
       this.resizeOnNextFrame();
     }
 
@@ -62,7 +68,12 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
       const commentsContainer = document.getElementById('code-panel--comments');
       const comments = document.getElementById('comments');
 
-      if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
+      if (
+        codeContainer !== null &&
+        codeMain !== null &&
+        commentsContainer !== null &&
+        comments !== null
+      ) {
         const codeMainWidth = codeContainer.offsetWidth;
         codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {
@@ -70,14 +81,22 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
         }
 
         const commentsContainerHeight =
-          this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
-        commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
+          this.props.windowheight -
+          commentsContainer.getBoundingClientRect().top -
+          themeVars.grade.marginBottom;
+        commentsContainer.style.setProperty(
+          'height',
+          `${commentsContainerHeight}px`,
+        );
       }
     }
   };
   public onHighlightClick = (e: React.MouseEvent) => {
     let commentID;
-    if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
+    if (
+      e.currentTarget !== null &&
+      e.currentTarget.id.split('-').length === 3
+    ) {
       commentID = e.currentTarget.id.split('-')[2];
     }
 
@@ -105,7 +124,10 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
     };
 
     return (
-      <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
+      <ErrorBoundary
+        type='codepanel'
+        submissionID={this.props.file.submission}
+        file={this.props.file}>
         <div style={{ position: 'relative', height: '100%', width: '100%' }}>
           <div
             style={{
@@ -115,27 +137,22 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                 flexDirection: 'column',
               },
               ...zoomStyles,
-            }}
-          >
-            <div className="code-panel" id="code-panel">
+            }}>
+            <div className='code-panel' id='code-panel'>
               <div
                 style={{
                   margin: `4px 0px 4px ${themeVars.grade.codeContainer.marginLeft}px`,
-                }}
-              >
+                }}>
                 {this.props.toolbarWidgets}
               </div>
               <div
-                className="code-panel--code"
+                className='code-panel--code'
                 style={{
-                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
-                    themeVars.grade.codeContainer.marginLeft
-                  }px`,
+                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${themeVars.grade.codeContainer.marginLeft}px`,
                   position: 'relative',
-                }}
-              >
+                }}>
                 <div
-                  id="code-tour-target"
+                  id='code-tour-target'
                   style={{
                     position: 'absolute',
                     width: '100%',
@@ -145,10 +162,11 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                 {this.props.code(this.onHighlightClick)}
               </div>
               <div
-                id="code-panel--comments"
-                className="code-panel--comments"
-                style={{ minWidth: `${this.props.dimensions.commentsWidth}px` }}
-              >
+                id='code-panel--comments'
+                className='code-panel--comments'
+                style={{
+                  minWidth: `${this.props.dimensions.commentsWidth}px`,
+                }}>
                 {this.props.comments}
               </div>
             </div>

@@ -3,30 +3,40 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
-const confirm = Modal.confirm;
+import {
+  Breadcrumb,
+  Dropdown,
+  Empty,
+  Icon,
+  Menu,
+  message,
+  Modal,
+  Select
+} from "antd";
 
 /* other library imports */
-import Highlighter from 'react-highlight-words';
+import Highlighter from "react-highlight-words";
 
 /* codePost imports */
-import { USER_APP, USER_TYPE } from '../../../types/common';
+import { USER_APP, USER_TYPE } from "../../../types/common";
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { CourseType } from "../../../infrastructure/course";
+import { SectionType } from "../../../infrastructure/section";
 
-import CPTooltip from '../../../components/core/CPTooltip';
-import { tooltips } from '../../../components/core/tooltips';
+import CPTooltip from "../../../components/core/CPTooltip";
+import { tooltips } from "../../../components/core/tooltips";
 
-import AddStudentDialog from './students/AddStudentDialog';
+import AddStudentDialog from "./students/AddStudentDialog";
 
-import DownloadRoster from './other/DownloadRoster';
-import RosterFileUpload from './other/RosterFileUpload';
+import DownloadRoster from "./other/DownloadRoster";
+import RosterFileUpload from "./other/RosterFileUpload";
 
-import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from "../other/TableDetail";
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -57,7 +67,7 @@ class ManageStudents extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
     super(props);
     this.state = {
-      activeStudent: '',
+      activeStudent: ""
     };
   }
 
@@ -67,19 +77,19 @@ class ManageStudents extends React.Component<IProps, IState> {
       content: `All the student's work will be saved, but they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.students.filter((student) => {
+        const newRoster = this.props.students.filter(student => {
           return student !== toRemove;
         });
         return this.props.updateRoster(newRoster, USER_APP.Student);
       },
-      okText: 'Remove',
+      okText: "Remove"
     });
   };
 
   public addStudent = (email: string, section?: SectionType): Promise<void> => {
     const newRoster = [...this.props.students, email];
     return this.props.updateRoster(newRoster, USER_APP.Student).then(() => {
-      if (typeof section !== 'undefined') {
+      if (typeof section !== "undefined") {
         return this.props.updateStudentSection(email, section.id);
       } else {
         return;
@@ -126,7 +136,11 @@ class ManageStudents extends React.Component<IProps, IState> {
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailUsers={
+            this.props.currentCourse
+              ? this.props.currentCourse.emailNewUsers
+              : false
+          }
           createSection={this.props.createSection}
         />,
         <AddStudentDialog
@@ -135,29 +149,29 @@ class ManageStudents extends React.Component<IProps, IState> {
           sections={this.props.sections}
           addStudent={this.addStudent}
           students={this.props.students}
-        />,
+        />
       ];
 
-      const aligner: 'left' | 'center' | 'right' = 'center';
+      const aligner: "left" | "center" | "right" = "center";
       const sections = this.props.sectionsByStudent;
       columns = [
         {
-          title: 'Student',
-          dataIndex: 'student',
-          key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          title: "Student",
+          dataIndex: "student",
+          key: "primary",
+          sorter: (a: any, b: any) => a.key.localeCompare(b.key)
         },
         {
-          title: 'Section',
-          dataIndex: 'section',
-          key: 'section',
+          title: "Section",
+          dataIndex: "section",
+          key: "section",
           align: aligner,
           sorter: (a: any, b: any) => {
             if (a === b) {
               return 0;
-            } else if (a.section === 'No section') {
+            } else if (a.section === "No section") {
               return 1;
-            } else if (b.section === 'No section') {
+            } else if (b.section === "No section") {
               return -1;
             } else {
               // save most expensive operation for last
@@ -173,26 +187,37 @@ class ManageStudents extends React.Component<IProps, IState> {
                     <Select
                       style={{ width: 150 }}
                       onChange={this.updateStudentSection.bind(this, student)}
-                      defaultValue={sections[student] ? sections[student].id : 0}
+                      defaultValue={
+                        sections[student] ? sections[student].id : 0
+                      }
                     >
                       {[
                         ...this.props.sections
                           .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((section) => {
+                          .map(section => {
                             return (
-                              <Select.Option key={section.name} value={section.id}>
+                              <Select.Option
+                                key={section.name}
+                                value={section.id}
+                              >
                                 {section.name}
                               </Select.Option>
                             );
                           }),
                         <Select.Option key={0} value={0}>
                           No section
-                        </Select.Option>,
+                        </Select.Option>
                       ]}
                     </Select>
                     &nbsp;
-                    <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                    <CPTooltip
+                      title={tooltips.admin.studentRoster.lockSection}
+                      hideThisOnHideTips={true}
+                    >
+                      <Icon
+                        type="edit"
+                        onClick={this.setActiveStudent.bind(this, "")}
+                      />
                     </CPTooltip>
                   </div>
                 );
@@ -200,27 +225,40 @@ class ManageStudents extends React.Component<IProps, IState> {
                 return (
                   <div>
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: "#5CBB8B",
+                        padding: 0
+                      }}
                       searchWords={[searchText]}
                       autoEscape
-                      textToHighlight={sections[student] ? sections[student].name : 'No section'}
-                    />{' '}
+                      textToHighlight={
+                        sections[student]
+                          ? sections[student].name
+                          : "No section"
+                      }
+                    />{" "}
                     &nbsp;
-                    <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                    <CPTooltip
+                      title={tooltips.admin.studentRoster.editSection}
+                      hideThisOnHideTips={true}
+                    >
+                      <Icon
+                        type="edit"
+                        onClick={this.setActiveStudent.bind(this, student)}
+                      />
                     </CPTooltip>
                   </div>
                 );
               }
             };
-          },
+          }
         },
         {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          align: aligner,
-        },
+          title: "Actions",
+          dataIndex: "actions",
+          key: "actions",
+          align: aligner
+        }
       ];
 
       data = this.props.students.map((student, i) => {
@@ -236,12 +274,12 @@ class ManageStudents extends React.Component<IProps, IState> {
         return {
           key: student,
           student,
-          section: sections[student] ? sections[student].name : 'No section',
+          section: sections[student] ? sections[student].name : "No section",
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown overlay={menu} trigger={["click"]}>
               <Icon type="menu" />
             </Dropdown>
-          ),
+          )
         };
       });
     }
@@ -249,12 +287,12 @@ class ManageStudents extends React.Component<IProps, IState> {
     return (
       <TableDetail
         loadComplete={this.props.loadComplete}
-        title={'Students'}
+        title={"Students"}
         isEmpty={this.props.students.length === 0}
         emptyNode={
           <Empty
             imageStyle={{
-              height: 60,
+              height: 60
             }}
             description={<span>No students yet</span>}
           >
@@ -277,7 +315,11 @@ class ManageStudents extends React.Component<IProps, IState> {
               changeRoster={this.props.updateRoster}
               isDisabled={false}
               updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              emailUsers={
+                this.props.currentCourse
+                  ? this.props.currentCourse.emailNewUsers
+                  : false
+              }
               createSection={this.props.createSection}
             />
           </Empty>

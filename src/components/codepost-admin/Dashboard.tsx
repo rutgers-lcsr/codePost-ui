@@ -9,20 +9,28 @@ import OrganizationTable from './OrganizationTable';
 import SummaryCard from './SummaryCard';
 
 import { Course, CourseType, RosterType } from '../../infrastructure/course';
-import { Organization, OrganizationType } from '../../infrastructure/organization';
+import {
+  Organization,
+  OrganizationType,
+} from '../../infrastructure/organization';
 
 const Dashboard = (props: any) => {
   useFixedWindow();
   const [admins, setAdmins] = React.useState<any[]>([]);
   const [courses, setCourses] = React.useState<CourseType[]>([]);
   const [rosters, setRosters] = React.useState<RosterType[]>([]);
-  const [organizations, setOrganizations] = React.useState<OrganizationType[]>([]);
+  const [organizations, setOrganizations] = React.useState<OrganizationType[]>(
+    [],
+  );
 
   const [current, setCurrent] = React.useState('Organizations');
 
-  const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]) => {
+  const buildAdminList = (
+    _rosters: RosterType[],
+    _organizations: OrganizationType[],
+  ) => {
     return _rosters
-      .map((roster: RosterType, index: number) => {
+      .map((roster: any, index: number) => {
         return roster.courseAdmins.map((email: string) => {
           const org = _organizations.find((_org: OrganizationType) => {
             return _org['id'] === roster['organization'];
@@ -66,12 +74,16 @@ const Dashboard = (props: any) => {
   // console.log('rosters', rosters);
   // console.log('admins', admins);
 
-  const isLoading = courses.length === 0 || organizations.length === 0 || rosters.length === 0 || admins.length === 0;
+  const isLoading =
+    courses.length === 0 ||
+    organizations.length === 0 ||
+    rosters.length === 0 ||
+    admins.length === 0;
 
   if (isLoading) {
     return (
       <div style={{ padding: '40px 0px', textAlign: 'center' }}>
-        <Spin size="large" />
+        <Spin size='large' />
       </div>
     );
   }
@@ -85,7 +97,9 @@ const Dashboard = (props: any) => {
       content = <div>not implemented</div>;
       break;
     case 'Organizations':
-      content = <OrganizationTable organizations={organizations} rosters={rosters} />;
+      content = (
+        <OrganizationTable organizations={organizations} rosters={rosters} />
+      );
       break;
     default:
       content = <div>not implemented</div>;
@@ -93,12 +107,22 @@ const Dashboard = (props: any) => {
 
   return (
     <div style={{ margin: '0px 0px 90px' }}>
-      <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', marginBottom: '20px' }}>
-        <SummaryCard objects={organizations} title="Organizations" onClick={setCurrent} />
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexWrap: 'wrap',
+          marginBottom: '20px',
+        }}>
+        <SummaryCard
+          objects={organizations}
+          title='Organizations'
+          onClick={setCurrent}
+        />
         <div style={{ width: '20px' }} />
-        <SummaryCard objects={courses} title="Courses" onClick={setCurrent} />
+        <SummaryCard objects={courses} title='Courses' onClick={setCurrent} />
         <div style={{ width: '20px' }} />
-        <SummaryCard objects={admins} title="Admins" onClick={setCurrent} />
+        <SummaryCard objects={admins} title='Admins' onClick={setCurrent} />
       </div>
       {content}
     </div>

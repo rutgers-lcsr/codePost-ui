@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Icon, Select, Switch, Table } from 'antd';
-const { Option } = Select;
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -19,12 +18,20 @@ import { tooltips } from '../core/tooltips';
 import { SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
-import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
+import {
+  formatSub,
+  getViewIcon,
+  ISubDataBasic,
+  sortByGrade,
+} from './GraderUtils';
 
 import { compare } from '../utils/SortUtils';
-type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+type alignType = 'left' | 'right' | 'center';
+
+const { Option } = Select;
 
 /**********************************************************************************************************************/
 
@@ -66,7 +73,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       await Course.readRoster(this.props.currentCourse.id),
     ]);
 
-    this.setState({ graders: roster.graders, viewsBySubmission, submissions, isLoading: false });
+    this.setState({
+      graders: roster.graders,
+      viewsBySubmission,
+      submissions,
+      isLoading: false,
+    });
   }
 
   public componentDidMount() {
@@ -80,8 +92,10 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   }
 
   public loadSubmissionsViews = async () => {
-    const histories = await Assignment.readSubmissionHistories(this.props.currentAssignment.id);
-    const viewsBySubmission = {};
+    const histories = await Assignment.readSubmissionHistories(
+      this.props.currentAssignment.id,
+    );
+    const viewsBySubmission: any = {};
     histories.forEach((history: SubmissionHistoryType) => {
       const submissionID = history.submission;
       if (!(submissionID in viewsBySubmission)) {
@@ -119,7 +133,9 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
   public render() {
     const { graders, submissions, selectedGraders } = this.state;
     const { currentAssignment } = this.props;
-    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+    const showingEmails =
+      !this.props.currentAssignment.anonymousGrading ||
+      this.state.showStudentEmails;
 
     const centerAlign: alignType = 'center';
     const columns = [
@@ -131,7 +147,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       {
         title: 'Student(s)',
         dataIndex: 'student',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+        sorter: (a: ITableRow, b: ITableRow) =>
+          compare(true, a.student, b.student),
       },
       {
         title: 'Grade',
@@ -147,7 +164,8 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       {
         title: 'Grader',
         dataIndex: 'grader',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.grader, b.grader),
+        sorter: (a: ITableRow, b: ITableRow) =>
+          compare(true, a.grader, b.grader),
         align: centerAlign,
       },
       {
@@ -173,7 +191,9 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       filteredSubs = submissions;
     } else {
       filteredSubs = submissions.filter((sub) => {
-        return sub.grader && selectedGraders.indexOf(sub.grader.toLowerCase()) !== -1;
+        return (
+          sub.grader && selectedGraders.indexOf(sub.grader.toLowerCase()) !== -1
+        );
       });
     }
 
@@ -184,7 +204,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         key: sub.id,
         student: students,
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
-        open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+        open: <Icon type='code' onClick={this.openGradePage.bind(this, sub)} />,
       };
     });
 
@@ -195,7 +215,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         <Switch
           defaultChecked={showingEmails}
           onChange={this.toggleShowStudentEmails}
-          key="toggleShowStudents"
+          key='toggleShowStudents'
           style={{ display: 'inline-block' }}
         />
       </div>
@@ -206,19 +226,20 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     const graderSelect = (
       <div>
         <Select
-          placeholder="Select Graders..."
-          mode="multiple"
+          placeholder='Select Graders...'
+          mode='multiple'
+          // @ts-ignore
           onSelect={this.handleSelect}
+          // @ts-ignore
           onDeselect={this.handleDeselect}
-          style={{ width: 500, marginBottom: 20 }}
-        >
+          style={{ width: 500, marginBottom: 20 }}>
           {graders.map((grader) => {
             return <Option key={grader}>{grader}</Option>;
           })}
         </Select>
         <CPTooltip
           title={tooltips.grader.allSubmissions.filter}
-          placement="right"
+          placement='right'
           infoIcon={true}
           hideThisOnHideTips={true}
           iconStyle={{ paddingLeft: 10 }}
@@ -229,7 +250,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
     const content = (
       <div>
         {graderSelect}
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          loading={this.state.isLoading}
+        />
       </div>
     );
 

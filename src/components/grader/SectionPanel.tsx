@@ -7,10 +7,14 @@ import * as React from 'react';
 
 /* ant imports */
 import { Divider, Icon, Select, Spin, Switch, Table } from 'antd';
-const { Option } = Select;
 
 /* codePost imports */
-import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
+import {
+  formatSub,
+  getViewIcon,
+  ISubDataBasic,
+  sortByGrade,
+} from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -20,9 +24,12 @@ import { SubmissionType } from '../../infrastructure/submission';
 import { tooltips } from '../core/tooltips';
 
 import { compare } from '../utils/SortUtils';
-type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+const { Option } = Select;
+
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -43,7 +50,9 @@ interface IProps {
 interface IState {
   /* data */
   activeSection: SectionType;
-  submissionsBySection: { [sectionID: number]: { [student: string]: SubmissionType | null } };
+  submissionsBySection: {
+    [sectionID: number]: { [student: string]: SubmissionType | null };
+  };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
@@ -101,19 +110,20 @@ class SectionPanel extends React.Component<IProps, IState> {
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
-    const submissionMap = {};
+    const submissionMap: any = {};
     for (const section of this.props.sectionsLed) {
-      const mapValue = {};
+      const mapValue: any = {};
       for (const student of section.students) {
-        mapValue[student] = await Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
-          (submissions) => {
-            if (submissions.length === 0) {
-              return null;
-            } else {
-              return submissions[0];
-            }
-          },
-        );
+        mapValue[student] = await Assignment.readSubmissionsStudent(
+          this.props.currentAssignment.id,
+          { student },
+        ).then((submissions) => {
+          if (submissions.length === 0) {
+            return null;
+          } else {
+            return submissions[0];
+          }
+        });
       }
       submissionMap[section.id] = mapValue;
     }
@@ -145,7 +155,9 @@ class SectionPanel extends React.Component<IProps, IState> {
 
   public render() {
     const { activeSection, isLoading } = this.state;
-    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
+    const showingEmails =
+      !this.props.currentAssignment.anonymousGrading ||
+      this.state.showStudentEmails;
 
     let columns: any[] = [];
     let data: any[] = [];
@@ -161,12 +173,14 @@ class SectionPanel extends React.Component<IProps, IState> {
         {
           title: 'Student',
           dataIndex: 'student',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+          sorter: (a: ITableRow, b: ITableRow) =>
+            compare(true, a.student, b.student),
         },
         {
           title: 'Partner(s)',
           dataIndex: 'partners',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
+          sorter: (a: ITableRow, b: ITableRow) =>
+            compare(true, a.partners, b.partners),
           align: centerAlign,
         },
         {
@@ -204,7 +218,9 @@ class SectionPanel extends React.Component<IProps, IState> {
       ];
 
       /* define table row */
-      const submissions = this.state.submissionsBySection[this.state.activeSection.id];
+      const submissions = this.state.submissionsBySection[
+        this.state.activeSection.id
+      ];
       if (submissions !== undefined) {
         data = Object.keys(submissions).map((student) => {
           const submission = submissions[student];
@@ -219,13 +235,22 @@ class SectionPanel extends React.Component<IProps, IState> {
               .join(', ');
           }
 
+          const openGradePage = () => {
+            // @ts-ignore
+            this.openGradePage(submission);
+          };
+
           return {
             ...formatSub(submission, this.props.currentAssignment),
             key: student,
             student: shownStudent,
             partners,
-            viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
-            open: <Icon type="code" onClick={this.openGradePage.bind(this, submission)} />,
+            viewIcon: (
+              <div>
+                {getViewIcon(submission, this.state.viewsBySubmission, student)}
+              </div>
+            ),
+            open: <Icon type='code' onClick={openGradePage} />,
           };
         });
       }
@@ -233,7 +258,11 @@ class SectionPanel extends React.Component<IProps, IState> {
 
     if (this.props.sectionsLed.length === 0) {
       // Sections haven't been loaded yet
-      return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
+      return (
+        <Spin
+          indicator={<Icon type='loading' style={{ fontSize: 24 }} spin />}
+        />
+      );
     }
 
     let selectContent;
@@ -244,12 +273,15 @@ class SectionPanel extends React.Component<IProps, IState> {
       selectContent = (
         <div>
           <Select
-            placeholder="Select section"
+            placeholder='Select section'
             onSelect={this.handleSelect}
-            value={this.state.activeSection ? this.state.activeSection.name : undefined}
+            value={
+              this.state.activeSection
+                ? this.state.activeSection.name
+                : undefined
+            }
             loading={this.state.isLoading}
-            style={{ width: 200 }}
-          >
+            style={{ width: 200 }}>
             {menuItems}
           </Select>
         </div>
@@ -270,16 +302,23 @@ class SectionPanel extends React.Component<IProps, IState> {
             <Switch
               defaultChecked={showingEmails}
               onChange={this.toggleShowStudentEmails}
-              key="toggleShowStudents"
+              key='toggleShowStudents'
               style={{ display: 'inline-block' }}
             />
           </div>
-          <Divider type="vertical" style={{ height: 25 }} />
+          <Divider type='vertical' style={{ height: 25 }} />
         </div>
       );
     }
 
-    const content = <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />;
+    const content = (
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={false}
+        loading={this.state.isLoading}
+      />
+    );
 
     return (
       <CPAdminDetail

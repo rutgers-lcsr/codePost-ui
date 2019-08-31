@@ -6,7 +6,17 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Checkbox, Divider, Icon, Input, Progress, Radio, Switch, Typography } from 'antd';
+import {
+  Alert,
+  Checkbox,
+  Divider,
+  Icon,
+  Input,
+  Progress,
+  Radio,
+  Switch,
+  Typography,
+} from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -23,7 +33,9 @@ import PreAuthSignupLayout from './PreAuthSignupLayout';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
-import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+import withWindowWatcher, {
+  IWithWindowWatcherProps,
+} from '../core/withWindowWatcher';
 
 import { Testimonial } from '../landing/Testimonial';
 
@@ -111,11 +123,14 @@ class CreateSignup extends React.Component<IProps, IState> {
     }
   }
 
-  public handleChange = (label: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  public handleChange = (
+    label: string,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -127,7 +142,8 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
+      // @ts-ignore
       newState[label] = !this.state[label];
       return newState;
     });
@@ -135,23 +151,31 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public validateNewUser = () => {
     // If selected organization, make sure it is valid. If a new org was created, make sure it is valid.
-    if ((!this.state.createNewOrg && !this.state.selectedOrg) || (this.state.createNewOrg && !this.state.newOrg)) {
+    if (
+      (!this.state.createNewOrg && !this.state.selectedOrg) ||
+      (this.state.createNewOrg && !this.state.newOrg)
+    ) {
       return;
     }
 
     const payload = {
       email: this.state.email,
-      organization: this.state.createNewOrg ? this.state.newOrg : this.state.selectedOrg!.value,
+      organization: this.state.createNewOrg
+        ? this.state.newOrg
+        : this.state.selectedOrg!.value,
     };
 
     this.setState({ status: STATUS.PENDING_VALIDATION }, () => {
-      fetch(`${process.env.REACT_APP_API_URL}/registration/validateNewAdminUser/`, {
-        headers: {
-          'Content-Type': 'application/json',
+      fetch(
+        `${process.env.REACT_APP_API_URL}/registration/validateNewAdminUser/`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify(payload),
         },
-        method: 'POST',
-        body: JSON.stringify(payload),
-      })
+      )
         .then((res) => {
           if (res.status === 200) {
             return res.json();
@@ -173,13 +197,19 @@ class CreateSignup extends React.Component<IProps, IState> {
               // update counter periodically
               this.progressInterval = setInterval(() => {
                 const currentProgress = this.state.progress;
-                const newProgress = currentProgress + 0.15 + Math.abs(randomNormal()) * 0.3;
+                const newProgress =
+                  currentProgress + 0.15 + Math.abs(randomNormal()) * 0.3;
                 if (newProgress >= 100) {
                   clearInterval(this.interval);
                   clearInterval(this.progressInterval);
-                  this.setState({ progress: 100, status: STATUS.VALIDATION_ONGOING });
+                  this.setState({
+                    progress: 100,
+                    status: STATUS.VALIDATION_ONGOING,
+                  });
                 } else {
-                  this.setState({ progress: parseInt(newProgress.toFixed(0), 10) });
+                  this.setState({
+                    progress: parseInt(newProgress.toFixed(0), 10),
+                  });
                 }
               }, PROGRESS_INCREMENT_TIME);
             });
@@ -203,7 +233,9 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public checkUserValidation = () => {
     fetch(
-      `${process.env.REACT_APP_API_URL}/registration/checkStatusNewAdminUser?email=${this.state.email.replace(
+      `${
+        process.env.REACT_APP_API_URL
+      }/registration/checkStatusNewAdminUser?email=${this.state.email.replace(
         /\+/g,
         '%2B',
       )}`,
@@ -240,7 +272,9 @@ class CreateSignup extends React.Component<IProps, IState> {
    *
    */
   public render() {
-    const spacing = <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 40 }} />;
+    const spacing = (
+      <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 40 }} />
+    );
 
     let content;
     switch (this.state.status) {
@@ -254,20 +288,24 @@ class CreateSignup extends React.Component<IProps, IState> {
                 For-profit
               </Radio>
             </Radio.Group>
-            <CPTooltip placement={'bottom'} title={tooltips.preauth.create.proPricing} infoIcon={true} />
+            <CPTooltip
+              placement={'bottom'}
+              title={tooltips.preauth.create.proPricing}
+              infoIcon={true}
+            />
             {spacing}
             <Input
               placeholder={'Your email'}
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              prefix={<Icon type='user' style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
             <br />
             <br />
             <Select
               placeholder={
                 <div>
-                  <Icon type="team" style={{ color: 'rgba(0,0,0,.25)' }} />
+                  <Icon type='team' style={{ color: 'rgba(0,0,0,.25)' }} />
                   &nbsp; Select your organization (type to search)
                 </div>
               }
@@ -277,13 +315,17 @@ class CreateSignup extends React.Component<IProps, IState> {
               isDisabled={this.state.createNewOrg}
             />
             <br />
-            <Switch onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
-            <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
+            <Switch
+              onChange={this.toggleCheck.bind(this.props, 'createNewOrg')}
+            />
+            <span>
+              &nbsp; &nbsp; Can't find your organization? Create a new one.
+            </span>
             {this.state.createNewOrg ? (
               <div>
                 <br />
                 <Input
-                  placeholder="Your organization"
+                  placeholder='Your organization'
                   value={this.state.newOrg}
                   onChange={this.handleChange.bind(this, 'newOrg')}
                 />
@@ -292,27 +334,34 @@ class CreateSignup extends React.Component<IProps, IState> {
             <div>
               <br />
               <br />
-              <Checkbox value={this.state.check2} onChange={this.toggleCheck.bind(this, 'check2')} /> I agree to the
-              codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+              <Checkbox
+                value={this.state.check2}
+                onChange={this.toggleCheck.bind(this, 'check2')}
+              />{' '}
+              I agree to the codePost <Link to='/terms'>Terms of Service</Link>{' '}
+              and <Link to='/privacy'>Privacy Policy</Link>.
             </div>
             {spacing}
             <div style={{ display: 'flex' }}>
-              <Link to="/signup">
-                <CPButton cpType="secondary">Back</CPButton>
+              <Link to='/signup'>
+                <CPButton cpType='secondary'>Back</CPButton>
               </Link>
               &nbsp; &nbsp; &nbsp; &nbsp;
               <CPButton
-                cpType="primary"
+                cpType='primary'
                 onClick={this.validateNewUser}
                 disabled={
                   !(
-                    (this.state.createNewOrg && this.state.newOrg && organizationRegex.test(this.state.newOrg)) ||
-                    (!this.state.createNewOrg && this.state.selectedOrg && /\S/.test(this.state.selectedOrg.label))
+                    (this.state.createNewOrg &&
+                      this.state.newOrg &&
+                      organizationRegex.test(this.state.newOrg)) ||
+                    (!this.state.createNewOrg &&
+                      this.state.selectedOrg &&
+                      /\S/.test(this.state.selectedOrg.label))
                   ) ||
                   !emailRegex.test(this.state.email) ||
                   !this.state.check2
-                }
-              >
+                }>
                 Continue
               </CPButton>
             </div>
@@ -320,7 +369,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Divider />
             <span>
               Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
-              <Link to="/signup/join">Want to join a course instead?</Link>
+              <Link to='/signup/join'>Want to join a course instead?</Link>
               <br />
             </span>
           </div>
@@ -329,7 +378,7 @@ class CreateSignup extends React.Component<IProps, IState> {
       case STATUS.PENDING_VALIDATION:
         content = (
           <div>
-            <Progress percent={this.state.progress} status="active" />
+            <Progress percent={this.state.progress} status='active' />
             {this.getProgressMessage(this.state.progress)}
           </div>
         );
@@ -343,7 +392,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Alert
               message="You're almost there!"
               description="We'll email soon with more instructions so you can finish setting up your account."
-              type="success"
+              type='success'
             />
           </div>
         );
@@ -356,8 +405,8 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <Alert
               message="You're all set!"
-              description="Check your email to finish setting up your account."
-              type="success"
+              description='Check your email to finish setting up your account.'
+              type='success'
             />
           </div>
         );
@@ -365,14 +414,14 @@ class CreateSignup extends React.Component<IProps, IState> {
       case STATUS.VALIDATION_REJECTED:
         content = (
           <div>
-            <Progress percent={this.state.progress} status="exception" />
+            <Progress percent={this.state.progress} status='exception' />
             <br />
             <br />
             <Alert
-              message="Whoops!"
+              message='Whoops!'
               description={`We need a little more time to validate your account.
                 Please contact us at team@codepost.io to continue setting up your account.`}
-              type="error"
+              type='error'
             />
           </div>
         );
@@ -380,14 +429,14 @@ class CreateSignup extends React.Component<IProps, IState> {
       case STATUS.VALIDATION_ERROR:
         content = (
           <div>
-            <Progress percent={this.state.progress} status="exception" />
+            <Progress percent={this.state.progress} status='exception' />
             <br />
             <br />
             <Alert
-              message="Whoops!"
+              message='Whoops!'
               description={`Something went wrong.
                 Please contact the codePost team at team@codepost.io to continue signing up.`}
-              type="error"
+              type='error'
             />
           </div>
         );
@@ -399,7 +448,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const bobText = (
       <span style={{ fontStyle: 'italic' }}>
         codePost has been a{' '}
-        <Typography.Text mark className="codePost-highlight">
+        <Typography.Text mark className='codePost-highlight'>
           paradigm shifting improvement
         </Typography.Text>{' '}
         to how we grade computer science at Princeton.
@@ -409,17 +458,19 @@ class CreateSignup extends React.Component<IProps, IState> {
     const flexDirection = this.props.windowwidth < 750 ? 'column' : 'row';
 
     return (
-      <PreAuthSignupLayout step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
+      <PreAuthSignupLayout
+        step={this.state.status === STATUS.VALIDATION_SUCCESS ? 2 : 1}>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection,
-          }}
-        >
+          }}>
           <div>
-            <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
+            <Typography.Title level={1}>
+              Create a new course with codePost
+            </Typography.Title>
             <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
           {this.state.status === STATUS.INPUT ? (
@@ -431,13 +482,12 @@ class CreateSignup extends React.Component<IProps, IState> {
                 boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
                 borderRadius: 8,
                 width: 300,
-              }}
-            >
+              }}>
               <Testimonial
                 text={<div>{bobText}</div>}
-                name="Robert Sedgewick"
+                name='Robert Sedgewick'
                 thumbnail={bobImg}
-                school="Princeton University"
+                school='Princeton University'
               />
             </div>
           ) : null}

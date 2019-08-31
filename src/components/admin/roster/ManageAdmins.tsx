@@ -3,28 +3,28 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
-const confirm = Modal.confirm;
-import { ColumnProps } from 'antd/lib/table';
+import { Breadcrumb, Dropdown, Icon, Menu, Modal } from "antd";
+import { ColumnProps } from "antd/lib/table";
 
 /* codePost imports */
-import { USER_APP, USER_TYPE } from '../../../types/common';
+import { USER_APP, USER_TYPE } from "../../../types/common";
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { CourseType } from "../../../infrastructure/course";
+import { SectionType } from "../../../infrastructure/section";
 
-import DownloadRoster from './other/DownloadRoster';
-import RosterFileUpload from './other/RosterFileUpload';
+import DownloadRoster from "./other/DownloadRoster";
+import RosterFileUpload from "./other/RosterFileUpload";
 
-import CPTooltip from '../../../components/core/CPTooltip';
-import { tooltips } from '../../../components/core/tooltips';
+import CPTooltip from "../../../components/core/CPTooltip";
+import { tooltips } from "../../../components/core/tooltips";
 
-import AddAdminDialog from './admins/AddAdminDialog';
+import AddAdminDialog from "./admins/AddAdminDialog";
 
-import { TableDetail } from '../other/TableDetail';
+import { TableDetail } from "../other/TableDetail";
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -60,12 +60,12 @@ class ManageAdmins extends React.Component<IProps, IState> {
       content: `Once removed, they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.admins.filter((admin) => {
+        const newRoster = this.props.admins.filter(admin => {
           return admin !== toRemove;
         });
         return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
       },
-      okText: 'Remove',
+      okText: "Remove"
     });
   };
 
@@ -103,7 +103,11 @@ class ManageAdmins extends React.Component<IProps, IState> {
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailUsers={
+            this.props.currentCourse
+              ? this.props.currentCourse.emailNewUsers
+              : false
+          }
           createSection={this.props.createSection}
         />,
         <AddAdminDialog
@@ -111,27 +115,27 @@ class ManageAdmins extends React.Component<IProps, IState> {
           admins={this.props.admins}
           addAdmin={this.addAdmin}
           willEmailUser={this.props.currentCourse.emailNewUsers}
-        />,
+        />
       ];
 
-      const aligner: 'left' | 'center' | 'right' = 'center';
+      const aligner: "left" | "center" | "right" = "center";
       columns = [
         {
-          title: 'Admin',
-          dataIndex: 'admin',
-          key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          title: "Admin",
+          dataIndex: "admin",
+          key: "primary",
+          sorter: (a: any, b: any) => a.key.localeCompare(b.key)
         },
 
         {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          align: aligner,
-        },
+          title: "Actions",
+          dataIndex: "actions",
+          key: "actions",
+          align: aligner
+        }
       ];
 
-      data = this.props.admins.map((admin) => {
+      data = this.props.admins.map(admin => {
         const menu =
           admin === this.props.me ? (
             <Menu>
@@ -142,29 +146,29 @@ class ManageAdmins extends React.Component<IProps, IState> {
               </Menu.Item>
             </Menu>
           ) : (
-            <Menu>
-              <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
-                <Icon type="user-delete" />
-                Unenroll
+              <Menu>
+                <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
+                  <Icon type="user-delete" />
+                  Unenroll
               </Menu.Item>
-            </Menu>
-          );
+              </Menu>
+            );
 
         return {
           key: admin,
           admin,
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown overlay={menu} trigger={["click"]}>
               <Icon type="menu" />
             </Dropdown>
-          ),
+          )
         };
       });
     }
 
     return (
       <TableDetail
-        title={'Admins'}
+        title={"Admins"}
         loadComplete={this.props.loadComplete}
         isEmpty={this.props.admins.length === 0}
         emptyNode={null}

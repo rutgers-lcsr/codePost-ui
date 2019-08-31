@@ -12,7 +12,10 @@ import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
 import Highlighter from 'react-highlight-words';
 
 /* codePost imports  */
-import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
+import {
+  IAssignmentToSubmissionsMap,
+  IGraderSubmissionsDataTable,
+} from '../../../types/common';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
@@ -42,7 +45,11 @@ interface IProps {
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (
+    assignment: AssignmentType,
+    partners: string[],
+    files: any[],
+  ) => Promise<void>;
   changeTab: (panel: PANELS) => void;
 }
 
@@ -54,12 +61,18 @@ interface IState {
 }
 
 class GraderData extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = { showActive: true, showInactive: false, means: {} };
+  public state: Readonly<IState> = {
+    showActive: true,
+    showInactive: false,
+    means: {},
+  };
 
   public componentDidMount() {
-    const newMeans = {};
+    const newMeans: any = {};
     for (const key of Object.keys(this.props.submissionsByAssignment)) {
-      const submissions: SubmissionType[] = this.props.submissionsByAssignment[key];
+      const submissions: SubmissionType[] = this.props.submissionsByAssignment[
+        +key
+      ];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of submissions) {
@@ -106,7 +119,7 @@ class GraderData extends React.Component<IProps, IState> {
 
   public toggleValue = (value: string) => {
     this.setState((prevState: IState) => {
-      const newState = { ...prevState };
+      const newState: any = { ...prevState };
       newState[value] = !newState[value];
       return newState;
     });
@@ -121,7 +134,12 @@ class GraderData extends React.Component<IProps, IState> {
       if (this.props.loadComplete) {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
-          { title: 'Expand', dataIndex: 'expand', key: 'expand', align: aligner },
+          {
+            title: 'Expand',
+            dataIndex: 'expand',
+            key: 'expand',
+            align: aligner,
+          },
           {
             title: 'Grader',
             dataIndex: 'grader',
@@ -133,7 +151,10 @@ class GraderData extends React.Component<IProps, IState> {
                 if (this.props.graders.indexOf(grader) > -1) {
                   return (
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={grader}
@@ -143,7 +164,10 @@ class GraderData extends React.Component<IProps, IState> {
                   return (
                     <span style={{ color: '#ccc' }}>
                       <Highlighter
-                        highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                        highlightStyle={{
+                          backgroundColor: '#5CBB8B',
+                          padding: 0,
+                        }}
                         searchWords={[searchText]}
                         autoEscape
                         textToHighlight={grader}
@@ -160,7 +184,10 @@ class GraderData extends React.Component<IProps, IState> {
               dataIndex: assignment.name,
               key: assignment.name,
               sorter: (a: any, b: any) => {
-                return this.sortFunction(a[assignment.name], b[assignment.name]);
+                return this.sortFunction(
+                  a[assignment.name],
+                  b[assignment.name],
+                );
               },
               align: aligner,
               className: 'student-table',
@@ -173,14 +200,17 @@ class GraderData extends React.Component<IProps, IState> {
         if (hasInactiveGraders) {
           toggleInactiveGraders = (
             <div>
-              <Checkbox defaultChecked={this.state.showActive} onChange={this.toggleValue.bind(this, 'showActive')}>
+              <Checkbox
+                defaultChecked={this.state.showActive}
+                onChange={this.toggleValue.bind(this, 'showActive')}>
                 Active graders
               </Checkbox>
-              <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+              <CPTooltip
+                title={tooltips.admin.studentSubmissions.inactives}
+                hideThisOnHideTips={true}>
                 <Checkbox
                   defaultChecked={this.state.showInactive}
-                  onChange={this.toggleValue.bind(this, 'showInactive')}
-                >
+                  onChange={this.toggleValue.bind(this, 'showInactive')}>
                   Inactive graders
                 </Checkbox>
               </CPTooltip>
@@ -203,17 +233,21 @@ class GraderData extends React.Component<IProps, IState> {
             this.setState({ activeGrader: graderEmail });
           };
 
-          const toRet = {
+          const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="zoom-in" onClick={expandFn} />
+              <CPTooltip
+                title={tooltips.admin.graderSubmissions.expand}
+                hideThisOnHideTips={true}>
+                <Icon type='zoom-in' onClick={expandFn} />
               </CPTooltip>
             ),
             key: graderEmail,
             grader: graderEmail,
           };
           for (const assignment of this.props.assignments) {
-            const graded = this.props.submissionsByGrader[graderEmail][assignment.id];
+            const graded = this.props.submissionsByGrader[graderEmail][
+              assignment.id
+            ];
             if (graded) {
               toRet[assignment.name] = (
                 <span style={{ cursor: 'pointer' }} onClick={expandFn}>
@@ -243,19 +277,22 @@ class GraderData extends React.Component<IProps, IState> {
                 this.props.assignments.length === 0 && numGraders === 0 ? (
                   <span>No graders or assignments yet</span>
                 ) : numGraders === 0 ? (
-                  <span>Nice job creating an assignment! Now add some graders.</span>
+                  <span>
+                    Nice job creating an assignment! Now add some graders.
+                  </span>
                 ) : (
                   <span>You added graders! Now create an assignment</span>
                 )
-              }
-            >
+              }>
               {numGraders === 0 ? (
                 <CPButton
-                  cpType="primary"
+                  cpType='primary'
                   key={1}
-                  icon="user-add"
-                  onClick={this.props.changeTab.bind(this, PANELS.ROSTER_GRADERS)}
-                >
+                  icon='user-add'
+                  onClick={this.props.changeTab.bind(
+                    this,
+                    PANELS.ROSTER_GRADERS,
+                  )}>
                   Add some graders
                 </CPButton>
               ) : null}
@@ -264,11 +301,13 @@ class GraderData extends React.Component<IProps, IState> {
                 <span>
                   {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
                   <CPButton
-                    cpType="primary"
+                    cpType='primary'
                     key={2}
-                    icon="plus-circle"
-                    onClick={this.props.changeTab.bind(this, PANELS.ASSIGNMENTS)}
-                  >
+                    icon='plus-circle'
+                    onClick={this.props.changeTab.bind(
+                      this,
+                      PANELS.ASSIGNMENTS,
+                    )}>
                     Add an assignment
                   </CPButton>
                 </span>
@@ -292,7 +331,9 @@ class GraderData extends React.Component<IProps, IState> {
         <GraderDetail
           onBack={this.changeActiveGrader.bind(this, undefined)}
           grader={this.state.activeGrader!}
-          submissionsByAssignment={this.props.submissionsByGrader[this.state.activeGrader!]}
+          submissionsByAssignment={
+            this.props.submissionsByGrader[this.state.activeGrader!]
+          }
           assignments={this.props.assignments}
           graders={this.props.graders}
           viewsBySubmission={this.props.viewsBySubmission}

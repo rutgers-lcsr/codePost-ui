@@ -1,11 +1,12 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { Button, Input, InputNumber } from 'antd';
+import { Button, Input, InputNumber } from "antd";
+
+import { ConsoleThemeContext } from "../../styles/abstracts/_console-theme-context";
+
 const InputGroup = Input.Group;
 
-export type CPPointInputType = 'small' | 'default';
-
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+export type CPPointInputType = "small" | "default";
 
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
@@ -21,25 +22,25 @@ interface ICPPointInputProps {
 
 class CPPointInput extends React.Component<ICPPointInputProps, {}> {
   public render() {
-    let className = 'cp-point-input';
-    if (this.props.size === 'default') {
-      className = className.concat(' ', 'cp-point-input--default');
-    } else if (this.props.size === 'small') {
-      className = className.concat(' ', 'cp-point-input--small');
+    let className = "cp-point-input";
+    if (this.props.size === "default") {
+      className = className.concat(" ", "cp-point-input--default");
+    } else if (this.props.size === "small") {
+      className = className.concat(" ", "cp-point-input--small");
     }
 
     // tslint:disable
     const style = this.props.disabled
       ? {
-          backgroundColor: this.context.consoleTheme.buttonDisabledBg,
-          color: this.context.consoleTheme.buttonDisabledColor,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        }
+        backgroundColor: this.context.consoleTheme.buttonDisabledBg,
+        color: this.context.consoleTheme.buttonDisabledColor,
+        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`
+      }
       : {
-          backgroundColor: this.context.consoleTheme.commentBody,
-          color: this.context.consoleTheme.text,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        };
+        backgroundColor: this.context.consoleTheme.commentBody,
+        color: this.context.consoleTheme.text,
+        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`
+      };
     // tslint:enable
 
     return (
@@ -53,8 +54,18 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
           onKeyDown={this.props.onKeyDown}
           style={style}
         />
-        <Button icon="plus" onClick={this.props.onPlus} disabled={this.props.disabled} style={style} />
-        <Button icon="minus" onClick={this.props.onMinus} disabled={this.props.disabled} style={style} />
+        <Button
+          icon="plus"
+          onClick={this.props.onPlus}
+          disabled={this.props.disabled}
+          style={style}
+        />
+        <Button
+          icon="minus"
+          onClick={this.props.onMinus}
+          disabled={this.props.disabled}
+          style={style}
+        />
       </InputGroup>
     );
   }

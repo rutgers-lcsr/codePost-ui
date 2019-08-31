@@ -10,7 +10,9 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../../types/common';
 
-import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
+import withWindowWatcher, {
+  IWithWindowWatcherProps,
+} from '../../core/withWindowWatcher';
 
 import * as Animation from '../../../infrastructure/animation';
 
@@ -39,7 +41,10 @@ interface ICommentsEditProps {
 
   addUnsaved: (commentID: number) => void;
   removeUnsaved: (commentID: number) => void;
-  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
+  removeRubricComment: (
+    comment: CommentType,
+    rubricComment: RubricCommentType,
+  ) => void;
 
   oldCommentIDs: { [currentID: number]: number };
 }
@@ -58,11 +63,23 @@ type BlockType = {
   endAt: number;
 };
 
-class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, ICommentsState> {
-  public static getCommentType = (readOnly: boolean, commentID: number, activeCommentID?: number) => {
-    return readOnly ? 'readonly' : commentID === activeCommentID ? 'active' : 'inactive';
+class Comments extends React.Component<
+  ICommentsCoreProps & ICommentsEditProps,
+  ICommentsState
+> {
+  public static getCommentType = (
+    readOnly: boolean,
+    commentID: number,
+    activeCommentID?: number,
+  ) => {
+    return readOnly
+      ? 'readonly'
+      : commentID === activeCommentID
+      ? 'active'
+      : 'inactive';
   };
 
+  // @ts-ignore
   public nextFrameActionId: number;
   public wrapperRef: any;
 
@@ -73,9 +90,14 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     this.handleClickOutside = this.handleClickOutside.bind(this);
 
     this.state = {
-      placements: this.props.comments.map((comment: CommentType, index: number) => {
-        return { commentID: comment.id, placement: comment.startLine * themeVars.grade.codeLineHeight };
-      }),
+      placements: this.props.comments.map(
+        (comment: CommentType, index: number) => {
+          return {
+            commentID: comment.id,
+            placement: comment.startLine * themeVars.grade.codeLineHeight,
+          };
+        },
+      ),
     };
   }
 
@@ -122,7 +144,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     document.removeEventListener('keydown', this.handleKeyPress);
   }
 
-  public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
+  public getSnapshotBeforeUpdate(
+    prevProps: ICommentsCoreProps & ICommentsEditProps,
+    prevState: ICommentsState,
+  ) {
     if (prevProps.comments.length < this.props.comments.length) {
       const codePanel = document.getElementById('code-panel');
       if (codePanel !== null) {
@@ -158,7 +183,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       }
     }
 
-    if (this.props.windowwidth !== prevProps.windowwidth || this.props.windowheight !== prevProps.windowheight) {
+    if (
+      this.props.windowwidth !== prevProps.windowwidth ||
+      this.props.windowheight !== prevProps.windowheight
+    ) {
       this.placeCommentsOnNextFrame();
     }
 
@@ -170,7 +198,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       this.placeCommentsOnNextFrame();
     }
 
-    if (this.props.dimensions.commentsWidth !== prevProps.dimensions.commentsWidth) {
+    if (
+      this.props.dimensions.commentsWidth !== prevProps.dimensions.commentsWidth
+    ) {
       this.placeCommentsOnNextFrame();
     }
   };
@@ -186,14 +216,18 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     this.props.changeActive(id);
   };
 
-  public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
+  public calculateCommentPlacements = (
+    comments: CommentType[],
+  ): ICommentPlacement[] => {
     // console.log('!! Calculating Placements !!');
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
       const lineHeight = CodePanelSizing.pixelsPerLine();
 
-      const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
+      const containerDifference =
+        themeVars.grade.codeContainer.paddingTop +
+        themeVars.grade.codeContainer.marginTop;
 
       let startAt =
         comment.startLine * lineHeight -
@@ -202,7 +236,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         this.props.verticalOffset;
 
       // Find position of markdown block elements
-      const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+      const blockElement: HTMLElement | null = document.querySelector(
+        `[index-number="${comment.startLine}"]`,
+      );
       if (blockElement) {
         startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }
@@ -215,7 +251,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         }
       }
 
-      const blockHeight = CodePanelSizing.commentHeight(comment.id) + themeVars.grade.commentSpacing;
+      const blockHeight =
+        CodePanelSizing.commentHeight(comment.id) +
+        themeVars.grade.commentSpacing;
 
       const newBlock: BlockType = {
         startAt,
@@ -236,7 +274,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     let lowestCommentBottom = 0;
     if (lastPlacement) {
-      const lastBlockHeight = CodePanelSizing.commentHeight(lastPlacement.commentID) + themeVars.grade.commentSpacing;
+      const lastBlockHeight =
+        CodePanelSizing.commentHeight(lastPlacement.commentID) +
+        themeVars.grade.commentSpacing;
       // const intercomHeight = 60;
       // lowestCommentBottom = lastPlacement.placement + lastBlockHeight + intercomHeight;
       lowestCommentBottom = lastPlacement.placement + lastBlockHeight;
@@ -269,54 +309,73 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
-    const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
-      const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
-        return value.commentID === comment.id;
-      });
+    const commentNodes = this.props.comments.map(
+      (comment: CommentType, index: number) => {
+        const commentPlacement = this.state.placements.find(
+          (value: ICommentPlacement) => {
+            return value.commentID === comment.id;
+          },
+        );
 
-      const placement = commentPlacement ? commentPlacement.placement : 0;
+        const placement = commentPlacement ? commentPlacement.placement : 0;
 
-      const commentType = Comments.getCommentType(this.props.readOnly, comment.id, this.props.activeCommentID);
+        const commentType = Comments.getCommentType(
+          this.props.readOnly,
+          comment.id,
+          this.props.activeCommentID,
+        );
 
-      const rubricComment = this.props.rubricComments.hasOwnProperty(comment.id)
-        ? this.props.rubricComments[comment.id]
-        : undefined;
+        const rubricComment = this.props.rubricComments.hasOwnProperty(
+          comment.id,
+        )
+          ? this.props.rubricComments[comment.id]
+          : undefined;
 
-      const key = this.props.oldCommentIDs.hasOwnProperty(comment.id)
-        ? this.props.oldCommentIDs[comment.id]
-        : comment.id;
+        const key = this.props.oldCommentIDs.hasOwnProperty(comment.id)
+          ? this.props.oldCommentIDs[comment.id]
+          : comment.id;
 
-      return (
-        <Comment
-          key={key}
-          isStudent={this.props.isStudent}
-          commentType={commentType}
-          comment={comment}
-          file={this.props.file}
-          rubricComment={rubricComment}
-          placement={placement}
-          changeActive={this.changeActive}
-          onSave={this.props.saveComment}
-          onDelete={this.props.deleteComment}
-          addUnsaved={this.props.addUnsaved}
-          removeUnsaved={this.props.removeUnsaved}
-          setCommentPlacements={this.placeCommentsOnNextFrame}
-          removeRubricComment={this.props.removeRubricComment}
-          updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
-          studentFeedbackOn={this.props.studentFeedbackOn}
-        />
-      );
-    });
+        return (
+          <Comment
+            key={key}
+            isStudent={this.props.isStudent}
+            commentType={commentType}
+            comment={comment}
+            file={this.props.file}
+            rubricComment={rubricComment}
+            placement={placement}
+            changeActive={this.changeActive}
+            onSave={this.props.saveComment}
+            onDelete={this.props.deleteComment}
+            addUnsaved={this.props.addUnsaved}
+            removeUnsaved={this.props.removeUnsaved}
+            setCommentPlacements={this.placeCommentsOnNextFrame}
+            removeRubricComment={this.props.removeRubricComment}
+            updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
+            studentFeedbackOn={this.props.studentFeedbackOn}
+          />
+        );
+      },
+    );
     return (
-      <div id="comments" style={{ position: 'relative' }} className="comments" ref={this.setWrapperRef}>
+      <div
+        id='comments'
+        style={{ position: 'relative' }}
+        className='comments'
+        ref={this.setWrapperRef}>
         {commentNodes}
       </div>
     );
   }
 }
 
-const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & ICommentsEditProps>) => {
-  return class WrappedComponent extends React.Component<ICommentsCoreProps, {}> {
+const makeReadOnly = (
+  Component: React.ComponentType<ICommentsCoreProps & ICommentsEditProps>,
+) => {
+  return class WrappedComponent extends React.Component<
+    ICommentsCoreProps,
+    {}
+  > {
     public readOnly = true;
     public activeCommentID = undefined;
 
@@ -324,7 +383,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
       return;
     };
 
-    public changeActive = (id: number) => {
+    public changeActive = (id: number | undefined) => {
       return;
     };
 
@@ -340,14 +399,17 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
       return;
     };
 
-    public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
+    public removeRubricComment = (
+      comment: CommentType,
+      rubricComment: RubricCommentType,
+    ) => {
       return;
     };
 
     public render() {
       return (
         <Component
-          {...this.props as ICommentsCoreProps}
+          {...(this.props as ICommentsCoreProps)}
           readOnly={this.readOnly}
           activeCommentID={this.activeCommentID}
           changeActive={this.changeActive}

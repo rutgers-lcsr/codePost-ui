@@ -1,10 +1,10 @@
-import * as React from 'react';
+import * as React from "react";
 
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from "react-syntax-highlighter";
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from "../../styles/abstracts/_console-theme-context";
 
 interface IBlockMarkdownProps {
   source: string;
@@ -12,22 +12,19 @@ interface IBlockMarkdownProps {
 }
 
 const BlockMarkdown = (props: IBlockMarkdownProps) => {
-  const renderers =
-    props.extraRenderers === undefined
-      ? useBlockMarkdownRenderers()
-      : { ...useBlockMarkdownRenderers(), ...props.extraRenderers };
+  const renderers = useBlockMarkdownRenderers(props.extraRenderers);
 
   return <ReactMarkdown renderers={renderers} source={props.source} />;
 };
 
-const useBlockMarkdownRenderers = () => {
+const useBlockMarkdownRenderers = (extraRenderers: any) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const blockProps = () => {
     return {
       style: {
-        color: consoleTheme.text,
-      },
+        color: consoleTheme.text
+      }
     };
   };
 
@@ -45,16 +42,19 @@ const useBlockMarkdownRenderers = () => {
         <div
           style={{
             border: `1px solid ${consoleTheme.commentTitleBorder}`,
-            borderRadius: '4px',
-            backgroundColor: consoleTheme.commentCode,
+            borderRadius: "4px",
+            backgroundColor: consoleTheme.commentCode
           }}
           className="markdown-code"
         >
-          <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
+          <SyntaxHighlighter
+            language={props.language}
+            style={consoleTheme.codeTheme}
+          >
             {props.value}
           </SyntaxHighlighter>
         </div>
-        <div style={{ height: '14px' }} />
+        <div style={{ height: "14px" }} />
       </div>
     );
   };
@@ -63,8 +63,8 @@ const useBlockMarkdownRenderers = () => {
     const style = {
       backgroundColor: consoleTheme.commentCode, // #e3e3e3
       color: consoleTheme.text,
-      padding: '0px 2px',
-      borderRadius: '2px',
+      padding: "0px 2px",
+      borderRadius: "2px"
     };
 
     return <code style={style}>{props.children}</code>;
@@ -74,13 +74,19 @@ const useBlockMarkdownRenderers = () => {
     return <hr {...blockProps()}>{props.children}</hr>;
   };
 
-  return {
+  const ret = {
     heading: headingRenderer,
     inlineCode: inlineCodeRenderer,
     code: codeRenderer,
     thematicBreak: thematicBreakRenderer,
-    link: linkRenderer,
+    link: linkRenderer
   };
+
+  if (extraRenderers === undefined) {
+    return ret;
+  } else {
+    return { ...ret, ...extraRenderers };
+  }
 };
 
 export default BlockMarkdown;

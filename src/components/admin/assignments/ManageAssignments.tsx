@@ -3,43 +3,57 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
-const { Text } = Typography;
-const SubMenu = Menu.SubMenu;
+import {
+  Breadcrumb,
+  Dropdown,
+  Empty,
+  Icon,
+  Menu,
+  message,
+  Popconfirm,
+  Switch,
+  Table,
+  Typography
+} from "antd";
 
-type alignType = 'left' | 'right' | 'center';
+import CPButton from "../../../components/core/CPButton";
+import CPTooltip from "../../../components/core/CPTooltip";
+import { tooltips } from "../../../components/core/tooltips";
 
-import CPButton from '../../../components/core/CPButton';
-import CPTooltip from '../../../components/core/CPTooltip';
-import { tooltips } from '../../../components/core/tooltips';
-
-import CPAdminDetail from '../other/CPAdminDetail';
+import CPAdminDetail from "../other/CPAdminDetail";
 
 /* other library imports */
-import memoizeOne from 'memoize-one';
+import memoizeOne from "memoize-one";
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
-import { SubmissionType } from '../../../infrastructure/submission';
+import {
+  AssignmentPatchType,
+  AssignmentType,
+  sortAssignments
+} from "../../../infrastructure/assignment";
+import { CourseType } from "../../../infrastructure/course";
+import { SubmissionType } from "../../../infrastructure/submission";
 
-import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
+import {
+  IAssignmentToSubmissionsMap,
+  IStudentSubmissionsDataTable
+} from "../../../types/common";
 
-import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
+import DeleteAssignmentDialog from "./assignments/DeleteAssignmentDialog";
 
-import UploadSubmissionBulkDialog from './assignments/UploadSubmissionBulkDialog';
-import UploadSubmissionDialog from './assignments/UploadSubmissionDialog';
+import UploadSubmissionBulkDialog from "./assignments/UploadSubmissionBulkDialog";
+import UploadSubmissionDialog from "./assignments/UploadSubmissionDialog";
 
-import NewAssignmentDialog from './assignments/NewAssignmentDialog';
+import NewAssignmentDialog from "./assignments/NewAssignmentDialog";
 
-import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
+import AssignmentSettingsDialog from "./assignments/AssignmentSettingsDialog";
 
-import RubricManager from './rubric/RubricManager';
+import RubricManager from "./rubric/RubricManager";
 
-import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
+import AssignmentStats from "./assignments/AssignmentStats/AssignmentStats";
 
 import {
   calculateMultipleAssignmentProgressStats,
@@ -47,8 +61,13 @@ import {
   filterDataByStat,
   getDrawerTitle,
   IAssignmentProgressStatsMap,
-  StatsDrawer,
-} from './assignments/AssignmentStats/StatsUtils';
+  StatsDrawer
+} from "./assignments/AssignmentStats/StatsUtils";
+
+const { Text } = Typography;
+const SubMenu = Menu.SubMenu;
+
+type alignType = "left" | "right" | "center";
 
 /**********************************************************************************************************************/
 
@@ -65,11 +84,18 @@ export interface IManageAssignmentsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (
+    assignmentName: string,
+    assignmentPoints: number
+  ) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (
+    assignment: AssignmentType,
+    partners: string[],
+    files: any[]
+  ) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
@@ -85,7 +111,7 @@ export enum DETAIL_TYPE {
   Settings,
   Delete,
   Drawer,
-  Stats,
+  Stats
 }
 
 interface IManageAssignmentsState {
@@ -93,19 +119,26 @@ interface IManageAssignmentsState {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isDownloading: boolean;
 }
 
 /**********************************************************************************************************************/
 
-class ManageAssignments extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
+class ManageAssignments extends React.Component<
+  IManageAssignmentsProps,
+  IManageAssignmentsState
+  > {
   public state: Readonly<IManageAssignmentsState> = {
     activeAssignment: undefined,
     detailType: undefined,
 
-    drawerContent: { title: '', subtitle: '', content: [] },
-    isDownloading: false,
+    drawerContent: { title: "", subtitle: "", content: [] },
+    isDownloading: false
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -119,26 +152,36 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
       this.props.submissions[assignment.id],
       this.props.viewsBySubmission,
-      this.props.students,
+      this.props.students
     );
 
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent
+      },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
-      drawerType: type,
+      drawerType: type
     });
   };
 
-  public changeDetailType = (newState: DETAIL_TYPE | undefined, newAssignment: AssignmentType | undefined) => {
+  public changeDetailType = (
+    newState: DETAIL_TYPE | undefined,
+    newAssignment: AssignmentType | undefined
+  ) => {
     this.setState({ detailType: newState, activeAssignment: newAssignment });
   };
 
@@ -155,7 +198,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     if (deletingAssignment) {
       this.setState({ activeAssignment: undefined, detailType: undefined });
       this.props.deleteAssignment(deletingAssignment).then(() => {
-        message.success('Assignment successfully deleted!');
+        message.success("Assignment successfully deleted!");
       });
     }
   };
@@ -169,16 +212,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const subs = submissions[assignment.id];
 
     const grades: string[] = [`Student,${assignment.name} Grade`];
-    subs.forEach((sub) => {
-      sub.students.forEach((student) => {
+    subs.forEach(sub => {
+      sub.students.forEach(student => {
         if (this.props.students.includes(student)) {
           grades.push(`${student},${sub.grade}`);
         }
       });
     });
 
-    const csv = grades.join('\n');
-    const a = document.createElement('a');
+    const csv = grades.join("\n");
+    const a = document.createElement("a");
     a.href = `data:text/csv;charset=utf-8, ${csv}`;
     a.download = `${currentCourse.name}-${currentCourse.period}-${assignment.name}-grades.csv`;
 
@@ -189,22 +232,24 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   public getAllGrades = (
     assignments: AssignmentType[],
     submissions: IAssignmentToSubmissionsMap,
-    students: string[],
+    students: string[]
   ) => {
-    const columns: string[] = ['Active Student'].concat(
+    const columns: string[] = ["Active Student"].concat(
       assignments.map((assignment: AssignmentType) => {
         return assignment.name;
-      }),
+      })
     );
 
     const csv = [columns];
     students.forEach((student: string) => {
       const row: string[] = [student];
       assignments.forEach((assignment: AssignmentType) => {
-        const sub = submissions[assignment.id].find((submission: SubmissionType) => {
-          return submission.students.includes(student);
-        });
-        const grade = sub && sub.grade ? sub.grade.toString() : '';
+        const sub = submissions[assignment.id].find(
+          (submission: SubmissionType) => {
+            return submission.students.includes(student);
+          }
+        );
+        const grade = sub && sub.grade ? sub.grade.toString() : "";
         row.push(grade);
       });
       csv.push(row);
@@ -219,8 +264,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
 
     this.setState({ isDownloading: true });
-    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students).join('\n');
-    const a = document.createElement('a');
+    const csv = this.getAllGrades(
+      this.props.assignments,
+      this.props.submissions,
+      this.props.students
+    ).join("\n");
+    const a = document.createElement("a");
     a.href = `data:text/csv;charset=utf-8, ${csv}`;
     a.download = `${this.props.currentCourse.name}-${this.props.currentCourse.period}-grades.csv`;
 
@@ -239,12 +288,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     let actions: React.ReactNode[] = [];
     let data: any[] = [];
 
-    const aligner: alignType = 'center';
+    const aligner: alignType = "center";
     const columns = [
       {
-        title: 'Assignment',
-        dataIndex: 'assignment',
-        key: 'assignment',
+        title: "Assignment",
+        dataIndex: "assignment",
+        key: "assignment"
       },
       {
         title: (
@@ -258,9 +307,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             />
           </div>
         ),
-        dataIndex: 'published',
-        key: 'published',
-        align: aligner,
+        dataIndex: "published",
+        key: "published",
+        align: aligner
       },
       {
         title: (
@@ -274,9 +323,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             />
           </div>
         ),
-        dataIndex: 'submissions',
-        key: 'submissions',
-        align: aligner,
+        dataIndex: "submissions",
+        key: "submissions",
+        align: aligner
       },
       {
         title: (
@@ -290,9 +339,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             />
           </div>
         ),
-        dataIndex: 'finalized',
-        key: 'finalized',
-        align: aligner,
+        dataIndex: "finalized",
+        key: "finalized",
+        align: aligner
       },
       {
         title: (
@@ -306,16 +355,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             />
           </div>
         ),
-        dataIndex: 'missing',
-        key: 'missing',
-        align: aligner,
+        dataIndex: "missing",
+        key: "missing",
+        align: aligner
       },
       {
-        title: 'Actions',
-        dataIndex: 'actions',
-        key: 'actions',
-        align: aligner,
-      },
+        title: "Actions",
+        dataIndex: "actions",
+        key: "actions",
+        align: aligner
+      }
     ];
 
     if (!this.props.loadComplete) {
@@ -324,7 +373,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           <Table
             pagination={false}
             columns={columns}
-            locale={{ emptyText: 'Loading your assignments...' }}
+            locale={{ emptyText: "Loading your assignments..." }}
             loading={!this.props.loadComplete}
           />
         </div>
@@ -334,7 +383,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         content = (
           <Empty
             imageStyle={{
-              height: 60,
+              height: 60
             }}
             description={<span>No assignments yet</span>}
           >
@@ -352,9 +401,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             assignments={this.props.assignments}
             createAssignment={this.props.createAssignment}
           />,
-          <CPButton onClick={this.downloadAllGrades} cpType="secondary" key={2} icon="download">
+          <CPButton
+            onClick={this.downloadAllGrades}
+            cpType="secondary"
+            key={2}
+            icon="download"
+          >
             Download grades
-          </CPButton>,
+          </CPButton>
         ];
 
         const assignmentStats: IAssignmentProgressStatsMap = this.calculateStats(
@@ -362,22 +416,39 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           this.props.submissions,
           this.props.submissionsByStudent,
           this.props.viewsBySubmission,
-          this.props.students,
+          this.props.students
         );
 
         data = sortAssignments(this.props.assignments).map((assignment, i) => {
           const statsForRow = assignmentStats[assignment.id];
           const menu = (
             <Menu>
-              <Menu.Item key="1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Rubric, assignment)}>
+              <Menu.Item
+                key="1"
+                onClick={this.changeDetailType.bind(
+                  this,
+                  DETAIL_TYPE.Rubric,
+                  assignment
+                )}
+              >
                 <Icon type="ordered-list" />
                 Edit rubric
               </Menu.Item>
-              <Menu.Item key="2" onClick={this.downloadGrades.bind(this, assignment)}>
+              <Menu.Item
+                key="2"
+                onClick={this.downloadGrades.bind(this, assignment)}
+              >
                 <Icon type="download" />
                 Download grades
               </Menu.Item>
-              <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
+              <Menu.Item
+                key="3"
+                onClick={this.changeDetailType.bind(
+                  this,
+                  DETAIL_TYPE.Stats,
+                  assignment
+                )}
+              >
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
@@ -390,31 +461,60 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                   </span>
                 }
               >
-                <Menu.Item key="0.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Single, assignment)}>
+                <Menu.Item
+                  key="0.1"
+                  onClick={this.changeDetailType.bind(
+                    this,
+                    DETAIL_TYPE.Upload_Single,
+                    assignment
+                  )}
+                >
                   <Icon type="file" />
                   Single submission
                 </Menu.Item>
                 <Menu.Item
                   key="0.2"
-                  onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Multiple, assignment)}
+                  onClick={this.changeDetailType.bind(
+                    this,
+                    DETAIL_TYPE.Upload_Multiple,
+                    assignment
+                  )}
                 >
                   <Icon type="folder" />
                   Multiple submissions
                 </Menu.Item>
-                <Menu.Item key="0.3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Import, assignment)}>
+                <Menu.Item
+                  key="0.3"
+                  onClick={this.changeDetailType.bind(
+                    this,
+                    DETAIL_TYPE.Upload_Import,
+                    assignment
+                  )}
+                >
                   <Icon type="import" />
                   Import
                 </Menu.Item>
               </SubMenu>
-              <Menu.Item key="5" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Settings, assignment)}>
+              <Menu.Item
+                key="5"
+                onClick={this.changeDetailType.bind(
+                  this,
+                  DETAIL_TYPE.Settings,
+                  assignment
+                )}
+              >
                 <Icon type="setting" />
                 Settings
               </Menu.Item>
               <Menu.Divider />
               <Menu.Item
                 key="6"
-                style={{ color: 'red' }}
-                onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Delete, assignment)}
+                style={{ color: "red" }}
+                onClick={this.changeDetailType.bind(
+                  this,
+                  DETAIL_TYPE.Delete,
+                  assignment
+                )}
               >
                 <Icon type="delete" />
                 Delete assignment
@@ -422,14 +522,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             </Menu>
           );
 
-          let publishToggleText = '';
+          let publishToggleText = "";
           if (assignment.isReleased) {
-            publishToggleText = 'Are you sure you want to un-publish this assignment?';
+            publishToggleText =
+              "Are you sure you want to un-publish this assignment?";
           } else {
-            publishToggleText = 'Are you sure you want to publish this assignment?';
+            publishToggleText =
+              "Are you sure you want to publish this assignment?";
           }
 
-          const hoverStyle = { cursor: 'pointer' };
+          const hoverStyle = { cursor: "pointer" };
 
           return {
             key: assignment.id,
@@ -438,7 +540,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               <Popconfirm
                 onConfirm={this.props.updateAssignment.bind(this, {
                   id: assignment.id,
-                  isReleased: !assignment.isReleased,
+                  isReleased: !assignment.isReleased
                 })}
                 title={publishToggleText}
                 icon={<Icon type="question-circle-o" />}
@@ -447,25 +549,46 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               </Popconfirm>
             ),
             submissions: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
+              <span
+                onClick={this.openDrawer.bind(
+                  this,
+                  assignment,
+                  DRAWER_TYPE.Submitted
+                )}
+                style={hoverStyle}
+              >
                 {statsForRow.numSubmissions}
               </span>
             ),
             finalized: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
+              <span
+                onClick={this.openDrawer.bind(
+                  this,
+                  assignment,
+                  DRAWER_TYPE.Graded
+                )}
+                style={hoverStyle}
+              >
                 {statsForRow.numGraded}
               </span>
             ),
             missing: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+              <span
+                onClick={this.openDrawer.bind(
+                  this,
+                  assignment,
+                  DRAWER_TYPE.Missing
+                )}
+                style={hoverStyle}
+              >
                 {statsForRow.numMissing}
               </span>
             ),
             actions: (
-              <Dropdown overlay={menu} trigger={['click']}>
+              <Dropdown overlay={menu} trigger={["click"]}>
                 <Icon type="menu" />
               </Dropdown>
-            ),
+            )
           };
         });
 
@@ -475,7 +598,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             detailComponent = (
               <AssignmentSettingsDialog
                 isVisible={true}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
                 onSave={this.saveSettings}
                 currentAssignment={this.state.activeAssignment!}
                 assignments={this.props.assignments}
@@ -486,7 +613,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             detailComponent = (
               <UploadSubmissionDialog
                 isVisible={true}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
                 assignments={[this.state.activeAssignment!]}
                 selectedAssignment={this.state.activeAssignment!}
                 students={this.props.students}
@@ -500,9 +631,15 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             detailComponent = (
               <UploadSubmissionBulkDialog
                 isVisible={true}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
                 assignment={this.state.activeAssignment!}
-                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                submissions={
+                  this.props.submissions[this.state.activeAssignment!.id]
+                }
                 students={this.props.students}
                 uploadSubmission={this.props.uploadSubmission}
                 updateSubmission={this.props.updateSubmission}
@@ -515,9 +652,15 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             detailComponent = (
               <UploadSubmissionBulkDialog
                 isVisible={true}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
                 assignment={this.state.activeAssignment!}
-                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                submissions={
+                  this.props.submissions[this.state.activeAssignment!.id]
+                }
                 students={this.props.students}
                 uploadSubmission={this.props.uploadSubmission}
                 updateSubmission={this.props.updateSubmission}
@@ -531,7 +674,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               <DeleteAssignmentDialog
                 isVisible={true}
                 assignmentName={this.state.activeAssignment!.name}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
                 onDelete={this.deleteAssignment}
               />
             );
@@ -540,8 +687,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             return (
               <RubricManager
                 assignment={this.state.activeAssignment!}
-                submissions={this.props.submissions[this.state.activeAssignment!.id]}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                submissions={
+                  this.props.submissions[this.state.activeAssignment!.id]
+                }
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
               />
             );
             break;
@@ -549,12 +702,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             return (
               <AssignmentStats
                 assignment={this.state.activeAssignment!}
-                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                submissions={
+                  this.props.submissions[this.state.activeAssignment!.id]
+                }
                 students={this.props.students}
                 submissionsByStudent={this.props.submissionsByStudent}
                 viewsBySubmission={this.props.viewsBySubmission}
                 refreshCourseData={this.props.refreshCourseData}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
               />
             );
             break;
@@ -564,17 +723,26 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           this.state.drawerType === undefined ? (
             <div />
           ) : (
-            <StatsDrawer
-              type={this.state.drawerType}
-              content={this.state.drawerContent}
-              onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
-              isVisible={this.state.detailType === DETAIL_TYPE.Drawer}
-            />
-          );
+              <StatsDrawer
+                type={this.state.drawerType}
+                content={this.state.drawerContent}
+                onClose={this.changeDetailType.bind(
+                  this.props,
+                  undefined,
+                  undefined
+                )}
+                isVisible={this.state.detailType === DETAIL_TYPE.Drawer}
+              />
+            );
 
         content = (
           <div>
-            <Table pagination={false} columns={columns} dataSource={data} loading={!this.props.loadComplete} />
+            <Table
+              pagination={false}
+              columns={columns}
+              dataSource={data}
+              loading={!this.props.loadComplete}
+            />
             {detailComponent}
             {drawerComponent}
           </div>
@@ -590,7 +758,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           </Breadcrumb>
         }
         goBack={null}
-        title={'Assignments'}
+        title={"Assignments"}
         actions={actions}
         content={content}
       />
