@@ -3,6 +3,8 @@
 /* React imports */
 import * as React from 'react';
 
+import { Link } from 'react-router-dom';
+
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
 const ButtonGroup = Button.Group;
@@ -98,6 +100,29 @@ const Reset = (props: IResetProps) => {
         </CPButton>
       </ButtonGroup>
     </CPTooltip>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IViewAsStudentProps {
+  pathname: string;
+}
+
+export const ViewAsStudent = (props: IViewAsStudentProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+  return (
+    <Link to={{ pathname: `${props.pathname}?student=1` }} target="_blank">
+      <CPTooltip title={tooltips.grade.header.viewAsStudent} hideThisOnHideTips={true}>
+        <ButtonGroup>
+          <CPButton id="view-as-student" cpType={cpType} small={true}>
+            <Icon type="idcard" />
+          </CPButton>
+        </ButtonGroup>
+      </CPTooltip>
+    </Link>
   );
 };
 
