@@ -59,12 +59,6 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
         props.startEditing(rubricComment.id);
       };
 
-      // @ts-ignore
-      let thisFeedback;
-      if (thisComment && props.feedbackScores && thisComment.id in props.feedbackScores) {
-        thisFeedback = props.feedbackScores[thisComment.id];
-      }
-
       if (thisComment) {
         const onChangeText = (e: any) => {
           helpers.updateRubricComment(thisComment.id, 'text', e);
@@ -82,10 +76,10 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           helpers.deleteComment(rubricComment, e);
         };
 
-        // @ts-ignore
-        const activateThisCommentExplorer = () => {
-          props.activateCommentExplorer(thisComment);
-        };
+        // // @ts-ignore
+        // const activateThisCommentExplorer = () => {
+        //   props.activateCommentExplorer(thisComment);
+        // };
 
         const textInput = (
           <TextArea
@@ -129,36 +123,6 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
             />
           </Menu.Item>
         );
-
-        // return {
-        //   key: thisComment.id,
-        //   text: <TextArea autosize value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />,
-        //   deduction: <InputNumber value={thisComment.pointDelta}
-        // onChange={onChangePointDelta} onBlur={saveComment} />,
-        //   linked: (
-        //     <span onClick={activateCommentExplorer}>
-        //       <Badge
-        //         count={thisComment.comments.length}
-        //         className="badge badge--standard"
-        //         style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-        //       />
-        //     </span>
-        //   ),
-        //   feedback: !props.commentFeedbackOn ? (
-        //     <Tag color="volcano" key="disabled">
-        //       DISABLED
-        //     </Tag>
-        //   ) : thisFeedback === undefined ? (
-        //     <Spin />
-        //   ) : (
-        //         `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
-        //       ),
-        //   delete: (
-        //     <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-        //       <Icon type="delete" onClick={deleteComment} />
-        //     </CPTooltip>
-        //   ),
-        // };
       } else {
         const updateRubricCommentText = (e: any) => {
           helpers.updateRubricComment(rubricComment.id, 'text', e);
@@ -218,18 +182,6 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
             />
           </Menu.Item>
         );
-
-        // return {
-        //   key: rubricComment.id,
-        //   text: <TextArea autosize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
-        //   deduction: <InputNumber value={0} onChange={updateRubricCommentPointDelta} onBlur={saveComment} />,
-        //   linked: null,
-        //   delete: (
-        //     <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-        //       <Icon type="delete" onClick={deleteComment} />
-        //     </CPTooltip>
-        //   ),
-        // };
       }
     });
   };
@@ -240,25 +192,6 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   // });
 
   const rows = buildCommentRows(props.rubricComments, state.rubricComments);
-
-  // const rows = props.rubricComments.map((rubricComment: RubricCommentType) => {
-  //   const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
-  //   return (
-  //     <Menu.Item
-  //       key={key}
-  //       style={{
-  //         backgroundColor: consoleTheme.siderBg,
-  //         color: consoleTheme.siderMenuItemColor,
-  //       }}
-  //     >
-  //       <RubricMenuCommentElement
-  //         rubricComment={rubricComment}
-  //         linkToComment={props.linkToComment}
-  //         hasActiveComment={props.hasActiveComment}
-  //       />
-  //     </Menu.Item>
-  //   );
-  // });
 
   const showDetailTag =
     props.rubricCategory.pointLimit !== null ||

@@ -38,10 +38,6 @@ import RubricMenuCategoryUI from './RubricMenuCategoryUI';
 
 // interface IRubricMenuState {
 //   searchTerm: string;
-//   tmpRubricCategories: RubricCategoryType[];
-//   tmpRubricComments: IRubricCategoryToRubricCommentsMap;
-//   tmpEditing: number[];
-//   counter: number;
 // }
 
 enum EDITING_STATUS {
@@ -50,15 +46,6 @@ enum EDITING_STATUS {
 }
 
 const RubricMenuUI = ({ props, state, helpers }: any) => {
-  // class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
-  // public state: Readonly<IRubricMenuState> = {
-  //   searchTerm: '',
-  //   tmpRubricCategories: this.props.rubricCategories,
-  //   tmpRubricComments: this.props.rubricComments,
-  //   tmpEditing: [],
-  //   counter: -1,
-  // };
-
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingStatuses, setEditingStatuses] = React.useState({});
@@ -94,7 +81,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    // this.setState({ searchTerm: e.target.value });
   };
 
   const linkToComment = (rubricComment: RubricCommentType) => {
@@ -108,23 +94,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       }
     }
   };
-
-  // const addRubricComment = (rubricCategoryID: number) => {
-  //   const emptyRubricComment: RubricCommentType = {
-  //     id: this.state.counter,
-  //     text: '',
-  //     pointDelta: 0,
-  //     category: rubricCategoryID,
-  //     comments: [],
-  //     sortKey: 0,
-  //   };
-
-  //   const appended = this.state.tmpRubricComments[rubricCategoryID].concat([emptyRubricComment]);
-
-  //   const updated = { ...this.state.tmpRubricComments, [rubricCategoryID]: appended };
-  //   this.addEditing(this.state.counter);
-  //   this.setState({ tmpRubricComments: updated, counter: this.state.counter - 1 });
-  // };
 
   const buildRubricMenu = (
     rubricCategories: RubricCategoryType[],
@@ -175,25 +144,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       );
     });
   };
-
-  // public addEditing = (id: number) => {
-  //   if (!this.state.tmpEditing.includes(id)) {
-  //     this.setState({ tmpEditing: this.state.tmpEditing.concat([id]) });
-  //   }
-  // };
-
-  // public removeEditing = (id: number) => {
-  //   if (this.state.tmpEditing.includes(id)) {
-  //     const rem = this.state.tmpEditing.filter((i: number) => {
-  //       return i !== id;
-  //     });
-  //     this.setState({ tmpEditing: rem });
-  //   }
-  // };
-
-  // public onSave = () => {
-  //   this.setState({ tmpEditing: [] });
-  // };
 
   let controls: React.ReactNode[] = [null];
   if (state.loadComplete) {
