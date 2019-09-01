@@ -205,7 +205,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     };
 
     const onUndo = (e: any) => {
-      helpers.rersetRubric();
+      helpers.resetRubric();
       setEditingStatuses({});
     };
 

@@ -66,22 +66,18 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
       }
 
       if (thisComment) {
-        // @ts-ignore
         const onChangeText = (e: any) => {
           helpers.updateRubricComment(thisComment.id, 'text', e);
         };
 
-        // @ts-ignore
         const onChangePointDelta = (e: any) => {
           helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
         };
 
-        // @ts-ignore
         const saveComment = () => {
           helpers.saveComment(thisComment.id);
         };
 
-        // @ts-ignore
         const deleteThisComment = (e: any) => {
           helpers.deleteComment(rubricComment, e);
         };
@@ -129,6 +125,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
               pointInput={pointInput}
               text={thisComment.text}
               pointDelta={thisComment.pointDelta}
+              deleteComment={deleteThisComment}
             />
           </Menu.Item>
         );
@@ -163,22 +160,18 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
         //   ),
         // };
       } else {
-        // @ts-ignore
         const updateRubricCommentText = (e: any) => {
           helpers.updateRubricComment(rubricComment.id, 'text', e);
         };
 
-        // @ts-ignore
         const updateRubricCommentPointDelta = (e: any) => {
           helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
         };
 
-        // @ts-ignore
         const saveComment = () => {
           helpers.saveComment(rubricComment.id);
         };
 
-        // @ts-ignore
         const deleteThisComment = (e: any) => {
           helpers.deleteComment(rubricComment, e);
         };
@@ -221,6 +214,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
               pointInput={pointInput}
               text={''}
               pointDelta={0}
+              deleteComment={deleteThisComment}
             />
           </Menu.Item>
         );
@@ -357,6 +351,7 @@ interface IRubricMenuCommentElementProps {
   pointInput: React.ReactNode;
   text: string;
   pointDelta: number;
+  deleteComment: any;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -375,10 +370,18 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
 
   if (props.editing) {
     return (
-      <InputGroup>
-        {props.textInput}
-        {props.pointInput}
-      </InputGroup>
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{ position: 'absolute', left: '-14px', color: '#f64852', cursor: 'pointer' }}
+          onClick={props.deleteComment}
+        >
+          x
+        </div>
+        <InputGroup>
+          {props.textInput}
+          {props.pointInput}
+        </InputGroup>
+      </div>
     );
   } else {
     return (
