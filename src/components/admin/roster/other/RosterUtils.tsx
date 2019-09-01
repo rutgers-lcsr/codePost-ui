@@ -11,7 +11,7 @@ const sendEmailToUser = (
   fetch(`${process.env.REACT_APP_API_URL}/users/${user}/email/`, {
     body: JSON.stringify({
       token: localStorage.getItem('token'),
-      template: 'grader_reminder',
+      template,
       assignment: assignment !== undefined ? assignment.id : undefined,
       course: course.id,
       livemode,
