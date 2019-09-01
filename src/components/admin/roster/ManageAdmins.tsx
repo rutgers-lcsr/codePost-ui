@@ -26,6 +26,8 @@ import AddAdminDialog from './admins/AddAdminDialog';
 
 import { TableDetail } from '../other/TableDetail';
 
+import { sendEmailToUser } from './other/RosterUtils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -67,6 +69,10 @@ class ManageAdmins extends React.Component<IProps, IState> {
       },
       okText: 'Remove',
     });
+  };
+
+  public sendActivationEmail = (admin: string) => {
+    sendEmailToUser(admin, 'add_admin', this.props.currentCourse, true, undefined);
   };
 
   public addAdmin = (email: string) => {
@@ -143,6 +149,10 @@ class ManageAdmins extends React.Component<IProps, IState> {
             </Menu>
           ) : (
             <Menu>
+              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, admin)}>
+                <Icon type="mail" />
+                Send activation email
+              </Menu.Item>
               <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
                 <Icon type="user-delete" />
                 Unenroll

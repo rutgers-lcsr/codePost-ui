@@ -28,6 +28,8 @@ import RosterFileUpload from './other/RosterFileUpload';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
+import { sendEmailToUser } from './other/RosterUtils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -60,6 +62,10 @@ class ManageStudents extends React.Component<IProps, IState> {
       activeStudent: '',
     };
   }
+
+  public sendActivationEmail = (student: string) => {
+    sendEmailToUser(student, 'add_student', this.props.currentCourse, true, undefined);
+  };
 
   public removeStudent = (toRemove: string) => {
     confirm({
@@ -226,6 +232,10 @@ class ManageStudents extends React.Component<IProps, IState> {
       data = this.props.students.map((student, i) => {
         const menu = (
           <Menu>
+            <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, student)}>
+              <Icon type="mail" />
+              Send activation email
+            </Menu.Item>
             <Menu.Item key="1" onClick={this.removeStudent.bind(this, student)}>
               <Icon type="user-delete" />
               Unenroll

@@ -25,6 +25,8 @@ import AddGraderDialog from './graders/AddGraderDialog';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
+import { sendEmailToUser } from './other/RosterUtils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -57,6 +59,10 @@ class ManageGraders extends React.Component<IProps, IState> {
       activeGrader: '',
     };
   }
+
+  public sendActivationEmail = (grader: string) => {
+    sendEmailToUser(grader, 'add_grader', this.props.currentCourse, true, undefined);
+  };
 
   public removeGrader = (toRemove: string) => {
     confirm({
@@ -194,6 +200,10 @@ class ManageGraders extends React.Component<IProps, IState> {
 
         const menu = (
           <Menu>
+            <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, grader)}>
+              <Icon type="mail" />
+              Send activation email
+            </Menu.Item>
             <Menu.Item key="1" onClick={this.removeGrader.bind(this, grader)}>
               <Icon type="user-delete" />
               Unenroll
