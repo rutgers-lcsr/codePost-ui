@@ -138,6 +138,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
               startEditing,
               linkToComment,
               searchTerm,
+              assignment: props.assignment,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
@@ -146,8 +147,8 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     });
   };
 
-  let controls: React.ReactNode[] = [null];
-  if (state.loadComplete) {
+  let controls = null;
+  if (state.loadComplete && props.assignment.collaborativeRubricMode) {
     const changesMade = helpers.changesMade();
 
     const onSave = (e: any) => {
@@ -160,7 +161,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       setEditingStatuses({});
     };
 
-    controls = [
+    const controlButtons = [
       <CPButton key="0" size="small" cpType="secondary" disabled={!changesMade} icon="undo" onClick={onUndo} />,
       <CPButton
         key="1"
@@ -175,6 +176,12 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
         Save
       </CPButton>,
     ];
+
+    controls = (
+      <div style={{ margin: '0px 18px 5px 0px' }}>
+        <CPFlex left={[]} right={controlButtons} gutterSize={10} />
+      </div>
+    );
   }
 
   let content = <Loading />;
@@ -202,9 +209,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   return (
     <div style={{ marginTop: '8px' }}>
       <div id="rubric-menu-title" style={{ marginBottom: '5px', width: '100%', textAlign: 'center' }}>
-        <div style={{ margin: '0px 18px 5px 0px' }}>
-          <CPFlex left={[]} right={controls} gutterSize={10} />
-        </div>
+        {controls}
         <Input
           placeholder="Search rubric... (⌘ O)"
           id="rubric-search"

@@ -45,6 +45,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
     startEditing,
     linkToComment,
     searchTerm,
+    assignment,
     ...otherProps
   } = props;
 
@@ -125,6 +126,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 text={thisComment.text}
                 pointDelta={thisComment.pointDelta}
                 deleteComment={deleteThisComment}
+                assignment={props.assignment}
               />
             </Menu.Item>
           );
@@ -184,6 +186,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 text={''}
                 pointDelta={0}
                 deleteComment={deleteThisComment}
+                assignment={props.assignment}
               />
             </Menu.Item>
           );
@@ -285,6 +288,7 @@ interface IRubricMenuCommentElementProps {
   text: string;
   pointDelta: number;
   deleteComment: any;
+  assignment: any;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -301,7 +305,21 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     props.linkToComment(props.rubricComment);
   };
 
-  if (props.editing) {
+  if (!props.assignment.collaborativeRubricMode) {
+    return (
+      <div
+        style={{
+          padding: '0px 40px 0px 0px',
+          fontSize: '12px',
+        }}
+        className="rubric-row--active"
+        onClick={onClick}
+      >
+        <InlineMarkdown source={props.text} />
+        <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+      </div>
+    );
+  } else if (props.editing) {
     return (
       <div style={{ position: 'relative' }}>
         <div

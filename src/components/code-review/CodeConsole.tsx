@@ -20,7 +20,7 @@ import {
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
-import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
+import { Course, CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -92,7 +92,6 @@ interface ICodeConsoleState {
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
-  allowGradersToEditRubric: boolean;
   activeCommentID?: number;
   unsavedComments: IdMapType;
   oldCommentIDs: { [currentID: number]: number };
@@ -330,7 +329,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricCategories: [],
       rubricComments: {},
       submission: undefined,
-      allowGradersToEditRubric: false,
 
       selectedFile: undefined,
       unsavedComments: {},
@@ -421,8 +419,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           this.loadRubric(writableSubmission.assignment),
         ]);
         course = await Course.read(assignment.course);
-        const settings = await this.loadSettings(assignment);
-        const allowGradersToEditRubric = settings.allowGradersToEditRubric;
 
         // load the data only an admin has access to
         const graders = this.isCourseAdmin(assignment)
@@ -449,7 +445,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           rubricCategories,
           rubricComments,
           graders,
-          allowGradersToEditRubric,
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
@@ -460,12 +455,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************
   /* Loading methods
   /**********************************************************************************/
-
-  public loadSettings = async (assignment: AssignmentType) => {
-    const courseID = assignment.course;
-    const settings: CourseSettingsType = await Course.readSettings(courseID);
-    return settings;
-  };
 
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
@@ -848,6 +837,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowStudentUpload: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
+      collaborativeRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -861,7 +851,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       timezone: '',
       emailNewUsers: false,
       anonymousGradingDefault: false,
-      allowGradersToEditRubric: false,
     };
 
     const demoSubmission: AnonymousSubmissionType = {
