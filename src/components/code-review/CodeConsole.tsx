@@ -1375,8 +1375,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             {({ props, state, helpers }: any) => {
               const propz = {
                 ...props,
-                rubricCategories: this.state.rubricCategories,
-                rubricComments: this.state.rubricComments,
                 handleRubricCommentClick: this.onRubricCommentClick,
                 hasActiveComment: this.state.activeCommentID !== undefined,
               };

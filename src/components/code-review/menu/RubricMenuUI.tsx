@@ -251,26 +251,45 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   //   this.setState({ tmpEditing: [] });
   // };
 
-  const rubricMenu = buildRubricMenu(props.rubricCategories, props.rubricComments);
-  const rubricKeys = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-    return `category-${rubricCategory.id}`;
-  });
+  let controls: React.ReactNode[] = [null];
+  if (state.loadComplete) {
+    controls = [
+      <CPButton key="0" size="small" cpType="secondary" disabled={false} icon="undo" />,
+      <CPButton
+        key="1"
+        size="small"
+        disabled={false}
+        cpType="primary"
+        icon="save"
+        loading={false}
+        style={{ minWidth: '80px' }}
+        // onClick={this.onSave}
+      >
+        Save
+      </CPButton>,
+    ];
+  }
 
-  const controls = [
-    <CPButton key="0" size="small" cpType="secondary" disabled={false} icon="undo" />,
-    <CPButton
-      key="1"
-      size="small"
-      disabled={false}
-      cpType="primary"
-      icon="save"
-      loading={false}
-      style={{ minWidth: '80px' }}
-      // onClick={this.onSave}
-    >
-      Save
-    </CPButton>,
-  ];
+  let content = <Loading />;
+  if (state.loadComplete) {
+    const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+    const rubricKeys = state.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+      return `category-${rubricCategory.id}`;
+    });
+
+    content = (
+      <Menu
+        defaultOpenKeys={rubricKeys}
+        selectedKeys={[]}
+        mode="inline"
+        className="rubric-menu"
+        id="rubric-menu"
+        style={{ backgroundColor: consoleTheme.siderBg }}
+      >
+        {rubricMenu}
+      </Menu>
+    );
+  }
 
   return (
     <div style={{ marginTop: '8px' }}>
@@ -292,20 +311,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
         />
       </div>
       <div id="rubric-menu" style={{ height: '100%', overflow: 'auto' }}>
-        {state.loadComplete ? (
-          <Menu
-            defaultOpenKeys={rubricKeys}
-            selectedKeys={[]}
-            mode="inline"
-            className="rubric-menu"
-            id="rubric-menu"
-            style={{ backgroundColor: consoleTheme.siderBg }}
-          >
-            {rubricMenu}
-          </Menu>
-        ) : (
-          <Loading />
-        )}
+        {content}
       </div>
     </div>
   );
