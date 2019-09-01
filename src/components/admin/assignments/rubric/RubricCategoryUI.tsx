@@ -82,11 +82,13 @@ const commentTableColumns = [
 ];
 
 const RubricCategoryUI = ({ props, state, helpers }: any) => {
+  console.log('zzzz', state.rubricCommentStatus);
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
   ) => {
     return rubricComments.map((rubricComment) => {
+      console.log('commentMap', commentMap);
       const thisComment = commentMap[rubricComment.id];
 
       let thisFeedback;
@@ -144,6 +146,7 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
           ),
         };
       } else {
+        console.log('else', rubricComment.id);
         const updateRubricCommentText = (e: any) => {
           helpers.updateRubricComment(rubricComment.id, 'text', e);
         };

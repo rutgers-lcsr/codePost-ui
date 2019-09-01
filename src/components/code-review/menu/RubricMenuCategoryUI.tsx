@@ -14,6 +14,11 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
+enum EDITING_STATUS {
+  NOT_EDITING,
+  EDITING,
+}
+
 const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   // Capturing ...otherProps allows us to catch the required Ant props from
   // ParentMenu -> Menu.SubMenu
@@ -46,10 +51,18 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   } = props;
 
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const [editingStatuses, setEditingStatuses] = React.useState(state.rubricCommentStatus);
 
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
     return rubricCommentz.map((rubricComment) => {
+      const editing = editingStatuses[rubricComment.id];
+
       const thisComment = commentMap[rubricComment.id];
+
+      const startEditing = () => {
+        const newEditingStatuses = { ...editingStatuses, [rubricComment.id]: EDITING_STATUS.EDITING };
+        setEditingStatuses(newEditingStatuses);
+      };
 
       // @ts-ignore
       let thisFeedback;
@@ -83,6 +96,16 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           props.activateCommentExplorer(thisComment);
         };
 
+        const textInput = (
+          <TextArea
+            autosize
+            value={thisComment.text}
+            onChange={onChangeText}
+            onBlur={saveComment}
+            style={{ width: '76%' }}
+          />
+        );
+
         const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
         return (
           <Menu.Item
@@ -93,9 +116,12 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
             }}
           >
             <RubricMenuCommentElement
+              editing={editing}
+              startEditing={startEditing}
               rubricComment={rubricComment}
               linkToComment={props.linkToComment}
               hasActiveComment={props.hasActiveComment}
+              textInput={textInput}
             />
           </Menu.Item>
         );
@@ -150,6 +176,16 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           helpers.deleteComment(rubricComment, e);
         };
 
+        const textInput = (
+          <TextArea
+            autosize
+            value={''}
+            onChange={updateRubricCommentText}
+            onBlur={saveComment}
+            style={{ width: '76%' }}
+          />
+        );
+
         const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
         return (
           <Menu.Item
@@ -160,9 +196,12 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
             }}
           >
             <RubricMenuCommentElement
+              editing={true}
+              startEditing={startEditing}
               rubricComment={rubricComment}
               linkToComment={props.linkToComment}
               hasActiveComment={props.hasActiveComment}
+              textInput={textInput}
             />
           </Menu.Item>
         );
@@ -293,7 +332,9 @@ interface IRubricMenuCommentElementProps {
   rubricComment: RubricCommentType;
   hasActiveComment: boolean;
   linkToComment: any;
-  // editing: boolean;
+  editing: boolean;
+  startEditing: any;
+  textInput: React.ReactNode;
   // addEditing: any;
   // removeEditing: any;
 }
@@ -310,29 +351,25 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     points = '0';
   }
 
+  // @ts-ignore
   const [text, setText] = React.useState(props.rubricComment.text);
 
   const onClick = () => {
     props.linkToComment(props.rubricComment);
   };
 
-  // const addEditing = () => {
-  //   props.addEditing(props.rubricComment.id);
+  // const onChangeText = (e: any) => {
+  //   setText(e.target.value);
   // };
-
-  const onChangeText = (e: any) => {
-    setText(e.target.value);
-  };
 
   const onChangePoints = (e: any) => {
     setPointDelta(e);
   };
 
-  // if (props.editing) {
-  if (false) {
+  if (props.editing) {
     return (
       <InputGroup>
-        <TextArea style={{ width: '76%' }} value={text} onChange={onChangeText} autosize={true} />
+        {props.textInput}
         <InputNumber style={{ width: '20%' }} value={pointDelta} onChange={onChangePoints} />
       </InputGroup>
     );
@@ -344,8 +381,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           fontSize: '12px',
         }}
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
-        onClick={onClick}
-        // onClick={props.hasActiveComment ? onClick : addEditing}
+        onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
         <InlineMarkdown source={text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
