@@ -548,6 +548,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           case DETAIL_TYPE.Stats:
             return (
               <AssignmentStats
+                course={this.props.currentCourse!}
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 students={this.props.students}
