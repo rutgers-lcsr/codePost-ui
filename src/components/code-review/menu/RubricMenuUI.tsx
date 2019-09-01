@@ -15,8 +15,8 @@ const { TextArea } = Input;
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
-import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -28,6 +28,10 @@ import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 
 import Loading from '../../core/Loading';
+
+import RubricCategoryManager from '../../core/rubric/RubricCategoryManager';
+
+import RubricMenuCategoryUI from './RubricMenuCategoryUI';
 
 /**********************************************************************************************************************/
 
@@ -119,19 +123,59 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
   const buildRubricMenu = (
     rubricCategories: RubricCategoryType[],
-    rubricCommentMap: IRubricCategoryToRubricCommentsMap,
+    rubricComments: IRubricCategoryToRubricCommentsMap,
   ) => {
+    const changesMade = helpers.changesMade();
+    console.log('changes', changesMade);
+
+    return rubricCategories.sort(RubricCategory.compare).map((cat: RubricCategoryType, catIndex: number) => {
+      const savedCategory = state.savedRubricCategories.find((el: any) => {
+        return el.id === cat.id;
+      });
+
+      return (
+        <RubricCategoryManager
+          key={cat.id}
+          rubricCategory={cat}
+          savedRubricCategory={savedCategory}
+          rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+          savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
+          updateCategory={helpers.updateRubricCategory}
+          deleteCategory={helpers.deleteRubricCategory}
+          addComment={helpers.addRubricComment}
+          updateComment={helpers.updateRubricComment}
+          deleteComment={helpers.deleteRubricComment}
+          onEdit={helpers.onCategoryEdit}
+          onUndo={helpers.onCategoryUndo}
+          onCommentEdit={helpers.onCommentEdit}
+          onCommentUndo={helpers.onCommentUndo}
+          activateCommentExplorer={helpers.activateCommentExplorer}
+          onCommentDragEnd={helpers.onCommentDragEnd}
+          moveCategory={helpers.moveCategory}
+          index={catIndex}
+          numCategories={state.rubricCategories.length}
+          otherCategories={state.rubricCategories}
+          feedbackScores={state.feedbackScores}
+          commentFeedbackOn={props.assignment.commentFeedback}
+        >
+          {({ propz, statez, helperz }: any) => {
+            return <RubricMenuCategoryUI props={propz} state={statez} helpers={helperz} />;
+          }}
+        </RubricCategoryManager>
+      );
+    });
+
     const showDetailTag =
       rubricCategories.filter((rubricCategory: RubricCategoryType) => {
         // UI handles 35 characters at the moment for rubric category Name
         return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' || rubricCategory.name.length > 35;
       }).length > 0;
 
-    return rubricCategories.map((rubricCategory: RubricCategoryType) => {
-      const rubricComments = rubricCommentMap[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
+    return rubricCategories.sort(RubricCategory.compare).map((rubricCategory: RubricCategoryType) => {
+      const rubricComments2 = rubricComments[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
         return rubricComment.text.toUpperCase().includes(searchTerm.toUpperCase());
       });
-      const rows = rubricComments.map((rubricComment: RubricCommentType) => {
+      const rows = rubricComments2.map((rubricComment: RubricCommentType) => {
         const key = `comment-${rubricCategory.id}-${rubricComment.id}`;
         return (
           <Menu.Item
@@ -273,6 +317,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   let content = <Loading />;
   if (state.loadComplete) {
     const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+    console.log('rubricmenu', rubricMenu);
     const rubricKeys = state.rubricCategories.map((rubricCategory: RubricCategoryType) => {
       return `category-${rubricCategory.id}`;
     });
