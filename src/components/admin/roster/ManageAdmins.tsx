@@ -28,6 +28,8 @@ import { TableDetail } from '../other/TableDetail';
 
 import { sendEmailToUser } from './other/RosterUtils';
 
+import SendEmailModal from '../other/SendEmailModal';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -38,6 +40,7 @@ interface IProps {
   sections: SectionType[];
   currentCourse: CourseType;
   sectionsByStudent: { [studentEmail: string]: SectionType };
+  notActivated: string[];
 
   /* loading state */
   loadComplete: boolean;
@@ -80,13 +83,40 @@ class ManageAdmins extends React.Component<IProps, IState> {
     return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
   };
 
+  public toInvite = () => {
+    return this.props.admins.filter((admin) => {
+      return this.props.notActivated.indexOf(admin) > -1;
+    });
+  };
+
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: Array<ColumnProps<any>> = [];
     let data: any[] = [];
 
+    const hasInactives = this.props.notActivated.some((el) => {
+      return this.props.admins.indexOf(el) > -1;
+    });
+
     if (this.props.loadComplete) {
       actions = [
+        hasInactives ? (
+          <SendEmailModal
+            key="activation"
+            buttonText="Send invites"
+            title="Send activation emails to admins"
+            template="add_admins"
+            course={this.props.currentCourse}
+            me={'james@codepost.io'}
+            filterFunction={this.toInvite}
+            body={
+              <div>
+                Send activation emails to all admins who have not yet joined codePost. Users who have signed up won't be
+                emailed.
+              </div>
+            }
+          />
+        ) : null,
         <DownloadRoster
           downloadType={USER_TYPE.ADMIN}
           sectionsByStudent={this.props.sectionsByStudent}
@@ -137,9 +167,10 @@ class ManageAdmins extends React.Component<IProps, IState> {
         },
       ];
 
-      data = this.props.admins.map((admin) => {
+      data = this.props.admins.map((adminEmail) => {
+        const hasActivated = this.props.notActivated.indexOf(adminEmail) === -1;
         const menu =
-          admin === this.props.me ? (
+          adminEmail === this.props.me ? (
             <Menu>
               <Menu.Item key="1" disabled={true}>
                 <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
@@ -149,11 +180,11 @@ class ManageAdmins extends React.Component<IProps, IState> {
             </Menu>
           ) : (
             <Menu>
-              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, admin)}>
+              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
                 <Icon type="mail" />
                 Send activation email
               </Menu.Item>
-              <Menu.Item key="1" onClick={this.removeAdmin.bind(this, admin)}>
+              <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
                 <Icon type="user-delete" />
                 Unenroll
               </Menu.Item>
@@ -161,8 +192,16 @@ class ManageAdmins extends React.Component<IProps, IState> {
           );
 
         return {
-          key: admin,
-          admin,
+          key: adminEmail,
+          admin: hasActivated ? (
+            adminEmail
+          ) : (
+            <span style={{ color: '#80808082' }}>
+              <CPTooltip title="This user has not yet signed up for codePost.">
+                {adminEmail} &nbsp; <Icon type="disconnect" />
+              </CPTooltip>
+            </span>
+          ),
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />
