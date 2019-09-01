@@ -14,11 +14,6 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
-enum EDITING_STATUS {
-  NOT_EDITING,
-  EDITING,
-}
-
 const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   // Capturing ...otherProps allows us to catch the required Ant props from
   // ParentMenu -> Menu.SubMenu
@@ -46,22 +41,22 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
     commentFeedbackOn,
     handleRubricCommentClick,
     hasActiveComment,
+    editingStatuses,
+    startEditing,
     linkToComment,
     ...otherProps
   } = props;
 
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const [editingStatuses, setEditingStatuses] = React.useState(state.rubricCommentStatus);
 
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
     return rubricCommentz.map((rubricComment) => {
-      const editing = editingStatuses[rubricComment.id];
+      const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id];
 
       const thisComment = commentMap[rubricComment.id];
 
-      const startEditing = () => {
-        const newEditingStatuses = { ...editingStatuses, [rubricComment.id]: EDITING_STATUS.EDITING };
-        setEditingStatuses(newEditingStatuses);
+      const startEditingThis = () => {
+        props.startEditing(rubricComment.id);
       };
 
       // @ts-ignore
@@ -106,6 +101,15 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           />
         );
 
+        const pointInput = (
+          <InputNumber
+            value={thisComment.pointDelta}
+            onChange={onChangePointDelta}
+            onBlur={saveComment}
+            style={{ width: '20%' }}
+          />
+        );
+
         const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
         return (
           <Menu.Item
@@ -117,11 +121,14 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           >
             <RubricMenuCommentElement
               editing={editing}
-              startEditing={startEditing}
+              startEditing={startEditingThis}
               rubricComment={rubricComment}
               linkToComment={props.linkToComment}
               hasActiveComment={props.hasActiveComment}
               textInput={textInput}
+              pointInput={pointInput}
+              text={thisComment.text}
+              pointDelta={thisComment.pointDelta}
             />
           </Menu.Item>
         );
@@ -186,6 +193,15 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           />
         );
 
+        const pointInput = (
+          <InputNumber
+            value={0}
+            onChange={updateRubricCommentPointDelta}
+            onBlur={saveComment}
+            style={{ width: '20%' }}
+          />
+        );
+
         const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
         return (
           <Menu.Item
@@ -197,11 +213,14 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           >
             <RubricMenuCommentElement
               editing={true}
-              startEditing={startEditing}
+              startEditing={startEditingThis}
               rubricComment={rubricComment}
               linkToComment={props.linkToComment}
               hasActiveComment={props.hasActiveComment}
               textInput={textInput}
+              pointInput={pointInput}
+              text={''}
+              pointDelta={0}
             />
           </Menu.Item>
         );
@@ -335,42 +354,30 @@ interface IRubricMenuCommentElementProps {
   editing: boolean;
   startEditing: any;
   textInput: React.ReactNode;
-  // addEditing: any;
-  // removeEditing: any;
+  pointInput: React.ReactNode;
+  text: string;
+  pointDelta: number;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
-  const [pointDelta, setPointDelta] = React.useState(props.rubricComment.pointDelta);
-
   let points = '';
-  if (pointDelta > 0) {
-    points = `- ${pointDelta}`;
-  } else if (pointDelta < 0) {
-    points = `+ ${pointDelta * -1}`;
+  if (props.pointDelta > 0) {
+    points = `-${props.pointDelta}`;
+  } else if (props.pointDelta < 0) {
+    points = `+${props.pointDelta * -1}`;
   } else {
     points = '0';
   }
 
-  // @ts-ignore
-  const [text, setText] = React.useState(props.rubricComment.text);
-
   const onClick = () => {
     props.linkToComment(props.rubricComment);
-  };
-
-  // const onChangeText = (e: any) => {
-  //   setText(e.target.value);
-  // };
-
-  const onChangePoints = (e: any) => {
-    setPointDelta(e);
   };
 
   if (props.editing) {
     return (
       <InputGroup>
         {props.textInput}
-        <InputNumber style={{ width: '20%' }} value={pointDelta} onChange={onChangePoints} />
+        {props.pointInput}
       </InputGroup>
     );
   } else {
@@ -383,7 +390,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
-        <InlineMarkdown source={text} />
+        <InlineMarkdown source={props.text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">

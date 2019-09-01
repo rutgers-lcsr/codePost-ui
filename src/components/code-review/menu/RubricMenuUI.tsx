@@ -44,6 +44,11 @@ import RubricMenuCategoryUI from './RubricMenuCategoryUI';
 //   counter: number;
 // }
 
+enum EDITING_STATUS {
+  NOT_EDITING,
+  EDITING,
+}
+
 const RubricMenuUI = ({ props, state, helpers }: any) => {
   // class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
   // public state: Readonly<IRubricMenuState> = {
@@ -56,6 +61,12 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [editingStatuses, setEditingStatuses] = React.useState({});
+
+  const startEditing = (rubricCommentID: number) => {
+    const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
+    setEditingStatuses(newEditingStatuses);
+  };
 
   // TODO, FIXME: addEventListener, keydown
 
@@ -119,9 +130,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     rubricCategories: RubricCategoryType[],
     rubricComments: IRubricCategoryToRubricCommentsMap,
   ) => {
-    const changesMade = helpers.changesMade();
-    console.log('changes', changesMade);
-
     return rubricCategories.sort(RubricCategory.compare).map((cat: RubricCategoryType, catIndex: number) => {
       const savedCategory = state.savedRubricCategories.find((el: any) => {
         return el.id === cat.id;
@@ -157,6 +165,8 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
               ...propz,
               hasActiveComment: props.hasActiveComment,
               handleRubricCommentClick: props.handleRubricCommentClick,
+              editingStatuses,
+              startEditing,
               linkToComment,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
@@ -187,17 +197,29 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
   let controls: React.ReactNode[] = [null];
   if (state.loadComplete) {
+    const changesMade = helpers.changesMade();
+
+    const onSave = (e: any) => {
+      helpers.onSave(undefined, e);
+      setEditingStatuses({});
+    };
+
+    const onUndo = (e: any) => {
+      helpers.rersetRubric();
+      setEditingStatuses({});
+    };
+
     controls = [
-      <CPButton key="0" size="small" cpType="secondary" disabled={false} icon="undo" />,
+      <CPButton key="0" size="small" cpType="secondary" disabled={!changesMade} icon="undo" onClick={onUndo} />,
       <CPButton
         key="1"
         size="small"
-        disabled={false}
+        disabled={!changesMade}
+        onClick={onSave}
         cpType="primary"
         icon="save"
-        loading={false}
+        loading={state.isSaving}
         style={{ minWidth: '80px' }}
-        // onClick={this.onSave}
       >
         Save
       </CPButton>,
