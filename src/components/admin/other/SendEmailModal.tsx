@@ -27,6 +27,7 @@ interface IProps {
   assignment?: AssignmentType;
   me: string;
   body: React.ReactNode;
+  button?: (toggleDialog: () => void) => React.ReactNode;
 }
 
 interface IState {
@@ -63,7 +64,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
         fetch(`${process.env.REACT_APP_API_URL}/users/${users}/email/`, {
           body: JSON.stringify({
             token: localStorage.getItem('token'),
-            template: 'grader_reminder',
+            template: this.props.template,
             assignment: this.props.assignment !== undefined ? this.props.assignment.id : undefined,
             course: this.props.course.id,
             livemode,
@@ -89,10 +90,14 @@ class SendEmailModal extends React.Component<IProps, IState> {
 
   public render() {
     return (
-      <div>
-        <CPButton cpType="secondary" icon="mail" loading={this.state.isSending} onClick={this.toggleDialog}>
-          {this.props.buttonText}
-        </CPButton>
+      <span>
+        {this.props.button !== undefined ? (
+          this.props.button(this.toggleDialog)
+        ) : (
+          <CPButton cpType="secondary" icon="mail" loading={this.state.isSending} onClick={this.toggleDialog}>
+            {this.props.buttonText}
+          </CPButton>
+        )}
         <Modal
           visible={this.state.modalVisible}
           onCancel={this.toggleDialog}
@@ -116,7 +121,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
             </CPButton>
           </div>
         </Modal>
-      </div>
+      </span>
     );
   }
 }
