@@ -175,7 +175,6 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
     });
   };
 
-  console.log('state', state.rubricComments);
   const data = buildCommentTableData(props.rubricComments, state.rubricComments);
 
   const moveUp = () => {

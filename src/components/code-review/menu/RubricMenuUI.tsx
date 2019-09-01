@@ -6,11 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Input, InputNumber, Menu, Popover, Tag } from 'antd';
-
-const SubMenu = Menu.SubMenu;
-const InputGroup = Input.Group;
-const { TextArea } = Input;
+import { Input, Menu } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -21,8 +17,6 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 // import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
-
-import InlineMarkdown from '../../core/InlineMarkdown';
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -159,119 +153,15 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
           commentFeedbackOn={props.assignment.commentFeedback}
         >
           {({ propz, statez, helperz }: any) => {
-            return <RubricMenuCategoryUI props={propz} state={statez} helpers={helperz} />;
+            const propsz = {
+              ...propz,
+              hasActiveComment: props.hasActiveComment,
+              handleRubricCommentClick: props.handleRubricCommentClick,
+              linkToComment,
+            };
+            return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
         </RubricCategoryManager>
-      );
-    });
-
-    const showDetailTag =
-      rubricCategories.filter((rubricCategory: RubricCategoryType) => {
-        // UI handles 35 characters at the moment for rubric category Name
-        return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' || rubricCategory.name.length > 35;
-      }).length > 0;
-
-    return rubricCategories.sort(RubricCategory.compare).map((rubricCategory: RubricCategoryType) => {
-      const rubricComments2 = rubricComments[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
-        return rubricComment.text.toUpperCase().includes(searchTerm.toUpperCase());
-      });
-      const rows = rubricComments2.map((rubricComment: RubricCommentType) => {
-        const key = `comment-${rubricCategory.id}-${rubricComment.id}`;
-        return (
-          <Menu.Item
-            key={key}
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-            }}
-          >
-            <RubricMenuCommentElement
-              rubricComment={rubricComment}
-              linkToComment={linkToComment}
-              hasActiveComment={props.hasActiveComment}
-            />
-          </Menu.Item>
-        );
-      });
-
-      const info = (
-        <div>
-          <div className="rubric-menu__info">
-            <div>Name:</div>
-            <div>{rubricCategory.name}</div>
-          </div>
-          <Divider style={{ margin: '10px 0px' }} />
-          <div className="rubric-menu__info">
-            <div>Point Limit: </div>
-            <div>{rubricCategory.pointLimit === null ? 'None set' : rubricCategory.pointLimit}</div>
-          </div>
-          <Divider style={{ margin: '10px 0px' }} />
-          <div className="rubric-menu__info">
-            <div>Details:</div>
-            <div>{rubricCategory.helpText ? rubricCategory.helpText : 'None set'}</div>
-          </div>
-        </div>
-      );
-
-      const capTag = showDetailTag ? (
-        <Popover title="Category Details" content={info}>
-          <Tag
-            style={{
-              backgroundColor: consoleTheme.siderSubmenuTitleBg,
-              color: consoleTheme.siderSubmenuTitleColor,
-              borderColor: consoleTheme.siderSubmenuBorder,
-              fontSize: '10.5px',
-            }}
-          >
-            Details
-          </Tag>
-        </Popover>
-      ) : null;
-
-      const onClick = () => {
-        console.log('add rubric comment');
-        // this.addRubricComment(rubricCategory.id);
-      };
-      // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
-      // So we can't update the styles with inline js (only css selectors)
-      // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
-      return (
-        <SubMenu
-          key={`category-${rubricCategory.id}`}
-          title={
-            <div
-              style={{
-                position: 'absolute',
-                width: '100%',
-                paddingLeft: '20px',
-                backgroundColor: consoleTheme.siderSubmenuTitleBg,
-                color: consoleTheme.siderSubmenuTitleColor,
-                borderBottom: consoleTheme.siderSubmenuBorder,
-              }}
-            >
-              <div style={{ paddingRight: '30px' }}>
-                <div className="display-flex justify-content-space-between">
-                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{rubricCategory.name}</span>
-                  <span style={{ float: 'right' }}>{capTag}</span>
-                </div>
-              </div>
-            </div>
-          }
-        >
-          {rows}
-          <Menu.Item
-            key={`comment-${rubricCategory.id}-add`}
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-              textAlign: 'center',
-            }}
-          >
-            <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={onClick}>
-              Add
-            </Button>
-          </Menu.Item>
-        </SubMenu>
       );
     });
   };
@@ -317,7 +207,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   let content = <Loading />;
   if (state.loadComplete) {
     const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
-    console.log('rubricmenu', rubricMenu);
+
     const rubricKeys = state.rubricCategories.map((rubricCategory: RubricCategoryType) => {
       return `category-${rubricCategory.id}`;
     });
@@ -360,76 +250,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       </div>
     </div>
   );
-};
-
-interface IRubricMenuCommentElementProps {
-  rubricComment: RubricCommentType;
-  hasActiveComment: boolean;
-  linkToComment: any;
-  // editing: boolean;
-  // addEditing: any;
-  // removeEditing: any;
-}
-
-const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
-  const [pointDelta, setPointDelta] = React.useState(props.rubricComment.pointDelta);
-
-  let points = '';
-  if (pointDelta > 0) {
-    points = `-${pointDelta}`;
-  } else if (pointDelta < 0) {
-    points = `+${pointDelta * -1}`;
-  } else {
-    points = '0';
-  }
-
-  const [text, setText] = React.useState(props.rubricComment.text);
-
-  const onClick = () => {
-    props.linkToComment(props.rubricComment);
-  };
-
-  // const addEditing = () => {
-  //   props.addEditing(props.rubricComment.id);
-  // };
-
-  const onChangeText = (e: any) => {
-    setText(e.target.value);
-  };
-
-  const onChangePoints = (e: any) => {
-    setPointDelta(e);
-  };
-
-  // if (props.editing) {
-  if (false) {
-    return (
-      <InputGroup>
-        <TextArea style={{ width: '76%' }} value={text} onChange={onChangeText} autosize={true} />
-        <InputNumber style={{ width: '20%' }} value={pointDelta} onChange={onChangePoints} />
-      </InputGroup>
-    );
-  } else {
-    return (
-      <div
-        style={{
-          padding: '0px 40px 0px 0px',
-          fontSize: '12px',
-        }}
-        className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'}`}
-        onClick={onClick}
-        // onClick={props.hasActiveComment ? onClick : addEditing}
-      >
-        <InlineMarkdown source={text} />
-        <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
-        {!props.hasActiveComment ? (
-          <div className="overlay">
-            <Icon type="edit" />
-          </div>
-        ) : null}
-      </div>
-    );
-  }
 };
 
 export default RubricMenuUI;
