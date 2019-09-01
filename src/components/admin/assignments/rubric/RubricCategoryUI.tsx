@@ -88,11 +88,14 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
   ) => {
     return rubricComments.map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
-      const thisFeedback = props.feedbackScores === undefined ? undefined : props.feedbackScores[thisComment.id];
+
+      let thisFeedback;
+      if (thisComment && props.feedbackScores && thisComment.id in props.feedbackScores) {
+        thisFeedback = props.feedbackScores[thisComment.id];
+      }
 
       if (thisComment) {
         const onChangeText = (e: any) => {
-          console.log('changing comment', thisComment);
           helpers.updateRubricComment(thisComment.id, 'text', e);
         };
 
@@ -172,6 +175,7 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
     });
   };
 
+  console.log('state', state.rubricComments);
   const data = buildCommentTableData(props.rubricComments, state.rubricComments);
 
   const moveUp = () => {

@@ -704,6 +704,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     };
 
     newComments[category.id] = [...newComments[category.id], payload];
+
     this.setState({
       rubricComments: newComments,
       newObjectCounter: newObjectCounter - 1,
