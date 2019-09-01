@@ -44,152 +44,152 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
     editingStatuses,
     startEditing,
     linkToComment,
+    searchTerm,
     ...otherProps
   } = props;
 
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
-    return rubricCommentz.map((rubricComment) => {
-      const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id];
+    return rubricCommentz
+      .filter((rubricComment: RubricCommentType) => {
+        return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
+      })
+      .map((rubricComment) => {
+        const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id];
 
-      const thisComment = commentMap[rubricComment.id];
+        const thisComment = commentMap[rubricComment.id];
 
-      const startEditingThis = () => {
-        props.startEditing(rubricComment.id);
-      };
-
-      if (thisComment) {
-        const onChangeText = (e: any) => {
-          helpers.updateRubricComment(thisComment.id, 'text', e);
+        const startEditingThis = () => {
+          props.startEditing(rubricComment.id);
         };
 
-        const onChangePointDelta = (e: any) => {
-          helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
-        };
+        if (thisComment) {
+          const onChangeText = (e: any) => {
+            helpers.updateRubricComment(thisComment.id, 'text', e);
+          };
 
-        const saveComment = () => {
-          helpers.saveComment(thisComment.id);
-        };
+          const onChangePointDelta = (e: any) => {
+            helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
+          };
 
-        const deleteThisComment = (e: any) => {
-          helpers.deleteComment(rubricComment, e);
-        };
+          const saveComment = () => {
+            helpers.saveComment(thisComment.id);
+          };
 
-        // // @ts-ignore
-        // const activateThisCommentExplorer = () => {
-        //   props.activateCommentExplorer(thisComment);
-        // };
+          const deleteThisComment = (e: any) => {
+            helpers.deleteComment(rubricComment, e);
+          };
 
-        const textInput = (
-          <TextArea
-            autosize
-            value={thisComment.text}
-            onChange={onChangeText}
-            onBlur={saveComment}
-            style={{ width: '76%' }}
-          />
-        );
+          // // @ts-ignore
+          // const activateThisCommentExplorer = () => {
+          //   props.activateCommentExplorer(thisComment);
+          // };
 
-        const pointInput = (
-          <InputNumber
-            value={thisComment.pointDelta}
-            onChange={onChangePointDelta}
-            onBlur={saveComment}
-            style={{ width: '20%' }}
-          />
-        );
-
-        const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
-        return (
-          <Menu.Item
-            key={key}
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-            }}
-          >
-            <RubricMenuCommentElement
-              editing={editing}
-              startEditing={startEditingThis}
-              rubricComment={rubricComment}
-              linkToComment={props.linkToComment}
-              hasActiveComment={props.hasActiveComment}
-              textInput={textInput}
-              pointInput={pointInput}
-              text={thisComment.text}
-              pointDelta={thisComment.pointDelta}
-              deleteComment={deleteThisComment}
+          const textInput = (
+            <TextArea
+              autosize
+              value={thisComment.text}
+              onChange={onChangeText}
+              onBlur={saveComment}
+              style={{ width: '76%' }}
             />
-          </Menu.Item>
-        );
-      } else {
-        const updateRubricCommentText = (e: any) => {
-          helpers.updateRubricComment(rubricComment.id, 'text', e);
-        };
+          );
 
-        const updateRubricCommentPointDelta = (e: any) => {
-          helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
-        };
-
-        const saveComment = () => {
-          helpers.saveComment(rubricComment.id);
-        };
-
-        const deleteThisComment = (e: any) => {
-          helpers.deleteComment(rubricComment, e);
-        };
-
-        const textInput = (
-          <TextArea
-            autosize
-            value={''}
-            onChange={updateRubricCommentText}
-            onBlur={saveComment}
-            style={{ width: '76%' }}
-          />
-        );
-
-        const pointInput = (
-          <InputNumber
-            value={0}
-            onChange={updateRubricCommentPointDelta}
-            onBlur={saveComment}
-            style={{ width: '20%' }}
-          />
-        );
-
-        const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
-        return (
-          <Menu.Item
-            key={key}
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-            }}
-          >
-            <RubricMenuCommentElement
-              editing={true}
-              startEditing={startEditingThis}
-              rubricComment={rubricComment}
-              linkToComment={props.linkToComment}
-              hasActiveComment={props.hasActiveComment}
-              textInput={textInput}
-              pointInput={pointInput}
-              text={''}
-              pointDelta={0}
-              deleteComment={deleteThisComment}
+          const pointInput = (
+            <InputNumber
+              value={thisComment.pointDelta}
+              onChange={onChangePointDelta}
+              onBlur={saveComment}
+              style={{ width: '20%' }}
             />
-          </Menu.Item>
-        );
-      }
-    });
+          );
+
+          const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
+          return (
+            <Menu.Item
+              key={key}
+              style={{
+                backgroundColor: consoleTheme.siderBg,
+                color: consoleTheme.siderMenuItemColor,
+              }}
+            >
+              <RubricMenuCommentElement
+                editing={editing}
+                startEditing={startEditingThis}
+                rubricComment={rubricComment}
+                linkToComment={props.linkToComment}
+                hasActiveComment={props.hasActiveComment}
+                textInput={textInput}
+                pointInput={pointInput}
+                text={thisComment.text}
+                pointDelta={thisComment.pointDelta}
+                deleteComment={deleteThisComment}
+              />
+            </Menu.Item>
+          );
+        } else {
+          const updateRubricCommentText = (e: any) => {
+            helpers.updateRubricComment(rubricComment.id, 'text', e);
+          };
+
+          const updateRubricCommentPointDelta = (e: any) => {
+            helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
+          };
+
+          const saveComment = () => {
+            helpers.saveComment(rubricComment.id);
+          };
+
+          const deleteThisComment = (e: any) => {
+            helpers.deleteComment(rubricComment, e);
+          };
+
+          const textInput = (
+            <TextArea
+              autosize
+              value={''}
+              onChange={updateRubricCommentText}
+              onBlur={saveComment}
+              style={{ width: '76%' }}
+            />
+          );
+
+          const pointInput = (
+            <InputNumber
+              value={0}
+              onChange={updateRubricCommentPointDelta}
+              onBlur={saveComment}
+              style={{ width: '20%' }}
+            />
+          );
+
+          const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
+          return (
+            <Menu.Item
+              key={key}
+              style={{
+                backgroundColor: consoleTheme.siderBg,
+                color: consoleTheme.siderMenuItemColor,
+              }}
+            >
+              <RubricMenuCommentElement
+                editing={true}
+                startEditing={startEditingThis}
+                rubricComment={rubricComment}
+                linkToComment={props.linkToComment}
+                hasActiveComment={props.hasActiveComment}
+                textInput={textInput}
+                pointInput={pointInput}
+                text={''}
+                pointDelta={0}
+                deleteComment={deleteThisComment}
+              />
+            </Menu.Item>
+          );
+        }
+      });
   };
-
-  // const filteredRubricComments =
-  // props.rubricComments[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
-  //   return rubricComment.text.toUpperCase().includes(searchTerm.toUpperCase());
-  // });
 
   const rows = buildCommentRows(props.rubricComments, state.rubricComments);
 
