@@ -16,7 +16,7 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-// import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
+import useHotkeys, { O_KEY } from '../useHotkeys';
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -55,29 +55,14 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     setEditingStatuses(newEditingStatuses);
   };
 
-  // TODO, FIXME: addEventListener, keydown
+  const focusSearch = () => {
+    const el = document.getElementById('rubric-search');
+    if (el !== null) {
+      el.focus();
+    }
+  };
 
-  // public componentDidMount() {
-  //   document.addEventListener('keydown', this.handleKeyDown);
-  // }
-
-  // public componentWillUnmount() {
-  //   document.removeEventListener('keydown', this.handleKeyDown);
-  // }
-
-  // public handleKeyDown = (e: any) => {
-  //   const os = getOperatingSystem();
-  //   const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
-
-  //   // Keyboard shortcuts
-  //   if (e.which === O_KEY && triggerKey) {
-  //     e.preventDefault();
-  //     const el = document.getElementById('rubric-search');
-  //     if (el !== null) {
-  //       el.focus();
-  //     }
-  //   }
-  // };
+  useHotkeys(O_KEY, focusSearch);
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
