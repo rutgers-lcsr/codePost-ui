@@ -34,8 +34,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       anonymousGrading: values.anonymousGrading,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
-      allowRegradeRequests: values.studentResponse === 'allowRegradeRequests',
-      allowQuestions: values.studentResponse === 'allowQuestions',
+      allowRegradeRequests: values.allowRegradeRequests,
     };
 
     this.props.onSave(payload).then(() => {
@@ -95,7 +94,7 @@ interface IFormValues {
   anonymousGrading: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
-  studentResponse: string;
+  allowRegradeRequests: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -198,27 +197,12 @@ const CollectionCreateForm: any = Form.create()(
             </Form.Item>
             <Form.Item
               label="Allow Student Questions and Regrades"
-              extra=" When enabled, students can submit a question on their graded submission."
+              extra=" When enabled, students can submit a question on their graded submission and request a regrade."
             >
-              {getFieldDecorator('studentResponse', {
-                initialValue: this.props.assignment.allowRegradeRequests
-                  ? 'allowRegradeRequests'
-                  : this.props.assignment.allowQuestions
-                  ? 'allowQuestions'
-                  : 'noQuestions',
-              })(
-                <Radio.Group>
-                  <Radio style={{ display: 'block' }} value="noQuestions">
-                    No response allowed
-                  </Radio>
-                  <Radio style={{ display: 'block' }} value="allowQuestions">
-                    Questions allowed
-                  </Radio>
-                  <Radio style={{ display: 'block' }} value="allowRegradeRequests">
-                    Questions and Regrade requests allowed
-                  </Radio>
-                </Radio.Group>,
-              )}
+              {getFieldDecorator('allowRegradeRequests', {
+                initialValue: this.props.assignment.allowRegradeRequests,
+                valuePropName: 'checked',
+              })(<Switch />)}
             </Form.Item>
           </Form>
         </Modal>
