@@ -256,8 +256,8 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
         <TextArea autosize value={responseText} onChange={changeRegradeText} />
         <div style={{ marginTop: 15 }}>
           <Text type="warning">
-            Note: A student will be able to view the response when it is submitted. You will, however, still be able to
-            edit the response.
+            Note: The student will be able to view this response once submitted, as well as your email as the responder.
+            You will, however, still be able to edit the response.
           </Text>
         </div>
       </Modal>
