@@ -98,7 +98,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         ) : null}
         {props.readOnlySubmission !== undefined &&
         props.submitStudentQuestion &&
-        (props.assignment.allowRegradeRequests || props.assignment.allowQuestions) ? (
+        props.assignment.allowRegradeRequests ? (
           <StudentQuestion
             submission={props.readOnlySubmission}
             assignment={props.assignment}
@@ -359,9 +359,10 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   const submitQuestion = () => {
     if (props.submitStudentQuestion) {
       setLoading(true);
-      closeModal();
       props.submitStudentQuestion(props.submission, questionText, questionIsRegrade).then(() => {
+        closeModal();
         setLoading(false);
+        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Submitted!`);
       });
     }
   };
@@ -384,23 +385,27 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip
-              title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
-              placement="right"
-            >
-              <CPButton cpType="secondary" icon="message" onClick={setModalVisible.bind({}, true)} />
+            <CPTooltip title="Submit a question or a regrade request" placement="right">
+              <CPButton cpType="secondary" icon="message" onClick={setModalVisible.bind(true)} />
             </CPTooltip>
           </div>
           <Modal
             onCancel={closeModal}
             visible={isModalVisible}
-            title={`Submit a question ${props.assignment.allowRegradeRequests ? 'or a regrade request' : ''}`}
-            onOk={submitQuestion}
+            title="Submit a question or regrade request"
+            footer={[
+              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+                Cancel
+              </CPButton>,
+              <CPButton key="submit" cpType="primary" loading={isLoading} onClick={submitQuestion}>
+                Submit
+              </CPButton>,
+            ]}
           >
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
-              <div style={regradeTextStyle}>
-                Ask for a regrade: <Switch disabled={false} onChange={setQuestionIsRegrade.bind({}, true)} />
+              <div style={{ paddingTop: 15, ...regradeTextStyle }}>
+                Ask for a regrade: <Switch disabled={false} onChange={setQuestionIsRegrade.bind(true)} />
               </div>
             ) : (
               <div />
@@ -413,7 +418,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div style={buttonStyle}>
           <CPTooltip title="Submitting..." placement="right">
-            <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind({}, true)} />
+            <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind(true)} />
           </CPTooltip>
         </div>
       );
@@ -422,15 +427,21 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip
-              title={`View submitted question ${props.assignment.allowRegradeRequests ? 'or regrade request' : ''}`}
-              placement="right"
-            >
-              <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind({}, true)} />
+            <CPTooltip title="View submitted question or regrade request" placement="right">
+              <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind(true)} />
             </CPTooltip>
           </div>
-          <Modal onCancel={closeModal} visible={isModalVisible} title="The review of your question is in progress...">
-            <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
+          <Modal
+            onCancel={closeModal}
+            visible={isModalVisible}
+            title="The review of your question is in progress..."
+            footer={[
+              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+                Cancel
+              </CPButton>,
+            ]}
+          >
+            <Text style={{ fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</Text>
             <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
           </Modal>
         </div>
@@ -441,11 +452,20 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
         <div>
           <div style={buttonStyle}>
             <CPTooltip title="View response" placement="right">
-              <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind({}, true)} />
+              <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind(true)} />
             </CPTooltip>
           </div>
-          <Modal onCancel={closeModal} visible={isModalVisible} title="View Question Response">
-            <Text style={{ fontStyle: 'italic' }}>{props.submission.questionText}</Text>
+          <Modal
+            onCancel={closeModal}
+            visible={isModalVisible}
+            title="View Question Response"
+            footer={[
+              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+                Cancel
+              </CPButton>,
+            ]}
+          >
+            <Text style={{ fontStyle: 'italic', whitespace: 'pre-wrap' }}>{props.submission.questionText}</Text>
             <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
             <Divider />
             <div>
@@ -453,7 +473,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
                 <b>Reviewer: </b> <Text>{props.submission.questionResponder}</Text>
               </div>
               <div style={{ paddingTop: 15 }}>
-                <b>Response: </b> <Text>{props.submission.questionResponse}</Text>
+                <b>Response: </b> <Text style={{ whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</Text>
               </div>
             </div>
           </Modal>
