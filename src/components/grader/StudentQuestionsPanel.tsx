@@ -27,7 +27,7 @@ interface IProps {
 
 const StudentQuestionsPanel = (props: IProps) => {
   const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
-  const [showStudentEmails, setShowStudentEmails] = useState(false);
+  const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
 
   const loadSubmissions = async (currentAssignment: AssignmentType, user: string) => {
