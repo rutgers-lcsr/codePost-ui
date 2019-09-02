@@ -388,10 +388,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
-              {assignment.allowRegradeRequests || assignment.allowQuestions ? (
+              {assignment.allowRegradeRequests ? (
                 <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Questions, assignment)}>
                   <Icon type="message" />
-                  {`View Questions${assignment.allowRegradeRequests ? ' & Regrades' : ''}`}
+                  View Questions & Regrades
                 </Menu.Item>
               ) : (
                 <div />

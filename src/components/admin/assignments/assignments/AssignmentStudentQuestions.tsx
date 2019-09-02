@@ -34,15 +34,11 @@ const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
             <a>Assignments</a>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>
-            {`Student Questions${props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''}`}
-          </Breadcrumb.Item>
+          <Breadcrumb.Item>Student Regrade Requests</Breadcrumb.Item>
         </Breadcrumb>
       }
       goBack={null}
-      title={`${props.assignment.name} | Student Questions${
-        props.assignment.allowRegradeRequests ? ' and Regrade Requests' : ''
-      }`}
+      title={`${props.assignment.name} | Student Regrade Requests`}
       actions={[]}
       content={
         <StudentQuestionsTable

@@ -306,7 +306,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     if (
       !this.state.currentCourse ||
       !this.state.currentAssignment ||
-      !(this.state.currentAssignment.allowQuestions || this.state.currentAssignment.allowRegradeRequests)
+      !this.state.currentAssignment.allowRegradeRequests
     ) {
       return null;
     }
@@ -431,8 +431,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         isSuperGrader={this.state.isSuperGrader}
         isSectionLeader={this.state.sectionsLed.length > 0}
         questionsAllowed={
-          this.state.currentAssignment !== undefined &&
-          (this.state.currentAssignment.allowQuestions || this.state.currentAssignment.allowRegradeRequests)
+          this.state.currentAssignment !== undefined && this.state.currentAssignment.allowRegradeRequests
         }
       />
     );
