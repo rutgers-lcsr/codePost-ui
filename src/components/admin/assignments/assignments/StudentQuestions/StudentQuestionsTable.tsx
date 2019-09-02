@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag } from 'antd';
+import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag, Typography } from 'antd';
 const { TextArea } = Input;
+const { Text } = Typography;
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -212,8 +213,8 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
       status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
-      text: submission.questionText,
-      response: responseContent,
+      text: <div style={{ whiteSpace: 'pre-wrap' }}>submission.questionText</div>,
+      response: <div style={{ whiteSpace: 'pre-wrap' }}>responseContent</div>,
       actions: (
         <Dropdown overlay={menu} trigger={['click']}>
           <Icon type="menu" />
@@ -236,9 +237,29 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
         onCancel={toggleModal.bind({}, null)}
         visible={modalVisible}
         title="Respond to Regrade request"
-        onOk={submitResponse}
+        footer={[
+          <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, null)}>
+            Close
+          </CPButton>,
+          <CPButton key="submit" cpType="primary" onClick={submitResponse}>
+            Submit
+          </CPButton>,
+        ]}
       >
+        <div>
+          <b>Request:</b>
+          <span style={{ fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+            {activeSubmission ? activeSubmission.questionText : ''}
+          </span>
+        </div>
+        <Divider />
         <TextArea autosize value={responseText} onChange={changeRegradeText} />
+        <div style={{ marginTop: 15 }}>
+          <Text type="warning">
+            Note: A student will be able to view the response when it is submitted. You will, however, still be able to
+            edit the response.
+          </Text>
+        </div>
       </Modal>
     </div>
   );
