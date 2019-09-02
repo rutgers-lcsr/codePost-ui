@@ -92,15 +92,16 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       }).length > 0;
 
     // sample search: category:dfdfdfdf some other text
-
-    // filter for rubric categories that only contain
+    // sample search: category:"some text" some other text
 
     // If user has specified a category with category:[some text], respect it
-    const categoryMatches = this.state.searchTerm.match(/category:[a-z0-9]{1,}/i);
+    const categoryMatches = this.state.searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+
     let filteredCatgories = rubricCategories;
     let commentSearchTerm = this.state.searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
-      const categoryName = categoryMatches[0].split(':')[1];
+      const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
+      console.log(categoryName);
       filteredCatgories = rubricCategories.filter((el) => {
         return el.name.toUpperCase().includes(categoryName.toUpperCase());
       });
