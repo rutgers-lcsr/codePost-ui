@@ -213,8 +213,8 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
       status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
-      text: <div style={{ whiteSpace: 'pre-wrap' }}>submission.questionText</div>,
-      response: <div style={{ whiteSpace: 'pre-wrap' }}>responseContent</div>,
+      text: <div style={{ whiteSpace: 'pre-wrap' }}>{submission.questionText}</div>,
+      response: <div style={{ whiteSpace: 'pre-wrap' }}>{responseContent}</div>,
       actions: (
         <Dropdown overlay={menu} trigger={['click']}>
           <Icon type="menu" />
