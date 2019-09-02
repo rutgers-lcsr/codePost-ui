@@ -40,7 +40,6 @@ import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from '
 import ThemeToggle from '../core/ThemeToggle';
 
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
-import RubricMenu from './menu/RubricMenu';
 
 import RubricMenuUI from './menu/RubricMenuUI';
 
@@ -1136,6 +1135,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
+        const onCancel = () => {
+          return;
+        };
+
         sider = [
           <SubmissionInfo
             key="submission-info"
@@ -1156,13 +1159,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             changeSelectedFile={this.changeSelectedFile}
             canChange={this.containsUnsavedComments}
           />,
-          <RubricMenu
-            key="rubric-menu"
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            handleRubricCommentClick={this.onRubricCommentClick}
-            hasActiveComment={this.state.activeCommentID !== undefined}
-          />,
+          <RubricManager key="rubric-menu" assignment={this.state.assignment} onCancel={onCancel}>
+            {({ props, state, helpers }: any) => {
+              const propz = {
+                ...props,
+                handleRubricCommentClick: this.onRubricCommentClick,
+                hasActiveComment: this.state.activeCommentID !== undefined,
+              };
+              return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
+            }}
+          </RubricManager>,
         ];
 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
@@ -1353,13 +1359,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             changeSelectedFile={this.changeSelectedFile}
             canChange={this.containsUnsavedComments}
           />,
-          // <RubricMenu
-          //   key="rubric-menu"
-          //   rubricCategories={this.state.rubricCategories}
-          //   rubricComments={this.state.rubricComments}
-          //   handleRubricCommentClick={this.onRubricCommentClick}
-          //   hasActiveComment={this.state.activeCommentID !== undefined}
-          // />,
           <RubricManager key="rubric-menu" assignment={this.state.assignment} onCancel={onCancel}>
             {({ props, state, helpers }: any) => {
               const propz = {
