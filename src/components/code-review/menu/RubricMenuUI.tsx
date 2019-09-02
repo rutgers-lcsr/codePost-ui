@@ -147,7 +147,14 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     };
 
     const controlButtons = [
-      <CPButton key="0" size="small" cpType="secondary" disabled={!changesMade} icon="undo" onClick={onUndo} />,
+      <CPButton
+        key="0"
+        size="small"
+        cpType="secondary"
+        disabled={!changesMade && Object.keys(editingStatuses).length === 0}
+        icon="undo"
+        onClick={onUndo}
+      />,
       <CPButton
         key="1"
         size="small"
