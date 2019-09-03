@@ -37,7 +37,7 @@ import { UserType } from '../../infrastructure/user';
 
 import GraderNav from './GraderNav';
 
-import StudentQuestionsPanel from './StudentQuestionsPanel';
+import RegradesPanel from './RegradesPanel';
 
 import RoleMenu from '../core/RoleMenu';
 
@@ -311,7 +311,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       return null;
     }
     return (
-      <StudentQuestionsPanel
+      <RegradesPanel
         assignment={this.state.currentAssignment}
         isAnonymous={this.state.currentAssignment.anonymousGrading}
         user={this.props.user}

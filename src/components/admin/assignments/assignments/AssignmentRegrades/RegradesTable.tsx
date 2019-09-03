@@ -37,7 +37,7 @@ enum RESPONSE_STATUS {
   EDIT_ALLOWED_NEW_RESPONSE,
 }
 
-const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
+const RegradesTable = (props: IStudentQuestionsProps) => {
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
@@ -270,4 +270,4 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
   );
 };
 
-export default StudentQuestionsTable;
+export default RegradesTable;

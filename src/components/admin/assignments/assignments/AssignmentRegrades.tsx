@@ -10,7 +10,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { UserType } from '../../../../infrastructure/user';
 
-import StudentQuestionsTable from './StudentQuestions/StudentQuestionsTable';
+import RegradesTable from './AssignmentRegrades/RegradesTable';
 
 interface IStudentQuestionsProps {
   /* assignment data */
@@ -23,7 +23,7 @@ interface IStudentQuestionsProps {
   user: UserType;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 }
-const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
+const AssignmentRegrades = (props: IStudentQuestionsProps) => {
   // *********************** STATE VARIABLES *************************
 
   return (
@@ -41,7 +41,7 @@ const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
       title={`${props.assignment.name} | Student Regrade Requests`}
       actions={[]}
       content={
-        <StudentQuestionsTable
+        <RegradesTable
           assignment={props.assignment}
           submissions={props.submissions}
           refreshCourseData={props.refreshCourseData}
@@ -54,4 +54,4 @@ const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
   );
 };
 
-export default AssignmentStudentQuestions;
+export default AssignmentRegrades;

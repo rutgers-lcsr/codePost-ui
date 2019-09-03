@@ -14,7 +14,7 @@ import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
-import StudentQuestionsTable from '../admin/assignments/assignments/StudentQuestions/StudentQuestionsTable';
+import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
 
 /**********************************************************************************************************************/
 
@@ -26,7 +26,7 @@ interface IProps {
   isSuperGrader: boolean;
 }
 
-const StudentQuestionsPanel = (props: IProps) => {
+const RegradesPanel = (props: IProps) => {
   const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
@@ -134,7 +134,7 @@ const StudentQuestionsPanel = (props: IProps) => {
 
   const content = (
     <div>
-      <StudentQuestionsTable
+      <RegradesTable
         assignment={props.assignment}
         submissions={submissions}
         refreshCourseData={refreshSubmissions}
@@ -159,4 +159,4 @@ const StudentQuestionsPanel = (props: IProps) => {
   );
 };
 
-export default StudentQuestionsPanel;
+export default RegradesPanel;
