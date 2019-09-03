@@ -36,6 +36,10 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
   }
 
   public toggleType = () => {
+    if (this.props.disabled) {
+      return;
+    }
+
     this.setState(
       (oldState) => {
         return {
@@ -110,7 +114,11 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
           onToggle={this.toggleType}
           thumbStyle={borderRadiusStyle}
           trackStyle={{ ...borderRadiusStyle, width: '40px' }}
-          containerStyle={{ display: 'inline-block', verticalAlign: 'middle' }}
+          containerStyle={{
+            display: 'inline-block',
+            verticalAlign: 'middle',
+            cursor: this.props.disabled ? 'not-allowed' : undefined,
+          }}
           thumbIcon={checked ? plus : minus}
           thumbAnimateRange={[1, 20]}
           colors={{
