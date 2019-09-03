@@ -9,6 +9,8 @@ import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-conte
 
 import ToggleButton from 'react-toggle-button';
 
+export type PointType = 'positive' | 'negative';
+
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
 interface ICPPointInputProps {
@@ -21,13 +23,45 @@ interface ICPPointInputProps {
   onKeyDown?: any;
 }
 
-class CPPointInput extends React.Component<ICPPointInputProps, {}> {
-  public onChange = () => {
-    this.props.onChange(this.props.value);
+interface IState {
+  pointType: PointType;
+}
+
+class CPPointInput extends React.Component<ICPPointInputProps, IState> {
+  public constructor(props: ICPPointInputProps) {
+    super(props);
+    this.state = {
+      pointType: props.value > 0 ? 'positive' : 'negative',
+    };
+  }
+
+  public toggleType = () => {
+    this.setState(
+      (oldState) => {
+        return {
+          pointType: oldState.pointType === 'positive' ? 'negative' : 'positive',
+        };
+      },
+      () => {
+        this.setValue(Math.abs(this.props.value));
+      },
+    );
   };
 
   public setValue = (value: number) => {
-    this.props.onChange(-value);
+    if (this.state.pointType === 'positive') {
+      this.props.onChange(-value);
+    } else {
+      this.props.onChange(value);
+    }
+  };
+
+  public onPlus = () => {
+    this.setValue(Math.abs(this.props.value) + 0.5);
+  };
+
+  public onMinus = () => {
+    this.setValue(Math.abs(this.props.value) - 0.5);
   };
 
   public render() {
@@ -65,7 +99,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
       </svg>
     );
 
-    const checked = this.props.value > 0;
+    const checked = this.state.pointType === 'positive';
 
     return (
       <InputGroup compact className={className}>
@@ -73,7 +107,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
           value={checked}
           inactiveLabel={''}
           activeLabel={''}
-          onToggle={this.onChange}
+          onToggle={this.toggleType}
           thumbStyle={borderRadiusStyle}
           trackStyle={{ ...borderRadiusStyle, width: '40px' }}
           containerStyle={{ display: 'inline-block', verticalAlign: 'middle' }}
@@ -89,16 +123,22 @@ class CPPointInput extends React.Component<ICPPointInputProps, {}> {
           }}
         />
         <InputNumber
-          value={this.props.value}
+          value={Math.abs(this.props.value)}
           step={0.5}
           size={this.props.size}
           onChange={this.setValue}
           disabled={this.props.disabled}
           onKeyDown={this.props.onKeyDown}
           style={style}
+          min={0}
         />
-        <Button icon="plus" onClick={this.props.onPlus} disabled={this.props.disabled} style={style} />
-        <Button icon="minus" onClick={this.props.onMinus} disabled={this.props.disabled} style={style} />
+        <Button icon="plus" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
+        <Button
+          icon="minus"
+          onClick={this.onMinus}
+          disabled={this.props.disabled || this.props.value === 0}
+          style={style}
+        />
       </InputGroup>
     );
   }
