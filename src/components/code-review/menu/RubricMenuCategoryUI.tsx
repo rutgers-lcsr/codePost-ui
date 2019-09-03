@@ -320,7 +320,6 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
       </div>
     );
   } else if (props.editing) {
-    console.log(<Icon type="delete" onClick={props.deleteComment} />);
     return (
       <div className="rubric-row--editing">
         {props.textInput}
@@ -344,24 +343,6 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         </div>
       </div>
     );
-
-    // return (
-    //   <div style={{ position: 'relative' }}>
-    //     <div
-    //       style={{ position: 'absolute', left: '-14px', color: '#f64852', cursor: 'pointer' }}
-    //       onClick={props.deleteComment}
-    //     >
-    //       x
-    //     </div>
-    //     <div style={{ position: 'absolute', left: '-24px', top: '20px' }} onClick={props.deleteComment}>
-    //       {props.linkedComments}
-    //     </div>
-    //     <InputGroup>
-    //       {props.textInput}
-    //       {props.pointInput}
-    //     </InputGroup>
-    //   </div>
-    // );
   } else {
     return (
       <div

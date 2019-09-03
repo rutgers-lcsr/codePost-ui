@@ -154,12 +154,26 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       setEditingStatuses({});
     };
 
+    const addRubricCategory = (e: any) => {
+      helpers.addRubricCategory(undefined, e);
+    };
+
     const onUndo = (e: any) => {
       helpers.resetRubric();
       setEditingStatuses({});
     };
 
     const controlButtons = [
+      <CPButton
+        key="add-category"
+        cpType="primary"
+        icon="plus"
+        onClick={addRubricCategory}
+        style={{ minWidth: '80px' }}
+      >
+        Add Category
+      </CPButton>,
+      <div key="gap1" style={{ width: '10px' }} />,
       <CPButton
         key="undo"
         cpType="secondary"
@@ -170,7 +184,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       >
         Undo
       </CPButton>,
-      <div key="gap" style={{ width: '10px' }} />,
+      <div key="gap2" style={{ width: '10px' }} />,
       <CPButton
         key="save"
         disabled={!changesMade}

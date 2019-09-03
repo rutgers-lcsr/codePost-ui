@@ -621,13 +621,13 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     }
   };
 
-  public addRubricCategory = () => {
+  public addRubricCategory = (name?: string) => {
     const { rubricCategories, rubricComments, newObjectCounter } = this.state;
     const newComments = { ...rubricComments };
 
     const payload = {
       id: newObjectCounter, // indicates unsaved
-      name: '',
+      name: name !== undefined ? name : '',
       pointLimit: null,
       assignment: this.props.assignment.id,
       rubricComments: [], // ignored by API,

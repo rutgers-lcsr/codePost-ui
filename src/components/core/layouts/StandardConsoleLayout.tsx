@@ -52,7 +52,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       : layoutVars.maxWidths.gradeSiderNormal;
 
   if (props.editRubricMode) {
-    siderWidth = 450;
+    siderWidth = 550;
   }
 
   const handleResize = async () => {
