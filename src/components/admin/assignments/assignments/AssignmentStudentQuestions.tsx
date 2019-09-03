@@ -47,6 +47,7 @@ const AssignmentStudentQuestions = (props: IStudentQuestionsProps) => {
           refreshCourseData={props.refreshCourseData}
           user={props.user}
           updateSubmission={props.updateSubmission}
+          isAdmin={true}
         />
       }
     />

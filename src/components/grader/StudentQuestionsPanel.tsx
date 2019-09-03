@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Divider, Switch } from 'antd';
+import { Switch } from 'antd';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
@@ -23,31 +23,34 @@ interface IProps {
   user: UserType;
   isAnonymous: boolean;
   isAdmin: boolean;
+  isSuperGrader: boolean;
 }
 
 const StudentQuestionsPanel = (props: IProps) => {
   const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
+  const [viewAll, setViewAll] = useState(false);
 
-  const loadSubmissions = async (currentAssignment: AssignmentType, user: string) => {
+  const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
     const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
     });
     setSubmissions(newSubmissions);
+    setLoading(false);
+    return;
+  };
+
+  const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
+    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id);
+    setSubmissions(newSubmissions);
+    setLoading(false);
     return;
   };
 
   const refreshSubmissions = () => {
-    loadSubmissions(props.assignment, props.user.email);
-    return;
-  };
-
-  const changeAssignment = (newAssignment: AssignmentType) => {
     setLoading(true);
-    loadSubmissions(newAssignment, props.user.email).then(() => {
-      setLoading(false);
-    });
+    viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email);
   };
 
   const updateSubmission = (toUpdate: AnonymousSubmissionType) => {
@@ -73,15 +76,26 @@ const StudentQuestionsPanel = (props: IProps) => {
     });
   };
 
+  // Update submission if assignment changes or viewAll is triggered
   useEffect(
     () => {
-      changeAssignment(props.assignment);
+      refreshSubmissions();
     },
-    [props.assignment],
+    [props.assignment, viewAll],
   );
 
+  // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
+  const regradeSubmissions = submissions.filter((submission) => {
+    return (
+      submission.questionIsOpen ||
+      submission.questionText ||
+      submission.questionResponder ||
+      submission.questionResponse
+    );
+  });
+
   const revealStudents =
-    props.isAnonymous && props.isAdmin ? (
+    props.isAnonymous && regradeSubmissions.length > 0 && typeof regradeSubmissions[0].students !== 'undefined' ? (
       <div>
         <div style={{ display: 'inline-block' }}>
           Reveal students: &nbsp;
@@ -90,17 +104,36 @@ const StudentQuestionsPanel = (props: IProps) => {
             onChange={setShowStudentEmails.bind({}, !showStudentEmails)}
             key="toggleShowStudents"
             style={{ display: 'inline-block' }}
+            disabled={isLoading}
           />
         </div>
-        <Divider type="vertical" style={{ height: 25 }} />
       </div>
     ) : (
       <div />
     );
 
+  const showAllRegrades =
+    props.isAdmin || props.isSuperGrader ? (
+      <div>
+        <div style={{ display: 'inline-block', marginLeft: 15 }}>
+          View all regrades: &nbsp;
+          <Switch
+            defaultChecked={viewAll}
+            onChange={setViewAll.bind(!viewAll)}
+            key="toggleViewAll"
+            style={{ display: 'inline-block' }}
+            disabled={isLoading}
+          />
+        </div>
+      </div>
+    ) : (
+      <div />
+    );
+
+  const actions = [revealStudents, showAllRegrades];
+
   const content = (
     <div>
-      {revealStudents}
       <StudentQuestionsTable
         assignment={props.assignment}
         submissions={submissions}
@@ -109,6 +142,7 @@ const StudentQuestionsPanel = (props: IProps) => {
         updateSubmission={updateSubmission}
         isLoading={isLoading}
         isAnonymous={!showStudentEmails}
+        isAdmin={props.isAdmin}
       />
     </div>
   );
@@ -118,7 +152,7 @@ const StudentQuestionsPanel = (props: IProps) => {
       goBack={null}
       title={<div>{`Student questions: ${props.assignment.name}`}</div>}
       titleInfo={'Quesitons or regrade requests from submissions that you have graded.'}
-      actions={[]}
+      actions={actions}
       content={content}
       gutterSize={0}
     />

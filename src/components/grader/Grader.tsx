@@ -318,6 +318,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         isAdmin={this.props.user.courseadminCourses.some((el) => {
           return el.id === this.state.currentCourse!.id;
         })}
+        isSuperGrader={this.state.isSuperGrader}
       />
     );
   };
