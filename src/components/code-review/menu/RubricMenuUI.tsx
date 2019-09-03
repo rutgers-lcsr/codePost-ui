@@ -125,6 +125,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
               linkToComment,
               searchTerm,
               assignment: props.assignment,
+              editRubricMode: props.editRubricMode,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}

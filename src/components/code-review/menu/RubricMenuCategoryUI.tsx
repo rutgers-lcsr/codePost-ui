@@ -5,7 +5,6 @@ import * as React from 'react';
 import { Button, Divider, Icon, Input, InputNumber, Menu, Popover, Tag } from 'antd';
 
 const SubMenu = Menu.SubMenu;
-const InputGroup = Input.Group;
 const { TextArea } = Input;
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
@@ -48,6 +47,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
     linkToComment,
     searchTerm,
     assignment,
+    editRubricMode,
     ...otherProps
   } = props;
 
@@ -90,13 +90,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           // };
 
           const textInput = (
-            <TextArea
-              autosize
-              value={thisComment.text}
-              onChange={onChangeText}
-              onBlur={saveComment}
-              style={{ width: '76%' }}
-            />
+            <TextArea autosize={{ minRows: 2 }} value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />
           );
 
           const pointInput = (
@@ -104,7 +98,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
               value={thisComment.pointDelta}
               onChange={onChangePointDelta}
               onBlur={saveComment}
-              style={{ width: '20%' }}
+              style={{ maxWidth: '45px' }}
             />
           );
 
@@ -134,6 +128,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
                 linkedComments={linkedComments}
+                editRubricMode={props.editRubricMode}
               />
             </Menu.Item>
           );
@@ -155,13 +150,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           };
 
           const textInput = (
-            <TextArea
-              autosize
-              value={''}
-              onChange={updateRubricCommentText}
-              onBlur={saveComment}
-              style={{ width: '76%' }}
-            />
+            <TextArea autosize={{ minRows: 2 }} value={''} onChange={updateRubricCommentText} onBlur={saveComment} />
           );
 
           const pointInput = (
@@ -169,7 +158,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
               value={0}
               onChange={updateRubricCommentPointDelta}
               onBlur={saveComment}
-              style={{ width: '20%' }}
+              style={{ maxWidth: '45px' }}
             />
           );
 
@@ -195,6 +184,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
                 linkedComments={null}
+                editRubricMode={props.editRubricMode}
               />
             </Menu.Item>
           );
@@ -298,6 +288,7 @@ interface IRubricMenuCommentElementProps {
   deleteComment: any;
   assignment: any;
   linkedComments: React.ReactNode;
+  editRubricMode: boolean;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -314,7 +305,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     props.linkToComment(props.rubricComment);
   };
 
-  if (!props.assignment.collaborativeRubricMode) {
+  if (!props.assignment.collaborativeRubricMode || !props.editRubricMode) {
     return (
       <div
         style={{
@@ -329,23 +320,48 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
       </div>
     );
   } else if (props.editing) {
+    console.log(<Icon type="delete" onClick={props.deleteComment} />);
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="rubric-row--editing">
+        {props.textInput}
+        {props.pointInput}
+        <div style={{ width: '40px' }} />
         <div
-          style={{ position: 'absolute', left: '-14px', color: '#f64852', cursor: 'pointer' }}
-          onClick={props.deleteComment}
+          style={{
+            position: 'absolute',
+            right: '0px',
+            width: '35px',
+            borderLeft: '1px solid #ececec',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
+          }}
         >
-          x
-        </div>
-        <div style={{ position: 'absolute', left: '-24px', top: '20px' }} onClick={props.deleteComment}>
+          <Icon type="delete" onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
           {props.linkedComments}
         </div>
-        <InputGroup>
-          {props.textInput}
-          {props.pointInput}
-        </InputGroup>
       </div>
     );
+
+    // return (
+    //   <div style={{ position: 'relative' }}>
+    //     <div
+    //       style={{ position: 'absolute', left: '-14px', color: '#f64852', cursor: 'pointer' }}
+    //       onClick={props.deleteComment}
+    //     >
+    //       x
+    //     </div>
+    //     <div style={{ position: 'absolute', left: '-24px', top: '20px' }} onClick={props.deleteComment}>
+    //       {props.linkedComments}
+    //     </div>
+    //     <InputGroup>
+    //       {props.textInput}
+    //       {props.pointInput}
+    //     </InputGroup>
+    //   </div>
+    // );
   } else {
     return (
       <div
