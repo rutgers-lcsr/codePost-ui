@@ -26,8 +26,9 @@ interface IStudentQuestionsProps {
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
   isAnonymous?: boolean;
-
   isLoading?: boolean;
+
+  isAdmin: boolean;
 }
 
 enum RESPONSE_STATUS {
@@ -172,11 +173,14 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
   });
 
   const rows = regradeSubmissions.map((submission) => {
+    const hasPermissionToClaim =
+      props.isAdmin || submission.questionResponder === props.user.email || submission.questionResponder === null;
+
     const menu = (
       <Menu>
         <Menu.Item
           key="1"
-          disabled={!submission.questionIsOpen}
+          disabled={!submission.questionIsOpen || !hasPermissionToClaim}
           onClick={updateSubmissionField.bind(
             {},
             submission,
@@ -191,6 +195,7 @@ const StudentQuestionsTable = (props: IStudentQuestionsProps) => {
         <Menu.Item
           key="2"
           onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
+          disabled={!hasPermissionToClaim}
         >
           <Icon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
           {submission.questionIsOpen ? 'Close' : 'Re-open'}
