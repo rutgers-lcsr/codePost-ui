@@ -119,6 +119,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               backgroundColor: consoleTheme.mainBg,
               minWidth: layoutVars.minWidths.grade,
             }}
+            id="code-scroll-area"
           >
             <Content className="layout--standard-console__content">{props.content}</Content>
             {props.children}
