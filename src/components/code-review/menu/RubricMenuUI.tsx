@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Menu } from 'antd';
+import { Icon, Input, Menu, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -50,6 +50,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingStatuses, setEditingStatuses] = React.useState({});
   const [editRubricClass, setEditRubricClass] = React.useState('');
+  const [newCategoryName, setNewCategoryName] = React.useState('');
 
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
@@ -155,7 +156,12 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     };
 
     const addRubricCategory = (e: any) => {
-      helpers.addRubricCategory(undefined, e);
+      helpers.addRubricCategory(newCategoryName, e);
+      setNewCategoryName('');
+    };
+
+    const onCancel = () => {
+      setNewCategoryName('');
     };
 
     const onUndo = (e: any) => {
@@ -163,16 +169,26 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       setEditingStatuses({});
     };
 
+    const onChangeCategoryName = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setNewCategoryName(e.target.value);
+    };
+
+    const categoryForm = <Input placeholder="Category name" value={newCategoryName} onChange={onChangeCategoryName} />;
+
     const controlButtons = [
-      <CPButton
+      <Popconfirm
         key="add-category"
-        cpType="primary"
-        icon="plus"
-        onClick={addRubricCategory}
-        style={{ minWidth: '80px' }}
+        icon={null}
+        title={categoryForm}
+        okText="Create"
+        cancelText="Cancel"
+        onConfirm={addRubricCategory}
+        onCancel={onCancel}
       >
-        Add Category
-      </CPButton>,
+        <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
+          Add Category
+        </CPButton>
+      </Popconfirm>,
       <div key="gap1" style={{ width: '10px' }} />,
       <CPButton
         key="undo"
