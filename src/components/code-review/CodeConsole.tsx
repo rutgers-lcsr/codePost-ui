@@ -100,6 +100,8 @@ interface ICodeConsoleState {
 
   /* demo data */
   demoCommentCounter: number;
+
+  editRubricMode: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -340,6 +342,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       demoCommentCounter: 0,
 
       isStudent: false,
+
+      editRubricMode: false,
     };
   }
 
@@ -954,6 +958,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ dimensions });
   };
 
+  public toggleEditRubricMode = () => {
+    this.setState({ editRubricMode: !this.state.editRubricMode });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -1165,6 +1173,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 ...props,
                 handleRubricCommentClick: this.onRubricCommentClick,
                 hasActiveComment: this.state.activeCommentID !== undefined,
+                toggleEditRubricMode: this.toggleEditRubricMode,
+                editRubricMode: this.state.editRubricMode,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1365,6 +1375,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 ...props,
                 handleRubricCommentClick: this.onRubricCommentClick,
                 hasActiveComment: this.state.activeCommentID !== undefined,
+                toggleEditRubricMode: this.toggleEditRubricMode,
+                editRubricMode: this.state.editRubricMode,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1406,6 +1418,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           sider={sider}
           siderTitles={siderTitles}
           content={content}
+          editRubricMode={this.state.editRubricMode}
         />
       </div>
     );

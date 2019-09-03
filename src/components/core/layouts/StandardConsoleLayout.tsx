@@ -34,6 +34,7 @@ interface IStandardConsoleLayoutProps {
   content: React.ReactNode;
   children?: React.ReactNode;
   siderTitles: Array<string | React.ReactNode>;
+  editRubricMode: boolean;
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
@@ -45,10 +46,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
   };
 
-  const siderWidth =
+  let siderWidth =
     windowSize.width < layoutVars.breakpoints.smallScreen.grade
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
+
+  if (props.editRubricMode) {
+    siderWidth = 450;
+  }
 
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
     useGradeResizer();

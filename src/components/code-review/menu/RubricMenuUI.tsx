@@ -6,7 +6,8 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Input, Menu } from 'antd';
+// @ts-ignore
+import { Icon, Input, Menu } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -19,7 +20,6 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import useHotkeys, { O_KEY } from '../useHotkeys';
 
 import CPButton from '../../core/CPButton';
-import CPFlex from '../../core/CPFlex';
 
 import Loading from '../../core/Loading';
 
@@ -49,6 +49,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingStatuses, setEditingStatuses] = React.useState({});
+  const [editRubricClass, setEditRubricClass] = React.useState('');
 
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
@@ -132,6 +133,17 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     });
   };
 
+  const toggleEditRubricMode = () => {
+    setEditingStatuses({});
+    if (!props.editRubricMode) {
+      setEditRubricClass('slide-in');
+      props.toggleEditRubricMode();
+    } else {
+      setEditRubricClass('slide-out');
+      props.toggleEditRubricMode();
+    }
+  };
+
   let controls = null;
   if (state.loadComplete && props.assignment.collaborativeRubricMode) {
     const changesMade = helpers.changesMade();
@@ -148,16 +160,18 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
     const controlButtons = [
       <CPButton
-        key="0"
-        size="small"
+        key="undo"
         cpType="secondary"
         disabled={!changesMade && Object.keys(editingStatuses).length === 0}
         icon="undo"
         onClick={onUndo}
-      />,
+        style={{ minWidth: '80px' }}
+      >
+        Undo
+      </CPButton>,
+      <div key="gap" style={{ width: '10px' }} />,
       <CPButton
-        key="1"
-        size="small"
+        key="save"
         disabled={!changesMade}
         onClick={onSave}
         cpType="primary"
@@ -169,10 +183,48 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       </CPButton>,
     ];
 
-    controls = (
-      <div style={{ margin: '0px 18px 5px 0px' }}>
-        <CPFlex left={[]} right={controlButtons} gutterSize={10} />
-      </div>
+    controls = controlButtons;
+  }
+
+  let searchBar;
+
+  if (props.assignment.collaborativeRubricMode) {
+    searchBar = (
+      <Input
+        placeholder="Search rubric... (⌘ O)"
+        id="rubric-search"
+        onChange={onSearch}
+        value={searchTerm}
+        addonBefore={
+          <Icon
+            type="edit"
+            theme="filled"
+            onClick={toggleEditRubricMode}
+            style={{ color: '#24be85', cursor: 'pointer' }}
+          />
+        }
+        style={{
+          backgroundColor: consoleTheme.siderBg,
+
+          color: consoleTheme.buttonSecondaryColor,
+          width: '100%',
+        }}
+      />
+    );
+  } else {
+    searchBar = (
+      <Input
+        placeholder="Search rubric... (⌘ O)"
+        id="rubric-search"
+        onChange={onSearch}
+        value={searchTerm}
+        style={{
+          backgroundColor: consoleTheme.siderBg,
+          border: consoleTheme.buttonSecondaryBorder,
+          color: consoleTheme.buttonSecondaryColor,
+          width: '100%',
+        }}
+      />
     );
   }
 
@@ -200,23 +252,17 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
 
   return (
     <div style={{ marginTop: '8px' }}>
-      <div id="rubric-menu-title" style={{ marginBottom: '5px', width: '100%', textAlign: 'center' }}>
-        {controls}
-        <Input
-          placeholder="Search rubric... (⌘ O)"
-          id="rubric-search"
-          onChange={onSearch}
-          value={searchTerm}
-          style={{
-            backgroundColor: consoleTheme.siderBg,
-            border: consoleTheme.buttonSecondaryBorder,
-            color: consoleTheme.buttonSecondaryColor,
-            width: '90%',
-          }}
-        />
+      <div
+        id="rubric-menu-title"
+        style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
+      >
+        {searchBar}
       </div>
       <div id="rubric-menu" style={{ height: '100%', overflow: 'auto' }}>
         {content}
+      </div>
+      <div id="rubric-menu-controls" className={editRubricClass} style={{ backgroundColor: consoleTheme.siderBg }}>
+        {controls}
       </div>
     </div>
   );

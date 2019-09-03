@@ -14,6 +14,8 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
+import Badge from '../../core/Badge';
+
 const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   // Capturing ...otherProps allows us to catch the required Ant props from
   // ParentMenu -> Menu.SubMenu
@@ -106,6 +108,10 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
             />
           );
 
+          const linkedComments = (
+            <Badge count={thisComment.comments.length} forcedStyle="neutral" faded={false} size="small" />
+          );
+
           const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
           return (
             <Menu.Item
@@ -127,6 +133,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 pointDelta={thisComment.pointDelta}
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
+                linkedComments={linkedComments}
               />
             </Menu.Item>
           );
@@ -187,6 +194,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                 pointDelta={0}
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
+                linkedComments={null}
               />
             </Menu.Item>
           );
@@ -289,6 +297,7 @@ interface IRubricMenuCommentElementProps {
   pointDelta: number;
   deleteComment: any;
   assignment: any;
+  linkedComments: React.ReactNode;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -327,6 +336,9 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           onClick={props.deleteComment}
         >
           x
+        </div>
+        <div style={{ position: 'absolute', left: '-24px', top: '20px' }} onClick={props.deleteComment}>
+          {props.linkedComments}
         </div>
         <InputGroup>
           {props.textInput}
