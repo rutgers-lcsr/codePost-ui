@@ -19,6 +19,7 @@ interface ICPPointInputProps {
   onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
   disabled?: boolean;
   onKeyDown?: any;
+  onBlur?: () => void;
 }
 
 interface IState {
@@ -104,7 +105,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     const checked = this.state.pointType === 'positive';
 
     return (
-      <InputGroup compact className={className}>
+      <InputGroup compact className={className} onBlur={this.props.onBlur ? this.props.onBlur : undefined}>
         <ToggleButton
           value={checked}
           inactiveLabel={''}

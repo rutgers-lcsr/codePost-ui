@@ -519,6 +519,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
               disabled={false}
               onKeyDown={doNothing}
+              onBlur={this.saveComment.bind(this, thisComment.id)}
             />
           ),
           linked: (
