@@ -882,6 +882,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           extension: file.name.split('.')[1],
           name: file.name,
           submission: 1,
+          path: null,
         });
 
         commentMap[index] = [];

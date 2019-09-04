@@ -12,6 +12,7 @@ const FileV = t.intersection(
       extension: t.string,
       name: t.string,
       submission: t.number,
+      path: t.union([t.string, t.null]),
     }),
     t.partial({}),
   ],
@@ -27,6 +28,7 @@ const FileVPatch = t.intersection(
       extension: t.string,
       name: t.string,
       submission: t.number,
+      path: t.union([t.string, t.null]),
     }),
   ],
   'FilePatch',
@@ -87,6 +89,7 @@ const FileMock: FileType = {
   code: codeString,
   comments: [1],
   submission: 1,
+  path: null,
 };
 
 export { CodeType, FileType, File, FileMock };

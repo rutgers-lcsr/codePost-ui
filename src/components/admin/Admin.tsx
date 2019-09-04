@@ -1160,6 +1160,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           code: file.data,
           submission: submission.id,
           comments: [],
+          path: null,
         };
         return File.create(filePayload);
       });
