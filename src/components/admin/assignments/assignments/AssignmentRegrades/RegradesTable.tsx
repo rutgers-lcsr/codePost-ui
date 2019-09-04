@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 
 import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag, Typography } from 'antd';
 const { TextArea } = Input;
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
+const { confirm } = Modal;
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -42,9 +43,11 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
   const [responseText, setResponseText] = useState('');
+  const [modalReadOnly, setModalReadOnly] = useState(true);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
-  const toggleModal = (submission?: SubmissionType) => {
+  const toggleModal = (readOnly: boolean, submission?: SubmissionType) => {
+    setModalReadOnly(readOnly);
     setActiveSubmission(submission);
     setModalVisibility(!modalVisible);
     setResponseText(submission && submission.questionResponse ? submission.questionResponse : '');
@@ -54,17 +57,37 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     setResponseText(event.target.value);
   };
 
-  const submitResponse = () => {
-    if (activeSubmission) {
-      updateSubmissionField(activeSubmission, 'questionResponse', responseText);
-    }
-    toggleModal(undefined);
-  };
-
   const updateSubmissionField = (submission: SubmissionType, field: string, newValue: any) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission[field] = newValue;
     props.updateSubmission(newSubmission);
+  };
+
+  const releaseRegrade = (submission: SubmissionType) => {
+    const newSubmission = JSON.parse(JSON.stringify(submission));
+    newSubmission['questionResponder'] = null;
+    newSubmission['questionResponse'] = '';
+    props.updateSubmission(newSubmission);
+  };
+
+  const confirmRelease = (submission: SubmissionType) => {
+    confirm({
+      title: 'Are you sure you want to release this regrade?',
+      content: 'Releasing this will delete any draft response.',
+      onOk() {
+        releaseRegrade(submission);
+      },
+      onCancel() {
+        return;
+      },
+    });
+  };
+
+  const submitResponse = () => {
+    if (activeSubmission) {
+      updateSubmissionField(activeSubmission, 'questionResponse', responseText);
+    }
+    toggleModal(true, undefined);
   };
 
   // *********************** TABLE HELPER FUNCTIONS *************************
@@ -81,19 +104,20 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
 
     switch (responseStatus) {
       case RESPONSE_STATUS.EDIT_NOT_ALLOWED:
-        return submission.questionResponse;
+        return (
+          <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
+            {submission.questionResponse}
+          </Paragraph>
+        );
       case RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE:
         return (
-          <div style={{ display: 'flex', justifyCotnent: 'space-between', alignItems: 'center' }}>
+          <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
             {submission.questionResponse}
-            <div style={{ float: 'right', marginLeft: 10 }}>
-              <CPButton cpType="secondary" onClick={toggleModal.bind({}, submission)} icon="edit" />
-            </div>
-          </div>
+          </Paragraph>
         );
       case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE:
         return (
-          <CPButton cpType="primary" onClick={toggleModal.bind({}, submission)}>
+          <CPButton cpType="primary" onClick={toggleModal.bind({}, false, submission)}>
             Respond
           </CPButton>
         );
@@ -176,24 +200,34 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     const hasPermissionToClaim =
       props.isAdmin || submission.questionResponder === props.user.email || submission.questionResponder === null;
 
+    const responseStatus = getResponseStatus(submission);
     const menu = (
       <Menu>
-        <Menu.Item
-          key="1"
-          disabled={!submission.questionIsOpen || !hasPermissionToClaim}
-          onClick={updateSubmissionField.bind(
-            {},
-            submission,
-            'questionResponder',
-            submission.questionResponder === props.user.email ? null : props.user.email,
-          )}
-        >
-          <Icon type={submission.questionResponder === props.user.email ? 'minus-circle' : 'plus-circle'} />
-          {submission.questionResponder === props.user.email ? 'Release' : 'Claim'}
+        <Menu.Item key="1" onClick={toggleModal.bind({}, true, submission)}>
+          <Icon type="eye" />
+          View Regrade
         </Menu.Item>
-        <Divider style={{ marginBottom: 10, marginTop: 10 }} />
+        {responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
+          <Menu.Item key="2" onClick={toggleModal.bind({}, false, submission)}>
+            <Icon type="edit" />
+            Edit Response
+          </Menu.Item>
+        ) : (
+          <div />
+        )}
         <Menu.Item
-          key="2"
+          key="3"
+          onClick={
+            submission.questionResponder !== props.user.email
+              ? updateSubmissionField.bind({}, submission, 'questionResponder', props.user.email)
+              : confirmRelease.bind({}, submission)
+          }
+        >
+          <Icon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
+          {submission.questionResponder !== props.user.email ? 'Claim' : 'Release'}
+        </Menu.Item>
+        <Menu.Item
+          key="4"
           onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
           disabled={!hasPermissionToClaim}
         >
@@ -218,8 +252,12 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
       status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
-      text: <div style={{ whiteSpace: 'pre-wrap' }}>{submission.questionText}</div>,
-      response: <div style={{ whiteSpace: 'pre-wrap' }}>{responseContent}</div>,
+      text: (
+        <Paragraph style={{ whiteSpace: 'pre-wrap' }} ellipsis={{ rows: 1 }}>
+          {submission.questionText}
+        </Paragraph>
+      ),
+      response: responseContent,
       actions: (
         <Dropdown overlay={menu} trigger={['click']}>
           <Icon type="menu" />
@@ -228,42 +266,60 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     };
   });
 
+  const closeButton = (
+    <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, true, null)}>
+      Close
+    </CPButton>
+  );
+
+  const submitButton = (
+    <CPButton key="submit" cpType="primary" onClick={submitResponse}>
+      Submit
+    </CPButton>
+  );
+
+  const footer = modalReadOnly ? [closeButton] : [closeButton, submitButton];
+
   // *********************** RENDER *************************
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 10 }}>
-        <CPButton cpType="secondary" icon="reload" onClick={props.refreshCourseData}>
-          Refresh Data
-        </CPButton>
-      </div>
+      <CPButton cpType="secondary" icon="reload" style={{ marginBottom: 10 }} onClick={props.refreshCourseData}>
+        Refresh Data
+      </CPButton>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
       <Modal
         onCancel={toggleModal.bind({}, null)}
         visible={modalVisible}
         title="Respond to Regrade request"
-        footer={[
-          <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, null)}>
-            Close
-          </CPButton>,
-          <CPButton key="submit" cpType="primary" onClick={submitResponse}>
-            Submit
-          </CPButton>,
-        ]}
+        footer={footer}
       >
-        <div>
-          <b>Request:</b>
-          <span style={{ fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
+        <div className="display-flex flex-direction-column">
+          <div style={{ fontSize: 12, color: 'grey', marginBottom: 5 }}>
+            {activeSubmission ? activeSubmission.students : ''}
+          </div>
+          <span style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}>
             {activeSubmission ? activeSubmission.questionText : ''}
           </span>
         </div>
         <Divider />
-        <TextArea autosize value={responseText} onChange={changeRegradeText} />
-        <div style={{ marginTop: 15 }}>
-          <Text type="warning">
-            Note: The student will be able to view this response once submitted, as well as your email as the responder.
-            You will, however, still be able to edit the response.
-          </Text>
+        <div className="display-flex flex-direction-column">
+          <div style={{ fontSize: 12, color: 'grey', marginBottom: 5 }}>
+            {activeSubmission && activeSubmission.questionResponder ? activeSubmission.questionResponder : ''}
+          </div>
+          {modalReadOnly ? (
+            <div>{responseText}</div>
+          ) : (
+            <div>
+              <TextArea autosize value={responseText} onChange={changeRegradeText} />
+              <div style={{ marginTop: 15 }}>
+                <Text type="warning">
+                  Note: The student will be able to view this response once submitted, as well as your email as the
+                  responder. You will, however, still be able to edit the response.
+                </Text>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>
