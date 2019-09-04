@@ -30,6 +30,8 @@ import { DIRECTION } from '../../../../types/common';
 
 import { IFeedbackScore } from './RubricManager';
 
+import CPPointInput from '../../../core/CPPointInput';
+
 /**********************************************************************************************************************/
 
 interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
@@ -495,6 +497,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         thisFeedback = this.props.feedbackScores[thisComment.id];
       }
 
+      const doNothing = () => {
+        return;
+      };
+
       if (thisComment) {
         return {
           key: thisComment.id,
@@ -507,10 +513,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           deduction: (
-            <InputNumber
-              value={thisComment.pointDelta}
+            <CPPointInput
+              value={-thisComment.pointDelta}
+              size="small"
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, thisComment.id)}
+              disabled={false}
+              onKeyDown={doNothing}
             />
           ),
           linked: (
