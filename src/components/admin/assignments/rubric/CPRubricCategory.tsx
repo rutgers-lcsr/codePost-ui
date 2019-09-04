@@ -30,6 +30,8 @@ import { DIRECTION } from '../../../../types/common';
 
 import { IFeedbackScore } from './RubricManager';
 
+import CPPointInput from '../../../core/CPPointInput';
+
 /**********************************************************************************************************************/
 
 interface ICPRubricCategoryProps extends IWithWindowWatcherProps {
@@ -507,9 +509,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           deduction: (
-            <InputNumber
-              value={thisComment.pointDelta}
+            <CPPointInput
+              value={-thisComment.pointDelta}
+              size="small"
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
+              disabled={false}
               onBlur={this.saveComment.bind(this, thisComment.id)}
             />
           ),
@@ -644,11 +648,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             iconStyle={{ paddingLeft: 5 }}
           />
         </div>
-        <InputNumber
-          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
+        <CPPointInput
+          value={this.state.pointLimit !== null ? -this.state.pointLimit : undefined}
+          size="small"
           onChange={this.setValue.bind(this, 'pointLimit')}
+          disabled={false}
           onBlur={this.saveCategory}
-          min={0}
         />
       </div>
     );

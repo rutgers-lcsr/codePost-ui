@@ -39,6 +39,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       allowStudentUpload: values.allowStudentUpload,
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
+      additiveGrading: values.additiveGrading,
     };
 
     this.props.onSave(payload).then(() => {
@@ -101,6 +102,7 @@ interface IFormValues {
   allowStudentUpload: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
+  additiveGrading: boolean;
 }
 
 interface IFormState {
@@ -265,7 +267,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
             </Form.Item>
             <Form.Item
-              label="Live Feedback mode"
+              label="Live feedback mode"
               extra={
                 <div>
                   <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
@@ -277,6 +279,21 @@ const CollectionCreateForm: any = Form.create()(
             >
               {getFieldDecorator('liveFeedbackMode', {
                 initialValue: this.props.assignment.liveFeedbackMode,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Additive grading"
+              extra={
+                <div>
+                  <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
+                </div>
+              }
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('additiveGrading', {
+                initialValue: this.props.assignment.additiveGrading,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>

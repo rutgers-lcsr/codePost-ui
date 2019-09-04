@@ -19,6 +19,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
+  additiveGrading: boolean;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
@@ -304,6 +305,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
           studentFeedbackOn={this.props.studentFeedbackOn}
+          additiveGrading={this.props.additiveGrading}
         />
       );
     });
