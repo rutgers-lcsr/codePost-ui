@@ -339,8 +339,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <CPPointInput
           value={-points}
           size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}

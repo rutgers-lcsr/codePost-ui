@@ -132,16 +132,6 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     return Math.ceil(n / m) * m;
   };
 
-  public onPlus = () => {
-    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
-    this.onChangePointInput(points);
-  };
-
-  public onMinus = () => {
-    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
-    this.onChangePointInput(points);
-  };
-
   public onCommentClick = (e: React.MouseEvent) => {
     // FIXME:
     if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
@@ -318,8 +308,6 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
         <CPPointInput
           value={points}
           size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}

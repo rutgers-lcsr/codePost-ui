@@ -17,8 +17,6 @@ interface ICPPointInputProps {
   value: number;
   size: CPPointInputType;
   onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
-  onPlus?: any;
-  onMinus?: any;
   disabled?: boolean;
   onKeyDown?: any;
 }
@@ -140,9 +138,9 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
           style={style}
           min={0}
         />
-        <Button icon="plus" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
+        <Button icon="caret-up" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
         <Button
-          icon="minus"
+          icon="caret-down"
           onClick={this.onMinus}
           disabled={this.props.disabled || this.props.value === 0}
           style={style}
