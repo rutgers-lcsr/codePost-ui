@@ -11,6 +11,9 @@ import ToggleButton from 'react-toggle-button';
 
 export type PointType = 'positive' | 'negative';
 
+import { ReactComponent as MinusSvg } from '../../img/icons/minus.svg';
+import { ReactComponent as PlusSvg } from '../../img/icons/plus.svg';
+
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
 interface ICPPointInputProps {
@@ -96,17 +99,34 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         };
     // tslint:enable
 
-    const borderRadiusStyle = { borderRadius: 2 };
     const plus = (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-8 0 42 42">
-        <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z" />
-      </svg>
+      <PlusSvg
+        key="plus"
+        style={{
+          height: '8px',
+          width: '8px',
+          fill: 'rgba(0, 0, 0, 0.8)',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
     );
 
     const minus = (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-8 0 42 42">
-        <path d="M0 10h24v4h-24z" />
-      </svg>
+      <MinusSvg
+        key="minus"
+        style={{
+          height: '8px',
+          width: '8px',
+          fill: 'rgba(0, 0, 0, 0.8)',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
     );
 
     const checked = this.state.pointType === 'positive';
@@ -118,15 +138,16 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
           inactiveLabel={''}
           activeLabel={''}
           onToggle={this.toggleType}
-          thumbStyle={borderRadiusStyle}
-          trackStyle={{ ...borderRadiusStyle, width: '40px' }}
+          thumbStyle={{ borderRadius: 4, boxShadow: 'none' }}
+          trackStyle={{ borderRadius: 5, width: '32px' }}
           containerStyle={{
             display: 'inline-block',
             verticalAlign: 'middle',
-            cursor: this.props.disabled ? 'not-allowed' : undefined,
+            width: '40px',
+            cursor: this.props.disabled ? 'not-allowed' : 'pointer',
           }}
           thumbIcon={checked ? plus : minus}
-          thumbAnimateRange={[1, 20]}
+          thumbAnimateRange={[1, 13]}
           colors={{
             active: {
               base: '#24be85',
