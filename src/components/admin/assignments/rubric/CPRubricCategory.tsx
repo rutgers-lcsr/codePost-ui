@@ -497,10 +497,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         thisFeedback = this.props.feedbackScores[thisComment.id];
       }
 
-      const doNothing = () => {
-        return;
-      };
-
       if (thisComment) {
         return {
           key: thisComment.id,
@@ -518,7 +514,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               size="small"
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
               disabled={false}
-              onKeyDown={doNothing}
               onBlur={this.saveComment.bind(this, thisComment.id)}
             />
           ),
@@ -653,11 +648,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             iconStyle={{ paddingLeft: 5 }}
           />
         </div>
-        <InputNumber
-          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
+        <CPPointInput
+          value={this.state.pointLimit !== null ? -this.state.pointLimit : undefined}
+          size="small"
           onChange={this.setValue.bind(this, 'pointLimit')}
+          disabled={false}
           onBlur={this.saveCategory}
-          min={0}
         />
       </div>
     );

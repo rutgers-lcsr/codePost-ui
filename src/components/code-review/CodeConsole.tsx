@@ -304,7 +304,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
-    return assignment.points - commentPoints - categoryPoints;
+    if (assignment.additiveGrading) {
+      return 0 - commentPoints - categoryPoints;
+    } else {
+      return assignment.points - commentPoints - categoryPoints;
+    }
   };
 
   /***********************************************************************************************/
@@ -843,6 +847,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowStudentUpload: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
+      additiveGrading: false,
     };
 
     const demoCourse: CourseType = {
@@ -1126,6 +1131,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1221,6 +1227,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={false}
             />
           );
 
@@ -1318,6 +1325,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 

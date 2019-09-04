@@ -29,6 +29,7 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 interface ICommentProps {
+  additiveGrading: boolean;
   commentType: UICommentType;
   comment: CommentType;
   file: FileType;
@@ -342,6 +343,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}
+          defaultToPositive={this.props.additiveGrading}
         />
       );
       commentElements.comment = (

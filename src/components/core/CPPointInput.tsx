@@ -14,10 +14,11 @@ export type PointType = 'positive' | 'negative';
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
 interface ICPPointInputProps {
-  value: number;
+  value: number | undefined;
   size: CPPointInputType;
   onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
   disabled?: boolean;
+  defaultToPositive?: boolean;
   onKeyDown?: any;
   onBlur?: () => void;
 }
@@ -29,13 +30,19 @@ interface IState {
 class CPPointInput extends React.Component<ICPPointInputProps, IState> {
   public constructor(props: ICPPointInputProps) {
     super(props);
+    const defaultValue = props.defaultToPositive ? 'positive' : 'negative';
+    let pointType: PointType = defaultValue;
+    if (props.value !== undefined && props.value !== 0) {
+      pointType = props.value > 0 ? 'positive' : 'negative';
+    }
+
     this.state = {
-      pointType: props.value > 0 ? 'positive' : 'negative',
+      pointType,
     };
   }
 
   public toggleType = () => {
-    if (this.props.disabled) {
+    if (this.props.disabled || this.props.value === undefined) {
       return;
     }
 
@@ -46,7 +53,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         };
       },
       () => {
-        this.setValue(Math.abs(this.props.value));
+        this.setValue(Math.abs(this.props.value!));
       },
     );
   };
@@ -60,11 +67,11 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
   };
 
   public onPlus = () => {
-    this.setValue(Math.abs(this.props.value) + 0.5);
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + 0.5);
   };
 
   public onMinus = () => {
-    this.setValue(Math.abs(this.props.value) - 0.5);
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - 0.5);
   };
 
   public render() {
@@ -130,7 +137,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
           }}
         />
         <InputNumber
-          value={Math.abs(this.props.value)}
+          value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
           step={0.5}
           size={this.props.size}
           onChange={this.setValue}
