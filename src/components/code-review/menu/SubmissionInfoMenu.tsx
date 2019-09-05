@@ -10,9 +10,6 @@ import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typo
 const { TextArea } = Input;
 const { Text } = Typography;
 
-/* other library imports */
-import moment from 'moment';
-
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
@@ -22,6 +19,8 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
+
+import { formatDate } from '../../utils/DateUtils';
 
 /**********************************************************************************************************************/
 
@@ -46,29 +45,13 @@ interface ISubmissionInfoWriteProps {
   ) => Promise<AnonymousSubmissionType>;
 }
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   let lastEdited;
   if (props.submission !== undefined) {
     if (props.submission.dateEdited) {
-      const dateObj = new Date(props.submission.dateEdited);
-      const today = new Date();
-      if (dateObj.getFullYear() === today.getFullYear()) {
-        if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
-          if (today.getTime() - dateObj.getTime() < 30000) {
-            lastEdited = 'Last edited moments ago';
-          } else {
-            lastEdited = `Last edit at ${moment(dateObj).format('h:mm a')}`;
-          }
-        } else {
-          lastEdited = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
-        }
-      } else {
-        lastEdited = `Last edit in ${dateObj.getFullYear()}`;
-      }
+      lastEdited = formatDate(props.submission.dateEdited);
     }
   }
 

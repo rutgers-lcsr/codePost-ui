@@ -884,6 +884,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       questionResponder: 'grader0@example.edu',
       questionResponse: '',
       questionIsRegrade: false,
+      questionDate: '',
+      responseDate: '',
     };
 
     const fileList: FileType[] = [];

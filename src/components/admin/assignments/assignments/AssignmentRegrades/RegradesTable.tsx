@@ -15,6 +15,8 @@ import CPButton from '../../../../../components/core/CPButton';
 
 import { openSubmission } from '../../../other/AdminUtils';
 
+import { formatDate } from '../../../../utils/DateUtils';
+
 interface IStudentQuestionsProps {
   /* assignment data */
   assignment: AssignmentType;
@@ -238,7 +240,6 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     );
 
     const responseContent = getResponseContent(submission);
-
     return {
       key: submission.id,
       code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
@@ -253,7 +254,7 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
       responder: submission.questionResponder,
       regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
       text: (
-        <Paragraph style={{ whiteSpace: 'pre-wrap' }} ellipsis={{ rows: 1 }}>
+        <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
           {submission.questionText}
         </Paragraph>
       ),
@@ -295,20 +296,28 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
         footer={footer}
       >
         <div className="display-flex flex-direction-column">
-          <div style={{ fontSize: 12, color: 'grey', marginBottom: 5 }}>
+          <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
             {activeSubmission ? activeSubmission.students : ''}
+            &nbsp; &nbsp;
+            <span style={{ fontSize: 12, color: '#ccc' }}>
+              {activeSubmission && activeSubmission.questionDate ? formatDate(activeSubmission.questionDate) : ''}
+            </span>
           </div>
-          <span style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}>
+          <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>
             {activeSubmission ? activeSubmission.questionText : ''}
           </span>
         </div>
         <Divider />
         <div className="display-flex flex-direction-column">
-          <div style={{ fontSize: 12, color: 'grey', marginBottom: 5 }}>
+          <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
             {activeSubmission && activeSubmission.questionResponder ? activeSubmission.questionResponder : ''}
+            &nbsp; &nbsp;
+            <span style={{ fontSize: 12, color: '#ccc' }}>
+              {activeSubmission && activeSubmission.responseDate ? formatDate(activeSubmission.responseDate) : ''}
+            </span>
           </div>
           {modalReadOnly ? (
-            <div>{responseText}</div>
+            <div style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{responseText}</div>
           ) : (
             <div>
               <TextArea autosize value={responseText} onChange={changeRegradeText} />
