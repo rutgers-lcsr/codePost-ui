@@ -317,7 +317,6 @@ interface IStudentQuestionProps {
 
 enum QUESTION_STATUS {
   NOT_SUBMITTED,
-  SUBMITTING,
   IN_PROGRESS,
   RESPONDED,
 }
@@ -350,9 +349,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   };
 
   // *********************** RENDER *************************
-  const questionStatus = isLoading
-    ? QUESTION_STATUS.SUBMITTING
-    : !props.submission.questionText
+  const questionStatus = !props.submission.questionText
     ? QUESTION_STATUS.NOT_SUBMITTED
     : props.submission.questionResponse
     ? QUESTION_STATUS.RESPONDED
@@ -395,23 +392,14 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
           </Modal>
         </div>
       );
-    case QUESTION_STATUS.SUBMITTING:
-      // Case 1: Student has submitted, but no API response yet
-      return (
-        <div style={buttonStyle}>
-          <CPTooltip title="Submitting..." placement="right">
-            <CPButton cpType="secondary" icon="loading" onClick={setModalVisible.bind(true)} />
-          </CPTooltip>
-        </div>
-      );
     case QUESTION_STATUS.IN_PROGRESS:
       // Case 2: Student has submitted. No response yet.
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip title="View submitted question or regrade request" placement="right">
-              <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind(true)} />
-            </CPTooltip>
+            <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind(true)}>
+              View submitted question or regrade request
+            </CPButton>
           </div>
           <Modal
             onCancel={closeModal}
