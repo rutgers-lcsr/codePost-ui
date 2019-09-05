@@ -272,9 +272,13 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
       submission.files.forEach((file: any) => {
+        const pathDirs = file.webkitRelativePath.split('/');
+        // Want to ignore first (root dir, student email) two and last element (file name) of split
+        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
         const payload = {
           name: file.name,
           data: fileMap[file.webkitRelativePath],
+          path: filePath,
         };
         files.push(payload);
       });
