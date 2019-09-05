@@ -302,6 +302,9 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
             <span style={{ fontSize: 12, color: '#ccc' }}>
               {activeSubmission && activeSubmission.questionDate ? formatDate(activeSubmission.questionDate) : ''}
             </span>
+            <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
+              {activeSubmission && activeSubmission.questionIsRegrade ? ' Regrade Requested' : ''}
+            </span>
           </div>
           <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>
             {activeSubmission ? activeSubmission.questionText : ''}

@@ -6,9 +6,8 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
+import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag } from 'antd';
 const { TextArea } = Input;
-const { Text } = Typography;
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -424,8 +423,19 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
               </CPButton>,
             ]}
           >
-            <Text style={{ fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</Text>
-            <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.students}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                </span>
+                <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
+                  {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
+                </span>
+              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</span>
+            </div>
           </Modal>
         </div>
       );
@@ -448,16 +458,29 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
               </CPButton>,
             ]}
           >
-            <Text style={{ fontStyle: 'italic', whitespace: 'pre-wrap' }}>{props.submission.questionText}</Text>
-            <div style={regradeTextStyle}>{props.submission.questionIsRegrade ? 'Regrade Requested' : ''}</div>
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.students}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                </span>
+                <span style={{ color: '#25be85', fontWeight: 400, float: 'right' }}>
+                  {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
+                </span>
+              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</span>
+            </div>
             <Divider />
-            <div>
-              <div>
-                <b>Reviewer: </b> <Text>{props.submission.questionResponder}</Text>
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.questionResponder}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.responseDate ? formatDate(props.submission.responseDate) : ''}
+                </span>
               </div>
-              <div style={{ paddingTop: 15 }}>
-                <b>Response: </b> <Text style={{ whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</Text>
-              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</span>
             </div>
           </Modal>
         </div>
