@@ -22,12 +22,13 @@ interface IProps {
   children: React.ReactChild;
   user: UserType;
   handleLogout: () => void;
+  subtitle?: string;
 }
 
 const PeripheralPageLayout = (props: IProps) => {
   return (
     <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
-      <PeripheralPageHeader user={props.user} handleLogout={props.handleLogout} />
+      <PeripheralPageHeader user={props.user} handleLogout={props.handleLogout} subtitle={props.subtitle} />
       <Content>
         <div
           style={{

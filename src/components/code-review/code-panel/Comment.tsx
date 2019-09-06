@@ -29,6 +29,7 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 interface ICommentProps {
+  additiveGrading: boolean;
   commentType: UICommentType;
   comment: CommentType;
   file: FileType;
@@ -84,6 +85,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // If a comment is finalized, then reset the state
     if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
       this.setState(this.init());
+    }
+
+    // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
+    if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
+      if (this.state.text.length === 0 && this.state.points === 0) {
+        this.props.onDelete(this.props.comment);
+      }
     }
   }
 
@@ -146,12 +154,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public onPlus = () => {
-    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
+    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) - 0.5;
     this.onChangePointInput(points);
   };
 
   public onMinus = () => {
-    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
+    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) + 0.5;
     this.onChangePointInput(points);
   };
 
@@ -332,13 +340,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (this.props.commentType === 'active') {
       commentElements.points = (
         <CPPointInput
-          value={points}
+          value={-points}
           size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}
+          defaultToPositive={this.props.additiveGrading}
         />
       );
       commentElements.comment = (

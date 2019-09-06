@@ -1,0 +1,96 @@
+/********************************************************
+Some CSS properties require vendor-specific prefixes
+in order to achieve consistent behavior between
+browsers.
+
+When webpack compiles our SCSS files, it automatically
+adds the necessary prefixes for maximal compatibility.
+(as a bonus, since prefixe requirements change often,
+the autoprefixer package takes care of staying up to
+date).
+
+This file wraps these CSS properties in classes
+to be used as an alternative to inline-JS styles (which
+are not autoprefixed).
+
+Here is a non-exhuastive but passable list of the most
+common properties that require prefixing:
+
+animation
+flexbox
+grid
+word-break
+hypens
+transform
+transition
+user-select
+gradient
+box-shadow
+
+*********************************************************/
+
+.display-flex {
+  display: flex;
+}
+
+.flex {
+  &-1 {
+    flex: 1;
+  }
+}
+
+.justify-content {
+  &-flex-end {
+    justify-content: flex-end;
+  }
+
+  &-flex-start {
+    justify-content: flex-start;
+  }
+
+  &-space-between {
+    justify-content: space-between;
+  }
+
+  &-space-around {
+    justify-content: space-around;
+  }
+
+  &-center {
+    justify-content: center;
+  }
+}
+
+.flex-direction {
+  &-column {
+    flex-direction: column;
+  }
+
+  &-row {
+    flex-direction: row;
+  }
+}
+
+.flex-wrap {
+  &-wrap {
+    flex-wrap: wrap;
+  }
+}
+
+.align-items {
+  &-center {
+    align-items: center;
+  }
+
+  &-left {
+    align-items: left;
+  }
+
+  &-flex-start {
+    align-items: flex-start;
+  }
+
+  &-flex-end {
+    align-items: flex-end;
+  }
+}

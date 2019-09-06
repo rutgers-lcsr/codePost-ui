@@ -1,5 +1,13 @@
 import * as t from 'io-ts';
-import { createObject, deleteObject, GenericObject, readObject, readObjectDetail, updateObject } from './generics';
+import {
+  createObject,
+  deleteObject,
+  GenericObject,
+  readObject,
+  readObjectDetail,
+  updateObject,
+  updateObjectDetail,
+} from './generics';
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
@@ -15,6 +23,10 @@ const AssignmentV = t.intersection(
       isReleased: t.boolean,
       hideGrades: t.boolean,
       commentFeedback: t.boolean,
+      allowStudentUpload: t.boolean,
+      uploadDueDate: t.union([t.string, t.null]),
+      liveFeedbackMode: t.boolean,
+      additiveGrading: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
@@ -38,6 +50,10 @@ const AssignmentVStudent = t.intersection(
     }),
     t.partial({
       hideGrades: t.boolean,
+      allowStudentUpload: t.boolean,
+      additiveGrading: t.boolean,
+      uploadDueDate: t.union([t.string, t.null]),
+      liveFeedbackMode: t.boolean,
       sortKey: t.number,
       anonymousGrading: t.boolean,
       hideGradersFromStudents: t.boolean,
@@ -81,6 +97,10 @@ const AssignmentVPatch = t.intersection(
       anonymousGrading: t.boolean,
       hideGradersFromStudents: t.boolean,
       commentFeedback: t.boolean,
+      allowStudentUpload: t.boolean,
+      uploadDueDate: t.union([t.string, t.null]),
+      liveFeedbackMode: t.boolean,
+      additiveGrading: t.boolean,
     }),
   ],
   'AssignmentPatch',
@@ -124,10 +144,37 @@ class Assignment {
   );
 }
 
+// Type for getting and patching student upload
+const StudentUploadData = t.intersection([
+  GenericObject,
+  t.type({
+    files: t.array(
+      t.intersection([
+        t.type({
+          code: t.string,
+          name: t.string,
+          extension: t.string,
+        }),
+        t.partial({
+          id: t.number,
+          submisssion: t.number,
+        }),
+      ]),
+    ),
+  }),
+]);
+
 // tslint:disable
 class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static updateStudentUpload = updateObjectDetail(
+    StudentSubmissionV,
+    StudentUploadData,
+    'assignments',
+    'studentUpload',
+  );
+  public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
 }
 
 const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {

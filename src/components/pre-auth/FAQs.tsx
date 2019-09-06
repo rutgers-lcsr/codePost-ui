@@ -152,13 +152,13 @@ const FAQs = (props: IProps) => {
     content = <div style={{ maxWidth: 500 }}>{questions}</div>;
   } else {
     content = (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="display-flex flex-direction-column">
         {questions.map((q, i) => {
           if (i % 2 === 1) {
             return;
           }
           return (
-            <div key={i} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <div key={i} className="display-flex flex-direction-row justify-content-space-between">
               <div style={{ maxWidth: 500, marginRight: 50 }}>{q}</div>
               <div style={{ maxWidth: 500 }}>{questions[i + 1]}</div>
             </div>
@@ -175,9 +175,8 @@ const FAQs = (props: IProps) => {
         <div
           style={{
             fontSize: 17,
-            display: 'flex',
-            justifyContent: 'center',
           }}
+          className="display-flex justify-content-center"
         >
           {content}
         </div>

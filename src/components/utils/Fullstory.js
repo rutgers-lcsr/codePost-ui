@@ -24,3 +24,9 @@ export const identifyUserForFS = (userEmail) => {
     email: userEmail,
   });
 }
+
+export const shutdownFS = () => {
+  if (FS.shutdown !== undefined) {
+     FS.shutdown();
+  }
+}

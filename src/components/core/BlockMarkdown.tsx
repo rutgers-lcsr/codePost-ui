@@ -8,10 +8,14 @@ import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-conte
 
 interface IBlockMarkdownProps {
   source: string;
+  extraRenderers?: any;
 }
 
 const BlockMarkdown = (props: IBlockMarkdownProps) => {
-  const renderers = useBlockMarkdownRenderers();
+  const renderers =
+    props.extraRenderers === undefined
+      ? useBlockMarkdownRenderers()
+      : { ...useBlockMarkdownRenderers(), ...props.extraRenderers };
 
   return <ReactMarkdown renderers={renderers} source={props.source} />;
 };
@@ -29,6 +33,10 @@ const useBlockMarkdownRenderers = () => {
 
   const headingRenderer = (props: any) => {
     return React.createElement(`h${props.level}`, blockProps(), props.children);
+  };
+
+  const linkRenderer = (props: any) => {
+    return <a {...props} target="_blank" />;
   };
 
   const codeRenderer = (props: any) => {
@@ -71,6 +79,7 @@ const useBlockMarkdownRenderers = () => {
     inlineCode: inlineCodeRenderer,
     code: codeRenderer,
     thematicBreak: thematicBreakRenderer,
+    link: linkRenderer,
   };
 };
 

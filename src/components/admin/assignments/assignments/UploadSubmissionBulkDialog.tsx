@@ -417,7 +417,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       if (path.split('/').length !== 3) {
         invalidPaths.push(`Invalid folder structure: ${path}`);
       } else {
-        const folderName = path.split('/')[1];
+        const folderName = path.split('/')[1].trim();
         const emails = folderName.split(',');
 
         if (!this.allStudentsValid(emails, students)) {
@@ -565,6 +565,18 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                   integration={INTEGRATIONS['blackboard']}
                   onClick={this.onIntegrationClick}
                   active={this.state.mode === 'blackboard'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
+                  integration={INTEGRATIONS['brightspace']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'brightspace'}
+                />
+                <div style={{ width: '20px' }} />
+                <IntegrationButton
+                  integration={INTEGRATIONS['github']}
+                  onClick={this.onIntegrationClick}
+                  active={this.state.mode === 'github'}
                 />
                 <div style={{ width: '20px' }} />
                 <IntegrationButton
@@ -937,6 +949,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         width={900}
         onCancel={this.props.onCancel}
         footer={[goBackButton, goForwardButton]}
+        style={{ top: 20 }}
       >
         <Steps size="small" current={panelNumber}>
           {steps.map((item) => {

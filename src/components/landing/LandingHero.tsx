@@ -26,13 +26,11 @@ const LandingHero = () => {
   const hero = (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
         textAlign: windowSize.width < landingVars.breakpoints.hero ? 'center' : 'start',
-        flexDirection: 'column',
         paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 40 : 0,
         paddingRight: windowSize.width < landingVars.breakpoints.hero ? 0 : landingVars.Hpadding.panelNormal,
       }}
+      className="display-flex flex-direction-column justify-content-flex-start"
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
@@ -65,11 +63,10 @@ const LandingHero = () => {
       <div
         style={{
           width: '100%',
-          display: 'flex',
-          justifyContent: windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start',
-          alignItems: 'center',
         }}
-        className="landing__heroButtons"
+        className={`landing__heroButtons display-flex align-items-center justify-content-${
+          windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start'
+        }`}
       >
         <Link to="/signup">
           <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
@@ -116,12 +113,11 @@ const LandingHero = () => {
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: '100%',
       }}
+      className={`display-flex align-items-center justify-content-center flex-direction-${
+        windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
+      }`}
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>
       <div
@@ -129,14 +125,12 @@ const LandingHero = () => {
           maxWidth: MAX_WIDTH,
           maxHeight: MAX_HEIGHT,
           minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
           borderRadius: 5,
           overflow: 'hidden',
           boxShadow,
           transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
         }}
+        className="display-flex justify-content-center align-items-center"
       >
         <GradeAnimationVideo width={610} height={390} controls={500} />
       </div>

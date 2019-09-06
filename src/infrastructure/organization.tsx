@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { GenericObject } from './generics';
+import { GenericObject, listObject } from './generics';
 
 const OrganizationV = t.intersection(
   [
@@ -16,4 +16,8 @@ const OrganizationV = t.intersection(
 
 type OrganizationType = t.TypeOf<typeof OrganizationV>;
 
-export { OrganizationType };
+class Organization {
+  public static list = listObject(OrganizationV, 'organizations');
+}
+
+export { Organization, OrganizationType };
