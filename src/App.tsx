@@ -142,7 +142,7 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
-    if (inProduction && !isSuperUser) {
+    if (inProduction) {
       runFSSetup();
     }
 
