@@ -14,6 +14,8 @@ export type PointType = 'positive' | 'negative';
 import { ReactComponent as MinusSvg } from '../../img/icons/minus.svg';
 import { ReactComponent as PlusSvg } from '../../img/icons/plus.svg';
 
+export type CPPointInputThemeType = 'light' | 'dark';
+
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
 interface ICPPointInputProps {
@@ -25,6 +27,8 @@ interface ICPPointInputProps {
   onKeyDown?: any;
   onBlur?: () => void;
   onMouseLeave?: () => void;
+  theme?: CPPointInputThemeType;
+  step?: number;
 }
 
 interface IState {
@@ -85,11 +89,13 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
   };
 
   public onPlus = () => {
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + 0.5);
+    const step = this.props.step !== undefined ? this.props.step : 0.5;
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + step);
   };
 
   public onMinus = () => {
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - 0.5);
+    const step = this.props.step !== undefined ? this.props.step : 0.5;
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - step);
   };
 
   public render() {
@@ -103,15 +109,15 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     // tslint:disable
     const style = this.props.disabled
       ? {
-          backgroundColor: this.context.consoleTheme.buttonDisabledBg,
-          color: this.context.consoleTheme.buttonDisabledColor,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        }
+        backgroundColor: this.context.consoleTheme.buttonDisabledBg,
+        color: this.context.consoleTheme.buttonDisabledColor,
+        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
+      }
       : {
-          backgroundColor: this.context.consoleTheme.commentBody,
-          color: this.context.consoleTheme.text,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        };
+        backgroundColor: this.context.consoleTheme.commentBody,
+        color: this.context.consoleTheme.text,
+        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
+      };
     // tslint:enable
 
     const plus = (
@@ -179,7 +185,6 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         />
         <InputNumber
           value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-          step={0.5}
           size={this.props.size}
           onChange={this.setValue}
           disabled={this.props.disabled}
