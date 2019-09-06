@@ -1292,6 +1292,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             canChange={this.containsUnsavedComments}
           />,
         ];
+
+        siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
           <HeaderMenu menu={menu} key="menu" />,
