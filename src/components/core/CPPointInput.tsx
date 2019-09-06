@@ -11,6 +11,8 @@ import ToggleButton from 'react-toggle-button';
 
 export type PointType = 'positive' | 'negative';
 
+export type CPPointInputThemeType = 'light' | 'dark';
+
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
 interface ICPPointInputProps {
@@ -22,6 +24,8 @@ interface ICPPointInputProps {
   onKeyDown?: any;
   onBlur?: () => void;
   onMouseLeave?: () => void;
+  theme?: CPPointInputThemeType;
+  step?: number;
 }
 
 interface IState {
@@ -82,11 +86,13 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
   };
 
   public onPlus = () => {
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + 0.5);
+    const step = this.props.step !== undefined ? this.props.step : 0.5;
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + step);
   };
 
   public onMinus = () => {
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - 0.5);
+    const step = this.props.step !== undefined ? this.props.step : 0.5;
+    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - step);
   };
 
   public render() {
@@ -158,7 +164,6 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         />
         <InputNumber
           value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-          step={0.5}
           size={this.props.size}
           onChange={this.setValue}
           disabled={this.props.disabled}
