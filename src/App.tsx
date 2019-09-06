@@ -142,6 +142,10 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
+    if (inProduction) {
+      runFSSetup();
+    }
+
     if (this.state.has_token && !this.state.user) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
@@ -158,20 +162,10 @@ class App extends React.Component<{}, IState> {
           const isSuperUser = superUsers.indexOf(json.user.email) > -1;
           this.setState({ user: json, triedLoading: true, isSuperUser });
           this.refreshToken();
-
-          // trigger fullstory only if user who is still logged in isn't a superuser
-          if (inProduction && !isSuperUser) {
-            runFSSetup();
-          }
         })
         .catch((error) => {
           this.setState({ triedLoading: true });
           this.handleLogout();
-
-          // user is not logged in, so we can start Fullstory
-          if (inProduction) {
-            runFSSetup();
-          }
         });
     } else {
       this.setState({ triedLoading: true });
