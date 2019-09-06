@@ -245,6 +245,7 @@ const CollectionCreateForm: any = Form.create()(
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
+            <Form.Item
               label="Allow student upload"
               extra={
                 <div>
