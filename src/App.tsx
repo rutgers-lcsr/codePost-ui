@@ -159,7 +159,7 @@ class App extends React.Component<{}, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          const isSuperUser = superUsers.indexOf(json.user.email) > -1;
+          const isSuperUser = superUsers.indexOf(json.email) > -1;
           this.setState({ user: json, triedLoading: true, isSuperUser });
           this.refreshToken();
         })
