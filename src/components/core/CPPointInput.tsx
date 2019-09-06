@@ -45,6 +45,20 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     };
   }
 
+  public componentDidUpdate(prevProps: ICPPointInputProps) {
+    if (prevProps.value !== this.props.value) {
+      const defaultValue = this.props.defaultToPositive ? 'positive' : 'negative';
+      let pointType: PointType = defaultValue;
+      if (this.props.value !== undefined && this.props.value !== 0) {
+        pointType = this.props.value > 0 ? 'positive' : 'negative';
+      }
+
+      this.setState({
+        pointType,
+      });
+    }
+  }
+
   public toggleType = () => {
     if (this.props.disabled || this.props.value === undefined) {
       return;
