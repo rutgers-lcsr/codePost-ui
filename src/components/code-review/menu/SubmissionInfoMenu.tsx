@@ -329,10 +329,6 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   const [isLoading, setLoading] = useState(false);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
   const changeQuestionText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setQuestionText(event.target.value);
   };
@@ -341,11 +337,19 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     if (props.submitStudentQuestion) {
       setLoading(true);
       props.submitStudentQuestion(props.submission, questionText, questionIsRegrade).then(() => {
-        closeModal();
+        setModalVisible(false);
         setLoading(false);
         message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Submitted!`);
       });
     }
+  };
+
+  const toggleModalVisible = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const toggleIsRegrade = () => {
+    setQuestionIsRegrade(!questionIsRegrade);
   };
 
   // *********************** RENDER *************************
@@ -355,7 +359,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     ? QUESTION_STATUS.RESPONDED
     : QUESTION_STATUS.IN_PROGRESS;
 
-  const buttonStyle = { float: 'left' as 'left', paddingTop: 15 };
+  const buttonStyle = { textAlign: 'center' as 'center', paddingTop: 15 };
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
 
   switch (questionStatus) {
@@ -364,16 +368,16 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip title="Submit a question or a regrade request" placement="right">
-              <CPButton cpType="secondary" icon="message" onClick={setModalVisible.bind(true)} />
-            </CPTooltip>
+            <CPButton cpType="secondary" icon="message" onClick={toggleModalVisible}>
+              Submit a regrade request
+            </CPButton>
           </div>
           <Modal
-            onCancel={closeModal}
+            onCancel={toggleModalVisible}
             visible={isModalVisible}
             title="Submit a question or regrade request"
             footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
                 Cancel
               </CPButton>,
               <CPButton key="submit" cpType="primary" loading={isLoading} onClick={submitQuestion}>
@@ -384,7 +388,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
-                Ask for a regrade: <Switch disabled={false} onChange={setQuestionIsRegrade.bind(true)} />
+                Ask for a regrade: <Switch disabled={false} onChange={toggleIsRegrade} />
               </div>
             ) : (
               <div />
@@ -397,16 +401,16 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPButton cpType="secondary" icon="history" onClick={setModalVisible.bind(true)}>
-              View submitted question or regrade request
+            <CPButton cpType="secondary" icon="history" onClick={toggleModalVisible}>
+              View submitted request
             </CPButton>
           </div>
           <Modal
-            onCancel={closeModal}
+            onCancel={toggleModalVisible}
             visible={isModalVisible}
-            title="The review of your question is in progress..."
+            title="The review of your request is in progress..."
             footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
                 Cancel
               </CPButton>,
             ]}
@@ -432,16 +436,16 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPTooltip title="View response" placement="right">
-              <CPButton cpType="secondary" icon="mail" onClick={setModalVisible.bind(true)} />
-            </CPTooltip>
+            <CPButton cpType="primary" icon="mail" onClick={toggleModalVisible}>
+              View Response
+            </CPButton>
           </div>
           <Modal
-            onCancel={closeModal}
+            onCancel={toggleModalVisible}
             visible={isModalVisible}
             title="View Question Response"
             footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={closeModal}>
+              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
                 Cancel
               </CPButton>,
             ]}

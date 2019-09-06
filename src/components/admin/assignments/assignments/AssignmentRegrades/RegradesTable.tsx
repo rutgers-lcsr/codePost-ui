@@ -65,19 +65,19 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     props.updateSubmission(newSubmission);
   };
 
-  const releaseRegrade = (submission: SubmissionType) => {
+  const clearRegrade = (submission: SubmissionType, newGrader: string | null) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
-    newSubmission['questionResponder'] = null;
+    newSubmission['questionResponder'] = newGrader;
     newSubmission['questionResponse'] = '';
     props.updateSubmission(newSubmission);
   };
 
-  const confirmRelease = (submission: SubmissionType) => {
+  const confirmClear = (submission: SubmissionType, isRelease: boolean) => {
     confirm({
-      title: 'Are you sure you want to release this regrade?',
-      content: 'Releasing this will delete any draft response.',
+      title: `Are you sure you want to ${isRelease ? 'release' : 'claim'} this regrade?`,
+      content: 'This will clear the existing draft response text.',
       onOk() {
-        releaseRegrade(submission);
+        clearRegrade(submission, isRelease ? null : props.user.email);
       },
       onCancel() {
         return;
@@ -220,10 +220,13 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
         <Menu.Item
           key="3"
           onClick={
-            submission.questionResponder !== props.user.email
+            submission.questionResponder === null
               ? updateSubmissionField.bind({}, submission, 'questionResponder', props.user.email)
-              : confirmRelease.bind({}, submission)
+              : submission.questionResponder === props.user.email
+              ? confirmClear.bind({}, submission, true)
+              : confirmClear.bind({}, submission, false)
           }
+          disabled={!hasPermissionToClaim}
         >
           <Icon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
           {submission.questionResponder !== props.user.email ? 'Claim' : 'Release'}
