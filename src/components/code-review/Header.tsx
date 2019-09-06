@@ -378,32 +378,45 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     </Descriptions>
   );
 
+  // tslint:disable
   const summary = [
-    {
-      description: <span className="cp-label">Assignment Total</span>,
-      value: <span>{props.assignment.points}</span>,
-    },
-    {
-      description: <span className="cp-label">Net Point Delta</span>,
-      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
-    },
+    props.assignment.additiveGrading
+      ? null
+      : {
+          description: <span className="cp-label">Assignment Total</span>,
+          value: <span>{props.assignment.points}</span>,
+        },
+    props.assignment.additiveGrading
+      ? null
+      : {
+          description: <span className="cp-label">Net Point Delta</span>,
+          value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+        },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
-        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
+        <span className="cp-label cp-label--very-bold">
+          {(props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints} /{' '}
+          {props.assignment.points}
+        </span>
       ),
     },
   ];
+  // tslint:enable
 
   const summaryTable = (
     <Descriptions title="Summary" column={1} bordered>
-      {summary.map((item: any, index: number) => {
-        return (
-          <Descriptions.Item key={index} label={item.description}>
-            {item.value}
-          </Descriptions.Item>
-        );
-      })}
+      {summary
+        .filter((el) => {
+          return el !== null;
+        })
+        .map((item: any, index: number) => {
+          return (
+            <Descriptions.Item key={index} label={item.description}>
+              {item.value}
+            </Descriptions.Item>
+          );
+        })}
     </Descriptions>
   );
 
