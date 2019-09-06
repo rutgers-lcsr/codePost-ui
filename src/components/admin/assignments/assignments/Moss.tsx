@@ -5,8 +5,6 @@
 /* React imports */
 import * as React from 'react';
 
-import * as tabletojson from 'tabletojson';
-
 /* ant imports */
 import { Breadcrumb, Button, Card, Icon, Input, message, Progress } from 'antd';
 
@@ -21,6 +19,8 @@ const { Search } = Input;
 import CPFlex from '../../../../components/core/CPFlex';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
+
+import MossResults from './MossResults';
 
 /* other library imports */
 // import memoizeOne from 'memoize-one';
@@ -47,7 +47,48 @@ const Moss = (props: any) => {
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState('http://moss.stanford.edu/results/783191722');
 
-  const toggleSubmit = () => {
+  const mockResults = [
+    {
+      file1: {
+        timestamp: '1567581291836253',
+        course: 'richardscourse',
+        assignment: 'HelloWorld',
+        sub_id: '25641',
+        email: 'student0@codepost.io',
+        similarity: '98',
+      },
+      file2: {
+        timestamp: '1567581291836253',
+        course: 'richardscourse',
+        assignment: 'HelloWorld',
+        sub_id: '25705',
+        email: 'student1@codepost.io',
+        similarity: '98',
+      },
+      linesMatched: 84,
+      matchURL: 'http://moss.stanford.edu/results/783191722/match0.html',
+    },
+  ];
+
+  // @ts-ignore
+  const [results, setResults] = React.useState(mockResults);
+
+  const toggleSubmit = async () => {
+    const payload = {
+      moss_url: 'http://moss.stanford.edu/results/783191722',
+    };
+
+    console.log('requesting here ---->');
+
+    const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/process-moss', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    console.log(await res.json());
     setSubmit(true);
   };
 
@@ -57,6 +98,44 @@ const Moss = (props: any) => {
 
   const toggleType = (t: boolean) => {
     return t ? 'primary' : 'default';
+  };
+
+  const processMoss = async (mossURL: string) => {
+    // const payload = {
+    //   course_name: this.props.currentCourse!['name'],
+    //   course_period: this.props.currentCourse!['period'],
+    //   assignment_name: assignment['name'],
+    //   api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
+    // };
+
+    const payload = {
+      moss_url: mossURL,
+    };
+    console.log('++++++', payload, JSON.stringify(payload));
+    const res = await fetch('https://i9d9zcmvh9.execute-api.us-east-2.amazonaws.com/default/process-moss', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    console.log('res', res);
+    const data = await res.json();
+
+    console.log('data', data);
+    console.log('asdf', data['statusCode']);
+
+    if (data['statusCode'] === '200') {
+      console.log('ddd', data);
+      if (data.hasOwnProperty('errorMessage')) {
+        return Promise.reject(data['errorMessage']);
+      }
+      return JSON.parse(data['body']);
+    } else {
+      const error = JSON.stringify(data['body']);
+      return Promise.reject(error);
+    }
   };
 
   const checkMoss = async () => {
@@ -113,8 +192,18 @@ const Moss = (props: any) => {
     setLoading(false);
   };
 
-  const onParse = (value: string) => {
+  const onParse = async (value: string) => {
+    setLoading(true);
+    try {
+      const data = await processMoss(value);
+      console.log('dat', data);
+    } catch (err) {
+      message.error(err);
+    }
+
+    // message.success(data['body']);
     console.log(value);
+    setLoading(false);
   };
 
   const title = <div style={{ fontSize: '24px', fontWeight: 500 }}>Moss Plagiarism Detection </div>;
@@ -134,17 +223,6 @@ const Moss = (props: any) => {
       </Button>
     </ButtonGroup>
   );
-
-  const callback = (tablesAsJson: any) => {
-    // Print out the 1st row from the 2nd table on the above webpage as JSON
-    console.log(tablesAsJson[1][0]);
-  };
-
-  const x = () => {
-    tabletojson.convertUrl(url, { stripHtmlFromCells: false }, callback);
-  };
-
-  x();
 
   console.log('url', url);
 
@@ -185,7 +263,14 @@ const Moss = (props: any) => {
     </Card>
   );
 
-  const content = actionCard;
+  const resultsCard = results === undefined ? null : <MossResults results={mockResults} />;
+
+  const content = (
+    <div>
+      <div style={{ marginBottom: '30px' }}>{actionCard}</div>
+      <div>{resultsCard}</div>
+    </div>
+  );
 
   return (
     <CPAdminDetail

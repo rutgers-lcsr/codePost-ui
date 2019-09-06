@@ -1188,7 +1188,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
-    console.log('admin', this.props.user);
+    // console.log('admin', this.props.user);
     /* build header */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
