@@ -284,7 +284,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return rubricCategory.id === +category;
         });
         const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
-        pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        if (pointLimit < 0) {
+          pointsPerCategoryWithCaps[+category] = Math.max(pointsPerCategory[category], pointLimit);
+        } else {
+          pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        }
       }
     }
     return pointsPerCategoryWithCaps;
