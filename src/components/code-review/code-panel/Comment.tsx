@@ -86,7 +86,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
     if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
-      if (this.state.text.length === 0 && this.state.points === 0) {
+      if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
         this.props.onDelete(this.props.comment);
       }
     }
