@@ -24,6 +24,7 @@ interface ICPPointInputProps {
   defaultToPositive?: boolean;
   onKeyDown?: any;
   onBlur?: () => void;
+  onMouseLeave?: () => void;
 }
 
 interface IState {
@@ -132,7 +133,12 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     const checked = this.state.pointType === 'positive';
 
     return (
-      <InputGroup compact className={className} onBlur={this.props.onBlur ? this.props.onBlur : undefined}>
+      <InputGroup
+        compact
+        className={className}
+        onBlur={this.props.onBlur ? this.props.onBlur : undefined}
+        onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
+      >
         <ToggleButton
           value={checked}
           inactiveLabel={''}
