@@ -408,7 +408,6 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
             <Text type="warning" style={{ marginBottom: 15 }}>
               {deadline}
             </Text>
-            ;
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
