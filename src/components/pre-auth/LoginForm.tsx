@@ -114,6 +114,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
               value={this.state.password}
               onChange={this.handleChange.bind(this, 'password')}
               onKeyDown={this.handleKeyPress}
+              visibilityToggle={false}
             />
             {this.renderError(this.props.error)}
             <br />

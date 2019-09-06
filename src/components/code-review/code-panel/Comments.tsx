@@ -19,6 +19,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
+  additiveGrading: boolean;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
@@ -124,9 +125,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     if (prevProps.comments.length < this.props.comments.length) {
-      const codePanel = document.getElementById('code-panel');
-      if (codePanel !== null) {
-        return codePanel.scrollTop;
+      const codeScrollArea = document.getElementById('code-scroll-area');
+      if (codeScrollArea !== null) {
+        return codeScrollArea.scrollTop;
       }
     }
 
@@ -152,9 +153,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     snapshot: any,
   ) => {
     if (snapshot !== null) {
-      const codePanel = document.getElementById('code-panel');
-      if (codePanel !== null) {
-        codePanel.scrollTop = snapshot;
+      const codeScrollArea = document.getElementById('code-scroll-area');
+      if (codeScrollArea !== null) {
+        codeScrollArea.scrollTop = snapshot;
       }
     }
 
@@ -304,6 +305,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
           studentFeedbackOn={this.props.studentFeedbackOn}
+          additiveGrading={this.props.additiveGrading}
         />
       );
     });

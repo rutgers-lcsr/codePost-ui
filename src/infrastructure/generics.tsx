@@ -203,7 +203,7 @@ function readObjectDetail<T, O, I>(
 
 function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, J, K>,
+  input: t.Type<Q, K, J>,
   url: string,
   detail: string,
 ): ((object: Q, urlArgs?: { [arg: string]: string }) => Promise<T>) {

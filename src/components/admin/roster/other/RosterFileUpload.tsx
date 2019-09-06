@@ -180,7 +180,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         case 'student':
           switch (tokens.length) {
             case 1:
-              newRoster[tokens[0]] = {};
+              newRoster[tokens[0].trim()] = {};
               break;
             case 2:
               let sectionName = null;
@@ -188,7 +188,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 // remove leading and trailing whitespace
                 sectionName = tokens[1].trim();
               }
-              newRoster[tokens[0]] = { section: sectionName };
+              newRoster[tokens[0].trim()] = { section: sectionName };
               break;
             default:
               errors.push(`Invalid row detected: row ${i}| ${line}`);
@@ -199,7 +199,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           if (tokens.length > 1) {
             errors.push(`Invalid row detected: row ${i}| ${line}`);
           }
-          newRoster[tokens[0]] = {};
+          newRoster[tokens[0].trim()] = {};
           break;
       }
     });

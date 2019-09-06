@@ -417,7 +417,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       if (path.split('/').length !== 3) {
         invalidPaths.push(`Invalid folder structure: ${path}`);
       } else {
-        const folderName = path.split('/')[1];
+        const folderName = path.split('/')[1].trim();
         const emails = folderName.split(',');
 
         if (!this.allStudentsValid(emails, students)) {
