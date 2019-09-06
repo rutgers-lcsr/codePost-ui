@@ -228,7 +228,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           newMap[rubricComment.id] = _.cloneDeep(rubricComment);
         }
       }
-      this.setState({ rubricComments: newMap });
+      this.setState({
+        rubricComments: newMap,
+        rubricCommentStatus: this.initializeRubricCommentStatus(this.props.rubricComments),
+      });
     }
   }
 
