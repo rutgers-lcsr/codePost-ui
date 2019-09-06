@@ -31,7 +31,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { identifyUserForFS, runFSSetup } from './components/utils/Fullstory';
+import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -82,12 +82,19 @@ const anonymousUser: UserType = {
 
 /*****************************************************************************/
 
+const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
+
+const inProduction = !(process.env.NODE_ENV && process.env.NODE_ENV === 'development');
+
+/*****************************************************************************/
+
 interface IState {
   error: string;
   has_token: boolean;
   user?: UserType;
   toRedirect: boolean;
   triedLoading: boolean;
+  isSuperUser: boolean;
   // theme: {[key: string]: string}
 }
 
@@ -100,6 +107,7 @@ class App extends React.Component<{}, IState> {
       has_token: localStorage.getItem('token') ? true : false,
       toRedirect: false,
       triedLoading: false,
+      isSuperUser: false,
     };
   }
 
@@ -109,18 +117,23 @@ class App extends React.Component<{}, IState> {
     }
 
     // On login, initiate fullstory logging
-    if (prevState.user !== this.state.user && this.state.user !== undefined) {
-      if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
+    if (inProduction) {
+      if (prevState.user !== this.state.user && this.state.user !== undefined && !this.state.isSuperUser) {
         identifyUserForFS(this.state.user.email);
+      } else {
+        shutdownFS();
       }
     }
   }
 
-  public replaceUser = (newUser: UserType, redirect: boolean) => {
+  public replaceUser = (newUser: UserType, redirect: boolean, isSuperUser: boolean) => {
     this.setState(
-      {
-        user: newUser,
-        toRedirect: redirect,
+      (oldState: IState) => {
+        return {
+          user: newUser,
+          toRedirect: redirect,
+          isSuperUser: oldState.isSuperUser || isSuperUser,
+        };
       },
       () => {
         localStorage.setItem('token', newUser.token);
@@ -129,10 +142,6 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
-    if (!(process.env.NODE_ENV && process.env.NODE_ENV === 'development')) {
-      runFSSetup();
-    }
-
     if (this.state.has_token && !this.state.user) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
@@ -146,12 +155,23 @@ class App extends React.Component<{}, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          this.setState({ user: json, triedLoading: true });
+          const isSuperUser = superUsers.indexOf(json.user.email) > -1;
+          this.setState({ user: json, triedLoading: true, isSuperUser });
           this.refreshToken();
+
+          // trigger fullstory only if user who is still logged in isn't a superuser
+          if (inProduction && !isSuperUser) {
+            runFSSetup();
+          }
         })
         .catch((error) => {
           this.setState({ triedLoading: true });
           this.handleLogout();
+
+          // user is not logged in, so we can start Fullstory
+          if (inProduction) {
+            runFSSetup();
+          }
         });
     } else {
       this.setState({ triedLoading: true });
@@ -283,6 +303,7 @@ class App extends React.Component<{}, IState> {
           has_token: true,
           user: json.user,
           toRedirect,
+          isSuperUser: superUsers.indexOf(json.user.email) > -1,
         });
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
