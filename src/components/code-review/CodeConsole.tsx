@@ -304,7 +304,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
-    return assignment.points - commentPoints - categoryPoints;
+    if (assignment.additiveGrading) {
+      return 0 - commentPoints - categoryPoints;
+    } else {
+      return assignment.points - commentPoints - categoryPoints;
+    }
   };
 
   /***********************************************************************************************/
@@ -841,6 +845,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       median: null,
       points: 20,
       commentFeedback: true,
+      allowStudentUpload: false,
+      uploadDueDate: '',
+      liveFeedbackMode: false,
+      additiveGrading: false,
     };
 
     const demoCourse: CourseType = {
@@ -864,6 +872,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       students: ['student1@example.edu'],
       assignment: -1,
       dateEdited: '',
+      dateUploaded: '',
       grade: null,
       grader: this.props.user.email,
     };
@@ -1124,6 +1133,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1220,6 +1230,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={false}
             />
           );
 
@@ -1318,6 +1329,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 

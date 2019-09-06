@@ -6,7 +6,7 @@ import { AssignmentType } from '../infrastructure/assignment';
 import { CommentType } from '../infrastructure/comment';
 import { RubricCategoryType } from '../infrastructure/rubricCategory';
 import { RubricCommentType } from '../infrastructure/rubricComment';
-import { SubmissionType } from '../infrastructure/submission';
+import { StudentSubmissionType, SubmissionType } from '../infrastructure/submission';
 
 export type IdMapType = {
   [id: number]: boolean;
@@ -79,6 +79,10 @@ export interface IGraderSubmissionsDataTable {
 
 export interface IAssignmentToSubmissionsMap {
   [assignmentID: number]: SubmissionType[];
+}
+
+export interface IAssignmentToSubmissionStudentMap {
+  [assignmentID: number]: Array<SubmissionType | StudentSubmissionType>;
 }
 
 export interface IAssignmentToRubricCategories {

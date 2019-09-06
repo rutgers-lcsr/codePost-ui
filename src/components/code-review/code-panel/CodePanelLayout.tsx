@@ -111,8 +111,6 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
             style={{
               ...{
                 position: 'absolute',
-                display: 'flex',
-                flexDirection: 'column',
               },
               ...zoomStyles,
             }}

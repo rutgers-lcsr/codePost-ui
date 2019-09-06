@@ -14,6 +14,7 @@ import useWindowSize from '../useWindowSize';
 interface IProps {
   user: UserType;
   handleLogout: any;
+  subtitle?: string;
 }
 
 const PeripheralPageHeader = (props: IProps) => {
@@ -25,6 +26,8 @@ const PeripheralPageHeader = (props: IProps) => {
       code<b>Post</b>
     </Link>
   );
+
+  const subtitle = props.subtitle !== undefined ? props.subtitle : null;
 
   // Remove email on mobile to make header fit
   const email = mobile ? (
@@ -46,7 +49,7 @@ const PeripheralPageHeader = (props: IProps) => {
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <CPFlex
-        left={[logo]}
+        left={[logo, subtitle]}
         right={headerRight}
         gutterSize={20}
         style={{ maxWidth: 1050, padding: '30px 10px', width: '100%' }}

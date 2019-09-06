@@ -90,15 +90,16 @@ const Pricing = (props: IProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div>
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <span style={textStyle}>codePost is 100% free for colleges. No credit card required.</span>
+        <div className="display-flex flex-direction-column" style={{ textAlign: 'center', position: 'relative' }}>
+          <div className="display-flex justify-content-center" style={{ width: '100%' }}>
+            <span style={textStyle}>codePost is 100% free for universities. No credit card required.</span>
           </div>
           <div
-            style={{ display: 'flex', flexDirection, justifyContent: 'center', alignItems: 'center', paddingTop: 50 }}
+            className={`display-flex justify-content-center align-items-center flex-direction-${flexDirection}`}
+            style={{ paddingTop: 50 }}
           >
             <div style={freeStyle}>
-              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Colleges</h3>
+              <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Universities</h3>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
               <Link to="/signup/create">
                 <Button style={freeButtonStyle}>
@@ -123,15 +124,14 @@ const Pricing = (props: IProps) => {
               style={{
                 marginTop: -15,
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
                 top: -15,
               }}
+              className="display-flex justify-content-center"
             >
               <div style={featureStyle}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="display-flex flex-direction-column">
                   <p style={{ fontSize: '16px', fontWeight: 'bold' }}>Features:</p>
-                  <div style={{ display: 'flex', flexDirection, justifyContent: 'center' }}>
+                  <div className={`display-flex justify-content-center flex-direction-${flexDirection}`}>
                     <ul style={{ maxWidth: 210, marginBottom: 0 }}>
                       <li>Unlimited students</li>
                       <li>Unlimited course staff</li>

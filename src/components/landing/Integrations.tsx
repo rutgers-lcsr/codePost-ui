@@ -9,7 +9,7 @@ import BlockMarkdown from '../core/BlockMarkdown';
 export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   github: {
     key: 'github',
-    name: 'Github',
+    name: 'GitHub',
     logo: require('./../../img/integrations/github.png'),
     description: `[GitHub](https://github.com) is a development platform
 that provides version-controlled software hosting using git.
@@ -18,7 +18,8 @@ Do your students use GitHub for version control and to submit their work?
 You can import student work from GitHub to codePost for code review and
 higher resolution feedback.
 
-Email team@codepost.io to learn how to set up this integration.
+See more detailed instructions for how to
+[import submissions here](https://github.com/codepost-io/integration-github).
 `,
   },
   jupyter: {
@@ -75,8 +76,7 @@ codePost makes it easy to:
 - Import submissions uploaded to Blackboard into codePost;
 - and export grades from codePost back to Blackboard.
 
-
-Courses using both codePost and Canvas often use this grading workflow:
+Courses using both codePost and Blackboard often use this grading workflow:
 
 1. Students submit their programming assignments through Blackboard.
 2. An instructor runs correctness tests, and then imports submissions and test output (as .txts)
@@ -84,6 +84,34 @@ to codePost using codePost's native Blackboard import feature.
 3. Instructors / TAs review and grade submissions in codePost.
 4. Students receive their feedback through codePost.
 5. (Optional) An instructor can export scores back to Blackboard.
+
+See more detailed instructions for how to
+[import submissions here](https://github.com/codepost-io/integration-blackboard).
+`,
+  },
+  brightspace: {
+    key: 'brightspace',
+    name: 'Brightspace',
+    logo: require('./../../img/integrations/brightspace.png'),
+    description: `[Brightspace by D2L](https://www.d2l.com/products/learning-environment/)
+is a learning management system (LMS) used widely in higher ed.
+
+codePost makes it easy to:
+- Import course rosters from Brightspace, and subsequently keep rosters in sync;
+- Import submissions uploaded to Brightspace into codePost;
+- and export grades from codePost back to Brightspace.
+
+Courses using both codePost and Brightspace often use this grading workflow:
+
+1. Students submit their programming assignments through Brightspace.
+2. An instructor runs correctness tests, and then imports submissions and test output (as .txts)
+to codePost using codePost's native Brightspace import feature.
+3. Instructors / TAs review and grade submissions in codePost.
+4. Students receive their feedback through codePost.
+5. (Optional) An instructor can export scores back to Brightspace.
+
+See more detailed instructions for how to
+[import submissions here](https://github.com/codepost-io/integration-brightspace).
 `,
   },
   moss: {

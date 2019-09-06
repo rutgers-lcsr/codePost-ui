@@ -3,6 +3,7 @@ import {
   createObject,
   deleteObject,
   GenericObject,
+  listObject,
   readObject,
   readObjectDetail,
   updateObject,
@@ -99,6 +100,7 @@ type CourseSettingsType = t.TypeOf<typeof CourseSettingsV>;
 class Course {
   public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
+  public static list = listObject(CourseV, 'courses');
   public static update = updateObject(CourseV, CourseVPatch, 'courses');
   public static delete = deleteObject(CourseV, 'courses');
 

@@ -41,7 +41,7 @@ const sections = [
     features: [
       'Make inline comments easily, with markdown',
       <span key="template">
-        Gray out template code &nbsp; <Tag>NEW</Tag>
+        Gray out template code &nbsp; <Tag>BETA</Tag>
       </span>,
       'Annotate IPython / Jupyter notebooks',
       <span key="text">
@@ -49,7 +49,10 @@ const sections = [
         <Typography.Text code>.md</Typography.Text>)
       </span>,
       'Apply rubric items while grading',
-      'Collaboratively create the rubric',
+      <span key="template">
+        Collaboratively create the rubric &nbsp; <Tag>BETA</Tag>
+      </span>,
+      'Dark Mode!',
     ],
     spotlights: [
       <img
@@ -71,6 +74,7 @@ const sections = [
         key="5"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
       />,
+      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -89,7 +93,7 @@ const sections = [
   },
   {
     title: 'For students',
-    features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback'],
+    features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback', 'Remote office hours'],
     spotlights: [
       <img
         src="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback_on_feedback.png"
@@ -99,6 +103,10 @@ const sections = [
       />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4" />,
+      <Video
+        key="3"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/remote-office-hours.mp4"
+      />,
     ],
     captions: [
       `In codePost, students can leave feedback on the feedback they receive. Course leaders can use this
@@ -106,6 +114,8 @@ const sections = [
       `You can take advantage in peer grading with codePost. Just make your students "graders" and enable anonymous
       grading mode.`,
       'Students use codePost to access their scores and feedback.',
+      `You can give live feedback on code that students upload, allowing you to provide office-hours quality
+        feedback remotely!`,
     ],
   },
   {

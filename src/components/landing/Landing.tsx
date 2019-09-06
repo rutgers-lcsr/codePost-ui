@@ -96,7 +96,7 @@ class Landing extends React.PureComponent<{}, {}> {
         <div style={{ paddingBottom: 15 }}>
           Setting up a course in codePost is easy: upload submissions to review and return graded work to students with
           a few clicks. <span style={{ fontWeight: 600 }}>Managing a team of graders?</span> codePost lets you dispatch
-          work to graders, perfrom quality control on their work, and set up a rubric that lets you track what errors
+          work to graders, perform quality control on their work, and set up a rubric that lets you track what errors
           students are making.
         </div>
         <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
@@ -175,7 +175,7 @@ class Landing extends React.PureComponent<{}, {}> {
     );
 
     const panelThreeModule = (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div className="display-flex align-items-center">
         <div style={{ display: 'inline-block', width: '500px' }}>
           <Integrations
             integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
@@ -184,7 +184,7 @@ class Landing extends React.PureComponent<{}, {}> {
       </div>
     );
     const panelThree = (
-      <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      <div className="display-flex align-items-center flex-direction-column">
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
             text={panelThreeText}
