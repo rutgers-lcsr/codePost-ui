@@ -37,6 +37,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
       allowRegradeRequests: values.allowRegradeRequests,
+      regradeDeadline: values.regradeDeadline,
       allowStudentUpload: values.allowStudentUpload,
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
@@ -101,6 +102,7 @@ interface IFormValues {
   hideGrades: boolean;
   commentFeedback: boolean;
   allowRegradeRequests: boolean;
+  regradeDeadline: string | null;
   allowStudentUpload: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
@@ -109,6 +111,7 @@ interface IFormValues {
 
 interface IFormState {
   studentUploadEnabled: boolean;
+  regradesEnabled: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -118,11 +121,16 @@ const CollectionCreateForm: any = Form.create()(
       super(props);
       this.state = {
         studentUploadEnabled: this.props.assignment.allowStudentUpload,
+        regradesEnabled: this.props.assignment.allowRegradeRequests,
       };
     }
 
     public handleStudentUploadCheck = (checked: boolean) => {
       this.setState({ studentUploadEnabled: checked });
+    };
+
+    public handleRegradeCheck = (checked: boolean) => {
+      this.setState({ regradesEnabled: checked });
     };
 
     public validateName = (rule: any, value: string, callback: any) => {
@@ -239,11 +247,26 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Allow Student Questions and Regrades"
               extra=" When enabled, students can submit a question on their graded submission and request a regrade."
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
             >
               {getFieldDecorator('allowRegradeRequests', {
                 initialValue: this.props.assignment.allowRegradeRequests,
                 valuePropName: 'checked',
-              })(<Switch />)}
+              })(<Switch onClick={this.handleRegradeCheck} />)}
+            </Form.Item>
+            <Form.Item
+              label="Deadline"
+              extra="Optional deadline for students to submit regrade requests"
+              labelCol={{ span: 9 }}
+              wrapperCol={{ span: 12 }}
+            >
+              {getFieldDecorator('regradeDeadline', {
+                initialValue: this.props.assignment.regradeDeadline
+                  ? moment(this.props.assignment.regradeDeadline)
+                  : null,
+                valuePropName: 'value',
+              })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.regradesEnabled} />)}
             </Form.Item>
             <Form.Item
               label="Allow student upload"

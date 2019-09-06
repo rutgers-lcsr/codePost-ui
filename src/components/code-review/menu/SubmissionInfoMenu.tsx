@@ -6,8 +6,12 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag } from 'antd';
+import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
 const { TextArea } = Input;
+const { Text } = Typography;
+
+/* other library imports */
+import * as moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -362,9 +366,25 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   const buttonStyle = { textAlign: 'center' as 'center', paddingTop: 15 };
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
 
+  const deadline = props.assignment.regradeDeadline
+    ? `Deadline: ${moment(props.assignment.regradeDeadline).format('llll')}`
+    : '';
+
   switch (questionStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED:
       // Case 0: Student has not submitted a question or regrade request
+      if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {
+        // Case 1: No regraded summited and deadline has passed
+        return (
+          <div style={buttonStyle}>
+            <CPTooltip title={`Deadline for submitting a regrade has passed. ${deadline}`}>
+              <CPButton cpType="secondary" icon="message" disabled={true}>
+                Submit a regrade request
+              </CPButton>
+            </CPTooltip>
+          </div>
+        );
+      }
       return (
         <div>
           <div style={buttonStyle}>
@@ -385,6 +405,10 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
               </CPButton>,
             ]}
           >
+            <Text type="warning" style={{ marginBottom: 15 }}>
+              {deadline}
+            </Text>
+            ;
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
