@@ -330,10 +330,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       };
     }
 
-    if (pointLimit !== null && (!Number.isInteger(pointLimit) || pointLimit < 0)) {
+    if (pointLimit !== null && !Number.isInteger(pointLimit)) {
       return {
         valid: false,
-        message: 'pointLimit must be a positive integer.',
+        message: 'pointLimit must be a valid integer.',
       };
     }
 
