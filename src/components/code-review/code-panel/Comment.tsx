@@ -484,6 +484,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     // Sets zIndex explicitly to avoid style conflict when modals open on this page
     // Per: https://github.com/ant-design/ant-design/issues/6722
+    // this.context.consoleTheme.commentBody
+    // this.context.consoleTheme.commentBody
     return (
       <div
         className={className}
@@ -495,9 +497,24 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
-          <div className="ant-popover-arrow" style={{ borderColor: this.context.consoleTheme.commentBody }} />
+          <div
+            className="ant-popover-arrow"
+            style={{
+              borderColor:
+                this.props.comment.color !== undefined
+                  ? this.props.comment.color
+                  : this.context.consoleTheme.commentBody,
+            }}
+          />
           <div className="ant-popover-inner" style={shadow}>
-            <div style={{ backgroundColor: this.context.consoleTheme.commentBody }}>
+            <div
+              style={{
+                backgroundColor:
+                  this.props.comment.color !== undefined
+                    ? this.props.comment.color
+                    : this.context.consoleTheme.commentBody,
+              }}
+            >
               <div
                 className="ant-popover-title"
                 style={{
