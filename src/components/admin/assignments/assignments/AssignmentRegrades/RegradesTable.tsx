@@ -69,6 +69,7 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission['questionResponder'] = newGrader;
     newSubmission['questionResponse'] = '';
+    newSubmission['questionIsOpen'] = true;
     props.updateSubmission(newSubmission);
   };
 
@@ -85,9 +86,13 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     });
   };
 
-  const submitResponse = () => {
+  const submitResponse = (questionIsOpen: boolean) => {
     if (activeSubmission) {
-      updateSubmissionField(activeSubmission, 'questionResponse', responseText);
+      console.log(questionIsOpen);
+      const newSubmission = JSON.parse(JSON.stringify(activeSubmission));
+      newSubmission['questionIsOpen'] = questionIsOpen;
+      newSubmission['questionResponse'] = responseText;
+      props.updateSubmission(newSubmission);
     }
     toggleModal(true, undefined);
   };
@@ -276,13 +281,19 @@ const RegradesTable = (props: IStudentQuestionsProps) => {
     </CPButton>
   );
 
-  const submitButton = (
-    <CPButton key="submit" cpType="primary" onClick={submitResponse}>
-      Submit
+  const submitAndKeepOpenButton = (
+    <CPButton key="submit-open" cpType="secondary" onClick={submitResponse.bind({}, true)}>
+      Submit and Keep Open
     </CPButton>
   );
 
-  const footer = modalReadOnly ? [closeButton] : [closeButton, submitButton];
+  const submitAndCloseButton = (
+    <CPButton key="submit-close" cpType="primary" onClick={submitResponse.bind({}, false)}>
+      Submit and Close
+    </CPButton>
+  );
+
+  const footer = modalReadOnly ? [closeButton] : [closeButton, submitAndKeepOpenButton, submitAndCloseButton];
 
   // *********************** RENDER *************************
 
