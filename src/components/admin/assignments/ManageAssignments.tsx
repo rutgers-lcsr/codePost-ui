@@ -572,7 +572,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             return (
               <Moss
                 assignment={this.state.activeAssignment!}
-                userr={this.props.user}
+                user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               />
             );

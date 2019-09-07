@@ -6,12 +6,15 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Typography } from 'antd';
+import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Typography } from 'antd';
+const { Option } = Select;
 
 const { Paragraph } = Typography;
 
 const ButtonGroup = Button.Group;
 const { Search } = Input;
+
+const InputGroup = Input.Group;
 
 import CPFlex from '../../../../components/core/CPFlex';
 
@@ -25,7 +28,7 @@ import { UserType } from '../../../../infrastructure/user';
 
 /**********************************************************************************************************************/
 
-export interface IProps {
+export interface IMossProps {
   /* assignment data */
   assignment: AssignmentType;
 
@@ -35,10 +38,40 @@ export interface IProps {
 }
 /**********************************************************************************************************************/
 
-const Moss = (props: any) => {
+export const MOSS_LANGUAGES = [
+  "don't specify a programming language",
+  'c',
+  'cc',
+  'java',
+  'ml',
+  'pascal',
+  'ada',
+  'lisp',
+  'scheme',
+  'haskell',
+  'fortran',
+  'ascii',
+  'vhdl',
+  'perl',
+  'matlab',
+  'python',
+  'mips',
+  'prolog',
+  'spice',
+  'vb',
+  'csharp',
+  'modula2',
+  'a8086',
+  'javascript',
+  'plsql',
+  'verilog',
+];
+
+const Moss = (props: IMossProps) => {
   const [submit, setSubmit] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState(null);
+  const [language, setLanguage] = React.useState('');
 
   // const mockResults = [
   //   {
@@ -97,6 +130,21 @@ const Moss = (props: any) => {
     return t ? 'primary' : 'default';
   };
 
+  const onLanguageChange = (value: string) => {
+    if (value === MOSS_LANGUAGES[0]) {
+      setLanguage('');
+    }
+    setLanguage(value);
+  };
+
+  const languageSelectData = MOSS_LANGUAGES.map((lang: string) => {
+    return (
+      <Option key={lang} value={lang}>
+        {lang}
+      </Option>
+    );
+  });
+
   const processMoss = async (mossURL: string) => {
     const payload = {
       moss_url: mossURL,
@@ -117,7 +165,7 @@ const Moss = (props: any) => {
     }
   };
 
-  const checkMoss = async (language: string) => {
+  const checkMoss = async () => {
     // const payload = {
     //   course_id: this.props.currentCourse!['id'],
     //   assignment_id: assignment['id'],
@@ -126,13 +174,12 @@ const Moss = (props: any) => {
     // };
 
     // Mock payload
-    // Lambda can't request localhost
     const payload = {
       course_id: 124,
       assignment_id: 512,
       api_key:
         // tslint:disable-next-line:max-line-length
-        'JWT <your jwt token here>',
+        'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InJpY2hhcmRAY29kZXBvc3QuaW8iLCJleHAiOjE1NjgwMDU5MTMsImVtYWlsIjoicmljaGFyZEBjb2RlcG9zdC5pbyIsIm9yaWdfaWF0IjoxNTY3ODMzMTEzfQ.E3sTLOVJ_lbzXCKz77AdrCk7wlmmBiytSGKC-Pkpv28',
       language,
     };
 
@@ -151,10 +198,10 @@ const Moss = (props: any) => {
     }
   };
 
-  const onSubmit = async (value: string) => {
+  const onSubmit = async () => {
     setLoading(true);
     try {
-      const data = await checkMoss(value);
+      const data = await checkMoss();
       setUrl(data);
       const mossResults = await processMoss(data);
       setResults(mossResults);
@@ -197,14 +244,19 @@ const Moss = (props: any) => {
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '80px 100px 40px 100px' }}>
-      <Search
-        key="submit-input"
-        placeholder="Programming language"
-        enterButton="Go"
-        size="large"
-        onSearch={onSubmit}
-        disabled={loading}
-      />
+      <InputGroup compact>
+        <Select
+          placeholder="Programming Language (Moss supported)"
+          disabled={loading}
+          onChange={onLanguageChange}
+          style={{ width: '90%' }}
+        >
+          {languageSelectData}
+        </Select>
+        <Button type="primary" onClick={onSubmit}>
+          Go
+        </Button>
+      </InputGroup>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
           <ProgressBar time={20000} />
