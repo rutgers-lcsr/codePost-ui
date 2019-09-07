@@ -12,11 +12,6 @@ const { Paragraph } = Typography;
 
 const ButtonGroup = Button.Group;
 const { Search } = Input;
-// const { Title } = Typography;
-
-// import CPButton from '../../../../../components/core/CPButton';
-// import CPTooltip from '../../../../../components/core/CPTooltip';
-// import { tooltips } from '../../../../../components/core/tooltips';
 
 import CPFlex from '../../../../components/core/CPFlex';
 
@@ -24,13 +19,9 @@ import CPAdminDetail from '../../other/CPAdminDetail';
 
 import MossResults from './MossResults';
 
-/* other library imports */
-// import memoizeOne from 'memoize-one';
-
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { UserType } from '../../../../infrastructure/user';
-// import { SubmissionType } from '../../../../../infrastructure/submission';
 
 /**********************************************************************************************************************/
 
@@ -45,7 +36,7 @@ export interface IProps {
 /**********************************************************************************************************************/
 
 const Moss = (props: any) => {
-  const [submit, setSubmit] = React.useState(false);
+  const [submit, setSubmit] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState(null);
 
@@ -126,7 +117,7 @@ const Moss = (props: any) => {
     }
   };
 
-  const checkMoss = async () => {
+  const checkMoss = async (language: string) => {
     // const payload = {
     //   course_name: this.props.currentCourse!['name'],
     //   course_period: this.props.currentCourse!['period'],
@@ -139,6 +130,7 @@ const Moss = (props: any) => {
       course_period: 'demo',
       assignment_name: 'Hello World',
       api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
+      language,
     };
 
     const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/send-to-moss', {
@@ -159,7 +151,7 @@ const Moss = (props: any) => {
   const onSubmit = async (value: string) => {
     setLoading(true);
     try {
-      const data = await checkMoss();
+      const data = await checkMoss(value);
       setUrl(data);
       const mossResults = await processMoss(data);
       setResults(mossResults);
@@ -191,7 +183,7 @@ const Moss = (props: any) => {
   const toggle = (
     <ButtonGroup>
       <Button type={toggleType(submit)} onClick={toggleSubmit}>
-        Submit assignment
+        Submit this assignment
       </Button>
       <Button type={toggleType(!submit)} onClick={toggleParse}>
         Parse link
@@ -199,11 +191,9 @@ const Moss = (props: any) => {
     </ButtonGroup>
   );
 
-  console.log('url', url);
-
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
-    <div style={{ padding: '80px 100px' }}>
+    <div style={{ padding: '80px 100px 40px 100px' }}>
       <Search
         key="submit-input"
         placeholder="Programming language"
@@ -224,7 +214,7 @@ const Moss = (props: any) => {
       ) : null}
     </div>
   ) : (
-    <div style={{ padding: '80px 100px' }}>
+    <div style={{ padding: '80px 100px 40px 100px' }}>
       <Search key="parse-input" placeholder="Moss results URL" enterButton="Go" size="large" onSearch={onParse} />
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
