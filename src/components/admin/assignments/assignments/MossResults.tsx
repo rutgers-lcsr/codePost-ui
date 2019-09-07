@@ -5,19 +5,58 @@
 /* React imports */
 import * as React from 'react';
 
-import { Card, Empty } from 'antd';
+import { Link } from 'react-router-dom';
+
+import { Card, Empty, Icon } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
 const MossResults = (props: any) => {
   const aligner: 'left' | 'center' | 'right' = 'center';
   const columns = [
-    { title: 'Inspect', dataIndex: 'inspect', key: 'inspect', align: aligner },
-    { title: 'Open', dataIndex: 'open1', key: 'open1', align: aligner },
+    {
+      title: 'Inspect',
+      dataIndex: 'inspect',
+      key: 'inspect',
+      align: aligner,
+      render: (url: string) => {
+        return (
+          <a href={url} target="_blank">
+            Inspect
+          </a>
+        );
+      },
+    },
+    {
+      title: 'Open',
+      dataIndex: 'open1',
+      key: 'open1',
+      align: aligner,
+      render: (open1: string) => {
+        return (
+          <Link to={`/code/${open1}`} target="_blank">
+            <Icon type="code" />
+          </Link>
+        );
+      },
+    },
     {
       title: 'Submission1',
       dataIndex: 'submission1',
       key: 'submission1',
+    },
+    {
+      title: 'Open',
+      dataIndex: 'open2',
+      key: 'open2',
+      align: aligner,
+      render: (open2: string) => {
+        return (
+          <Link to={`/code/${open2}`} target="_blank">
+            <Icon type="code" />
+          </Link>
+        );
+      },
     },
     {
       title: 'Submission2',
@@ -28,43 +67,31 @@ const MossResults = (props: any) => {
       title: 'Similarity',
       dataIndex: 'similarity',
       key: 'similarity',
+      align: aligner,
+      defaultSortOrder: 'descend' as 'ascend' | 'descend',
+      sorter: (a: any, b: any) => a.similarity - b.similarity,
     },
     {
       title: 'Lines Matched',
       dataIndex: 'linesMatched',
       key: 'linesMatched',
+      align: aligner,
+      sorter: (a: any, b: any) => a.linesMatched - b.linesMatched,
     },
   ];
 
-  const data = [
-    {
-      key: '1',
-      inspect: 'inspect',
-      open1: 'open',
-      submission1: 'submission1',
-      submission2: 'submission2',
-      similarity: 20,
-      linesMatched: 10,
-    },
-    {
-      key: '2',
-      inspect: 'inspect',
-      open1: 'open',
-      submission1: 'submission1',
-      submission2: 'submission2',
-      similarity: 20,
-      linesMatched: 10,
-    },
-    {
-      key: '3',
-      inspect: 'inspect',
-      open1: 'open',
-      submission1: 'submission1',
-      submission2: 'submission2',
-      similarity: 20,
-      linesMatched: 10,
-    },
-  ];
+  const data = props.results.map((result: any, index: number) => {
+    return {
+      key: index,
+      inspect: result.matchURL,
+      open1: result.file1.sub_id,
+      open2: result.file2.sub_id,
+      submission1: result.file1.email,
+      submission2: result.file2.email,
+      similarity: +result.file1.similarity,
+      linesMatched: +result.linesMatched,
+    };
+  });
 
   const table = (
     <TableDetail
@@ -90,7 +117,7 @@ const MossResults = (props: any) => {
   );
   return (
     <Card
-      style={{ boxShadow: 'rgba(0, 0, 0, 0.1) 0px 2px 15px 0px', padding: '10px', margin: '15px', border: '0px' }}
+      style={{ boxShadow: 'rgba(0, 0, 0, 0.1) 0px 2px 15px 0px', padding: '0px', margin: '15px', border: '0px' }}
       className="moss-results"
     >
       {table}

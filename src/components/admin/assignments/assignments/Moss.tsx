@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Button, Card, Icon, Input, message, Progress } from 'antd';
+import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Typography } from 'antd';
+
+const { Paragraph } = Typography;
 
 const ButtonGroup = Button.Group;
 const { Search } = Input;
@@ -45,50 +47,54 @@ export interface IProps {
 const Moss = (props: any) => {
   const [submit, setSubmit] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [url, setUrl] = React.useState('http://moss.stanford.edu/results/783191722');
+  const [url, setUrl] = React.useState(null);
 
-  const mockResults = [
-    {
-      file1: {
-        timestamp: '1567581291836253',
-        course: 'richardscourse',
-        assignment: 'HelloWorld',
-        sub_id: '25641',
-        email: 'student0@codepost.io',
-        similarity: '98',
-      },
-      file2: {
-        timestamp: '1567581291836253',
-        course: 'richardscourse',
-        assignment: 'HelloWorld',
-        sub_id: '25705',
-        email: 'student1@codepost.io',
-        similarity: '98',
-      },
-      linesMatched: 84,
-      matchURL: 'http://moss.stanford.edu/results/783191722/match0.html',
-    },
-  ];
+  // const mockResults = [
+  //   {
+  //     file1: {
+  //       timestamp: '1567581291836253',
+  //       course: 'richardscourse',
+  //       assignment: 'HelloWorld',
+  //       sub_id: '25641',
+  //       email: 'student0@codepost.io',
+  //       similarity: '98',
+  //     },
+  //     file2: {
+  //       timestamp: '1567581291836253',
+  //       course: 'richardscourse',
+  //       assignment: 'HelloWorld',
+  //       sub_id: '25705',
+  //       email: 'student1@codepost.io',
+  //       similarity: '98',
+  //     },
+  //     linesMatched: 84,
+  //     matchURL: 'http://moss.stanford.edu/results/783191722/match0.html',
+  //   },
+  //   {
+  //     file1: {
+  //       timestamp: '1567581291836254',
+  //       course: 'richardscourse',
+  //       assignment: 'HelloWorld',
+  //       sub_id: '25634',
+  //       email: 'student2@codepost.io',
+  //       similarity: '90',
+  //     },
+  //     file2: {
+  //       timestamp: '1567581291836253',
+  //       course: 'richardscourse',
+  //       assignment: 'HelloWorld',
+  //       sub_id: '257044',
+  //       email: 'student3@codepost.io',
+  //       similarity: '90',
+  //     },
+  //     linesMatched: 77,
+  //     matchURL: 'http://moss.stanford.edu/results/783191722/match1.html',
+  //   },
+  // ];
 
-  // @ts-ignore
-  const [results, setResults] = React.useState(mockResults);
+  const [results, setResults] = React.useState(undefined);
 
   const toggleSubmit = async () => {
-    const payload = {
-      moss_url: 'http://moss.stanford.edu/results/783191722',
-    };
-
-    console.log('requesting here ---->');
-
-    const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/process-moss', {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-
-    console.log(await res.json());
     setSubmit(true);
   };
 
@@ -101,18 +107,11 @@ const Moss = (props: any) => {
   };
 
   const processMoss = async (mossURL: string) => {
-    // const payload = {
-    //   course_name: this.props.currentCourse!['name'],
-    //   course_period: this.props.currentCourse!['period'],
-    //   assignment_name: assignment['name'],
-    //   api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
-    // };
-
     const payload = {
       moss_url: mossURL,
     };
-    console.log('++++++', payload, JSON.stringify(payload));
-    const res = await fetch('https://i9d9zcmvh9.execute-api.us-east-2.amazonaws.com/default/process-moss', {
+
+    const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/process-moss', {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -120,21 +119,10 @@ const Moss = (props: any) => {
       body: JSON.stringify(payload),
     });
 
-    console.log('res', res);
-    const data = await res.json();
-
-    console.log('data', data);
-    console.log('asdf', data['statusCode']);
-
-    if (data['statusCode'] === '200') {
-      console.log('ddd', data);
-      if (data.hasOwnProperty('errorMessage')) {
-        return Promise.reject(data['errorMessage']);
-      }
-      return JSON.parse(data['body']);
+    if (res['status'] === 200) {
+      return await res.json();
     } else {
-      const error = JSON.stringify(data['body']);
-      return Promise.reject(error);
+      return Promise.reject(await res.json());
     }
   };
 
@@ -152,6 +140,7 @@ const Moss = (props: any) => {
       assignment_name: 'Hello World',
       api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
     };
+
     const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/send-to-moss', {
       headers: {
         'Content-Type': 'application/json',
@@ -160,21 +149,10 @@ const Moss = (props: any) => {
       body: JSON.stringify(payload),
     });
 
-    console.log('res', res);
-    const data = await res.json();
-
-    console.log('data', data);
-    console.log('asdf', data['statusCode']);
-
-    if (data['statusCode'] === '200') {
-      console.log('ddd', data);
-      if (data.hasOwnProperty('errorMessage')) {
-        return Promise.reject(data['errorMessage']);
-      }
-      return JSON.parse(data['body']);
+    if (res['status'] === 200) {
+      return await res.json();
     } else {
-      const error = JSON.stringify(data['body']);
-      return Promise.reject(error);
+      return Promise.reject(await res.json());
     }
   };
 
@@ -183,12 +161,12 @@ const Moss = (props: any) => {
     try {
       const data = await checkMoss();
       setUrl(data);
+      const mossResults = await processMoss(data);
+      setResults(mossResults);
     } catch (err) {
       message.error(err);
     }
 
-    // message.success(data['body']);
-    console.log(value);
     setLoading(false);
   };
 
@@ -196,13 +174,10 @@ const Moss = (props: any) => {
     setLoading(true);
     try {
       const data = await processMoss(value);
-      console.log('dat', data);
+      setResults(data);
     } catch (err) {
       message.error(err);
     }
-
-    // message.success(data['body']);
-    console.log(value);
     setLoading(false);
   };
 
@@ -215,11 +190,11 @@ const Moss = (props: any) => {
 
   const toggle = (
     <ButtonGroup>
-      <Button type={toggleType(!submit)} onClick={toggleParse}>
-        Parse
-      </Button>
       <Button type={toggleType(submit)} onClick={toggleSubmit}>
-        Submit
+        Submit assignment
+      </Button>
+      <Button type={toggleType(!submit)} onClick={toggleParse}>
+        Parse link
       </Button>
     </ButtonGroup>
   );
@@ -239,20 +214,23 @@ const Moss = (props: any) => {
       />
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
-          <ProgressBar />
+          <ProgressBar time={20000} />
         </div>
       ) : null}
       {url !== null ? (
         <div style={{ textAlign: 'center', padding: '20px' }}>
-          <a href={url} target="_blank">
-            {url}
-          </a>
+          <Paragraph copyable>{url}</Paragraph>
         </div>
       ) : null}
     </div>
   ) : (
     <div style={{ padding: '80px 100px' }}>
       <Search key="parse-input" placeholder="Moss results URL" enterButton="Go" size="large" onSearch={onParse} />
+      {loading ? (
+        <div style={{ padding: '40px 0px 0px 0px' }}>
+          <ProgressBar time={10000} />
+        </div>
+      ) : null}
     </div>
   );
 
@@ -263,7 +241,7 @@ const Moss = (props: any) => {
     </Card>
   );
 
-  const resultsCard = results === undefined ? null : <MossResults results={mockResults} />;
+  const resultsCard = results === undefined ? null : <MossResults results={results} />;
 
   const content = (
     <div>
@@ -292,7 +270,7 @@ const Moss = (props: any) => {
 };
 
 const ProgressBar = (props: any) => {
-  const timerTime = 20000; // milliseconds, AWS timeout
+  const timerTime = props.time; // milliseconds, AWS timeout
 
   const [counter, setCounter] = React.useState(0);
 
