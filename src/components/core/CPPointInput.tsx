@@ -5,7 +5,7 @@ const InputGroup = Input.Group;
 
 export type CPPointInputType = 'small' | 'default';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import ToggleButton from 'react-toggle-button';
 
@@ -109,16 +109,21 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     // tslint:disable
     const style = this.props.disabled
       ? {
-        backgroundColor: this.context.consoleTheme.buttonDisabledBg,
-        color: this.context.consoleTheme.buttonDisabledColor,
-        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-      }
+          backgroundColor: this.context.consoleTheme.buttonDisabledBg,
+          color: this.context.consoleTheme.buttonDisabledColor,
+          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
+        }
       : {
-        backgroundColor: this.context.consoleTheme.commentBody,
-        color: this.context.consoleTheme.text,
-        border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-      };
+          backgroundColor: this.context.consoleTheme.commentBody,
+          color: this.context.consoleTheme.text,
+          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
+        };
     // tslint:enable
+
+    const groupClass =
+      consoleThemes.light === this.context.consoleTheme
+        ? 'point-input-group'
+        : 'point-input-group point-input-group--dark';
 
     const plus = (
       <PlusSvg
@@ -126,7 +131,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         style={{
           height: '8px',
           width: '8px',
-          fill: 'rgba(0, 0, 0, 0.8)',
+          fill: this.context.consoleTheme.commentTitleText,
           position: 'absolute',
           top: '50%',
           left: '50%',
@@ -141,7 +146,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         style={{
           height: '8px',
           width: '8px',
-          fill: 'rgba(0, 0, 0, 0.8)',
+          fill: this.context.consoleTheme.commentTitleText,
           position: 'absolute',
           top: '50%',
           left: '50%',
@@ -153,18 +158,16 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     const checked = this.state.pointType === 'positive';
 
     return (
-      <InputGroup
-        compact
-        className={className}
-        onBlur={this.props.onBlur ? this.props.onBlur : undefined}
-        onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
-      >
+      <div className={groupClass}>
         <ToggleButton
           value={checked}
           inactiveLabel={''}
           activeLabel={''}
           onToggle={this.toggleType}
-          thumbStyle={{ borderRadius: 4, boxShadow: 'none' }}
+          thumbStyle={{
+            borderRadius: 4,
+            boxShadow: 'none',
+          }}
           trackStyle={{ borderRadius: 5, width: '32px' }}
           containerStyle={{
             display: 'inline-block',
@@ -175,6 +178,12 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
           thumbIcon={checked ? plus : minus}
           thumbAnimateRange={[1, 13]}
           colors={{
+            activeThumb: {
+              base: this.context.consoleTheme.commentBody,
+            },
+            inactiveThumbe: {
+              base: this.context.consoleTheme.commentBody,
+            },
             active: {
               base: '#24be85',
             },
@@ -183,23 +192,30 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
             },
           }}
         />
-        <InputNumber
-          value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-          size={this.props.size}
-          onChange={this.setValue}
-          disabled={this.props.disabled}
-          onKeyDown={this.props.onKeyDown}
-          style={style}
-          min={0}
-        />
-        <Button icon="caret-up" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
-        <Button
-          icon="caret-down"
-          onClick={this.onMinus}
-          disabled={this.props.disabled || this.props.value === 0}
-          style={style}
-        />
-      </InputGroup>
+        <InputGroup
+          compact
+          className={className}
+          onBlur={this.props.onBlur ? this.props.onBlur : undefined}
+          onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
+        >
+          <InputNumber
+            value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
+            size={this.props.size}
+            onChange={this.setValue}
+            disabled={this.props.disabled}
+            onKeyDown={this.props.onKeyDown}
+            style={style}
+            min={0}
+          />
+          <Button icon="caret-up" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
+          <Button
+            icon="caret-down"
+            onClick={this.onMinus}
+            disabled={this.props.disabled || this.props.value === 0}
+            style={style}
+          />
+        </InputGroup>
+      </div>
     );
   }
 }
