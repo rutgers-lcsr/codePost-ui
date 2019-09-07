@@ -658,6 +658,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             onChange={this.setValue.bind(this, 'pointLimit')}
             disabled={false}
             onBlur={this.saveCategory}
+            onMouseLeave={this.saveCategory}
             step={1}
           />
           <span onBlur={this.saveCategory}>
