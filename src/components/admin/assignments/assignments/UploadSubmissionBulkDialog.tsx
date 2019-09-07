@@ -213,12 +213,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     submissions.forEach((submission) => {
       for (const file of submission.files) {
         const anyFile: any = file;
-        const extension = anyFile.name.includes('.') ? anyFile.name.split('.').slice(-1)[0] : '';
-        if (!acceptedFilesSet.has(`.${extension}`)) {
-          const errorPaths = this.state.errorPaths;
-          const newMessage = `File type not accepted: ${anyFile.webkitRelativePath}`;
-          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
-        }
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
         studentsReader.onerror = () => {
@@ -464,9 +458,21 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
       const folderName = el.webkitRelativePath.split('/')[1];
-      if (folderName in folderMap) {
-        folderMap[folderName].files.push(el);
-        numFiles = numFiles + 1;
+      const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
+      if (!acceptedFilesSet.has(`.${extension}`)) {
+        invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
+      } else {
+        if (folderName in folderMap) {
+          folderMap[folderName].files.push(el);
+          numFiles = numFiles + 1;
+        }
+      }
+    });
+
+    // Remove protoSubmissions which have no files (because all of the files are invalid)
+    Object.keys(folderMap).forEach((key) => {
+      if (folderMap[key].files.length === 0) {
+        delete folderMap[key];
       }
     });
 
