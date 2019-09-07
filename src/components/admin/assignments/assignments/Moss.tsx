@@ -119,17 +119,20 @@ const Moss = (props: any) => {
 
   const checkMoss = async (language: string) => {
     // const payload = {
-    //   course_name: this.props.currentCourse!['name'],
-    //   course_period: this.props.currentCourse!['period'],
-    //   assignment_name: assignment['name'],
-    //   api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
+    //   course_id: this.props.currentCourse!['id'],
+    //   assignment_id: assignment['id'],
+    //   api_key: `JWT ${localStorage.getItem('token')}`,
+    //   language
     // };
 
+    // Mock payload
+    // Lambda can't request localhost
     const payload = {
-      course_name: "richard's course",
-      course_period: 'demo',
-      assignment_name: 'Hello World',
-      api_key: '175b9ff8cf47feec6557b74781a8fb9cda79510d',
+      course_id: 124,
+      assignment_id: 512,
+      api_key:
+        // tslint:disable-next-line:max-line-length
+        'JWT <your jwt token here>',
       language,
     };
 
@@ -156,7 +159,7 @@ const Moss = (props: any) => {
       const mossResults = await processMoss(data);
       setResults(mossResults);
     } catch (err) {
-      message.error(err);
+      message.error(JSON.stringify(err));
     }
 
     setLoading(false);
@@ -168,7 +171,7 @@ const Moss = (props: any) => {
       const data = await processMoss(value);
       setResults(data);
     } catch (err) {
-      message.error(err);
+      message.error(JSON.stringify(err));
     }
     setLoading(false);
   };
@@ -239,6 +242,8 @@ const Moss = (props: any) => {
       <div>{resultsCard}</div>
     </div>
   );
+
+  console.log('jwt', `JWT ${localStorage.getItem('token')} `);
 
   return (
     <CPAdminDetail
