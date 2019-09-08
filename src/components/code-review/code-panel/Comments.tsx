@@ -28,6 +28,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   isStudent: boolean;
   updateFeedback: (commentID: number, feedback: number) => void;
   studentFeedbackOn: boolean;
+  hideAuthor: boolean;
 }
 
 interface ICommentsEditProps {
@@ -305,6 +306,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
           studentFeedbackOn={this.props.studentFeedbackOn}
+          hideAuthor={this.props.hideAuthor}
           additiveGrading={this.props.additiveGrading}
         />
       );
