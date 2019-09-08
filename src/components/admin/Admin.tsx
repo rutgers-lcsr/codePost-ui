@@ -1188,6 +1188,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
+    // console.log('admin', this.props.user);
     /* build header */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
@@ -1300,6 +1301,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
+              user={this.props.user}
             />
           );
           break;

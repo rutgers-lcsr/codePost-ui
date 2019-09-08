@@ -25,6 +25,7 @@ import memoizeOne from 'memoize-one';
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
+import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -40,6 +41,8 @@ import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
+
+import Moss from './assignments/Moss';
 
 import {
   calculateMultipleAssignmentProgressStats,
@@ -75,6 +78,9 @@ export interface IManageAssignmentsProps {
 
   /* Refresh course */
   refreshCourseData: () => void;
+
+  /* user data */
+  user: UserType;
 }
 
 export enum DETAIL_TYPE {
@@ -86,6 +92,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
+  Moss,
 }
 
 interface IManageAssignmentsState {
@@ -381,6 +388,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
+              <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
+                <Icon type="diff" />
+                Check MOSS
+              </Menu.Item>
               <SubMenu
                 key="4"
                 title={
@@ -554,6 +565,15 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 submissionsByStudent={this.props.submissionsByStudent}
                 viewsBySubmission={this.props.viewsBySubmission}
                 refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              />
+            );
+          case DETAIL_TYPE.Moss:
+            return (
+              <Moss
+                course={this.props.currentCourse!}
+                assignment={this.state.activeAssignment!}
+                user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               />
             );
