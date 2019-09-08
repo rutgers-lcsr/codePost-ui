@@ -284,7 +284,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return rubricCategory.id === +category;
         });
         const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
-        pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        if (pointLimit < 0) {
+          pointsPerCategoryWithCaps[+category] = Math.max(pointsPerCategory[category], pointLimit);
+        } else {
+          pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        }
       }
     }
     return pointsPerCategoryWithCaps;
@@ -304,7 +308,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
-    return assignment.points - commentPoints - categoryPoints;
+    if (assignment.additiveGrading) {
+      return 0 - commentPoints - categoryPoints;
+    } else {
+      return assignment.points - commentPoints - categoryPoints;
+    }
   };
 
   /***********************************************************************************************/
@@ -836,6 +844,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       course: -1,
       sortKey: 0,
       anonymousGrading: false,
+      hideGradersFromStudents: false,
       mean: null,
       median: null,
       points: 20,
@@ -843,6 +852,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowStudentUpload: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
+      additiveGrading: false,
     };
 
     const demoCourse: CourseType = {
@@ -1127,6 +1137,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1222,6 +1234,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={false}
             />
           );
 
@@ -1319,6 +1333,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 

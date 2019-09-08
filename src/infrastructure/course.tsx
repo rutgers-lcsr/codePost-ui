@@ -60,6 +60,7 @@ const RosterV = t.intersection(
       graders: t.array(t.string),
       superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
+      not_activated: t.array(t.string),
     }),
     t.partial({}),
   ],

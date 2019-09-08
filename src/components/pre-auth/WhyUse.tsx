@@ -93,7 +93,7 @@ const sections = [
   },
   {
     title: 'For students',
-    features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback'],
+    features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback', 'Remote office hours'],
     spotlights: [
       <img
         src="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback_on_feedback.png"
@@ -103,6 +103,10 @@ const sections = [
       />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4" />,
+      <Video
+        key="3"
+        url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/remote-office-hours.mp4"
+      />,
     ],
     captions: [
       `In codePost, students can leave feedback on the feedback they receive. Course leaders can use this
@@ -110,6 +114,8 @@ const sections = [
       `You can take advantage in peer grading with codePost. Just make your students "graders" and enable anonymous
       grading mode.`,
       'Students use codePost to access their scores and feedback.',
+      `You can give live feedback on code that students upload, allowing you to provide office-hours quality
+        feedback remotely!`,
     ],
   },
   {

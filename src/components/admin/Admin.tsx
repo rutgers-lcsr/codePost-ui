@@ -121,6 +121,7 @@ interface IAdminState {
   inactiveGraders: string[];
   admins: string[];
   superGraders: string[];
+  notActivated: string[];
 
   /**** Sections data ****/
   sectionsLoadComplete: boolean;
@@ -175,13 +176,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       courses: _.cloneDeep(this.props.initialCourses),
 
       /**** Roster data ****/
+      rosterLoadComplete: false,
       students: [],
       inactiveStudents: [],
       graders: [],
       inactiveGraders: [],
       admins: [],
       superGraders: [],
-      rosterLoadComplete: false,
+      notActivated: [],
 
       /**** Sections data ****/
       sections: [],
@@ -432,6 +434,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
             superGraders: roster.superGraders,
             inactiveStudents: roster.inactive_students,
             inactiveGraders: roster.inactive_graders,
+            notActivated: roster.not_activated,
           });
         });
       } else {
@@ -443,6 +446,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           superGraders: roster.superGraders,
           inactiveStudents: roster.inactive_students,
           inactiveGraders: roster.inactive_graders,
+          notActivated: roster.not_activated,
         });
       }
     });
@@ -1189,6 +1193,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
+    // console.log('admin', this.props.user);
     /* build header */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
@@ -1301,12 +1306,14 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
+              user={this.props.user}
             />
           );
           break;
         case PANELS.ROSTER_STUDENTS:
           detail = (
             <ManageStudents
+              notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
               graders={this.state.graders}
@@ -1324,6 +1331,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_GRADERS:
           detail = (
             <ManageGraders
+              notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
               graders={this.state.graders}
@@ -1341,6 +1349,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_ADMINS:
           detail = (
             <ManageAdmins
+              notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
               graders={this.state.graders}

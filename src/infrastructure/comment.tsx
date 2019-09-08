@@ -21,6 +21,7 @@ const CommentV = t.intersection(
     t.partial({
       author: t.string,
       isSaved: t.boolean,
+      color: t.string,
     }),
   ],
   'Comment',

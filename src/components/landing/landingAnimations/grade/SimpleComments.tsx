@@ -34,6 +34,7 @@ const SimpleComment = (props: {
   const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
+      additiveGrading={false}
       isStudent={false}
       commentType={props.classType}
       comment={data}
@@ -49,6 +50,7 @@ const SimpleComment = (props: {
       file={FileMock}
       updateFeedback={empty}
       studentFeedbackOn={false}
+      hideAuthor={true}
     />
   );
 };
