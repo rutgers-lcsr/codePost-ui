@@ -503,7 +503,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             className="ant-popover-arrow"
             style={{
               borderColor:
-                this.props.comment.color !== undefined
+                this.props.comment.color !== undefined && this.props.comment.color !== null
                   ? this.props.comment.color
                   : this.context.consoleTheme.commentBody,
             }}
@@ -512,7 +512,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             <div
               style={{
                 backgroundColor:
-                  this.props.comment.color !== undefined
+                  this.props.comment.color !== undefined && this.props.comment.color !== null
                     ? this.props.comment.color
                     : this.context.consoleTheme.commentBody,
               }}
