@@ -66,7 +66,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
                   redirectAfterLogin={true}
-                  maintenanceMode={true}
+                  maintenanceMode={false}
                 />
               )}
             />
