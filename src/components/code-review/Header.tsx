@@ -403,9 +403,6 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
           {props.assignment.points}
         </span>
       ),
-      value: (
-        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
-      ),
     },
   ];
   // tslint:enable

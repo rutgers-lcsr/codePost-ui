@@ -29,9 +29,9 @@ import { DIRECTION } from '../../../../types/common';
 
 import { IFeedbackScore } from './RubricManager';
 
-const { TextArea } = Input;
-
 import CPPointInput from '../../../core/CPPointInput';
+
+const { TextArea } = Input;
 
 /**********************************************************************************************************************/
 
