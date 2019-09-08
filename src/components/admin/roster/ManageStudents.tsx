@@ -204,7 +204,7 @@ class ManageStudents extends React.Component<IProps, IState> {
           },
           renderForSearch: (searchText: string) => {
             return (text: string, record: any, index: number) => {
-              const student = record.student;
+              const student = record.key;
               if (student === this.state.activeStudent) {
                 return (
                   <div>
