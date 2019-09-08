@@ -53,6 +53,8 @@ import {
   StatsDrawer,
 } from './assignments/AssignmentStats/StatsUtils';
 
+import SendEmailModal from '../other/SendEmailModal';
+
 /**********************************************************************************************************************/
 
 export interface IManageAssignmentsProps {
@@ -442,20 +444,49 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
           const hoverStyle = { cursor: 'pointer' };
 
+          const notifyButton = (toggleDialog: () => void) => {
+            return (
+              <CPTooltip title="Notify students via email. ">
+                <Icon onClick={toggleDialog} style={{ cursor: 'pointer' }} type="mail" />
+              </CPTooltip>
+            );
+          };
+          const listStudents = () => {
+            return this.props.students;
+          };
+
           return {
             key: assignment.id,
             assignment: <Text strong>{assignment.name}</Text>,
             published: (
-              <Popconfirm
-                onConfirm={this.props.updateAssignment.bind(this, {
-                  id: assignment.id,
-                  isReleased: !assignment.isReleased,
-                })}
-                title={publishToggleText}
-                icon={<Icon type="question-circle-o" />}
-              >
-                <Switch checked={assignment.isReleased} />
-              </Popconfirm>
+              <span>
+                <Popconfirm
+                  onConfirm={this.props.updateAssignment.bind(this, {
+                    id: assignment.id,
+                    isReleased: !assignment.isReleased,
+                  })}
+                  title={publishToggleText}
+                  icon={<Icon type="question-circle-o" />}
+                >
+                  <Switch checked={assignment.isReleased} />
+                </Popconfirm>
+                {assignment.isReleased ? (
+                  <span>
+                    &nbsp; &nbsp;
+                    <SendEmailModal
+                      buttonText={'Notify students'}
+                      title="Notify students via email"
+                      template="publish_assignment"
+                      course={this.props.currentCourse!}
+                      assignment={assignment}
+                      me={'james@codepost.io'}
+                      filterFunction={listStudents}
+                      body={<div>Notify students via email that {assignment.name} has been published.</div>}
+                      button={notifyButton}
+                    />
+                  </span>
+                ) : null}
+              </span>
             ),
             submissions: (
               <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
@@ -559,6 +590,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           case DETAIL_TYPE.Stats:
             return (
               <AssignmentStats
+                course={this.props.currentCourse!}
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 students={this.props.students}
