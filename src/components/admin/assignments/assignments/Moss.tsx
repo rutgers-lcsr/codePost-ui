@@ -16,6 +16,8 @@ const { Search } = Input;
 
 const InputGroup = Input.Group;
 
+import useAWSLambda from '../../../../components/core/useAWSLambda';
+
 import CPFlex from '../../../../components/core/CPFlex';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
@@ -179,22 +181,21 @@ const Moss = (props: IMossProps) => {
       assignment_id: 512,
       api_key:
         // tslint:disable-next-line:max-line-length
-        'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InJpY2hhcmRAY29kZXBvc3QuaW8iLCJleHAiOjE1NjgwMDU5MTMsImVtYWlsIjoicmljaGFyZEBjb2RlcG9zdC5pbyIsIm9yaWdfaWF0IjoxNTY3ODMzMTEzfQ.E3sTLOVJ_lbzXCKz77AdrCk7wlmmBiytSGKC-Pkpv28',
+        'JWT <YOUR JWt>',
       language,
     };
 
-    const res = await fetch('https://6yvun70md8.execute-api.us-east-2.amazonaws.com/default/send-to-moss', {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(payload),
+    const res: any = await useAWSLambda({
+      accessKey: 'AKIAV22BSJSCXXWUPZUD',
+      secretAccessKey: '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',
+      arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss',
+      payload,
     });
 
-    if (res['status'] === 200) {
-      return await res.json();
+    if (res.hasOwnProperty('FunctionError')) {
+      return Promise.reject(await res['FunctionError']);
     } else {
-      return Promise.reject(await res.json());
+      return await JSON.parse(res['Payload'])['body'];
     }
   };
 
@@ -249,17 +250,17 @@ const Moss = (props: IMossProps) => {
           placeholder="Programming Language (Moss supported)"
           disabled={loading}
           onChange={onLanguageChange}
-          style={{ width: '90%' }}
+          style={{ width: '80%' }}
         >
           {languageSelectData}
         </Select>
-        <Button type="primary" onClick={onSubmit}>
+        <Button type="primary" disabled={loading} onClick={onSubmit}>
           Go
         </Button>
       </InputGroup>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
-          <ProgressBar time={20000} />
+          <ProgressBar time={100000} />
         </div>
       ) : null}
       {url !== null ? (
@@ -294,8 +295,6 @@ const Moss = (props: IMossProps) => {
       <div>{resultsCard}</div>
     </div>
   );
-
-  console.log('jwt', `JWT ${localStorage.getItem('token')} `);
 
   return (
     <CPAdminDetail
