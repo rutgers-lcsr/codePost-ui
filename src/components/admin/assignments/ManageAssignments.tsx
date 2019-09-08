@@ -77,6 +77,9 @@ export interface IManageAssignmentsProps {
 
   /* Refresh course */
   refreshCourseData: () => void;
+
+  /* misc */
+  myEmail: string;
 }
 
 export enum DETAIL_TYPE {
@@ -448,7 +451,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             key: assignment.id,
             assignment: <Text strong>{assignment.name}</Text>,
             published: (
-              <span>
+              <span className="display-flex align-items-center justify-content-center">
                 <Popconfirm
                   onConfirm={this.props.updateAssignment.bind(this, {
                     id: assignment.id,
@@ -468,7 +471,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                       template="publish_assignment"
                       course={this.props.currentCourse!}
                       assignment={assignment}
-                      me={'james@codepost.io'}
+                      me={this.props.myEmail}
                       filterFunction={listStudents}
                       body={<div>Notify students via email that {assignment.name} has been published.</div>}
                       button={notifyButton}
@@ -587,6 +590,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 viewsBySubmission={this.props.viewsBySubmission}
                 refreshCourseData={this.props.refreshCourseData}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                myEmail={this.props.myEmail}
               />
             );
             break;
