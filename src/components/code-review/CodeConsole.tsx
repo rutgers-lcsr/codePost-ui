@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { Empty, Menu, message } from 'antd';
+import queryString from 'query-string';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -45,7 +46,15 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import { Controls, FinalizeButton, GradeButton, HeaderMenu, StatusTags, SubheaderTitle } from '../code-review/Header';
+import {
+  Controls,
+  FinalizeButton,
+  GradeButton,
+  HeaderMenu,
+  StatusTags,
+  SubheaderTitle,
+  ViewAsStudent,
+} from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
@@ -364,7 +373,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `codePost | Submission - ${submissionID}`;
 
-    const permissionLevel = await this.detectPermissionType(submissionID);
+    let permissionLevel = await this.detectPermissionType(submissionID);
+
+    const values = queryString.parse(this.props.location.search);
+    if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
+      permissionLevel = PERMISSION_LEVEL.READ;
+    }
 
     // Everything we need to load
     let submission;
@@ -1291,6 +1305,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
           controls,
+          <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
