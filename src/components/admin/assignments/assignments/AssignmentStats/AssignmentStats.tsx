@@ -53,6 +53,9 @@ export interface IProps {
   refreshCourseData: () => void | undefined;
 
   onCancel: () => void;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -377,7 +380,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                   template="grader_reminder"
                   course={this.props.course}
                   assignment={this.props.assignment}
-                  me={'james@codepost.io'}
+                  me={this.props.myEmail}
                   filterFunction={this.sendReminders}
                   body={
                     <div>

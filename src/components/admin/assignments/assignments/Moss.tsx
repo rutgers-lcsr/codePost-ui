@@ -248,7 +248,7 @@ const Moss = (props: IMossProps) => {
   const action = submit ? (
     <div style={{ padding: '80px 100px 40px 100px' }}>
       <div style={{ padding: '10px 0px' }}>
-        <Input placeholder="Moss ID Number" value={mossID} onChange={onMossIDChange} style={{ width: '100%' }} />
+        <Input addonBefore="Moss ID Number" value={mossID} onChange={onMossIDChange} style={{ width: '100%' }} />
       </div>
       <div style={{ padding: '10px 0px' }}>
         <Select

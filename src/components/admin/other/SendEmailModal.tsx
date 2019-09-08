@@ -80,7 +80,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
     });
 
     this.setState({ isSending: false });
-    message.success('Emails successfully sent.');
+    message.success(`Email${livemode ? 's' : ''} successfully sent.`);
   };
 
   public toggleDialog = () => {
@@ -117,12 +117,13 @@ class SendEmailModal extends React.Component<IProps, IState> {
           <br />
           <div>
             <CPButton onClick={this.sendTestEmail} cpType="secondary">
-              Send myself a test email &nbsp;
-              <CPTooltip
-                title="This will send you an email example of what the recipients will receive."
-                infoIcon={true}
-              />
+              Send myself a test email
             </CPButton>
+            &nbsp;{' '}
+            <CPTooltip
+              title="This will send you an email example of what the recipients will receive."
+              infoIcon={true}
+            />
           </div>
         </Modal>
       </span>

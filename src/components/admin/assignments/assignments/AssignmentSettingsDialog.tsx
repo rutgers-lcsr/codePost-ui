@@ -217,6 +217,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Hide Graders"
               extra={<div>When enabled, students will not be able to see the grader associated with a submission.</div>}
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
             >
               {getFieldDecorator('hideGradersFromStudents', {
                 initialValue: this.props.assignment.hideGradersFromStudents,
