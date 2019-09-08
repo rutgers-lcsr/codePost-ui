@@ -62,7 +62,12 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/login'}
               render={(props: any) => (
-                <LoginForm handleLogin={this.props.handleLogin} error={this.props.error} redirectAfterLogin={true} />
+                <LoginForm
+                  handleLogin={this.props.handleLogin}
+                  error={this.props.error}
+                  redirectAfterLogin={true}
+                  maintenanceMode={true}
+                />
               )}
             />
 
