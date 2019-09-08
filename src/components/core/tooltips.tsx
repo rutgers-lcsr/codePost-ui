@@ -51,6 +51,9 @@ const GRADE_HEADER_ALIGNMENT = (
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
 const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Mark this submission as Done to edit its grader.';
+const GRADE_COMMENT_POINTSDISABLED = `The points for a rubric comment are fixed by the rubric.\
+        Create a normal comment to be able to change the points\
+        (or, if you have admin privileges, edit the rubric).`;
 
 // ************************ Settings tooltips ************************
 const SETTINGS_TOKEN_COPY = 'Copy API token';
@@ -183,6 +186,9 @@ export const tooltips = {
     subInfo: {
       assignGrader: GRADE_SUBINFO_ASSIGNGRADER,
       unfinalizeToAssign: GRADE_SUBINFO_UNFINALIZETOASSIGN,
+    },
+    comments: {
+      pointsDisabled: GRADE_COMMENT_POINTSDISABLED,
     },
   },
   settings: {

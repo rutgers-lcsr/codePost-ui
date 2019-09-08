@@ -8,6 +8,9 @@ const { TextArea } = Input;
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
+import CPTooltip from '../../core/CPTooltip';
+
+import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
 import InlineMarkdown from '../../core/InlineMarkdown';
@@ -338,15 +341,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     if (this.props.commentType === 'active') {
+      const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
+
       commentElements.points = (
-        <CPPointInput
-          value={-points}
-          size="small"
-          onChange={this.onChangePointInput}
-          disabled={this.props.rubricComment ? true : false}
-          onKeyDown={this.handleShiftEnter}
-          defaultToPositive={this.props.additiveGrading}
-        />
+        <CPTooltip title={tooltip} hideThisOnHideTips={true}>
+          <div>
+            <CPPointInput
+              value={-points}
+              size="small"
+              onChange={this.onChangePointInput}
+              disabled={this.props.rubricComment ? true : false}
+              onKeyDown={this.handleShiftEnter}
+              defaultToPositive={this.props.additiveGrading}
+            />
+          </div>
+        </CPTooltip>
       );
       commentElements.comment = (
         <TextArea
