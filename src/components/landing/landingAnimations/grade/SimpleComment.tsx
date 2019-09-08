@@ -1,26 +1,26 @@
-import * as React from "react";
+import * as React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
-import { Input, message, Popover, Typography } from "antd";
+import { Input, message, Popover, Typography } from 'antd';
 
-import CPButton from "../../../core/CPButton";
-import CPFlex from "../../../core/CPFlex";
-import CPPointInput from "../../../core/CPPointInput";
+import CPButton from '../../../core/CPButton';
+import CPFlex from '../../../core/CPFlex';
+import CPPointInput from '../../../core/CPPointInput';
 
-import Badge from "../../../core/Badge";
+import Badge from '../../../core/Badge';
 
-import { CommentType, UiComment } from "../../../../infrastructure/comment";
-import { RubricCommentType } from "../../../../infrastructure/rubricComment";
+import { CommentType, UiComment } from '../../../../infrastructure/comment';
+import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
-import { wait } from "../../../../infrastructure/animation";
+import { wait } from '../../../../infrastructure/animation';
 
-import ReactMarkdown from "react-markdown";
-import { consoleThemes } from "../../../../styles/abstracts/_console-theme-context";
+import ReactMarkdown from 'react-markdown';
+import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
-export type UICommentType = "readonly" | "active" | "inactive";
+export type UICommentType = 'readonly' | 'active' | 'inactive';
 
-export type CommentStatus = "edited" | "saved" | "idle" | "error";
+export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 const { TextArea } = Input;
 const { Paragraph } = Typography;
@@ -38,10 +38,7 @@ interface ISimpleCommentProps {
 
   addUnsaved: (commentID: number) => void;
   removeUnsaved: (commentID: number) => void;
-  removeRubricComment: (
-    comment: CommentType,
-    rubricComment: RubricCommentType
-  ) => void;
+  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   setCommentPlacements: () => void;
 }
@@ -52,10 +49,7 @@ interface ISimpleCommentState {
   points: number;
 }
 
-class SimpleComment extends React.Component<
-  ISimpleCommentProps,
-  ISimpleCommentState
-  > {
+class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
   public constructor(props: ISimpleCommentProps, context: any) {
     super(props, context);
     this.state = this.init();
@@ -69,7 +63,7 @@ class SimpleComment extends React.Component<
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
       this.setState({
-        points: UiComment.points(this.props.comment, this.props.rubricComment)
+        points: UiComment.points(this.props.comment, this.props.rubricComment),
       });
       this.props.setCommentPlacements();
     }
@@ -79,22 +73,15 @@ class SimpleComment extends React.Component<
     }
 
     // If a comment is finalized, then reset the state
-    if (
-      ["active", "inactive"].includes(prevProps.commentType) &&
-      this.props.commentType === "readonly"
-    ) {
+    if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
       this.setState(this.init());
     }
   }
 
   public init = () => {
-    const text: string = this.props.comment.text ? this.props.comment.text : "";
-    const points: number = UiComment.points(
-      this.props.comment,
-      this.props.rubricComment
-    );
-    const status: CommentStatus =
-      text === "" && points === 0 ? "edited" : "idle";
+    const text: string = this.props.comment.text ? this.props.comment.text : '';
+    const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
+    const status: CommentStatus = text === '' && points === 0 ? 'edited' : 'idle';
 
     return { text, points, status };
   };
@@ -104,9 +91,7 @@ class SimpleComment extends React.Component<
       ...this.props.comment,
       text: this.state.text,
       pointDelta: this.state.points,
-      rubricComment: this.props.rubricComment
-        ? this.props.rubricComment.id
-        : null
+      rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
     };
 
     try {
@@ -120,12 +105,12 @@ class SimpleComment extends React.Component<
 
   public edited = () => {
     // this.props.addUnsaved(this.props.comment.id);
-    this.setState({ status: "edited" });
+    this.setState({ status: 'edited' });
   };
 
   public idle = () => {
     // this.props.removeUnsaved(this.props.comment.id);
-    this.setState({ status: "idle" });
+    this.setState({ status: 'idle' });
   };
 
   // Ant type bug https://cl.ly/c5094e2c4526
@@ -133,9 +118,7 @@ class SimpleComment extends React.Component<
     const parsed = parseFloat(value);
     const points = isNaN(parsed) ? this.state.points : parsed;
 
-    if (
-      points !== UiComment.points(this.props.comment, this.props.rubricComment)
-    ) {
+    if (points !== UiComment.points(this.props.comment, this.props.rubricComment)) {
       this.edited();
     } else {
       this.idle();
@@ -152,20 +135,9 @@ class SimpleComment extends React.Component<
     return Math.ceil(n / m) * m;
   };
 
-  public onPlus = () => {
-    const points =
-      this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
-    this.onChangePointInput(points);
-  };
-
-  public onMinus = () => {
-    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
-    this.onChangePointInput(points);
-  };
-
   public onCommentClick = (e: React.MouseEvent) => {
     // FIXME:
-    if (e.target instanceof HTMLElement && e.target.textContent === "expand") {
+    if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
       e.stopPropagation();
     } else {
       this.activate();
@@ -195,10 +167,7 @@ class SimpleComment extends React.Component<
   public removeRubricComment = () => {
     if (this.props.rubricComment) {
       this.edited();
-      this.props.removeRubricComment(
-        this.props.comment,
-        this.props.rubricComment
-      );
+      this.props.removeRubricComment(this.props.comment, this.props.rubricComment);
     }
   };
 
@@ -214,14 +183,14 @@ class SimpleComment extends React.Component<
   };
 
   public fadeSavedState = async () => {
-    this.setState({ status: "saved" });
+    this.setState({ status: 'saved' });
     await wait(1000);
-    this.setState({ status: "idle" });
+    this.setState({ status: 'idle' });
   };
 
   // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
   public handleShiftEnter = (e: any) => {
-    if (e.key === "Enter" && e.shiftKey) {
+    if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault(); // skip OnChange method
       this.save();
     }
@@ -231,34 +200,27 @@ class SimpleComment extends React.Component<
     const blockProps = () => {
       return {
         style: {
-          color: consoleThemes.light.text
-        }
+          color: consoleThemes.light.text,
+        },
       };
     };
 
     const rootRenderer = (props: any) => {
       return (
-        <div
-          className="comment__comment"
-          style={{ color: consoleThemes.light.text }}
-        >
+        <div className="comment__comment" style={{ color: consoleThemes.light.text }}>
           {props.children}
         </div>
       );
     };
 
     const headingRenderer = (props: any) => {
-      return React.createElement(
-        `h${props.level}`,
-        blockProps(),
-        props.children
-      );
+      return React.createElement(`h${props.level}`, blockProps(), props.children);
     };
 
     const inlineCodeRenderer = (props: any) => {
       const style = {
         backgroundColor: consoleThemes.light.commentTitle,
-        color: consoleThemes.light.text
+        color: consoleThemes.light.text,
       };
 
       return <code style={style}>{props.children}</code>;
@@ -272,7 +234,7 @@ class SimpleComment extends React.Component<
       root: rootRenderer,
       heading: headingRenderer,
       inlineCode: inlineCodeRenderer,
-      thematicBreak: thematicBreakRenderer
+      thematicBreak: thematicBreakRenderer,
     };
   };
 
@@ -288,11 +250,11 @@ class SimpleComment extends React.Component<
       rubricCommentAction: null,
       saveButton: null,
       deleteButton: null,
-      author: null
+      author: null,
     };
 
     let onClick;
-    let cursor = "auto";
+    let cursor = 'auto';
     let shadow;
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -300,10 +262,7 @@ class SimpleComment extends React.Component<
     //////////////////////////////////////////////////////////////////////////////////////////
 
     commentElements.line = (
-      <span
-        className="cp-label--mid-bold cp-label--italic"
-        style={{ color: consoleThemes.light.commentTitleText }}
-      >
+      <span className="cp-label--mid-bold cp-label--italic" style={{ color: consoleThemes.light.commentTitleText }}>
         Line {this.props.comment.startLine + 1}
       </span>
     );
@@ -317,10 +276,7 @@ class SimpleComment extends React.Component<
 
     if (this.props.comment.author) {
       commentElements.author = (
-        <span
-          className="cp-label--italic cp-label--very-small"
-          style={{ color: consoleThemes.light.commentAuthor }}
-        >
+        <span className="cp-label--italic cp-label--very-small" style={{ color: consoleThemes.light.commentAuthor }}>
           Author: {this.props.comment.author}
         </span>
       );
@@ -331,29 +287,18 @@ class SimpleComment extends React.Component<
     //////////////////////////////////////////////////////////////////////////////////////////
 
     switch (this.state.status) {
-      case "edited":
+      case 'edited':
         commentElements.status = (
-          <span
-            className="cp-label--small cp-label--italic"
-            style={{ color: consoleThemes.light.commentTitleText }}
-          >
+          <span className="cp-label--small cp-label--italic" style={{ color: consoleThemes.light.commentTitleText }}>
             Draft
           </span>
         );
         break;
-      case "saved":
-        commentElements.status = (
-          <span className="cp-label--small cp-label--italic cp-label--success">
-            Saved!
-          </span>
-        );
+      case 'saved':
+        commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
         break;
-      case "error":
-        commentElements.status = (
-          <span className="cp-label--small cp-label--italic cp-label--error">
-            Error!
-          </span>
-        );
+      case 'error':
+        commentElements.status = <span className="cp-label--small cp-label--italic cp-label--error">Error!</span>;
         break;
     }
 
@@ -361,13 +306,11 @@ class SimpleComment extends React.Component<
     // ------------------ commentType ['active', 'inactive', 'readonly'] ------------------ //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    if (this.props.commentType === "active") {
+    if (this.props.commentType === 'active') {
       commentElements.points = (
         <CPPointInput
           value={points}
           size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}
@@ -382,25 +325,18 @@ class SimpleComment extends React.Component<
           onPressEnter={this.handleShiftEnter}
           style={{
             backgroundColor: consoleThemes.light.commentTextArea,
-            color: consoleThemes.light.text
+            color: consoleThemes.light.text,
           }}
           autoFocus
         />
       );
 
-      commentElements.saveButton = (
-        <CPButton cpType="secondary" icon="save" onClick={this.save} />
-      );
-      commentElements.deleteButton = (
-        <CPButton cpType="danger" icon="delete" onClick={this.delete} />
-      );
+      commentElements.saveButton = <CPButton cpType="secondary" icon="save" onClick={this.save} />;
+      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
-          <span
-            style={{ position: "absolute", right: "20px", cursor: "pointer" }}
-            onClick={this.removeRubricComment}
-          >
+          <span style={{ position: 'absolute', right: '20px', cursor: 'pointer' }} onClick={this.removeRubricComment}>
             X
           </span>
         );
@@ -411,7 +347,7 @@ class SimpleComment extends React.Component<
 
     const markdownRenderers = this.markdownRenderers();
 
-    if (this.props.commentType === "inactive") {
+    if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
       // commentElements.comment = (
       //   <Paragraph
@@ -426,37 +362,30 @@ class SimpleComment extends React.Component<
       //     <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
       //   </Paragraph>
       // );
-      commentElements.comment = (
-        <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
-      );
-      commentElements.deleteButton = (
-        <CPButton cpType="danger" icon="delete" onClick={this.delete} />
-      );
+      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
+      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
       onClick = this.onCommentClick;
-      cursor = "pointer";
+      cursor = 'pointer';
     }
 
-    if (this.props.commentType === "readonly") {
+    if (this.props.commentType === 'readonly') {
       commentElements.points = badge;
       commentElements.comment = (
         <Paragraph
           className="comment__comment"
           style={{
-            whiteSpace: "pre-wrap",
-            wordWrap: "break-word",
-            marginBottom: "0px"
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+            marginBottom: '0px',
           }}
           ellipsis={{
             rows: 2,
             expandable: false,
-            onExpand: this.props.setCommentPlacements
+            onExpand: this.props.setCommentPlacements,
           }}
         >
-          <ReactMarkdown
-            renderers={markdownRenderers}
-            source={this.state.text}
-          />
+          <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
         </Paragraph>
       );
     }
@@ -466,36 +395,26 @@ class SimpleComment extends React.Component<
     //////////////////////////////////////////////////////////////////////////////////////////
 
     if (this.props.rubricComment) {
-      let rubricCommentClassName = "comment__rubric-comment";
-      let pointsString = "";
+      let rubricCommentClassName = 'comment__rubric-comment';
+      let pointsString = '';
       let style = {};
       if (this.props.rubricComment.pointDelta > 0) {
-        rubricCommentClassName = rubricCommentClassName.concat(
-          " ",
-          "comment__rubric-comment--negative"
-        );
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--negative');
         pointsString = `${points * -1}`;
       } else if (this.props.rubricComment.pointDelta < 0) {
-        rubricCommentClassName = rubricCommentClassName.concat(
-          " ",
-          "comment__rubric-comment--positive"
-        );
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--positive');
         pointsString = `+${points * -1}`;
       } else {
-        rubricCommentClassName = rubricCommentClassName.concat(
-          " ",
-          "comment__rubric-comment--neutral"
-        );
+        rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--neutral');
         style = {
           color: consoleThemes.light.commentRubricCommentNeutral,
-          borderLeft: `3px solid ${consoleThemes.light.commentRubricCommentNeutral}`
+          borderLeft: `3px solid ${consoleThemes.light.commentRubricCommentNeutral}`,
         };
       }
 
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
-          <span className="cp-label--very-bold">{pointsString}</span>{" "}
-          {this.props.rubricComment.text}
+          <span className="cp-label--very-bold">{pointsString}</span> {this.props.rubricComment.text}
           {commentElements.rubricCommentAction}
         </div>
       );
@@ -511,10 +430,7 @@ class SimpleComment extends React.Component<
 
     const footerLeft = [commentElements.author];
 
-    const footerRight = [
-      commentElements.saveButton,
-      commentElements.deleteButton
-    ];
+    const footerRight = [commentElements.saveButton, commentElements.deleteButton];
 
     return (
       <div
@@ -524,26 +440,20 @@ class SimpleComment extends React.Component<
           top: `${this.props.placement}px`,
           cursor,
           marginBottom: 0,
-          boxShadow:
-            this.props.commentType === "active"
-              ? "4px 0px 8px -4px rgba(0, 0, 0, 0.15)"
-              : ""
+          boxShadow: this.props.commentType === 'active' ? '4px 0px 8px -4px rgba(0, 0, 0, 0.15)' : '',
         }}
         onClick={onClick}
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
-          <div
-            className="ant-popover-arrow"
-            style={{ borderColor: consoleThemes.light.commentBody }}
-          />
+          <div className="ant-popover-arrow" style={{ borderColor: consoleThemes.light.commentBody }} />
           <div className="ant-popover-inner" style={shadow}>
             <div style={{ backgroundColor: consoleThemes.light.commentBody }}>
               <div
                 className="ant-popover-title"
                 style={{
                   backgroundColor: consoleThemes.light.commentTitle,
-                  borderBottom: `1px solid ${consoleThemes.light.commentTitleBorder}`
+                  borderBottom: `1px solid ${consoleThemes.light.commentTitleBorder}`,
                 }}
               >
                 <CPFlex left={titleLeft} right={titleRight} gutterSize={14} />
@@ -552,20 +462,15 @@ class SimpleComment extends React.Component<
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              {this.props.commentType !== "readonly" ? (
+              {this.props.commentType !== 'readonly' ? (
                 <div
                   style={{
-                    margin: "0px 20px 0px 20px",
-                    paddingBottom: "6px",
-                    lineHeight: "9px"
+                    margin: '0px 20px 0px 20px',
+                    paddingBottom: '6px',
+                    lineHeight: '9px',
                   }}
                 >
-                  <CPFlex
-                    left={footerLeft}
-                    right={footerRight}
-                    gutterSize={10}
-                    style={{ minHeight: "32px" }}
-                  />
+                  <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
                 </div>
               ) : null}
             </div>

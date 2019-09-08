@@ -3,45 +3,35 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import {
-  Badge,
-  Button,
-  Icon,
-  Input,
-  InputNumber,
-  Popconfirm,
-  Spin,
-  Table,
-  Tag
-} from "antd";
+import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
 
 /* other library imports */
-import _ from "lodash";
+import _ from 'lodash';
 
 // import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 
 /* codePost imports */
-import CPButton from "../../../core/CPButton";
-import CPFlex from "../../../core/CPFlex";
-import CPTooltip from "../../../core/CPTooltip";
-import { tooltips } from "../../../core/tooltips";
-import withWindowWatcher, {
-  IWithWindowWatcherProps
-} from "../../../core/withWindowWatcher";
+import CPButton from '../../../core/CPButton';
+import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
+import { tooltips } from '../../../core/tooltips';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../../core/withWindowWatcher';
 
-import { RubricCategoryType } from "../../../../infrastructure/rubricCategory";
-import { RubricCommentType } from "../../../../infrastructure/rubricComment";
+import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
+import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
-import { STATUS, statusChange } from "./RubricUtils";
+import { STATUS, statusChange } from './RubricUtils';
 
-import { DIRECTION } from "../../../../types/common";
+import { DIRECTION } from '../../../../types/common';
 
-import { IFeedbackScore } from "./RubricManager";
+import { IFeedbackScore } from './RubricManager';
 
 const { TextArea } = Input;
+
+import CPPointInput from '../../../core/CPPointInput';
 
 /**********************************************************************************************************************/
 
@@ -96,12 +86,12 @@ interface IState {
   commentErrorMessage: string;
 }
 
-const aligner: "left" | "center" | "right" = "center";
+const aligner: 'left' | 'center' | 'right' = 'center';
 const commentTableColumns = [
   {
-    title: "Comment Text",
-    dataIndex: "text",
-    key: "text"
+    title: 'Comment Text',
+    dataIndex: 'text',
+    key: 'text',
   },
   {
     title: (
@@ -115,9 +105,9 @@ const commentTableColumns = [
         />
       </div>
     ),
-    dataIndex: "deduction",
-    key: "deduction",
-    align: aligner
+    dataIndex: 'deduction',
+    key: 'deduction',
+    align: aligner,
   },
   {
     title: (
@@ -131,32 +121,32 @@ const commentTableColumns = [
         />
       </div>
     ),
-    key: "linked",
-    dataIndex: "linked",
-    align: aligner
+    key: 'linked',
+    dataIndex: 'linked',
+    align: aligner,
   },
   {
     title: (
       <div>
         Feedback
         <CPTooltip
-          title={"Comprehension scores from students."}
+          title={'Comprehension scores from students.'}
           infoIcon={true}
           hideThisOnHideTips={true}
           iconStyle={{ paddingLeft: 5 }}
         />
       </div>
     ),
-    key: "feedback",
-    dataIndex: "feedback",
-    align: aligner
+    key: 'feedback',
+    dataIndex: 'feedback',
+    align: aligner,
   },
   {
-    title: "",
-    dataIndex: "delete",
-    key: "delete",
-    align: aligner
-  }
+    title: '',
+    dataIndex: 'delete',
+    key: 'delete',
+    align: aligner,
+  },
 ];
 
 class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
@@ -171,20 +161,13 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       name: props.rubricCategory.name,
       pointLimit: props.rubricCategory.pointLimit,
       helpText: props.rubricCategory.helpText,
-      status:
-        typeof props.savedRubricCategory === "undefined"
-          ? STATUS.UNSAVED
-          : STATUS.NONE,
-      rubricComments: this.buildLocalRubricCommentsStructure(
-        props.rubricComments
-      ),
-      rubricCommentStatus: this.initializeRubricCommentStatus(
-        props.rubricComments
-      ),
+      status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
+      rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
+      rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
       hasError: false,
-      errorMessage: "",
+      errorMessage: '',
       hasCommentError: false,
-      commentErrorMessage: ""
+      commentErrorMessage: '',
     };
   }
 
@@ -223,11 +206,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         {
           name: this.props.rubricCategory.name,
           pointLimit: this.props.rubricCategory.pointLimit,
-          helpText: this.props.rubricCategory.helpText
+          helpText: this.props.rubricCategory.helpText,
         },
         () => {
           this.updateCategoryStatus();
-        }
+        },
       );
     }
 
@@ -235,7 +218,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     if (this.props.rubricComments !== prevProps.rubricComments) {
       const newMap = this.state.rubricComments;
       for (const rubricComment of this.props.rubricComments) {
-        const match = prevProps.rubricComments.find(el => {
+        const match = prevProps.rubricComments.find((el) => {
           return el.id === rubricComment.id;
         });
         if (match) {
@@ -246,13 +229,14 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           newMap[rubricComment.id] = _.cloneDeep(rubricComment);
         }
       }
-      this.setState({ rubricComments: newMap });
+      this.setState({
+        rubricComments: newMap,
+        rubricCommentStatus: this.initializeRubricCommentStatus(this.props.rubricComments),
+      });
     }
   }
 
-  public buildLocalRubricCommentsStructure = (
-    rubricComments: RubricCommentType[]
-  ) => {
+  public buildLocalRubricCommentsStructure = (rubricComments: RubricCommentType[]) => {
     const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = _.cloneDeep(rubricComment);
@@ -260,9 +244,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     return toRet;
   };
 
-  public initializeRubricCommentStatus = (
-    rubricComments: RubricCommentType[]
-  ) => {
+  public initializeRubricCommentStatus = (rubricComments: RubricCommentType[]) => {
     const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = STATUS.NONE;
@@ -279,13 +261,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const { name, pointLimit, helpText, status } = this.state;
     if (savedRubricCategory) {
       const newStatus = statusChange(
-        [
-          savedRubricCategory.name,
-          savedRubricCategory.pointLimit,
-          savedRubricCategory.helpText
-        ],
+        [savedRubricCategory.name, savedRubricCategory.pointLimit, savedRubricCategory.helpText],
         [name, pointLimit, helpText],
-        status
+        status,
       );
       if (newStatus !== status) {
         this.setState({ status: newStatus }, () => {
@@ -304,10 +282,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 
   public setValue = (label: string, value: any) => {
     this.setState(
-      prevstate => {
+      (prevstate) => {
         const newState: any = { ...prevstate };
         let newVal = value;
-        if (label === "pointLimit") {
+        if (label === 'pointLimit') {
           if (value !== null) {
             newVal = parseFloat(value);
           } else {
@@ -320,56 +298,49 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       },
       () => {
         this.updateCategoryStatus();
-      }
+      },
     );
   };
 
-  public validateCategory = (
-    name: string,
-    helpText: string,
-    pointLimit: number | null
-  ) => {
+  public validateCategory = (name: string, helpText: string, pointLimit: number | null) => {
     if (name.length === 0) {
       return {
         valid: false,
-        message: "Category name cannot be blank."
+        message: 'Category name cannot be blank.',
       };
     }
 
     if (name.length < 4) {
       return {
         valid: false,
-        message: "Category name must be at least 4 characters"
+        message: 'Category name must be at least 4 characters',
       };
     }
 
     if (name.length > 72) {
       return {
         valid: false,
-        message: "Category name cannot exceed 72 characters"
+        message: 'Category name cannot exceed 72 characters',
       };
     }
 
     if (helpText.length > 500) {
       return {
         valid: false,
-        message: "Helptext cannot exceed 500 characters"
+        message: 'Helptext cannot exceed 500 characters',
       };
     }
 
-    if (
-      pointLimit !== null &&
-      (!Number.isInteger(pointLimit) || pointLimit < 0)
-    ) {
+    if (pointLimit !== null && !Number.isInteger(pointLimit)) {
       return {
         valid: false,
-        message: "pointLimit must be a positive integer."
+        message: 'pointLimit must be a valid integer.',
       };
     }
 
     return {
       valid: true,
-      message: ""
+      message: '',
     };
   };
 
@@ -383,15 +354,8 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       pointLimit !== rubricCategory.pointLimit ||
       helpText !== rubricCategory.helpText
     ) {
-      const { valid, message } = this.validateCategory(
-        name,
-        helpText,
-        pointLimit
-      );
-      const payload: RubricCategoryType = Object.assign(
-        {},
-        this.props.rubricCategory
-      );
+      const { valid, message } = this.validateCategory(name, helpText, pointLimit);
+      const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
       payload.helpText = this.state.helpText;
@@ -405,11 +369,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   };
 
   public changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setValue("name", event.target.value);
+    this.setValue('name', event.target.value);
   };
 
   public changeHelpText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    this.setValue("helpText", event.target.value);
+    this.setValue('helpText', event.target.value);
   };
 
   /****************************************************************************
@@ -429,7 +393,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 
     return {
       valid: true,
-      message: ""
+      message: '',
     };
   };
 
@@ -437,7 +401,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const { rubricComments } = this.props;
     const rubricComment = this.state.rubricComments[rubricCommentID];
 
-    const match = rubricComments.find(el => {
+    const match = rubricComments.find((el) => {
       return el.id === rubricComment.id;
     });
 
@@ -445,11 +409,8 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       let pointDelta = parseFloat(rubricComment.pointDelta.toFixed(1));
       const text = rubricComment.text;
 
-      if (
-        isNaN(rubricComment.pointDelta) ||
-        rubricComment.pointDelta === null
-      ) {
-        this.updateRubricComment(rubricComment.id, "pointDelta", 0);
+      if (isNaN(rubricComment.pointDelta) || rubricComment.pointDelta === null) {
+        this.updateRubricComment(rubricComment.id, 'pointDelta', 0);
         pointDelta = 0;
       }
 
@@ -458,8 +419,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       this.props.updateComment(payload);
 
       if (text !== match.text || pointDelta !== match.pointDelta) {
-        const hasCurrentError =
-          this.state.hasError || this.state.hasCommentError;
+        const hasCurrentError = this.state.hasError || this.state.hasCommentError;
         if (hasCurrentError && !this.state.hasError && valid) {
           // moving from error state to safe state
           this.props.updateCategory(this.props.rubricCategory, false);
@@ -480,7 +440,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const { savedRubricComments } = this.props;
 
     if (savedRubricComments) {
-      const savedRubricComment = savedRubricComments.find(el => {
+      const savedRubricComment = savedRubricComments.find((el) => {
         return el.id === rubricComment.id;
       });
       const localRubricComment = this.state.rubricComments[rubricComment.id];
@@ -489,7 +449,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         const newStatus = statusChange(
           [savedRubricComment.text, savedRubricComment.pointDelta],
           [localRubricComment.text, localRubricComment.pointDelta],
-          status
+          status,
         );
         if (newStatus !== status) {
           const newStatusMap = { ...this.state.rubricCommentStatus };
@@ -509,31 +469,27 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     }
   };
 
-  public updateRubricComment = (
-    rubricCommentID: number,
-    key: string,
-    event: any
-  ) => {
+  public updateRubricComment = (rubricCommentID: number, key: string, event: any) => {
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
-      case "number":
+      case 'number':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
-          [key]: event
+          [key]: event,
         };
         break;
-      case "string":
-        if (key !== "pointDelta") {
+      case 'string':
+        if (key !== 'pointDelta') {
           rubricComments[rubricCommentID] = {
             ...rubricComments[rubricCommentID],
-            [key]: event
+            [key]: event,
           };
         }
         break;
-      case "object":
+      case 'object':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
-          [key]: event.target.value
+          [key]: event.target.value,
         };
         break;
     }
@@ -545,16 +501,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 
   public buildCommentTableData = (
     rubricComments: RubricCommentType[],
-    commentMap: { [id: number]: RubricCommentType }
+    commentMap: { [id: number]: RubricCommentType },
   ) => {
-    return rubricComments.map(rubricComment => {
+    return rubricComments.map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
       let thisFeedback;
-      if (
-        thisComment &&
-        this.props.feedbackScores &&
-        thisComment.id in this.props.feedbackScores
-      ) {
+      if (thisComment && this.props.feedbackScores && thisComment.id in this.props.feedbackScores) {
         thisFeedback = this.props.feedbackScores[thisComment.id];
       }
 
@@ -565,38 +517,27 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             <TextArea
               autosize
               value={thisComment.text}
-              onChange={this.updateRubricComment.bind(
-                this,
-                thisComment.id,
-                "text"
-              )}
+              onChange={this.updateRubricComment.bind(this, thisComment.id, 'text')}
               onBlur={this.saveComment.bind(this, thisComment.id)}
             />
           ),
           deduction: (
-            <InputNumber
-              value={thisComment.pointDelta}
-              onChange={this.updateRubricComment.bind(
-                this,
-                thisComment.id,
-                "pointDelta"
-              )}
-              onBlur={this.saveComment.bind(this, thisComment.id)}
+            <CPPointInput
+              value={-thisComment.pointDelta}
+              size="small"
+              onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
+              disabled={false}
+              onMouseLeave={this.saveComment.bind(this, thisComment.id)}
             />
           ),
           linked: (
-            <span
-              onClick={this.props.activateCommentExplorer.bind(
-                this,
-                thisComment
-              )}
-            >
+            <span onClick={this.props.activateCommentExplorer.bind(this, thisComment)}>
               <Badge
                 count={thisComment.comments.length}
                 className="badge badge--standard"
                 style={{
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  cursor: "pointer"
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  cursor: 'pointer',
                 }}
               />
             </span>
@@ -607,25 +548,18 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             </Tag>
           ) : thisFeedback === undefined ? (
             rubricComment.id < 0 ? (
-              "--"
+              '--'
             ) : (
-                <Spin />
-              )
+              <Spin />
+            )
           ) : (
-                `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive *
-                100}%`
-              ),
+            `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
+          ),
           delete: (
-            <CPTooltip
-              title={tooltips.admin.rubric.deleteComment}
-              hideThisOnHideTips={true}
-            >
-              <Icon
-                type="delete"
-                onClick={this.deleteComment.bind(this, rubricComment)}
-              />
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
             </CPTooltip>
-          )
+          ),
         };
       } else {
         return {
@@ -633,38 +567,24 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           text: (
             <TextArea
               autosize
-              value={""}
-              onChange={this.updateRubricComment.bind(
-                this,
-                rubricComment.id,
-                "text"
-              )}
+              value={''}
+              onChange={this.updateRubricComment.bind(this, rubricComment.id, 'text')}
               onBlur={this.saveComment.bind(this, rubricComment.id)}
             />
           ),
           deduction: (
             <InputNumber
               value={0}
-              onChange={this.updateRubricComment.bind(
-                this,
-                rubricComment.id,
-                "pointDelta"
-              )}
+              onChange={this.updateRubricComment.bind(this, rubricComment.id, 'pointDelta')}
               onBlur={this.saveComment.bind(this, rubricComment.id)}
             />
           ),
           linked: null,
           delete: (
-            <CPTooltip
-              title={tooltips.admin.rubric.deleteComment}
-              hideThisOnHideTips={true}
-            >
-              <Icon
-                type="delete"
-                onClick={this.deleteComment.bind(this, rubricComment)}
-              />
+            <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
+              <Icon type="delete" onClick={this.deleteComment.bind(this, rubricComment)} />
             </CPTooltip>
-          )
+          ),
         };
       }
     });
@@ -675,48 +595,30 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   *****************************************************************************/
 
   public render() {
-    const data = this.buildCommentTableData(
-      this.props.rubricComments,
-      this.state.rubricComments
-    );
+    const data = this.buildCommentTableData(this.props.rubricComments, this.state.rubricComments);
 
     const titleLeft = [
       <span key="title" className="cp-label cp-label--plus cp-label--bold">
         Category: {this.props.rubricCategory.name}
       </span>,
       <span key="buttons">
-        <CPTooltip
-          title={this.props.index === 0 ? "" : tooltips.admin.rubric.categoryUp}
-          hideThisOnHideTips={true}
-        >
+        <CPTooltip title={this.props.index === 0 ? '' : tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
           <Button
             icon="caret-up"
             size="small"
-            onClick={this.props.moveCategory.bind(
-              this,
-              this.props.rubricCategory,
-              DIRECTION.Up
-            )}
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Up)}
             disabled={this.props.index === 0}
           />
         </CPTooltip>
         <CPTooltip
-          title={
-            this.props.index === this.props.numCategories - 1
-              ? ""
-              : tooltips.admin.rubric.categoryDown
-          }
+          title={this.props.index === this.props.numCategories - 1 ? '' : tooltips.admin.rubric.categoryDown}
           hideThisOnHideTips={true}
         >
           <Button
             icon="caret-down"
             size="small"
             disabled={this.props.index === this.props.numCategories - 1}
-            onClick={this.props.moveCategory.bind(
-              this,
-              this.props.rubricCategory,
-              DIRECTION.Down
-            )}
+            onClick={this.props.moveCategory.bind(this, this.props.rubricCategory, DIRECTION.Down)}
           />
         </CPTooltip>
       </span>,
@@ -728,46 +630,32 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         <Tag color="volcano" key="warning">
           Error: {this.state.commentErrorMessage}
         </Tag>
-      ) : null
+      ) : null,
     ];
     const titleRight = [
       <Popconfirm
         key="delete"
         title="Are you sure you want to delete this category?"
-        onConfirm={this.props.deleteCategory.bind(
-          this,
-          this.props.rubricCategory
-        )}
+        onConfirm={this.props.deleteCategory.bind(this, this.props.rubricCategory)}
       >
         <CPButton cpType="danger" fallback="delete">
           Delete
         </CPButton>
-      </Popconfirm>
+      </Popconfirm>,
     ];
 
     const categoryName = (
       <div key="name">
-        <div
-          className="cp-label cp-label--bold"
-          style={{ marginBottom: "7px" }}
-        >
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Name
         </div>
-        <Input
-          value={this.state.name}
-          onChange={this.changeName}
-          onBlur={this.saveCategory}
-          ref={this.nameInput}
-        />
+        <Input value={this.state.name} onChange={this.changeName} onBlur={this.saveCategory} ref={this.nameInput} />
       </div>
     );
 
     const categoryPoints = (
       <div key="points">
-        <div
-          className="cp-label cp-label--bold"
-          style={{ marginBottom: "7px" }}
-        >
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Point Limit
           <CPTooltip
             title={tooltips.admin.rubric.categoryPointLimit}
@@ -776,23 +664,35 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             iconStyle={{ paddingLeft: 5 }}
           />
         </div>
-        <InputNumber
-          value={
-            this.state.pointLimit !== null ? this.state.pointLimit : undefined
-          }
-          onChange={this.setValue.bind(this, "pointLimit")}
-          onBlur={this.saveCategory}
-          min={0}
-        />
+        <div className="display-flex align-items-center">
+          <CPPointInput
+            value={this.state.pointLimit !== null ? -this.state.pointLimit : undefined}
+            size="small"
+            onChange={this.setValue.bind(this, 'pointLimit')}
+            disabled={false}
+            onBlur={this.saveCategory}
+            onMouseLeave={this.saveCategory}
+            step={1}
+          />
+          <span onBlur={this.saveCategory}>
+            <CPTooltip
+              title={`Clear this category's point limit (so any number of points can
+                be added or deducted using its rubric comments)`}
+            >
+              <Icon
+                style={{ cursor: 'pointer' }}
+                type="close-circle"
+                onClick={this.setValue.bind(this, 'pointLimit', null)}
+              />
+            </CPTooltip>
+          </span>
+        </div>
       </div>
     );
 
     const helpText = (
       <div key="help-text" style={{ maxWidth: 300 }}>
-        <div
-          className="cp-label cp-label--bold"
-          style={{ marginBottom: "7px" }}
-        >
+        <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
           Category Help Text
           <CPTooltip
             title={tooltips.admin.rubric.categoryHelpText}
@@ -814,25 +714,12 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const contentLeft =
       this.props.windowwidth < 1200 ? (
         <div>
-          <CPFlex
-            left={[categoryName, categoryPoints]}
-            right={[]}
-            gutterSize={60}
-          />
-          <CPFlex
-            left={[helpText]}
-            right={[]}
-            gutterSize={60}
-            style={{ paddingTop: 30 }}
-          />
+          <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
+          <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
         </div>
       ) : (
-          <CPFlex
-            left={[categoryName, categoryPoints]}
-            right={[helpText]}
-            gutterSize={60}
-          />
-        );
+        <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      );
 
     return (
       <div className="cp-rubric-category">
@@ -841,19 +728,16 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         </div>
         <div className="cp-rubric-category__content">
           {contentLeft}
-          <div style={{ height: "40px" }} />
+          <div style={{ height: '40px' }} />
           <Table
             columns={commentTableColumns}
             dataSource={data}
             pagination={false}
-            locale={{ emptyText: "No comments yet" }}
+            locale={{ emptyText: 'No comments yet' }}
           />
           <div className="cp-rubric-category__add-new-comment">
             <CPButton cpType="primary" icon="plus" onClick={this.addComment} />
-            <span
-              style={{ marginLeft: "20px" }}
-              className="cp-label cp-label--success cp-label--bold"
-            >
+            <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
               ADD NEW COMMENT
             </span>
           </div>

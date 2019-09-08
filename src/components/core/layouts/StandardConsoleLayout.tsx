@@ -16,10 +16,7 @@ import useBrowserNotification from '../useBrowserNotification';
 import useFixedWindow from '../useFixedWindow';
 import useWindowSize from '../useWindowSize';
 
-import {
-  ConsoleThemeContext,
-  consoleThemes,
-} from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import { wait } from '../../../infrastructure/animation';
 
@@ -46,9 +43,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   const windowSize = useWindowSize();
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
-    toTheme === 'light'
-      ? setConsoleTheme(consoleThemes.light)
-      : setConsoleTheme(consoleThemes.dark);
+    toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
   };
 
   const siderWidth =
@@ -66,7 +61,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
-      <Layout className='layout--standard-console'>
+      <Layout className="layout--standard-console">
         <Header
           style={{
             backgroundColor: consoleTheme.subheaderBg,
@@ -75,25 +70,25 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             overflowY: 'hidden',
             lineHeight: '49px',
           }}
-          className='layout--standard-console__header'>
+          className="layout--standard-console__header"
+        >
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
           <Sider
             width={siderWidth}
-            className='layout--standard-console__sider'
+            className="layout--standard-console__sider"
             style={{
               backgroundColor: consoleTheme.siderBg,
               color: consoleTheme.siderTitle,
               zIndex: 100,
-            }}>
+            }}
+          >
             {props.sider.length === 0 ? null : (
               // @ts-ignore
               <Collapse
-                expandIconPosition='right'
-                defaultActiveKey={props.sider.map((el, index) =>
-                  index.toString(),
-                )}
+                expandIconPosition="right"
+                defaultActiveKey={props.sider.map((el, index) => index.toString())}
                 bordered={false}
                 // @ts-ignore
                 onChange={onCollapse}
@@ -102,28 +97,27 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                 style={{
                   backgroundColor: consoleTheme.siderBg,
                   color: consoleTheme.siderTitle,
-                }}>
-                {props.sider.map(
-                  (siderNode: React.ReactNode, index: number) => {
-                    return (
-                      <Collapse.Panel
-                        header={
-                          <div
-                            style={{
-                              padding: '0px 10px 5px 0px',
-                              color: consoleTheme.siderTitle,
-                            }}>
-                            <div className='cp-label cp-label--plus cp-label--bold'>
-                              {props.siderTitles[index]}
-                            </div>
-                          </div>
-                        }
-                        key={index.toString()}>
-                        {siderNode}
-                      </Collapse.Panel>
-                    );
-                  },
-                )}
+                }}
+              >
+                {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                  return (
+                    <Collapse.Panel
+                      header={
+                        <div
+                          style={{
+                            padding: '0px 10px 5px 0px',
+                            color: consoleTheme.siderTitle,
+                          }}
+                        >
+                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                        </div>
+                      }
+                      key={index.toString()}
+                    >
+                      {siderNode}
+                    </Collapse.Panel>
+                  );
+                })}
               </Collapse>
             )}
           </Sider>
@@ -131,10 +125,10 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             style={{
               backgroundColor: consoleTheme.mainBg,
               minWidth: layoutVars.minWidths.grade,
-            }}>
-            <Content className='layout--standard-console__content'>
-              {props.content}
-            </Content>
+            }}
+            id="code-scroll-area"
+          >
+            <Content className="layout--standard-console__content">{props.content}</Content>
             {props.children}
           </Layout>
         </Layout>
@@ -152,17 +146,11 @@ const handleResize = async () => {
     const submissionInfo = document.getElementById('submission-info');
     const rubricMenuTitle = document.getElementById('rubric-menu-title');
 
-    if (
-      fileMenu !== null &&
-      rubricMenu !== null &&
-      rubricMenuTitle !== null &&
-      submissionInfo !== null
-    ) {
+    if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
       // Don't let the file menu take up more than half of the vertical space
       // allowable for files and rubric
       const fileMenuMaxHeight =
-        (window.innerHeight - themeVars.grade.headerHeight) / 2 -
-        themeVars.grade.subheaderHeight;
+        (window.innerHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
       fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
 
       setBottomElementMaxHeight(rubricMenuTitle, rubricMenu);

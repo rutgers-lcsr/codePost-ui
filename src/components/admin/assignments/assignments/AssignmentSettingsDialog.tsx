@@ -3,28 +3,16 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import {
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Modal,
-  Switch,
-  Tag
-} from "antd";
-import { FormComponentProps } from "antd/lib/form";
+import { DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
+import { FormComponentProps } from 'antd/lib/form';
 
-import moment from "moment";
+import moment from 'moment';
 
 /* codePost imports */
-import {
-  AssignmentPatchType,
-  AssignmentType
-} from "../../../../infrastructure/assignment";
+import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
 
 /**********************************************************************************************************************/
 
@@ -50,11 +38,12 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       commentFeedback: values.commentFeedback,
       allowStudentUpload: values.allowStudentUpload,
       uploadDueDate: values.uploadDueDate,
-      liveFeedbackMode: values.liveFeedbackMode
+      liveFeedbackMode: values.liveFeedbackMode,
+      additiveGrading: values.additiveGrading,
     };
 
     this.props.onSave(payload).then(() => {
-      message.success("Assignment settings updated!");
+      message.success('Assignment settings updated!');
     });
   };
 
@@ -113,6 +102,7 @@ interface IFormValues {
   allowStudentUpload: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
+  additiveGrading: boolean;
 }
 
 interface IFormState {
@@ -125,7 +115,7 @@ const CollectionCreateForm: any = Form.create()(
     public constructor(props: IFormProps) {
       super(props);
       this.state = {
-        studentUploadEnabled: this.props.assignment.allowStudentUpload
+        studentUploadEnabled: this.props.assignment.allowStudentUpload,
       };
     }
 
@@ -136,11 +126,11 @@ const CollectionCreateForm: any = Form.create()(
     public validateName = (rule: any, value: string, callback: any) => {
       if (
         value !== this.props.assignment.name &&
-        this.props.assignments.some(el => {
+        this.props.assignments.some((el) => {
           return el.name === value;
         })
       ) {
-        callback("An assignment with this name already exists in this course.");
+        callback('An assignment with this name already exists in this course.');
       }
 
       // Call callback with no arguments to signal that value passed validation
@@ -153,7 +143,7 @@ const CollectionCreateForm: any = Form.create()(
       // of InputNumber, but it's nicer to alert the user explicitly if they
       // try to enter a disallowed value.
       if (parseFloat(value) < 0 || !Number.isInteger(parseFloat(value))) {
-        callback("Points must be a non-negative integer.");
+        callback('Points must be a non-negative integer.');
       }
 
       // Call callback with no arguments to signal that value passed validation
@@ -164,13 +154,7 @@ const CollectionCreateForm: any = Form.create()(
       const { visible, onCancel, onSave, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal
-          visible={visible}
-          title="Update assignment settings"
-          okText="Save"
-          onCancel={onCancel}
-          onOk={onSave}
-        >
+        <Modal visible={visible} title="Update assignment settings" okText="Save" onCancel={onCancel} onOk={onSave}>
           <Form layout="horizontal" hideRequiredMark={true}>
             <Form.Item
               label="Name"
@@ -178,21 +162,20 @@ const CollectionCreateForm: any = Form.create()(
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("name", {
+              {getFieldDecorator('name', {
                 initialValue: this.props.assignment.name,
                 rules: [
                   {
                     required: true,
-                    message:
-                      "Please input an assignment name with at least 4 characters",
-                    min: 4
+                    message: 'Please input an assignment name with at least 4 characters',
+                    min: 4,
                   },
                   {
-                    message: "Assignment name cannot exceed 32 characters",
-                    max: 32
+                    message: 'Assignment name cannot exceed 32 characters',
+                    max: 32,
                   },
-                  { validator: this.validateName }
-                ]
+                  { validator: this.validateName },
+                ],
               })(<Input />)}
             </Form.Item>
             <Form.Item
@@ -201,20 +184,20 @@ const CollectionCreateForm: any = Form.create()(
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("points", {
+              {getFieldDecorator('points', {
                 initialValue: this.props.assignment.points,
                 rules: [
-                  { required: true, message: "Please specify a point value" },
-                  { validator: this.validatePoints }
-                ]
+                  { required: true, message: 'Please specify a point value' },
+                  { validator: this.validatePoints },
+                ],
               })(<InputNumber min={0} />)}
             </Form.Item>
             <Form.Item
               label="Anonymous Grading"
               extra={
                 <div>
-                  When enabled, graders will not be able to see student emails
-                  associated with submissions. For more info, see{" "}
+                  When enabled, graders will not be able to see student emails associated with submissions. For more
+                  info, see{' '}
                   <a href="https://help.codepost.io/en/articles/3164756-how-to-enable-anonymous-grading-mode">
                     our docs
                   </a>
@@ -224,25 +207,20 @@ const CollectionCreateForm: any = Form.create()(
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("anonymousGrading", {
+              {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
             <Form.Item
               label="Student feedback"
-              extra={
-                <div>
-                  When enabled, students will be able to leave feedback on
-                  applied rubric comments.
-                </div>
-              }
+              extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("commentFeedback", {
+              {getFieldDecorator('commentFeedback', {
                 initialValue: this.props.assignment.commentFeedback,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
             <Form.Item
@@ -251,25 +229,24 @@ const CollectionCreateForm: any = Form.create()(
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("hideGrades", {
+              {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
             <Form.Item
               label="Allow student upload"
               extra={
                 <div>
-                  <Tag>NEW</Tag>When enabled, students can upload submissions
-                  before the given due date.
+                  <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
                 </div>
               }
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("allowStudentUpload", {
+              {getFieldDecorator('allowStudentUpload', {
                 initialValue: this.props.assignment.allowStudentUpload,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch onClick={this.handleStudentUploadCheck} />)}
             </Form.Item>
             <Form.Item
@@ -278,47 +255,53 @@ const CollectionCreateForm: any = Form.create()(
               labelCol={{ span: 9 }}
               wrapperCol={{ span: 12 }}
             >
-              {getFieldDecorator("uploadDueDate", {
-                initialValue: this.props.assignment.uploadDueDate
-                  ? moment(this.props.assignment.uploadDueDate)
-                  : null,
-                valuePropName: "value",
+              {getFieldDecorator('uploadDueDate', {
+                initialValue: this.props.assignment.uploadDueDate ? moment(this.props.assignment.uploadDueDate) : null,
+                valuePropName: 'value',
                 rules: [
                   {
                     required: this.state.studentUploadEnabled,
-                    message: "Due date is required if student upload is enabed."
-                  }
-                ]
-              })(
-                <DatePicker
-                  showTime
-                  placeholder="Select Time"
-                  disabled={!this.state.studentUploadEnabled}
-                />
-              )}
+                    message: 'Due date is required if student upload is enabed.',
+                  },
+                ],
+              })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
             </Form.Item>
             <Form.Item
-              label="Live Feedback mode"
+              label="Live feedback mode"
               extra={
                 <div>
-                  <Tag>NEW</Tag> Students can see their feedback and comments
-                  without the submission being finalized or published.\ Ideal
-                  for office hours or ungraded feedback.
+                  <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
+                  published.\ Ideal for office hours or ungraded feedback.
                 </div>
               }
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}
             >
-              {getFieldDecorator("liveFeedbackMode", {
+              {getFieldDecorator('liveFeedbackMode', {
                 initialValue: this.props.assignment.liveFeedbackMode,
-                valuePropName: "checked"
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Additive grading"
+              extra={
+                <div>
+                  <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
+                </div>
+              }
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('additiveGrading', {
+                initialValue: this.props.assignment.additiveGrading,
+                valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>
           </Form>
         </Modal>
       );
     }
-  }
+  },
 );
 
 export default AssignmentSettingsDialog;

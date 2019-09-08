@@ -114,14 +114,17 @@ class TermsOfService extends React.Component<IProps, {}> {
             By posting User Content on or through the Service, you grant codePost a worldwide, irrevocable, perpetual,
             non-exclusive, transferable, royalty-free license (with the right to sublicense) to use, copy, reproduce,
             process, adapt, modify, transmit, display, distribute, and otherwise exploit such User Content in any format
-            or medium now known or developed in the future, in order to provide the Service subject to applicable law
-            and our Privacy Policy. Your User Content will not be used for publicity, advertising, or any public
-            statements without your prior consent. The license granted to codePost shall survive termination of the
-            Service or your Account, subject to other rights presented in the Terms. Notwithstanding the license granted
-            to codePost in User Content and for avoidance of doubt, our use and retention of your personal data,
-            including any that is contained in User Content, shall also be governed by and comply with the codePost
-            Privacy Policy. You represent, warrant and agree that you have the necessary rights to grant us the license
-            described in this Section for any User Content that you post.
+            or medium now known or developed in the future,{' '}
+            <b style={{ fontWeight: 600 }}>
+              in order to provide the Service subject to applicable law and our Privacy Policy
+            </b>
+            . Your User Content will not be used for publicity, advertising, or any public statements without your prior
+            consent. The license granted to codePost shall survive termination of the Service or your Account, subject
+            to other rights presented in the Terms. Notwithstanding the license granted to codePost in User Content and
+            for avoidance of doubt, our use and retention of your personal data, including any that is contained in User
+            Content, shall also be governed by and comply with the codePost Privacy Policy. You represent, warrant and
+            agree that you have the necessary rights to grant us the license described in this Section for any User
+            Content that you post.
           </Typography.Paragraph>
           <Typography.Paragraph>
             You agree that this license includes the right for other Users with permitted access to your User Content to

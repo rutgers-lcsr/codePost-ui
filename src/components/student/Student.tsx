@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Tag, Typography } from 'antd';
+import { Button, Icon, Menu, Spin, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -14,28 +14,16 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import withWindowWatcher, {
-  IWithWindowWatcherProps,
-} from '../core/withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import CPFlex from '../core/CPFlex';
 
-import {
-  IAssignmentToSubmissionStudentMap,
-  ICourseToAssignmentMap,
-  USER_TYPE,
-} from '../../types/common';
+import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
-import {
-  AssignmentStudent,
-  AssignmentType,
-} from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { loadIDList } from '../../infrastructure/generics';
-import {
-  StudentSubmissionType,
-  Submission,
-} from '../../infrastructure/submission';
+import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
 import { UserType } from '../../infrastructure/user';
 
@@ -120,27 +108,21 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public componentDidMount() {
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
-        const { course } = this.setStateFromURL(
-          this.props.initialCourses,
-          assignments,
-        );
+        const { course } = this.setStateFromURL(this.props.initialCourses, assignments);
         if (course) {
           this.changeURL(course);
           this.setState({ currentCourse: course });
-          this.loadSubmissions(this.state.assignments[course.id]).then(
-            (submissions) => {
-              this.loadHistories(
-                Object.values(submissions),
-                this.props.user.email,
-              ).then((viewMap: { [submissionID: number]: boolean }) => {
+          this.loadSubmissions(this.state.assignments[course.id]).then((submissions) => {
+            this.loadHistories(Object.values(submissions), this.props.user.email).then(
+              (viewMap: { [submissionID: number]: boolean }) => {
                 this.setState({
                   submissions,
                   viewsBySubmission: viewMap,
                   isLoadingSubmissions: false,
                 });
-              });
-            },
-          );
+              },
+            );
+          });
         }
       });
     });
@@ -150,10 +132,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /* URL + UI handling methods
   /**********************************************************************************/
 
-  public setStateFromURL = (
-    courses: CourseType[],
-    assignments: ICourseToAssignmentMap,
-  ) => {
+  public setStateFromURL = (courses: CourseType[], assignments: ICourseToAssignmentMap) => {
     const { courseName, period } = this.props.match.params;
     if (courses.length === 0) {
       return { course: undefined };
@@ -165,9 +144,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         const formattedCourseName = courseName.replace(/_/g, ' ');
         const formattedPeriod = period.replace(/_/g, ' ');
         currentCourse = courses.find((obj: CourseType) => {
-          return (
-            obj.name === formattedCourseName && obj.period === formattedPeriod
-          );
+          return obj.name === formattedCourseName && obj.period === formattedPeriod;
         });
       }
 
@@ -211,22 +188,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const submissions: any = {};
     for (const assignment of assignments) {
       if (assignment.isReleased || assignment.allowStudentUpload) {
-        submissions[assignment.id] = await AssignmentStudent.readSubmissions(
-          assignment.id,
-          {
-            student: this.props.user.email,
-          },
-        );
+        submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
+          student: this.props.user.email,
+        });
       }
     }
 
     return submissions;
   };
 
-  public loadHistories = async (
-    submissions: IAssignmentToSubmissionStudentMap,
-    email: string,
-  ) => {
+  public loadHistories = async (submissions: IAssignmentToSubmissionStudentMap, email: string) => {
     const toRet: any = {};
     const keys = Object.keys(submissions);
     for (const key of keys) {
@@ -262,10 +233,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     });
     // If it has a history object, and has not been viewed, mark it as viewed
     if (history && history[0] && !history[0].hasViewed) {
-      return await Submission.updateHistory(
-        { id: submission.id, hasViewed: true },
-        { student: this.props.user.email },
-      );
+      return await Submission.updateHistory({ id: submission.id, hasViewed: true }, { student: this.props.user.email });
     }
     // If empty, this submission does not have a history object. It was created before tracking was implemented
     return;
@@ -273,11 +241,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public handleCourseChange = (e: ClickParam) => {
     const courseID = +e.key;
-    const currentCourse = this.props.initialCourses.find(
-      (course: CourseType) => {
-        return course.id === courseID;
-      },
-    );
+    const currentCourse = this.props.initialCourses.find((course: CourseType) => {
+      return course.id === courseID;
+    });
 
     if (currentCourse) {
       this.setState(
@@ -287,20 +253,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         () => {
           this.setState({ isLoadingSubmissions: true }, () => {
             this.changeURL(currentCourse);
-            this.loadSubmissions(this.state.assignments[currentCourse.id]).then(
-              (submissions) => {
-                this.loadHistories(
-                  Object.values(submissions),
-                  this.props.user.email,
-                ).then((viewMap: { [submissionID: number]: boolean }) => {
+            this.loadSubmissions(this.state.assignments[currentCourse.id]).then((submissions) => {
+              this.loadHistories(Object.values(submissions), this.props.user.email).then(
+                (viewMap: { [submissionID: number]: boolean }) => {
                   this.setState({
                     submissions,
                     viewsBySubmission: viewMap,
                     isLoadingSubmissions: false,
                   });
-                });
-              },
-            );
+                },
+              );
+            });
           });
         },
       );
@@ -320,17 +283,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }));
   }
 
-  public getCourseName = (course: CourseType) =>
-    `${course.name} | ${course.period}`;
+  public getCourseName = (course: CourseType) => `${course.name} | ${course.period}`;
   public getCourseValue = (course: CourseType) => course.id;
   public getCourseDisabled = (course: CourseType) => false;
   public courseSelectorItems = (courses: CourseType[]) => {
-    return this.selectorItemsFormatter(
-      courses,
-      this.getCourseValue,
-      this.getCourseName,
-      this.getCourseDisabled,
-    );
+    return this.selectorItemsFormatter(courses, this.getCourseValue, this.getCourseName, this.getCourseDisabled);
   };
   public courseActiveSelector = (currentCourse: CourseType | undefined) => {
     if (!currentCourse) {
@@ -342,10 +299,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
   };
 
-  public changePanel = (
-    newPanel: CURRENT_PANEL,
-    assignment?: AssignmentType,
-  ) => {
+  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType) => {
     this.setState({ currentPanel: newPanel, detailAssignment: assignment });
   };
 
@@ -355,11 +309,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   // Upload a submission as a student
-  public uploadSubmission = (
-    assignment: AssignmentType,
-    partners: string[],
-    files: any[],
-  ) => {
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       return Promise.reject();
     }
@@ -377,42 +327,32 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       files: formattedFiles,
     };
 
-    const submission = AssignmentStudent.updateStudentUpload(payload).then(
-      (sub) => {
-        const submissions = this.state.submissions;
-        submissions[assignment.id] = [sub];
-        this.setState({ submissions });
-      },
-    );
+    const submission = AssignmentStudent.updateStudentUpload(payload).then((sub) => {
+      const submissions = this.state.submissions;
+      submissions[assignment.id] = [sub];
+      this.setState({ submissions });
+    });
 
     return submission;
   };
 
-  public getUploadContent = (
-    assignment: AssignmentType,
-    submission?: StudentSubmissionType,
-  ) => {
+  public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
     if (!assignment.allowStudentUpload) {
       // Case 0: Student upload not allowed
       return <div />;
     }
 
-    const dueDate = assignment.uploadDueDate
-      ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}`
-      : '';
-    const dueDateText = <Text type='warning'>{dueDate}</Text>;
+    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDateText = <Text type="warning">{dueDate}</Text>;
 
     const uploadButton = (text: string) => {
       return (
         <Button
-          icon='upload'
-          type='primary'
+          icon="upload"
+          type="primary"
           style={{ maxWidth: 180 }}
-          onClick={this.changePanel.bind(
-            this,
-            CURRENT_PANEL.UPLOADFILES,
-            assignment,
-          )}>
+          onClick={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment)}
+        >
           {text}
         </Button>
       );
@@ -423,22 +363,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       <div />
     ) : (
       <Button
-        icon='eye'
+        icon="eye"
         style={{ maxWidth: 160 }}
-        onClick={this.changePanel.bind(
-          this,
-          CURRENT_PANEL.VIEWFILES,
-          assignment,
-        )}>
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment)}
+      >
         View files
       </Button>
     );
 
     if (!submission) {
-      if (
-        assignment.uploadDueDate &&
-        Date.parse(assignment.uploadDueDate) <= Date.now()
-      ) {
+      if (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now()) {
         // Case 1: No submission has been uploaded and due date has passed
         return <div>{dueDateText}</div>;
       } else {
@@ -450,18 +384,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               flexDirection: 'column',
               lineHeight: 2.2,
               alignItems: 'center',
-            }}>
+            }}
+          >
             {dueDateText}
             {uploadButton('Upload Files')}
           </div>
         );
       }
     } else {
-      if (
-        submission.isFinalized ||
-        (assignment.uploadDueDate &&
-          Date.parse(assignment.uploadDueDate) <= Date.now())
-      ) {
+      if (submission.isFinalized || (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())) {
         // Case 3: Submission exists, and cannot be replaced, either because
         // it's finalized, re-sbumitting is not allowed, or the due date has passed
         return (
@@ -471,10 +402,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               flexDirection: 'column',
               lineHeight: 2.2,
               alignItems: 'center',
-            }}>
-            <div>
-              Uploaded: {moment(submission.dateUploaded).format('llll')}
-            </div>
+            }}
+          >
+            <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
             {dueDateText}
             {viewButton}
           </div>
@@ -487,10 +417,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               display: 'flex',
               flexDirection: 'column',
               lineHeight: 2.2,
-            }}>
-            <div>
-              Last uploaded: {moment(submission.dateUploaded).format('llll')}
-            </div>
+            }}
+          >
+            <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
             {dueDateText}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               {viewButton}
@@ -507,10 +436,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /* Content area
   /**********************************************************************************/
 
-  public buildAssignmentsTable = (
-    assignments: AssignmentType[],
-    submissions: IAssignmentToSubmissionStudentMap,
-  ) => {
+  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionStudentMap) => {
     const modifyIf = (modMap: { [statusTarget: number]: number }) => {
       return (value: any, row: any, index: number) => {
         const obj = {
@@ -582,17 +508,16 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
 
     // If one assignment has studentUpload, add the uploadColumn to the columns
-    columns = assignments.some((assn) => {
-      return assn.allowStudentUpload;
-    })
-      ? [...columns, uploadColumn]
-      : columns;
+    if (assignments) {
+      columns = assignments.some((assn) => {
+        return assn.allowStudentUpload;
+      })
+        ? [...columns, uploadColumn]
+        : columns;
+    }
 
     const data = assignments.map((assignment) => {
-      const submission =
-        assignment.id in submissions
-          ? submissions[assignment.id][0]
-          : undefined;
+      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
       const uploadContent = this.getUploadContent(assignment, submission);
 
       if (!assignment.isReleased && !assignment.liveFeedbackMode) {
@@ -604,7 +529,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           partners: (
             <div>
               {' '}
-              <Icon type='stop' /> &nbsp; Assignment not yet published
+              <Icon type="stop" /> &nbsp; Assignment not yet published
             </div>
           ),
           disabled: true,
@@ -616,8 +541,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         if (hasStats) {
           statsContent = (
             <div>
-              Mean: {assignment.mean}/{assignment.points} <br /> Median:{' '}
-              {assignment.median}/{assignment.points}
+              Mean: {assignment.mean}/{assignment.points} <br /> Median: {assignment.median}/{assignment.points}
             </div>
           );
         }
@@ -635,8 +559,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             ...toRet,
             partners: (
               <div>
-                <Icon type='minus-circle' /> &nbsp; Your submission hasn't been
-                uploaded
+                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been uploaded
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
@@ -647,8 +570,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             ...toRet,
             partners: (
               <div>
-                <Icon type='minus-circle' /> &nbsp; Your submission hasn't been
-                graded yet
+                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been graded yet
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
@@ -658,8 +580,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
           // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
           const showGrade =
-            !(submission.id in this.state.viewsBySubmission) ||
-            this.state.viewsBySubmission[submission.id];
+            !(submission.id in this.state.viewsBySubmission) || this.state.viewsBySubmission[submission.id];
           return {
             ...toRet,
             partners:
@@ -674,11 +595,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               submission.grade !== null && submission.grade !== undefined ? (
                 `${submission.grade}/${assignment.points}`
               ) : null
-            ) : this.props.windowwidth >
-              layoutVars.breakpoints.mobile.student ? (
-              <Tag
-                onClick={this.openAndMarkViewed.bind(this, submission)}
-                style={{ cursor: 'pointer' }}>
+            ) : this.props.windowwidth > layoutVars.breakpoints.mobile.student ? (
+              <Tag onClick={this.openAndMarkViewed.bind(this, submission)} style={{ cursor: 'pointer' }}>
                 View feedback
               </Tag>
             ) : (
@@ -686,12 +604,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             ),
             code: (
               <div onClick={openSubmission.bind(this, submission.id)}>
-                <Icon type='code' style={{ cursor: 'pointer' }} />
+                <Icon type="code" style={{ cursor: 'pointer' }} />
               </div>
             ),
-            statusType: showGrade
-              ? SUBMISSION_STATUS.SUBMISSION_VIEWED
-              : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
+            statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
           };
         }
       }
@@ -705,13 +621,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /**********************************************************************************/
 
   public render() {
-    const {
-      assignments,
-      currentCourse,
-      isLoadingAssignments,
-      isLoadingSubmissions,
-      submissions,
-    } = this.state;
+    const { assignments, currentCourse, isLoadingAssignments, isLoadingSubmissions, submissions } = this.state;
 
     let studentContent;
     // if not loaded yet, render a get started div
@@ -721,12 +631,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <div>Select course</div>
         </div>
       );
+    } else if (!assignments[currentCourse.id]) {
+      // Assignments haven't finished loading
+      studentContent = <Spin />;
     } else {
       const assignmentList = assignments[currentCourse.id];
-      const { columns, data } = this.buildAssignmentsTable(
-        assignmentList,
-        submissions,
-      );
+      const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
       const rowClassName = (record: any, index: number) => {
         if (record.disabled) {
           return 'disabled-row';
@@ -751,11 +661,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           />
           <UploadSubmissionDialog
             isVisible={this.state.currentPanel === CURRENT_PANEL.UPLOADFILES}
-            onCancel={this.changePanel.bind(
-              this,
-              CURRENT_PANEL.TABLE,
-              undefined,
-            )}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
             assignments={[]}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
@@ -766,11 +672,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
             assignment={this.state.detailAssignment}
-            onCancel={this.changePanel.bind(
-              this,
-              CURRENT_PANEL.TABLE,
-              undefined,
-            )}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
           />
         </div>
       );
@@ -784,55 +686,32 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const courseMenu = (
       <Menu onClick={this.handleCourseChange}>
         {this.props.initialCourses.map((course, i) => {
-          return (
-            <Menu.Item
-              key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>
-          );
+          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
         })}
       </Menu>
     );
-    const courseDropdown = (
-      <CPDropdown
-        value={courseSelectorText}
-        overlay={courseMenu}
-        key='dropdown'
-      />
-    );
+    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} key="dropdown" />;
 
-    const headerLeft = [
-      <CPLogo cpType='dark' key='logo' />,
-      <span key='empty' />,
-      courseDropdown,
-    ];
+    const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
 
     const headerRight = [
-      <span key='header-user' className='cp-label cp-label--bold'>
+      <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      <RoleMenu
-        key='header-roles'
-        user={this.props.user}
-        thisApp={USER_TYPE.STUDENT}
-        theme='light'
-      />,
-      <Link className='internal-link' key='settings' to='/settings'>
-        <Icon type='setting' />
+      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
+      <Link className="internal-link" key="settings" to="/settings">
+        <Icon type="setting" />
       </Link>,
-      <Button
-        key='header-logout'
-        size='small'
-        onClick={this.props.handleLogout}>
+      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
         Logout
       </Button>,
     ];
 
-    const header = (
-      <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />
-    );
+    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
     const navigation = (collapsed: boolean) => null;
     return (
-      <div id='Student'>
+      <div id="Student">
         <CPLayoutAdmin
           header={header}
           detail={studentContent}

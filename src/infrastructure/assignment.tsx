@@ -11,11 +11,7 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import {
-  AnonymousSubmissionV,
-  StudentSubmissionV,
-  SubmissionV,
-} from './submission';
+import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 
 const AssignmentV = t.intersection(
@@ -30,6 +26,7 @@ const AssignmentV = t.intersection(
       allowStudentUpload: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
+      additiveGrading: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
@@ -53,6 +50,7 @@ const AssignmentVStudent = t.intersection(
     t.partial({
       hideGrades: t.boolean,
       allowStudentUpload: t.boolean,
+      additiveGrading: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       sortKey: t.number,
@@ -98,6 +96,7 @@ const AssignmentVPatch = t.intersection(
       allowStudentUpload: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
+      additiveGrading: t.boolean,
     }),
   ],
   'AssignmentPatch',
@@ -121,35 +120,19 @@ const RubricV = t.intersection(
 export type RubricType = t.TypeOf<typeof RubricV>;
 
 export class Assignment {
-  public static create = createObject(
-    AssignmentV,
-    AssignmentVPost,
-    'assignments',
-  );
+  public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
   public static read = readObject(AssignmentV, 'assignments');
-  public static update = updateObject(
-    AssignmentV,
-    AssignmentVPatch,
-    'assignments',
-  );
+  public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
   public static delete = deleteObject(AssignmentV, 'assignments');
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
-  public static readSubmissions = readObjectDetail(
-    t.array(SubmissionV),
-    'assignments',
-    'submissions',
-  );
+  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionV),
     'assignments',
     'submissions',
   );
-  public static readSubmissionsStudent = readObjectDetail(
-    t.array(StudentSubmissionV),
-    'assignments',
-    'submissions',
-  );
+  public static readSubmissionsStudent = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
   public static readSubmissionHistories = readObjectDetail(
     t.array(SubmissionHistoryV),
     'assignments',
@@ -180,27 +163,17 @@ const StudentUploadData = t.intersection([
 // tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
-  public static readSubmissions = readObjectDetail(
-    t.array(StudentSubmissionV),
-    'assignments',
-    'submissions',
-  );
+  public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
   public static updateStudentUpload = updateObjectDetail(
     StudentSubmissionV,
     StudentUploadData,
     'assignments',
     'studentUpload',
   );
-  public static readStudentUpload = readObjectDetail(
-    StudentUploadData,
-    'assignments',
-    'studentUpload',
-  );
+  public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
 }
 
-export const sortAssignments = (
-  assignments: AssignmentType[],
-): AssignmentType[] => {
+export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
     if (a.sortKey === b.sortKey) {

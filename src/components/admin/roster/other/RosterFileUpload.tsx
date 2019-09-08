@@ -183,7 +183,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         case 'student':
           switch (tokens.length) {
             case 1:
-              newRoster[tokens[0]] = {};
+              newRoster[tokens[0].trim()] = {};
               break;
             case 2:
               let sectionName = null;
@@ -191,7 +191,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 // remove leading and trailing whitespace
                 sectionName = tokens[1].trim();
               }
-              newRoster[tokens[0]] = { section: sectionName };
+              newRoster[tokens[0].trim()] = { section: sectionName };
               break;
             default:
               errors.push(`Invalid row detected: row ${i}| ${line}`);
@@ -202,7 +202,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           if (tokens.length > 1) {
             errors.push(`Invalid row detected: row ${i}| ${line}`);
           }
-          newRoster[tokens[0]] = {};
+          newRoster[tokens[0].trim()] = {};
           break;
       }
     });
@@ -248,20 +248,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             // Pre-fill sections to account for students whose sections we aren't
             // updating.
             for (const student of newStudents) {
-              if (
-                addedStudents.indexOf(student) === -1 &&
-                changedStudents.indexOf(student) === -1
-              ) {
+              if (addedStudents.indexOf(student) === -1 && changedStudents.indexOf(student) === -1) {
                 const section = this.props.sectionsByStudent[student];
                 const sectionValue = section ? section.name : undefined;
                 if (sectionValue !== null && sectionValue !== undefined) {
                   if (sectionMap[sectionValue] === undefined) {
                     sectionMap[sectionValue] = [student];
                   } else {
-                    sectionMap[sectionValue] = [
-                      ...sectionMap[sectionValue],
-                      student,
-                    ];
+                    sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
                   }
                 }
               }
@@ -274,10 +268,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 if (sectionMap[sectionValue] === undefined) {
                   sectionMap[sectionValue] = [student];
                 } else {
-                  sectionMap[sectionValue] = [
-                    ...sectionMap[sectionValue],
-                    student,
-                  ];
+                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
                 }
               }
             }
@@ -289,10 +280,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 if (sectionMap[sectionValue] === undefined) {
                   sectionMap[sectionValue] = [student];
                 } else {
-                  sectionMap[sectionValue] = [
-                    ...sectionMap[sectionValue],
-                    student,
-                  ];
+                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
                 }
               }
             }
@@ -434,9 +422,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       switch (userType) {
         case 'student':
           userMap[user] = {
-            section: sectionsByStudent[user]
-              ? sectionsByStudent[user].name
-              : null,
+            section: sectionsByStudent[user] ? sectionsByStudent[user].name : null,
           };
           break;
         case 'grader':
@@ -471,18 +457,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         let oldRoster = {};
         switch (this.props.roleType) {
           case 'student':
-            oldRoster = this.transformOldRoster(
-              'student',
-              this.props.students,
-              this.props.sectionsByStudent,
-            );
+            oldRoster = this.transformOldRoster('student', this.props.students, this.props.sectionsByStudent);
             break;
           case 'grader':
-            oldRoster = this.transformOldRoster(
-              'grader',
-              this.props.graders,
-              {},
-            );
+            oldRoster = this.transformOldRoster('grader', this.props.graders, {});
             break;
           case 'admin':
             oldRoster = this.transformOldRoster('admin', this.props.admins, {});
@@ -605,7 +583,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               <h4>{diffItem.title}</h4>
               <Table
                 pagination={false}
-                size='small'
+                size="small"
                 style={{ lineHeight: 1 }}
                 dataSource={dataSource}
                 columns={columns}
@@ -660,12 +638,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             <div key={i}>
               <br />
               <h4>{diffItem.title}</h4>
-              <Table
-                pagination={false}
-                style={{ lineHeight: 1 }}
-                dataSource={dataSource}
-                columns={columns}
-              />
+              <Table pagination={false} style={{ lineHeight: 1 }} dataSource={dataSource} columns={columns} />
             </div>
           );
         })}
@@ -715,15 +688,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           content = (
             <div>
-              <Alert
-                message='Your roster was parsed successfully!'
-                type='success'
-              />
+              <Alert message="Your roster was parsed successfully!" type="success" />
               <br />
-              <Divider orientation='left'>Status</Divider>
+              <Divider orientation="left">Status</Divider>
               <b>{this.props.roleType}s parsed in uploaded file: </b>
               <em>{Object.keys(uploadedUsers!).length}</em>
-              <Divider orientation='left'>Changes</Divider>
+              <Divider orientation="left">Changes</Divider>
               {sectionContent}
             </div>
           );
@@ -731,8 +701,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           content = (
             <div>
               <Alert
-                message='Your roster contains some errors. Check out the area below to get them fixed.'
-                type='error'
+                message="Your roster contains some errors. Check out the area below to get them fixed."
+                type="error"
               />
               <br />
               <b>Errors:</b>
@@ -749,7 +719,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                             fontWeight: 500,
                             backgroundColor: '#ececec',
                             borderRadius: '2px',
-                          }}>
+                          }}
+                        >
                           {el.split('|')[1]}
                         </span>
                       </li>
@@ -780,27 +751,21 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     switch (this.state.status) {
       case UPLOAD_STATUS.UPLOAD:
         goBackButton = (
-          <Button key='back' onClick={this.toggleDialog}>
+          <Button key="back" onClick={this.toggleDialog}>
             Cancel
           </Button>
         );
         break;
       case UPLOAD_STATUS.REVIEW:
         goBackButton = (
-          <Button
-            key='back'
-            onClick={this.changeStatus.bind(this, UPLOAD_STATUS.UPLOAD)}>
+          <Button key="back" onClick={this.changeStatus.bind(this, UPLOAD_STATUS.UPLOAD)}>
             Back
           </Button>
         );
         break;
       case UPLOAD_STATUS.SAVE:
         goBackButton = (
-          <Button
-            key='back'
-            type='primary'
-            onClick={this.toggleDialog}
-            disabled={this.state.updatingRoster}>
+          <Button key="back" type="primary" onClick={this.toggleDialog} disabled={this.state.updatingRoster}>
             Close
           </Button>
         );
@@ -812,15 +777,15 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     if (this.state.status === UPLOAD_STATUS.REVIEW) {
       if (this.state.uploadErrors.length > 0) {
         goForwardButton = (
-          <CPTooltip key='submit' title={tooltips.admin.uploadRoster.error}>
-            <Button key='submit' type='primary' disabled={true}>
+          <CPTooltip key="submit" title={tooltips.admin.uploadRoster.error}>
+            <Button key="submit" type="primary" disabled={true}>
               Continue
             </Button>
           </CPTooltip>
         );
       } else {
         goForwardButton = (
-          <Button key='submit' type='primary' onClick={this.updateRoster}>
+          <Button key="submit" type="primary" onClick={this.updateRoster}>
             Confirm
           </Button>
         );
@@ -829,18 +794,18 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
     return (
       <div>
-        <CPButton icon='upload' cpType='secondary' onClick={this.toggleDialog}>
+        <CPButton icon="upload" cpType="secondary" onClick={this.toggleDialog}>
           {'Upload roster'}
         </CPButton>
         <Modal
           visible={this.state.dialogVisible}
           onCancel={this.toggleDialog}
-          title={`Upload roster: ${this.props.roleType[0].toUpperCase() +
-            this.props.roleType.slice(1)}s`}
+          title={`Upload roster: ${this.props.roleType[0].toUpperCase() + this.props.roleType.slice(1)}s`}
           width={700}
           footer={[goBackButton, goForwardButton]}
-          destroyOnClose={true}>
-          <Steps size='small' current={this.state.status}>
+          destroyOnClose={true}
+        >
+          <Steps size="small" current={this.state.status}>
             {steps.map((item) => {
               return <Step key={item.title} title={item.title} />;
             })}

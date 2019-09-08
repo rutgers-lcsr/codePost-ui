@@ -19,31 +19,13 @@ import {
 } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import {
-  CommentIO,
-  CommentType,
-  UiComment,
-} from '../../infrastructure/comment';
-import {
-  Course,
-  CourseSettingsType,
-  CourseType,
-} from '../../infrastructure/course';
+import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
+import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import * as Immutable from '../../infrastructure/immutable';
-import {
-  RubricCategory,
-  RubricCategoryType,
-} from '../../infrastructure/rubricCategory';
-import {
-  RubricComment,
-  RubricCommentType,
-} from '../../infrastructure/rubricComment';
-import {
-  AnonymousSubmissionType,
-  StudentSubmissionType,
-  Submission,
-} from '../../infrastructure/submission';
+import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
+import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
 import CPButton from '../core/CPButton';
@@ -53,35 +35,19 @@ import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 import { GradeCode, StudentCode } from './code-panel/CodeContent';
 import CodePanelLayout from './code-panel/CodePanelLayout';
 import { GradeComments, StudentComments } from './code-panel/Comments';
-import LayoutResizer, {
-  CodeConsoleDimensionsType,
-  getInitialDimensions,
-} from './code-panel/LayoutResizer';
+import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from './code-panel/LayoutResizer';
 
 import ThemeToggle from '../core/ThemeToggle';
 
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 import RubricMenu from './menu/RubricMenu';
-import {
-  ReadOnlySubmissionInfo,
-  SubmissionInfo,
-} from './menu/SubmissionInfoMenu';
+import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import {
-  Controls,
-  FinalizeButton,
-  GradeButton,
-  HeaderMenu,
-  StatusTags,
-  SubheaderTitle,
-} from '../code-review/Header';
+import { Controls, FinalizeButton, GradeButton, HeaderMenu, StatusTags, SubheaderTitle } from '../code-review/Header';
 
-import {
-  ConsoleThemeContext,
-  consoleThemes,
-} from '../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
@@ -142,73 +108,42 @@ export interface ICodeConsoleProps {
   inDemoMode: boolean;
 }
 
-class CodeConsole extends React.Component<
-  ICodeConsoleProps,
-  ICodeConsoleState
-> {
+class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
   /***********************************************************************************************/
   /* Static Methods
   /***********************************************************************************************/
 
   // --- Comments
-  public static addCommentToState = (
-    comments: IFileToCommentsMap,
-    comment: CommentType,
-    file: FileType,
-  ) => {
+  public static addCommentToState = (comments: IFileToCommentsMap, comment: CommentType, file: FileType) => {
     const fileComments = Immutable.arrayAdd(comments[file.id], comment);
     return { ...comments, [file.id]: fileComments.sort(CommentIO.compare) };
   };
 
-  public static removeCommentFromState = (
-    comments: IFileToCommentsMap,
-    comment: CommentType,
-  ) => {
-    const index = comments[comment.file].findIndex(
-      (c: CommentType) => c.id === comment.id,
-    );
+  public static removeCommentFromState = (comments: IFileToCommentsMap, comment: CommentType) => {
+    const index = comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
 
     const fileComments = Immutable.arrayRemove(comments[comment.file], index);
     return { ...comments, [comment.file]: fileComments };
   };
 
-  public static updateCommentsState = (
-    comments: IFileToCommentsMap,
-    commentID: number,
-    newComment: CommentType,
-  ) => {
-    const index = comments[newComment.file].findIndex(
-      (comment: CommentType) => comment.id === commentID,
-    );
-    const fileComments = Immutable.arrayUpdate(
-      comments[newComment.file],
-      newComment,
-      index,
-    );
+  public static updateCommentsState = (comments: IFileToCommentsMap, commentID: number, newComment: CommentType) => {
+    const index = comments[newComment.file].findIndex((comment: CommentType) => comment.id === commentID);
+    const fileComments = Immutable.arrayUpdate(comments[newComment.file], newComment, index);
 
     return { ...comments, [newComment.file]: fileComments };
   };
 
   // --- Edits
-  public static addIdToUnsavedState = (
-    unsavedComments: IdMapType,
-    commentID: number,
-  ) => {
+  public static addIdToUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
     return { ...unsavedComments, [commentID]: true };
   };
 
-  public static removeIdFromUnsavedState = (
-    unsavedComments: IdMapType,
-    commentID: number,
-  ) => {
+  public static removeIdFromUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
     const { [commentID]: flag, ...restOfUnsavedComments } = unsavedComments;
     return restOfUnsavedComments;
   };
 
-  public static clearUnsavedComments = (
-    comments: IFileToCommentsMap,
-    file: FileType,
-  ) => {
+  public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
     // tslint:disable
     return comments.hasOwnProperty(file.id)
       ? {
@@ -237,10 +172,7 @@ class CodeConsole extends React.Component<
     commentRubricComments: ICommentToRubricCommentMap,
     commentID: number,
   ): [RubricCommentType, ICommentToRubricCommentMap] => {
-    const {
-      [commentID]: rubricComment,
-      ...restOfCommentRubricComments
-    } = commentRubricComments;
+    const { [commentID]: rubricComment, ...restOfCommentRubricComments } = commentRubricComments;
     return [rubricComment, restOfCommentRubricComments];
   };
 
@@ -250,20 +182,14 @@ class CodeConsole extends React.Component<
     activeCommentID: number,
   ) => {
     for (const fileID of Object.keys(comments)) {
-      const index = comments[+fileID].findIndex(
-        (comment: CommentType) => comment.id === activeCommentID,
-      );
+      const index = comments[+fileID].findIndex((comment: CommentType) => comment.id === activeCommentID);
       if (index !== -1) {
         const comment = {
           ...comments[+fileID][index],
           rubricComment: rubricComment.id,
           pointDelta: null,
         };
-        const fileComments = Immutable.arrayUpdate(
-          comments[+fileID],
-          comment,
-          index,
-        );
+        const fileComments = Immutable.arrayUpdate(comments[+fileID], comment, index);
 
         return { ...comments, [+fileID]: fileComments };
       }
@@ -277,19 +203,13 @@ class CodeConsole extends React.Component<
     comment: CommentType,
     rubricComment: RubricCommentType,
   ) => {
-    const index = comments[comment.file].findIndex(
-      (c: CommentType) => c.id === comment.id,
-    );
+    const index = comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
     const editedComment = {
       ...comments[comment.file][index],
       rubricComment: null,
       pointDelta: rubricComment.pointDelta,
     };
-    const fileComments = Immutable.arrayUpdate(
-      comments[comment.file],
-      editedComment,
-      index,
-    );
+    const fileComments = Immutable.arrayUpdate(comments[comment.file], editedComment, index);
     return { ...comments, [comment.file]: fileComments };
   };
 
@@ -321,21 +241,16 @@ class CodeConsole extends React.Component<
   };
 
   // Points from generic comments
-  public static genericCommentPoints = (
-    comments: IFileToCommentsMap,
-  ): number => {
+  public static genericCommentPoints = (comments: IFileToCommentsMap): number => {
     return Object.keys(comments)
       .map((fileID) => {
-        return comments[+fileID].reduce(
-          (accumulator: number, comment: CommentType) => {
-            if (!UiComment.isNew(comment) && comment.pointDelta) {
-              return accumulator + comment.pointDelta;
-            } else {
-              return accumulator;
-            }
-          },
-          0,
-        );
+        return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
+          if (!UiComment.isNew(comment) && comment.pointDelta) {
+            return accumulator + comment.pointDelta;
+          } else {
+            return accumulator;
+          }
+        }, 0);
       })
       .reduce((accumulator: number, fileGrade: number) => {
         return accumulator + fileGrade;
@@ -351,12 +266,10 @@ class CodeConsole extends React.Component<
       // Don't count unsaved comments
       if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
         if (!pointsPerCategory[commentRubricComments[commentID].category]) {
-          pointsPerCategory[commentRubricComments[commentID].category] =
-            commentRubricComments[commentID].pointDelta;
+          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
         } else {
           pointsPerCategory[commentRubricComments[commentID].category] =
-            pointsPerCategory[commentRubricComments[commentID].category] +
-            commentRubricComments[commentID].pointDelta;
+            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
         }
       }
     }
@@ -371,20 +284,15 @@ class CodeConsole extends React.Component<
     const pointsPerCategoryWithCaps: any = {};
     for (const category in pointsPerCategory) {
       if (pointsPerCategory.hasOwnProperty(category)) {
-        const thisCategory = rubricCategories.find(
-          (rubricCategory: RubricCategoryType) => {
-            return rubricCategory.id === +category;
-          },
-        );
-        const pointLimit = thisCategory
-          ? thisCategory.pointLimit !== null
-            ? thisCategory.pointLimit
-            : 99999
-          : 99999;
-        pointsPerCategoryWithCaps[+category] = Math.min(
-          pointsPerCategory[category],
-          pointLimit,
-        );
+        const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
+          return rubricCategory.id === +category;
+        });
+        const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
+        if (pointLimit < 0) {
+          pointsPerCategoryWithCaps[+category] = Math.max(pointsPerCategory[category], pointLimit);
+        } else {
+          pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        }
       }
     }
     return pointsPerCategoryWithCaps;
@@ -397,22 +305,18 @@ class CodeConsole extends React.Component<
     rubricCategories: RubricCategoryType[],
   ): number => {
     const commentPoints = CodeConsole.genericCommentPoints(comments);
-    const pointsPerCategory = CodeConsole.pointsPerCategory(
-      commentRubricComments,
-    );
-    const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(
-      pointsPerCategory,
-      rubricCategories,
-    );
+    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments);
+    const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
 
-    const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce(
-      (accumulator: number, current: number) => {
-        return accumulator + current;
-      },
-      0,
-    );
+    const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
+      return accumulator + current;
+    }, 0);
 
-    return assignment.points - commentPoints - categoryPoints;
+    if (assignment.additiveGrading) {
+      return 0 - commentPoints - categoryPoints;
+    } else {
+      return assignment.points - commentPoints - categoryPoints;
+    }
   };
 
   /***********************************************************************************************/
@@ -483,10 +387,7 @@ class CodeConsole extends React.Component<
       case PERMISSION_LEVEL.READ:
         // load the data a reader has access to
         submission = await Submission.readReadOnly(submissionID);
-        [
-          assignment,
-          [files, comments, commentRubricComments],
-        ] = await Promise.all([
+        [assignment, [files, comments, commentRubricComments]] = await Promise.all([
           Assignment.read(submission.assignment),
           Submission.loadData(submission),
         ]);
@@ -576,9 +477,7 @@ class CodeConsole extends React.Component<
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
 
-    const rubricCategories = rubric.rubricCategories.sort(
-      RubricCategory.compare,
-    );
+    const rubricCategories = rubric.rubricCategories.sort(RubricCategory.compare);
     const rubricComments: any = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
@@ -594,14 +493,11 @@ class CodeConsole extends React.Component<
 
   public detectPermissionType = (submissionID: number) => {
     // Read submission and figure out whether the client is a reader or writer
-    return fetch(
-      `${process.env.REACT_APP_API_URL}/submissions/${submissionID}/checkPermission/`,
-      {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem('token')}`,
-        },
+    return fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionID}/checkPermission/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
       },
-    )
+    })
       .then(async (res) => {
         if (res.ok) {
           return res.json();
@@ -638,10 +534,7 @@ class CodeConsole extends React.Component<
   public changeSelectedFile = (fileID: number): void => {
     const comments =
       this.state.selectedFile !== undefined
-        ? CodeConsole.clearUnsavedComments(
-            this.state.comments,
-            this.state.selectedFile,
-          )
+        ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
         : this.state.comments;
 
     const selectedFile = this.state.files.find((file: FileType) => {
@@ -658,9 +551,7 @@ class CodeConsole extends React.Component<
     if (this.state.selectedFile) {
       if (this.state.comments.hasOwnProperty(this.state.selectedFile.id)) {
         for (const comment of this.state.comments[this.state.selectedFile.id]) {
-          const commentElement = document.getElementById(
-            `comment-${comment.id}`,
-          );
+          const commentElement = document.getElementById(`comment-${comment.id}`);
           if (commentElement !== null) {
             if (commentElement.dataset.status === 'edited') {
               return false;
@@ -678,31 +569,16 @@ class CodeConsole extends React.Component<
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
-    const comments = CodeConsole.addCommentToState(
-      this.state.comments,
-      comment,
-      file,
-    );
+    const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
     this.setState({ comments, activeCommentID: comment.id });
   };
 
-  public updateComment = (
-    commentID: number,
-    newComment: CommentType,
-    newRubricComment?: RubricCommentType,
-  ) => {
-    const comments = CodeConsole.updateCommentsState(
-      this.state.comments,
-      commentID,
-      newComment,
-    );
+  public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
+    const comments = CodeConsole.updateCommentsState(this.state.comments, commentID, newComment);
 
-    const [
-      rubricComment,
-      restOfCommentRubricComments,
-    ] = CodeConsole.removeFromCommentRubricCommentsState(
+    const [rubricComment, restOfCommentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       commentID,
     );
@@ -746,14 +622,8 @@ class CodeConsole extends React.Component<
       });
     }
 
-    let unsavedComments = CodeConsole.removeIdFromUnsavedState(
-      this.state.unsavedComments,
-      comment.id,
-    );
-    unsavedComments = CodeConsole.removeIdFromUnsavedState(
-      unsavedComments,
-      savedComment.id,
-    );
+    let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
     this.setState({
       unsavedComments,
@@ -766,26 +636,15 @@ class CodeConsole extends React.Component<
 
   public deleteComment = async (comment: CommentType) => {
     if (comment.id > 0 && !this.props.inDemoMode) {
-      await CommentIO.delete(comment.id).then(() =>
-        this.updateSubmissionGrade(),
-      );
+      await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
-    const comments = CodeConsole.removeCommentFromState(
-      this.state.comments,
-      comment,
-    );
-    const [
-      ,
-      commentRubricComments,
-    ] = CodeConsole.removeFromCommentRubricCommentsState(
+    const comments = CodeConsole.removeCommentFromState(this.state.comments, comment);
+    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = CodeConsole.removeIdFromUnsavedState(
-      this.state.unsavedComments,
-      comment.id,
-    );
+    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
     this.setState({ comments, unsavedComments, commentRubricComments }, () => {
       // We will never be in a situation in which we have an active comment immediately after
@@ -797,62 +656,37 @@ class CodeConsole extends React.Component<
   };
 
   public addUnsaved = (commentID: number) => {
-    const unsavedComments = CodeConsole.addIdToUnsavedState(
-      this.state.unsavedComments,
-      commentID,
-    );
+    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, commentID);
     this.setState({ unsavedComments });
   };
 
   public removeUnsaved = (commentID: number) => {
-    const unsavedComments = CodeConsole.removeIdFromUnsavedState(
-      this.state.unsavedComments,
-      commentID,
-    );
+    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
     this.setState({ unsavedComments });
   };
 
-  public updateFeedback = (
-    fileID: number,
-    commentID: number,
-    feedbackNum: number,
-  ) => {
-    CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then(
-      (newComment) => {
-        this.setState((oldState) => {
-          const newMap = { ...oldState.comments };
-          newMap[fileID] = [
-            ...newMap[fileID].filter((el) => {
-              return el.id !== commentID;
-            }),
-            newComment,
-          ];
-          return { comments: newMap };
-        });
-      },
-    );
+  public updateFeedback = (fileID: number, commentID: number, feedbackNum: number) => {
+    CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then((newComment) => {
+      this.setState((oldState) => {
+        const newMap = { ...oldState.comments };
+        newMap[fileID] = [
+          ...newMap[fileID].filter((el) => {
+            return el.id !== commentID;
+          }),
+          newComment,
+        ];
+        return { comments: newMap };
+      });
+    });
   };
 
-  public removeRubricComment = (
-    comment: CommentType,
-    rubricComment: RubricCommentType,
-  ) => {
-    const comments = CodeConsole.unlinkRubricComment(
-      this.state.comments,
-      comment,
-      rubricComment,
-    );
-    const [
-      ,
-      commentRubricComments,
-    ] = CodeConsole.removeFromCommentRubricCommentsState(
+  public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
+    const comments = CodeConsole.unlinkRubricComment(this.state.comments, comment, rubricComment);
+    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = CodeConsole.addIdToUnsavedState(
-      this.state.unsavedComments,
-      comment.id,
-    );
+    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
 
     this.setState({ comments, commentRubricComments, unsavedComments });
   };
@@ -867,11 +701,7 @@ class CodeConsole extends React.Component<
       return;
     }
 
-    const comments = CodeConsole.linkRubricComment(
-      this.state.comments,
-      rubricComment,
-      this.state.activeCommentID,
-    );
+    const comments = CodeConsole.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
       return;
@@ -902,11 +732,7 @@ class CodeConsole extends React.Component<
   };
 
   public getPointsInFile = (file: FileType): number[] => {
-    return CodeConsole.pointsInFile(
-      file,
-      this.state.comments[file.id],
-      this.state.commentRubricComments,
-    );
+    return CodeConsole.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
   };
 
   public updateSubmissionGrade = () => {
@@ -962,10 +788,7 @@ class CodeConsole extends React.Component<
       if (!this.state.submission.isFinalized) {
         comments =
           this.state.selectedFile !== undefined
-            ? CodeConsole.clearUnsavedComments(
-                this.state.comments,
-                this.state.selectedFile,
-              )
+            ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
             : this.state.comments;
         message.success('Successfully finalized submission');
       } else {
@@ -978,10 +801,7 @@ class CodeConsole extends React.Component<
     }
   };
 
-  public updateGrader = (
-    sub: AnonymousSubmissionType,
-    graderUsername: string | undefined,
-  ) => {
+  public updateGrader = (sub: AnonymousSubmissionType, graderUsername: string | undefined) => {
     const payload = {
       id: sub.id,
       isFinalized: false,
@@ -1039,6 +859,7 @@ class CodeConsole extends React.Component<
       allowStudentUpload: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
+      additiveGrading: false,
     };
 
     const demoCourse: CourseType = {
@@ -1140,8 +961,7 @@ class CodeConsole extends React.Component<
       [2]: [
         {
           id: 4,
-          text:
-            'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
           category: 2,
           comments: [],
           pointDelta: 2,
@@ -1149,8 +969,7 @@ class CodeConsole extends React.Component<
         },
         {
           id: 5,
-          text:
-            'Memoization would improve performance, since these values are frequently recomputed',
+          text: 'Memoization would improve performance, since these values are frequently recomputed',
           category: 2,
           comments: [],
           pointDelta: 1,
@@ -1184,8 +1003,7 @@ class CodeConsole extends React.Component<
       return <Loading />;
     }
 
-    const theme =
-      consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
     let leftHeader: React.ReactNode[] = [];
     let middleHeader: React.ReactNode[] = [];
@@ -1197,13 +1015,11 @@ class CodeConsole extends React.Component<
     const toolbarWidgets = [];
     if (!this.props.inDemoMode) {
       const hasComments =
-        this.state.selectedFile !== undefined
-          ? this.state.comments[this.state.selectedFile.id].length > 0
-          : false;
+        this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
 
       toolbarWidgets.push(
         <LayoutResizer
-          key='layout-resizer'
+          key="layout-resizer"
           initialDimensions={this.state.dimensions}
           setDimensions={this.setDimensions}
           hasComments={hasComments}
@@ -1223,7 +1039,7 @@ class CodeConsole extends React.Component<
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
     ) {
-      rightHeader = [<ThemeToggle key='theme-toggle' small={true} />, controls];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
       content = (
         <Empty
@@ -1241,7 +1057,7 @@ class CodeConsole extends React.Component<
         />
       );
     } else if (this.props.inDemoMode && !this.state.assignment) {
-      rightHeader = [<ThemeToggle key='theme-toggle' small={true} />, controls];
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
     } else {
       if (!this.state.assignment) {
         return <div>We're not supposed to get here..</div>;
@@ -1274,43 +1090,33 @@ class CodeConsole extends React.Component<
       };
 
       const menu = (
-        <Menu mode='vertical' style={{ width: 280, padding: 0 }}>
-          <Menu.Item key='setting:1' style={groupStyle} className='header-menu'>
+        <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
+          <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
             Code Review Console
           </Menu.Item>
-          <Menu.Item key='setting:2' style={itemStyle} className='header-menu'>
-            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>
-              Redo tutorial
-            </a>
+          <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
           </Menu.Item>
-          <Menu.Item
-            key='setting:3'
-            style={itemStyle}
-            className='header-menu'
-            onClick={openIntercom}>
+          <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
           </Menu.Item>
-          <Menu.Item key='setting:4' style={groupStyle} className='header-menu'>
+          <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
             Other
           </Menu.Item>
-          <Menu.Item key='setting:5' style={itemStyle} className='header-menu'>
-            <a href='/'>Home</a>
+          <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
+            <a href="/">Home</a>
           </Menu.Item>
-          <Menu.Item key='setting:6' style={itemStyle} className='header-menu'>
-            <a href='/logout'>Logout</a>
+          <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+            <a href="/logout">Logout</a>
           </Menu.Item>
         </Menu>
       );
 
       middleHeader = [
         <GradeButton
-          key='subheader-grade'
+          key="subheader-grade"
           assignment={this.state.assignment!}
-          submission={
-            this.state.submission === undefined
-              ? this.state.readOnlySubmission!
-              : this.state.submission
-          }
+          submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
           calculateGrade={this.calculateGradeFromState}
           rubricCategories={this.state.rubricCategories}
           comments={this.state.comments}
@@ -1318,9 +1124,7 @@ class CodeConsole extends React.Component<
         />,
       ];
 
-      const fileMenuTitle = (
-        <FileMenuTitle key='files' files={this.state.files} />
-      );
+      const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
       if (this.props.inDemoMode) {
         if (this.state.selectedFile) {
           const demoCode = (onHighlightClick: any) => (
@@ -1353,11 +1157,9 @@ class CodeConsole extends React.Component<
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
-              updateFeedback={this.updateFeedback.bind(
-                this,
-                this.state.selectedFile!.id,
-              )}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1376,8 +1178,8 @@ class CodeConsole extends React.Component<
 
         sider = [
           <SubmissionInfo
-            key='submission-info'
-            title='Submission Info'
+            key="submission-info"
+            title="Submission Info"
             assignment={this.state.assignment!}
             submission={this.state.submission!}
             graders={this.state.graders}
@@ -1385,8 +1187,8 @@ class CodeConsole extends React.Component<
             updateGrader={this.updateGrader}
           />,
           <FileMenu
-            key='file-menu'
-            title='Files'
+            key="file-menu"
+            title="Files"
             files={this.state.files}
             comments={this.state.comments}
             selectedFile={this.state.selectedFile}
@@ -1395,7 +1197,7 @@ class CodeConsole extends React.Component<
             canChange={this.containsUnsavedComments}
           />,
           <RubricMenu
-            key='rubric-menu'
+            key="rubric-menu"
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             handleRubricCommentClick={this.onRubricCommentClick}
@@ -1405,17 +1207,14 @@ class CodeConsole extends React.Component<
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu menu={menu} key='menu' />,
-          <SubheaderTitle
-            key='subheader-title'
-            assignment={this.state.assignment}
-          />,
+          <HeaderMenu menu={menu} key="menu" />,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
         const signupButton =
           this.props.user.id === -1 ? (
-            <CPButton key='sign-up' cpType='primary'>
-              <a href='/signup/create' target='_blank'>
+            <CPButton key="sign-up" cpType="primary">
+              <a href="/signup/create" target="_blank">
                 Sign up!
               </a>
             </CPButton>
@@ -1423,10 +1222,10 @@ class CodeConsole extends React.Component<
 
         rightHeader = [
           signupButton,
-          <ThemeToggle key='theme-toggle' small={true} />,
+          <ThemeToggle key="theme-toggle" small={true} />,
           controls,
           <FinalizeButton
-            key='subheader-finalize'
+            key="subheader-finalize"
             submission={this.state.submission!}
             canToggle={this.containsUnsavedComments}
             toggleFinalized={this.toggleFinalized}
@@ -1454,11 +1253,9 @@ class CodeConsole extends React.Component<
               file={this.state.selectedFile!}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
-              updateFeedback={this.updateFeedback.bind(
-                this,
-                this.state.selectedFile!.id,
-              )}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={false}
             />
           );
 
@@ -1476,28 +1273,22 @@ class CodeConsole extends React.Component<
         }
 
         leftHeader = [
-          <HeaderMenu menu={menu} key='menu' />,
-          <SubheaderTitle
-            key='subheader-title'
-            assignment={this.state.assignment!}
-          />,
+          <HeaderMenu menu={menu} key="menu" />,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
-        rightHeader = [
-          <ThemeToggle key='theme-toggle' small={true} />,
-          controls,
-        ];
+        rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
         sider = [
           <ReadOnlySubmissionInfo
-            key='submission-info'
-            title='Submission Info'
+            key="submission-info"
+            title="Submission Info"
             assignment={this.state.assignment}
             readOnlySubmission={this.state.readOnlySubmission!}
           />,
           <FileMenu
-            key='file-menu'
-            title='Files'
+            key="file-menu"
+            title="Files"
             files={this.state.files}
             comments={this.state.comments}
             selectedFile={this.state.selectedFile}
@@ -1508,13 +1299,10 @@ class CodeConsole extends React.Component<
         ];
       } else {
         leftHeader = [
-          <HeaderMenu menu={menu} key='menu' />,
-          <SubheaderTitle
-            key='subheader-title'
-            assignment={this.state.assignment!}
-          />,
+          <HeaderMenu menu={menu} key="menu" />,
+          <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
-            key='tag'
+            key="tag"
             assignment={this.state.assignment!}
             submission={this.state.submission!}
             fallbackWidth={layoutVars.breakpoints.smallScreen.gradeHeader}
@@ -1522,10 +1310,10 @@ class CodeConsole extends React.Component<
         ];
 
         rightHeader = [
-          <ThemeToggle key='theme-toggle' small={true} />,
+          <ThemeToggle key="theme-toggle" small={true} />,
           controls,
           <FinalizeButton
-            key='subheader-finalize'
+            key="subheader-finalize"
             submission={this.state.submission!}
             canToggle={this.containsUnsavedComments}
             toggleFinalized={this.toggleFinalized}
@@ -1563,11 +1351,9 @@ class CodeConsole extends React.Component<
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
-              updateFeedback={this.updateFeedback.bind(
-                this,
-                this.state.selectedFile!.id,
-              )}
+              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1586,8 +1372,8 @@ class CodeConsole extends React.Component<
 
         sider = [
           <SubmissionInfo
-            key='submission-info'
-            title='Submission Info'
+            key="submission-info"
+            title="Submission Info"
             assignment={this.state.assignment}
             submission={this.state.submission!}
             graders={this.state.graders}
@@ -1595,8 +1381,8 @@ class CodeConsole extends React.Component<
             updateGrader={this.updateGrader}
           />,
           <FileMenu
-            key='file-menu'
-            title='Files'
+            key="file-menu"
+            title="Files"
             files={this.state.files}
             comments={this.state.comments}
             selectedFile={this.state.selectedFile}
@@ -1605,7 +1391,7 @@ class CodeConsole extends React.Component<
             canChange={this.containsUnsavedComments}
           />,
           <RubricMenu
-            key='rubric-menu'
+            key="rubric-menu"
             rubricCategories={this.state.rubricCategories}
             rubricComments={this.state.rubricComments}
             handleRubricCommentClick={this.onRubricCommentClick}
@@ -1621,7 +1407,7 @@ class CodeConsole extends React.Component<
     };
 
     return (
-      <div id='Grade'>
+      <div id="Grade">
         <CodeConsoleOnboardingSelector
           visible={this.props.inDemoMode && !this.state.assignment}
           onUploadConfirm={this.loadDemoData}
