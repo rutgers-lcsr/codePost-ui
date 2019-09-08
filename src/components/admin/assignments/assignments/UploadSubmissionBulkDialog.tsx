@@ -417,7 +417,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       // by detecting browser and removing prefix if necessary
       const path: string = newFile.webkitRelativePath;
 
-      const folderName = path.split('/')[1].trim().toLowerCase();;
+      const folderName = path
+        .split('/')[1]
+        .trim()
+        .toLowerCase();
       const emails = folderName.split(',');
 
       if (!this.allStudentsValid(emails, students)) {
@@ -455,6 +458,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               alreadySeen[el] = true;
             });
           }
+        }
       }
     });
 
