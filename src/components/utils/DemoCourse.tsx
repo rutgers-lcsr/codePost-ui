@@ -129,6 +129,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
             extension: fileT.ext,
             name: fileT.name,
             submission: submission.id,
+            path: null,
           };
 
           return File.create(filePayload).then((fileObj) => {

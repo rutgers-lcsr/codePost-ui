@@ -20,6 +20,7 @@ import memoizeOne from 'memoize-one';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { CourseType } from '../../../../../infrastructure/course';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
@@ -33,10 +34,13 @@ import {
   StatsDrawer,
 } from './StatsUtils';
 
+import SendEmailModal from '../../../other/SendEmailModal';
+
 /**********************************************************************************************************************/
 
 export interface IProps {
   /* assignment data */
+  course: CourseType;
   assignment: AssignmentType;
   submissions: SubmissionType[];
   students: string[]; // emails
@@ -49,6 +53,9 @@ export interface IProps {
   refreshCourseData: () => void | undefined;
 
   onCancel: () => void;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -111,6 +118,17 @@ class ManageAssignments extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       this.props.refreshCourseData();
     });
+  };
+
+  public sendReminders = () => {
+    const toEmail = new Set();
+    for (const submission of this.props.submissions) {
+      if (submission.grader !== null && !submission.isFinalized) {
+        toEmail.add(submission.grader);
+      }
+    }
+
+    return Array.from(toEmail) as string[];
   };
 
   /******************************************************************************
@@ -353,8 +371,26 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 Grading Progress Summary
               </Title>
               <CPButton onClick={this.refreshData} cpType="primary" icon="redo" loading={this.state.isLoading}>
-                Refresh Data
+                Refresh data
               </CPButton>
+              {statsForRow.numInProgress > 0 ? (
+                <SendEmailModal
+                  buttonText={'Remind graders'}
+                  title="Send reminder emails"
+                  template="grader_reminder"
+                  course={this.props.course}
+                  assignment={this.props.assignment}
+                  me={this.props.myEmail}
+                  filterFunction={this.sendReminders}
+                  body={
+                    <div>
+                      Send a reminder email to graders with pending submissions for {this.props.assignment.name} asking
+                      them to complete or unclaim these submissions. Graders without pending submissions won't be
+                      emailed
+                    </div>
+                  }
+                />
+              ) : null}
             </div>
             <div className="display-flex align-items-center" style={{ ...divStyle }}>
               <Table

@@ -30,7 +30,7 @@ interface IProps {
   match: any;
   history: any;
   handleLogout: () => void;
-  replaceUser: (newUser: UserType, redirect: boolean) => void;
+  replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;
 }
 
 class Settings extends React.Component<IProps, IState> {
@@ -59,7 +59,7 @@ class Settings extends React.Component<IProps, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          this.props.replaceUser(json, false);
+          this.props.replaceUser(json, false, false);
           this.setState({ askedToReset: false, loading: false });
         });
     });
@@ -83,7 +83,7 @@ class Settings extends React.Component<IProps, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          this.props.replaceUser(json, false);
+          this.props.replaceUser(json, false, false);
           this.setState({ loading: false });
         });
     });

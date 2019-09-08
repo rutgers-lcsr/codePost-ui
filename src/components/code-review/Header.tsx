@@ -3,6 +3,8 @@
 /* React imports */
 import * as React from 'react';
 
+import { Link } from 'react-router-dom';
+
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
 const ButtonGroup = Button.Group;
@@ -98,6 +100,29 @@ const Reset = (props: IResetProps) => {
         </CPButton>
       </ButtonGroup>
     </CPTooltip>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IViewAsStudentProps {
+  pathname: string;
+}
+
+export const ViewAsStudent = (props: IViewAsStudentProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+  return (
+    <Link to={{ pathname: `${props.pathname}?student=1` }} target="_blank">
+      <CPTooltip title={tooltips.grade.header.viewAsStudent} hideThisOnHideTips={true}>
+        <ButtonGroup>
+          <CPButton id="view-as-student" cpType={cpType} small={true}>
+            <Icon type="idcard" />
+          </CPButton>
+        </ButtonGroup>
+      </CPTooltip>
+    </Link>
   );
 };
 
@@ -378,32 +403,45 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     </Descriptions>
   );
 
+  // tslint:disable
   const summary = [
-    {
-      description: <span className="cp-label">Assignment Total</span>,
-      value: <span>{props.assignment.points}</span>,
-    },
-    {
-      description: <span className="cp-label">Net Point Delta</span>,
-      value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
-    },
+    props.assignment.additiveGrading
+      ? null
+      : {
+          description: <span className="cp-label">Assignment Total</span>,
+          value: <span>{props.assignment.points}</span>,
+        },
+    props.assignment.additiveGrading
+      ? null
+      : {
+          description: <span className="cp-label">Net Point Delta</span>,
+          value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+        },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
-        <span className="cp-label cp-label--very-bold">{props.assignment.points - categoryPoints - genericPoints}</span>
+        <span className="cp-label cp-label--very-bold">
+          {(props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints} /{' '}
+          {props.assignment.points}
+        </span>
       ),
     },
   ];
+  // tslint:enable
 
   const summaryTable = (
     <Descriptions title="Summary" column={1} bordered>
-      {summary.map((item: any, index: number) => {
-        return (
-          <Descriptions.Item key={index} label={item.description}>
-            {item.value}
-          </Descriptions.Item>
-        );
-      })}
+      {summary
+        .filter((el) => {
+          return el !== null;
+        })
+        .map((item: any, index: number) => {
+          return (
+            <Descriptions.Item key={index} label={item.description}>
+              {item.value}
+            </Descriptions.Item>
+          );
+        })}
     </Descriptions>
   );
 

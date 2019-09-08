@@ -28,6 +28,10 @@ import RosterFileUpload from './other/RosterFileUpload';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
+import { sendEmailToUser } from './other/RosterUtils';
+
+import SendEmailModal from '../other/SendEmailModal';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -38,6 +42,7 @@ interface IProps {
   sections: SectionType[];
   currentCourse: CourseType;
   sectionsByStudent: { [studentEmail: string]: SectionType };
+  notActivated: string[];
 
   /* loading state */
   loadComplete: boolean;
@@ -47,6 +52,9 @@ interface IProps {
   updateSection: (section: SectionType) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
   updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -60,6 +68,10 @@ class ManageStudents extends React.Component<IProps, IState> {
       activeStudent: '',
     };
   }
+
+  public sendActivationEmail = (student: string) => {
+    sendEmailToUser(student, 'add_student', this.props.currentCourse, true, undefined);
+  };
 
   public removeStudent = (toRemove: string) => {
     confirm({
@@ -97,13 +109,39 @@ class ManageStudents extends React.Component<IProps, IState> {
     });
   };
 
+  public toInvite = () => {
+    return this.props.students.filter((student) => {
+      return this.props.notActivated.indexOf(student) > -1;
+    });
+  };
+
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
+    const hasInactives = this.props.notActivated.some((el) => {
+      return this.props.students.indexOf(el) > -1;
+    });
 
     if (this.props.students.length > 0) {
       actions = [
+        hasInactives ? (
+          <SendEmailModal
+            key="activation"
+            buttonText="Send invites"
+            title="Send activation emails to students"
+            template="add_student"
+            course={this.props.currentCourse}
+            me={this.props.myEmail}
+            filterFunction={this.toInvite}
+            body={
+              <div>
+                Send activation emails to all students who have not yet joined codePost. Users who have signed up won't
+                be emailed.
+              </div>
+            }
+          />
+        ) : null,
         <DownloadRoster
           key={0}
           downloadType={USER_TYPE.STUDENT}
@@ -166,7 +204,7 @@ class ManageStudents extends React.Component<IProps, IState> {
           },
           renderForSearch: (searchText: string) => {
             return (text: string, record: any, index: number) => {
-              const student = record.student;
+              const student = record.key;
               if (student === this.state.activeStudent) {
                 return (
                   <div>
@@ -223,10 +261,18 @@ class ManageStudents extends React.Component<IProps, IState> {
         },
       ];
 
-      data = this.props.students.map((student, i) => {
+      data = this.props.students.map((studentEmail, i) => {
+        const hasActivated = this.props.notActivated.indexOf(studentEmail) === -1;
+
         const menu = (
           <Menu>
-            <Menu.Item key="1" onClick={this.removeStudent.bind(this, student)}>
+            {hasActivated ? null : (
+              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, studentEmail)}>
+                <Icon type="mail" />
+                Send activation email
+              </Menu.Item>
+            )}
+            <Menu.Item key="1" onClick={this.removeStudent.bind(this, studentEmail)}>
               <Icon type="user-delete" />
               Unenroll
             </Menu.Item>
@@ -234,9 +280,17 @@ class ManageStudents extends React.Component<IProps, IState> {
         );
 
         return {
-          key: student,
-          student,
-          section: sections[student] ? sections[student].name : 'No section',
+          key: studentEmail,
+          student: hasActivated ? (
+            studentEmail
+          ) : (
+            <span style={{ color: '#80808082' }}>
+              <CPTooltip title="This user has not yet signed up for codePost.">
+                {studentEmail} &nbsp; <Icon type="disconnect" />
+              </CPTooltip>
+            </span>
+          ),
+          section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />

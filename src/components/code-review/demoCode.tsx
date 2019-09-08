@@ -12,6 +12,7 @@ export const demoFiles = [
     /* tslint:ensable */
     comments: [],
     submission: 1,
+    path: null,
   },
   {
     id: 1,
@@ -22,5 +23,6 @@ export const demoFiles = [
     /* tslint:ensable */
     comments: [],
     submission: 1,
+    path: null,
   },
 ];

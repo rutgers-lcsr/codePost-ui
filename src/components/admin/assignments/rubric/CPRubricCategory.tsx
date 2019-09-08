@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -29,6 +29,8 @@ import { STATUS, statusChange } from './RubricUtils';
 import { DIRECTION } from '../../../../types/common';
 
 import { IFeedbackScore } from './RubricManager';
+
+import CPPointInput from '../../../core/CPPointInput';
 
 /**********************************************************************************************************************/
 
@@ -226,7 +228,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
           newMap[rubricComment.id] = _.cloneDeep(rubricComment);
         }
       }
-      this.setState({ rubricComments: newMap });
+      this.setState({
+        rubricComments: newMap,
+        rubricCommentStatus: this.initializeRubricCommentStatus(this.props.rubricComments),
+      });
     }
   }
 
@@ -292,6 +297,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       },
       () => {
         this.updateCategoryStatus();
+        if (label === 'pointLimit') {
+          this.saveCategory();
+        }
       },
     );
   };
@@ -325,10 +333,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       };
     }
 
-    if (pointLimit !== null && (!Number.isInteger(pointLimit) || pointLimit < 0)) {
+    if (pointLimit !== null && !Number.isInteger(pointLimit)) {
       return {
         valid: false,
-        message: 'pointLimit must be a positive integer.',
+        message: 'pointLimit must be a valid integer.',
       };
     }
 
@@ -481,6 +489,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
+      if (key === 'pointDelta') {
+        this.saveComment(rubricCommentID);
+      }
     });
   };
 
@@ -507,10 +518,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           deduction: (
-            <InputNumber
-              value={thisComment.pointDelta}
+            <CPPointInput
+              value={-thisComment.pointDelta}
+              size="small"
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, thisComment.id)}
+              disabled={false}
             />
           ),
           linked: (
@@ -553,10 +565,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           deduction: (
-            <InputNumber
-              value={0}
+            <CPPointInput
+              value={-rubricComment.pointDelta}
+              size="small"
               onChange={this.updateRubricComment.bind(this, rubricComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, rubricComment.id)}
+              disabled={false}
             />
           ),
           linked: null,
@@ -644,12 +657,27 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             iconStyle={{ paddingLeft: 5 }}
           />
         </div>
-        <InputNumber
-          value={this.state.pointLimit !== null ? this.state.pointLimit : undefined}
-          onChange={this.setValue.bind(this, 'pointLimit')}
-          onBlur={this.saveCategory}
-          min={0}
-        />
+        <div className="display-flex align-items-center">
+          <CPPointInput
+            value={this.state.pointLimit !== null ? -this.state.pointLimit : undefined}
+            size="small"
+            onChange={this.setValue.bind(this, 'pointLimit')}
+            disabled={false}
+            step={1}
+          />
+          <span onBlur={this.saveCategory}>
+            <CPTooltip
+              title={`Clear this category's point limit (so any number of points can
+                be added or deducted using its rubric comments)`}
+            >
+              <Icon
+                style={{ cursor: 'pointer' }}
+                type="close-circle"
+                onClick={this.setValue.bind(this, 'pointLimit', null)}
+              />
+            </CPTooltip>
+          </span>
+        </div>
       </div>
     );
 

@@ -162,21 +162,26 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const newMap = {};
 
     for (const student of students) {
-      newMap[student] = STUDENT_STATUS.MISSING;
+      newMap[student.toLowerCase()] = STUDENT_STATUS.MISSING;
     }
 
     for (const submission of submissions) {
       for (const student of submission.students) {
-        newMap[student] = STUDENT_STATUS.EXISTING;
+        newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
       }
     }
 
     return newMap;
   };
 
+  public isEqual = (string1: string, string2: string) => {
+    // Case insensitive string compare
+    return string1.toLowerCase() === string2.toLowerCase();
+  };
+
   public isValidStudent = (student: string, students: string[]) => {
     return students.some((el) => {
-      return el === student;
+      return this.isEqual(el, student);
     });
   };
 
@@ -194,7 +199,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     for (const sub of protoSubmissions) {
       if (
         sub.students.some((el) => {
-          return el === student;
+          return this.isEqual(el, student);
         })
       ) {
         return sub;
@@ -213,12 +218,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     submissions.forEach((submission) => {
       for (const file of submission.files) {
         const anyFile: any = file;
-        const extension = anyFile.name.includes('.') ? anyFile.name.split('.').slice(-1)[0] : '';
-        if (!acceptedFilesSet.has(`.${extension}`)) {
-          const errorPaths = this.state.errorPaths;
-          const newMessage = `File type not accepted: ${anyFile.webkitRelativePath}`;
-          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
-        }
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
         studentsReader.onerror = () => {
@@ -272,9 +271,13 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
       submission.files.forEach((file: any) => {
+        const pathDirs = file.webkitRelativePath.split('/');
+        // Want to ignore first (root dir, student email) two and last element (file name) of split
+        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
         const payload = {
           name: file.name,
           data: fileMap[file.webkitRelativePath],
+          path: filePath,
         };
         files.push(payload);
       });
@@ -328,7 +331,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       if (newSubmission !== undefined && newSubmission.isCollision) {
         const match = submissions.find((submission) => {
           return submission.students.some((el) => {
-            return el === student;
+            return this.isEqual(el, student);
           });
         });
 
@@ -339,12 +342,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
           if (reMatch) {
             reMatch.students.filter((el) => {
-              return el !== student;
+              return !this.isEqual(el, student);
             });
           } else {
             const newSub = { ...match };
             newSub.students = newSub.students.filter((el) => {
-              return el !== student;
+              return !this.isEqual(el, student);
             });
             toChange.push(newSub);
           }
@@ -414,47 +417,46 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       // by detecting browser and removing prefix if necessary
       const path: string = newFile.webkitRelativePath;
 
-      if (path.split('/').length !== 3) {
-        invalidPaths.push(`Invalid folder structure: ${path}`);
+      const folderName = path
+        .split('/')[1]
+        .trim()
+        .toLowerCase();
+      const emails = folderName.split(',');
+
+      if (!this.allStudentsValid(emails, students)) {
+        invalidPaths.push(`Folder refers to invalid student: ${path}`);
+      } else if (!this.noDuplicates(emails)) {
+        invalidPaths.push(`Folder contains duplicate students: ${path}`);
       } else {
-        const folderName = path.split('/')[1].trim();
-        const emails = folderName.split(',');
+        // No need to check folders which we've already validated
+        if (!(folderName in folderMap)) {
+          // Only use valid emails
+          const validEmails = emails.filter((el) => {
+            // Email must be valid and so far unsued
+            return !alreadySeen[el];
+          });
 
-        if (!this.allStudentsValid(emails, students)) {
-          invalidPaths.push(`Folder refers to invalid student: ${path}`);
-        } else if (!this.noDuplicates(emails)) {
-          invalidPaths.push(`Folder contains duplicate students: ${path}`);
-        } else {
-          // No need to check folders which we've already validated
-          if (!(folderName in folderMap)) {
-            // Only use valid emails
-            const validEmails = emails.filter((el) => {
-              // Email must be valid and so far unsued
-              return !alreadySeen[el];
-            });
-
-            if (validEmails.length !== emails.length) {
-              // Some email in the folder name was invalid
-              invalidPaths.push(`Contains a duplicate student: ${path}`);
-            } else {
-              let noCollisions = true;
-              for (const email of emails) {
-                if (studentMap[email] === STUDENT_STATUS.EXISTING) {
-                  noCollisions = false;
-                  break;
-                }
+          if (validEmails.length !== emails.length) {
+            // Some email in the folder name was invalid
+            invalidPaths.push(`Contains a duplicate student: ${path}`);
+          } else {
+            let noCollisions = true;
+            for (const email of emails) {
+              if (studentMap[email] === STUDENT_STATUS.EXISTING) {
+                noCollisions = false;
+                break;
               }
-
-              folderMap[folderName] = {
-                files: [],
-                students: validEmails,
-                isCollision: !noCollisions,
-              };
-
-              validEmails.forEach((el) => {
-                alreadySeen[el] = true;
-              });
             }
+
+            folderMap[folderName] = {
+              files: [],
+              students: validEmails,
+              isCollision: !noCollisions,
+            };
+
+            validEmails.forEach((el) => {
+              alreadySeen[el] = true;
+            });
           }
         }
       }
@@ -463,10 +465,22 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
-      const folderName = el.webkitRelativePath.split('/')[1];
-      if (folderName in folderMap) {
-        folderMap[folderName].files.push(el);
-        numFiles = numFiles + 1;
+      const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
+      const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
+      if (!acceptedFilesSet.has(`.${extension}`)) {
+        invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
+      } else {
+        if (folderName in folderMap) {
+          folderMap[folderName].files.push(el);
+          numFiles = numFiles + 1;
+        }
+      }
+    });
+
+    // Remove protoSubmissions which have no files (because all of the files are invalid)
+    Object.keys(folderMap).forEach((key) => {
+      if (folderMap[key].files.length === 0) {
+        delete folderMap[key];
       }
     });
 
@@ -606,7 +620,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           uploaded: [] as string[],
         };
 
-        for (const student of this.props.students) {
+        const lowerCaseStudents = this.props.students.map((student) => {
+          return student.toLowerCase();
+        });
+
+        for (const student of lowerCaseStudents) {
           const sub = this.getSubforStudent(student, this.state.protoSubmissions);
           if (sub !== undefined) {
             studentLists.impacted[student] = sub;
@@ -704,7 +722,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               key: el,
               student: el,
               status,
-              partners: sub ? sub.students.filter((student) => student !== el).join(', ') : '',
+              partners: sub ? sub.students.filter((student) => !this.isEqual(student, el)).join(', ') : '',
               files: sub
                 ? sub.files
                     .map((file) => {

@@ -37,8 +37,41 @@
   }
 }
 
+// Submenu for folder directories
 #file-menu {
-  .ant-menu-item {
-    padding-left: 16px !important;
+  .sider-submenu {
+    .ant-menu-submenu-title {
+      height: 24px;
+      line-height: 24px;
+
+      padding-left: 15px;
+      font-size: 12px;
+      font-weight: 400;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      border-top: 1px solid #f4f4f4;
+    }
+
+    .ant-menu-item {
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
+
+    &--light {
+      .ant-menu-submenu-title {
+        background-color: #f9f9f9 !important;
+      }
+    }
+
+    &--dark {
+    }
+  }
+}
+
+#file-menu {
+  .sider-menu {
+    .ant-menu-item {
+      padding-left: 16px !important;
+    }
   }
 }

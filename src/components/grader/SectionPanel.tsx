@@ -208,7 +208,7 @@ class SectionPanel extends React.Component<IProps, IState> {
       if (submissions !== undefined) {
         data = Object.keys(submissions).map((student) => {
           const submission = submissions[student];
-          const shownStudent = showingEmails ? student : '--';
+          const shownStudent = showingEmails || !submission ? student : submission.id;
 
           let partners = '--';
           if (showingEmails && submission) {
