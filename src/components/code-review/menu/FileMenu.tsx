@@ -185,13 +185,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   };
 
   // Recursive function to build a Sub Menu for a folder
-  public buildFolderMenu = (folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
+  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
     const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
     const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
     return (
       <SubMenu
-        key={folder.name}
+        key={`${parentPath}'/'${folder.name}`}
         title={
           <div>
             <Icon type="folder" />
@@ -202,7 +202,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       >
         {fileItems}
         {folder.folders.map((f: IFolder) => {
-          return this.buildFolderMenu(f);
+          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
         })}
       </SubMenu>
     );
@@ -324,7 +324,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     console.log(fileStructure);
     const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
     const folders = fileStructure.folders.map((f: IFolder) => {
-      return this.buildFolderMenu(f);
+      return this.buildFolderMenu('', f);
     });
 
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
