@@ -1306,6 +1306,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               updateSubmission={this.updateSubmission}
               viewsBySubmission={this.state.viewsBySubmission}
               refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
+              myEmail={this.props.user.email}
               user={this.props.user}
             />
           );
@@ -1325,6 +1326,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               updateSection={this.updateSection}
               createSection={this.createSection}
               updateStudentSection={this.updateStudentSection}
+              myEmail={this.props.user.email}
             />
           );
           break;
@@ -1343,6 +1345,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               sectionsByStudent={this.state.sectionsByStudent}
               updateSection={this.updateSection}
               createSection={this.createSection}
+              myEmail={this.props.user.email}
             />
           );
           break;
@@ -1360,7 +1363,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               sectionsByStudent={this.state.sectionsByStudent}
               updateSection={this.updateSection}
               createSection={this.createSection}
-              me={this.props.user.email}
+              myEmail={this.props.user.email}
             />
           );
           break;

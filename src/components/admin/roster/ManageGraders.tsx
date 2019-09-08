@@ -49,6 +49,9 @@ interface IProps {
   updateSection: (section: SectionType) => Promise<void>;
   updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -134,7 +137,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             title="Send activation emails to graders"
             template="add_graders"
             course={this.props.currentCourse}
-            me={'james@codepost.io'}
+            me={this.props.myEmail}
             filterFunction={this.toInvite}
             body={
               <div>
