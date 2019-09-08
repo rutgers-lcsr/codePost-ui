@@ -181,7 +181,7 @@ class ManageStudents extends React.Component<IProps, IState> {
       columns = [
         {
           title: 'Student',
-          dataIndex: 'student',
+          dataIndex: 'studentFormatted',
           key: 'primary',
           sorter: (a: any, b: any) => a.key.localeCompare(b.key),
         },
@@ -281,7 +281,7 @@ class ManageStudents extends React.Component<IProps, IState> {
 
         return {
           key: studentEmail,
-          student: hasActivated ? (
+          studentFormatted: hasActivated ? (
             studentEmail
           ) : (
             <span style={{ color: '#80808082' }}>
@@ -290,6 +290,7 @@ class ManageStudents extends React.Component<IProps, IState> {
               </CPTooltip>
             </span>
           ),
+          student: studentEmail,
           section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
