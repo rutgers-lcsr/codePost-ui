@@ -107,7 +107,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       );
     } else {
       // case: submission has not been viewed
-      return <Icon type="eye" />;
+      return <Icon type="eye-invisible" />;
     }
   };
 
