@@ -14,8 +14,6 @@ const { Paragraph } = Typography;
 const ButtonGroup = Button.Group;
 const { Search } = Input;
 
-const InputGroup = Input.Group;
-
 import useAWSLambda from '../../../../components/core/useAWSLambda';
 
 import CPFlex from '../../../../components/core/CPFlex';
@@ -41,7 +39,7 @@ export interface IMossProps {
 /**********************************************************************************************************************/
 
 export const MOSS_LANGUAGES = [
-  "don't specify a programming language",
+  'no specified programming language',
   'c',
   'cc',
   'java',
@@ -74,6 +72,7 @@ const Moss = (props: IMossProps) => {
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState(null);
   const [language, setLanguage] = React.useState('');
+  const [mossID, setMossID] = React.useState('');
 
   // const mockResults = [
   //   {
@@ -139,6 +138,10 @@ const Moss = (props: IMossProps) => {
     setLanguage(value);
   };
 
+  const onMossIDChange = (e: any) => {
+    setMossID(e.currentTarget.value);
+  };
+
   const languageSelectData = MOSS_LANGUAGES.map((lang: string) => {
     return (
       <Option key={lang} value={lang}>
@@ -181,8 +184,9 @@ const Moss = (props: IMossProps) => {
       assignment_id: 512,
       api_key:
         // tslint:disable-next-line:max-line-length
-        'JWT <YOUR JWt>',
+        'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InJpY2hhcmRAY29kZXBvc3QuaW8iLCJleHAiOjE1NjgwODc4ODksImVtYWlsIjoicmljaGFyZEBjb2RlcG9zdC5pbyIsIm9yaWdfaWF0IjoxNTY3OTE1MDg5fQ.VStHDKTCJ2SjiHkGp-KxRTdR5Dr0bWU5rK49ka_vVWE',
       language,
+      moss_id: mossID,
     };
 
     const res: any = await useAWSLambda({
@@ -192,6 +196,8 @@ const Moss = (props: IMossProps) => {
       payload,
     });
 
+    // console.log('res', res);
+
     if (res.hasOwnProperty('FunctionError')) {
       return Promise.reject(await res['FunctionError']);
     } else {
@@ -200,17 +206,21 @@ const Moss = (props: IMossProps) => {
   };
 
   const onSubmit = async () => {
-    setLoading(true);
-    try {
-      const data = await checkMoss();
-      setUrl(data);
-      const mossResults = await processMoss(data);
-      setResults(mossResults);
-    } catch (err) {
-      message.error(JSON.stringify(err));
-    }
+    if (mossID === '') {
+      message.warning('Moss ID cannot be blank. You can get yours at moss.stanford.edu');
+    } else {
+      setLoading(true);
+      try {
+        const data = await checkMoss();
+        setUrl(data);
+        const mossResults = await processMoss(data);
+        setResults(mossResults);
+      } catch (err) {
+        message.error(JSON.stringify(err));
+      }
 
-    setLoading(false);
+      setLoading(false);
+    }
   };
 
   const onParse = async (value: string) => {
@@ -245,19 +255,24 @@ const Moss = (props: IMossProps) => {
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '80px 100px 40px 100px' }}>
-      <InputGroup compact>
+      <div style={{ padding: '10px 0px' }}>
+        <Input placeholder="Moss ID Number" value={mossID} onChange={onMossIDChange} style={{ width: '100%' }} />
+      </div>
+      <div style={{ padding: '10px 0px' }}>
         <Select
           placeholder="Programming Language (Moss supported)"
           disabled={loading}
           onChange={onLanguageChange}
-          style={{ width: '80%' }}
+          style={{ width: '100%' }}
         >
           {languageSelectData}
         </Select>
+      </div>
+      <div style={{ padding: '10px 0px', textAlign: 'center' }}>
         <Button type="primary" disabled={loading} onClick={onSubmit}>
           Go
         </Button>
-      </InputGroup>
+      </div>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
           <ProgressBar time={100000} />
