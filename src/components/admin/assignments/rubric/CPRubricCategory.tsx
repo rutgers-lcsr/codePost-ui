@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
 const { TextArea } = Input;
 
 /* other library imports */
@@ -297,6 +297,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
       },
       () => {
         this.updateCategoryStatus();
+        if (label === 'pointLimit') {
+          this.saveCategory();
+        }
       },
     );
   };
@@ -486,6 +489,9 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
 
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
+      if (key === 'pointDelta') {
+        this.saveComment(rubricCommentID);
+      }
     });
   };
 
@@ -517,7 +523,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               size="small"
               onChange={this.updateRubricComment.bind(this, thisComment.id, 'pointDelta')}
               disabled={false}
-              onMouseLeave={this.saveComment.bind(this, thisComment.id)}
             />
           ),
           linked: (
@@ -560,10 +565,11 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             />
           ),
           deduction: (
-            <InputNumber
-              value={0}
+            <CPPointInput
+              value={-rubricComment.pointDelta}
+              size="small"
               onChange={this.updateRubricComment.bind(this, rubricComment.id, 'pointDelta')}
-              onBlur={this.saveComment.bind(this, rubricComment.id)}
+              disabled={false}
             />
           ),
           linked: null,
@@ -657,8 +663,6 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
             size="small"
             onChange={this.setValue.bind(this, 'pointLimit')}
             disabled={false}
-            onBlur={this.saveCategory}
-            onMouseLeave={this.saveCategory}
             step={1}
           />
           <span onBlur={this.saveCategory}>
