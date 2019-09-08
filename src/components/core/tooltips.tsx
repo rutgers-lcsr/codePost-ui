@@ -47,6 +47,8 @@ const GRADE_HEADER_ALIGNMENT = (
     [⌘ click highlights]
   </div>
 );
+
+const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
 const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Mark this submission as Done to edit its grader.';
 
@@ -176,6 +178,7 @@ export const tooltips = {
       grow: GRADE_HEADER_GROW,
       shrink: GRADE_HEADER_SHRINK,
       alignment: GRADE_HEADER_ALIGNMENT,
+      viewAsStudent: GRADE_HEADER_VIEW_AS_STUDENT,
     },
     subInfo: {
       assignGrader: GRADE_SUBINFO_ASSIGNGRADER,

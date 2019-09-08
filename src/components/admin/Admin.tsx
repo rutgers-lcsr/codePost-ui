@@ -1164,6 +1164,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           code: file.data,
           submission: submission.id,
           comments: [],
+          path: file.path ? file.path : null,
         };
         return File.create(filePayload);
       });
@@ -1192,6 +1193,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
+    // console.log('admin', this.props.user);
     /* build header */
     const menu = (
       <Menu onClick={this.handleMenuClick}>
@@ -1305,6 +1307,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               viewsBySubmission={this.state.viewsBySubmission}
               refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
               myEmail={this.props.user.email}
+              user={this.props.user}
             />
           );
           break;
