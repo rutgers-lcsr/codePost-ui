@@ -15,6 +15,7 @@ import { AssignmentType } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 
 import CPButton from '../../core/CPButton';
+import CPTooltip from '../../core/CPTooltip';
 
 /**********************************************************************************************************************/
 
@@ -115,9 +116,12 @@ class SendEmailModal extends React.Component<IProps, IState> {
           {this.props.body}
           <br />
           <div>
-            To see what this email will look like, send yourself a test email.
             <CPButton onClick={this.sendTestEmail} cpType="secondary">
-              Send myself a test email
+              Send myself a test email &nbsp;
+              <CPTooltip
+                title="This will send you an email example of what the recipients will receive."
+                infoIcon={true}
+              />
             </CPButton>
           </div>
         </Modal>
