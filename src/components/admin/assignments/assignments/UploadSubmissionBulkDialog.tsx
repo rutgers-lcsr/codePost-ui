@@ -162,21 +162,26 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const newMap = {};
 
     for (const student of students) {
-      newMap[student] = STUDENT_STATUS.MISSING;
+      newMap[student.toLowerCase()] = STUDENT_STATUS.MISSING;
     }
 
     for (const submission of submissions) {
       for (const student of submission.students) {
-        newMap[student] = STUDENT_STATUS.EXISTING;
+        newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
       }
     }
 
     return newMap;
   };
 
+  public isEqual = (string1: string, string2: string) => {
+    // Case insensitive string compare
+    return string1.toLowerCase() === string2.toLowerCase();
+  };
+
   public isValidStudent = (student: string, students: string[]) => {
     return students.some((el) => {
-      return el === student;
+      return this.isEqual(el, student);
     });
   };
 
@@ -194,7 +199,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     for (const sub of protoSubmissions) {
       if (
         sub.students.some((el) => {
-          return el === student;
+          return this.isEqual(el, student);
         })
       ) {
         return sub;
@@ -322,7 +327,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       if (newSubmission !== undefined && newSubmission.isCollision) {
         const match = submissions.find((submission) => {
           return submission.students.some((el) => {
-            return el === student;
+            return this.isEqual(el, student);
           });
         });
 
@@ -333,12 +338,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
           if (reMatch) {
             reMatch.students.filter((el) => {
-              return el !== student;
+              return !this.isEqual(el, student);
             });
           } else {
             const newSub = { ...match };
             newSub.students = newSub.students.filter((el) => {
-              return el !== student;
+              return !this.isEqual(el, student);
             });
             toChange.push(newSub);
           }
@@ -411,7 +416,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       if (path.split('/').length !== 3) {
         invalidPaths.push(`Invalid folder structure: ${path}`);
       } else {
-        const folderName = path.split('/')[1].trim();
+        const folderName = path
+          .split('/')[1]
+          .trim()
+          .toLowerCase();
         const emails = folderName.split(',');
 
         if (!this.allStudentsValid(emails, students)) {
@@ -457,7 +465,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
-      const folderName = el.webkitRelativePath.split('/')[1];
+      const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
       const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
       if (!acceptedFilesSet.has(`.${extension}`)) {
         invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
@@ -612,7 +620,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           uploaded: [] as string[],
         };
 
-        for (const student of this.props.students) {
+        const lowerCaseStudents = this.props.students.map((student) => {
+          return student.toLowerCase();
+        });
+
+        for (const student of lowerCaseStudents) {
           const sub = this.getSubforStudent(student, this.state.protoSubmissions);
           if (sub !== undefined) {
             studentLists.impacted[student] = sub;
@@ -710,7 +722,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               key: el,
               student: el,
               status,
-              partners: sub ? sub.students.filter((student) => student !== el).join(', ') : '',
+              partners: sub ? sub.students.filter((student) => !this.isEqual(student, el)).join(', ') : '',
               files: sub
                 ? sub.files
                     .map((file) => {
