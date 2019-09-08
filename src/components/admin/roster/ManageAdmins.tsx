@@ -51,7 +51,7 @@ interface IProps {
   createSection: (sectionName: string) => Promise<SectionType>;
 
   /* misc */
-  me: string;
+  myEmail: string;
 }
 
 interface IState {
@@ -107,7 +107,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
             title="Send activation emails to admins"
             template="add_admins"
             course={this.props.currentCourse}
-            me={'james@codepost.io'}
+            me={this.props.myEmail}
             filterFunction={this.toInvite}
             body={
               <div>
@@ -170,7 +170,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
       data = this.props.admins.map((adminEmail) => {
         const hasActivated = this.props.notActivated.indexOf(adminEmail) === -1;
         const menu =
-          adminEmail === this.props.me ? (
+          adminEmail === this.props.myEmail ? (
             <Menu>
               <Menu.Item key="1" disabled={true}>
                 <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
