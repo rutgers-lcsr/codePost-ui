@@ -571,6 +571,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           case DETAIL_TYPE.Moss:
             return (
               <Moss
+                course={this.props.currentCourse!}
                 assignment={this.state.activeAssignment!}
                 user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
