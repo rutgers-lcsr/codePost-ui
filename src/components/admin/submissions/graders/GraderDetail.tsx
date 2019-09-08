@@ -122,7 +122,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type="eye" />
+              <Icon type="eye-invisible" />
             </div>
           </CPTooltip>
         );
