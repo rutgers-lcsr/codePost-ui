@@ -38,8 +38,12 @@ import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
-import Moss from './assignments/Moss';
+import AssignmentRegrades from './assignments/AssignmentRegrades';
 
+import { UserType } from '../../../infrastructure/user';
+
+import Moss from './assignments/Moss';
+        
 import {
   calculateMultipleAssignmentProgressStats,
   DRAWER_TYPE,
@@ -84,6 +88,7 @@ export interface IManageAssignmentsProps {
 
   /* misc */
   myEmail: string;
+  
   /* user data */
   user: UserType;
 }
@@ -97,6 +102,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
+  Regrades,
   Moss,
 }
 
@@ -404,6 +410,14 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
+              {assignment.allowRegradeRequests ? (
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
+                  <Icon type="message" />
+                  View Regrades
+                </Menu.Item>
+              ) : (
+                <div />
+              )}
               <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
                 <Icon type="diff" />
                 Check MOSS
@@ -622,6 +636,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 assignment={this.state.activeAssignment!}
                 user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Regrades:
+            return (
+              <AssignmentRegrades
+                assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                user={this.props.user}
+                updateSubmission={this.props.updateSubmission}
               />
             );
             break;

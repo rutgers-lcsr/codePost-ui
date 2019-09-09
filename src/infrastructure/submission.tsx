@@ -43,6 +43,13 @@ export const SubmissionV = t.intersection(
       dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
@@ -59,6 +66,13 @@ export const StudentSubmissionV = t.intersection(
     t.partial({
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
       dateUploaded: t.string,
     }),
   ],
@@ -90,6 +104,11 @@ const SubmissionVPatch = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
     }),
   ],
   'SubmissionPatch',
@@ -106,6 +125,13 @@ export const AnonymousSubmissionV = t.intersection(
       dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
     }),
     t.partial({
       students: t.array(t.string),
@@ -147,6 +173,19 @@ export class Submission {
     SubmissionHistoryVPatch,
     'submissions',
     'history',
+  );
+
+  public static updateQuestion = updateObjectDetail(
+    StudentSubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'submitRegrade',
+  );
+  public static deleteQuestion = updateObjectDetail(
+    StudentSubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'deleteRegrade',
   );
 
   // FIXME, duplicate

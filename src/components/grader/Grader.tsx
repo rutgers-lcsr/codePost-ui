@@ -37,6 +37,8 @@ import { UserType } from '../../infrastructure/user';
 
 import GraderNav from './GraderNav';
 
+import RegradesPanel from './RegradesPanel';
+
 import RoleMenu from '../core/RoleMenu';
 
 /**********************************************************************************************************************/
@@ -45,14 +47,16 @@ export enum PANELS {
   MY_SUBMISSIONS,
   MY_SECTIONS,
   VIEW_ALL,
+  REGRADES,
 }
 
-const panelStrings = ['my_submissions', 'my_sections', 'view_all'];
+const panelStrings = ['my_submissions', 'my_sections', 'view_all', 'regrades'];
 
 const panels: any = {
   [PANELS.MY_SUBMISSIONS]: panelStrings[PANELS.MY_SUBMISSIONS],
   [PANELS.MY_SECTIONS]: panelStrings[PANELS.MY_SECTIONS],
   [PANELS.VIEW_ALL]: panelStrings[PANELS.VIEW_ALL],
+  [PANELS.REGRADES]: panelStrings[PANELS.REGRADES],
 };
 
 interface IGraderState {
@@ -367,6 +371,27 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
   };
 
+  public getRegradesComponent = () => {
+    if (
+      !this.state.currentCourse ||
+      !this.state.currentAssignment ||
+      !this.state.currentAssignment.allowRegradeRequests
+    ) {
+      return null;
+    }
+    return (
+      <RegradesPanel
+        assignment={this.state.currentAssignment}
+        isAnonymous={this.state.currentAssignment.anonymousGrading}
+        user={this.props.user}
+        isAdmin={this.props.user.courseadminCourses.some((el) => {
+          return el.id === this.state.currentCourse!.id;
+        })}
+        isSuperGrader={this.state.isSuperGrader}
+      />
+    );
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -409,6 +434,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         case PANELS.VIEW_ALL:
           graderPanelContent = this.getViewAllComponent();
           break;
+        case PANELS.REGRADES:
+          graderPanelContent = this.getRegradesComponent();
       }
     }
 
@@ -496,6 +523,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         onClick={this.handleTabClick}
         isSuperGrader={this.state.isSuperGrader}
         isSectionLeader={this.state.sectionsLed.length > 0}
+        regradesAllowed={
+          this.state.currentAssignment !== undefined && this.state.currentAssignment.allowRegradeRequests
+        }
       />
     );
 

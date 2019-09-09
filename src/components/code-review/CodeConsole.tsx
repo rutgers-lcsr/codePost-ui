@@ -581,6 +581,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Helper functions
   /**********************************************************************************/
 
+  public submitStudentQuestion = async (submission: StudentSubmissionType, text: string, isRegrade: boolean) => {
+    const payload = {
+      id: submission.id,
+      questionText: text,
+      questionIsRegrade: isRegrade,
+    };
+
+    const newSubmission = await Submission.updateQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
+  };
+
+  public deleteStudentQuestion = async (submission: StudentSubmissionType) => {
+    const payload = {
+      id: submission.id,
+    };
+
+    const newSubmission = await Submission.deleteQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -866,6 +890,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       course: -1,
       sortKey: 0,
       anonymousGrading: false,
+      allowRegradeRequests: false,
+      regradeDeadline: '',
       hideGradersFromStudents: false,
       mean: null,
       median: null,
@@ -901,6 +927,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       dateUploaded: '',
       grade: null,
       grader: this.props.user.email,
+      questionText: '',
+      questionIsOpen: false,
+      questionResponder: 'grader0@example.edu',
+      questionResponse: '',
+      questionIsRegrade: false,
+      questionDate: '',
+      responseDate: '',
     };
 
     const fileList: FileType[] = [];
@@ -1303,6 +1336,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             title="Submission Info"
             assignment={this.state.assignment}
             readOnlySubmission={this.state.readOnlySubmission!}
+            submitStudentQuestion={this.submitStudentQuestion}
+            deleteStudentQuestion={this.deleteStudentQuestion}
           />,
           <FileMenu
             key="file-menu"
@@ -1315,6 +1350,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             canChange={this.containsUnsavedComments}
           />,
         ];
+
+        siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
           <HeaderMenu menu={menu} key="menu" />,

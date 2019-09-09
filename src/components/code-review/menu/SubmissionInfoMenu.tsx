@@ -3,13 +3,16 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, message, Modal, Select, Tag } from 'antd';
+import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
+const { TextArea } = Input;
+const { Text } = Typography;
+const { confirm } = Modal;
 
 /* other library imports */
-import moment from 'moment';
+import * as moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -17,8 +20,11 @@ import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrast
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
+
+import { formatDate } from '../../utils/DateUtils';
 
 /**********************************************************************************************************************/
 
@@ -27,6 +33,12 @@ interface ISubmissionReadProps {
   assignment: AssignmentType;
   submission?: AnonymousSubmissionType;
   readOnlySubmission?: StudentSubmissionType;
+  submitStudentQuestion?: (
+    submission: StudentSubmissionType,
+    text: string,
+    isRegrade: boolean,
+  ) => Promise<StudentSubmissionType>;
+  deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -38,29 +50,13 @@ interface ISubmissionInfoWriteProps {
   ) => Promise<AnonymousSubmissionType>;
 }
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   let lastEdited;
   if (props.submission !== undefined) {
     if (props.submission.dateEdited) {
-      const dateObj = new Date(props.submission.dateEdited);
-      const today = new Date();
-      if (dateObj.getFullYear() === today.getFullYear()) {
-        if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
-          if (today.getTime() - dateObj.getTime() < 30000) {
-            lastEdited = 'Last edited moments ago';
-          } else {
-            lastEdited = `Last edit at ${moment(dateObj).format('h:mm a')}`;
-          }
-        } else {
-          lastEdited = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
-        }
-      } else {
-        lastEdited = `Last edit in ${dateObj.getFullYear()}`;
-      }
+      lastEdited = formatDate(props.submission.dateEdited);
     }
   }
 
@@ -88,6 +84,18 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             />
           </div>
         ) : null}
+        {props.readOnlySubmission !== undefined &&
+        props.submitStudentQuestion &&
+        props.assignment.allowRegradeRequests ? (
+          <StudentRegrade
+            submission={props.readOnlySubmission}
+            assignment={props.assignment}
+            submitStudentQuestion={props.submitStudentQuestion}
+            deleteStudentQuestion={props.deleteStudentQuestion}
+          />
+        ) : (
+          <div />
+        )}
       </div>
     </div>
   );
@@ -299,6 +307,231 @@ export const Students = (props: {
         </div>
       );
     }
+  }
+};
+
+/******************************* Student Question and Regrade option *******************************************/
+
+interface IStudentRegradeProps {
+  submission: StudentSubmissionType;
+  assignment: AssignmentType;
+  submitStudentQuestion?: (
+    submission: StudentSubmissionType,
+    text: string,
+    isRegrade: boolean,
+  ) => Promise<StudentSubmissionType>;
+  deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
+}
+
+enum QUESTION_STATUS {
+  NOT_SUBMITTED,
+  UNCLAIMED,
+  CLAIMED,
+  RESPONDED,
+}
+
+const StudentRegrade = (props: IStudentRegradeProps) => {
+  // *********************** STATE VARIABLES *************************
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
+  const [questionIsRegrade, setQuestionIsRegrade] = useState(true);
+  const [isLoading, setLoading] = useState(false);
+
+  // *********************** STATE CHANGE FUNCTIONS *************************
+  const changeQuestionText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setQuestionText(event.target.value);
+  };
+
+  const submitQuestion = () => {
+    if (props.submitStudentQuestion) {
+      setLoading(true);
+      props.submitStudentQuestion(props.submission, questionText, questionIsRegrade).then(() => {
+        setModalVisible(false);
+        setLoading(false);
+        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Submitted!`);
+      });
+    }
+  };
+
+  const deleteQuestion = () => {
+    if (props.deleteStudentQuestion) {
+      setLoading(true);
+      props.deleteStudentQuestion(props.submission).then(() => {
+        setModalVisible(false);
+        setLoading(false);
+        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Deleted.`);
+      });
+    }
+  };
+
+  const confirmDelete = () => {
+    confirm({
+      title: 'Are you sure you want to delete this request?',
+      onOk() {
+        deleteQuestion();
+      },
+      onCancel() {
+        return;
+      },
+    });
+  };
+
+  const toggleModalVisible = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const toggleIsRegrade = () => {
+    setQuestionIsRegrade(!questionIsRegrade);
+  };
+
+  // *********************** RENDER *************************
+  const regradeStatus = !props.submission.questionText
+    ? QUESTION_STATUS.NOT_SUBMITTED
+    : props.submission.questionResponse
+    ? QUESTION_STATUS.RESPONDED
+    : props.submission.questionResponder
+    ? QUESTION_STATUS.CLAIMED
+    : QUESTION_STATUS.UNCLAIMED;
+
+  const buttonStyle = { textAlign: 'center' as 'center', paddingTop: 15 };
+  const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
+
+  const deadline = props.assignment.regradeDeadline
+    ? `Deadline: ${moment(props.assignment.regradeDeadline).format('llll')}`
+    : '';
+
+  const cancelButton = (
+    <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
+      Cancel
+    </CPButton>
+  );
+  const submitButton = (
+    <CPButton key="submit" cpType="primary" loading={isLoading} onClick={submitQuestion}>
+      Submit
+    </CPButton>
+  );
+  const deleteButton = (
+    <CPButton key="delete" cpType="danger" loading={isLoading} onClick={confirmDelete}>
+      Delete
+    </CPButton>
+  );
+
+  switch (regradeStatus) {
+    case QUESTION_STATUS.NOT_SUBMITTED:
+      // Case 0: Student has not submitted a question or regrade request
+      if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {
+        // Case 1: No regraded summited and deadline has passed
+        return (
+          <div style={buttonStyle}>
+            <CPTooltip title={`Deadline for submitting a regrade has passed. ${deadline}`}>
+              <CPButton cpType="secondary" icon="message" disabled={true}>
+                Submit a regrade request
+              </CPButton>
+            </CPTooltip>
+          </div>
+        );
+      }
+      return (
+        <div>
+          <div style={buttonStyle}>
+            <CPButton cpType="secondary" icon="message" onClick={toggleModalVisible}>
+              Submit a regrade request
+            </CPButton>
+          </div>
+          <Modal
+            onCancel={toggleModalVisible}
+            visible={isModalVisible}
+            title="Submit a question or regrade request"
+            footer={[cancelButton, submitButton]}
+          >
+            <Text type="warning" style={{ marginBottom: 15 }}>
+              {deadline}
+            </Text>
+            <TextArea autosize value={questionText} onChange={changeQuestionText} />
+            {props.assignment.allowRegradeRequests ? (
+              <div style={{ paddingTop: 15, ...regradeTextStyle }}>
+                Ask for a regrade: <Switch disabled={false} checked={questionIsRegrade} onChange={toggleIsRegrade} />
+              </div>
+            ) : (
+              <div />
+            )}
+          </Modal>
+        </div>
+      );
+    case QUESTION_STATUS.CLAIMED:
+    case QUESTION_STATUS.UNCLAIMED:
+      // Case 2: Student has submitted. No response yet.
+      return (
+        <div>
+          <div style={buttonStyle}>
+            <CPButton cpType="secondary" icon="history" onClick={toggleModalVisible}>
+              View submitted request
+            </CPButton>
+          </div>
+          <Modal
+            onCancel={toggleModalVisible}
+            visible={isModalVisible}
+            title="The review of your request is in progress..."
+            footer={QUESTION_STATUS.UNCLAIMED ? [deleteButton, cancelButton] : [cancelButton]}
+          >
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.students}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                </span>
+                <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
+                  {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
+                </span>
+              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</span>
+            </div>
+          </Modal>
+        </div>
+      );
+    case QUESTION_STATUS.RESPONDED:
+      // Case 3: Student has submitted and there is a response.
+      return (
+        <div>
+          <div style={buttonStyle}>
+            <CPButton cpType="primary" icon="mail" onClick={toggleModalVisible}>
+              View Response
+            </CPButton>
+          </div>
+          <Modal
+            onCancel={toggleModalVisible}
+            visible={isModalVisible}
+            title="View Question Response"
+            footer={[cancelButton]}
+          >
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.students}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                </span>
+                <span style={{ color: '#25be85', fontWeight: 400, float: 'right' }}>
+                  {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
+                </span>
+              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionText}</span>
+            </div>
+            <Divider />
+            <div className="display-flex flex-direction-column">
+              <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
+                {props.submission.questionResponder}
+                &nbsp; &nbsp;
+                <span style={{ fontSize: 12, color: '#ccc' }}>
+                  {props.submission.responseDate ? formatDate(props.submission.responseDate) : ''}
+                </span>
+              </div>
+              <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</span>
+            </div>
+          </Modal>
+        </div>
+      );
   }
 };
 
