@@ -12,7 +12,7 @@ import { UserType } from '../../../../infrastructure/user';
 
 import RegradesTable from './AssignmentRegrades/RegradesTable';
 
-interface IStudentQuestionsProps {
+interface IAssignmentRegradesProps {
   /* assignment data */
   assignment: AssignmentType;
   submissions: SubmissionType[];
@@ -23,7 +23,7 @@ interface IStudentQuestionsProps {
   user: UserType;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 }
-const AssignmentRegrades = (props: IStudentQuestionsProps) => {
+const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
   // *********************** STATE VARIABLES *************************
 
   return (

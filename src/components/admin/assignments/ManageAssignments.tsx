@@ -92,7 +92,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
-  Questions,
+  Regrades,
 }
 
 interface IManageAssignmentsState {
@@ -389,9 +389,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 View Stats
               </Menu.Item>
               {assignment.allowRegradeRequests ? (
-                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Questions, assignment)}>
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
                   <Icon type="message" />
-                  View Questions & Regrades
+                  View Regrades
                 </Menu.Item>
               ) : (
                 <div />
@@ -573,7 +573,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
             );
             break;
-          case DETAIL_TYPE.Questions:
+          case DETAIL_TYPE.Regrades:
             return (
               <AssignmentRegrades
                 assignment={this.state.activeAssignment!}

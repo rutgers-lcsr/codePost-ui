@@ -329,7 +329,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   // *********************** STATE VARIABLES *************************
   const [isModalVisible, setModalVisible] = useState(false);
   const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
-  const [questionIsRegrade, setQuestionIsRegrade] = useState(false);
+  const [questionIsRegrade, setQuestionIsRegrade] = useState(true);
   const [isLoading, setLoading] = useState(false);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
@@ -357,7 +357,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   };
 
   // *********************** RENDER *************************
-  const questionStatus = !props.submission.questionText
+  const regradeStatus = !props.submission.questionText
     ? QUESTION_STATUS.NOT_SUBMITTED
     : props.submission.questionResponse
     ? QUESTION_STATUS.RESPONDED
@@ -370,7 +370,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     ? `Deadline: ${moment(props.assignment.regradeDeadline).format('llll')}`
     : '';
 
-  switch (questionStatus) {
+  switch (regradeStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED:
       // Case 0: Student has not submitted a question or regrade request
       if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {

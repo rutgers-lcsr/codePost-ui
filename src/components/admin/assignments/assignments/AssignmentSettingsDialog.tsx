@@ -245,7 +245,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
-              label="Allow Student Questions and Regrades"
+              label="Allow Regrade Requests"
               extra=" When enabled, students can submit a question on their graded submission and request a regrade."
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 15 }}

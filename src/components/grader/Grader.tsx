@@ -47,16 +47,16 @@ export enum PANELS {
   MY_SUBMISSIONS,
   MY_SECTIONS,
   VIEW_ALL,
-  QUESTIONS_AND_REGRADES,
+  REGRADES,
 }
 
-const panelStrings = ['my_submissions', 'my_sections', 'view_all', 'questions'];
+const panelStrings = ['my_submissions', 'my_sections', 'view_all', 'regrades'];
 
 const panels = {
   [PANELS.MY_SUBMISSIONS]: panelStrings[PANELS.MY_SUBMISSIONS],
   [PANELS.MY_SECTIONS]: panelStrings[PANELS.MY_SECTIONS],
   [PANELS.VIEW_ALL]: panelStrings[PANELS.VIEW_ALL],
-  [PANELS.QUESTIONS_AND_REGRADES]: panelStrings[PANELS.QUESTIONS_AND_REGRADES],
+  [PANELS.REGRADES]: panelStrings[PANELS.REGRADES],
 };
 
 interface IGraderState {
@@ -302,7 +302,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     );
   };
 
-  public getStudentQuestionsComponent = () => {
+  public getRegradesComponent = () => {
     if (
       !this.state.currentCourse ||
       !this.state.currentAssignment ||
@@ -365,8 +365,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         case PANELS.VIEW_ALL:
           graderPanelContent = this.getViewAllComponent();
           break;
-        case PANELS.QUESTIONS_AND_REGRADES:
-          graderPanelContent = this.getStudentQuestionsComponent();
+        case PANELS.REGRADES:
+          graderPanelContent = this.getRegradesComponent();
       }
     }
 
@@ -431,7 +431,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         onClick={this.handleTabClick}
         isSuperGrader={this.state.isSuperGrader}
         isSectionLeader={this.state.sectionsLed.length > 0}
-        questionsAllowed={
+        regradesAllowed={
           this.state.currentAssignment !== undefined && this.state.currentAssignment.allowRegradeRequests
         }
       />

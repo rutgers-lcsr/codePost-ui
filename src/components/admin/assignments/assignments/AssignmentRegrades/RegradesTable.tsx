@@ -17,7 +17,7 @@ import { openSubmission } from '../../../other/AdminUtils';
 
 import { formatDate } from '../../../../utils/DateUtils';
 
-interface IStudentQuestionsProps {
+interface IRegradesTableProps {
   /* assignment data */
   assignment: AssignmentType;
   submissions: SubmissionType[] | AnonymousSubmissionType[];
@@ -40,7 +40,7 @@ enum RESPONSE_STATUS {
   EDIT_ALLOWED_NEW_RESPONSE,
 }
 
-const RegradesTable = (props: IStudentQuestionsProps) => {
+const RegradesTable = (props: IRegradesTableProps) => {
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);

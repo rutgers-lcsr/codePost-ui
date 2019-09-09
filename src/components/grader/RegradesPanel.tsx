@@ -150,7 +150,7 @@ const RegradesPanel = (props: IProps) => {
   return (
     <CPAdminDetail
       goBack={null}
-      title={<div>{`Student questions: ${props.assignment.name}`}</div>}
+      title={<div>{`Regrade Requests: ${props.assignment.name}`}</div>}
       titleInfo={'Quesitons or regrade requests from submissions that you have graded.'}
       actions={actions}
       content={content}
