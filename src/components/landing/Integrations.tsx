@@ -266,7 +266,7 @@ const IntegrationCard = (props: IIntegrationCardProps) => {
           <tbody>
             <tr>
               <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={props.onClick}>
-                <img src={props.integration.logo} style={{ width: '55px' }} />
+                <img src={props.integration.logo} style={{ width: '55px' }} alt="" />
               </td>
             </tr>
             <tr style={{ height: '30px' }}>
@@ -313,7 +313,7 @@ export const IntegrationButton = (props: IIntegrationButtonProps) => {
           <tbody>
             <tr>
               <td style={{ verticalAlign: 'middle', textAlign: 'center' }} onClick={onClick}>
-                <img src={props.integration.logo} style={{ width: '45px' }} />
+                <img src={props.integration.logo} style={{ width: '45px' }} alt="" />
               </td>
             </tr>
           </tbody>
