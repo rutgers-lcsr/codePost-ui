@@ -1,11 +1,5 @@
 import * as t from 'io-ts';
-import {
-  createObject,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-} from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 import LangMap from 'lang-map';
 
@@ -18,6 +12,7 @@ const FileV = t.intersection(
       extension: t.string,
       name: t.string,
       submission: t.number,
+      path: t.union([t.string, t.null]),
     }),
     t.partial({}),
   ],
@@ -33,6 +28,7 @@ const FileVPatch = t.intersection(
       extension: t.string,
       name: t.string,
       submission: t.number,
+      path: t.union([t.string, t.null]),
     }),
   ],
   'FilePatch',
@@ -93,6 +89,7 @@ export const FileMock: FileType = {
   code: codeString,
   comments: [1],
   submission: 1,
+  path: null,
 };
 
 // export { CodeType, FileType, File, FileMock };

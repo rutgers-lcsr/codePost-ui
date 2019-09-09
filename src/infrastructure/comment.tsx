@@ -2,14 +2,7 @@ import * as t from 'io-ts';
 
 import { RubricCommentType } from './rubricComment';
 
-import {
-  createObject,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-  updateObjectDetail,
-} from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject, updateObjectDetail } from './generics';
 
 const CommentV = t.intersection(
   [
@@ -28,6 +21,7 @@ const CommentV = t.intersection(
     t.partial({
       author: t.string,
       isSaved: t.boolean,
+      color: t.union([t.string, t.null]),
     }),
   ],
   'Comment',
@@ -66,12 +60,7 @@ export class CommentIO {
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
   public static delete = deleteObject(CommentV, 'comments');
 
-  public static updateFeedback = updateObjectDetail(
-    CommentV,
-    CommentVFeedback,
-    'comments',
-    'feedback',
-  );
+  public static updateFeedback = updateObjectDetail(CommentV, CommentVFeedback, 'comments', 'feedback');
 
   public static sortComments = (comments: CommentType[]): CommentType[] => {
     return comments.sort((a: CommentType, b: CommentType) => {
@@ -121,10 +110,7 @@ export class UiComment {
     return comment.id < 0;
   };
 
-  public static points = (
-    comment: CommentType,
-    rubricComment?: RubricCommentType,
-  ): number => {
+  public static points = (comment: CommentType, rubricComment?: RubricCommentType): number => {
     if (rubricComment) {
       return rubricComment.pointDelta ? rubricComment.pointDelta : 0;
     } else {

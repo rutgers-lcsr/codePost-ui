@@ -48,6 +48,8 @@ describe('ManageAssignments', () => {
         updateSubmission: jest.fn(),
         deleteSubmission: jest.fn(),
         refreshCourseData: jest.fn(),
+        myEmail: 'myEmail@school.edu',
+        user: {},
       },
       propOverrides,
     );

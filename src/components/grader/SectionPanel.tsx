@@ -9,12 +9,7 @@ import * as React from 'react';
 import { Divider, Icon, Select, Spin, Switch, Table } from 'antd';
 
 /* codePost imports */
-import {
-  formatSub,
-  getViewIcon,
-  ISubDataBasic,
-  sortByGrade,
-} from './GraderUtils';
+import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -114,16 +109,15 @@ class SectionPanel extends React.Component<IProps, IState> {
     for (const section of this.props.sectionsLed) {
       const mapValue: any = {};
       for (const student of section.students) {
-        mapValue[student] = await Assignment.readSubmissionsStudent(
-          this.props.currentAssignment.id,
-          { student },
-        ).then((submissions) => {
-          if (submissions.length === 0) {
-            return null;
-          } else {
-            return submissions[0];
-          }
-        });
+        mapValue[student] = await Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
+          (submissions) => {
+            if (submissions.length === 0) {
+              return null;
+            } else {
+              return submissions[0];
+            }
+          },
+        );
       }
       submissionMap[section.id] = mapValue;
     }
@@ -155,9 +149,7 @@ class SectionPanel extends React.Component<IProps, IState> {
 
   public render() {
     const { activeSection, isLoading } = this.state;
-    const showingEmails =
-      !this.props.currentAssignment.anonymousGrading ||
-      this.state.showStudentEmails;
+    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
 
     let columns: any[] = [];
     let data: any[] = [];
@@ -173,14 +165,12 @@ class SectionPanel extends React.Component<IProps, IState> {
         {
           title: 'Student',
           dataIndex: 'student',
-          sorter: (a: ITableRow, b: ITableRow) =>
-            compare(true, a.student, b.student),
+          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
         },
         {
           title: 'Partner(s)',
           dataIndex: 'partners',
-          sorter: (a: ITableRow, b: ITableRow) =>
-            compare(true, a.partners, b.partners),
+          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
           align: centerAlign,
         },
         {
@@ -218,13 +208,11 @@ class SectionPanel extends React.Component<IProps, IState> {
       ];
 
       /* define table row */
-      const submissions = this.state.submissionsBySection[
-        this.state.activeSection.id
-      ];
+      const submissions = this.state.submissionsBySection[this.state.activeSection.id];
       if (submissions !== undefined) {
         data = Object.keys(submissions).map((student) => {
           const submission = submissions[student];
-          const shownStudent = showingEmails ? student : '--';
+          const shownStudent = showingEmails || !submission ? student : submission.id;
 
           let partners = '--';
           if (showingEmails && submission) {
@@ -245,12 +233,8 @@ class SectionPanel extends React.Component<IProps, IState> {
             key: student,
             student: shownStudent,
             partners,
-            viewIcon: (
-              <div>
-                {getViewIcon(submission, this.state.viewsBySubmission, student)}
-              </div>
-            ),
-            open: <Icon type='code' onClick={openGradePage} />,
+            viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
+            open: <Icon type="code" onClick={openGradePage} />,
           };
         });
       }
@@ -258,11 +242,7 @@ class SectionPanel extends React.Component<IProps, IState> {
 
     if (this.props.sectionsLed.length === 0) {
       // Sections haven't been loaded yet
-      return (
-        <Spin
-          indicator={<Icon type='loading' style={{ fontSize: 24 }} spin />}
-        />
-      );
+      return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
     }
 
     let selectContent;
@@ -273,15 +253,12 @@ class SectionPanel extends React.Component<IProps, IState> {
       selectContent = (
         <div>
           <Select
-            placeholder='Select section'
+            placeholder="Select section"
             onSelect={this.handleSelect}
-            value={
-              this.state.activeSection
-                ? this.state.activeSection.name
-                : undefined
-            }
+            value={this.state.activeSection ? this.state.activeSection.name : undefined}
             loading={this.state.isLoading}
-            style={{ width: 200 }}>
+            style={{ width: 200 }}
+          >
             {menuItems}
           </Select>
         </div>
@@ -302,23 +279,16 @@ class SectionPanel extends React.Component<IProps, IState> {
             <Switch
               defaultChecked={showingEmails}
               onChange={this.toggleShowStudentEmails}
-              key='toggleShowStudents'
+              key="toggleShowStudents"
               style={{ display: 'inline-block' }}
             />
           </div>
-          <Divider type='vertical' style={{ height: 25 }} />
+          <Divider type="vertical" style={{ height: 25 }} />
         </div>
       );
     }
 
-    const content = (
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        loading={this.state.isLoading}
-      />
-    );
+    const content = <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />;
 
     return (
       <CPAdminDetail

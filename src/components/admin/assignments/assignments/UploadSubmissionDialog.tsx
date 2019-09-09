@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, message, Modal, Progress, Upload } from 'antd';
+import { Button, Icon, message, Modal, Progress, Switch, Upload } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -49,6 +49,8 @@ interface IState {
   // can remove files from the list if they are not valid
   fileList: any[];
   status: STATUS;
+
+  uploadDirectory: boolean;
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
@@ -65,6 +67,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     files: [],
     fileList: [],
     status: STATUS.NONE,
+    uploadDirectory: false,
   };
 
   public componentDidUpdate(prevProps: IProps) {
@@ -92,6 +95,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public cancel = () => {
     this.setState({ status: STATUS.NONE, files: [], fileList: [] });
     this.props.onCancel();
+  };
+
+  public toggleDirectoryUpload = () => {
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], uploadDirectory: !this.state.uploadDirectory });
   };
 
   public upload = () => {
@@ -216,6 +223,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
         const beforeUpload = (file: any, fileList: any) => {
+          // Ignore hidden files
+          if (file.name[0] === '.') {
+            return false;
+          }
+
           const reader = new FileReader();
           reader.onload = () => {
             if (reader.result) {
@@ -225,12 +237,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               const newFileList = this.state.fileList.filter((el) => {
                 return el.name !== file.name;
               });
+              const pathDirs = file.webkitRelativePath.split('/');
+              const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
               this.setState({
                 files: [
                   ...newFiles,
                   {
                     name: file.name,
                     data: reader.result,
+                    path: filePath,
                   },
                 ],
                 fileList: [...newFileList, file],
@@ -283,6 +298,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}
+            <div style={{ marginBottom: 15 }}>
+              Upload a Directory{' '}
+              <CPTooltip
+                title={`If the submission has nested directories, turn this on and upload a single
+                  directory that contains the submission.`}
+                infoIcon={true}
+              />
+              &nbsp; <Switch checked={this.state.uploadDirectory} onClick={this.toggleDirectoryUpload} />
+            </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Upload
                 beforeUpload={beforeUpload}
@@ -291,6 +315,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 onRemove={this.onRemove}
                 fileList={this.state.fileList}
                 accept={acceptedFilesString}
+                directory={this.state.uploadDirectory}
               >
                 <Button>
                   <Icon type="upload" /> Upload files

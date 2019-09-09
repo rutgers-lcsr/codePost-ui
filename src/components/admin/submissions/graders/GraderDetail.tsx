@@ -55,9 +55,7 @@ class GraderDetail extends React.Component<IProps, IState> {
   public removeSubmission = (toRemove: SubmissionType) => {
     confirm({
       title: 'Are you sure you want to delete this submission?',
-      content: `The following students are associated with this submission: ${toRemove.students.join(
-        ',',
-      )}.`,
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
       onOk: () => {
         return this.props.deleteSubmission(toRemove);
       },
@@ -66,13 +64,7 @@ class GraderDetail extends React.Component<IProps, IState> {
   };
 
   public getStatus = (submission: SubmissionType | undefined) => {
-    let badgeStatus:
-      | 'default'
-      | 'error'
-      | 'success'
-      | 'warning'
-      | 'processing'
-      | undefined;
+    let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
       if (submission.isFinalized) {
@@ -98,10 +90,7 @@ class GraderDetail extends React.Component<IProps, IState> {
   };
 
   public getViewIcon = (submission: SubmissionType) => {
-    if (
-      !(submission.id in this.props.viewsBySubmission) ||
-      !submission.isFinalized
-    ) {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';
     } else {
@@ -121,7 +110,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type='eye' theme='filled' />
+              <Icon type="eye" theme="filled" />
             </div>
           </CPTooltip>
         );
@@ -134,7 +123,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type='eye' />
+              <Icon type="eye-invisible" />
             </div>
           </CPTooltip>
         );
@@ -201,9 +190,8 @@ class GraderDetail extends React.Component<IProps, IState> {
         const graded = this.props.submissionsByAssignment[assignment.id];
         const menu = (
           <Menu>
-            <Menu.Item
-              onClick={this.changeActiveAssignment.bind(this, assignment)}>
-              <Icon type='zoom-in' />
+            <Menu.Item onClick={this.changeActiveAssignment.bind(this, assignment)}>
+              <Icon type="zoom-in" />
               Expand
             </Menu.Item>
           </Menu>
@@ -229,34 +217,23 @@ class GraderDetail extends React.Component<IProps, IState> {
         return {
           key: assignment.name,
           expand: (
-            <CPTooltip
-              title={tooltips.admin.graderSubmissions.expandAssignment}
-              hideThisOnHideTips={true}>
-              <Icon
-                type='zoom-in'
-                onClick={this.changeActiveAssignment.bind(this, assignment)}
-              />
+            <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
+              <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />
             </CPTooltip>
           ),
           assignment: assignment.name,
           claimed: graded ? graded.length : 0,
           finalized: numFinalized,
           unfinalized: numUnfinalized,
-          graderAverage:
-            numFinalized > 0
-              ? `${avgGrade.toFixed(1)}/${assignment.points}`
-              : '--',
+          graderAverage: numFinalized > 0 ? `${avgGrade.toFixed(1)}/${assignment.points}` : '--',
           assignmentAverage: assignment.mean
             ? `${assignment.mean.toFixed(1)}/${assignment.points}`
             : this.props.means[assignment.id]
             ? `${this.props.means[assignment.id]}/${assignment.points}`
             : '--',
           actions: (
-            <Dropdown
-              overlay={menu}
-              trigger={['click']}
-              placement={'bottomRight'}>
-              <Icon type='menu' />
+            <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+              <Icon type="menu" />
             </Dropdown>
           ),
         };
@@ -269,14 +246,12 @@ class GraderDetail extends React.Component<IProps, IState> {
             title={`Submissions graded by: ${this.props.grader}`}
             breadcrumbs={
               <Breadcrumb>
+                <Breadcrumb.Item onClick={this.props.onBack}>Submissions</Breadcrumb.Item>
                 <Breadcrumb.Item onClick={this.props.onBack}>
-                  Submissions
-                </Breadcrumb.Item>
-                <Breadcrumb.Item onClick={this.props.onBack}>
-                  <a href='#'>Graders</a>
+                  <a href="#">Graders</a>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
-                  <a href='#'>{this.props.grader}</a>
+                  <a href="#">{this.props.grader}</a>
                 </Breadcrumb.Item>
               </Breadcrumb>
             }
@@ -332,21 +307,17 @@ class GraderDetail extends React.Component<IProps, IState> {
         },
       ];
 
-      const submissions = this.props.submissionsByAssignment[
-        selectedAssignment.id
-      ];
+      const submissions = this.props.submissionsByAssignment[selectedAssignment.id];
       const data = submissions.map((submission) => {
         const menu = (
           <Menu>
             <Menu.Item onClick={openSubmission.bind(this, submission.id)}>
-              <Icon type='code' />
+              <Icon type="code" />
               Open
             </Menu.Item>
             <Menu.Divider />
-            <Menu.Item
-              style={{ color: 'red' }}
-              onClick={this.removeSubmission.bind(this, submission)}>
-              <Icon type='delete' />
+            <Menu.Item style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
+              <Icon type="delete" />
               Delete
             </Menu.Item>
           </Menu>
@@ -354,20 +325,13 @@ class GraderDetail extends React.Component<IProps, IState> {
 
         let gradeString: string;
         if (submission.isFinalized) {
-          gradeString = `${String(submission.grade)}/${
-            selectedAssignment.points
-          }`;
+          gradeString = `${String(submission.grade)}/${selectedAssignment.points}`;
         } else {
           gradeString = 'Unfinalized';
         }
 
         return {
-          open: (
-            <Icon
-              type='code'
-              onClick={openSubmission.bind(this, submission.id)}
-            />
-          ),
+          open: <Icon type="code" onClick={openSubmission.bind(this, submission.id)} />,
           key: submission.id,
           assignment: selectedAssignment.name,
           status: this.getStatus(submission),
@@ -375,11 +339,8 @@ class GraderDetail extends React.Component<IProps, IState> {
           grade: gradeString,
           viewed: this.getViewIcon(submission),
           actions: (
-            <Dropdown
-              overlay={menu}
-              trigger={['click']}
-              placement={'bottomRight'}>
-              <Icon type='menu' />
+            <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+              <Icon type="menu" />
             </Dropdown>
           ),
         };
@@ -392,14 +353,11 @@ class GraderDetail extends React.Component<IProps, IState> {
             title={`Submissions graded by: ${this.props.grader} for ${selectedAssignment.name}`}
             breadcrumbs={
               <Breadcrumb>
+                <Breadcrumb.Item onClick={this.props.onBack}>Submissions</Breadcrumb.Item>
                 <Breadcrumb.Item onClick={this.props.onBack}>
-                  Submissions
+                  <a href="#">Graders</a>
                 </Breadcrumb.Item>
-                <Breadcrumb.Item onClick={this.props.onBack}>
-                  <a href='#'>Graders</a>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item
-                  onClick={this.changeActiveAssignment.bind(this, undefined)}>
+                <Breadcrumb.Item onClick={this.changeActiveAssignment.bind(this, undefined)}>
                   <a>{this.props.grader}</a>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>

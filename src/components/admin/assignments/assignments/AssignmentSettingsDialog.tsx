@@ -34,6 +34,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       name: values.name,
       points: values.points,
       anonymousGrading: values.anonymousGrading,
+      hideGradersFromStudents: values.hideGradersFromStudents,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
       allowStudentUpload: values.allowStudentUpload,
@@ -97,6 +98,7 @@ interface IFormValues {
   name: string;
   points: number;
   anonymousGrading: boolean;
+  hideGradersFromStudents: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
   allowStudentUpload: boolean;
@@ -209,6 +211,17 @@ const CollectionCreateForm: any = Form.create()(
             >
               {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Hide Graders"
+              extra={<div>When enabled, students will not be able to see the grader associated with a submission.</div>}
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('hideGradersFromStudents', {
+                initialValue: this.props.assignment.hideGradersFromStudents,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>

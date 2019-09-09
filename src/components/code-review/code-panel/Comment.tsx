@@ -7,6 +7,9 @@ import { Button, Input, message, Popover, Tooltip } from 'antd';
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
+import CPTooltip from '../../core/CPTooltip';
+
+import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
 import InlineMarkdown from '../../core/InlineMarkdown';
@@ -52,6 +55,8 @@ interface ICommentProps {
 
   updateFeedback: (feedback: number) => void;
   studentFeedbackOn: boolean;
+
+  hideAuthor: boolean;
 }
 
 interface ICommentState {
@@ -340,15 +345,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     if (this.props.commentType === 'active') {
+      const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
+
       commentElements.points = (
-        <CPPointInput
-          value={-points}
-          size="small"
-          onChange={this.onChangePointInput}
-          disabled={this.props.rubricComment ? true : false}
-          onKeyDown={this.handleShiftEnter}
-          defaultToPositive={this.props.additiveGrading}
-        />
+        <CPTooltip title={tooltip} hideThisOnHideTips={true}>
+          <div>
+            <CPPointInput
+              value={-points}
+              size="small"
+              onChange={this.onChangePointInput}
+              disabled={this.props.rubricComment ? true : false}
+              onKeyDown={this.handleShiftEnter}
+              defaultToPositive={this.props.additiveGrading}
+            />
+          </div>
+        </CPTooltip>
       );
       commentElements.comment = (
         <TextArea
@@ -496,6 +507,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     // Sets zIndex explicitly to avoid style conflict when modals open on this page
     // Per: https://github.com/ant-design/ant-design/issues/6722
+    // this.context.consoleTheme.commentBody
+    // this.context.consoleTheme.commentBody
     return (
       <div
         className={className}
@@ -507,9 +520,24 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
-          <div className="ant-popover-arrow" style={{ borderColor: this.context.consoleTheme.commentBody }} />
+          <div
+            className="ant-popover-arrow"
+            style={{
+              borderColor:
+                this.props.comment.color !== undefined && this.props.comment.color !== null
+                  ? this.props.comment.color
+                  : this.context.consoleTheme.commentBody,
+            }}
+          />
           <div className="ant-popover-inner" style={shadow}>
-            <div style={{ backgroundColor: this.context.consoleTheme.commentBody }}>
+            <div
+              style={{
+                backgroundColor:
+                  this.props.comment.color !== undefined && this.props.comment.color !== null
+                    ? this.props.comment.color
+                    : this.context.consoleTheme.commentBody,
+              }}
+            >
               <div
                 className="ant-popover-title"
                 style={{
@@ -523,7 +551,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              {this.props.commentType !== 'readonly' ? (
+              {this.props.commentType === 'readonly' && this.props.hideAuthor ? null : (
                 <div
                   style={{
                     margin: '0px 20px 0px 20px',
@@ -533,7 +561,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 >
                   <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>

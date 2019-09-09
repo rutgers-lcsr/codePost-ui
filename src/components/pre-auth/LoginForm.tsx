@@ -19,14 +19,11 @@ import CPButton from '../core/CPButton';
 /**********************************************************************************************************************/
 
 interface ILoginFormProps {
-  handleLogin: (
-    email: string,
-    password: string,
-    toRedirect: boolean,
-  ) => Promise<void>;
+  handleLogin: (email: string, password: string, toRedirect: boolean) => Promise<void>;
   error: string;
   title?: string;
   redirectAfterLogin: boolean;
+  maintenanceMode?: boolean;
 }
 
 const initialState = {
@@ -40,10 +37,7 @@ type State = Readonly<typeof initialState>;
 class LoginForm extends React.Component<ILoginFormProps, State> {
   public readonly state: State = initialState;
 
-  public handleChange = (
-    label: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  public handleChange = (label: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     this.setState((prevstate) => {
       const newState: any = { ...prevstate };
@@ -54,15 +48,9 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
 
   public handleLogin = () => {
     this.setState({ loading: true });
-    this.props
-      .handleLogin(
-        this.state.email,
-        this.state.password,
-        this.props.redirectAfterLogin,
-      )
-      .catch(() => {
-        this.setState({ password: '', loading: false });
-      });
+    this.props.handleLogin(this.state.email, this.state.password, this.props.redirectAfterLogin).catch(() => {
+      this.setState({ password: '', loading: false });
+    });
   };
 
   public handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -80,9 +68,9 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           <div>
             <br />
             <Alert
-              message='Error'
+              message="Error"
               description={'The email and password you entered are invalid.'}
-              type='error'
+              type="error"
               showIcon
             />
           </div>
@@ -92,11 +80,9 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           <div>
             <br />
             <Alert
-              message='Error'
-              description={
-                'An unknown error occurred. Please contact us if this issue persists.'
-              }
-              type='error'
+              message="Error"
+              description={'An unknown error occurred. Please contact us if this issue persists.'}
+              type="error"
               showIcon
             />
           </div>
@@ -109,42 +95,52 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
       <PreAuthLayout isLoggedIn={false}>
         <div style={{ maxWidth: 500 }}>
           <br />
+          {this.props.maintenanceMode ? (
+            <Typography.Title level={2} style={{ textAlign: 'center', color: 'orange' }}>
+              CodePost is currently down for maintenance. Please try logging back in later.
+            </Typography.Title>
+          ) : (
+            <div />
+          )}
           <br />
-          <Typography.Title level={1}>
-            {this.props.title !== undefined ? this.props.title : 'Login'}
-          </Typography.Title>
+          <Typography.Title level={2}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
           <form>
             <Input
-              prefix={<Icon type='user' style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder='Email address'
-              autoComplete='email'
+              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="Email address"
+              autoComplete="email"
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
               onKeyDown={this.handleKeyPress}
+              disabled={this.props.maintenanceMode}
             />
             <br />
             <br />
             <Input.Password
-              prefix={<Icon type='lock' style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder='Password'
-              autoComplete='current-password'
+              prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="Password"
+              autoComplete="current-password"
               value={this.state.password}
               onChange={this.handleChange.bind(this, 'password')}
               onKeyDown={this.handleKeyPress}
+              visibilityToggle={false}
+              disabled={this.props.maintenanceMode}
             />
             {this.renderError(this.props.error)}
             <br />
             <br />
             <CPButton
               onClick={this.handleLogin}
-              cpType='primary'
-              loading={this.state.loading}>
+              cpType="primary"
+              loading={this.state.loading}
+              disabled={this.props.maintenanceMode}
+            >
               Continue
             </CPButton>
           </form>
           <br />
           <br />
-          <Link to='/forgot-password'>Forgot password?</Link>
+          <Link to="/forgot-password">Forgot password?</Link>
         </div>
       </PreAuthLayout>
     );

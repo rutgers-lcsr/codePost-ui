@@ -60,6 +60,7 @@ const RosterV = t.intersection(
       graders: t.array(t.string),
       superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
+      not_activated: t.array(t.string),
     }),
     t.partial({}),
   ],
@@ -105,18 +106,9 @@ export class Course {
   public static delete = deleteObject(CourseV, 'courses');
 
   public static readRoster = readObjectDetail(RosterV, 'courses', 'roster');
-  public static updateRoster = updateObjectDetail(
-    RosterV,
-    RosterVPatch,
-    'courses',
-    'roster',
-  );
+  public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
 
-  public static readSettings = readObjectDetail(
-    CourseSettingsV,
-    'courses',
-    'courseSettings',
-  );
+  public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
 }
 
 // export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };

@@ -3,34 +3,26 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import {
-  Breadcrumb,
-  Card,
-  Col,
-  Progress,
-  Row,
-  Statistic,
-  Table,
-  Typography
-} from "antd";
+import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography } from 'antd';
 
-import CPButton from "../../../../../components/core/CPButton";
-import CPTooltip from "../../../../../components/core/CPTooltip";
-import { tooltips } from "../../../../../components/core/tooltips";
+import CPButton from '../../../../../components/core/CPButton';
+import CPTooltip from '../../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../../components/core/tooltips';
 
-import CPAdminDetail from "../../../other/CPAdminDetail";
+import CPAdminDetail from '../../../other/CPAdminDetail';
 
 /* other library imports */
-import memoizeOne from "memoize-one";
+import memoizeOne from 'memoize-one';
 
 /* codePost imports */
-import { AssignmentType } from "../../../../../infrastructure/assignment";
-import { SubmissionType } from "../../../../../infrastructure/submission";
+import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { CourseType } from '../../../../../infrastructure/course';
+import { SubmissionType } from '../../../../../infrastructure/submission';
 
-import { IStudentSubmissionsDataTable } from "../../../../../types/common";
+import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import {
   calculateFullStats,
@@ -38,15 +30,18 @@ import {
   filterDataByStat,
   getDrawerTitle,
   IFullStats,
-  StatsDrawer
-} from "./StatsUtils";
+  StatsDrawer,
+} from './StatsUtils';
 
 const { Title } = Typography;
+
+import SendEmailModal from '../../../other/SendEmailModal';
 
 /**********************************************************************************************************************/
 
 export interface IProps {
   /* assignment data */
+  course: CourseType;
   assignment: AssignmentType;
   submissions: SubmissionType[];
   students: string[]; // emails
@@ -59,6 +54,9 @@ export interface IProps {
   refreshCourseData: () => void | undefined;
 
   onCancel: () => void;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -76,9 +74,9 @@ interface IState {
 
 class ManageAssignments extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
-    drawerContent: { title: "", subtitle: "", content: [] },
+    drawerContent: { title: '', subtitle: '', content: [] },
     isLoading: false,
-    drawerOpen: false
+    drawerOpen: false,
   };
 
   public calculateStats = memoizeOne(calculateFullStats);
@@ -107,7 +105,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
       type,
       this.props.submissions,
       this.props.viewsBySubmission,
-      this.props.students
+      this.props.students,
     );
 
     const title = getDrawerTitle(type, newContent.length);
@@ -116,10 +114,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
       drawerContent: {
         title: assignment.name,
         subtitle: title,
-        content: newContent
+        content: newContent,
       },
       drawerType: type,
-      drawerOpen: true
+      drawerOpen: true,
     });
   };
 
@@ -134,6 +132,17 @@ class ManageAssignments extends React.Component<IProps, IState> {
     });
   };
 
+  public sendReminders = () => {
+    const toEmail = new Set();
+    for (const submission of this.props.submissions) {
+      if (submission.grader !== null && !submission.isFinalized) {
+        toEmail.add(submission.grader);
+      }
+    }
+
+    return Array.from(toEmail) as string[];
+  };
+
   /******************************************************************************
    * Render
    ******************************************************************************/
@@ -141,40 +150,40 @@ class ManageAssignments extends React.Component<IProps, IState> {
   public render() {
     let content;
 
-    const hoverStyle = { cursor: "pointer" };
+    const hoverStyle = { cursor: 'pointer' };
     const statsForRow: IFullStats = this.calculateStats(
       this.props.assignment,
       this.props.submissions,
       this.props.submissionsByStudent,
       this.props.viewsBySubmission,
-      this.props.students
+      this.props.students,
     );
 
-    type alignType = "left" | "right" | "center";
-    const alignCenter: alignType = "center";
-    const alignLeft = "left" as "left" | "right" | "center";
+    type alignType = 'left' | 'right' | 'center';
+    const alignCenter: alignType = 'center';
+    const alignLeft = 'left' as 'left' | 'right' | 'center';
 
     const columns = [
       {
-        title: "category",
-        dataIndex: "category",
-        key: "category",
+        title: 'category',
+        dataIndex: 'category',
+        key: 'category',
         align: alignLeft,
-        width: 180
+        width: 180,
       },
       {
-        title: "tooltip",
-        dataIndex: "tooltip",
-        key: "tooltip",
+        title: 'tooltip',
+        dataIndex: 'tooltip',
+        key: 'tooltip',
         align: alignLeft,
-        width: 100
+        width: 100,
       },
       {
-        title: "data",
-        dataIndex: "data",
-        key: "data",
-        align: alignCenter
-      }
+        title: 'data',
+        dataIndex: 'data',
+        key: 'data',
+        align: alignCenter,
+      },
     ];
 
     const {
@@ -188,13 +197,13 @@ class ManageAssignments extends React.Component<IProps, IState> {
       numUnclaimed,
       numMissing,
       numViewed,
-      numUnviewed
+      numUnviewed,
     } = statsForRow;
 
     const submissionData = [
       {
         key: 1,
-        category: "Total Submissions",
+        category: 'Total Submissions',
         tooltip: (
           <CPTooltip
             title={tooltips.admin.assignments.submissions}
@@ -204,21 +213,14 @@ class ManageAssignments extends React.Component<IProps, IState> {
           />
         ),
         data: (
-          <span
-            onClick={this.openDrawer.bind(
-              this,
-              this.props.assignment,
-              DRAWER_TYPE.Submitted
-            )}
-            style={hoverStyle}
-          >
+          <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
             {numSubmissions}
           </span>
         ),
         children: [
           {
             key: 11,
-            category: "Done",
+            category: 'Done',
             tooltip: (
               <CPTooltip
                 title={tooltips.admin.assignments.finalized}
@@ -228,21 +230,14 @@ class ManageAssignments extends React.Component<IProps, IState> {
               />
             ),
             data: (
-              <span
-                onClick={this.openDrawer.bind(
-                  this,
-                  this.props.assignment,
-                  DRAWER_TYPE.Graded
-                )}
-                style={hoverStyle}
-              >
+              <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
                 {numGraded}
               </span>
             ),
             children: [
               {
                 key: 111,
-                category: "Unviewed",
+                category: 'Unviewed',
                 tooltip: (
                   <CPTooltip
                     title={tooltips.admin.assignments.unviewed}
@@ -253,20 +248,16 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 ),
                 data: (
                   <span
-                    onClick={this.openDrawer.bind(
-                      this,
-                      this.props.assignment,
-                      DRAWER_TYPE.Unviewed
-                    )}
+                    onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unviewed)}
                     style={hoverStyle}
                   >
                     {numUnviewed}
                   </span>
-                )
+                ),
               },
               {
                 key: 112,
-                category: "Viewed",
+                category: 'Viewed',
                 tooltip: (
                   <CPTooltip
                     title={tooltips.admin.assignments.viewed}
@@ -277,22 +268,18 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 ),
                 data: (
                   <span
-                    onClick={this.openDrawer.bind(
-                      this,
-                      this.props.assignment,
-                      DRAWER_TYPE.Viewed
-                    )}
+                    onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Viewed)}
                     style={hoverStyle}
                   >
                     {numViewed}
                   </span>
-                )
-              }
-            ]
+                ),
+              },
+            ],
           },
           {
             key: 12,
-            category: "Drafts",
+            category: 'Drafts',
             tooltip: (
               <CPTooltip
                 title={tooltips.admin.assignments.inProgress}
@@ -302,21 +289,14 @@ class ManageAssignments extends React.Component<IProps, IState> {
               />
             ),
             data: (
-              <span
-                onClick={this.openDrawer.bind(
-                  this,
-                  this.props.assignment,
-                  DRAWER_TYPE.Missing
-                )}
-                style={hoverStyle}
-              >
+              <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
                 {numInProgress}
               </span>
-            )
+            ),
           },
           {
             key: 13,
-            category: "Unclaimed",
+            category: 'Unclaimed',
             tooltip: (
               <CPTooltip
                 title={tooltips.admin.assignments.unclaimed}
@@ -327,22 +307,18 @@ class ManageAssignments extends React.Component<IProps, IState> {
             ),
             data: (
               <span
-                onClick={this.openDrawer.bind(
-                  this,
-                  this.props.assignment,
-                  DRAWER_TYPE.Unclaimed
-                )}
+                onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unclaimed)}
                 style={hoverStyle}
               >
                 {numUnclaimed}
               </span>
-            )
-          }
-        ]
+            ),
+          },
+        ],
       },
       {
         key: 2,
-        category: "Missing",
+        category: 'Missing',
         tooltip: (
           <CPTooltip
             title={tooltips.admin.assignments.missing}
@@ -352,54 +328,31 @@ class ManageAssignments extends React.Component<IProps, IState> {
           />
         ),
         data: (
-          <span
-            onClick={this.openDrawer.bind(
-              this,
-              this.props.assignment,
-              DRAWER_TYPE.Missing
-            )}
-            style={hoverStyle}
-          >
+          <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
             {numMissing}
           </span>
-        )
-      }
+        ),
+      },
     ];
     const summaryData = (
       <Card
         style={{
-          backgroundColor: "#F9F9F9",
-          boxShadow: "0 2px 15px 0 rgba(0, 0, 0, 0.1)"
+          backgroundColor: '#F9F9F9',
+          boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
         }}
       >
-        <Row gutter={0} style={{ width: 600, textAlign: "center" }}>
+        <Row gutter={0} style={{ width: 600, textAlign: 'center' }}>
           <Col span={6}>
-            <Statistic
-              title="Mean"
-              value={mean ? mean : "--"}
-              suffix={`/ ${this.props.assignment.points}`}
-            />
+            <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic
-              title="Median"
-              value={median ? median : "--"}
-              suffix={`/ ${this.props.assignment.points}`}
-            />
+            <Statistic title="Median" value={median ? median : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic
-              title="Max"
-              value={max ? max : "--"}
-              suffix={`/ ${this.props.assignment.points}`}
-            />
+            <Statistic title="Max" value={max ? max : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic
-              title="Min"
-              value={min ? min : "--"}
-              suffix={`/ ${this.props.assignment.points}`}
-            />
+            <Statistic title="Min" value={min ? min : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
         </Row>
       </Card>
@@ -409,66 +362,69 @@ class ManageAssignments extends React.Component<IProps, IState> {
       this.state.drawerType === undefined ? (
         <div />
       ) : (
-          <StatsDrawer
-            type={this.state.drawerType}
-            content={this.state.drawerContent}
-            onClose={this.closeDrawer}
-            isVisible={this.state.drawerOpen}
-          />
-        );
+        <StatsDrawer
+          type={this.state.drawerType}
+          content={this.state.drawerContent}
+          onClose={this.closeDrawer}
+          isVisible={this.state.drawerOpen}
+        />
+      );
 
-    const divStyle = { padding: "20px 40px" };
+    const divStyle = { padding: '20px 40px' };
     content = (
       <div>
-        <div
-          className="display-flex flex-direction-column align-items-center"
-          style={{ paddingBottom: 50 }}
-        >
+        <div className="display-flex flex-direction-column align-items-center" style={{ paddingBottom: 50 }}>
           <div style={{ ...divStyle, paddingBottom: 50 }}>{summaryData}</div>
-          <div style={{ boxShadow: "0 2px 15px 0 rgba(0, 0, 0, 0.1)" }}>
+          <div style={{ boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
             <div
               className="display-flex justify-content-space-between align-items-center"
               style={{
                 ...divStyle,
                 paddingBottom: 10,
-                paddingTop: 30
+                paddingTop: 30,
               }}
             >
-              <Title level={3} style={{ color: "#24be85" }}>
+              <Title level={3} style={{ color: '#24be85' }}>
                 Grading Progress Summary
               </Title>
-              <CPButton
-                onClick={this.refreshData}
-                cpType="primary"
-                icon="redo"
-                loading={this.state.isLoading}
-              >
-                Refresh Data
+              <CPButton onClick={this.refreshData} cpType="primary" icon="redo" loading={this.state.isLoading}>
+                Refresh data
               </CPButton>
+              {statsForRow.numInProgress > 0 ? (
+                <SendEmailModal
+                  buttonText={'Remind graders'}
+                  title="Send reminder emails"
+                  template="grader_reminder"
+                  course={this.props.course}
+                  assignment={this.props.assignment}
+                  me={this.props.myEmail}
+                  filterFunction={this.sendReminders}
+                  body={
+                    <div>
+                      Send a reminder email to graders with pending submissions for {this.props.assignment.name} asking
+                      them to complete or unclaim these submissions. Graders without pending submissions won't be
+                      emailed
+                    </div>
+                  }
+                />
+              ) : null}
             </div>
-            <div
-              className="display-flex align-items-center"
-              style={{ ...divStyle }}
-            >
+            <div className="display-flex align-items-center" style={{ ...divStyle }}>
               <Table
                 pagination={false}
                 columns={columns}
                 showHeader={false}
                 dataSource={submissionData}
-                size={"small"}
+                size={'small'}
                 style={{ width: 450, paddingRight: 50 }}
                 defaultExpandAllRows={true}
               />
               <div className="display-flex flex-direction-column align-items-center">
                 <Progress
                   percent={Math.floor(
-                    ((statsForRow.numGraded + statsForRow.numInProgress) /
-                      statsForRow.numSubmissions) *
-                    100
+                    ((statsForRow.numGraded + statsForRow.numInProgress) / statsForRow.numSubmissions) * 100,
                   )}
-                  successPercent={Math.floor(
-                    (statsForRow.numGraded / statsForRow.numSubmissions) * 100
-                  )}
+                  successPercent={Math.floor((statsForRow.numGraded / statsForRow.numSubmissions) * 100)}
                   type="dashboard"
                 />
                 <Typography.Text style={{ paddingBottom: 10 }}>

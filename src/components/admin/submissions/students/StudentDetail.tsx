@@ -6,16 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import {
-  Badge,
-  Breadcrumb,
-  Dropdown,
-  Icon,
-  Menu,
-  message,
-  Modal,
-  Select,
-} from 'antd';
+import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -50,16 +41,9 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (
-    assignment: AssignmentType,
-    partners: string[],
-    files: any[],
-  ) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  changeSubmissionGrader: (
-    submission: SubmissionType,
-    grader: string | undefined,
-  ) => Promise<void>;
+  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
 }
 
 interface IState {
@@ -95,10 +79,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     this.setState({ selectedSubmission: assignment });
   };
 
-  public changeGrader = (
-    submission: SubmissionType,
-    newGrader: string | undefined,
-  ) => {
+  public changeGrader = (submission: SubmissionType, newGrader: string | undefined) => {
     this.props.changeSubmissionGrader(submission, newGrader).then(() => {
       message.success('Updated grader');
     });
@@ -107,9 +88,7 @@ class StudentDetail extends React.Component<IProps, IState> {
   public removeSubmission = (toRemove: SubmissionType) => {
     confirm({
       title: 'Are you sure you want to remove this submission?',
-      content: `The following students are associated with this submission: ${toRemove.students.join(
-        ',',
-      )}.`,
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
       onOk: () => {
         return this.props.deleteSubmission(toRemove);
       },
@@ -118,38 +97,26 @@ class StudentDetail extends React.Component<IProps, IState> {
   };
 
   public getViewIcon = (submission: SubmissionType, student: string) => {
-    if (
-      !(submission.id in this.props.viewsBySubmission) ||
-      !submission.isFinalized
-    ) {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';
     } else if (student in this.props.viewsBySubmission[submission.id]) {
       // case: submission has been viewed
       return (
-        <CPTooltip
-          title={moment(
-            this.props.viewsBySubmission[submission.id][student],
-          ).format('llll')}>
+        <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
           <div>
-            <Icon type='eye' theme='filled' />
+            <Icon type="eye" theme="filled" />
           </div>
         </CPTooltip>
       );
     } else {
       // case: submission has not been viewed
-      return <Icon type='eye' />;
+      return <Icon type="eye-invisible" />;
     }
   };
 
   public getStatus = (submission: SubmissionType | undefined) => {
-    let badgeStatus:
-      | 'default'
-      | 'error'
-      | 'success'
-      | 'warning'
-      | 'processing'
-      | undefined;
+    let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
       if (submission.isFinalized) {
@@ -219,11 +186,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         title: (
           <div>
             Viewed &nbsp;
-            <CPTooltip
-              title={tooltips.admin.studentSubmissions.viewed}
-              infoIcon={true}
-              hideThisOnHideTips={true}
-            />
+            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} infoIcon={true} hideThisOnHideTips={true} />
           </div>
         ),
         dataIndex: 'viewed',
@@ -250,30 +213,23 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       const menu = submission ? (
         <Menu>
-          <Menu.Item key='0' onClick={openSubmission.bind(this, submission.id)}>
+          <Menu.Item key="0" onClick={openSubmission.bind(this, submission.id)}>
             <span>
-              <Icon type='code' /> Open submission
+              <Icon type="code" /> Open submission
             </span>
           </Menu.Item>
 
           <Menu.Divider />
-          <Menu.Item
-            key='4'
-            style={{ color: 'red' }}
-            onClick={this.removeSubmission.bind(this, submission)}>
-            <Icon type='delete' />
+          <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
+            <Icon type="delete" />
             Delete submission
           </Menu.Item>
         </Menu>
       ) : (
         <Menu>
-          <Menu.Item key='0'>
-            <span
-              onClick={this.toggleUploadSubmissionVisible.bind(
-                this,
-                assignment.id,
-              )}>
-              <Icon type='upload' /> Upload submission
+          <Menu.Item key="0">
+            <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
+              <Icon type="upload" /> Upload submission
             </span>
           </Menu.Item>
         </Menu>
@@ -286,7 +242,8 @@ class StudentDetail extends React.Component<IProps, IState> {
             <Select
               style={{ width: 200 }}
               defaultValue={submission.grader ? submission.grader : undefined}
-              onChange={this.changeGrader.bind(this, submission)}>
+              onChange={this.changeGrader.bind(this, submission)}
+            >
               {[
                 ...this.props.graders
                   .sort((a, b) => a.localeCompare(b))
@@ -303,13 +260,8 @@ class StudentDetail extends React.Component<IProps, IState> {
               ]}
             </Select>
             &nbsp;{' '}
-            <CPTooltip
-              title={tooltips.admin.studentSubmissions.lockAssignGrader}
-              hideThisOnHideTips={true}>
-              <Icon
-                type='edit'
-                onClick={this.changeActiveSubmission.bind(this, '')}
-              />
+            <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
             </CPTooltip>
           </div>
         );
@@ -317,16 +269,8 @@ class StudentDetail extends React.Component<IProps, IState> {
         graderElement = (
           <div>
             {submission.grader ? submission.grader : '--'}&nbsp;
-            <CPTooltip
-              title={tooltips.admin.studentSubmissions.assignGrader}
-              hideThisOnHideTips={true}>
-              <Icon
-                type='edit'
-                onClick={this.changeActiveSubmission.bind(
-                  this,
-                  assignment.name,
-                )}
-              />
+            <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
+              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
             </CPTooltip>
           </div>
         );
@@ -336,14 +280,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       return {
         key: assignment.name,
-        open: submission ? (
-          <Icon
-            type='code'
-            onClick={openSubmission.bind(this, submission.id)}
-          />
-        ) : (
-          '--'
-        ),
+        open: submission ? <Icon type="code" onClick={openSubmission.bind(this, submission.id)} /> : '--',
         assignment: assignment.name,
         partners: submission
           ? submission.students
@@ -355,15 +292,10 @@ class StudentDetail extends React.Component<IProps, IState> {
         grade: gradeString,
         grader: graderElement,
         status: this.getStatus(submission),
-        viewed: submission
-          ? this.getViewIcon(submission, this.props.student)
-          : '--',
+        viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
-          <Dropdown
-            overlay={menu}
-            trigger={['click']}
-            placement={'bottomRight'}>
-            <Icon type='menu' />
+          <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+            <Icon type="menu" />
           </Dropdown>
         ),
       };
