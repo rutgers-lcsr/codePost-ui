@@ -147,6 +147,12 @@ const RegradesTable = (props: IRegradesTableProps) => {
       sorter: (a: any, b: any) => a.students.localeCompare(b.students),
     },
     {
+      title: 'Request Type',
+      dataIndex: 'type',
+      key: 'type',
+      align: aligner,
+    },
+    {
       title: 'Status',
       dataIndex: 'statusTag',
       key: 'statusTag',
@@ -157,12 +163,6 @@ const RegradesTable = (props: IRegradesTableProps) => {
       title: 'Text',
       dataIndex: 'text',
       key: 'text',
-    },
-    {
-      title: 'Regrade Requested?',
-      dataIndex: 'regrade',
-      key: 'regrade',
-      align: aligner,
     },
     {
       title: 'Responder',
@@ -204,8 +204,10 @@ const RegradesTable = (props: IRegradesTableProps) => {
   });
 
   const rows = regradeSubmissions.map((submission) => {
-    const hasPermissionToClaim =
+    const isAbleToChange =
       props.isAdmin || submission.questionResponder === props.user.email || submission.questionResponder === null;
+
+    const isAbleToClose = submission.questionIsOpen && submission.questionResponse;
 
     const responseStatus = getResponseStatus(submission);
     const menu = (
@@ -231,7 +233,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
               ? confirmClear.bind({}, submission, true)
               : confirmClear.bind({}, submission, false)
           }
-          disabled={!hasPermissionToClaim}
+          disabled={!isAbleToChange}
         >
           <Icon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
           {submission.questionResponder !== props.user.email ? 'Claim' : 'Release'}
@@ -239,7 +241,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
         <Menu.Item
           key="4"
           onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
-          disabled={!hasPermissionToClaim}
+          disabled={!(isAbleToChange && (!submission.questionIsOpen || isAbleToClose))}
         >
           <Icon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
           {submission.questionIsOpen ? 'Close' : 'Re-open'}
@@ -252,6 +254,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       key: submission.id,
       code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
       students: submission.students && !props.isAnonymous ? submission.students.toString() : submission.id,
+      type: submission.questionIsRegrade ? 'Regrade' : 'Question',
       statusTag:
         submission.questionText && !submission.questionIsOpen ? (
           <Tag color="green">Closed</Tag>
@@ -260,7 +263,6 @@ const RegradesTable = (props: IRegradesTableProps) => {
         ),
       status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
       responder: submission.questionResponder,
-      regrade: submission.questionIsRegrade ? <Icon type="check-circle" /> : <div />,
       text: (
         <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
           {submission.questionText}
@@ -276,7 +278,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
   });
 
   const closeButton = (
-    <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, true, null)}>
+    <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, modalReadOnly, null)}>
       Close
     </CPButton>
   );
@@ -304,7 +306,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       </CPButton>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
       <Modal
-        onCancel={toggleModal.bind({}, null)}
+        onCancel={toggleModal.bind({}, modalReadOnly)}
         visible={modalVisible}
         title="Respond to Regrade request"
         footer={footer}

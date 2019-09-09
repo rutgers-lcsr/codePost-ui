@@ -161,7 +161,13 @@ class Submission {
     StudentSubmissionV,
     SubmissionVPatch,
     'submissions',
-    'submitQuestion',
+    'submitRegrade',
+  );
+  public static deleteQuestion = updateObjectDetail(
+    StudentSubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'deleteRegrade',
   );
 
   // FIXME, duplicate

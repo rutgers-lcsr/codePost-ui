@@ -572,6 +572,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return newSubmission;
   };
 
+  public deleteStudentQuestion = async (submission: StudentSubmissionType) => {
+    const payload = {
+      id: submission.id,
+    };
+
+    const newSubmission = await Submission.deleteQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -1280,6 +1291,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             assignment={this.state.assignment}
             readOnlySubmission={this.state.readOnlySubmission!}
             submitStudentQuestion={this.submitStudentQuestion}
+            deleteStudentQuestion={this.deleteStudentQuestion}
           />,
           <FileMenu
             key="file-menu"

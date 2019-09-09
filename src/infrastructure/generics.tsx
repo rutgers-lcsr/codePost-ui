@@ -162,23 +162,28 @@ function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): ((id: number)
   return foo;
 }
 
+function getURLString(urlArgs?: { [arg: string]: string }) {
+  let urlString = '';
+  if (urlArgs) {
+    Object.keys(urlArgs).forEach((key, i) => {
+      if (i === 0) {
+        urlString = `?${key}=${urlArgs[key]}`;
+      } else {
+        urlString = `${urlString}&${key}=${urlArgs[key]}`;
+      }
+    });
+  }
+  urlString = urlString.replace(/\+/g, '%2B');
+  return urlString;
+}
+
 function readObjectDetail<T, O, I>(
   arg: t.Type<T, O, I>,
   url: string,
   detail: string,
 ): ((arg0: number, urlArgs?: { [arg: string]: string }) => Promise<T>) {
   const foo = async (id: number, urlArgs?: { [arg: string]: string }) => {
-    let urlString = '';
-    if (urlArgs) {
-      Object.keys(urlArgs).forEach((key, i) => {
-        if (i === 0) {
-          urlString = `?${key}=${urlArgs[key]}`;
-        } else {
-          urlString = `${urlString}&${key}=${urlArgs[key]}`;
-        }
-      });
-    }
-    urlString = urlString.replace(/\+/g, '%2B');
+    const urlString = getURLString(urlArgs);
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
@@ -208,17 +213,7 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   detail: string,
 ): ((object: Q, urlArgs?: { [arg: string]: string }) => Promise<T>) {
   const foo = async (object: Q, urlArgs?: { [arg: string]: string }) => {
-    let urlString = '';
-    if (urlArgs) {
-      Object.keys(urlArgs).forEach((key, i) => {
-        if (i === 0) {
-          urlString = `?${key}=${urlArgs[key]}`;
-        } else {
-          urlString = `${urlString}&${key}=${urlArgs[key]}`;
-        }
-      });
-    }
-    urlString = urlString.replace(/\+/g, '%2B');
+    const urlString = getURLString(urlArgs);
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {

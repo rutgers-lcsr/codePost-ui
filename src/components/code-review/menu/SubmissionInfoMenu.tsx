@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
 const { TextArea } = Input;
 const { Text } = Typography;
+const { confirm } = Modal;
 
 /* other library imports */
 import * as moment from 'moment';
@@ -37,6 +38,7 @@ interface ISubmissionReadProps {
     text: string,
     isRegrade: boolean,
   ) => Promise<StudentSubmissionType>;
+  deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -85,10 +87,11 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         {props.readOnlySubmission !== undefined &&
         props.submitStudentQuestion &&
         props.assignment.allowRegradeRequests ? (
-          <StudentQuestion
+          <StudentRegrade
             submission={props.readOnlySubmission}
             assignment={props.assignment}
             submitStudentQuestion={props.submitStudentQuestion}
+            deleteStudentQuestion={props.deleteStudentQuestion}
           />
         ) : (
           <div />
@@ -309,7 +312,7 @@ export const Students = (props: {
 
 /******************************* Student Question and Regrade option *******************************************/
 
-interface IStudentQuestionProps {
+interface IStudentRegradeProps {
   submission: StudentSubmissionType;
   assignment: AssignmentType;
   submitStudentQuestion?: (
@@ -317,15 +320,17 @@ interface IStudentQuestionProps {
     text: string,
     isRegrade: boolean,
   ) => Promise<StudentSubmissionType>;
+  deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
 }
 
 enum QUESTION_STATUS {
   NOT_SUBMITTED,
-  IN_PROGRESS,
+  UNCLAIMED,
+  CLAIMED,
   RESPONDED,
 }
 
-const StudentQuestion = (props: IStudentQuestionProps) => {
+const StudentRegrade = (props: IStudentRegradeProps) => {
   // *********************** STATE VARIABLES *************************
   const [isModalVisible, setModalVisible] = useState(false);
   const [questionText, setQuestionText] = useState(props.submission.questionText ? props.submission.questionText : '');
@@ -348,6 +353,29 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     }
   };
 
+  const deleteQuestion = () => {
+    if (props.deleteStudentQuestion) {
+      setLoading(true);
+      props.deleteStudentQuestion(props.submission).then(() => {
+        setModalVisible(false);
+        setLoading(false);
+        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Deleted.`);
+      });
+    }
+  };
+
+  const confirmDelete = () => {
+    confirm({
+      title: 'Are you sure you want to delete this request?',
+      onOk() {
+        deleteQuestion();
+      },
+      onCancel() {
+        return;
+      },
+    });
+  };
+
   const toggleModalVisible = () => {
     setModalVisible(!isModalVisible);
   };
@@ -361,7 +389,9 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
     ? QUESTION_STATUS.NOT_SUBMITTED
     : props.submission.questionResponse
     ? QUESTION_STATUS.RESPONDED
-    : QUESTION_STATUS.IN_PROGRESS;
+    : props.submission.questionResponder
+    ? QUESTION_STATUS.CLAIMED
+    : QUESTION_STATUS.UNCLAIMED;
 
   const buttonStyle = { textAlign: 'center' as 'center', paddingTop: 15 };
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
@@ -369,6 +399,22 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
   const deadline = props.assignment.regradeDeadline
     ? `Deadline: ${moment(props.assignment.regradeDeadline).format('llll')}`
     : '';
+
+  const cancelButton = (
+    <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
+      Cancel
+    </CPButton>
+  );
+  const submitButton = (
+    <CPButton key="submit" cpType="primary" loading={isLoading} onClick={submitQuestion}>
+      Submit
+    </CPButton>
+  );
+  const deleteButton = (
+    <CPButton key="delete" cpType="danger" loading={isLoading} onClick={confirmDelete}>
+      Delete
+    </CPButton>
+  );
 
   switch (regradeStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED:
@@ -396,14 +442,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
             onCancel={toggleModalVisible}
             visible={isModalVisible}
             title="Submit a question or regrade request"
-            footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
-                Cancel
-              </CPButton>,
-              <CPButton key="submit" cpType="primary" loading={isLoading} onClick={submitQuestion}>
-                Submit
-              </CPButton>,
-            ]}
+            footer={[cancelButton, submitButton]}
           >
             <Text type="warning" style={{ marginBottom: 15 }}>
               {deadline}
@@ -419,7 +458,8 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
           </Modal>
         </div>
       );
-    case QUESTION_STATUS.IN_PROGRESS:
+    case QUESTION_STATUS.CLAIMED:
+    case QUESTION_STATUS.UNCLAIMED:
       // Case 2: Student has submitted. No response yet.
       return (
         <div>
@@ -432,11 +472,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
             onCancel={toggleModalVisible}
             visible={isModalVisible}
             title="The review of your request is in progress..."
-            footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
-                Cancel
-              </CPButton>,
-            ]}
+            footer={QUESTION_STATUS.UNCLAIMED ? [deleteButton, cancelButton] : [cancelButton]}
           >
             <div className="display-flex flex-direction-column">
               <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
@@ -467,11 +503,7 @@ const StudentQuestion = (props: IStudentQuestionProps) => {
             onCancel={toggleModalVisible}
             visible={isModalVisible}
             title="View Question Response"
-            footer={[
-              <CPButton key="cancel" cpType="secondary" onClick={toggleModalVisible}>
-                Cancel
-              </CPButton>,
-            ]}
+            footer={[cancelButton]}
           >
             <div className="display-flex flex-direction-column">
               <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
