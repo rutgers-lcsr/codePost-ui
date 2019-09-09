@@ -14,10 +14,10 @@ const OrganizationV = t.intersection(
   'Organization',
 );
 
-type OrganizationType = t.TypeOf<typeof OrganizationV>;
+export type OrganizationType = t.TypeOf<typeof OrganizationV>;
 
-class Organization {
+export class Organization {
   public static list = listObject(OrganizationV, 'organizations');
 }
 
-export { Organization, OrganizationType };
+// export { Organization, OrganizationType };

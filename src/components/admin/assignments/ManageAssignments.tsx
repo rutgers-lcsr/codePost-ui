@@ -7,10 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
-const { Text } = Typography;
-const SubMenu = Menu.SubMenu;
-
-type alignType = 'left' | 'right' | 'center';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -54,6 +50,11 @@ import {
 } from './assignments/AssignmentStats/StatsUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const { Text } = Typography;
+const SubMenu = Menu.SubMenu;
+
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -104,7 +105,11 @@ interface IManageAssignmentsState {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isDownloading: boolean;
 }
 
@@ -130,7 +135,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
@@ -142,7 +150,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent,
+      },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
       drawerType: type,

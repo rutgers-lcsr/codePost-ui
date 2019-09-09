@@ -34,14 +34,14 @@ const FileVPatch = t.intersection(
   'FilePatch',
 );
 
-type FileType = t.TypeOf<typeof FileV>;
+export type FileType = t.TypeOf<typeof FileV>;
 
 const MarkdownExtensions = ['md', '.md'];
 const JupyterExtensions = ['ipynb', '.ipynb'];
 
 type CodeType = 'code' | 'markdown' | 'jupyter';
 
-class File {
+export class File {
   public static create = createObject(FileV, FileV, 'files');
   public static read = readObject(FileV, 'files');
   public static update = updateObject(FileV, FileVPatch, 'files');
@@ -82,7 +82,7 @@ public class HelloWorld {
     }
 }`;
 
-const FileMock: FileType = {
+export const FileMock: FileType = {
   id: 1,
   name: 'hello.java',
   extension: 'java',
@@ -92,4 +92,4 @@ const FileMock: FileType = {
   path: null,
 };
 
-export { CodeType, FileType, File, FileMock };
+// export { CodeType, FileType, File, FileMock };

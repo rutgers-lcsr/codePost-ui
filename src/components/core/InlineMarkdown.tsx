@@ -13,10 +13,20 @@ interface IInlineMarkdownProps {
 const InlineMarkdown = (props: IInlineMarkdownProps) => {
   const renderers = useInlineMarkdownRenderers();
 
-  const allowedTypes = ['paragraph', 'text', 'emphasis', 'strong', 'inlineCode', 'delete', 'link', 'break'];
+  const allowedTypes = [
+    'paragraph',
+    'text',
+    'emphasis',
+    'strong',
+    'inlineCode',
+    'delete',
+    'link',
+    'break',
+  ];
 
   return (
     <ReactMarkdown
+      // @ts-ignore
       allowedTypes={allowedTypes}
       renderers={renderers}
       source={props.source}

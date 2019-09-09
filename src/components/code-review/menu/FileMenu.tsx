@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
-const { SubMenu } = Menu;
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -29,6 +28,8 @@ import Badge from '../../core/Badge';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 import { getOperatingSystem, OS } from '../useHotkeys';
+
+const { SubMenu } = Menu;
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
 

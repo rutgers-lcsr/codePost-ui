@@ -3,7 +3,6 @@ import * as React from 'react';
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
 import { Button, Input, message, Popover, Tooltip } from 'antd';
-const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -30,6 +29,8 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
+
+const { TextArea } = Input;
 
 interface ICommentProps {
   additiveGrading: boolean;
@@ -77,7 +78,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
-      this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
+      this.setState({
+        points: UiComment.points(this.props.comment, this.props.rubricComment),
+      });
       this.props.setCommentPlacements();
     }
 
@@ -158,6 +161,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public onPlus = () => {
     const points = this.roundDownToNearestMultiple(this.state.points, 0.5) - 0.5;
+
     this.onChangePointInput(points);
   };
 
@@ -364,7 +368,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
-          style={{ backgroundColor: this.context.consoleTheme.commentTextArea, color: this.context.consoleTheme.text }}
+          style={{
+            backgroundColor: this.context.consoleTheme.commentTextArea,
+            color: this.context.consoleTheme.text,
+          }}
           autoFocus
         />
       );
@@ -375,7 +382,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
           <span
-            style={{ position: 'absolute', right: '20px', top: '42px', cursor: 'pointer' }}
+            style={{
+              position: 'absolute',
+              right: '20px',
+              top: '42px',
+              cursor: 'pointer',
+            }}
             onClick={this.removeRubricComment}
           >
             X

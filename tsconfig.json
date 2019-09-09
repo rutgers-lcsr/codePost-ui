@@ -1,46 +1,25 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "build/dist",
-    "module": "esnext",
     "target": "es5",
-    "lib": ["es6", "dom", "es2017", "esnext", "es5"],
-    "sourceMap": true,
-    "allowJs": true,
-    "jsx": "react",
-    "moduleResolution": "node",
-    "rootDir": "src",
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "importHelpers": true,
-    "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true,
-    "allowSyntheticDefaultImports": true // Added due to https://github.com/DefinitelyTyped/DefinitelyTyped/issues/19337
-  },
-  "rules": {
-    "prefer-array-literal": [
-      true,
-      {
-        "allow-type-parameters": true
-      }
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "interface-over-type-literal": false
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react"
   },
-  "exclude": [
-    "node_modules/**",
-    "build",
-    "scripts",
-    "acceptance-tests",
-    "webpack",
-    "jest",
-    "src/setupTests.ts",
-    "venv",
-    "coverage",
-    "config",
-    "prettier.config.js",
-    "src/stories"
+  "include": [
+    "src"
   ]
 }

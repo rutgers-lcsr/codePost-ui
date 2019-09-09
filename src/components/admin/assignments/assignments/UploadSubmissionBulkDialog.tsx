@@ -7,8 +7,6 @@ import React from 'react';
 
 /* ant imports */
 import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, Typography } from 'antd';
-const Panel = Collapse.Panel;
-const { Step } = Steps;
 
 /* other library imports */
 
@@ -26,6 +24,9 @@ import { acceptedFilesSet } from './AcceptedFileTypes';
 import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
+
+const Panel = Collapse.Panel;
+const { Step } = Steps;
 
 /**********************************************************************************************************************/
 
@@ -143,7 +144,9 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   public componentDidMount() {
     // Cache map logging whether student already has a submission uploaded for this assignment
     const { submissions, students } = this.props;
-    this.setState({ studentMap: this.buildNewStudentMap(students, submissions) });
+    this.setState({
+      studentMap: this.buildNewStudentMap(students, submissions),
+    });
   }
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
@@ -159,7 +162,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   /***************************************************************************************/
 
   public buildNewStudentMap = (students: string[], submissions: SubmissionType[]) => {
-    const newMap = {};
+    const newMap: any = {};
 
     for (const student of students) {
       newMap[student.toLowerCase()] = STUDENT_STATUS.MISSING;
@@ -223,7 +226,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         studentsReader.onerror = () => {
           const errorPaths = this.state.errorPaths;
           const newMessage = `Failed to read file: ${anyFile.webkitRelativePath}`;
-          this.setState({ errorPaths: [...errorPaths, newMessage], status: STATUS.FILE_ERROR });
+          this.setState({
+            errorPaths: [...errorPaths, newMessage],
+            status: STATUS.FILE_ERROR,
+          });
         };
         studentsReader.onload = () => {
           const result = studentsReader.result;
@@ -381,7 +387,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public noDuplicates = (candidates: string[]) => {
-    const seenCandidates = {};
+    const seenCandidates: any = {};
     for (const candidate of candidates) {
       if (seenCandidates[candidate]) {
         return false;
@@ -394,7 +400,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public onFileDrop = (acceptedFiles: File[]) => {
-    const folderMap = {};
+    const folderMap: any = {};
     const students = this.props.students;
     const studentMap = this.state.studentMap;
     const invalidPaths: string[] = [];
@@ -779,7 +785,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             <Divider orientation="left">Instructions</Divider>
             You are about to upload <Typography.Text strong>{numSubmissions}</Typography.Text> submission
             {numSubmissions > 1 ? 's ' : ' '}
-            corresponding to <Typography.Text strong>{numStudents}</Typography.Text> student{numStudents > 1 ? 's' : ''}
+            corresponding to <Typography.Text strong>{numStudents}</Typography.Text> student
+            {numStudents > 1 ? 's' : ''}
             . You can view information about the submissions you are about to upload below. If you want to make changes,
             just hit "Start over" to re-upload.
             <br />

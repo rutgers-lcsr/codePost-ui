@@ -8,9 +8,9 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-const midBreakPoint = landingVars.breakpoints.whyUse;
-
 import PreAuthLayout from './PreAuthLayout';
+
+const midBreakPoint = landingVars.breakpoints.whyUse;
 
 interface IPageProps {
   isLoggedIn: boolean;
@@ -315,7 +315,10 @@ const WhyUse = (props: IPageProps) => {
             <a
               className="whyUse__link"
               href="mailto:team@codepost.io"
-              style={{ borderBottom: '4px solid #24be85', textDecoration: 'none' }}
+              style={{
+                borderBottom: '4px solid #24be85',
+                textDecoration: 'none',
+              }}
             >
               Tell us
             </a>{' '}

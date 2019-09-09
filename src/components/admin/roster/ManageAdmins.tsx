@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
-const confirm = Modal.confirm;
 import { ColumnProps } from 'antd/lib/table';
 
 /* codePost imports */
@@ -29,6 +28,8 @@ import { TableDetail } from '../other/TableDetail';
 import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 

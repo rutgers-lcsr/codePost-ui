@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
-const { TextArea } = Input;
 
 /* other library imports */
 import _ from 'lodash';
@@ -31,6 +30,8 @@ import { DIRECTION } from '../../../../types/common';
 import { IFeedbackScore } from './RubricManager';
 
 import CPPointInput from '../../../core/CPPointInput';
+
+const { TextArea } = Input;
 
 /**********************************************************************************************************************/
 
@@ -236,7 +237,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   }
 
   public buildLocalRubricCommentsStructure = (rubricComments: RubricCommentType[]) => {
-    const toRet = {};
+    const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = _.cloneDeep(rubricComment);
     }
@@ -244,7 +245,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   };
 
   public initializeRubricCommentStatus = (rubricComments: RubricCommentType[]) => {
-    const toRet = {};
+    const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = STATUS.NONE;
     }
@@ -282,7 +283,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
   public setValue = (label: string, value: any) => {
     this.setState(
       (prevstate) => {
-        const newState = { ...prevstate };
+        const newState: any = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
           if (value !== null) {
@@ -475,15 +476,24 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
       case 'number':
-        rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event };
+        rubricComments[rubricCommentID] = {
+          ...rubricComments[rubricCommentID],
+          [key]: event,
+        };
         break;
       case 'string':
         if (key !== 'pointDelta') {
-          rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event };
+          rubricComments[rubricCommentID] = {
+            ...rubricComments[rubricCommentID],
+            [key]: event,
+          };
         }
         break;
       case 'object':
-        rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event.target.value };
+        rubricComments[rubricCommentID] = {
+          ...rubricComments[rubricCommentID],
+          [key]: event.target.value,
+        };
         break;
     }
 
@@ -530,7 +540,10 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
               <Badge
                 count={thisComment.comments.length}
                 className="badge badge--standard"
-                style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                style={{
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  cursor: 'pointer',
+                }}
               />
             </span>
           ),

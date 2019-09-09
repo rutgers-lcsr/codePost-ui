@@ -6,8 +6,16 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Collapse, Icon, Modal, Spin, Steps, Typography, Upload } from 'antd';
-const { Step } = Steps;
+import {
+  Button,
+  Collapse,
+  Icon,
+  Modal,
+  Spin,
+  Steps,
+  Typography,
+  Upload,
+} from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -21,6 +29,8 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import CPButton from '../../../../components/core/CPButton';
 
+const { Step } = Steps;
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -30,7 +40,10 @@ interface IProps {
   rubricComments: IRubricCategoryToRubricCommentsMap;
 
   /* change data functions */
-  onRubricUpload: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  onRubricUpload: (
+    categories: RubricCategoryType[],
+    comments: IRubricCategoryToRubricCommentsMap,
+  ) => void;
 
   /* UI controllers */
   isDisabled: boolean;
@@ -111,7 +124,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
   // Turn nested rubric into standard structure
   public parseRubric = (rubric: IDownloadCategory[]) => {
     const categories: RubricCategoryType[] = [];
-    const comments = {};
+    const comments: any = {};
 
     let categoryID = -1;
     let commentID = -1;
@@ -127,17 +140,19 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         helpText: newCategory.helpText,
       };
 
-      newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {
-        commentList.push({
-          id: commentID,
-          text: newComment.text,
-          pointDelta: newComment.pointDelta,
-          category: categoryPayload.id,
-          comments: [],
-          sortKey: indexComment,
-        });
-        commentID = commentID - 1;
-      });
+      newCategory.rubricComments.forEach(
+        (newComment: IDownloadComment, indexComment: number) => {
+          commentList.push({
+            id: commentID,
+            text: newComment.text,
+            pointDelta: newComment.pointDelta,
+            category: categoryPayload.id,
+            comments: [],
+            sortKey: indexComment,
+          });
+          commentID = commentID - 1;
+        },
+      );
 
       comments[categoryPayload.id] = commentList;
       categories.push(categoryPayload);
@@ -170,7 +185,11 @@ class RubricFileUpload extends React.Component<IProps, IState> {
             uploadFileName: file.name,
           });
         } else {
-          this.setState({ uploadErrors, status: STATUS.UPLOAD_ERRORS, uploadFileName: file.name });
+          this.setState({
+            uploadErrors,
+            status: STATUS.UPLOAD_ERRORS,
+            uploadFileName: file.name,
+          });
         }
       } catch (error) {
         this.setState({
@@ -198,14 +217,20 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           }
         });
         if (numDuplicateName > 1) {
-          uploadErrors.push(`Multiple categories with the same name (${cat.name})`);
+          uploadErrors.push(
+            `Multiple categories with the same name (${cat.name})`,
+          );
         }
         cat.rubricComments.map((comm) => {
           if (!(typeof comm.text === 'string')) {
-            uploadErrors.push('Make sure every comment text field contains a string');
+            uploadErrors.push(
+              'Make sure every comment text field contains a string',
+            );
           }
           if (!(typeof comm.pointDelta === 'number')) {
-            uploadErrors.push('Make sure every comment pointDelta field contains a number');
+            uploadErrors.push(
+              'Make sure every comment pointDelta field contains a number',
+            );
           }
         });
       });
@@ -235,7 +260,10 @@ class RubricFileUpload extends React.Component<IProps, IState> {
 
   public saveRubric = () => {
     this.setState({ status: STATUS.LOADING }, () => {
-      this.props.onRubricUpload(this.state.newCategories, this.state.newComments);
+      this.props.onRubricUpload(
+        this.state.newCategories,
+        this.state.newComments,
+      );
       this.toggleStatus();
     });
   };
@@ -289,30 +317,36 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           <div>
             <div>
               <div>
-                Upload a rubric encoded in <Typography.Text code>.json</Typography.Text> format. This will replace any
-                existing rubric in place for this assignment.
+                Upload a rubric encoded in{' '}
+                <Typography.Text code>.json</Typography.Text> format. This will
+                replace any existing rubric in place for this assignment.
               </div>
               <br />
               <Collapse defaultActiveKey={['json']}>
-                <Collapse.Panel header="Required JSON format" key="json">
-                  <Icon type="warning" /> One common mistake: don't use trailing commas (e.g.{' '}
+                <Collapse.Panel header='Required JSON format' key='json'>
+                  <Icon type='warning' /> One common mistake: don't use trailing
+                  commas (e.g.{' '}
                   <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
-                  <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
+                  <Typography.Text code>[el1, el2]</Typography.Text>) <br />{' '}
+                  <br />
                   <ReactMarkdown source={exampleText} />
                 </Collapse.Panel>
               </Collapse>
               <br />
               <br />
-              <Upload beforeUpload={this.beforeUpload} listType="text" multiple={true}>
+              <Upload
+                beforeUpload={this.beforeUpload}
+                listType='text'
+                multiple={true}>
                 <Button>
-                  <Icon type="upload" /> Upload
+                  <Icon type='upload' /> Upload
                 </Button>
               </Upload>
             </div>
           </div>
         );
         footer = [
-          <Button key="cancel" onClick={this.toggleStatus}>
+          <Button key='cancel' onClick={this.toggleStatus}>
             Cancel
           </Button>,
         ];
@@ -321,13 +355,13 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         content = this.state.uploadErrors.map((error, index) => {
           return (
             <div key={index}>
-              <div className="uploadErrorText">{error}</div>
+              <div className='uploadErrorText'>{error}</div>
               <br />
             </div>
           );
         });
         footer = [
-          <Button key="back" onClick={this.goBack}>
+          <Button key='back' onClick={this.goBack}>
             Go back
           </Button>,
         ];
@@ -337,23 +371,29 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         content = (
           <div>
             <div>
-              Uploaded file: <Typography.Text code>{this.state.uploadFileName}</Typography.Text>
+              Uploaded file:{' '}
+              <Typography.Text code>
+                {this.state.uploadFileName}
+              </Typography.Text>
             </div>
             <br />
             <br />
             {isReplacement ? (
               <div>
-                <Typography.Text type="warning">Warning: </Typography.Text> Continuing will overwrite your existing
-                rubric.
+                <Typography.Text type='warning'>Warning: </Typography.Text>{' '}
+                Continuing will overwrite your existing rubric.
               </div>
             ) : null}
           </div>
         );
         footer = [
-          <Button key="back" onClick={this.goBack}>
+          <Button key='back' onClick={this.goBack}>
             Go back
           </Button>,
-          <Button key="continue" onClick={this.saveRubric} type={isReplacement ? undefined : 'primary'}>
+          <Button
+            key='continue'
+            onClick={this.saveRubric}
+            type={isReplacement ? undefined : 'primary'}>
             {isReplacement ? 'Overwrite' : 'Save'}
           </Button>,
         ];
@@ -373,27 +413,25 @@ class RubricFileUpload extends React.Component<IProps, IState> {
     }
 
     return (
-      <div className="admin-rubric__FileDialog">
+      <div className='admin-rubric__FileDialog'>
         <CPButton
-          cpType="secondary"
+          cpType='secondary'
           onClick={this.toggleStatus}
           disabled={this.props.isDisabled}
-          icon="upload"
-          fallback="upload"
-          fallbackWidth={1250}
-        >
+          icon='upload'
+          fallback='upload'
+          fallbackWidth={1250}>
           Upload Rubric
         </CPButton>
 
         <Modal
           visible={this.state.status !== STATUS.CLOSED}
-          title="Rubric File Upload"
+          title='Rubric File Upload'
           onCancel={this.toggleStatus}
           onOk={this.saveRubric}
           width={600}
-          footer={footer}
-        >
-          <Steps size="small" current={currentStep}>
+          footer={footer}>
+          <Steps size='small' current={currentStep}>
             {steps.map((item) => {
               return <Step key={item} title={item} />;
             })}

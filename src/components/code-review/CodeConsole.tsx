@@ -193,7 +193,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     for (const fileID of Object.keys(comments)) {
       const index = comments[+fileID].findIndex((comment: CommentType) => comment.id === activeCommentID);
       if (index !== -1) {
-        const comment = { ...comments[+fileID][index], rubricComment: rubricComment.id, pointDelta: null };
+        const comment = {
+          ...comments[+fileID][index],
+          rubricComment: rubricComment.id,
+          pointDelta: null,
+        };
         const fileComments = Immutable.arrayUpdate(comments[+fileID], comment, index);
 
         return { ...comments, [+fileID]: fileComments };
@@ -249,7 +253,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static genericCommentPoints = (comments: IFileToCommentsMap): number => {
     return Object.keys(comments)
       .map((fileID) => {
-        return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+        return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
           if (!UiComment.isNew(comment) && comment.pointDelta) {
             return accumulator + comment.pointDelta;
           } else {
@@ -266,7 +270,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static pointsPerCategory = (
     commentRubricComments: ICommentToRubricCommentMap,
   ): { [categoryID: number]: number } => {
-    const pointsPerCategory = {};
+    const pointsPerCategory: any = {};
     for (const commentID in commentRubricComments) {
       // Don't count unsaved comments
       if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
@@ -286,7 +290,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     pointsPerCategory: { [categoryID: number]: number },
     rubricCategories: RubricCategoryType[],
   ): { [categoryID: number]: number } => {
-    const pointsPerCategoryWithCaps = {};
+    const pointsPerCategoryWithCaps: any = {};
     for (const category in pointsPerCategory) {
       if (pointsPerCategory.hasOwnProperty(category)) {
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
@@ -488,7 +492,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const rubric = await Assignment.readRubric(assignmentID);
 
     const rubricCategories = rubric.rubricCategories.sort(RubricCategory.compare);
-    const rubricComments = {};
+    const rubricComments: any = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
       rubricComments[rubricCategory.id] = rubric.rubricComments
@@ -635,7 +639,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
     unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
-    this.setState({ unsavedComments, oldCommentIDs, activeCommentID: undefined });
+    this.setState({
+      unsavedComments,
+      oldCommentIDs,
+      activeCommentID: undefined,
+    });
 
     this.updateComment(comment.id, savedComment);
   };
@@ -896,7 +904,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     };
 
     const fileList: FileType[] = [];
-    const commentMap = {};
+    const commentMap: any = {};
     if (files.length > 0) {
       files.forEach((file, index) => {
         fileList.push({
@@ -919,8 +927,24 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
 
     const rubricCategoryList: RubricCategoryType[] = [
-      { id: 1, name: 'Style', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 0, helpText: '' },
-      { id: 2, name: 'Performance', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 1, helpText: '' },
+      {
+        id: 1,
+        name: 'Style',
+        rubricComments: [],
+        assignment: 1,
+        pointLimit: null,
+        sortKey: 0,
+        helpText: '',
+      },
+      {
+        id: 2,
+        name: 'Performance',
+        rubricComments: [],
+        assignment: 1,
+        pointLimit: null,
+        sortKey: 1,
+        helpText: '',
+      },
     ];
 
     const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {

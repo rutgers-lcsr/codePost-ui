@@ -1,24 +1,25 @@
-import * as React from 'react';
+import * as React from "react";
 
-import 'rc-slider/assets/index.css';
+import "rc-slider/assets/index.css";
 
-import Slider from 'rc-slider';
+import Slider from "rc-slider";
+
+import useWindowSize from "../../core/useWindowSize";
+
+import { ConsoleThemeContext } from "../../../styles/abstracts/_console-theme-context";
+
+import { ShowTooltipContext } from "../../core/tooltips";
+
+import themeVars from "../../../styles/abstracts/_theme.js";
+
+import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from "../useHotkeys";
+
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 
-import useWindowSize from '../../core/useWindowSize';
-
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
-
-import { ShowTooltipContext } from '../../core/tooltips';
-
-import themeVars from '../../../styles/abstracts/_theme.js';
-
-import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
-
 enum RESIZER {
   CODE,
-  COMMENTS,
+  COMMENTS
 }
 
 export type CodeConsoleDimensionsType = {
@@ -28,8 +29,11 @@ export type CodeConsoleDimensionsType = {
 
 export const getInitialDimensions = (): CodeConsoleDimensionsType => {
   const dimensions = {
-    codeWidth: Math.max(Math.min(themeVars.grade.codeTargetWidth, window.innerWidth - 700), 400),
-    commentsWidth: themeVars.grade.commentsTargetWidth,
+    codeWidth: Math.max(
+      Math.min(themeVars.grade.codeTargetWidth, window.innerWidth - 700),
+      400
+    ),
+    commentsWidth: themeVars.grade.commentsTargetWidth
   };
   return dimensions;
 };
@@ -51,16 +55,18 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   // not used
   // @ts-ignore
   const marks = {
-    630: '80char',
-    775: '100char',
-    915: '120char',
+    630: "80char",
+    775: "100char",
+    915: "120char"
   };
 
   const [ranges, setRanges] = React.useState([
     0,
     props.initialDimensions.codeWidth,
     props.initialDimensions.codeWidth + 20,
-    props.initialDimensions.codeWidth + 20 + (props.initialDimensions.commentsWidth - 20),
+    props.initialDimensions.codeWidth +
+    20 +
+    (props.initialDimensions.commentsWidth - 20)
   ]);
 
   const [hovered, setHovered] = React.useState(false);
@@ -82,28 +88,28 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     };
 
     const codeHandle =
-      document.getElementsByClassName('rc-slider-handle-2').length > 0
-        ? document.getElementsByClassName('rc-slider-handle-2')[0]
+      document.getElementsByClassName("rc-slider-handle-2").length > 0
+        ? document.getElementsByClassName("rc-slider-handle-2")[0]
         : null;
     if (codeHandle !== null) {
-      codeHandle.addEventListener('mousedown', handleCodeHandle);
+      codeHandle.addEventListener("mousedown", handleCodeHandle);
     }
 
     const commentsHandle =
-      document.getElementsByClassName('rc-slider-handle-4').length > 0
-        ? document.getElementsByClassName('rc-slider-handle-4')[0]
+      document.getElementsByClassName("rc-slider-handle-4").length > 0
+        ? document.getElementsByClassName("rc-slider-handle-4")[0]
         : null;
     if (commentsHandle !== null) {
-      commentsHandle.addEventListener('mousedown', handleCommentsHandle);
+      commentsHandle.addEventListener("mousedown", handleCommentsHandle);
     }
 
     return () => {
       if (codeHandle !== null) {
-        codeHandle.removeEventListener('mousedown', handleCodeHandle);
+        codeHandle.removeEventListener("mousedown", handleCodeHandle);
       }
 
       if (commentsHandle !== null) {
-        commentsHandle.removeEventListener('mousedown', handleCommentsHandle);
+        commentsHandle.removeEventListener("mousedown", handleCommentsHandle);
       }
     };
   });
@@ -113,7 +119,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   };
 
   const handleChange = (r: number[]) => {
-    setRanges((prevRanges) => {
+    setRanges(prevRanges => {
       if (activeHandle === null) {
         return prevRanges;
       }
@@ -133,7 +139,10 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         // [codeStart, codeEnd, commentsStart, commentsEnd]
         // [n0, n1, n2, n3]
         const n0 = 0;
-        const n1 = changedValue < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : changedValue;
+        const n1 =
+          changedValue < absoluteCodeWidthMinimum
+            ? absoluteCodeWidthMinimum
+            : changedValue;
         const n2 = n1 + 20;
         const n3 = n2 + (prevRanges[3] - prevRanges[2]);
         return [n0, n1, n2, n3];
@@ -152,31 +161,42 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         // [codeStart, codeEnd, commentsStart, commentsEnd]
         // [n0, n1, n2, n3]
         const n0 = 0;
-        const n1 = r[1] < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : r[1];
+        const n1 =
+          r[1] < absoluteCodeWidthMinimum ? absoluteCodeWidthMinimum : r[1];
         const n2 = n1 + 20;
-        const n3 = changedValue - n2 > absoluteCommentsWidthMinimum ? changedValue : n2 + absoluteCommentsWidthMinimum;
+        const n3 =
+          changedValue - n2 > absoluteCommentsWidthMinimum
+            ? changedValue
+            : n2 + absoluteCommentsWidthMinimum;
         return [n0, n1, n2, n3];
       }
     });
   };
 
   const beforeChange = (r: number[]) => {
-    document.documentElement.style.userSelect = 'none';
+    document.documentElement.style.userSelect = "none";
   };
 
   const afterChange = (r: number[]) => {
-    if (document.getElementsByClassName('rc-slider-handle').length > 0) {
-      for (const el of document.getElementsByClassName('rc-slider-handle') as any) {
+    if (document.getElementsByClassName("rc-slider-handle").length > 0) {
+      for (const el of document.getElementsByClassName(
+        "rc-slider-handle"
+      ) as any) {
         el.blur();
       }
     }
     setActiveHandle(null);
-    document.documentElement.style.userSelect = 'auto';
+    document.documentElement.style.userSelect = "auto";
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
 
   const grow = (n: number) => {
-    const newRanges = [ranges[0], ranges[1] + n, ranges[2] + n, ranges[3] + n + n];
+    const newRanges = [
+      ranges[0],
+      ranges[1] + n,
+      ranges[2] + n,
+      ranges[3] + n + n
+    ];
 
     setRanges(newRanges);
     afterChange(newRanges);
@@ -187,7 +207,9 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     const n1 = Math.max(ranges[1] - n, absoluteCodeWidthMinimum);
     const n2 = n1 + 20;
     const n3 =
-      ranges[3] - n - n - n2 > absoluteCommentsWidthMinimum ? ranges[3] - n - n : n2 + absoluteCommentsWidthMinimum;
+      ranges[3] - n - n - n2 > absoluteCommentsWidthMinimum
+        ? ranges[3] - n - n
+        : n2 + absoluteCommentsWidthMinimum;
 
     const newRanges = [n0, n1, n2, n3];
 
@@ -211,14 +233,20 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   };
 
   const prefixCls =
-    activeHandle === null && showTooltips ? 'rc-slider-tooltip' : 'rc-slider-tooltip rc-slider-tooltip-hidden';
+    activeHandle === null && showTooltips
+      ? "rc-slider-tooltip"
+      : "rc-slider-tooltip rc-slider-tooltip-hidden";
   const tipProps = {
-    placement: 'bottom',
-    prefixCls,
+    placement: "bottom",
+    prefixCls
   };
 
   return (
-    <div style={{ width: `${windowSize.width * 2}px` }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+    <div
+      style={{ width: `${windowSize.width * 2}px` }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <Range
         className="layout-resizer"
         value={ranges}
@@ -228,15 +256,30 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         min={0}
         max={windowSize.width * 2}
         handleStyle={[
-          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-          { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
-          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          {
+            backgroundColor: "transparent",
+            borderColor: "transparent",
+            cursor: "auto"
+          },
+          {
+            backgroundColor: consoleTheme.resizerTrack,
+            borderColor: consoleTheme.resizerTrackActive
+          },
+          {
+            backgroundColor: "transparent",
+            borderColor: "transparent",
+            cursor: "auto"
+          },
           {
             backgroundColor:
-              hovered || (activeHandle !== null && props.hasComments) ? consoleTheme.resizerTrack : 'transparent',
+              hovered || (activeHandle !== null && props.hasComments)
+                ? consoleTheme.resizerTrack
+                : "transparent",
             borderColor:
-              hovered || (activeHandle !== null && props.hasComments) ? consoleTheme.resizerTrackActive : 'transparent',
-          },
+              hovered || (activeHandle !== null && props.hasComments)
+                ? consoleTheme.resizerTrackActive
+                : "transparent"
+          }
         ]}
         trackStyle={[
           { backgroundColor: consoleTheme.resizerTrackActive },
@@ -245,8 +288,8 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
             backgroundColor:
               hovered || (activeHandle !== null && props.hasComments)
                 ? consoleTheme.resizerTrackActive
-                : consoleTheme.resizerTrack,
-          },
+                : consoleTheme.resizerTrack
+          }
         ]}
         railStyle={{ backgroundColor: consoleTheme.resizerTrack }}
         tipFormatter={tipFormatter}

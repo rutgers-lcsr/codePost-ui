@@ -8,7 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Divider, Input, Menu, Popover, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-const SubMenu = Menu.SubMenu;
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -21,6 +20,8 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
+
+const SubMenu = Menu.SubMenu;
 
 /**********************************************************************************************************************/
 
@@ -179,6 +180,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
       // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
+      console.log('context', this.context.consoleTheme.siderSubmenuTitleBg, this.context.consoleTheme);
       return (
         <SubMenu
           key={`category-${rubricCategory.id}`}
@@ -296,7 +298,16 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
       }}
     >
       <InlineMarkdown source={props.rubricComment.text} />
-      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+      <span
+        style={{
+          position: 'absolute',
+          right: '20px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}
+      >
+        {points}
+      </span>
     </div>
   );
 };

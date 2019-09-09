@@ -1,12 +1,12 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { Card, Input, Table } from 'antd';
+import { Card, Input, Table } from "antd";
+
+import { Link } from "react-router-dom";
+
+import { OrganizationType } from "../../infrastructure/organization";
 
 const { Search } = Input;
-
-import { Link } from 'react-router-dom';
-
-import { OrganizationType } from '../../infrastructure/organization';
 
 const fullstoryQuery = (email: string) => {
   // tslint:disable-next-line
@@ -15,47 +15,47 @@ const fullstoryQuery = (email: string) => {
 
 const cols = [
   {
-    title: 'Email',
-    dataIndex: 'email',
-    key: 'email',
+    title: "Email",
+    dataIndex: "email",
+    key: "email",
     render: (email: string) => {
       return email;
-    },
+    }
   },
   {
-    title: 'Organization',
-    dataIndex: 'organization',
-    key: 'organization',
+    title: "Organization",
+    dataIndex: "organization",
+    key: "organization",
     render: (organization: OrganizationType) => {
       return `${organization.name} (${organization.shortname})`;
-    },
+    }
   },
   {
-    title: 'Course',
-    dataIndex: 'course',
-    key: 'course',
+    title: "Course",
+    dataIndex: "course",
+    key: "course",
     render: (course: any, record: any) => {
-      return `${record['course_name']} | ${record['course_period']}`;
-    },
+      return `${record["course_name"]} | ${record["course_period"]}`;
+    }
   },
   {
-    title: 'Actions',
-    dataIndex: 'actions',
-    key: 'actions',
+    title: "Actions",
+    dataIndex: "actions",
+    key: "actions",
     render: (actions: string, record: any) => {
       return (
         <span>
-          <Link to={`/loginas/${record['email']}`} target="_blank">
+          <Link to={`/loginas/${record["email"]}`} target="_blank">
             loginas
-          </Link>{' '}
-          |{' '}
-          <a href={fullstoryQuery(record['email'])} target="_blank">
+          </Link>{" "}
+          |{" "}
+          <a href={fullstoryQuery(record["email"])} target="_blank">
             fullstory
           </a>
         </span>
       );
-    },
-  },
+    }
+  }
 ];
 
 const AdminTable = (props: any) => {
@@ -66,21 +66,23 @@ const AdminTable = (props: any) => {
     setFilteredAdmins(
       props.admins.filter((admin: any) => {
         return (
-          admin['email'].toLowerCase().includes(v) ||
-          admin['course_name'].toLowerCase().includes(v) ||
-          admin['course_period'].toLowerCase().includes(v) ||
-          admin['organization']['name'].toLowerCase().includes(v)
+          admin["email"].toLowerCase().includes(v) ||
+          admin["course_name"].toLowerCase().includes(v) ||
+          admin["course_period"].toLowerCase().includes(v) ||
+          admin["organization"]["name"].toLowerCase().includes(v)
         );
-      }),
+      })
     );
   };
 
   return (
-    <Card title="Admins" bordered={false} style={{ width: '100%' }}>
-      <div style={{ padding: '14px 0px', width: '400px' }}>
+    <Card title="Admins" bordered={false} style={{ width: "100%" }}>
+      <div style={{ padding: "14px 0px", width: "400px" }}>
         <Search placeholder="search..." onSearch={onSearch} enterButton />
       </div>
-      <div style={{ padding: '14px 0px' }}>Admin Count: {filteredAdmins.length}</div>
+      <div style={{ padding: "14px 0px" }}>
+        Admin Count: {filteredAdmins.length}
+      </div>
       <Table columns={cols} dataSource={filteredAdmins} size="small" />
     </Card>
   );

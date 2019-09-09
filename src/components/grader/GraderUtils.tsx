@@ -7,16 +7,20 @@ import * as React from 'react';
 
 /* antd imports */
 import { Icon, Typography } from 'antd';
-const { Text } = Typography;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+import {
+  AnonymousSubmissionType,
+  SubmissionType,
+} from '../../infrastructure/submission';
 
 import CPTooltip from '../core/CPTooltip';
+
+const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -41,9 +45,12 @@ const getViewIcon = (
   // case: looking up a single student, and student has viewed the submission
   if (studentToLookup && studentToLookup in views) {
     return (
-      <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
+      <CPTooltip
+        title={moment(viewsBySubmission[submission.id][studentToLookup]).format(
+          'llll',
+        )}>
         <div>
-          <Icon type="eye" theme="filled" />
+          <Icon type='eye' theme='filled' />
         </div>
       </CPTooltip>
     );
@@ -51,7 +58,7 @@ const getViewIcon = (
 
   // case: looking up a single student, and student has not viewed the submission
   if (studentToLookup && !(studentToLookup in views)) {
-    return <Icon type="eye-invisible" />;
+    return <Icon type='eye-invisible' />;
   }
 
   // looking up for multiple students
@@ -74,13 +81,13 @@ const getViewIcon = (
   switch (Object.keys(views).length) {
     // case: no student has viewed
     case 0:
-      return <Icon type="eye-invisible" />;
+      return <Icon type='eye-invisible' />;
     // case: all students have viewed
     case submission.students.length:
       return (
         <CPTooltip title={getTooltipLabel()}>
           <div>
-            <Icon type="eye" theme="filled" />
+            <Icon type='eye' theme='filled' />
           </div>
         </CPTooltip>
       );
@@ -88,7 +95,7 @@ const getViewIcon = (
       return (
         <CPTooltip title={getTooltipLabel()}>
           <div>
-            <Icon type="eye" theme="twoTone" twoToneColor="#646464" />
+            <Icon type='eye' theme='twoTone' twoToneColor='#646464' />
           </div>
         </CPTooltip>
       );
@@ -106,7 +113,7 @@ const sortByGrade = (
   return a.grade - b.grade;
 };
 
-interface ISubDataBasic {
+export interface ISubDataBasic {
   gradeText: string | React.ReactElement;
   grader: string | React.ReactElement;
   lastEdited: string;
@@ -136,19 +143,21 @@ const formatSub = (
         gradeText = <Text>{`${sub.grade}`}</Text>;
       }
     } else if (sub.grader) {
-      gradeText = <Text type="warning">Unfinalized</Text>;
+      gradeText = <Text type='warning'>Unfinalized</Text>;
     } else {
-      gradeText = <Text type="warning">Unclaimed</Text>;
+      gradeText = <Text type='warning'>Unclaimed</Text>;
     }
 
     return {
       gradeText,
       grade: sub.grade,
       isFinalized: sub.isFinalized,
-      grader: sub.grader ? sub.grader : <Text type="warning">Unclaimed</Text>,
-      lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(sub.dateEdited).format('LT')}`,
+      grader: sub.grader ? sub.grader : <Text type='warning'>Unclaimed</Text>,
+      lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(
+        sub.dateEdited,
+      ).format('LT')}`,
     };
   }
 };
 
-export { getViewIcon, formatSub, sortByGrade, ISubDataBasic };
+export { getViewIcon, formatSub, sortByGrade };

@@ -3,26 +3,38 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import * as React from "react";
 
 /* style imports */
-import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table } from 'antd';
-const confirm = Modal.confirm;
+import {
+  Breadcrumb,
+  Drawer,
+  Dropdown,
+  Empty,
+  Icon,
+  Menu,
+  message,
+  Modal,
+  Select,
+  Table
+} from "antd";
 
 /* other library imports */
-import Highlighter from 'react-highlight-words';
+import Highlighter from "react-highlight-words";
 
 /* codePost imports */
-import { USER_APP } from '../../../types/common';
+import { USER_APP } from "../../../types/common";
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { CourseType } from "../../../infrastructure/course";
+import { SectionType } from "../../../infrastructure/section";
 
-import AddSectionDialog from './sections/AddSectionDialog';
+import AddSectionDialog from "./sections/AddSectionDialog";
 
-import { tooltips } from '../../../components/core/tooltips';
+import { tooltips } from "../../../components/core/tooltips";
 
-import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from "../other/TableDetail";
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -55,8 +67,8 @@ class ManageSections extends React.Component<IProps, IState> {
   public constructor(props: any) {
     super(props);
     this.state = {
-      activeSection: '',
-      drawerOpen: false,
+      activeSection: "",
+      drawerOpen: false
     };
   }
 
@@ -66,23 +78,23 @@ class ManageSections extends React.Component<IProps, IState> {
 
   public deleteSection = (toRemove: number) => {
     confirm({
-      title: 'Are you sure you want to delete this section?',
+      title: "Are you sure you want to delete this section?",
       onOk: () => {
         return this.props.deleteSection(toRemove);
       },
-      okText: 'Delete',
+      okText: "Delete"
     });
   };
 
   public changeLeaders = (section: number, leaders: string[]) => {
-    const sectionObj = this.props.sections.find((el) => {
+    const sectionObj = this.props.sections.find(el => {
       return el.id === section;
     });
     if (sectionObj) {
       const updated = { ...sectionObj };
       updated.leaders = leaders;
       this.props.updateSection(updated).then(() => {
-        message.success('Leaders updated');
+        message.success("Leaders updated");
       });
     }
   };
@@ -107,26 +119,32 @@ class ManageSections extends React.Component<IProps, IState> {
     let data: any[] = [];
 
     if (this.props.loadComplete) {
-      actions = [<AddSectionDialog key={2} sections={this.props.sections} addSection={this.props.createSection} />];
+      actions = [
+        <AddSectionDialog
+          key={2}
+          sections={this.props.sections}
+          addSection={this.props.createSection}
+        />
+      ];
 
-      const aligner: 'left' | 'center' | 'right' = 'center';
+      const aligner: "left" | "center" | "right" = "center";
       columns = [
         {
-          title: 'Sections',
-          dataIndex: 'section',
-          key: 'primary',
-          sorter: (a: any, b: any) => a.section.localeCompare(b.section),
+          title: "Sections",
+          dataIndex: "section",
+          key: "primary",
+          sorter: (a: any, b: any) => a.section.localeCompare(b.section)
         },
         {
-          title: 'Students',
-          dataIndex: 'students',
-          key: 'students',
-          align: aligner,
+          title: "Students",
+          dataIndex: "students",
+          key: "students",
+          align: aligner
         },
         {
-          title: 'Leaders',
-          dataIndex: 'leaders',
-          key: 'leaders',
+          title: "Leaders",
+          dataIndex: "leaders",
+          key: "leaders",
           align: aligner,
           renderForSearch: (searchText: string) => {
             return (text: string, record: any, index: number) => {
@@ -139,44 +157,62 @@ class ManageSections extends React.Component<IProps, IState> {
                       onChange={this.changeLeaders.bind(this, record.key)}
                       style={{ width: 400 }}
                     >
-                      {this.props.graders.map((grader) => {
-                        return <Select.Option key={grader}>{grader}</Select.Option>;
+                      {this.props.graders.map(grader => {
+                        return (
+                          <Select.Option key={grader}>{grader}</Select.Option>
+                        );
                       })}
-                    </Select>{' '}
+                    </Select>{" "}
                     &nbsp;&nbsp;
-                    <Icon type="edit" onClick={this.setActiveSection.bind(this, '')} />
+                    <Icon
+                      type="edit"
+                      onClick={this.setActiveSection.bind(this, "")}
+                    />
                   </div>
                 );
               } else {
                 return (
                   <div>
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: "#5CBB8B",
+                        padding: 0
+                      }}
                       searchWords={[searchText]}
                       autoEscape
-                      textToHighlight={record.leaderData.length === 0 ? 'No leaders' : record.leaderData.join(', ')}
+                      textToHighlight={
+                        record.leaderData.length === 0
+                          ? "No leaders"
+                          : record.leaderData.join(", ")
+                      }
                     />
                     &nbsp;&nbsp;
-                    <Icon type="edit" onClick={this.setActiveSection.bind(this, record.section)} />
+                    <Icon
+                      type="edit"
+                      onClick={this.setActiveSection.bind(this, record.section)}
+                    />
                   </div>
                 );
               }
             };
-          },
+          }
         },
         {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          align: aligner,
-        },
+          title: "Actions",
+          dataIndex: "actions",
+          key: "actions",
+          align: aligner
+        }
       ];
 
-      const hoverStyle = { cursor: 'pointer' };
+      const hoverStyle = { cursor: "pointer" };
       data = this.props.sections.map((section, i) => {
         const menu = (
           <Menu>
-            <Menu.Item key="1" onClick={this.deleteSection.bind(this, section.id)}>
+            <Menu.Item
+              key="1"
+              onClick={this.deleteSection.bind(this, section.id)}
+            >
               <Icon type="delete" />
               Delete
             </Menu.Item>
@@ -187,68 +223,83 @@ class ManageSections extends React.Component<IProps, IState> {
           key: section.id,
           section: section.name,
           students: (
-            <span onClick={this.setOpenSection.bind(this, section)} style={hoverStyle}>
+            <span
+              onClick={this.setOpenSection.bind(this, section)}
+              style={hoverStyle}
+            >
               {section.students.length}
             </span>
           ),
           leaderData: section.leaders, // for passing data to render function
-          leadersForSearch: section.leaders.join(', '), // to make leaders searchable
+          leadersForSearch: section.leaders.join(", "), // to make leaders searchable
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown overlay={menu} trigger={["click"]}>
               <Icon type="menu" />
             </Dropdown>
-          ),
+          )
         };
       });
     }
 
     const drawerColumns = [
       {
-        title: 'Student',
-        dataIndex: 'student',
-        key: 'student',
-        align: 'left' as 'left' | 'center' | 'right' /* this is so ugly.. */,
-      },
+        title: "Student",
+        dataIndex: "student",
+        key: "student",
+        align: "left" as "left" | "center" | "right" /* this is so ugly.. */
+      }
     ];
 
     // tslint:disable
     const drawerData =
       this.state.openSection === undefined
         ? []
-        : this.state.openSection.students.map((el) => {
-            return {
-              student: el,
-            };
-          });
+        : this.state.openSection.students.map(el => {
+          return {
+            student: el
+          };
+        });
     // tslint:enable
 
     const drawerComponent = (
       <Drawer
-        title={this.state.openSection ? `${this.state.openSection!.name}: students` : ''}
+        title={
+          this.state.openSection
+            ? `${this.state.openSection!.name}: students`
+            : ""
+        }
         placement="right"
         closable={true}
         onClose={this.setOpenSection.bind(this.props, undefined)}
         visible={this.state.drawerOpen}
         width={600}
       >
-        <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
+        <Table
+          columns={drawerColumns}
+          dataSource={drawerData}
+          pagination={false}
+        />
       </Drawer>
     );
 
     return (
       <TableDetail
-        title={'Sections'}
+        title={"Sections"}
         drawer={drawerComponent}
         loadComplete={this.props.loadComplete}
         isEmpty={this.props.sections.length === 0}
         emptyNode={
           <Empty
             imageStyle={{
-              height: 60,
+              height: 60
             }}
             description={<span>No sections yet</span>}
           >
-            <AddSectionDialog key={0} addSection={this.props.createSection} sections={this.props.sections} />
+            <AddSectionDialog
+              key={0}
+              addSection={this.props.createSection}
+              sections={this.props.sections}
+            />
           </Empty>
         }
         columns={columns}

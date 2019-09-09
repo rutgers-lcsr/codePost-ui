@@ -9,7 +9,7 @@ import * as React from 'react';
 import { DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';

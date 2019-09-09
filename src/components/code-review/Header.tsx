@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
-const ButtonGroup = Button.Group;
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -28,6 +27,8 @@ import CodeConsole from './CodeConsole';
 import useHotkeys, { MINUS_KEY, PLUS_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
+
+const ButtonGroup = Button.Group;
 
 /**********************************************************************************************************************/
 
@@ -60,7 +61,7 @@ const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: 1.499 }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
@@ -148,7 +149,12 @@ export const Controls = (props: IControlsProps) => {
       <Popover content={controls} placement="bottom" trigger="click">
         <Icon
           type="control"
-          style={{ fontSize: '20px', lineHeight: '20px', verticalAlign: '-7px', cursor: 'pointer' }}
+          style={{
+            fontSize: '20px',
+            lineHeight: '20px',
+            verticalAlign: '-7px',
+            cursor: 'pointer',
+          }}
         />
       </Popover>
     ) : (
@@ -179,52 +185,49 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setNudge(false);
   };
 
-  React.useEffect(
-    () => {
-      // Activate the nudge when these elements are clicked
-      const codeContainer = document.getElementById('code-container');
-      const comments = document.getElementById('comments');
-      const grader = document.getElementById('submission-grader');
-      const rubricMenu = document.getElementById('rubric-menu');
+  React.useEffect(() => {
+    // Activate the nudge when these elements are clicked
+    const codeContainer = document.getElementById('code-container');
+    const comments = document.getElementById('comments');
+    const grader = document.getElementById('submission-grader');
+    const rubricMenu = document.getElementById('rubric-menu');
 
-      if (props.submission.isFinalized) {
-        if (codeContainer !== null) {
-          codeContainer.addEventListener('click', triggerNudge);
-        }
-
-        if (comments !== null) {
-          comments.addEventListener('click', triggerNudge);
-        }
-
-        if (grader !== null) {
-          grader.addEventListener('click', triggerNudge);
-        }
-
-        if (rubricMenu !== null) {
-          rubricMenu.addEventListener('click', triggerNudge);
-        }
+    if (props.submission.isFinalized) {
+      if (codeContainer !== null) {
+        codeContainer.addEventListener('click', triggerNudge);
       }
 
-      return () => {
-        if (codeContainer !== null) {
-          codeContainer.removeEventListener('click', triggerNudge);
-        }
+      if (comments !== null) {
+        comments.addEventListener('click', triggerNudge);
+      }
 
-        if (comments !== null) {
-          comments.removeEventListener('click', triggerNudge);
-        }
+      if (grader !== null) {
+        grader.addEventListener('click', triggerNudge);
+      }
 
-        if (grader !== null) {
-          grader.removeEventListener('click', triggerNudge);
-        }
+      if (rubricMenu !== null) {
+        rubricMenu.addEventListener('click', triggerNudge);
+      }
+    }
 
-        if (rubricMenu !== null) {
-          rubricMenu.removeEventListener('click', triggerNudge);
-        }
-      };
-    },
-    [props.submission],
-  );
+    return () => {
+      if (codeContainer !== null) {
+        codeContainer.removeEventListener('click', triggerNudge);
+      }
+
+      if (comments !== null) {
+        comments.removeEventListener('click', triggerNudge);
+      }
+
+      if (grader !== null) {
+        grader.removeEventListener('click', triggerNudge);
+      }
+
+      if (rubricMenu !== null) {
+        rubricMenu.removeEventListener('click', triggerNudge);
+      }
+    };
+  }, [props.submission]);
 
   const onClick = async () => {
     setIsLoading(true);

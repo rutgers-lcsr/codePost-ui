@@ -40,7 +40,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   public handleChange = (label: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[label] = newValue;
       return newState;
     });

@@ -1,20 +1,21 @@
 import * as React from 'react';
 
 import { Button, Input, InputNumber } from 'antd';
-const InputGroup = Input.Group;
-
-export type CPPointInputType = 'small' | 'default';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import ToggleButton from 'react-toggle-button';
 
-export type PointType = 'positive' | 'negative';
-
 import { ReactComponent as MinusSvg } from '../../img/icons/minus.svg';
 import { ReactComponent as PlusSvg } from '../../img/icons/plus.svg';
 
+export type PointType = 'positive' | 'negative';
+
 export type CPPointInputThemeType = 'light' | 'dark';
+
+export type CPPointInputType = 'small' | 'default';
+
+const InputGroup = Input.Group;
 
 // FIXME: these are only optional to prevent breaking the rest of the site.
 //         We can generalize this much more elegantly.
@@ -80,7 +81,11 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
     );
   };
 
-  public setValue = (value: number) => {
+  public setValue = (value: number | undefined) => {
+    if (value === undefined) {
+      return;
+    }
+
     if (this.state.pointType === 'positive') {
       this.props.onChange(-value);
     } else {
@@ -195,6 +200,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         <InputGroup
           compact
           className={className}
+          style={{ display: 'flex', justifyContent: 'flex-end' }}
           onBlur={this.props.onBlur ? this.props.onBlur : undefined}
           onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
         >
