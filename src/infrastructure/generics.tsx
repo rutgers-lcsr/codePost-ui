@@ -96,8 +96,13 @@ function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): () => Promise<T
 
       if ((await res.status) === 200) {
         const data = await res.json();
+
+        // Is this list paginated?
         if (data.hasOwnProperty('results')) {
           objects = objects.concat(data['results']);
+        } else {
+          objects = data;
+          url = null;
         }
 
         if (data.hasOwnProperty('next')) {
