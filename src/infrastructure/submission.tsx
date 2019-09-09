@@ -54,6 +54,7 @@ const StudentSubmissionV = t.intersection(
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
       dateUploaded: t.string,
+      hasGrader: t.boolean,
     }),
   ],
   'Submission',

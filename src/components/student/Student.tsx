@@ -182,7 +182,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public loadSubmissions = async (assignments: AssignmentType[]) => {
     const submissions = {};
     for (const assignment of assignments) {
-      if (assignment.isReleased || assignment.allowStudentUpload) {
+      if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
         });
@@ -365,9 +365,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         );
       }
     } else {
-      if (submission.isFinalized || (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())) {
+      if (
+        submission.hasGrader ||
+        submission.isFinalized ||
+        (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
+      ) {
         // Case 3: Submission exists, and cannot be replaced, either because
-        // it's finalized, re-sbumitting is not allowed, or the due date has passed
+        // it has a grader, is finalized (hasGrader isn't exposed), or the due date has passed
         return (
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
             <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
