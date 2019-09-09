@@ -24,11 +24,11 @@ import AddGraderDialog from './graders/AddGraderDialog';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
-const confirm = Modal.confirm;
-
 import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 

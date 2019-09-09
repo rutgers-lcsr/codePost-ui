@@ -7,7 +7,7 @@ interface IAWSLambdaProps {
   payload: any;
 }
 
-const useAWSLambda = async (props: IAWSLambdaProps) => {
+const invokeAWSLambda = async (props: IAWSLambdaProps) => {
   // This function creates a service object to execute AWS actions
   const createService = () => {
     AWS.config.update({
@@ -42,4 +42,4 @@ const useAWSLambda = async (props: IAWSLambdaProps) => {
   return await invokeLambda(lambdaService, props.arn, props.payload);
 };
 
-export default useAWSLambda;
+export default invokeAWSLambda;

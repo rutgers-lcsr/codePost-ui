@@ -49,12 +49,12 @@ import {
   StatsDrawer,
 } from './assignments/AssignmentStats/StatsUtils';
 
+import SendEmailModal from '../other/SendEmailModal';
+
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
 type alignType = 'left' | 'right' | 'center';
-
-import SendEmailModal from '../other/SendEmailModal';
 
 /**********************************************************************************************************************/
 

@@ -24,11 +24,12 @@ import { tooltips } from '../../../components/core/tooltips';
 import AddAdminDialog from './admins/AddAdminDialog';
 
 import { TableDetail } from '../other/TableDetail';
-const confirm = Modal.confirm;
 
 import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 

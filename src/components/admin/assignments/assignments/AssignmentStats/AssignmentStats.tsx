@@ -33,9 +33,9 @@ import {
   StatsDrawer,
 } from './StatsUtils';
 
-const { Title } = Typography;
-
 import SendEmailModal from '../../../other/SendEmailModal';
+
+const { Title } = Typography;
 
 /**********************************************************************************************************************/
 

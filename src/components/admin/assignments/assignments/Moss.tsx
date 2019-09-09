@@ -7,14 +7,8 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Typography } from 'antd';
-const { Option } = Select;
 
-const { Paragraph } = Typography;
-
-const ButtonGroup = Button.Group;
-const { Search } = Input;
-
-import useAWSLambda from '../../../../components/core/useAWSLambda';
+import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 
 import CPFlex from '../../../../components/core/CPFlex';
 
@@ -26,6 +20,13 @@ import MossResults from './MossResults';
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
 import { UserType } from '../../../../infrastructure/user';
+
+const { Option } = Select;
+
+const { Paragraph } = Typography;
+
+const ButtonGroup = Button.Group;
+const { Search } = Input;
 
 /**********************************************************************************************************************/
 
@@ -181,7 +182,7 @@ const Moss = (props: IMossProps) => {
       moss_id: mossID,
     };
 
-    const res: any = await useAWSLambda({
+    const res: any = await invokeAWSLambda({
       accessKey: 'AKIAV22BSJSCXXWUPZUD',
       secretAccessKey: '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',
       arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss',
