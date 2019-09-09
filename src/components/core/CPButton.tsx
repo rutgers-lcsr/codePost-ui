@@ -4,22 +4,13 @@ import { Button } from 'antd';
 
 import { ButtonProps } from 'antd/lib/button';
 
-import withWindowWatcher, {
-  IWithWindowWatcherProps,
-} from './withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
 import CPTooltip from './CPTooltip';
 
-export type CPButtonType =
-  | 'primary'
-  | 'secondary'
-  | 'dark'
-  | 'danger'
-  | 'highlight'
-  | 'disabled'
-  | 'link';
+export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
 
 interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
@@ -34,10 +25,7 @@ interface ICPButtonState {
   border: string;
 }
 
-class CPButton extends React.Component<
-  ButtonProps & ICPButtonProps,
-  ICPButtonState
-> {
+class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonState> {
   public constructor(props: ButtonProps & ICPButtonProps, context: any) {
     super(props, context);
   }
@@ -59,27 +47,18 @@ class CPButton extends React.Component<
   };
 
   public render() {
-    const {
-      cpType,
-      fallback,
-      isLoading,
-      small,
-      windowwidth,
-      windowheight,
-      ...props
-    } = this.props;
+    const { cpType, fallback, isLoading, small, windowwidth, windowheight, ...props } = this.props;
     const customProps: any = {};
     customProps['className'] = `cp-button cp-button--${cpType}`;
 
-    if (
-      ['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)
-    ) {
+    if (['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)) {
       customProps['type'] = cpType;
     }
 
     if (cpType === 'danger') {
       customProps['style'] = {
         backgroundColor: this.context.consoleTheme.buttonDangerBg,
+        color: this.context.consoleTheme.buttonSecondaryColor,
         border: this.context.consoleTheme.buttonDangerBorder,
       };
     }
@@ -92,19 +71,12 @@ class CPButton extends React.Component<
     }
 
     // Optionally resize a button to an icon button if it has fallback defined
-    const fallbackWidth = this.props.fallbackWidth
-      ? this.props.fallbackWidth
-      : 900;
+    const fallbackWidth = this.props.fallbackWidth ? this.props.fallbackWidth : 900;
     if (this.props.windowwidth < fallbackWidth && fallback) {
       const { children, ...withoutChildren } = props;
       return (
         <CPTooltip title={children}>
-          <Button
-            shape='circle'
-            icon={fallback}
-            {...customProps}
-            {...withoutChildren}
-          />
+          <Button shape="circle" icon={fallback} {...customProps} {...withoutChildren} />
         </CPTooltip>
       );
     }
@@ -112,10 +84,7 @@ class CPButton extends React.Component<
     if (props.children === undefined) {
       customProps['shape'] = 'circle';
     } else if (!(this.props.small !== undefined && this.props.small)) {
-      customProps['className'] = customProps['className'].concat(
-        ' ',
-        'cp-button--with-text',
-      );
+      customProps['className'] = customProps['className'].concat(' ', 'cp-button--with-text');
     }
 
     if (this.props.isLoading !== undefined && this.props.isLoading) {

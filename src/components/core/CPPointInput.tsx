@@ -200,6 +200,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         <InputGroup
           compact
           className={className}
+          style={{ display: 'flex', justifyContent: 'flex-end' }}
           onBlur={this.props.onBlur ? this.props.onBlur : undefined}
           onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
         >

@@ -59,7 +59,7 @@ const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: 1.499 }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <Icon type="zoom-out" />
