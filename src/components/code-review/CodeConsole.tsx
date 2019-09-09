@@ -948,7 +948,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     ];
 
     const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
-      [1]: [
+      1: [
         {
           id: 1,
           text: 'Unnecessary comment - this code speaks for itself!',
@@ -974,7 +974,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           sortKey: 2,
         },
       ],
-      [2]: [
+      2: [
         {
           id: 4,
           text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',

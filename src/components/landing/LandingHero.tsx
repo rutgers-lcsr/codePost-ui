@@ -89,14 +89,14 @@ const LandingHero = () => {
         title="Try out codePost!"
       >
         <CPButton cpType="primary" block>
-          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank">
+          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
           </a>
         </CPButton>
         <br />
         <br />
         <CPButton cpType="secondary" block>
-          <a href="https://codepost.wistia.com/medias/n0ja8jbpny" target="_blank">
+          <a href="https://codepost.wistia.com/medias/n0ja8jbpny" target="_blank" rel="noopener noreferrer">
             Watch a video overview
           </a>
         </CPButton>

@@ -3,9 +3,6 @@ import 'react-app-polyfill/stable';
 
 import * as React from 'react';
 
-// @ts-ignore
-import { Badge, Button, Dropdown, Icon, Input, InputNumber, Layout, Menu, Popover, Table, Tooltip } from 'antd';
-
 import './styles/main.scss';
 
 import * as ReactDOM from 'react-dom';
