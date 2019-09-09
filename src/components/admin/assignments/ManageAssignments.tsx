@@ -40,10 +40,8 @@ import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
 import AssignmentRegrades from './assignments/AssignmentRegrades';
 
-import { UserType } from '../../../infrastructure/user';
-
 import Moss from './assignments/Moss';
-        
+
 import {
   calculateMultipleAssignmentProgressStats,
   DRAWER_TYPE,
@@ -88,7 +86,7 @@ export interface IManageAssignmentsProps {
 
   /* misc */
   myEmail: string;
-  
+
   /* user data */
   user: UserType;
 }

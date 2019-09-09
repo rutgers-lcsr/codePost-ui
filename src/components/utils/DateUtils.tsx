@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

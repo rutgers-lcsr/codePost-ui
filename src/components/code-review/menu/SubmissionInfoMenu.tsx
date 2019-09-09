@@ -7,12 +7,9 @@ import React, { useState } from 'react';
 
 /* antd imports */
 import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
-const { TextArea } = Input;
-const { Text } = Typography;
-const { confirm } = Modal;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -25,6 +22,10 @@ import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
 import { formatDate } from '../../utils/DateUtils';
+
+const { TextArea } = Input;
+const { Text } = Typography;
+const { confirm } = Modal;
 
 /**********************************************************************************************************************/
 
@@ -110,7 +111,7 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
     public render() {
       return (
         <Component
-          {...this.props as ISubmissionReadProps}
+          {...(this.props as ISubmissionReadProps)}
           updateGrader={this.updateGrader}
           isCourseAdmin={false}
           graders={[]}

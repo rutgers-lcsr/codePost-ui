@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 
 import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag, Typography } from 'antd';
-const { TextArea } = Input;
-const { Paragraph, Text } = Typography;
-const { confirm } = Modal;
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -16,6 +13,10 @@ import CPButton from '../../../../../components/core/CPButton';
 import { openSubmission } from '../../../other/AdminUtils';
 
 import { formatDate } from '../../../../utils/DateUtils';
+
+const { TextArea } = Input;
+const { Paragraph, Text } = Typography;
+const { confirm } = Modal;
 
 interface IRegradesTableProps {
   /* assignment data */
@@ -43,12 +44,14 @@ enum RESPONSE_STATUS {
 const RegradesTable = (props: IRegradesTableProps) => {
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | AnonymousSubmissionType | undefined>(
+    undefined,
+  );
   const [responseText, setResponseText] = useState('');
   const [modalReadOnly, setModalReadOnly] = useState(true);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
-  const toggleModal = (readOnly: boolean, submission?: SubmissionType) => {
+  const toggleModal = (readOnly: boolean, submission?: SubmissionType | AnonymousSubmissionType) => {
     setModalReadOnly(readOnly);
     setActiveSubmission(submission);
     setModalVisibility(!modalVisible);
@@ -59,13 +62,17 @@ const RegradesTable = (props: IRegradesTableProps) => {
     setResponseText(event.target.value);
   };
 
-  const updateSubmissionField = (submission: SubmissionType, field: string, newValue: any) => {
+  const updateSubmissionField = (
+    submission: SubmissionType | AnonymousSubmissionType,
+    field: string,
+    newValue: any,
+  ) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission[field] = newValue;
     props.updateSubmission(newSubmission);
   };
 
-  const clearRegrade = (submission: SubmissionType, newGrader: string | null) => {
+  const clearRegrade = (submission: SubmissionType | AnonymousSubmissionType, newGrader: string | null) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission['questionResponder'] = newGrader;
     newSubmission['questionResponse'] = '';
@@ -73,7 +80,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     props.updateSubmission(newSubmission);
   };
 
-  const confirmClear = (submission: SubmissionType, isRelease: boolean) => {
+  const confirmClear = (submission: SubmissionType | AnonymousSubmissionType, isRelease: boolean) => {
     confirm({
       title: `Are you sure you want to ${isRelease ? 'release' : 'claim'} this regrade?`,
       content: 'This will clear the existing draft response text.',
@@ -123,8 +130,12 @@ const RegradesTable = (props: IRegradesTableProps) => {
           </Paragraph>
         );
       case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE:
+        const toggle = () => {
+          toggleModal(false, submission);
+        };
+
         return (
-          <CPButton cpType="primary" onClick={toggleModal.bind({}, false, submission)}>
+          <CPButton cpType="primary" onClick={toggle}>
             Respond
           </CPButton>
         );
@@ -210,6 +221,19 @@ const RegradesTable = (props: IRegradesTableProps) => {
     const isAbleToClose = submission.questionIsOpen && submission.questionResponse;
 
     const responseStatus = getResponseStatus(submission);
+
+    const updateSubmissionFieldClick = () => {
+      updateSubmissionField(submission, 'questionResponder', props.user.email);
+    };
+
+    const confirmClearReleaseClick = () => {
+      confirmClear(submission, true);
+    };
+
+    const confirmClearNonReleaseClick = () => {
+      confirmClear(submission, false);
+    };
+
     const menu = (
       <Menu>
         <Menu.Item key="1" onClick={toggleModal.bind({}, true, submission)}>
@@ -228,10 +252,10 @@ const RegradesTable = (props: IRegradesTableProps) => {
           key="3"
           onClick={
             submission.questionResponder === null
-              ? updateSubmissionField.bind({}, submission, 'questionResponder', props.user.email)
+              ? updateSubmissionFieldClick
               : submission.questionResponder === props.user.email
-              ? confirmClear.bind({}, submission, true)
-              : confirmClear.bind({}, submission, false)
+              ? confirmClearReleaseClick
+              : confirmClearNonReleaseClick
           }
           disabled={!isAbleToChange}
         >
@@ -277,20 +301,32 @@ const RegradesTable = (props: IRegradesTableProps) => {
     };
   });
 
+  const onCancel = () => {
+    toggleModal(modalReadOnly, undefined);
+  };
+
+  const submitOpen = () => {
+    submitResponse(true);
+  };
+
+  const submitClose = () => {
+    submitResponse(false);
+  };
+
   const closeButton = (
-    <CPButton key="cancel" cpType="secondary" onClick={toggleModal.bind({}, modalReadOnly, null)}>
+    <CPButton key="cancel" cpType="secondary" onClick={onCancel}>
       Close
     </CPButton>
   );
 
   const submitAndKeepOpenButton = (
-    <CPButton key="submit-open" cpType="secondary" onClick={submitResponse.bind({}, true)}>
+    <CPButton key="submit-open" cpType="secondary" onClick={submitOpen}>
       Submit and Keep Open
     </CPButton>
   );
 
   const submitAndCloseButton = (
-    <CPButton key="submit-close" cpType="primary" onClick={submitResponse.bind({}, false)}>
+    <CPButton key="submit-close" cpType="primary" onClick={submitClose}>
       Submit and Close
     </CPButton>
   );
@@ -305,12 +341,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
         Refresh Data
       </CPButton>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
-      <Modal
-        onCancel={toggleModal.bind({}, modalReadOnly)}
-        visible={modalVisible}
-        title="Respond to Regrade request"
-        footer={footer}
-      >
+      <Modal onCancel={onCancel} visible={modalVisible} title="Respond to Regrade request" footer={footer}>
         <div className="display-flex flex-direction-column">
           <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
             {activeSubmission ? activeSubmission.students : ''}
