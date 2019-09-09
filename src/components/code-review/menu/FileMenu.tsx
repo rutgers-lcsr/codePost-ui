@@ -86,7 +86,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     }
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
