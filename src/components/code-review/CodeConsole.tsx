@@ -391,6 +391,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let comments;
     let commentRubricComments;
     let course;
+    let rubricCategories;
+    let rubricComments;
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -401,9 +403,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       case PERMISSION_LEVEL.READ:
         // load the data a reader has access to
         submission = await Submission.readReadOnly(submissionID);
-        [assignment, [files, comments, commentRubricComments]] = await Promise.all([
+        [
+          assignment,
+          [files, comments, commentRubricComments],
+          { rubricCategories, rubricComments },
+        ] = await Promise.all([
           Assignment.read(submission.assignment),
           Submission.loadData(submission),
+          this.loadRubric(submission.assignment),
         ]);
         course = await Course.read(assignment.course);
 
@@ -419,6 +426,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           files,
           comments,
           commentRubricComments,
+          rubricCategories,
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
@@ -428,8 +436,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       case PERMISSION_LEVEL.WRITE:
         // load the data a writer has access to
-        let rubricCategories;
-        let rubricComments;
 
         const writableSubmission = await Submission.readAnonymous(submissionID);
         [
