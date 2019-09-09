@@ -115,7 +115,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -127,7 +127,8 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
+      // @ts-ignore
       newState[label] = !this.state[label];
       return newState;
     });
@@ -177,9 +178,14 @@ class CreateSignup extends React.Component<IProps, IState> {
                 if (newProgress >= 100) {
                   clearInterval(this.interval);
                   clearInterval(this.progressInterval);
-                  this.setState({ progress: 100, status: STATUS.VALIDATION_ONGOING });
+                  this.setState({
+                    progress: 100,
+                    status: STATUS.VALIDATION_ONGOING,
+                  });
                 } else {
-                  this.setState({ progress: parseInt(newProgress.toFixed(0), 10) });
+                  this.setState({
+                    progress: parseInt(newProgress.toFixed(0), 10),
+                  });
                 }
               }, PROGRESS_INCREMENT_TIME);
             });

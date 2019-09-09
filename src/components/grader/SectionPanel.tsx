@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Divider, Icon, Select, Spin, Switch, Table } from 'antd';
-const { Option } = Select;
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -20,9 +19,12 @@ import { SubmissionType } from '../../infrastructure/submission';
 import { tooltips } from '../core/tooltips';
 
 import { compare } from '../utils/SortUtils';
-type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+const { Option } = Select;
+
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -43,7 +45,9 @@ interface IProps {
 interface IState {
   /* data */
   activeSection: SectionType;
-  submissionsBySection: { [sectionID: number]: { [student: string]: SubmissionType | null } };
+  submissionsBySection: {
+    [sectionID: number]: { [student: string]: SubmissionType | null };
+  };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
@@ -101,9 +105,9 @@ class SectionPanel extends React.Component<IProps, IState> {
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
-    const submissionMap = {};
+    const submissionMap: any = {};
     for (const section of this.props.sectionsLed) {
-      const mapValue = {};
+      const mapValue: any = {};
       for (const student of section.students) {
         mapValue[student] = await Assignment.readSubmissionsStudent(this.props.currentAssignment.id, { student }).then(
           (submissions) => {
@@ -208,7 +212,7 @@ class SectionPanel extends React.Component<IProps, IState> {
       if (submissions !== undefined) {
         data = Object.keys(submissions).map((student) => {
           const submission = submissions[student];
-          const shownStudent = showingEmails ? student : '--';
+          const shownStudent = showingEmails || !submission ? student : submission.id;
 
           let partners = '--';
           if (showingEmails && submission) {
@@ -219,13 +223,18 @@ class SectionPanel extends React.Component<IProps, IState> {
               .join(', ');
           }
 
+          const openGradePage = () => {
+            // @ts-ignore
+            this.openGradePage(submission);
+          };
+
           return {
             ...formatSub(submission, this.props.currentAssignment),
             key: student,
             student: shownStudent,
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
-            open: <Icon type="code" onClick={this.openGradePage.bind(this, submission)} />,
+            open: <Icon type="code" onClick={openGradePage} />,
           };
         });
       }

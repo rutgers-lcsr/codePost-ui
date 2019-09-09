@@ -7,10 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
-const { Text } = Typography;
-const SubMenu = Menu.SubMenu;
-
-type alignType = 'left' | 'right' | 'center';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -25,6 +21,7 @@ import memoizeOne from 'memoize-one';
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
+import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -45,6 +42,8 @@ import AssignmentRegrades from './assignments/AssignmentRegrades';
 
 import { UserType } from '../../../infrastructure/user';
 
+import Moss from './assignments/Moss';
+        
 import {
   calculateMultipleAssignmentProgressStats,
   DRAWER_TYPE,
@@ -53,6 +52,13 @@ import {
   IAssignmentProgressStatsMap,
   StatsDrawer,
 } from './assignments/AssignmentStats/StatsUtils';
+
+import SendEmailModal from '../other/SendEmailModal';
+
+const { Text } = Typography;
+const SubMenu = Menu.SubMenu;
+
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -80,6 +86,10 @@ export interface IManageAssignmentsProps {
   /* Refresh course */
   refreshCourseData: () => void;
 
+  /* misc */
+  myEmail: string;
+  
+  /* user data */
   user: UserType;
 }
 
@@ -93,6 +103,7 @@ export enum DETAIL_TYPE {
   Drawer,
   Stats,
   Regrades,
+  Moss,
 }
 
 interface IManageAssignmentsState {
@@ -100,7 +111,11 @@ interface IManageAssignmentsState {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isDownloading: boolean;
 }
 
@@ -126,7 +141,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
@@ -138,7 +156,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent,
+      },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
       drawerType: type,
@@ -396,6 +418,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               ) : (
                 <div />
               )}
+              <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
+                <Icon type="diff" />
+                Check MOSS
+              </Menu.Item>
               <SubMenu
                 key="4"
                 title={
@@ -446,20 +472,49 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
 
           const hoverStyle = { cursor: 'pointer' };
 
+          const notifyButton = (toggleDialog: () => void) => {
+            return (
+              <CPTooltip title="Notify students via email. ">
+                <Icon onClick={toggleDialog} style={{ cursor: 'pointer' }} type="mail" />
+              </CPTooltip>
+            );
+          };
+          const listStudents = () => {
+            return this.props.students;
+          };
+
           return {
             key: assignment.id,
             assignment: <Text strong>{assignment.name}</Text>,
             published: (
-              <Popconfirm
-                onConfirm={this.props.updateAssignment.bind(this, {
-                  id: assignment.id,
-                  isReleased: !assignment.isReleased,
-                })}
-                title={publishToggleText}
-                icon={<Icon type="question-circle-o" />}
-              >
-                <Switch checked={assignment.isReleased} />
-              </Popconfirm>
+              <span className="display-flex align-items-center justify-content-center">
+                <Popconfirm
+                  onConfirm={this.props.updateAssignment.bind(this, {
+                    id: assignment.id,
+                    isReleased: !assignment.isReleased,
+                  })}
+                  title={publishToggleText}
+                  icon={<Icon type="question-circle-o" />}
+                >
+                  <Switch checked={assignment.isReleased} />
+                </Popconfirm>
+                {assignment.isReleased ? (
+                  <span>
+                    &nbsp; &nbsp;
+                    <SendEmailModal
+                      buttonText={'Notify students'}
+                      title="Notify students via email"
+                      template="publish_assignment"
+                      course={this.props.currentCourse!}
+                      assignment={assignment}
+                      me={this.props.myEmail}
+                      filterFunction={listStudents}
+                      body={<div>Notify students via email that {assignment.name} has been published.</div>}
+                      button={notifyButton}
+                    />
+                  </span>
+                ) : null}
+              </span>
             ),
             submissions: (
               <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
@@ -563,12 +618,23 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
           case DETAIL_TYPE.Stats:
             return (
               <AssignmentStats
+                course={this.props.currentCourse!}
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 students={this.props.students}
                 submissionsByStudent={this.props.submissionsByStudent}
                 viewsBySubmission={this.props.viewsBySubmission}
                 refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                myEmail={this.props.myEmail}
+              />
+            );
+          case DETAIL_TYPE.Moss:
+            return (
+              <Moss
+                course={this.props.currentCourse!}
+                assignment={this.state.activeAssignment!}
+                user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               />
             );

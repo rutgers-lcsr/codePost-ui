@@ -6,8 +6,18 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
-const { Option } = Select;
+import {
+  Button,
+  Divider,
+  Dropdown,
+  Empty,
+  Icon,
+  Menu,
+  Popconfirm,
+  Select,
+  Switch,
+  Table,
+} from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -25,14 +35,20 @@ import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
-import { AnonymousSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
+import {
+  AnonymousSubmissionType,
+  Submission,
+  SubmissionType,
+} from '../../infrastructure/submission';
 import { compare } from '../utils/SortUtils';
 
 import { loadIDList } from '../../infrastructure/generics';
 
+import { ADMIN } from '../../routes';
+
 type alignType = 'left' | 'right' | 'center';
 
-import { ADMIN } from '../../routes';
+const { Option } = Select;
 
 /**********************************************************************************************************************/
 
@@ -105,13 +121,18 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
 
   public changeAssignment = (newAssignment: AssignmentType) => {
     this.setState({ isLoadingSubmissions: true }, () => {
-      this.loadSubmissions(newAssignment, this.props.graderEmail).then((submissions) => {
-        this.setState({
-          submissions,
-          canViewSubmissionInfo: submissions.length > 0 ? typeof submissions[0].students !== 'undefined' : false,
-          isLoadingSubmissions: false,
-        });
-      });
+      this.loadSubmissions(newAssignment, this.props.graderEmail).then(
+        (submissions) => {
+          this.setState({
+            submissions,
+            canViewSubmissionInfo:
+              submissions.length > 0
+                ? typeof submissions[0].students !== 'undefined'
+                : false,
+            isLoadingSubmissions: false,
+          });
+        },
+      );
 
       this.loadSections(this.props.course).then((sections) => {
         this.setState({ sections });
@@ -127,7 +148,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     return loadIDList(course.sections, Section);
   };
 
-  public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
+  public loadSubmissions = (
+    currentAssignment: AssignmentType,
+    user: string,
+  ) => {
     return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
     });
@@ -138,11 +162,14 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     section?: SectionType,
   ): Promise<SubmissionType | undefined> => {
     const params = section ? `?section=${section.name}` : '';
-    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
-      headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+    return await fetch(
+      `${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`,
+      {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem('token')}`,
+        },
       },
-    })
+    )
       .then((res) => {
         if (res.status === 204) {
           return undefined;
@@ -179,7 +206,9 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     return submission;
   };
 
-  public releaseSubmission = async (submission: SubmissionType): Promise<SubmissionType> => {
+  public releaseSubmission = async (
+    submission: SubmissionType,
+  ): Promise<SubmissionType> => {
     const payload = {
       id: submission.id,
       grader: '',
@@ -201,7 +230,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     const { assignment } = this.props;
 
     this.setState({ buttonState: BUTTON_STATE.Loading });
-    const claimedSubmission = await this.claimSubmission(assignment, this.state.currentSections);
+    const claimedSubmission = await this.claimSubmission(
+      assignment,
+      this.state.currentSections,
+    );
     if (!claimedSubmission) {
       this.setState({ buttonState: BUTTON_STATE.Inactive });
     } else {
@@ -232,7 +264,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       if (this.state.currentSections.length === 0) {
         this.setState({ currentSections: [match] });
       } else {
-        this.setState({ currentSections: [...this.state.currentSections, match], buttonState: BUTTON_STATE.Active });
+        this.setState({
+          currentSections: [...this.state.currentSections, match],
+          buttonState: BUTTON_STATE.Active,
+        });
       }
     }
   };
@@ -241,29 +276,36 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     const newSections = this.state.currentSections.filter((obj) => {
       return obj.id !== Number(sectionID);
     });
-    this.setState({ currentSections: newSections, buttonState: BUTTON_STATE.Active });
+    this.setState({
+      currentSections: newSections,
+      buttonState: BUTTON_STATE.Active,
+    });
   };
 
   public setFilterType = (filterType: FILTER_TYPE) => {
     this.setState({ filterType, currentSections: [] });
   };
 
-  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: () => void) => {
+  public getAnotherSubmissionButton = (
+    buttonState: BUTTON_STATE,
+    handleClick: () => void,
+  ) => {
     /* build claim button based on state of submission queue */
     let claimButton;
     let refreshButton;
     switch (buttonState) {
       case BUTTON_STATE.Active:
         claimButton = (
-          <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
+          <CPTooltip
+            title={tooltips.grader.mySubmissions.claim}
+            hideThisOnHideTips={true}>
             <CPButton
-              cpType="primary"
+              cpType='primary'
               key={2}
-              icon="plus-circle"
+              icon='plus-circle'
               onClick={handleClick}
-              fallback="plus-circle"
-              style={{ display: 'inline-block' }}
-            >
+              fallback='plus-circle'
+              style={{ display: 'inline-block' }}>
               Claim
             </CPButton>
           </CPTooltip>
@@ -271,20 +313,34 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         break;
       case BUTTON_STATE.Inactive:
         claimButton = (
-          <CPButton cpType="disabled" key={2} icon="inbox" fallback="inbox" style={{ display: 'inline-block' }}>
+          <CPButton
+            cpType='disabled'
+            key={2}
+            icon='inbox'
+            fallback='inbox'
+            style={{ display: 'inline-block' }}>
             Queue empty
           </CPButton>
         );
-        const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
+        const refreshFunction = () =>
+          this.setState({ buttonState: BUTTON_STATE.Active });
         refreshButton = (
-          <CPButton cpType="secondary" icon="redo" onClick={refreshFunction} fallback="redo">
+          <CPButton
+            cpType='secondary'
+            icon='redo'
+            onClick={refreshFunction}
+            fallback='redo'>
             Refresh
           </CPButton>
         );
         break;
       case BUTTON_STATE.Loading:
         claimButton = (
-          <CPButton cpType="primary" key={2} loading={true} style={{ display: 'inline-block' }}>
+          <CPButton
+            cpType='primary'
+            key={2}
+            loading={true}
+            style={{ display: 'inline-block' }}>
             Claim
           </CPButton>
         );
@@ -297,15 +353,19 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       case FILTER_TYPE.NONE:
         const filterMenu = (
           <Menu>
-            <Menu.Item onClick={this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION)} key="by-section">
+            <Menu.Item
+              onClick={this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION)}
+              key='by-section'>
               By section
             </Menu.Item>
           </Menu>
         );
         filterComponent = (
-          <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
+          <CPTooltip
+            title={tooltips.grader.mySubmissions.filter}
+            hideThisOnHideTips={true}>
             <Dropdown overlay={filterMenu} trigger={['click']}>
-              <Button icon="filter">Filter</Button>
+              <Button icon='filter'>Filter</Button>
             </Dropdown>
           </CPTooltip>
         );
@@ -321,7 +381,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
               disabled={this.state.isLoadingSubmissions}
             />
             &nbsp;
-            <Icon type="close-circle" onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
+            <Icon
+              type='close-circle'
+              onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)}
+            />
           </div>
         );
         break;
@@ -368,11 +431,11 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
               <Switch
                 defaultChecked={this.state.showStudentEmails}
                 onChange={this.toggleShowStudentEmails}
-                key="toggleShowStudents"
+                key='toggleShowStudents'
                 style={{ display: 'inline-block' }}
               />
             </div>
-            <Divider type="vertical" style={{ height: 25 }} />
+            <Divider type='vertical' style={{ height: 25 }} />
           </div>
         );
       }
@@ -387,7 +450,8 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         {
           title: 'Student',
           dataIndex: 'student',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+          sorter: (a: ITableRow, b: ITableRow) =>
+            compare(true, a.student, b.student),
         },
         {
           title: 'Grade',
@@ -417,25 +481,36 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         },
       ];
 
-      const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
+      const showingEmails =
+        !this.props.isAnonymous || this.state.showStudentEmails;
 
       const data = this.state.submissions.map((sub) => {
-        const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
+        const releaseSubmission = () => {
+          // @ts-ignore
+          this.releaseSubmission(sub);
+        };
+        const students =
+          showingEmails && sub.students ? sub.students.join(', ') : sub.id;
         return {
           ...formatSub(sub, this.props.assignment),
-          open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+          open: (
+            <Icon type='code' onClick={this.openGradePage.bind(this, sub)} />
+          ),
           key: sub.id,
           student: students,
           release: (
             <div>
               <Popconfirm
-                title="Are you sure you want to release this submission?"
-                onConfirm={this.releaseSubmission.bind(this, sub)}
-                okText="Release"
-                cancelText="Cancel"
-                placement="left"
-              >
-                <Icon type="minus-circle" theme="twoTone" twoToneColor="#eb2f96" />
+                title='Are you sure you want to release this submission?'
+                onConfirm={releaseSubmission}
+                okText='Release'
+                cancelText='Cancel'
+                placement='left'>
+                <Icon
+                  type='minus-circle'
+                  theme='twoTone'
+                  twoToneColor='#eb2f96'
+                />
               </Popconfirm>
             </div>
           ),
@@ -444,17 +519,27 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
 
       actions = [anonymousToggle, getAnotherSubmissionButton];
       content = (
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoadingSubmissions} />
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          loading={this.state.isLoadingSubmissions}
+        />
       );
     } else {
       actions = [];
 
-      let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
+      let emptyMessage: string | React.ReactElement =
+        'No submissions yet. Click claim to start grading!';
       if (this.props.isAdmin) {
         emptyMessage = (
           <span>
-            This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}
-            <Link to={`${ADMIN}/${this.props.course.name}/${this.props.course.period}`}>Admin Console</Link>
+            This is where you can claim submissions to grade. If you're looking
+            to manage your course, head to the{' '}
+            <Link
+              to={`${ADMIN}/${this.props.course.name}/${this.props.course.period}`}>
+              Admin Console
+            </Link>
           </span>
         );
       }
@@ -464,8 +549,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
           imageStyle={{
             height: 60,
           }}
-          description={emptyMessage}
-        >
+          description={emptyMessage}>
           {getAnotherSubmissionButton}
         </Empty>
       );
@@ -496,7 +580,9 @@ export const SelectSection = (props: ISelectSectionProps) => {
   const { sections, onSelect, onDeselect } = props;
 
   const selectorItemsFormatter = (items: SectionType[]) => {
-    return items.map((section, i) => <Option key={section.id}>{section.name}</Option>);
+    return items.map((section, i) => (
+      <Option key={section.id}>{section.name}</Option>
+    ));
   };
 
   if (sections.length === 0) {
@@ -504,13 +590,12 @@ export const SelectSection = (props: ISelectSectionProps) => {
   } else {
     return (
       <Select
-        placeholder="Filter by section"
-        mode="multiple"
+        placeholder='Filter by section'
+        mode='multiple'
         onSelect={onSelect}
         onDeselect={onDeselect}
         style={{ width: 250 }}
-        disabled={props.disabled}
-      >
+        disabled={props.disabled}>
         {selectorItemsFormatter(sections)}
       </Select>
     );

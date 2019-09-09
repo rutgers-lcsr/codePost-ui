@@ -29,10 +29,13 @@ interface IProps {
 class ForgotPasswordForm extends React.Component<IProps, State> {
   public readonly state: State = initialState;
 
-  public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  public handleChange = (
+    name: string,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -44,6 +47,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
 
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
+        // @ts-ignore
         payload.append(key, data[key]);
       }
     }
@@ -74,18 +78,18 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
         content = (
           <Alert
             onClose={this.resetState}
-            message="Success!"
-            description="Check your email for a link. Follow that to reset your password."
-            type="success"
+            message='Success!'
+            description='Check your email for a link. Follow that to reset your password.'
+            type='success'
           />
         );
         break;
       case 'failure':
         content = (
           <Alert
-            message="Error"
-            description="An unknown error occurred. Please contact us if this message persists."
-            type="error"
+            message='Error'
+            description='An unknown error occurred. Please contact us if this message persists.'
+            type='error'
           />
         );
         break;
@@ -96,12 +100,12 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
             <Input
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
-              placeholder="Email address"
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder='Email address'
+              prefix={<Icon type='user' style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
             <br />
             <br />
-            <CPButton onClick={this.handleReset} cpType="primary">
+            <CPButton onClick={this.handleReset} cpType='primary'>
               Submit
             </CPButton>
           </div>

@@ -449,11 +449,11 @@ class App extends React.Component<{}, IState> {
         <Route
           exact={true}
           path={`${CODE}/:submissionId`}
-          render={(props: any) =>
-            this.wrapTooltipContext(
+          render={(props: any) => {
+            return this.wrapTooltipContext(
               <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} inDemoMode={false} />,
-            )
-          }
+            );
+          }}
         />
       );
 

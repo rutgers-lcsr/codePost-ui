@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Collapse, Icon, Layout } from 'antd';
-const { Content, Header, Sider } = Layout;
 
 /* codePost imports */
 import themeVars from '../../../styles/abstracts/_theme.js';
@@ -17,13 +16,15 @@ import useBrowserNotification from '../useBrowserNotification';
 import useFixedWindow from '../useFixedWindow';
 import useWindowSize from '../useWindowSize';
 
-export type ConsoleType = 'grade' | 'subheader';
-
-type ConsoleTheme = 'light' | 'dark';
-
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import { wait } from '../../../infrastructure/animation';
+
+const { Content, Header, Sider } = Layout;
+
+export type ConsoleType = 'grade' | 'subheader';
+
+type ConsoleTheme = 'light' | 'dark';
 
 /**********************************************************************************************************************/
 
@@ -50,9 +51,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
 
-  if (props.consoleTypes && props.consoleTypes.includes('grade')) {
-    useGradeResizer();
-  }
+  useGradeResizer(props.consoleTypes);
 
   // Manually set collapse icon so we can change color for dark mode
   const collapseIcon = ({ isActive }: { isActive: boolean }) => {
@@ -86,11 +85,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             }}
           >
             {props.sider.length === 0 ? null : (
+              // @ts-ignore
               <Collapse
                 expandIconPosition="right"
                 defaultActiveKey={props.sider.map((el, index) => index.toString())}
                 bordered={false}
+                // @ts-ignore
                 onChange={onCollapse}
+                // @ts-ignore
                 expandIcon={collapseIcon}
                 style={{
                   backgroundColor: consoleTheme.siderBg,
@@ -101,7 +103,12 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                   return (
                     <Collapse.Panel
                       header={
-                        <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
+                        <div
+                          style={{
+                            padding: '0px 10px 5px 0px',
+                            color: consoleTheme.siderTitle,
+                          }}
+                        >
                           <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
                         </div>
                       }
@@ -177,12 +184,16 @@ const setBottomElementMaxHeight = (above: HTMLElement, toSet: HTMLElement) => {
   toSet.style.setProperty('max-height', `${maxHeight}px`);
 };
 
-const useGradeResizer = () => {
+const useGradeResizer = (consoleTypes: any) => {
   React.useEffect(() => {
-    handleResize();
-    window.addEventListener('resize', handleResize);
+    if (consoleTypes && consoleTypes.includes('grade')) {
+      handleResize();
+      window.addEventListener('resize', handleResize);
+    }
     return () => {
-      window.removeEventListener('resize', handleResize);
+      if (consoleTypes && consoleTypes.includes('grade')) {
+        window.removeEventListener('resize', handleResize);
+      }
     };
   }, []); // only run on mount, unmount
 };

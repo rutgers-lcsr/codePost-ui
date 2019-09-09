@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography } from 'antd';
-const { Title } = Typography;
 
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -20,6 +19,7 @@ import memoizeOne from 'memoize-one';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { CourseType } from '../../../../../infrastructure/course';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
@@ -33,10 +33,15 @@ import {
   StatsDrawer,
 } from './StatsUtils';
 
+import SendEmailModal from '../../../other/SendEmailModal';
+
+const { Title } = Typography;
+
 /**********************************************************************************************************************/
 
 export interface IProps {
   /* assignment data */
+  course: CourseType;
   assignment: AssignmentType;
   submissions: SubmissionType[];
   students: string[]; // emails
@@ -49,11 +54,18 @@ export interface IProps {
   refreshCourseData: () => void | undefined;
 
   onCancel: () => void;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isLoading: boolean;
   drawerOpen: boolean;
 }
@@ -84,7 +96,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
@@ -96,7 +111,11 @@ class ManageAssignments extends React.Component<IProps, IState> {
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent,
+      },
       drawerType: type,
       drawerOpen: true,
     });
@@ -111,6 +130,17 @@ class ManageAssignments extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       this.props.refreshCourseData();
     });
+  };
+
+  public sendReminders = () => {
+    const toEmail = new Set();
+    for (const submission of this.props.submissions) {
+      if (submission.grader !== null && !submission.isFinalized) {
+        toEmail.add(submission.grader);
+      }
+    }
+
+    return Array.from(toEmail) as string[];
   };
 
   /******************************************************************************
@@ -305,7 +335,12 @@ class ManageAssignments extends React.Component<IProps, IState> {
       },
     ];
     const summaryData = (
-      <Card style={{ backgroundColor: '#F9F9F9', boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
+      <Card
+        style={{
+          backgroundColor: '#F9F9F9',
+          boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <Row gutter={0} style={{ width: 600, textAlign: 'center' }}>
           <Col span={6}>
             <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${this.props.assignment.points}`} />
@@ -346,15 +381,33 @@ class ManageAssignments extends React.Component<IProps, IState> {
               style={{
                 ...divStyle,
                 paddingBottom: 10,
-                padddingTop: 30,
+                paddingTop: 30,
               }}
             >
               <Title level={3} style={{ color: '#24be85' }}>
                 Grading Progress Summary
               </Title>
               <CPButton onClick={this.refreshData} cpType="primary" icon="redo" loading={this.state.isLoading}>
-                Refresh Data
+                Refresh data
               </CPButton>
+              {statsForRow.numInProgress > 0 ? (
+                <SendEmailModal
+                  buttonText={'Remind graders'}
+                  title="Send reminder emails"
+                  template="grader_reminder"
+                  course={this.props.course}
+                  assignment={this.props.assignment}
+                  me={this.props.myEmail}
+                  filterFunction={this.sendReminders}
+                  body={
+                    <div>
+                      Send a reminder email to graders with pending submissions for {this.props.assignment.name} asking
+                      them to complete or unclaim these submissions. Graders without pending submissions won't be
+                      emailed
+                    </div>
+                  }
+                />
+              ) : null}
             </div>
             <div className="display-flex align-items-center" style={{ ...divStyle }}>
               <Table
@@ -375,9 +428,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                   type="dashboard"
                 />
                 <Typography.Text style={{ paddingBottom: 10 }}>
-                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${
-                    statsForRow.numUnclaimed
-                  } unclaimed`}
+                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${statsForRow.numUnclaimed} unclaimed`}
                 </Typography.Text>
               </div>
             </div>

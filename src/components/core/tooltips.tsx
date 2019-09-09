@@ -47,8 +47,13 @@ const GRADE_HEADER_ALIGNMENT = (
     [⌘ click highlights]
   </div>
 );
+
+const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
 const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Mark this submission as Done to edit its grader.';
+const GRADE_COMMENT_POINTSDISABLED = `The points for a rubric comment are fixed by the rubric.\
+        Create a normal comment to be able to change the points\
+        (or, if you have admin privileges, edit the rubric).`;
 
 // ************************ Settings tooltips ************************
 const SETTINGS_TOKEN_COPY = 'Copy API token';
@@ -81,15 +86,15 @@ const ADMIN_GRADERSUBMISSIONS_EXPAND = 'View submissions graded by this grader';
 const ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT = 'View graded submissions for this assignment';
 
 const ADMIN_ASSIGNMENTS_PUBLISHED =
-  'Publishing an assignment allows students who have finalized submissions to view those submissions.\
-   If an assignment is unpublished no student will be able to view their submissions.';
-const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment';
-const ADMIN_ASSIGNMENTS_FINALIZED = 'The submissions that have been marked as Finalized';
-const ADMIN_ASSIGNMENTS_CLAIMED = 'The submissions that have been claimed by a grader.';
-const ADMIN_ASSIGNMENTS_INPROGRESS = 'The submissionst hat have been claimed by a grader but have not been finalized.';
-const ADMIN_ASSIGNMENTS_MISSING = 'The students that have not submitted a submission. ';
-const ADMIN_ASSIGNMENTS_VIEWED = 'The students who have viewed their feedback. ';
-const ADMIN_ASSIGNMENTS_UNVIEWED = 'The students that have not viewed their feedback. ';
+  'Publishing an assignment allows students to view their submission with feedback (if finalized).\
+   If an assignment is unpublished, no student will be able to view their submissions.';
+const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment.';
+const ADMIN_ASSIGNMENTS_FINALIZED = 'Submissions marked as Finalized.';
+const ADMIN_ASSIGNMENTS_CLAIMED = 'Submissions claimed by a grader.';
+const ADMIN_ASSIGNMENTS_INPROGRESS = 'Submissions claimed by a grader but not yet finalized.';
+const ADMIN_ASSIGNMENTS_MISSING = 'Students missing a submission.';
+const ADMIN_ASSIGNMENTS_VIEWED = 'Students who have viewed their feedback.';
+const ADMIN_ASSIGNMENTS_UNVIEWED = 'Students who have not viewed their feedback.';
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
   'Select multiple students, so long as none of them have a pre-existing submission for the assignment you selected.';
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
@@ -176,10 +181,14 @@ export const tooltips = {
       grow: GRADE_HEADER_GROW,
       shrink: GRADE_HEADER_SHRINK,
       alignment: GRADE_HEADER_ALIGNMENT,
+      viewAsStudent: GRADE_HEADER_VIEW_AS_STUDENT,
     },
     subInfo: {
       assignGrader: GRADE_SUBINFO_ASSIGNGRADER,
       unfinalizeToAssign: GRADE_SUBINFO_UNFINALIZETOASSIGN,
+    },
+    comments: {
+      pointsDisabled: GRADE_COMMENT_POINTSDISABLED,
     },
   },
   settings: {

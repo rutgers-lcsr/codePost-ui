@@ -7,10 +7,9 @@ import * as React from 'react';
 
 /* style imports */
 import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
-const confirm = Modal.confirm;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -24,6 +23,8 @@ import { tooltips } from '../../../../components/core/tooltips';
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
 import { openSubmission } from '../../other/AdminUtils';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -122,7 +123,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type="eye" />
+              <Icon type="eye-invisible" />
             </div>
           </CPTooltip>
         );

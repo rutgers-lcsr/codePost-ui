@@ -25,6 +25,7 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
 }
 
 class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
+  // @ts-ignore
   public nextFrameActionId: number;
 
   public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
@@ -126,9 +127,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
               <div
                 className="code-panel--code"
                 style={{
-                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${
-                    themeVars.grade.codeContainer.marginLeft
-                  }px`,
+                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${themeVars.grade.codeContainer.marginLeft}px`,
                   position: 'relative',
                 }}
               >
@@ -145,7 +144,9 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
               <div
                 id="code-panel--comments"
                 className="code-panel--comments"
-                style={{ minWidth: `${this.props.dimensions.commentsWidth}px` }}
+                style={{
+                  minWidth: `${this.props.dimensions.commentsWidth}px`,
+                }}
               >
                 {this.props.comments}
               </div>

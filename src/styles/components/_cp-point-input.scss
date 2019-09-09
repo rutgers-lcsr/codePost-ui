@@ -1,35 +1,64 @@
+.point-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  max-width: 120px;
+  margin: 0px auto;
+
+  &--dark {
+    .ant-input-number {
+      border-color: #57595c;
+      z-index: 10;
+
+      &:active {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+      &:focus {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+      &:hover {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+    }
+
+    .ant-btn {
+      border-color: #57595c;
+      z-index: 10;
+
+      &:active {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+      &:focus {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+      &:hover {
+        border-color: $brandPrimary;
+        z-index: 11;
+      }
+    }
+  }
+}
+
 .cp-point-input {
   .ant-input-number-handler-wrap {
     visibility: hidden;
     width: 0px;
   }
 
-  .anticon {
-    // color: $neutralSecondaryText;
-  }
-
-  .ant-btn {
-    &:active {
-      color: $neutralTitle;
-      background-color: #fafafa;
-      border-color: #d9d9d9;
-    }
-    &:focus {
-      color: $neutralMainText;
-      border-color: #d9d9d9;
-    }
-    &:hover {
-      color: $neutralMainText;
-      border-color: #d9d9d9;
-    }
-  }
-
   &--default {
+    width: auto;
   }
 
   &--small {
+    width: 72px !important;
     .ant-input-number {
-      width: 42px;
+      width: 34px;
       font-size: 12px;
     }
 
@@ -44,6 +73,11 @@
     .ant-btn {
       padding: 0px 4px !important;
       height: 24px;
+      line-height: 10px;
+    }
+
+    .ant-btn-icon-only {
+      width: auto;
     }
   }
 }

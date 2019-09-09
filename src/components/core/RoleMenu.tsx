@@ -55,7 +55,11 @@ const RoleMenu = (props: IProps) => {
           title={
             <div>
               Each role in codePost has its own console. To learn more about roles, click{' '}
-              <a href="https://help.codepost.io/en/articles/3182075-roles-in-codepost" target="_blank">
+              <a
+                href="https://help.codepost.io/en/articles/3182075-roles-in-codepost"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 here
               </a>
               .

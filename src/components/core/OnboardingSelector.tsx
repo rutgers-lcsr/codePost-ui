@@ -9,9 +9,6 @@ import * as React from 'react';
 import { Button, Divider, Icon, Modal, Tooltip, Upload } from 'antd';
 import { UploadChangeParam } from 'antd/lib/upload';
 
-/* other library imports */
-import _ from 'lodash';
-
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
 

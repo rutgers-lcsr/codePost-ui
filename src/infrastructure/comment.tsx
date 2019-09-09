@@ -21,6 +21,7 @@ const CommentV = t.intersection(
     t.partial({
       author: t.string,
       isSaved: t.boolean,
+      color: t.union([t.string, t.null]),
     }),
   ],
   'Comment',
@@ -51,9 +52,9 @@ const CommentVFeedback = t.intersection([
   }),
 ]);
 
-type CommentType = t.TypeOf<typeof CommentV>;
+export type CommentType = t.TypeOf<typeof CommentV>;
 
-class CommentIO {
+export class CommentIO {
   public static create = createObject(CommentV, CommentV, 'comments');
   public static read = readObject(CommentV, 'comments');
   public static update = updateObject(CommentV, CommentVPatch, 'comments');
@@ -104,7 +105,7 @@ class CommentIO {
 }
 
 /* tslint:disable:max-classes-per-file */
-class UiComment {
+export class UiComment {
   public static isNew = (comment: CommentType) => {
     return comment.id < 0;
   };
@@ -118,7 +119,7 @@ class UiComment {
   };
 }
 
-const CommentMock: CommentType = {
+export const CommentMock: CommentType = {
   id: 1,
   text: 'This is a mocked comment',
   pointDelta: null,
@@ -132,4 +133,4 @@ const CommentMock: CommentType = {
   feedback: 0,
 };
 
-export { CommentType, CommentIO, CommentMock, UiComment };
+// export { CommentType, CommentIO, CommentMock, UiComment };

@@ -2,15 +2,13 @@ import * as React from 'react';
 
 import { Divider, Tag, Typography } from 'antd';
 
-import _ from 'lodash';
-
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-const midBreakPoint = landingVars.breakpoints.whyUse;
-
 import PreAuthLayout from './PreAuthLayout';
+
+const midBreakPoint = landingVars.breakpoints.whyUse;
 
 interface IPageProps {
   isLoggedIn: boolean;
@@ -60,12 +58,14 @@ const sections = [
         width="550"
         height="344"
         key="0"
+        alt="inline markdown comments"
       />,
       <img
         src="https://cl.ly/189610d312b3/Image%2525202019-08-12%252520at%2525205.39.12%252520PM.png"
         width="550"
         height="344"
         key="1"
+        alt="template code"
       />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
       <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
@@ -74,7 +74,7 @@ const sections = [
         key="5"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
       />,
-      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" />,
+      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" alt="dark mode" />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -100,6 +100,7 @@ const sections = [
         width="550"
         height="344"
         key="0"
+        alt="feedback on feedback"
       />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/peer-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/students.mp4" />,
@@ -134,6 +135,7 @@ const sections = [
         width="550"
         height="344"
         key="0"
+        alt="grader management"
       />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4" />,
@@ -315,7 +317,10 @@ const WhyUse = (props: IPageProps) => {
             <a
               className="whyUse__link"
               href="mailto:team@codepost.io"
-              style={{ borderBottom: '4px solid #24be85', textDecoration: 'none' }}
+              style={{
+                borderBottom: '4px solid #24be85',
+                textDecoration: 'none',
+              }}
             >
               Tell us
             </a>{' '}
