@@ -450,7 +450,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
             <TextArea autosize value={questionText} onChange={changeQuestionText} />
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
-                Ask for a regrade: <Switch disabled={false} onChange={toggleIsRegrade} />
+                Ask for a regrade: <Switch disabled={false} checked={questionIsRegrade} onChange={toggleIsRegrade} />
               </div>
             ) : (
               <div />
