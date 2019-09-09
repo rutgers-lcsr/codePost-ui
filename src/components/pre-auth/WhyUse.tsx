@@ -2,8 +2,6 @@ import * as React from 'react';
 
 import { Divider, Tag, Typography } from 'antd';
 
-import _ from 'lodash';
-
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';

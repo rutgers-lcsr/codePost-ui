@@ -13,8 +13,6 @@ import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-import _ from 'lodash';
-
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';

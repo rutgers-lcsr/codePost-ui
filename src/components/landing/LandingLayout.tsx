@@ -130,6 +130,7 @@ const LandingLayout = (props: IProps) => {
                   ? landingVars.backgroundOffsets.testimonialMobile
                   : landingVars.backgroundOffsets.testimonial,
             }}
+            alt=""
           />
           <div
             style={{
@@ -158,6 +159,7 @@ const LandingLayout = (props: IProps) => {
                 ? landingVars.backgroundOffsets.panelOneMobile
                 : landingVars.backgroundOffsets.panelOne,
           }}
+          alt=""
         />
         <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
       </div>
@@ -171,6 +173,7 @@ const LandingLayout = (props: IProps) => {
                 ? landingVars.backgroundOffsets.whyPanelMobile
                 : landingVars.backgroundOffsets.whyPanel,
           }}
+          alt=""
         />
         <div
           style={{
@@ -192,6 +195,7 @@ const LandingLayout = (props: IProps) => {
                 ? landingVars.backgroundOffsets.panelTwoMobile
                 : landingVars.backgroundOffsets.panelTwo,
           }}
+          alt=""
         />
         <div style={panelStyle}>{props.panelTwo}</div>
       </div>

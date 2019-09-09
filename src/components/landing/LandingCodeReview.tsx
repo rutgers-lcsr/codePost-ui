@@ -25,7 +25,7 @@ const setEditor = (editor: CodeMirror.Editor) => {
 const badCodeMirror = (
   <CodeMirror
     key={'bad code'}
-    className='bad-codemirror'
+    className="bad-codemirror"
     editorDidMount={setEditor}
     onBeforeChange={dummyFunction}
     value={
@@ -77,8 +77,7 @@ const comment2: CommentType = {
   startLine: 8,
   endLine: 8,
   pointDelta: 1,
-  text:
-    "This is why you're failing test 2. You can stop looking through the array once you've found the target!",
+  text: "This is why you're failing test 2. You can stop looking through the array once you've found the target!",
   file: -1,
   rubricComment: null,
   feedback: 0,
@@ -155,13 +154,14 @@ class CodeReview extends React.Component<{}, IState> {
     this.setMarkings(instance);
     return (
       <div
-        className='module--codeReview'
+        className="module--codeReview"
         style={{
           width: 685,
           display: 'flex',
           flexDirection: 'column',
           paddingTop: 50,
-        }}>
+        }}
+      >
         <div>
           <div
             style={{
@@ -169,7 +169,8 @@ class CodeReview extends React.Component<{}, IState> {
               marginBottom: 35,
               width: 335,
               maxHeight: 550,
-            }}>
+            }}
+          >
             {badCodeMirror}
           </div>
           <div style={{ width: 350, position: 'relative', float: 'right' }}>
@@ -180,11 +181,9 @@ class CodeReview extends React.Component<{}, IState> {
                 paddingLeft: 75,
                 top: 115,
                 position: 'absolute',
-              }}>
-              <img
-                src={require('./../../img/landing/compressed/confused_student.png')}
-                width='225'
-              />
+              }}
+            >
+              <img src={require('./../../img/landing/compressed/confused_student.png')} width="225" alt="" />
             </div>
             <div style={{ position: 'absolute', top: 40 }}>
               <div
@@ -193,9 +192,10 @@ class CodeReview extends React.Component<{}, IState> {
                   opacity: this.state.showComments ? 1 : 0,
                   transition: 'opacity .3s ease',
                   minHeight: 74,
-                }}>
+                }}
+              >
                 <Comment
-                  commentType='readonly'
+                  commentType="readonly"
                   comment={comment1}
                   placement={0}
                   changeActive={dummyFunction}
@@ -215,9 +215,10 @@ class CodeReview extends React.Component<{}, IState> {
                   opacity: this.state.showComments ? 1 : 0,
                   transition: 'opacity .3s ease',
                   minHeight: 94,
-                }}>
+                }}
+              >
                 <Comment
-                  commentType='readonly'
+                  commentType="readonly"
                   comment={comment2}
                   placement={0}
                   changeActive={dummyFunction}
@@ -237,16 +238,19 @@ class CodeReview extends React.Component<{}, IState> {
             display: 'flex',
             justifyContent: 'center',
             marginBottom: 35,
-          }}>
+          }}
+        >
           <CPButton
             cpType={this.state.showComments ? 'primary' : 'secondary'}
-            onClick={this.changeStatus.bind(this, true)}>
+            onClick={this.changeStatus.bind(this, true)}
+          >
             With code review
           </CPButton>
           &nbsp; &nbsp;
           <CPButton
             cpType={this.state.showComments ? 'secondary' : 'primary'}
-            onClick={this.changeStatus.bind(this, false)}>
+            onClick={this.changeStatus.bind(this, false)}
+          >
             No code review
           </CPButton>
         </div>
