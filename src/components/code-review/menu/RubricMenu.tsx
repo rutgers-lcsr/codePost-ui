@@ -102,7 +102,6 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     let commentSearchTerm = this.state.searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
       const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
-      console.log(categoryName);
       filteredCatgories = rubricCategories.filter((el) => {
         return el.name.toUpperCase().includes(categoryName.toUpperCase());
       });
@@ -233,7 +232,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
           <div style={{ textAlign: 'right' }}>
             <Tag
               style={{
-                background: '#fff',
+                background: this.context.consoleTheme.siderBg,
+                color: this.context.consoleTheme.siderTitle,
                 borderStyle: 'dashed',
                 marginBottom: '4px',
                 marginRight: '0px',

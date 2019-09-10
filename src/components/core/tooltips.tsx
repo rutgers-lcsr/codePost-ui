@@ -12,6 +12,13 @@ const CONSOLE_FILEMENU_COMMENTS = 'Comments in file';
 const STUDENT_SUBHEADER_ASSIGNMENT = 'Assignment name';
 
 // Grade Tooltips
+const GRADE_HEADER_DARKMODE = (
+  <div>
+    Toggle Dark Mode
+    <br />
+    [⌘ shift l]
+  </div>
+);
 const GRADE_HEADER_ZOOMIN = (
   <div>
     Magnify code
@@ -176,6 +183,7 @@ export const tooltips = {
   },
   grade: {
     header: {
+      darkMode: GRADE_HEADER_DARKMODE,
       zoomIn: GRADE_HEADER_ZOOMIN,
       zoomOut: GRADE_HEADER_ZOOMOUT,
       grow: GRADE_HEADER_GROW,

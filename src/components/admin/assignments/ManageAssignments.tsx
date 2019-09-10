@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Tag, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -418,7 +418,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               )}
               <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
                 <Icon type="diff" />
-                Check MOSS
+                Check MOSS <Tag>BETA</Tag>
               </Menu.Item>
               <SubMenu
                 key="4"
