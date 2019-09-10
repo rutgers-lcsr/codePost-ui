@@ -54,6 +54,7 @@ import {
   StatusTags,
   SubheaderTitle,
   ViewAsStudent,
+  DownloadCode,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -1368,6 +1369,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
+          <DownloadCode key="download-code" />,
           controls,
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton

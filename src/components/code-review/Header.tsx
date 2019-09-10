@@ -129,6 +129,31 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
 
 /**********************************************************************************************************************/
 
+// interface IDownloadCode {
+//   pathname: string;
+// }
+
+export const DownloadCode = (props: any) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+  const onClick = () => {
+    console.log('download!');
+  };
+
+  return (
+    <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
+      <ButtonGroup>
+        <CPButton id="view-as-student" cpType={cpType} small={true} onClick={onClick}>
+          <Icon type="download" />
+        </CPButton>
+      </ButtonGroup>
+    </CPTooltip>
+  );
+};
+
+/**********************************************************************************************************************/
+
 interface IControlsProps {
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
   updateZoom: (newZoom: number) => void;
