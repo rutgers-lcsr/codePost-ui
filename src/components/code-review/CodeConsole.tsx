@@ -1143,9 +1143,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
             Code Review Console
           </Menu.Item>
-          <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-          </Menu.Item>
+          {this.state.isStudent ? null : (
+            <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+              <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
+            </Menu.Item>
+          )}
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
           </Menu.Item>
