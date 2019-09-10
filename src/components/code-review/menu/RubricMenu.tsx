@@ -179,7 +179,6 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       // Unfortunately, Ant API doesn't give us direct access to subcomponents (e.g. ant-submenu-title)
       // So we can't update the styles with inline js (only css selectors)
       // In order to handle dark mode, we inject an absolutely positioned div to simulate the title space
-      console.log('context', this.context.consoleTheme.siderSubmenuTitleBg, this.context.consoleTheme);
       return (
         <SubMenu
           key={`category-${rubricCategory.id}`}

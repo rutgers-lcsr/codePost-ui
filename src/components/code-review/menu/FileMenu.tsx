@@ -86,7 +86,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     }
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -322,7 +322,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   /**************************** Render *************************************/
   public render() {
     const fileStructure = this.createDirectoryStructure(this.props.files);
-    console.log(fileStructure);
     const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
     const folders = fileStructure.folders.map((f: IFolder) => {
       return this.buildFolderMenu('', f);
