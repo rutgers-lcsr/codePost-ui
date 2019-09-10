@@ -5,6 +5,10 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
+import JSZip from 'jszip';
+
+import { saveAs } from 'file-saver';
+
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
 
@@ -17,6 +21,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 
@@ -129,16 +134,24 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
 
 /**********************************************************************************************************************/
 
-// interface IDownloadCode {
-//   pathname: string;
-// }
+interface IDownloadCodeProps {
+  files: FileType[];
+}
 
-export const DownloadCode = (props: any) => {
+export const DownloadCode = (props: IDownloadCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
   const onClick = () => {
-    console.log('download!');
+    console.log('download!', props.files);
+    const zip = new JSZip();
+    props.files.map((file: FileType) => {
+      zip.file(file.name, file.code);
+    });
+
+    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+      saveAs(content, `submission-${props.files[0].submission}.zip`);
+    });
   };
 
   return (
