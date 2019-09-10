@@ -418,7 +418,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               )}
               <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
                 <Icon type="diff" />
-                Check MOSS <Tag>BETA</Tag>
+                Check Moss <Tag>BETA</Tag>
               </Menu.Item>
               <SubMenu
                 key="4"

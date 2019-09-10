@@ -57,24 +57,24 @@ const sections = [
         src="https://cl.ly/5be426469f4b/Image%2525202019-08-12%252520at%2525205.46.08%252520PM.png"
         width="550"
         height="344"
-        key="0"
+        key="markdown"
         alt="inline markdown comments"
       />,
       <img
         src="https://cl.ly/189610d312b3/Image%2525202019-08-12%252520at%2525205.39.12%252520PM.png"
         width="550"
         height="344"
-        key="1"
+        key="template"
         alt="template code"
       />,
-      <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
-      <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
-      <Video key="4" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4" />,
+      <Video key="jupyter" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/ipython.mp4" />,
+      <Video key="text" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/text_files.mp4" />,
+      <Video key="rubric" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/rubrics.mp4" />,
       <Video
-        key="5"
+        key="collab"
         url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/collaborative_rubric.mp4"
       />,
-      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="6" alt="dark mode" />,
+      <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="dark" alt="dark mode" />,
     ],
     captions: [
       `codePost comments sit alongside code so they're easier to read.
@@ -123,6 +123,9 @@ const sections = [
     title: 'For instructors',
     features: [
       'Make sure everything gets graded',
+      <span key="moss">
+        Do plagiarism detection with Moss &nbsp; <Tag>BETA</Tag>
+      </span>,
       'Grade student work anonymously',
       'Make changes to rubrics after grading',
       'Distribute work to a team of graders',
@@ -137,6 +140,7 @@ const sections = [
         key="0"
         alt="grader management"
       />,
+      <img src="https://cl.ly/b1fe90be31f9/Moss.png" width="550" height="344" key="moss" alt="moss" />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4" />,
       <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/distribute-work.mp4" />,
@@ -149,6 +153,8 @@ const sections = [
     captions: [
       `codePost gives course leaders a dashboard that helps track the progress of grading, so no submission
     slips through the cracks.`,
+      `codePost can send assignment submissions through Moss for plagiarism detection, making it easy to
+    run routine checks.`,
       `Anonymous Grading Mode hides student identity from graders, preventing conflicts of interest or implicit
       bias to influence grading.`,
       `Changes made to rubrics after grading propagate to all submissions to which the rubric has been applied.
