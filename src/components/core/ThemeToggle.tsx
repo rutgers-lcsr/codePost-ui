@@ -7,6 +7,8 @@ import { ReactComponent as SunSvg } from '../../img/icons/sun.svg';
 
 import ToggleButton from 'react-toggle-button';
 
+import useHotkeys, { L_KEY } from '../code-review/useHotkeys';
+
 interface IProps {
   small?: boolean;
 }
@@ -29,6 +31,8 @@ const ThemeToggle = (props: IProps) => {
       toggleConsoleTheme('dark');
     }
   };
+
+  useHotkeys(L_KEY, onChange, true);
 
   // @ts-ignore
   const Moon = (
