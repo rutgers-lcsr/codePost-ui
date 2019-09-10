@@ -123,10 +123,10 @@ See more detailed instructions for how to
 the similarity of programs and detecting plagiarism in programming courses. It was
 developed at Stanford in 1994.
 
-Out of the box, codePost can  send submissions to Moss for similarity assessment.
-To learn how, see the [full instructions on GitHub](https://github.com/codepost-io/Moss-Integration).
+Out of the box, codePost can send submissions to Moss for similarity assessment. Once you
+have a Moss ID, go to your codePost Assignments and click Actions -> Check Moss.
 
-And watch the full process in action [here](https://codepost.wistia.com/medias/4fe8oc5ijg).
+To see the scripts in more detail, [check them out on GitHub](https://github.com/codepost-io/integration-moss).
 `,
   },
   homegrown: {
