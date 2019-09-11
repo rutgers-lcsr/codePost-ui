@@ -1,11 +1,5 @@
 import * as t from 'io-ts';
-import {
-  createObject,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-} from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 export const RubricCategoryV = t.intersection(
   [
@@ -16,6 +10,8 @@ export const RubricCategoryV = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       sortKey: t.number,
+    }),
+    t.partial({
       helpText: t.string,
     }),
   ],
@@ -56,17 +52,9 @@ export type RubricCategoryStudentType = t.TypeOf<typeof RubricCategoryStudentV>;
 export type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
 
 export class RubricCategory {
-  public static create = createObject(
-    RubricCategoryV,
-    RubricCategoryV,
-    'rubricCategories',
-  );
+  public static create = createObject(RubricCategoryV, RubricCategoryV, 'rubricCategories');
   public static read = readObject(RubricCategoryV, 'rubricCategories');
-  public static update = updateObject(
-    RubricCategoryV,
-    RubricCategoryVPatch,
-    'rubricCategories',
-  );
+  public static update = updateObject(RubricCategoryV, RubricCategoryVPatch, 'rubricCategories');
   public static delete = deleteObject(RubricCategoryV, 'rubricCategories');
 
   public static compare = (a: RubricCategoryType, b: RubricCategoryType) => {
