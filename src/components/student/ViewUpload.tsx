@@ -60,12 +60,7 @@ function ViewUpload(props: IProps) {
   );
 
   return (
-    <Modal
-      visible={props.isVisible}
-      title="Submitted Files"
-      footer={[cancel]}
-      width={1100}
-    >
+    <Modal visible={props.isVisible} title="Submitted Files" onCancel={props.onCancel} footer={[cancel]} width={1100}>
       {!loadComplete ? (
         <Spin />
       ) : files.length === 0 ? (
