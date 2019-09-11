@@ -31,6 +31,8 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import { getOperatingSystem, OS } from '../useHotkeys';
 
+import { slack } from '../../core/slack';
+
 const { SubMenu } = Menu;
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
@@ -72,6 +74,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
     const sortedFiles = this.sortFiles(directoryStructure);
     const oldVersionsMap = separatedFiles.old;
+    if (oldVersionsMap) {
+      const payload = {
+        message: `File versioning:`,
+        url: window.location.href,
+      };
+      slack(`${process.env.REACT_APP_API_URL}/logs/logFeature/`, payload);
+    }
     this.state = {
       directoryStructure,
       sortedFiles,
