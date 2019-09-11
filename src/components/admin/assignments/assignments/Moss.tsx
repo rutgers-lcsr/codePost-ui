@@ -92,8 +92,8 @@ const Moss = (props: IMossProps) => {
 
   const estimate = props.submissions.length * props.submissions.length * 80;
   // const estimate = 45 * 45 * 80;
-  const submitTime = Math.ceil(estimate / 30000) * 30000;
-  // const submitTime = 30000;
+  // const submitTime = Math.ceil(estimate / 30000) * 30000;
+  const submitTime = 200;
 
   // const mockResults = [
   //   {
@@ -192,10 +192,19 @@ const Moss = (props: IMossProps) => {
   };
 
   const checkMoss = async () => {
+    // const payload = {
+    //   course_id: props.course['id'],
+    //   assignment_id: props.assignment['id'],
+    //   api_key: `JWT ${localStorage.getItem('token')}`,
+    //   language,
+    //   moss_id: mossID,
+    // };
+
     const payload = {
-      course_id: props.course['id'],
-      assignment_id: props.assignment['id'],
-      api_key: `JWT ${localStorage.getItem('token')}`,
+      course_id: 124,
+      assignment_id: 512,
+      api_key:
+        'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InJpY2hhcmRAY29kZXBvc3QuaW8iLCJleHAiOjE1NjgzOTc4MDUsImVtYWlsIjoicmljaGFyZEBjb2RlcG9zdC5pbyIsIm9yaWdfaWF0IjoxNTY4MjI1MDA1fQ.n7KxM31M0bT_jIgvGsz_CTlPCWsJ3-i_FxTF3CZwDuQ',
       language,
       moss_id: mossID,
     };
@@ -277,6 +286,7 @@ const Moss = (props: IMossProps) => {
   const help = (
     <CPTooltip
       infoIcon={true}
+      iconStyle={{ cursor: 'pointer' }}
       title={
         <span>
           Want help getting started with Moss? Check out our guide{' '}
@@ -331,7 +341,12 @@ const Moss = (props: IMossProps) => {
               title={
                 <span>
                   You can obtain a Moss ID by clicking{' '}
-                  <a href={`mailto:${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody}`}>here</a>{' '}
+                  <a
+                    href={`mailto:${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody}`}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    here
+                  </a>{' '}
                   and sending the email as it appears.
                 </span>
               }
@@ -357,8 +372,9 @@ const Moss = (props: IMossProps) => {
         </Button>
       </div>
       {loading ? (
-        <div style={{ padding: '40px 0px 0px 0px' }}>
+        <div style={{ padding: '40px 0px 0px 0px', textAlign: 'center' }}>
           <ProgressBar time={submitTime} />
+          <Paragraph>We'll also send you an email when this is done...</Paragraph>
         </div>
       ) : null}
       {hanging ? (
