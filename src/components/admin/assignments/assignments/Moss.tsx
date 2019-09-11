@@ -270,6 +270,7 @@ const Moss = (props: IMossProps) => {
       <div style={{ padding: '10px 0px' }}>
         <Input
           addonBefore="Moss ID Number"
+          type="password"
           value={mossID}
           onChange={onMossIDChange}
           style={{ width: '100%' }}
