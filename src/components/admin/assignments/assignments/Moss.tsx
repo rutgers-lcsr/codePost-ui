@@ -89,11 +89,9 @@ const Moss = (props: IMossProps) => {
   const [hanging, setHanging] = React.useState(false);
 
   // const estimate = props.submissions.length * props.submissions.length * 80;
-  const estimate = 45 * 45 * 80;
-  console.log('estimate', estimate);
-  const submitTime = Math.ceil(estimate / 30000) * 30000;
-  console.log('submittime', submitTime, msToString(submitTime));
-  // const submitTime = 10 * 10 * 200;
+  // const estimate = 45 * 45 * 80;
+  // const submitTime = Math.ceil(estimate / 30000) * 30000;
+  const submitTime = 30000;
 
   // const mockResults = [
   //   {
@@ -208,6 +206,7 @@ const Moss = (props: IMossProps) => {
     });
 
     console.log('res', res);
+    console.log('------>');
 
     // Uncaught Lambda Error
     if (res.StatusCode !== 200) {
@@ -245,6 +244,7 @@ const Moss = (props: IMossProps) => {
 
       try {
         const data = await checkMoss();
+        console.log('done', data);
         setUrl(data);
         clearTimeout(timer);
         hideHang();
