@@ -907,6 +907,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       uploadDueDate: '',
       liveFeedbackMode: false,
       additiveGrading: false,
+      forcedRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -1218,6 +1219,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
@@ -1419,6 +1421,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
