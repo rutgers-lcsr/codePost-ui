@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Dropdown, Icon, Menu, Popconfirm, Tag } from 'antd';
+
+import moment from 'moment';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -209,52 +211,129 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     );
   };
 
+  public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
+    const [deductions, bonuses] = this.props.getPointsInFile(file);
+    let commentCount = 0;
+    if (this.props.comments === undefined) {
+      commentCount = file.comments.length;
+    } else {
+      commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+        return comment.id > 0;
+      }).length;
+    }
+
+    let faded = true;
+    if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+      faded = false;
+    }
+
+    let commentCountBadge = null;
+    if (commentCount > 0) {
+      commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
+    } else {
+      commentCountBadge = null;
+    }
+
+    let deductionBadge = null;
+    let bonusBadge = null;
+
+    if (deductions > 0) {
+      deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
+    } else {
+      deductionBadge = null;
+    }
+
+    if (bonuses > 0) {
+      bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
+    } else {
+      bonusBadge = null;
+    }
+
+    const badgesStyle: React.CSSProperties = !shrunkSider
+      ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
+      : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+
+    return (
+      <div style={badgesStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {!this.props.hidePoints ? (
+            <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+              <div>{bonusBadge}</div>
+            </CPTooltip>
+          ) : null}
+          {!this.props.hidePoints ? (
+            <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+              <div>{deductionBadge}</div>
+            </CPTooltip>
+          ) : null}
+          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+            <div>{commentCountBadge}</div>
+          </CPTooltip>
+        </div>
+      </div>
+    );
+  };
+
   // Build a list of Menu.Items from a set of files
   public buildFileMenu = (files: FileType[], sortedFiles: FileType[]) => {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
 
-    return files.map((file: FileType) => {
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
+    const olderFiles: { [fileName: string]: FileType[] } = {};
 
-      let commentCount = 0;
-      if (this.props.comments === undefined) {
-        commentCount = file.comments.length;
-      } else {
-        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-          return comment.id > 0;
-        }).length;
+    const latestFiles = files.filter((f1) => {
+      const moreRecentFile = files.some((f2) => {
+        return f2.name === f1.name && f2.id !== f1.id && Date.parse(f1.created) >= Date.parse(f2.created);
+      });
+      if (moreRecentFile) {
+        olderFiles[f1.name] ? olderFiles[f1.name].push(f1) : (olderFiles[f1.name] = [f1]);
       }
+      return !moreRecentFile;
+    });
 
-      let faded = true;
-      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-        faded = false;
+    return latestFiles.map((file: FileType) => {
+      let olderFileMenu = null;
+      if (olderFiles[file.name]) {
+        const items = olderFiles[file.name].map((f2: FileType) => {
+          console.log(f2);
+          return (
+            <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
+              {
+                <div className="display-flex align-items-center justify-content-space-between">
+                  {moment(file.created).format('llll')}
+                  <Badge count={f2.comments.length} forcedStyle="neutral" size="small" />
+                </div>
+              }
+            </Menu.Item>
+          );
+        });
+        const menu = (
+          <UnsavedCommentsPopconfirm
+            changeSelectedFile={this.props.changeSelectedFile}
+            canChange={this.props.canChange}
+          >
+            <Menu
+              mode="inline"
+              inlineCollapsed={false}
+              selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+              defaultOpenKeys={[`${file.id}-old-versions-submenu`]}
+              style={{ minWidth: 280 }}
+            >
+              <Menu.SubMenu key={`${file.id}-old-versions-submenu`} title="Older Versions">
+                {items}
+              </Menu.SubMenu>
+            </Menu>
+          </UnsavedCommentsPopconfirm>
+        );
+
+        olderFileMenu = (
+          <Dropdown overlay={menu} trigger={['hover']}>
+            <AntBadge
+              count={olderFiles[file.name].length + 1}
+              style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
+            />
+          </Dropdown>
+        );
       }
-
-      let commentCountBadge = null;
-      if (commentCount > 0) {
-        commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
-      } else {
-        commentCountBadge = null;
-      }
-
-      let deductionBadge = null;
-      let bonusBadge = null;
-
-      if (deductions > 0) {
-        deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
-      } else {
-        deductionBadge = null;
-      }
-
-      if (bonuses > 0) {
-        bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
-      } else {
-        bonusBadge = null;
-      }
-
-      const badgesStyle: React.CSSProperties = !shrunkSider
-        ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
-        : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
 
       /* tslint:disable */
       const shortcutStyle: React.CSSProperties = !shrunkSider
@@ -275,6 +354,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
       return (
         <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
+          {olderFileMenu}
           <div
             style={{
               display: 'inline-block',
@@ -296,24 +376,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               {file.name}
             </div>
           </div>
-
-          <div style={badgesStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              {!this.props.hidePoints ? (
-                <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-                  <div>{bonusBadge}</div>
-                </CPTooltip>
-              ) : null}
-              {!this.props.hidePoints ? (
-                <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-                  <div>{deductionBadge}</div>
-                </CPTooltip>
-              ) : null}
-              <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-                <div>{commentCountBadge}</div>
-              </CPTooltip>
-            </div>
-          </div>
+          {this.buildFileBadges(file, shrunkSider)}
         </Menu.Item>
       );
     });
@@ -365,18 +428,25 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
 
   const onSelect = (selectParam: SelectParam) => {
     setSelectedParam(selectParam);
+    if (selectParam) {
+      selectParam.domEvent.preventDefault();
+      selectParam.domEvent.stopPropagation();
+    }
   };
 
   const confirm = () => {
     if (selectedParam) {
+      console.log(selectedParam.domEvent);
       const fileID = +selectedParam.key.split('-')[1];
       props.changeSelectedFile(fileID);
+      console.log(fileID);
     }
     setSelectedParam(null);
     setVisible(false);
   };
 
   const cancel = () => {
+    console.log('cancelling');
     setSelectedParam(null);
     setVisible(false);
   };
