@@ -88,10 +88,10 @@ const Moss = (props: IMossProps) => {
   const [mossID, setMossID] = React.useState('');
   const [hanging, setHanging] = React.useState(false);
 
-  // const estimate = props.submissions.length * props.submissions.length * 80;
+  const estimate = props.submissions.length * props.submissions.length * 80;
   // const estimate = 45 * 45 * 80;
-  // const submitTime = Math.ceil(estimate / 30000) * 30000;
-  const submitTime = 30000;
+  const submitTime = Math.ceil(estimate / 30000) * 30000;
+  // const submitTime = 30000;
 
   // const mockResults = [
   //   {
