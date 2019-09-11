@@ -37,9 +37,10 @@ const SignupHeader = (props: { step: SignupStep }) => {
         justifyContent: 'center',
         paddingRight: 40,
         paddingLeft: 40,
-        paddingTop:
-          windowSize.width < breakpoint ? landingVars.Vpadding.headerSmallScreen : landingVars.Vpadding.headerNormal,
-        paddingBottom: windowSize.width < breakpoint ? 0 : landingVars.Vpadding.headerNormal,
+        paddingTop: windowSize.width < breakpoint ? landingVars.Vpadding.headerSmallScreen : '35px',
+        paddingBottom: windowSize.width < breakpoint ? 0 : '35px',
+        maxWidth: '1200px',
+        margin: '0 auto',
       }}
     >
       <div
@@ -59,9 +60,9 @@ const SignupHeader = (props: { step: SignupStep }) => {
         </div>
         <div style={{ paddingTop: paddingTopSteps }}>
           <Steps current={props.step} direction={stepDirection}>
-            <Step title="1. Choose role" />
-            <Step title="2. Create Account" />
-            <Step title="3. Start using codePost!" />
+            <Step title="Choose role" />
+            <Step title="Create Account" />
+            <Step title="Start using codePost!" />
           </Steps>
         </div>
       </div>
