@@ -370,7 +370,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
             <div style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{responseText}</div>
           ) : (
             <div>
-              <TextArea autosize value={responseText} onChange={changeRegradeText} />
+              <TextArea autosize={{ minRows: 4, maxRows: 8 }} value={responseText} onChange={changeRegradeText} />
               <div style={{ marginTop: 15 }}>
                 <Text type="warning">
                   Note: The student will be able to view this response once submitted, as well as your email as the
