@@ -166,7 +166,14 @@ const CollectionCreateForm: any = Form.create()(
       const { visible, onCancel, onSave, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Update assignment settings" okText="Save" onCancel={onCancel} onOk={onSave}>
+        <Modal
+          visible={visible}
+          title="Update assignment settings"
+          okText="Save"
+          onCancel={onCancel}
+          onOk={onSave}
+          width={650}
+        >
           <Form layout="horizontal" hideRequiredMark={true}>
             <Form.Item
               label="Name"
