@@ -323,7 +323,7 @@ const Moss = (props: IMossProps) => {
           <ProgressBar time={submitTime} />
         </div>
       ) : null}
-      {!hanging ? (
+      {hanging ? (
         <div style={{ textAlign: 'center', padding: '20px' }}>
           <Paragraph>
             Hang tight, this is taking longer than expected... <Spin size="small" />
