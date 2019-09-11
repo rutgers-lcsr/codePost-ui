@@ -127,6 +127,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     this.props.changeSelectedFile(fileID);
   };
 
+  /**************************** FILE VERSIONING AND DIRECTORY HELPERS*************************************/
   // Go through the list of files and separate the latest files from the old files
   public separateFilesByVersion = (files: FileType[]) => {
     const olderFiles: { [pathName: string]: FileType[] } = {};
@@ -152,7 +153,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     return { new: latestFilesArr, old: olderFiles };
   };
 
-  /**************************** File Menu Functions *************************************/
   // Create a nested directory corresponding to the folder and file structure
   public createDirectoryStructure = (files: FileType[]) => {
     const root: IDirectoryStructure = { folders: [], files: [] };
@@ -226,7 +226,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     return sortedFiles;
   };
 
-  // Recursive function to build a Sub Menu for a folder
+  /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
+  // FOLDER MENU BUILD
   public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
     const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
@@ -250,6 +251,52 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     );
   };
 
+  // OLD VERSIONS MENU BUILD
+  public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
+    const { oldVersionsMap } = this.state;
+    const items = oldVersions.map((f2: FileType) => {
+      return (
+        <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
+          {
+            <div className="display-flex align-items-center justify-content-space-between">
+              {moment(f2.created).format('llll')}
+              <Badge count={f2.comments.length} forcedStyle="neutral" size="small" />
+            </div>
+          }
+        </Menu.Item>
+      );
+    });
+    const menu = (
+      <UnsavedCommentsPopconfirm
+        changeSelectedFile={this.props.changeSelectedFile}
+        canChange={this.props.canChange}
+        oldVersions={true}
+      >
+        <Menu
+          mode="inline"
+          inlineCollapsed={false}
+          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+          defaultOpenKeys={[`${path}-old-versions`]}
+          style={{ minWidth: 280 }}
+        >
+          <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
+            {items}
+          </Menu.SubMenu>
+        </Menu>
+      </UnsavedCommentsPopconfirm>
+    );
+
+    return (
+      <Dropdown overlay={menu} trigger={['hover']}>
+        <AntBadge
+          count={oldVersionsMap[path].length + 1}
+          style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
+        />
+      </Dropdown>
+    );
+  };
+
+  // FILE MENU HELPER - BADGE STYLING
   public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
     const [deductions, bonuses] = this.props.getPointsInFile(file);
     let commentCount = 0;
@@ -313,7 +360,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     );
   };
 
-  // Build a list of Menu.Items from a set of files
+  // FILE MEN BUILD
   public buildFileMenu = (files: FileType[], sortedFiles: FileType[]) => {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
     const { oldVersionsMap } = this.state;
@@ -321,47 +368,9 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     return files.map((file: FileType) => {
       let oldVersionsMenu: any = null;
       const path = `${file.path ? file.path : ''}/${file.name}`;
-      if (oldVersionsMap[path]) {
-        const items = oldVersionsMap[path].map((f2: FileType) => {
-          return (
-            <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
-              {
-                <div className="display-flex align-items-center justify-content-space-between">
-                  {moment(f2.created).format('llll')}
-                  <Badge count={f2.comments.length} forcedStyle="neutral" size="small" />
-                </div>
-              }
-            </Menu.Item>
-          );
-        });
-        const menu = (
-          <UnsavedCommentsPopconfirm
-            changeSelectedFile={this.props.changeSelectedFile}
-            canChange={this.props.canChange}
-            oldVersions={true}
-          >
-            <Menu
-              mode="inline"
-              inlineCollapsed={false}
-              selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-              defaultOpenKeys={[`${path}-old-versions`]}
-              style={{ minWidth: 280 }}
-            >
-              <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
-                {items}
-              </Menu.SubMenu>
-            </Menu>
-          </UnsavedCommentsPopconfirm>
-        );
 
-        oldVersionsMenu = (
-          <Dropdown overlay={menu} trigger={['hover']}>
-            <AntBadge
-              count={oldVersionsMap[path].length + 1}
-              style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
-            />
-          </Dropdown>
-        );
+      if (oldVersionsMap[path]) {
+        oldVersionsMenu = this.buildOldVersionsMenu(file, oldVersionsMap[path], path);
       }
 
       /* tslint:disable */
@@ -411,7 +420,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     });
   };
 
-  /**************************** Render *************************************/
+  /**************************** RENDER *************************************/
   public render() {
     const { directoryStructure } = this.state;
     const rootFiles = this.buildFileMenu(directoryStructure.files, this.state.sortedFiles);
