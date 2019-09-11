@@ -4,6 +4,8 @@ import { reporter } from 'io-ts-reporters';
 import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/pipeable';
 
+import { slack } from '../components/core/slack';
+
 import { message } from 'antd';
 
 // Apply a validator and get the result in a Promise
@@ -15,6 +17,15 @@ function decodeToPromise<T, O, I>(validator: t.Type<T, O, I>, input: I): Promise
     E.fold(
       (errors: any) => {
         const messages = reporter(result);
+
+        const payload = {
+          error: `io-ts error -> ${messages.join('; ').toString()}`,
+          errorDetail: JSON.stringify(input),
+          url: window.location.href,
+        };
+
+        slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+
         return Promise.reject(new Error(messages.join('\n')));
       },
       (value: any) => {
