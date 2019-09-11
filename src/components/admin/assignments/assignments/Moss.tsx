@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Statistic, Typography } from 'antd';
+import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
 
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 
@@ -207,13 +207,14 @@ const Moss = (props: IMossProps) => {
       payload,
     });
 
-    // console.log('res', res);
+    console.log('res', res);
 
     // Uncaught Lambda Error
     if (res.StatusCode !== 200) {
       return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
     } else {
       const resPayload = await JSON.parse(res['Payload']);
+      console.log('resPayload', resPayload);
       // Completed Running Function
       if (resPayload.hasOwnProperty('errorMessage')) {
         const error = resPayload['errorMessage'];
@@ -322,9 +323,11 @@ const Moss = (props: IMossProps) => {
           <ProgressBar time={submitTime} />
         </div>
       ) : null}
-      {hanging ? (
+      {!hanging ? (
         <div style={{ textAlign: 'center', padding: '20px' }}>
-          <Paragraph>Hang tight, this is taking longer than expected...</Paragraph>
+          <Paragraph>
+            Hang tight, this is taking longer than expected... <Spin size="small" />
+          </Paragraph>
         </div>
       ) : null}
       {url !== null ? (
