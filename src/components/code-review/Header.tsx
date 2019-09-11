@@ -19,6 +19,7 @@ import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+import { FileType } from '../../infrastructure/file';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -466,6 +467,7 @@ interface IGradeButtonProps {
   rubricCategories: RubricCategoryType[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
+  files: FileType[];
 }
 
 export const GradeButton = (props: IGradeButtonProps) => {
