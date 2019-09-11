@@ -366,12 +366,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       }
     } else {
       if (
-        submission.hasGrader ||
+        (submission.hasGrader && !assignment.liveFeedbackMode) ||
         submission.isFinalized ||
         (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
       ) {
         // Case 3: Submission exists, and cannot be replaced, either because
-        // it has a grader, is finalized (hasGrader isn't exposed), or the due date has passed
+        // it has a grader and is not in live feeedback mode, is finalized
+        // (hasGrader isn't exposed), or the due date has passed
         return (
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
             <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
