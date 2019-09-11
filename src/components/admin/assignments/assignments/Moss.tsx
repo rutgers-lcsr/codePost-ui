@@ -8,19 +8,21 @@ import * as React from 'react';
 /* ant imports */
 import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
 
+/* codePost imports */
+import { AssignmentType } from '../../../../infrastructure/assignment';
+import { CourseType } from '../../../../infrastructure/course';
+import { SubmissionType } from '../../../../infrastructure/submission';
+import { UserType } from '../../../../infrastructure/user';
+
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 
 import CPFlex from '../../../../components/core/CPFlex';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
 
-import MossResults from './MossResults';
+import CPTooltip from '../../../core/CPTooltip';
 
-/* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionType } from '../../../../infrastructure/submission';
-import { UserType } from '../../../../infrastructure/user';
+import MossResults from './MossResults';
 
 const { Option } = Select;
 
@@ -273,9 +275,21 @@ const Moss = (props: IMossProps) => {
 
   const title = <div style={{ fontSize: '24px', fontWeight: 500 }}>Moss Plagiarism Detection </div>;
   const help = (
-    <div>
-      <Icon type="info-circle" />
-    </div>
+    <CPTooltip
+      infoIcon={true}
+      title={
+        <span>
+          Want help getting started with Moss? Check out our guide{' '}
+          <a
+            target="_blank"
+            href="https://help.codepost.io/en/articles/3324264-faq-does-codepost-do-plagiarism-detection"
+          >
+            here
+          </a>
+          .
+        </span>
+      }
+    />
   );
 
   const toggle = (
@@ -289,6 +303,11 @@ const Moss = (props: IMossProps) => {
     </ButtonGroup>
   );
 
+  // Source for email format: http://theory.stanford.edu/~aiken/moss/
+  const requestEmail = 'moss@moss.stanford.edu';
+  const requestEmailSubject = 'New%20Moss%20Account';
+  const requestEmailBody = `registeruser${escape('\r\n')}mail ${props.user.email}`;
+
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
@@ -301,7 +320,25 @@ const Moss = (props: IMossProps) => {
         <Statistic title="Estimated Time" value={msToString(submitTime)} style={{ display: 'inline-block' }} />
       </div>
       <div style={{ padding: '10px 0px' }}>
-        <Input addonBefore="Moss ID Number" value={mossID} onChange={onMossIDChange} style={{ width: '100%' }} />
+        <Input
+          addonBefore="Moss ID Number"
+          value={mossID}
+          onChange={onMossIDChange}
+          style={{ width: '100%' }}
+          addonAfter={
+            <CPTooltip
+              title={
+                <span>
+                  You can obtain a Moss ID by clicking{' '}
+                  <a href={`mailto:${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody}`}>here</a>{' '}
+                  and sending the email as it appears.
+                </span>
+              }
+            >
+              <Icon type="question-circle" />
+            </CPTooltip>
+          }
+        />
       </div>
       <div style={{ padding: '10px 0px' }}>
         <Select
