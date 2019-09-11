@@ -88,7 +88,11 @@ const Moss = (props: IMossProps) => {
   const [mossID, setMossID] = React.useState('');
   const [hanging, setHanging] = React.useState(false);
 
-  const submitTime = props.submissions.length * props.submissions.length * 80;
+  // const estimate = props.submissions.length * props.submissions.length * 80;
+  const estimate = 45 * 45 * 80;
+  console.log('estimate', estimate);
+  const submitTime = Math.ceil(estimate / 30000) * 30000;
+  console.log('submittime', submitTime, msToString(submitTime));
   // const submitTime = 10 * 10 * 200;
 
   // const mockResults = [
@@ -212,10 +216,7 @@ const Moss = (props: IMossProps) => {
       const resPayload = await JSON.parse(res['Payload']);
       // Completed Running Function
       if (resPayload.hasOwnProperty('errorMessage')) {
-        const error = resPayload['errorMessage']
-          .split(' ')
-          .slice(2)
-          .join(' ');
+        const error = resPayload['errorMessage'];
         return Promise.reject(error);
       } else if (resPayload['statusCode'] !== '200') {
         return Promise.reject(resPayload['body']);
@@ -291,7 +292,11 @@ const Moss = (props: IMossProps) => {
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
       <div>
-        <Statistic title="# Submissions" value="20" style={{ display: 'inline-block', marginRight: '60px' }} />
+        <Statistic
+          title="# Submissions"
+          value={props.submissions.length}
+          style={{ display: 'inline-block', marginRight: '60px' }}
+        />
         <Statistic title="Estimated Time" value={msToString(submitTime)} style={{ display: 'inline-block' }} />
       </div>
       <div style={{ padding: '10px 0px' }}>
