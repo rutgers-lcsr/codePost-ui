@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Alert, Button, Divider, Modal, Spin, Steps, Table } from 'antd';
-const { Step } = Steps;
 
 /* codePost imports */
 
@@ -22,6 +21,8 @@ import { USER_APP, USER_TYPE } from '../../../../types/common';
 import CPButton from '../../../../components/core/CPButton';
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
+
+const { Step } = Steps;
 
 /**********************************************************************************************************************/
 
@@ -58,7 +59,9 @@ interface IChangeType {
   /* old and new keys map to objects which can store arbitrary properties of
    * users, which have changed. For now, the object corresponds to {section: sectionName}
    */
-  changed: { [studentEmail: string]: { old: IUserProperties; new: IUserProperties } };
+  changed: {
+    [studentEmail: string]: { old: IUserProperties; new: IUserProperties };
+  };
 }
 
 interface IProps {
@@ -237,7 +240,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         promises.push(
           this.props.changeRoster(newStudents, USER_APP.Student).then(() => {
             // build new sections
-            const sectionMap = {};
+            const sectionMap: any = {};
             const innerPromises: Array<Promise<any>> = [];
             const addedStudents = Object.keys(diff.added);
             const changedStudents = Object.keys(diff.changed);
@@ -360,8 +363,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     const newList: string[] = Array.from(Object.keys(newRoster));
 
     /* calculate changed users and removed users */
-    const deletedList = {};
-    const changedList = {};
+    const deletedList: any = {};
+    const changedList: any = {};
     for (const user of oldList) {
       if (!newList.includes(user)) {
         deletedList[user] = oldRoster[user];
@@ -380,7 +383,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     }
 
     /* calculate added users */
-    const addedList = {};
+    const addedList: any = {};
     for (const user of newList) {
       if (!oldList.includes(user)) {
         addedList[user] = newRoster[user];
@@ -414,11 +417,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     users: string[],
     sectionsByStudent: { [studentEmail: string]: SectionType },
   ): IUserMap => {
-    const userMap = {};
+    const userMap: any = {};
     users.forEach((user) => {
       switch (userType) {
         case 'student':
-          userMap[user] = { section: sectionsByStudent[user] ? sectionsByStudent[user].name : null };
+          userMap[user] = {
+            section: sectionsByStudent[user] ? sectionsByStudent[user].name : null,
+          };
           break;
         case 'grader':
         case 'admin':
@@ -463,7 +468,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         }
         const diff = this.rosterDiff(oldRoster, newRoster);
 
-        this.setState({ status: UPLOAD_STATUS.REVIEW, updates: diff, newRoster, uploadErrors: [] });
+        this.setState({
+          status: UPLOAD_STATUS.REVIEW,
+          updates: diff,
+          newRoster,
+          uploadErrors: [],
+        });
       },
     );
   };
@@ -556,6 +566,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 to: `Section: ${toSectionName}`,
               };
             } else {
+              // @ts-ignore
               let sectionName = changes[diffItem.key][el].section;
               if (sectionName === null || sectionName === undefined) {
                 sectionName = 'No section';

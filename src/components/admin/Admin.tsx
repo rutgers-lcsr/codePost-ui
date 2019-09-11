@@ -79,7 +79,7 @@ export enum PANELS {
   SETTINGS,
 }
 
-const panels = {
+const panels: any = {
   [PANELS.SUBMISSION_STUDENTS]: 'submissions/by_student',
   [PANELS.SUBMISSION_GRADERS]: 'submissions/by_grader',
   [PANELS.ASSIGNMENTS]: 'assignments/',
@@ -154,6 +154,7 @@ interface IAdminProps {
 }
 
 class Admin extends React.Component<IAdminProps, IAdminState> {
+  // @ts-ignore
   private interval: number;
 
   public constructor(props: IAdminProps) {
@@ -407,16 +408,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       if (this.state.currentCourse !== course) {
         return;
       }
-      const submissionMap = {};
+      const submissionMap: any = {};
       submissionList.forEach((submissionObj) => {
         submissionMap[submissionObj.assignment] = submissionObj.submissions;
       });
       if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
         this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-          this.setState({ submissions: submissionMap, submissionsLoadComplete: true });
+          this.setState({
+            submissions: submissionMap,
+            submissionsLoadComplete: true,
+          });
         });
       } else {
-        this.setState({ submissions: submissionMap, submissionsLoadComplete: true });
+        this.setState({
+          submissions: submissionMap,
+          submissionsLoadComplete: true,
+        });
       }
     });
 
@@ -513,7 +520,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public generateViewsBySubmissions = (viewHistoryLists: SubmissionHistoryType[][]) => {
-    const viewsBySubmission = {};
+    const viewsBySubmission: any = {};
     viewHistoryLists.forEach((viewHistoryList: SubmissionHistoryType[]) => {
       viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
         const { submission, student, hasViewed, dateViewed } = viewHistory;
@@ -539,7 +546,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public updateSubmissionsByUser = (
-    roster?: { students: string[]; graders: string[]; inactive_students: string[]; inactive_graders: string[] },
+    roster?: {
+      students: string[];
+      graders: string[];
+      inactive_students: string[];
+      inactive_graders: string[];
+    },
     submissions?: IAssignmentToSubmissionsMap,
     assignments?: AssignmentType[],
     callback?: () => void,
@@ -574,7 +586,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public generateSubmissionsByUser = (
-    roster: { students: string[]; graders: string[]; inactive_students: string[]; inactive_graders: string[] },
+    roster: {
+      students: string[];
+      graders: string[];
+      inactive_students: string[];
+      inactive_graders: string[];
+    },
     submissions: IAssignmentToSubmissionsMap,
     assignments: AssignmentType[],
   ) => {
@@ -758,14 +775,26 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         .then((roster: RosterType) => {
           switch (userType) {
             case USER_APP.Student:
-              this.setState({ students: roster.students, inactiveStudents: roster.inactive_students }, () => {
-                this.updateSubmissionsByUser(roster);
-              });
+              this.setState(
+                {
+                  students: roster.students,
+                  inactiveStudents: roster.inactive_students,
+                },
+                () => {
+                  this.updateSubmissionsByUser(roster);
+                },
+              );
               break;
             case USER_APP.Grader:
-              this.setState({ graders: roster.graders, inactiveGraders: roster.inactive_graders }, () => {
-                this.updateSubmissionsByUser(roster);
-              });
+              this.setState(
+                {
+                  graders: roster.graders,
+                  inactiveGraders: roster.inactive_graders,
+                },
+                () => {
+                  this.updateSubmissionsByUser(roster);
+                },
+              );
               break;
             case USER_APP.CourseAdmin:
               this.setState({ admins: roster.courseAdmins });
@@ -838,7 +867,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       students.forEach((student) => {
         delete sectionsByStudent[student];
       });
-      this.setState({ currentCourse, sections: newSections, sectionsByStudent });
+      this.setState({
+        currentCourse,
+        sections: newSections,
+        sectionsByStudent,
+      });
       return;
     });
   };
@@ -882,7 +915,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         sectionMap[added] = newSection;
       }
 
-      this.setState({ sections: cleanedSections, sectionsByStudent: sectionMap });
+      this.setState({
+        sections: cleanedSections,
+        sectionsByStudent: sectionMap,
+      });
       return;
     });
   };
@@ -905,7 +941,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       promises.push(this.updateSection(updatedSection));
     } else if (oldSection) {
       const updatedSection = _.cloneDeep(oldSection);
-      updatedSection.students = updatedSection.students.filter((el) => {
+      updatedSection.students = updatedSection.students.filter((el: string) => {
         return el !== studentEmail;
       });
       promises.push(this.updateSection(updatedSection));
@@ -970,7 +1006,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       currentCourse.assignments.push(assignment.id);
       submissions[assignment.id] = [];
       const newAssignments = [...assignments, assignment];
-      this.setState({ currentCourse, submissions, assignments: newAssignments, submissionsByGrader: newSubsByGrader });
+      this.setState({
+        currentCourse,
+        submissions,
+        assignments: newAssignments,
+        submissionsByGrader: newSubsByGrader,
+      });
 
       // Add assignment to course representations held in top-level state
       this.props.addAssignment(assignment);

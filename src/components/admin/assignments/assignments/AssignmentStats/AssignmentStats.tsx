@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography } from 'antd';
-const { Title } = Typography;
 
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -36,6 +35,8 @@ import {
 
 import SendEmailModal from '../../../other/SendEmailModal';
 
+const { Title } = Typography;
+
 /**********************************************************************************************************************/
 
 export interface IProps {
@@ -60,7 +61,11 @@ export interface IProps {
 
 interface IState {
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isLoading: boolean;
   drawerOpen: boolean;
 }
@@ -91,7 +96,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
@@ -103,7 +111,11 @@ class ManageAssignments extends React.Component<IProps, IState> {
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent,
+      },
       drawerType: type,
       drawerOpen: true,
     });
@@ -323,7 +335,12 @@ class ManageAssignments extends React.Component<IProps, IState> {
       },
     ];
     const summaryData = (
-      <Card style={{ backgroundColor: '#F9F9F9', boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
+      <Card
+        style={{
+          backgroundColor: '#F9F9F9',
+          boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <Row gutter={0} style={{ width: 600, textAlign: 'center' }}>
           <Col span={6}>
             <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${this.props.assignment.points}`} />
@@ -364,7 +381,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
               style={{
                 ...divStyle,
                 paddingBottom: 10,
-                padddingTop: 30,
+                paddingTop: 30,
               }}
             >
               <Title level={3} style={{ color: '#24be85' }}>
@@ -411,9 +428,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                   type="dashboard"
                 />
                 <Typography.Text style={{ paddingBottom: 10 }}>
-                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${
-                    statsForRow.numUnclaimed
-                  } unclaimed`}
+                  {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${statsForRow.numUnclaimed} unclaimed`}
                 </Typography.Text>
               </div>
             </div>

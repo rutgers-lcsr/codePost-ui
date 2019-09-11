@@ -8,7 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Divider, Input, Menu, Popover, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-const SubMenu = Menu.SubMenu;
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -21,6 +20,8 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
+
+const SubMenu = Menu.SubMenu;
 
 /**********************************************************************************************************************/
 
@@ -101,7 +102,6 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     let commentSearchTerm = this.state.searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
       const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
-      console.log(categoryName);
       filteredCatgories = rubricCategories.filter((el) => {
         return el.name.toUpperCase().includes(categoryName.toUpperCase());
       });
@@ -231,7 +231,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
           <div style={{ textAlign: 'right' }}>
             <Tag
               style={{
-                background: '#fff',
+                background: this.context.consoleTheme.siderBg,
+                color: this.context.consoleTheme.siderTitle,
                 borderStyle: 'dashed',
                 marginBottom: '4px',
                 marginRight: '0px',
@@ -296,7 +297,16 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
       }}
     >
       <InlineMarkdown source={props.rubricComment.text} />
-      <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
+      <span
+        style={{
+          position: 'absolute',
+          right: '20px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+        }}
+      >
+        {points}
+      </span>
     </div>
   );
 };

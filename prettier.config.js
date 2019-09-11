@@ -1,5 +1,5 @@
 module.exports = {
-  trailingComma: 'all',
+  trailingComma: "all",
   tabWidth: 2,
   bracketSpacing: true,
   printWidth: 120,
@@ -7,7 +7,7 @@ module.exports = {
   singleQuote: true,
   semi: true,
   requirePragma: false,
-  proseWrap: 'preserve',
-  arrowParens: 'always',
-  htmlWhitespaceSensitivity: 'css',
+  proseWrap: "preserve",
+  arrowParens: "always",
+  htmlWhitespaceSensitivity: "css"
 };

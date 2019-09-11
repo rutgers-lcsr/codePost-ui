@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
-const confirm = Modal.confirm;
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -31,6 +30,8 @@ import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -238,7 +239,10 @@ class ManageStudents extends React.Component<IProps, IState> {
                 return (
                   <div>
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={sections[student] ? sections[student].name : 'No section'}

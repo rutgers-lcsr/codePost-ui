@@ -56,10 +56,10 @@
   }
 
   &__text-area {
-    border: 0px;
-    resize: none;
-    font-size: 12px;
-    line-height: 1.83;
+    border: 0px !important;
+    resize: none !important;
+    font-size: 12px !important;
+    line-height: 1.83 !important;
   }
 
   &__comment {

@@ -12,17 +12,19 @@ import ReactMarkdown from 'react-markdown';
 import TurndownService from 'turndown';
 import * as turndownPluginGfm from 'turndown-plugin-gfm';
 
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
 const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
-
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 interface IMarkdownProps {
   commentCounter: number;
 }
 
-const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
+const Markdown = (
+  props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps,
+) => {
   let markdown;
   if (File.codeType(props.file) === 'jupyter') {
     markdown = jupyterToMarkdown(props.file.code);
@@ -68,16 +70,27 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     return className;
   };
 
-  const renderers = useMarkdownRenderers(getClassName, props.readOnly ? undefined : onBlockElementClick);
+  const renderers = useMarkdownRenderers(
+    getClassName,
+    props.readOnly ? undefined : onBlockElementClick,
+  );
 
   return (
-    <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
+    <ReactMarkdown
+      includeNodeIndex={true}
+      sourcePos={true}
+      rawSourcePos={true}
+      escapeHtml={true}
+      renderers={renderers}>
       {markdown}
     </ReactMarkdown>
   );
 };
 
-const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp?: (e: React.MouseEvent) => void) => {
+const useMarkdownRenderers = (
+  getClassName: (index: number) => string,
+  onMouseUp?: (e: React.MouseEvent) => void,
+) => {
   // Hack to determine which block elements are nested
   // topLevelChildren is initialized when the rootRenderer is called
   let topLevelChildren: number | undefined;
@@ -106,7 +119,10 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   const rootRenderer = (props: any) => {
     topLevelChildren = props.children.length;
     return (
-      <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
+      <div
+        id='code-markdown'
+        className='markdown'
+        style={{ padding: '5px 0px' }}>
         {props.children}
       </div>
     );
@@ -114,19 +130,30 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
 
   const headingRenderer = (props: any) => {
     const fontSize = 24 * Math.pow(0.9, props.level);
-    return React.createElement(`h${props.level}`, { ...blockProps(props), style: { fontSize } }, props.children);
+    return React.createElement(
+      `h${props.level}`,
+      { ...blockProps(props), style: { fontSize } },
+      props.children,
+    );
   };
 
   const paragraphRenderer = (props: any) => {
     return (
-      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
+      <p
+        {...blockProps(props)}
+        style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
         {props.children}
       </p>
     );
   };
 
   const listRenderer = (props: any) => {
-    return React.createElement(props.ordered ? 'ol' : 'ul', blockProps(props), props.children);
+    return React.createElement(
+      props.ordered ? 'ol' : 'ul',
+      // @ts-ignore
+      blockProps(props),
+      props.children,
+    );
   };
 
   const codeRenderer = (props: any) => {
@@ -144,8 +171,7 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
           }}
           showLineNumbers={false}
           wrapLines={false}
-          {...blockProps(props)}
-        >
+          {...blockProps(props)}>
           {props.value ? props.value : ' '}
         </SyntaxHighlighter>
       );
@@ -160,8 +186,7 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
               fontFamily: 'monospace',
               padding: '4px',
               wordBreak: 'break-word',
-            }}
-          >
+            }}>
             {props.value ? props.value : ' '}
           </div>
         </div>
@@ -177,15 +202,19 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   const blockQuoteRenderer = (props: any) => {
     return (
       <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
-        <blockquote style={{ marginBottom: '0px' }}>{props.children}</blockquote>
+        <blockquote style={{ marginBottom: '0px' }}>
+          {props.children}
+        </blockquote>
       </div>
     );
   };
 
   const tableRenderer = (props: any) => {
     return (
-      <div {...blockProps(props)} style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
-        <table className="markdown-table">{props.children}</table>
+      <div
+        {...blockProps(props)}
+        style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
+        <table className='markdown-table'>{props.children}</table>
       </div>
     );
   };
@@ -222,7 +251,11 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       paragraph: paragraphRend,
     };
 
-    return <ReactMarkdown renderers={renderers}>{turndown.turndown(props.value)}</ReactMarkdown>;
+    return (
+      <ReactMarkdown renderers={renderers}>
+        {turndown.turndown(props.value)}
+      </ReactMarkdown>
+    );
   };
 
   return {

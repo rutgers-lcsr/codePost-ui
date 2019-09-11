@@ -6,11 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Typography } from 'antd';
-const { Text } = Typography;
-const SubMenu = Menu.SubMenu;
-
-type alignType = 'left' | 'right' | 'center';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Tag, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -42,6 +38,8 @@ import RubricManager from './rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
+import AssignmentRegrades from './assignments/AssignmentRegrades';
+
 import Moss from './assignments/Moss';
 
 import {
@@ -54,6 +52,11 @@ import {
 } from './assignments/AssignmentStats/StatsUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
+
+const { Text } = Typography;
+const SubMenu = Menu.SubMenu;
+
+type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -83,6 +86,7 @@ export interface IManageAssignmentsProps {
 
   /* misc */
   myEmail: string;
+
   /* user data */
   user: UserType;
 }
@@ -96,6 +100,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   Stats,
+  Regrades,
   Moss,
 }
 
@@ -104,7 +109,11 @@ interface IManageAssignmentsState {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   drawerType?: DRAWER_TYPE;
-  drawerContent: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  drawerContent: {
+    title: string;
+    subtitle: string;
+    content: Array<{ email: string; subID: number | null }>;
+  };
   isDownloading: boolean;
 }
 
@@ -130,7 +139,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{ email: string; subID: number | null }> = filterDataByStat(
+    const newContent: Array<{
+      email: string;
+      subID: number | null;
+    }> = filterDataByStat(
       assignment,
       this.props.submissionsByStudent,
       type,
@@ -142,7 +154,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     const title = getDrawerTitle(type, newContent.length);
 
     this.setState({
-      drawerContent: { title: assignment.name, subtitle: title, content: newContent },
+      drawerContent: {
+        title: assignment.name,
+        subtitle: title,
+        content: newContent,
+      },
       detailType: DETAIL_TYPE.Drawer,
       activeAssignment: assignment,
       drawerType: type,
@@ -392,9 +408,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="bar-chart" />
                 View Stats
               </Menu.Item>
+              {assignment.allowRegradeRequests ? (
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
+                  <Icon type="message" />
+                  View Regrades
+                </Menu.Item>
+              ) : (
+                <div />
+              )}
               <Menu.Item key="moss" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Moss, assignment)}>
                 <Icon type="diff" />
-                Check MOSS
+                Check Moss <Tag>BETA</Tag>
               </Menu.Item>
               <SubMenu
                 key="4"
@@ -610,6 +634,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 assignment={this.state.activeAssignment!}
                 user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+              />
+            );
+            break;
+          case DETAIL_TYPE.Regrades:
+            return (
+              <AssignmentRegrades
+                assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                refreshCourseData={this.props.refreshCourseData}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                user={this.props.user}
+                updateSubmission={this.props.updateSubmission}
               />
             );
             break;

@@ -16,7 +16,9 @@ interface ICodeProps {
   commentCounter: number;
 }
 
-const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
+const Code = (
+  props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps,
+) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const onMouseUp = async (event: React.MouseEvent) => {
@@ -24,7 +26,12 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
-    if (selection === null || selection.toString() === '') {
+    if (
+      selection === null ||
+      selection.toString() === '' ||
+      selection.anchorNode === null ||
+      selection.focusNode === null
+    ) {
       return;
     }
 
@@ -32,8 +39,8 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     if (
       // This selection ended on top of the code but outside of a text highlight
       // The Node is an HTMLElement
-      selection.anchorNode.nodeName === 'DIV' &&
       selection.anchorNode &&
+      selection.anchorNode.nodeName === 'DIV' &&
       // @ts-ignore
       selection.anchorNode.id.includes('line')
     ) {
@@ -48,8 +55,8 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     if (
       // This selection ended on top of the code but outside of a text highlight
       // The Node is an HTMLElement
-      selection.focusNode.nodeName === 'DIV' &&
       selection.focusNode &&
+      selection.focusNode.nodeName === 'DIV' &&
       // @ts-ignore
       selection.focusNode.id.includes('line')
     ) {
@@ -106,13 +113,23 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     // FIXME: we can come up with a better solution
     await wait(5);
 
-    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
+    CodePanelHighlighting.brightenHighlight(
+      newComment.id,
+      consoleTheme.highlightActive,
+    );
   };
 
-  const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
+  const linesOfCode = (
+    readOnly: boolean,
+    code: string,
+    comments: CommentType[],
+  ) => {
     return code.split('\n').map((text: string, i: number) => {
       return (
-        <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
+        <div
+          key={i}
+          id={`line-${i}`}
+          onMouseUp={readOnly ? undefined : onMouseUp}>
           {text === ''
             ? ' '
             : CodePanelHighlighting.highlight(
@@ -127,7 +144,9 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       );
     });
   };
-  return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
+  return (
+    <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>
+  );
 };
 
 export default Code;

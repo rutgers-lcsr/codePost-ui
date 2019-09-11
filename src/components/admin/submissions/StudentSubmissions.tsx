@@ -45,8 +45,15 @@ interface IProps {
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  changeSubmissionGrader: (
+    submission: SubmissionType,
+    grader: string | undefined,
+  ) => Promise<void>;
+  uploadSubmission: (
+    assignment: AssignmentType,
+    partners: string[],
+    files: any[],
+  ) => Promise<void>;
 }
 
 interface IState {
@@ -70,7 +77,7 @@ class StudentData extends React.Component<IProps, IState> {
     }
   }
 
-  public changeActiveStudent = (newStudent: string) => {
+  public changeActiveStudent = (newStudent?: string) => {
     this.setState({ activeStudent: newStudent });
   };
 
@@ -92,7 +99,7 @@ class StudentData extends React.Component<IProps, IState> {
 
   public toggleValue = (value: string) => {
     this.setState((prevState: IState) => {
-      const newState = { ...prevState };
+      const newState: any = { ...prevState };
       newState[value] = !newState[value];
       return newState;
     });
@@ -110,14 +117,17 @@ class StudentData extends React.Component<IProps, IState> {
         if (hasInactiveStudents) {
           toggleInactiveStudents = (
             <div>
-              <Checkbox defaultChecked={this.state.showActive} onChange={this.toggleValue.bind(this, 'showActive')}>
+              <Checkbox
+                defaultChecked={this.state.showActive}
+                onChange={this.toggleValue.bind(this, 'showActive')}>
                 Active students
               </Checkbox>
-              <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+              <CPTooltip
+                title={tooltips.admin.studentSubmissions.inactives}
+                hideThisOnHideTips={true}>
                 <Checkbox
                   defaultChecked={this.state.showInactive}
-                  onChange={this.toggleValue.bind(this, 'showInactive')}
-                >
+                  onChange={this.toggleValue.bind(this, 'showInactive')}>
                   Inactive students
                 </Checkbox>
               </CPTooltip>
@@ -127,7 +137,12 @@ class StudentData extends React.Component<IProps, IState> {
 
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
-          { title: 'Expand', dataIndex: 'expand', key: 'expand', align: aligner },
+          {
+            title: 'Expand',
+            dataIndex: 'expand',
+            key: 'expand',
+            align: aligner,
+          },
           {
             title: 'Student',
             dataIndex: 'student',
@@ -139,7 +154,10 @@ class StudentData extends React.Component<IProps, IState> {
                 if (this.props.students.indexOf(student) > -1) {
                   return (
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={student}
@@ -149,7 +167,10 @@ class StudentData extends React.Component<IProps, IState> {
                   return (
                     <span style={{ color: '#ccc' }}>
                       <Highlighter
-                        highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                        highlightStyle={{
+                          backgroundColor: '#5CBB8B',
+                          padding: 0,
+                        }}
                         searchWords={[searchText]}
                         autoEscape
                         textToHighlight={student}
@@ -166,7 +187,10 @@ class StudentData extends React.Component<IProps, IState> {
               dataIndex: assignment.name,
               key: assignment.name,
               sorter: (a: any, b: any) => {
-                return this.sortFunction(a[assignment.name], b[assignment.name]);
+                return this.sortFunction(
+                  a[assignment.name],
+                  b[assignment.name],
+                );
               },
               align: aligner,
               className: 'student-table',
@@ -189,20 +213,26 @@ class StudentData extends React.Component<IProps, IState> {
             this.setState({ activeStudent: studentEmail });
           };
 
-          const toRet = {
+          const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="zoom-in" onClick={expandFn} />
+              <CPTooltip
+                title={tooltips.admin.studentSubmissions.expand}
+                hideThisOnHideTips={true}>
+                <Icon type='zoom-in' onClick={expandFn} />
               </CPTooltip>
             ),
             student: studentEmail,
             key: studentEmail,
           };
           for (const assignment of this.props.assignments) {
-            const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
+            const submission = this.props.submissionsByStudent[studentEmail][
+              assignment.id
+            ];
             if (submission && submission.isFinalized) {
               toRet[assignment.name] = (
-                <span style={{ cursor: 'pointer' }} onClick={openSubmission.bind(this, submission.id)}>
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={openSubmission.bind(this, submission.id)}>
                   {submission.grade}
                 </span>
               );
@@ -232,19 +262,22 @@ class StudentData extends React.Component<IProps, IState> {
                 this.props.assignments.length === 0 && numStudents === 0 ? (
                   <span>No students or assignments yet</span>
                 ) : numStudents === 0 ? (
-                  <span>Nice job creating an assignment! Now add some students.</span>
+                  <span>
+                    Nice job creating an assignment! Now add some students.
+                  </span>
                 ) : (
                   <span>You added students! Now create an assignment</span>
                 )
-              }
-            >
+              }>
               {numStudents === 0 ? (
                 <CPButton
-                  cpType="primary"
+                  cpType='primary'
                   key={1}
-                  icon="user-add"
-                  onClick={this.props.changeTab.bind(this, PANELS.ROSTER_STUDENTS)}
-                >
+                  icon='user-add'
+                  onClick={this.props.changeTab.bind(
+                    this,
+                    PANELS.ROSTER_STUDENTS,
+                  )}>
                   Add some students
                 </CPButton>
               ) : null}
@@ -253,11 +286,13 @@ class StudentData extends React.Component<IProps, IState> {
                 <span>
                   {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
                   <CPButton
-                    cpType="primary"
+                    cpType='primary'
                     key={2}
-                    icon="plus-circle"
-                    onClick={this.props.changeTab.bind(this, PANELS.ASSIGNMENTS)}
-                  >
+                    icon='plus-circle'
+                    onClick={this.props.changeTab.bind(
+                      this,
+                      PANELS.ASSIGNMENTS,
+                    )}>
                     Add an assignment
                   </CPButton>
                 </span>
@@ -281,7 +316,9 @@ class StudentData extends React.Component<IProps, IState> {
         <StudentDetail
           onBack={this.changeActiveStudent.bind(this, undefined)}
           student={this.state.activeStudent!}
-          submissionsMap={this.props.submissionsByStudent[this.state.activeStudent!]}
+          submissionsMap={
+            this.props.submissionsByStudent[this.state.activeStudent!]
+          }
           assignments={this.props.assignments}
           graders={this.props.graders}
           submissions={this.props.submissionsByStudent}

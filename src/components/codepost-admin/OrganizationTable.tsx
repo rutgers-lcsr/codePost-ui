@@ -1,46 +1,48 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { Button, Card, Drawer, Input, Table } from 'antd';
+import { Button, Card, Drawer, Input, Table } from "antd";
+
+import { Link } from "react-router-dom";
+
+import { OrganizationType } from "../../infrastructure/organization";
 
 const { Search } = Input;
 
-import { Link } from 'react-router-dom';
-
-import { OrganizationType } from '../../infrastructure/organization';
-
 const cols = [
   {
-    title: 'Organization',
-    dataIndex: 'organization',
-    key: 'organization',
+    title: "Organization",
+    dataIndex: "organization",
+    key: "organization",
     render: (name: string, record: any) => {
       return `${record.name} (${record.shortname})`;
-    },
+    }
   },
   {
-    title: 'Courses',
-    dataIndex: 'courses',
-    key: 'courses',
+    title: "Courses",
+    dataIndex: "courses",
+    key: "courses",
     sorter: (a: any, b: any) => {
-      return a['rosters'].length - b['rosters'].length;
+      return a["rosters"].length - b["rosters"].length;
     },
     render: (courses: any, record: any) => {
-      return record['rosters'].length;
-    },
-  },
+      return record["rosters"].length;
+    }
+  }
 ];
 
 const OrganizationTable = (props: any) => {
   const initialOrganizationRows = () => {
     return props.organizations.map((organization: OrganizationType) => {
       const rosters = props.rosters.filter((roster: any) => {
-        return roster['organization'] === organization.id;
+        return roster["organization"] === organization.id;
       });
       return { ...organization, rosters, key: organization.shortname };
     });
   };
 
-  const [organizationRows, setOrganizationRows] = React.useState(initialOrganizationRows());
+  const [organizationRows, setOrganizationRows] = React.useState(
+    initialOrganizationRows()
+  );
   const [visible, setVisible] = React.useState(false);
 
   const [currentRoster, setCurrentRoster] = React.useState<any>(undefined);
@@ -59,66 +61,74 @@ const OrganizationTable = (props: any) => {
     const v = value.toLowerCase();
     setOrganizationRows(
       initialOrganizationRows().filter((organization: any) => {
-        return organization['name'].toLowerCase().includes(v) || organization['shortname'].toLowerCase().includes(v);
-      }),
+        return (
+          organization["name"].toLowerCase().includes(v) ||
+          organization["shortname"].toLowerCase().includes(v)
+        );
+      })
     );
   };
 
   const expandedRowRender = (record: any, index: any) => {
     const columns = [
       {
-        title: 'Course',
-        dataIndex: 'name',
-        key: 'name',
+        title: "Course",
+        dataIndex: "name",
+        key: "name",
         render: (name: any, record1: any) => {
           const onClick = () => {
-            showDrawer(record1['roster']);
+            showDrawer(record1["roster"]);
           };
           return (
             <Button type="link" onClick={onClick}>
               {name}
             </Button>
           );
-        },
+        }
       },
       {
-        title: '# Admins',
-        dataIndex: 'admins',
-        key: 'admins',
+        title: "# Admins",
+        dataIndex: "admins",
+        key: "admins",
         sorter: (a: any, b: any) => {
-          return a['admins'] - b['admins'];
-        },
+          return a["admins"] - b["admins"];
+        }
       },
       {
-        title: '# Graders',
-        dataIndex: 'graders',
-        key: 'graders',
+        title: "# Graders",
+        dataIndex: "graders",
+        key: "graders",
         sorter: (a: any, b: any) => {
-          return a['graders'] - b['graders'];
-        },
+          return a["graders"] - b["graders"];
+        }
       },
       {
-        title: '# Students',
-        dataIndex: 'students',
-        key: 'students',
+        title: "# Students",
+        dataIndex: "students",
+        key: "students",
         sorter: (a: any, b: any) => {
-          return a['students'] - b['students'];
-        },
-      },
+          return a["students"] - b["students"];
+        }
+      }
     ];
 
-    const courses = record['rosters'].map((roster: any) => {
+    const courses = record["rosters"].map((roster: any) => {
       return {
-        name: `${roster['name']} | ${roster['period']}`,
-        admins: roster['courseAdmins'].length,
-        graders: roster['graders'].length,
-        students: roster['students'].length,
-        roster,
+        name: `${roster["name"]} | ${roster["period"]}`,
+        admins: roster["courseAdmins"].length,
+        graders: roster["graders"].length,
+        students: roster["students"].length,
+        roster
       };
     });
     return (
-      <div style={{ padding: '10px 0px' }}>
-        <Table columns={columns} dataSource={courses} pagination={false} size="small" />
+      <div style={{ padding: "10px 0px" }}>
+        <Table
+          columns={columns}
+          dataSource={courses}
+          pagination={false}
+          size="small"
+        />
       </div>
     );
   };
@@ -136,7 +146,7 @@ const OrganizationTable = (props: any) => {
     };
 
     drawerContent = (
-      <div style={{ overflowY: 'auto' }}>
+      <div style={{ overflowY: "auto" }}>
         <p>
           <b>Admins</b>
         </p>
@@ -162,14 +172,21 @@ const OrganizationTable = (props: any) => {
   }
 
   return (
-    <Card title="Organizations" bordered={false} style={{ width: '100%' }}>
-      <div style={{ padding: '14px 0px', width: '400px' }}>
+    <Card title="Organizations" bordered={false} style={{ width: "100%" }}>
+      <div style={{ padding: "14px 0px", width: "400px" }}>
         <Search placeholder="search..." onSearch={onSearch} enterButton />
       </div>
-      <div style={{ padding: '14px 0px' }}>Organization Count: {organizationRows.length}</div>
-      <Table columns={cols} dataSource={organizationRows} size="small" expandedRowRender={expandedRowRender} />
+      <div style={{ padding: "14px 0px" }}>
+        Organization Count: {organizationRows.length}
+      </div>
+      <Table
+        columns={cols}
+        dataSource={organizationRows}
+        size="small"
+        expandedRowRender={expandedRowRender}
+      />
       <Drawer
-        title={currentRoster !== undefined ? currentRoster.name : ''}
+        title={currentRoster !== undefined ? currentRoster.name : ""}
         placement="right"
         closable={true}
         onClose={onClose}

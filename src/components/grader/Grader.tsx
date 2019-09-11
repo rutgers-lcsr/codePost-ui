@@ -37,6 +37,8 @@ import { UserType } from '../../infrastructure/user';
 
 import GraderNav from './GraderNav';
 
+import RegradesPanel from './RegradesPanel';
+
 import RoleMenu from '../core/RoleMenu';
 
 /**********************************************************************************************************************/
@@ -45,14 +47,16 @@ export enum PANELS {
   MY_SUBMISSIONS,
   MY_SECTIONS,
   VIEW_ALL,
+  REGRADES,
 }
 
-const panelStrings = ['my_submissions', 'my_sections', 'view_all'];
+const panelStrings = ['my_submissions', 'my_sections', 'view_all', 'regrades'];
 
-const panels = {
+const panels: any = {
   [PANELS.MY_SUBMISSIONS]: panelStrings[PANELS.MY_SUBMISSIONS],
   [PANELS.MY_SECTIONS]: panelStrings[PANELS.MY_SECTIONS],
   [PANELS.VIEW_ALL]: panelStrings[PANELS.VIEW_ALL],
+  [PANELS.REGRADES]: panelStrings[PANELS.REGRADES],
 };
 
 interface IGraderState {
@@ -105,11 +109,18 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   public componentDidMount() {
     this.loadAssignments(this.props.courses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
-        const { course, assignment, panel } = this.setStateFromURL(this.props.courses, assignments);
+        const { course, assignment, panel } = this.setStateFromURL(
+          this.props.courses,
+          assignments,
+        );
         if (course) {
           this.setTabs(course);
           this.changeURL(course, assignment, panel);
-          this.setState({ currentCourse: course, currentAssignment: assignment, currentPanel: panel });
+          this.setState({
+            currentCourse: course,
+            currentAssignment: assignment,
+            currentPanel: panel,
+          });
         }
       });
     });
@@ -120,25 +131,41 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   /**********************************************************************************/
 
   public setTabs = (currentCourse: CourseType) => {
-    const isSuperGrader = this.isSuperGrader(this.props.superGraderCourses, currentCourse);
-    const sectionsLed = this.sectionsLedInThisCourse(this.props.sectionsLed, currentCourse);
+    const isSuperGrader = this.isSuperGrader(
+      this.props.superGraderCourses,
+      currentCourse,
+    );
+    const sectionsLed = this.sectionsLedInThisCourse(
+      this.props.sectionsLed,
+      currentCourse,
+    );
     this.setState({ isSuperGrader, sectionsLed });
   };
 
-  public isSuperGrader = (superGraderCourses: CourseType[], currentCourse: CourseType): boolean => {
+  public isSuperGrader = (
+    superGraderCourses: CourseType[],
+    currentCourse: CourseType,
+  ): boolean => {
     return superGraderCourses.some((course: CourseType) => {
       return course.id === currentCourse.id;
     });
   };
 
-  public sectionsLedInThisCourse = (sectionsLed: SectionType[], currentCourse: CourseType) => {
+  public sectionsLedInThisCourse = (
+    sectionsLed: SectionType[],
+    currentCourse: CourseType,
+  ) => {
     const sections = sectionsLed.slice();
     return sections.filter((section) => {
       return currentCourse.sections.indexOf(section.id) !== -1;
     });
   };
 
-  public changeURL = (course: CourseType, assignment?: AssignmentType, panel?: number) => {
+  public changeURL = (
+    course: CourseType,
+    assignment?: AssignmentType,
+    panel?: number,
+  ) => {
     const courseName = course.name.replace(/ /g, '_');
     const coursePeriod = course.period.replace(/ /g, '_');
 
@@ -146,7 +173,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       this.props.history.push(`/grader/${courseName}/${coursePeriod}`);
     } else {
       const assignmentName = assignment.name.replace(/ /g, '_');
-      this.props.history.push(`/grader/${courseName}/${coursePeriod}/${assignmentName}/${panels[panel]}`);
+      this.props.history.push(
+        `/grader/${courseName}/${coursePeriod}/${assignmentName}/${panels[panel]}`,
+      );
     }
   };
 
@@ -158,7 +187,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   public changePanel = (panelNum: number) => {
     this.setState({ currentPanel: panelNum });
     if (this.state.currentCourse) {
-      this.changeURL(this.state.currentCourse, this.state.currentAssignment, panelNum);
+      this.changeURL(
+        this.state.currentCourse,
+        this.state.currentAssignment,
+        panelNum,
+      );
     }
   };
 
@@ -166,8 +199,16 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     this.changePanel(parseInt(e.key, 10));
   };
 
-  public setStateFromURL = (courses: CourseType[], assignments: ICourseToAssignmentMap) => {
-    const { courseName, period, assignmentName, panelName1 } = this.props.match.params;
+  public setStateFromURL = (
+    courses: CourseType[],
+    assignments: ICourseToAssignmentMap,
+  ) => {
+    const {
+      courseName,
+      period,
+      assignmentName,
+      panelName1,
+    } = this.props.match.params;
     if (courses.length === 0) {
       return { course: undefined, panel: 0 };
     } else {
@@ -180,7 +221,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         const formattedCourseName = courseName.replace(/_/g, ' ');
         const formattedPeriod = period.replace(/_/g, ' ');
         currentCourse = courses.find((obj: CourseType) => {
-          return obj.name === formattedCourseName && obj.period === formattedPeriod;
+          return (
+            obj.name === formattedCourseName && obj.period === formattedPeriod
+          );
         });
       }
 
@@ -207,7 +250,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         })[0];
       }
 
-      return { course: currentCourse, assignment: currentAssignment, panel: currentPanel };
+      return {
+        course: currentCourse,
+        assignment: currentAssignment,
+        panel: currentPanel,
+      };
     }
   };
 
@@ -221,7 +268,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         return loadIDList(course.assignments, Assignment);
       }),
     ).then((assignments) => {
-      const toRet = {};
+      const toRet: any = {};
       courses.forEach((course, i) => {
         toRet[course.id] = assignments[i];
       });
@@ -240,9 +287,11 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       return;
     }
 
-    const currentAssignment = assignments[currentCourse.id].find((obj: AssignmentType) => {
-      return obj.id === Number(newAssignment.key);
-    });
+    const currentAssignment = assignments[currentCourse.id].find(
+      (obj: AssignmentType) => {
+        return obj.id === Number(newAssignment.key);
+      },
+    );
 
     this.setState({ currentAssignment }, () => {
       this.changeURL(currentCourse, currentAssignment, this.state.currentPanel);
@@ -259,17 +308,28 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       this.setState({
         currentAssignment: undefined,
         currentCourse: thisCourse,
-        isSuperGrader: this.isSuperGrader(this.props.superGraderCourses, thisCourse),
-        sectionsLed: this.sectionsLedInThisCourse(this.props.sectionsLed, thisCourse),
+        isSuperGrader: this.isSuperGrader(
+          this.props.superGraderCourses,
+          thisCourse,
+        ),
+        sectionsLed: this.sectionsLedInThisCourse(
+          this.props.sectionsLed,
+          thisCourse,
+        ),
       });
     }
   };
 
   public selectorItemsFormatter = (assignments: AssignmentType[]) => {
-    return assignments.map((assignment, i) => ({ value: assignment.id, label: assignment.name }));
+    return assignments.map((assignment, i) => ({
+      value: assignment.id,
+      label: assignment.name,
+    }));
   };
 
-  public selectorCurrentFormatter = (assignment: AssignmentType | undefined) => {
+  public selectorCurrentFormatter = (
+    assignment: AssignmentType | undefined,
+  ) => {
     if (assignment === undefined) {
       return undefined;
     }
@@ -277,15 +337,28 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
   };
 
   public getViewAllComponent = () => {
-    if (!this.state.currentCourse || !this.state.currentAssignment || !this.state.isSuperGrader) {
+    if (
+      !this.state.currentCourse ||
+      !this.state.currentAssignment ||
+      !this.state.isSuperGrader
+    ) {
       return null;
     }
 
-    return <ViewAllPanel currentCourse={this.state.currentCourse} currentAssignment={this.state.currentAssignment} />;
+    return (
+      <ViewAllPanel
+        currentCourse={this.state.currentCourse}
+        currentAssignment={this.state.currentAssignment}
+      />
+    );
   };
 
   public getSectionsComponent = () => {
-    if (!this.state.currentCourse || !this.state.currentAssignment || this.state.sectionsLed.length === 0) {
+    if (
+      !this.state.currentCourse ||
+      !this.state.currentAssignment ||
+      this.state.sectionsLed.length === 0
+    ) {
       return null;
     }
 
@@ -294,6 +367,27 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         sectionsLed={this.state.sectionsLed}
         currentCourse={this.state.currentCourse}
         currentAssignment={this.state.currentAssignment}
+      />
+    );
+  };
+
+  public getRegradesComponent = () => {
+    if (
+      !this.state.currentCourse ||
+      !this.state.currentAssignment ||
+      !this.state.currentAssignment.allowRegradeRequests
+    ) {
+      return null;
+    }
+    return (
+      <RegradesPanel
+        assignment={this.state.currentAssignment}
+        isAnonymous={this.state.currentAssignment.anonymousGrading}
+        user={this.props.user}
+        isAdmin={this.props.user.courseadminCourses.some((el) => {
+          return el.id === this.state.currentCourse!.id;
+        })}
+        isSuperGrader={this.state.isSuperGrader}
       />
     );
   };
@@ -340,6 +434,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         case PANELS.VIEW_ALL:
           graderPanelContent = this.getViewAllComponent();
           break;
+        case PANELS.REGRADES:
+          graderPanelContent = this.getRegradesComponent();
       }
     }
 
@@ -351,22 +447,32 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const courseMenu = (
       <Menu onClick={this.handleCourseChange}>
         {this.props.courses.map((course, i) => {
-          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
+          return (
+            <Menu.Item
+              key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>
+          );
         })}
       </Menu>
     );
-    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} />;
+    const courseDropdown = (
+      <CPDropdown value={courseSelectorText} overlay={courseMenu} />
+    );
 
     let assignmentSelectorText = 'Select an assignment';
     if (this.state.currentAssignment) {
       assignmentSelectorText = this.state.currentAssignment.name;
     }
     const assignmentMenu =
-      this.state.currentCourse && this.state.assignments[this.state.currentCourse.id] ? (
+      this.state.currentCourse &&
+      this.state.assignments[this.state.currentCourse.id] ? (
         <Menu onClick={this.handleAssignmentChange}>
-          {this.state.assignments[this.state.currentCourse.id].map((assignment, i) => {
-            return <Menu.Item key={assignment.id}>{assignment.name}</Menu.Item>;
-          })}
+          {this.state.assignments[this.state.currentCourse.id].map(
+            (assignment, i) => {
+              return (
+                <Menu.Item key={assignment.id}>{assignment.name}</Menu.Item>
+              );
+            },
+          )}
         </Menu>
       ) : (
         <Menu />
@@ -382,21 +488,34 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     const headerLeft = [courseDropdown, assignmentDropdown];
 
     const headerRight = [
-      <span key="header-user" className="cp-label cp-label--bold">
+      <span key='header-user' className='cp-label cp-label--bold'>
         {this.props.user.email}
       </span>,
-      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
-      <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
-        <Link className="internal-link" to="/settings">
-          <Icon type="setting" />
+      <RoleMenu
+        key='header-roles'
+        user={this.props.user}
+        thisApp={USER_TYPE.GRADER}
+        theme='light'
+      />,
+      <CPTooltip
+        key='settings'
+        title={tooltips.management.header.settings}
+        hideThisOnHideTips={true}>
+        <Link className='internal-link' to='/settings'>
+          <Icon type='setting' />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
+      <Button
+        key='header-logout'
+        size='small'
+        onClick={this.props.handleLogout}>
         Logout
       </Button>,
     ];
 
-    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
+    const header = (
+      <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />
+    );
     const navigation = (collapsed: boolean) => (
       <GraderNav
         selectedPanel={this.state.currentPanel}
@@ -404,6 +523,9 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         onClick={this.handleTabClick}
         isSuperGrader={this.state.isSuperGrader}
         isSectionLeader={this.state.sectionsLed.length > 0}
+        regradesAllowed={
+          this.state.currentAssignment !== undefined && this.state.currentAssignment.allowRegradeRequests
+        }
       />
     );
 

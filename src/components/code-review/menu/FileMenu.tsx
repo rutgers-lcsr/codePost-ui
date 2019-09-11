@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
-const { SubMenu } = Menu;
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -29,6 +28,8 @@ import Badge from '../../core/Badge';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 import { getOperatingSystem, OS } from '../useHotkeys';
+
+const { SubMenu } = Menu;
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
 
@@ -85,7 +86,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     }
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -321,7 +322,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   /**************************** Render *************************************/
   public render() {
     const fileStructure = this.createDirectoryStructure(this.props.files);
-    console.log(fileStructure);
     const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
     const folders = fileStructure.folders.map((f: IFolder) => {
       return this.buildFolderMenu('', f);

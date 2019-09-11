@@ -3,8 +3,6 @@ import * as React from 'react';
 import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
-const createSliderWithTooltip = Slider.createSliderWithTooltip;
-const Range = createSliderWithTooltip(Slider.Range);
 
 import useWindowSize from '../../core/useWindowSize';
 
@@ -15,6 +13,9 @@ import { ShowTooltipContext } from '../../core/tooltips';
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
+
+const createSliderWithTooltip = Slider.createSliderWithTooltip;
+const Range = createSliderWithTooltip(Slider.Range);
 
 enum RESIZER {
   CODE,
@@ -47,14 +48,6 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   const windowSize = useWindowSize();
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const showTooltips = React.useContext(ShowTooltipContext);
-
-  // not used
-  // @ts-ignore
-  const marks = {
-    630: '80char',
-    775: '100char',
-    915: '120char',
-  };
 
   const [ranges, setRanges] = React.useState([
     0,
@@ -228,9 +221,20 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
         min={0}
         max={windowSize.width * 2}
         handleStyle={[
-          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
-          { backgroundColor: consoleTheme.resizerTrack, borderColor: consoleTheme.resizerTrackActive },
-          { backgroundColor: 'transparent', borderColor: 'transparent', cursor: 'auto' },
+          {
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            cursor: 'auto',
+          },
+          {
+            backgroundColor: consoleTheme.resizerTrack,
+            borderColor: consoleTheme.resizerTrackActive,
+          },
+          {
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            cursor: 'auto',
+          },
           {
             backgroundColor:
               hovered || (activeHandle !== null && props.hasComments) ? consoleTheme.resizerTrack : 'transparent',

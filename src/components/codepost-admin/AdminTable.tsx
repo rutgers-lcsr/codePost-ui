@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import { Card, Input, Table } from 'antd';
 
-const { Search } = Input;
-
 import { Link } from 'react-router-dom';
 
 import { OrganizationType } from '../../infrastructure/organization';
+
+const { Search } = Input;
 
 const fullstoryQuery = (email: string) => {
   // tslint:disable-next-line
@@ -45,11 +45,11 @@ const cols = [
     render: (actions: string, record: any) => {
       return (
         <span>
-          <Link to={`/loginas/${record['email']}`} target="_blank">
+          <Link to={`/loginas/${record['email']}`} target="_blank" rel="noopener noreferrer">
             loginas
           </Link>{' '}
           |{' '}
-          <a href={fullstoryQuery(record['email'])} target="_blank">
+          <a href={fullstoryQuery(record['email'])} target="_blank" rel="noopener noreferrer">
             fullstory
           </a>
         </span>

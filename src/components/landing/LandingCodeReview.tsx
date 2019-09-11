@@ -15,7 +15,9 @@ import { CommentType } from '../../infrastructure/comment';
 const dummyFunction = () => {
   return;
 };
+// @ts-ignore
 let instance: CodeMirror.Editor | null = null;
+// @ts-ignore
 const setEditor = (editor: CodeMirror.Editor) => {
   instance = editor;
 };
@@ -46,7 +48,12 @@ public boolean some(int[] x, int y) {\n\n\
 // Test 2: array = [1, 2, 2], target = 2\n\
 // FAILED'
     }
-    options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'javascript' }}
+    options={{
+      lineNumbers: true,
+      readOnly: true,
+      lineWrapping: true,
+      mode: 'javascript',
+    }}
   />
 );
 
@@ -88,7 +95,11 @@ const comment2: CommentType = {
 //   rubricComment: null,
 // };
 
-const commentStyle = { boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.11)', minWidth: 330, marginLeft: 10 };
+const commentStyle = {
+  boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.11)',
+  minWidth: 330,
+  marginLeft: 10,
+};
 
 interface IState {
   showComments: boolean;
@@ -106,6 +117,7 @@ class CodeReview extends React.Component<{}, IState> {
     this.setState({ showComments: toChange });
   };
 
+  // @ts-ignore
   public setMarkings = (codeMirrorInstance: CodeMirror.Editor | null) => {
     if (codeMirrorInstance) {
       const css = this.state.showComments
@@ -143,10 +155,24 @@ class CodeReview extends React.Component<{}, IState> {
     return (
       <div
         className="module--codeReview"
-        style={{ width: 685, display: 'flex', flexDirection: 'column', paddingTop: 50 }}
+        style={{
+          width: 685,
+          display: 'flex',
+          flexDirection: 'column',
+          paddingTop: 50,
+        }}
       >
         <div>
-          <div style={{ float: 'left', marginBottom: 35, width: 335, maxHeight: 550 }}>{badCodeMirror}</div>
+          <div
+            style={{
+              float: 'left',
+              marginBottom: 35,
+              width: 335,
+              maxHeight: 550,
+            }}
+          >
+            {badCodeMirror}
+          </div>
           <div style={{ width: 350, position: 'relative', float: 'right' }}>
             <div
               style={{
@@ -157,7 +183,7 @@ class CodeReview extends React.Component<{}, IState> {
                 position: 'absolute',
               }}
             >
-              <img src={require('./../../img/landing/compressed/confused_student.png')} width="225" />
+              <img src={require('./../../img/landing/compressed/confused_student.png')} width="225" alt="" />
             </div>
             <div style={{ position: 'absolute', top: 40 }}>
               <div
@@ -207,7 +233,13 @@ class CodeReview extends React.Component<{}, IState> {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 35 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: 35,
+          }}
+        >
           <CPButton
             cpType={this.state.showComments ? 'primary' : 'secondary'}
             onClick={this.changeStatus.bind(this, true)}

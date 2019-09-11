@@ -7,10 +7,9 @@ import * as React from 'react';
 
 /* style imports */
 import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
-const confirm = Modal.confirm;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
@@ -26,6 +25,8 @@ import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -66,7 +67,10 @@ class StudentDetail extends React.Component<IProps, IState> {
         return el.id === assignmentToUpload;
       });
       if (toUpload !== undefined) {
-        this.setState({ uploadSubmissionVisible: true, assignmentToUpload: toUpload });
+        this.setState({
+          uploadSubmissionVisible: true,
+          assignmentToUpload: toUpload,
+        });
       }
     }
   };

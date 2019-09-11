@@ -29,7 +29,13 @@ interface IProps {
 
 interface IState {
   comments: CommentType[];
-  commentToSubMap: { [commentID: number]: { submission: number; fileName: string; students: string[] } };
+  commentToSubMap: {
+    [commentID: number]: {
+      submission: number;
+      fileName: string;
+      students: string[];
+    };
+  };
   isLoading: boolean;
 }
 
@@ -78,9 +84,13 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         });
       }),
     ).then((data) => {
-      const commentToSubMap = {};
+      const commentToSubMap: any = {};
       data.forEach((el) => {
-        commentToSubMap[el[0] as number] = { fileName: el[1], submission: el[2], students: el[3] };
+        commentToSubMap[el[0] as number] = {
+          fileName: el[1],
+          submission: el[2],
+          students: el[3],
+        };
       });
       return commentToSubMap;
     });
@@ -134,24 +144,40 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         author: comment.author,
         text:
           comment.text === null || comment.text.length === 0 ? (
-            <Icon type="pushpin" />
+            <Icon type='pushpin' />
           ) : (
             <CPTooltip title={comment.text}>
-              <Icon type="pushpin" theme="filled" />
+              <Icon type='pushpin' theme='filled' />
             </CPTooltip>
           ),
-        open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
+        open: (
+          <Icon
+            type='code'
+            onClick={openSubmission.bind(
+              this,
+              commentToSubMap[comment.id].submission,
+            )}
+          />
+        ),
       };
     });
 
     const content = (
       <div>
         <span>
-          Comment: <Typography.Text code>{this.props.rubricComment.text}</Typography.Text>
+          Comment:{' '}
+          <Typography.Text code>
+            {this.props.rubricComment.text}
+          </Typography.Text>
         </span>
         <br />
         <br />
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          loading={this.state.isLoading}
+        />
       </div>
     );
 
@@ -162,11 +188,10 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         width={800}
         onCancel={closeCommentExplorer}
         footer={[
-          <Button key="close" onClick={closeCommentExplorer}>
+          <Button key='close' onClick={closeCommentExplorer}>
             Close
           </Button>,
-        ]}
-      >
+        ]}>
         {content}
       </Modal>
     );
