@@ -632,6 +632,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               <Moss
                 course={this.props.currentCourse!}
                 assignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               />

@@ -6,11 +6,12 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Typography } from 'antd';
+import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
+import { SubmissionType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
@@ -36,6 +37,7 @@ export interface IMossProps {
   /* assignment data */
   assignment: AssignmentType;
   course: CourseType;
+  submissions: SubmissionType[];
 
   user: UserType;
 
@@ -72,12 +74,26 @@ export const MOSS_LANGUAGES = [
   'verilog',
 ];
 
+const msToString = (ms: number) => {
+  const showWith0 = (value: number) => (value < 10 ? `0${value}` : `${value}`);
+  const hours = showWith0(Math.floor((ms / (1000 * 60 * 60)) % 60));
+  const minutes = showWith0(Math.floor((ms / (1000 * 60)) % 60));
+  const seconds = showWith0(Math.floor((ms / 1000) % 60));
+  return `${parseInt(hours) ? `${hours}hr` : ''}${minutes}m ${seconds}s`;
+};
+
 const Moss = (props: IMossProps) => {
   const [submit, setSubmit] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState(null);
   const [language, setLanguage] = React.useState('');
   const [mossID, setMossID] = React.useState('');
+  const [hanging, setHanging] = React.useState(false);
+
+  const estimate = props.submissions.length * props.submissions.length * 80;
+  // const estimate = 45 * 45 * 80;
+  const submitTime = Math.ceil(estimate / 30000) * 30000;
+  // const submitTime = 30000;
 
   // const mockResults = [
   //   {
@@ -191,13 +207,33 @@ const Moss = (props: IMossProps) => {
       payload,
     });
 
-    // console.log('res', res);
+    console.log('res', res);
+    console.log('------>');
 
-    if (res.hasOwnProperty('FunctionError')) {
-      return Promise.reject(await res['FunctionError']);
+    // Uncaught Lambda Error
+    if (res.StatusCode !== 200) {
+      return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
     } else {
-      return await JSON.parse(res['Payload'])['body'];
+      const resPayload = await JSON.parse(res['Payload']);
+      console.log('resPayload', resPayload);
+      // Completed Running Function
+      if (resPayload.hasOwnProperty('errorMessage')) {
+        const error = resPayload['errorMessage'];
+        return Promise.reject(error);
+      } else if (resPayload['statusCode'] !== '200') {
+        return Promise.reject(resPayload['body']);
+      } else {
+        return resPayload['body'];
+      }
     }
+  };
+
+  const showHang = () => {
+    setHanging(true);
+  };
+
+  const hideHang = () => {
+    setHanging(false);
   };
 
   const onSubmit = async () => {
@@ -205,13 +241,21 @@ const Moss = (props: IMossProps) => {
       message.warning('Moss ID cannot be blank. You can get yours at moss.stanford.edu');
     } else {
       setLoading(true);
+
+      const timer = setTimeout(showHang, submitTime);
+
       try {
         const data = await checkMoss();
+        console.log('done', data);
         setUrl(data);
+        clearTimeout(timer);
+        hideHang();
         const mossResults = await processMoss(data);
         setResults(mossResults);
       } catch (err) {
         message.error(JSON.stringify(err));
+        clearTimeout(timer);
+        hideHang();
       }
 
       setLoading(false);
@@ -266,7 +310,15 @@ const Moss = (props: IMossProps) => {
 
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
-    <div style={{ padding: '80px 100px 40px 100px' }}>
+    <div style={{ padding: '40px 100px 0px 100px' }}>
+      <div>
+        <Statistic
+          title="# Submissions"
+          value={props.submissions.length}
+          style={{ display: 'inline-block', marginRight: '60px' }}
+        />
+        <Statistic title="Estimated Time" value={msToString(submitTime)} style={{ display: 'inline-block' }} />
+      </div>
       <div style={{ padding: '10px 0px' }}>
         <Input
           addonBefore="Moss ID Number"
@@ -299,13 +351,20 @@ const Moss = (props: IMossProps) => {
         </Select>
       </div>
       <div style={{ padding: '10px 0px', textAlign: 'center' }}>
-        <Button type="primary" disabled={loading} onClick={onSubmit}>
+        <Button type="primary" disabled={loading || props.submissions.length === 0} onClick={onSubmit}>
           Go
         </Button>
       </div>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
-          <ProgressBar time={100000} />
+          <ProgressBar time={submitTime} />
+        </div>
+      ) : null}
+      {hanging ? (
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <Paragraph>
+            Hang tight, this is taking longer than expected... <Spin size="small" />
+          </Paragraph>
         </div>
       ) : null}
       {url !== null ? (
