@@ -74,6 +74,7 @@ export const StudentSubmissionV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       dateUploaded: t.string,
+      hasGrader: t.boolean,
     }),
   ],
   'Submission',
