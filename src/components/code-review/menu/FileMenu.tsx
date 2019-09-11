@@ -62,16 +62,20 @@ interface IFileMenuState {
   // Storing both of these in state for speed (avoid recreating directory on each render)
   directoryStructure: IDirectoryStructure; // The nested directory of the files, after path is parsed
   sortedFiles: FileType[]; // The ordered array of files that will be visually rendered (for shortcut mapping)
+  oldVersionsMap: { [path: string]: FileType[] };
 }
 
 class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   public constructor(props: IFileMenuProps) {
     super(props);
-    const directoryStructure = this.createDirectoryStructure(props.files);
+    const separatedFiles = this.separateFilesByVersion(props.files);
+    const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
     const sortedFiles = this.sortFiles(directoryStructure);
+    const oldVersionsMap = separatedFiles.old;
     this.state = {
       directoryStructure,
       sortedFiles,
+      oldVersionsMap,
     };
     if (sortedFiles.length > 0) {
       // If the file has a directory, then the order of the files in the UI might be different than the order passed in
@@ -82,9 +86,10 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
   public componentDidUpdate(prevProps: IFileMenuProps) {
     if (prevProps.files !== this.props.files) {
-      const fileStructure = this.createDirectoryStructure(this.props.files);
-      const orderedFiles = this.sortFiles(fileStructure);
-      this.setState({ directoryStructure: fileStructure, sortedFiles: orderedFiles });
+      const separatedFiles = this.separateFilesByVersion(this.props.files);
+      const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
+      const sortedFiles = this.sortFiles(directoryStructure);
+      this.setState({ directoryStructure, sortedFiles, oldVersionsMap: separatedFiles.old });
     }
   }
 
@@ -111,6 +116,31 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   public onSelect = (selectedParam: SelectParam) => {
     const fileID = +selectedParam.key.split('-')[1];
     this.props.changeSelectedFile(fileID);
+  };
+
+  // Go through the list of files and separate the latest files from the old files
+  public separateFilesByVersion = (files: FileType[]) => {
+    const olderFiles: { [pathName: string]: FileType[] } = {};
+    const latestFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path : ''}/${file.name}`;
+      if (!latestFiles[path]) latestFiles[path] = file;
+      else {
+        if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
+          const oldLatest = latestFiles[path];
+          olderFiles[path] ? olderFiles[path].push(oldLatest) : (olderFiles[path] = [oldLatest]);
+          latestFiles[path] = file;
+        } else olderFiles[path] ? olderFiles[path].push(file) : (olderFiles[path] = [file]);
+      }
+    });
+
+    const latestFilesArr: FileType[] = [];
+    Object.keys(latestFiles).forEach((path) => {
+      const file = latestFiles[path];
+      latestFilesArr.push(file);
+    });
+
+    return { new: latestFilesArr, old: olderFiles };
   };
 
   /**************************** File Menu Functions *************************************/
@@ -277,29 +307,18 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   // Build a list of Menu.Items from a set of files
   public buildFileMenu = (files: FileType[], sortedFiles: FileType[]) => {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
+    const { oldVersionsMap } = this.state;
 
-    const olderFiles: { [fileName: string]: FileType[] } = {};
-
-    const latestFiles = files.filter((f1) => {
-      const moreRecentFile = files.some((f2) => {
-        return f2.name === f1.name && f2.id !== f1.id && Date.parse(f1.created) >= Date.parse(f2.created);
-      });
-      if (moreRecentFile) {
-        olderFiles[f1.name] ? olderFiles[f1.name].push(f1) : (olderFiles[f1.name] = [f1]);
-      }
-      return !moreRecentFile;
-    });
-
-    return latestFiles.map((file: FileType) => {
-      let olderFileMenu = null;
-      if (olderFiles[file.name]) {
-        const items = olderFiles[file.name].map((f2: FileType) => {
-          console.log(f2);
+    return files.map((file: FileType) => {
+      let oldVersionsMenu: any = null;
+      const path = `${file.path ? file.path : ''}/${file.name}`;
+      if (oldVersionsMap[path]) {
+        const items = oldVersionsMap[path].map((f2: FileType) => {
           return (
             <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
               {
                 <div className="display-flex align-items-center justify-content-space-between">
-                  {moment(file.created).format('llll')}
+                  {moment(f2.created).format('llll')}
                   <Badge count={f2.comments.length} forcedStyle="neutral" size="small" />
                 </div>
               }
@@ -310,25 +329,26 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
           <UnsavedCommentsPopconfirm
             changeSelectedFile={this.props.changeSelectedFile}
             canChange={this.props.canChange}
+            oldVersions={true}
           >
             <Menu
               mode="inline"
               inlineCollapsed={false}
               selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-              defaultOpenKeys={[`${file.id}-old-versions-submenu`]}
+              defaultOpenKeys={[`${path}-old-versions`]}
               style={{ minWidth: 280 }}
             >
-              <Menu.SubMenu key={`${file.id}-old-versions-submenu`} title="Older Versions">
+              <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
                 {items}
               </Menu.SubMenu>
             </Menu>
           </UnsavedCommentsPopconfirm>
         );
 
-        olderFileMenu = (
+        oldVersionsMenu = (
           <Dropdown overlay={menu} trigger={['hover']}>
             <AntBadge
-              count={olderFiles[file.name].length + 1}
+              count={oldVersionsMap[path].length + 1}
               style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
             />
           </Dropdown>
@@ -354,13 +374,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
       return (
         <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
-          {olderFileMenu}
           <div
             style={{
               display: 'inline-block',
               lineHeight: '12px',
             }}
           >
+            {oldVersionsMenu}
             <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
@@ -384,9 +404,9 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
   /**************************** Render *************************************/
   public render() {
-    const fileStructure = this.createDirectoryStructure(this.props.files);
-    const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
-    const folders = fileStructure.folders.map((f: IFolder) => {
+    const { directoryStructure } = this.state;
+    const rootFiles = this.buildFileMenu(directoryStructure.files, this.state.sortedFiles);
+    const folders = directoryStructure.folders.map((f: IFolder) => {
       return this.buildFolderMenu('', f);
     });
 
@@ -396,7 +416,11 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     return (
       <div id="file-menu" style={{ overflowY: 'auto' }}>
-        <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
+        <UnsavedCommentsPopconfirm
+          changeSelectedFile={this.props.changeSelectedFile}
+          canChange={this.props.canChange}
+          oldVersions={false}
+        >
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
@@ -418,6 +442,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 interface IUnsavedCommentsPopconfirmProps {
   changeSelectedFile: (fileID: number) => void;
   canChange: () => boolean;
+  oldVersions: boolean;
   children: any;
 }
 
@@ -427,7 +452,8 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
 
   const onSelect = (selectParam: SelectParam) => {
     setSelectedParam(selectParam);
-    if (selectParam) {
+    if (selectParam && props.oldVersions) {
+      // IF this is a child menu, we want to avoid the parent onSelect method from being triggered
       selectParam.domEvent.preventDefault();
       selectParam.domEvent.stopPropagation();
     }
@@ -435,17 +461,14 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
 
   const confirm = () => {
     if (selectedParam) {
-      console.log(selectedParam.domEvent);
       const fileID = +selectedParam.key.split('-')[1];
       props.changeSelectedFile(fileID);
-      console.log(fileID);
     }
     setSelectedParam(null);
     setVisible(false);
   };
 
   const cancel = () => {
-    console.log('cancelling');
     setSelectedParam(null);
     setVisible(false);
   };
