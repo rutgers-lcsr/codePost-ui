@@ -381,6 +381,7 @@ const Moss = (props: IMossProps) => {
         <div style={{ padding: '40px 0px 0px 0px', textAlign: 'center' }}>
           <ProgressBar time={Math.min(submitTime, 100000)} />
           <Paragraph>We'll also send you an email when this is done...</Paragraph>
+          <Paragraph>Come back to this page to parse the link in codePost!</Paragraph>
         </div>
       ) : null}
       {hanging ? (
