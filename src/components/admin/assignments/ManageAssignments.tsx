@@ -89,6 +89,8 @@ export interface IManageAssignmentsProps {
 
   /* user data */
   user: UserType;
+
+  location: any;
 }
 
 export enum DETAIL_TYPE {
@@ -635,6 +637,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 user={this.props.user}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                location={this.props.location}
               />
             );
             break;
