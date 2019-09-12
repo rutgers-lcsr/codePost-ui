@@ -641,11 +641,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (comment.id < 0) {
-        savedComment = await CommentIO.create(comment);
-        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (UiComment.isEmpty(comment)) {
+        return this.deleteComment(comment);
       } else {
-        savedComment = await CommentIO.update(comment);
+        if (comment.id < 0) {
+          savedComment = await CommentIO.create(comment);
+          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+        } else {
+          savedComment = await CommentIO.update(comment);
+        }
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
