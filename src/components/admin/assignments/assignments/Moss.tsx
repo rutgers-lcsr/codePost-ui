@@ -24,6 +24,10 @@ import CPTooltip from '../../../core/CPTooltip';
 
 import MossResults from './MossResults';
 
+import { sendSlack } from '../../../core/slack';
+
+import queryString from 'query-string';
+
 const { Option } = Select;
 
 const { Paragraph } = Typography;
@@ -42,6 +46,7 @@ export interface IMossProps {
   user: UserType;
 
   onCancel: () => void;
+  location: any;
 }
 /**********************************************************************************************************************/
 
@@ -91,8 +96,13 @@ const Moss = (props: IMossProps) => {
   const [hanging, setHanging] = React.useState(false);
 
   const estimate = props.submissions.length * props.submissions.length * 80;
-  // const estimate = 45 * 45 * 80;
-  const submitTime = Math.ceil(estimate / 30000) * 30000;
+  const submitTime = Math.min(Math.ceil(estimate / 30000) * 30000, 100000);
+
+  let testMode = false;
+  const values = queryString.parse(props.location.search);
+  if (values.test !== undefined) {
+    testMode = true;
+  }
 
   // const mockResults = [
   //   {
@@ -191,12 +201,19 @@ const Moss = (props: IMossProps) => {
   };
 
   const checkMoss = async () => {
+    sendSlack(
+      'Moss submission',
+      `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
+    );
+
     const payload = {
       course_id: props.course['id'],
       assignment_id: props.assignment['id'],
-      api_key: `JWT ${localStorage.getItem('token')}`,
+      api_key: `JWT ${localStorage.getItem('token')} `,
       language,
       moss_id: mossID,
+      email: props.user.email,
+      test_mode: testMode,
     };
 
     const res: any = await invokeAWSLambda({
@@ -206,19 +223,23 @@ const Moss = (props: IMossProps) => {
       payload,
     });
 
-    // Uncaught Lambda Error
-    if (res.StatusCode !== 200) {
-      return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
+    if (res === 'DELAY') {
+      return Promise.reject("This is taking a while. We'll email you when this is done.");
     } else {
-      const resPayload = await JSON.parse(res['Payload']);
-      // Completed Running Function
-      if (resPayload.hasOwnProperty('errorMessage')) {
-        const error = resPayload['errorMessage'];
-        return Promise.reject(error);
-      } else if (resPayload['statusCode'] !== '200') {
-        return Promise.reject(resPayload['body']);
+      // Uncaught Lambda Error
+      if (res.StatusCode !== 200) {
+        return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
       } else {
-        return resPayload['body'];
+        const resPayload = await JSON.parse(res['Payload']);
+        // Completed Running Function
+        if (resPayload.hasOwnProperty('errorMessage')) {
+          const error = resPayload['errorMessage'];
+          return Promise.reject(error);
+        } else if (resPayload['statusCode'] !== '200') {
+          return Promise.reject(resPayload['body']);
+        } else {
+          return resPayload['body'];
+        }
       }
     }
   };
@@ -247,7 +268,7 @@ const Moss = (props: IMossProps) => {
         const mossResults = await processMoss(data);
         setResults(mossResults);
       } catch (err) {
-        message.error(JSON.stringify(err));
+        message.info(JSON.stringify(err));
         clearTimeout(timer);
         hideHang();
       }
@@ -301,7 +322,7 @@ const Moss = (props: IMossProps) => {
   // Source for email format: http://theory.stanford.edu/~aiken/moss/
   const requestEmail = 'moss@moss.stanford.edu';
   const requestEmailSubject = 'New%20Moss%20Account';
-  const requestEmailBody = `registeruser${escape('\r\n')}mail ${props.user.email}`;
+  const requestEmailBody = `registeruser${escape('\r\n')} mail ${props.user.email} `;
 
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
@@ -317,7 +338,6 @@ const Moss = (props: IMossProps) => {
       <div style={{ padding: '10px 0px' }}>
         <Input
           addonBefore="Moss ID Number"
-          type="password"
           value={mossID}
           onChange={onMossIDChange}
           style={{ width: '100%' }}
@@ -327,7 +347,7 @@ const Moss = (props: IMossProps) => {
                 <span>
                   You can obtain a Moss ID by clicking{' '}
                   <a
-                    href={`mailto:${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody}`}
+                    href={`mailto: ${requestEmail}?subject = ${requestEmailSubject}& body=${requestEmailBody} `}
                     style={{ cursor: 'pointer' }}
                   >
                     here
@@ -397,6 +417,7 @@ const Moss = (props: IMossProps) => {
 
   const content = (
     <div>
+      {testMode ? <div style={{ fontSize: '40px', fontWeight: 600, textAlign: 'center' }}>TEST MODE</div> : null}
       <div style={{ marginBottom: '30px' }}>{actionCard}</div>
       <div>{resultsCard}</div>
     </div>

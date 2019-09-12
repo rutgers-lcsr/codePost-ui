@@ -15,6 +15,22 @@ export const slack = (url: string, payload: any) => {
       }
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
+      console.log('.');
     });
+};
+
+export const sendSlack = (message: string, text = '', color = '#24be85') => {
+  const targetURL = `${process.env.REACT_APP_API_URL}/logs/log/`;
+
+  const attachments = [
+    {
+      title: message,
+      color,
+      text,
+      footer: window.location.href,
+    },
+  ];
+
+  slack(targetURL, attachments);
 };
