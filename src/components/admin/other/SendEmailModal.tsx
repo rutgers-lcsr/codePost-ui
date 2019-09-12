@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Button, message, Modal } from 'antd';
+import { Button, List, message, Modal } from 'antd';
 
 /* codePost imports */
 
@@ -35,8 +35,16 @@ interface IState {
   /* are we in the middle of sending an email? */
   isSending: boolean;
 
+  /* list of users who will be emailed on confirm */
+  usersToEmail?: string[];
+
+  /* number of recipients to show in list */
+  usersToShow: number;
+
   modalVisible: boolean;
 }
+
+const MAX_USERS_IN_INITIAL_LIST = 5;
 
 class SendEmailModal extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
@@ -44,7 +52,24 @@ class SendEmailModal extends React.Component<IProps, IState> {
     this.state = {
       isSending: false,
       modalVisible: false,
+      usersToShow: MAX_USERS_IN_INITIAL_LIST,
     };
+  }
+
+  public componentDidUpdate(oldProps: IProps, oldState: IState) {
+    const isFirstOpen = !oldState.modalVisible && this.state.modalVisible && this.state.usersToEmail === undefined;
+    const changedRecipients = oldProps.filterFunction !== this.props.filterFunction;
+    if (isFirstOpen || changedRecipients) {
+      this.setState({
+        usersToEmail: this.props.filterFunction(),
+      });
+    }
+
+    if (oldState.modalVisible && !this.state.modalVisible) {
+      this.setState({
+        usersToShow: MAX_USERS_IN_INITIAL_LIST,
+      });
+    }
   }
 
   public sendTestEmail = () => {
@@ -57,6 +82,14 @@ class SendEmailModal extends React.Component<IProps, IState> {
       this.sendEmails(toEmail, true);
     });
     this.toggleDialog();
+  };
+
+  public showMore = () => {
+    this.setState((oldState: IState) => {
+      return {
+        usersToShow: oldState.usersToShow + 5,
+      };
+    });
   };
 
   public sendEmails = (toSend: string[], livemode: boolean) => {
@@ -125,6 +158,34 @@ class SendEmailModal extends React.Component<IProps, IState> {
               infoIcon={true}
             />
           </div>
+          {this.state.usersToEmail !== undefined ? (
+            <div>
+              <br />
+              <h3>{this.state.usersToEmail.length} users will be emailed</h3>
+              <List
+                itemLayout="horizontal"
+                loadMore={
+                  this.state.usersToEmail.length > this.state.usersToShow ? (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        marginTop: 12,
+                        height: 32,
+                        lineHeight: '32px',
+                      }}
+                    >
+                      <Button onClick={this.showMore}>show more</Button>
+                    </div>
+                  ) : null
+                }
+                dataSource={this.state.usersToEmail.slice(
+                  0,
+                  Math.min(this.state.usersToShow, this.state.usersToEmail.length),
+                )}
+                renderItem={(item) => <List.Item>{item}</List.Item>}
+              />
+            </div>
+          ) : null}
         </Modal>
       </span>
     );

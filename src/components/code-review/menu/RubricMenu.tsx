@@ -138,7 +138,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
       });
 
       // hide categories with no matching comments
-      if (rows.length === 0) {
+      if (rows.length === 0 && commentSearchTerm.length > 0) {
         return null;
       }
 
