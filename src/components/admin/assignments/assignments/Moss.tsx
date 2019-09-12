@@ -206,14 +206,11 @@ const Moss = (props: IMossProps) => {
       payload,
     });
 
-    console.log('------>res', res);
-
     // Uncaught Lambda Error
     if (res.StatusCode !== 200) {
       return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
     } else {
       const resPayload = await JSON.parse(res['Payload']);
-      console.log('resPayload', resPayload);
       // Completed Running Function
       if (resPayload.hasOwnProperty('errorMessage')) {
         const error = resPayload['errorMessage'];
@@ -244,7 +241,6 @@ const Moss = (props: IMossProps) => {
 
       try {
         const data = await checkMoss();
-        console.log('done', data);
         setUrl(data);
         clearTimeout(timer);
         hideHang();
