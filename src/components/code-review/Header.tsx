@@ -24,7 +24,6 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
-import { FileType } from '../../infrastructure/file';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 

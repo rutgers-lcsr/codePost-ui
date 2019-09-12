@@ -78,8 +78,9 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       const payload = {
         message: `File versioning:`,
         url: window.location.href,
+        channel: '#user_notifications_beta_use',
       };
-      slack(`${process.env.REACT_APP_API_URL}/logs/logFeature/`, payload);
+      slack(`${process.env.REACT_APP_API_URL}/log/`, payload);
     }
     this.state = {
       directoryStructure,
