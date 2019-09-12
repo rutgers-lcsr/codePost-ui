@@ -167,6 +167,7 @@ class ManageStudents extends React.Component<IProps, IState> {
           updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
+          course={this.props.currentCourse}
         />,
         <AddStudentDialog
           key={2}
@@ -337,6 +338,7 @@ class ManageStudents extends React.Component<IProps, IState> {
               updateSection={this.props.updateSection}
               emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
+              course={this.props.currentCourse}
             />
           </Empty>
         }
