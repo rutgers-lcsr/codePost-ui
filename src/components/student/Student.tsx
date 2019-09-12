@@ -335,11 +335,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     const submissions = this.state.submissions;
     submissions[assignment.id] = [submission1];
     this.setState({ submissions });
-    // const submission = AssignmentStudent.updateStudentUpload(payload).then((sub) => {
-    //   const submissions = this.state.submissions;
-    //   submissions[assignment.id] = [sub];
-    //   this.setState({ submissions });
-    // })
   };
 
   public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
