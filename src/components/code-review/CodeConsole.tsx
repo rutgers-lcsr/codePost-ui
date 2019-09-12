@@ -46,6 +46,8 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import { sendSlack } from '../core/slack';
+
 import {
   Controls,
   FinalizeButton,
@@ -831,6 +833,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       let comments = this.state.comments;
 
       if (!this.state.submission.isFinalized) {
+        sendSlack(
+          'Submission finalized',
+          `${this.state.submission.id} ${this.state.assignment ? this.state.assignment.name : ''} | ${
+            this.state.course ? this.state.course.name : ''
+          } ${this.state.course ? this.state.course.period : ''}`,
+        );
         comments =
           this.state.selectedFile !== undefined
             ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)

@@ -15,12 +15,15 @@ import { rosterToCsv } from './DownloadRoster';
 import RosterInput from './RosterInput';
 
 // type definitions
+import { CourseType } from '../../../../infrastructure/course';
 import { SectionType } from '../../../../infrastructure/section';
 import { USER_APP, USER_TYPE } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
+
+import { sendSlack } from '../../../../components/core/slack';
 
 const { Step } = Steps;
 
@@ -71,6 +74,8 @@ interface IProps {
   admins: string[];
   sections: SectionType[];
   sectionsByStudent: { [studentEmail: string]: SectionType };
+
+  course: CourseType;
 
   /* UI control */
   isDisabled: boolean;
@@ -237,6 +242,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           ...Object.keys(diff.added),
         ];
 
+        sendSlack(
+          'Updated roster',
+          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
+            this.props.course.period
+          }`,
+        );
+
         promises.push(
           this.props.changeRoster(newStudents, USER_APP.Student).then(() => {
             // build new sections
@@ -338,6 +350,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           }),
           ...Object.keys(diff.added),
         ];
+        sendSlack(
+          'Updated roster',
+          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
+            this.props.course.period
+          }`,
+        );
         promises.push(this.props.changeRoster(newGraders, USER_APP.Grader));
       }
 
@@ -348,6 +366,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           }),
           ...Object.keys(diff.added),
         ];
+        sendSlack(
+          'Updated roster',
+          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
+            this.props.course.period
+          }`,
+        );
         promises.push(this.props.changeRoster(newAdmins, USER_APP.CourseAdmin));
       }
 

@@ -42,6 +42,8 @@ import AssignmentRegrades from './assignments/AssignmentRegrades';
 
 import Moss from './assignments/Moss';
 
+import { sendSlack } from '../../../components/core/slack';
+
 import {
   calculateMultipleAssignmentProgressStats,
   DRAWER_TYPE,
@@ -483,19 +485,28 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             return this.props.students;
           };
 
+          const onConfirm = () => {
+            if (!assignment.isReleased) {
+              sendSlack(
+                'Assignment published',
+                `${assignment.name} | ${this.props.currentCourse ? this.props.currentCourse.name : ''} ${
+                  this.props.currentCourse ? this.props.currentCourse.period : ''
+                }`,
+              );
+            }
+
+            this.props.updateAssignment({
+              id: assignment.id,
+              isReleased: !assignment.isReleased,
+            });
+          };
+
           return {
             key: assignment.id,
             assignment: <Text strong>{assignment.name}</Text>,
             published: (
               <span className="display-flex align-items-center justify-content-center">
-                <Popconfirm
-                  onConfirm={this.props.updateAssignment.bind(this, {
-                    id: assignment.id,
-                    isReleased: !assignment.isReleased,
-                  })}
-                  title={publishToggleText}
-                  icon={<Icon type="question-circle-o" />}
-                >
+                <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle-o" />}>
                   <Switch checked={assignment.isReleased} />
                 </Popconfirm>
                 {assignment.isReleased ? (
