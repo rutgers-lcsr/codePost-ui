@@ -15,7 +15,8 @@ export const slack = (url: string, payload: any) => {
       }
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
+      console.log('.');
     });
 };
 

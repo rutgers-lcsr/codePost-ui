@@ -42,7 +42,6 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
           resolve(data);
         }
       };
-      console.log('invoking!');
       lambda.invoke(params, genericCallback);
     });
   };
