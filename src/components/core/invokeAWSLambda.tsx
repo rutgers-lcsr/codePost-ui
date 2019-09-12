@@ -8,6 +8,8 @@ interface IAWSLambdaProps {
 }
 
 const invokeAWSLambda = async (props: IAWSLambdaProps) => {
+  const FETCH_TIMEOUT = 100000;
+
   // This function creates a service object to execute AWS actions
   const createService = () => {
     AWS.config.update({
@@ -22,6 +24,10 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
   // This function invokes a lambda function based on a service lambda, arn, and payload
   const invokeLambda = (lambda: any, arn: string, payload: any) => {
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(function() {
+        resolve('DELAY');
+      }, FETCH_TIMEOUT);
+
       const params = {
         FunctionName: arn,
         Payload: JSON.stringify(payload),
@@ -29,8 +35,10 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
 
       const genericCallback = (err: any, data: any) => {
         if (err) {
+          clearTimeout(timeout);
           reject(err);
         } else {
+          clearTimeout(timeout);
           resolve(data);
         }
       };

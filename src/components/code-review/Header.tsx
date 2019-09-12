@@ -5,6 +5,10 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
+import JSZip from 'jszip';
+
+import { saveAs } from 'file-saver';
+
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
 
@@ -17,6 +21,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 
@@ -124,6 +129,49 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
         </ButtonGroup>
       </CPTooltip>
     </Link>
+  );
+};
+
+/**********************************************************************************************************************/
+
+interface IDownloadCodeProps {
+  files: FileType[];
+}
+
+export const DownloadCode = (props: IDownloadCodeProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+
+  const onClick = () => {
+    if (props.files.length === 0) {
+      return;
+    }
+
+    const zip = new JSZip();
+    props.files.map((file: FileType) => {
+      let dir = zip;
+      if (file.path !== null && file.path.length > 0) {
+        const folders = file.path.split('/');
+        folders.forEach((f: string) => {
+          dir = dir.folder(f);
+        });
+      }
+      dir.file(file.name, file.code);
+    });
+
+    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+      saveAs(content, `submission-${props.files[0].submission}.zip`);
+    });
+  };
+
+  return (
+    <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
+      <ButtonGroup>
+        <CPButton id="view-as-student" cpType={cpType} small={true} onClick={onClick}>
+          <Icon type="download" />
+        </CPButton>
+      </ButtonGroup>
+    </CPTooltip>
   );
 };
 
