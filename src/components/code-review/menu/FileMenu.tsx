@@ -227,40 +227,31 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   };
 
   /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
-  // FOLDER MENU BUILD
-  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
-    const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
-    const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
-    return (
-      <SubMenu
-        key={`${parentPath}'/'${folder.name}`}
-        title={
-          <div>
-            <Icon type="folder" />
-            {folder.name}
-          </div>
-        }
-        className={className}
-      >
-        {fileItems}
-        {folder.folders.map((f: IFolder) => {
-          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
-        })}
-      </SubMenu>
-    );
+  // Get the latest number of comments in a file (file.comments might be out of date because
+  //   we re-calculate sort on change of props.file, which doesn't update when comments change
+  public getNumCommentsInFile = (file: FileType) => {
+    let commentCount;
+    if (this.props.comments === undefined) {
+      commentCount = file.comments.length;
+    } else {
+      commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+        return comment.id > 0;
+      }).length;
+    }
+    return commentCount;
   };
 
   // OLD VERSIONS MENU BUILD
   public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
     const { oldVersionsMap } = this.state;
     const items = oldVersions.map((f2: FileType) => {
+      const numComments = this.getNumCommentsInFile(f2);
       return (
         <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
           {
             <div className="display-flex align-items-center justify-content-space-between">
               {moment(f2.created).format('llll')}
-              <Badge count={f2.comments.length} forcedStyle="neutral" size="small" />
+              <Badge count={numComments} forcedStyle="neutral" size="small" />
             </div>
           }
         </Menu.Item>
@@ -299,15 +290,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   // FILE MENU HELPER - BADGE STYLING
   public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
     const [deductions, bonuses] = this.props.getPointsInFile(file);
-    let commentCount = 0;
-    if (this.props.comments === undefined) {
-      commentCount = file.comments.length;
-    } else {
-      commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-        return comment.id > 0;
-      }).length;
-    }
-
+    const commentCount = this.getNumCommentsInFile(file);
     let faded = true;
     if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
       faded = false;
@@ -418,6 +401,30 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         </Menu.Item>
       );
     });
+  };
+
+  // FOLDER MENU BUILD
+  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+    const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
+    const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
+    return (
+      <SubMenu
+        key={`${parentPath}'/'${folder.name}`}
+        title={
+          <div>
+            <Icon type="folder" />
+            {folder.name}
+          </div>
+        }
+        className={className}
+      >
+        {fileItems}
+        {folder.folders.map((f: IFolder) => {
+          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
+        })}
+      </SubMenu>
+    );
   };
 
   /**************************** RENDER *************************************/

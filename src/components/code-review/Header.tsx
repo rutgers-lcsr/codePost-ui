@@ -321,6 +321,14 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     return accumulator + current;
   }, 0);
 
+  const liveFeedbackWarning = props.assignment.liveFeedbackMode ? (
+    <div style={{ color: 'grey', fontStyle: 'italic', marginBottom: 10, textAlign: 'center' }}>
+      Note: Grade calculations do not include old versions of files.
+    </div>
+  ) : (
+    ''
+  );
+
   const styledLabel = (n: number, excluded?: boolean) => {
     let points = n;
     let style = {};
@@ -451,6 +459,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
 
   return (
     <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+      {liveFeedbackWarning}
       {categoriesTable}
       <Divider />
       {summaryTable}
