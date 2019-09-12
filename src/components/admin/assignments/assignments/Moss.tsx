@@ -164,8 +164,9 @@ const Moss = (props: IMossProps) => {
   const onLanguageChange = (value: string) => {
     if (value === MOSS_LANGUAGES[0]) {
       setLanguage('');
+    } else {
+      setLanguage(value);
     }
-    setLanguage(value);
   };
 
   const onMossIDChange = (e: any) => {
