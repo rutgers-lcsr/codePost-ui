@@ -172,14 +172,14 @@ const CollectionCreateForm: any = Form.create()(
           okText="Save"
           onCancel={onCancel}
           onOk={onSave}
-          width={650}
+          width={'70%'}
         >
           <Form layout="horizontal" hideRequiredMark={true}>
             <Form.Item
               label="Name"
               extra="Must be unique within this course."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('name', {
                 initialValue: this.props.assignment.name,
@@ -200,8 +200,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Points"
               extra="Total points possible for this assignment."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('points', {
                 initialValue: this.props.assignment.points,
@@ -223,8 +223,8 @@ const CollectionCreateForm: any = Form.create()(
                   .
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
@@ -234,8 +234,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Hide Graders"
               extra={<div>When enabled, students will not be able to see the grader associated with a submission.</div>}
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('hideGradersFromStudents', {
                 initialValue: this.props.assignment.hideGradersFromStudents,
@@ -245,8 +245,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Student feedback"
               extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('commentFeedback', {
                 initialValue: this.props.assignment.commentFeedback,
@@ -256,8 +256,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Hide grades"
               extra=" When enabled, students won't be able to view the grades associated with their submissions."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
@@ -267,8 +267,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Allow Regrade Requests"
               extra=" When enabled, students can submit a question on their graded submission and request a regrade."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('allowRegradeRequests', {
                 initialValue: this.props.assignment.allowRegradeRequests,
@@ -278,8 +278,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Deadline"
               extra="Optional deadline for students to submit regrade requests"
-              labelCol={{ span: 9 }}
-              wrapperCol={{ span: 12 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('regradeDeadline', {
                 initialValue: this.props.assignment.regradeDeadline
@@ -295,8 +295,8 @@ const CollectionCreateForm: any = Form.create()(
                   <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('allowStudentUpload', {
                 initialValue: this.props.assignment.allowStudentUpload,
@@ -306,8 +306,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Due Date"
               extra="Due date for student uploads"
-              labelCol={{ span: 9 }}
-              wrapperCol={{ span: 12 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('uploadDueDate', {
                 initialValue: this.props.assignment.uploadDueDate ? moment(this.props.assignment.uploadDueDate) : null,
@@ -328,8 +328,8 @@ const CollectionCreateForm: any = Form.create()(
                   published.\ Ideal for office hours or ungraded feedback.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('liveFeedbackMode', {
                 initialValue: this.props.assignment.liveFeedbackMode,
@@ -343,8 +343,8 @@ const CollectionCreateForm: any = Form.create()(
                   <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('additiveGrading', {
                 initialValue: this.props.assignment.additiveGrading,
