@@ -172,6 +172,7 @@ class ManageGraders extends React.Component<IProps, IState> {
           updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
+          course={this.props.currentCourse}
         />,
         <AddGraderDialog
           key={3}
@@ -302,6 +303,7 @@ class ManageGraders extends React.Component<IProps, IState> {
               updateSection={this.props.updateSection}
               emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
+              course={this.props.currentCourse}
             />
             ,
           </Empty>

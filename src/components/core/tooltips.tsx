@@ -56,6 +56,7 @@ const GRADE_HEADER_ALIGNMENT = (
 );
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
+const GRADE_HEADER_DOWNLOAD_CODE = 'Download the code for this submission.';
 const GRADE_SUBINFO_ASSIGNGRADER = 'Click to assign a grader to this submission.';
 const GRADE_SUBINFO_UNFINALIZETOASSIGN = 'Mark this submission as Done to edit its grader.';
 const GRADE_COMMENT_POINTSDISABLED = `The points for a rubric comment are fixed by the rubric.\
@@ -190,6 +191,7 @@ export const tooltips = {
       shrink: GRADE_HEADER_SHRINK,
       alignment: GRADE_HEADER_ALIGNMENT,
       viewAsStudent: GRADE_HEADER_VIEW_AS_STUDENT,
+      downloadCode: GRADE_HEADER_DOWNLOAD_CODE,
     },
     subInfo: {
       assignGrader: GRADE_SUBINFO_ASSIGNGRADER,
