@@ -92,8 +92,7 @@ const Moss = (props: IMossProps) => {
 
   const estimate = props.submissions.length * props.submissions.length * 80;
   // const estimate = 45 * 45 * 80;
-  // const submitTime = Math.ceil(estimate / 30000) * 30000;
-  const submitTime = 200;
+  const submitTime = Math.ceil(estimate / 30000) * 30000;
 
   // const mockResults = [
   //   {
@@ -192,19 +191,10 @@ const Moss = (props: IMossProps) => {
   };
 
   const checkMoss = async () => {
-    // const payload = {
-    //   course_id: props.course['id'],
-    //   assignment_id: props.assignment['id'],
-    //   api_key: `JWT ${localStorage.getItem('token')}`,
-    //   language,
-    //   moss_id: mossID,
-    // };
-
     const payload = {
-      course_id: 124,
-      assignment_id: 512,
-      api_key:
-        'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InJpY2hhcmRAY29kZXBvc3QuaW8iLCJleHAiOjE1NjgzOTc4MDUsImVtYWlsIjoicmljaGFyZEBjb2RlcG9zdC5pbyIsIm9yaWdfaWF0IjoxNTY4MjI1MDA1fQ.n7KxM31M0bT_jIgvGsz_CTlPCWsJ3-i_FxTF3CZwDuQ',
+      course_id: props.course['id'],
+      assignment_id: props.assignment['id'],
+      api_key: `JWT ${localStorage.getItem('token')}`,
       language,
       moss_id: mossID,
     };
@@ -212,12 +202,11 @@ const Moss = (props: IMossProps) => {
     const res: any = await invokeAWSLambda({
       accessKey: 'AKIAV22BSJSCXXWUPZUD',
       secretAccessKey: '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',
-      arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss',
+      arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
       payload,
     });
 
-    console.log('res', res);
-    console.log('------>');
+    console.log('------>res', res);
 
     // Uncaught Lambda Error
     if (res.StatusCode !== 200) {
