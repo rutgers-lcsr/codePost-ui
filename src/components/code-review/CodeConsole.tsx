@@ -46,6 +46,8 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import { sendSlack } from '../core/slack';
+
 import {
   Controls,
   FinalizeButton,
@@ -54,6 +56,7 @@ import {
   StatusTags,
   SubheaderTitle,
   ViewAsStudent,
+  DownloadCode,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -868,6 +871,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       let comments = this.state.comments;
 
       if (!this.state.submission.isFinalized) {
+        sendSlack(
+          'Submission finalized',
+          `${this.state.submission.id} ${this.state.assignment ? this.state.assignment.name : ''} | ${
+            this.state.course ? this.state.course.name : ''
+          } ${this.state.course ? this.state.course.period : ''}`,
+        );
         comments =
           this.state.selectedFile !== undefined
             ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
@@ -1414,6 +1423,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
+          <DownloadCode key="download-code" files={this.state.files} />,
           controls,
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton

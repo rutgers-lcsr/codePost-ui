@@ -1,15 +1,21 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+/* antd imports */
+import { Icon } from 'antd';
+
 import { UserType } from '../../../infrastructure/user';
 
 import RoleMenu from '../RoleMenu';
 
 import CPButton from '../CPButton';
 import CPFlex from '../CPFlex';
+import CPTooltip from '../CPTooltip';
 
 import layoutVars from '../../../styles/layout/_layoutVars';
 import useWindowSize from '../useWindowSize';
+
+import { tooltips } from '../../core/tooltips';
 
 interface IProps {
   user: UserType;
@@ -41,6 +47,11 @@ const PeripheralPageHeader = (props: IProps) => {
   const headerRight = [
     email,
     <RoleMenu key="header-role-menu" user={props.user} theme="light" />,
+    <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
+      <Link className="internal-link" to="/settings">
+        <Icon type="setting" />
+      </Link>
+    </CPTooltip>,
     <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>
       Log Out
     </CPButton>,

@@ -142,6 +142,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
           updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
+          course={this.props.currentCourse}
         />,
         <AddAdminDialog
           key={3}

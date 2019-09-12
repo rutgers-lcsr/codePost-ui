@@ -15,35 +15,19 @@ import _ from 'lodash';
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
 
-import {
-  LinkedCommentsAlert,
-  LinkedCommentsConfirm,
-} from './LinkedCommentsAlert';
+import { LinkedCommentsAlert, LinkedCommentsConfirm } from './LinkedCommentsAlert';
 
 import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
 import RubricFileDownload from './RubricFileDownload';
 import RubricFileUpload from './RubricFileUpload';
 
-import {
-  Assignment,
-  AssignmentType,
-  RubricType,
-} from '../../../../infrastructure/assignment';
+import { Assignment, AssignmentType, RubricType } from '../../../../infrastructure/assignment';
 import { CommentIO } from '../../../../infrastructure/comment';
-import {
-  RubricCategory,
-  RubricCategoryType,
-} from '../../../../infrastructure/rubricCategory';
-import {
-  RubricComment,
-  RubricCommentType,
-} from '../../../../infrastructure/rubricComment';
+import { RubricCategory, RubricCategoryType } from '../../../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
-import {
-  DIRECTION,
-  IRubricCategoryToRubricCommentsMap,
-} from '../../../../types/common';
+import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
 import Loading from '../../../../components/core/Loading';
@@ -150,10 +134,7 @@ class RubricManager extends React.Component<IProps, IState> {
   public loadAssignmentRubric = (assignment: AssignmentType) => {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
-        const commentMap = this.buildCommentMap(
-          rubric.rubricCategories,
-          rubric.rubricComments,
-        );
+        const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
         this.setState(
           {
             rubricCategories: rubric.rubricCategories,
@@ -268,9 +249,7 @@ class RubricManager extends React.Component<IProps, IState> {
         rubricComments,
       },
       () => {
-        this.onSave(
-          this.setNewRubric.bind(this, rubricCategories, rubricComments),
-        );
+        this.onSave(this.setNewRubric.bind(this, rubricCategories, rubricComments));
       },
     );
   };
@@ -367,11 +346,7 @@ class RubricManager extends React.Component<IProps, IState> {
               // We don't want to pass in the ids of linked comments on update
               // Passing in these comments can create race conditions
               // An example is if a linked comment gets deleted between rubric saves
-              const {
-                category: rubricCategory,
-                comments: linkedComments,
-                ...payload
-              } = comment;
+              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
               return RubricComment.update(payload);
             } else {
               return Promise.resolve();
@@ -411,29 +386,23 @@ class RubricManager extends React.Component<IProps, IState> {
       return RubricCategory.delete(rubricCategory.id);
     });
 
-    const allPromises: Array<Promise<any>> = [
-      ...promises,
-      ...deleteComments,
-      ...deleteCategories,
-    ];
+    const allPromises: Array<Promise<any>> = [...promises, ...deleteComments, ...deleteCategories];
     return Promise.all(allPromises)
       .then(() => {
         // retrieve rubric
-        return Assignment.readRubric(this.props.assignment.id).then(
-          (newRubric: RubricType) => {
-            const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
-              newRubric.rubricCategories,
-              newRubric.rubricComments,
-            );
+        return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
+          const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
+            newRubric.rubricCategories,
+            newRubric.rubricComments,
+          );
 
-            this.loadFeedbackScores(newRubric.rubricComments);
+          this.loadFeedbackScores(newRubric.rubricComments);
 
-            return {
-              newCategories: newRubric.rubricCategories,
-              newComments: commentMap,
-            };
-          },
-        );
+          return {
+            newCategories: newRubric.rubricCategories,
+            newComments: commentMap,
+          };
+        });
       })
       .catch((errors) => {
         return {
@@ -515,11 +484,7 @@ class RubricManager extends React.Component<IProps, IState> {
     }
 
     this.setState({ isSaving: true }, () => {
-      const conflicts = this.buildLinkedList(
-        deletedComments,
-        unsavedComments,
-        resolutions,
-      );
+      const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
 
       // Do we need to figure out what to do with applied rubric comments that are being deleted?
       if (conflicts.deleted.length > 0) {
@@ -564,10 +529,7 @@ class RubricManager extends React.Component<IProps, IState> {
   /* Utility functions
   /***********************************************************************/
 
-  public buildCommentMap = (
-    rubricCategories: RubricCategoryType[],
-    rubricComments: RubricCommentType[],
-  ) => {
+  public buildCommentMap = (rubricCategories: RubricCategoryType[], rubricComments: RubricCommentType[]) => {
     const commentMap: any = {};
     rubricCategories.forEach((category) => {
       commentMap[category.id] = []; // ensures that categories with no comments will have an entry
@@ -580,14 +542,9 @@ class RubricManager extends React.Component<IProps, IState> {
     return commentMap;
   };
 
-  public moveCategory = (
-    category: RubricCategoryType,
-    direction: DIRECTION,
-  ) => {
+  public moveCategory = (category: RubricCategoryType, direction: DIRECTION) => {
     const { rubricCategories } = this.state;
-    const index = rubricCategories.findIndex(
-      (x: RubricCategoryType) => x.id === category.id,
-    );
+    const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === category.id);
 
     if (index > -1) {
       let targetIndex = index;
@@ -598,8 +555,7 @@ class RubricManager extends React.Component<IProps, IState> {
           break;
         }
         case DIRECTION.Down: {
-          targetIndex =
-            index === rubricCategories.length - 1 ? index : index + 1;
+          targetIndex = index === rubricCategories.length - 1 ? index : index + 1;
           break;
         }
         default: {
@@ -607,11 +563,7 @@ class RubricManager extends React.Component<IProps, IState> {
         }
       }
 
-      const reorderedCategories: RubricCategoryType[] = arrayMove(
-        rubricCategories,
-        index,
-        targetIndex,
-      );
+      const reorderedCategories: RubricCategoryType[] = arrayMove(rubricCategories, index, targetIndex);
 
       // Eagerly update order
       const toAdd: RubricCategoryType[] = [];
@@ -637,14 +589,9 @@ class RubricManager extends React.Component<IProps, IState> {
   /* RubricCategory wrappers
   /***********************************************************************/
 
-  public updateRubricCategory = (
-    rubricCategory: RubricCategoryType,
-    hasError?: boolean,
-  ) => {
+  public updateRubricCategory = (rubricCategory: RubricCategoryType, hasError?: boolean) => {
     const { rubricCategories } = this.state;
-    const index = rubricCategories.findIndex(
-      (x: RubricCategoryType) => x.id === rubricCategory.id,
-    );
+    const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === rubricCategory.id);
 
     if (index > -1) {
       const newCategories: RubricCategoryType[] = [...rubricCategories];
@@ -669,43 +616,42 @@ class RubricManager extends React.Component<IProps, IState> {
   public deleteRubricCategory = (rubricCategory: RubricCategoryType) => {
     const { rubricCategories, rubricComments } = this.state;
     const newCategories = [...rubricCategories];
-
-    const index = rubricCategories.findIndex(
-      (x: RubricCategoryType) => x.id === rubricCategory.id,
-    );
+    const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === rubricCategory.id);
 
     if (index > -1) {
       newCategories.splice(index, 1);
-      this.setState({
-        rubricCategories: newCategories,
-      });
 
-      this.setState(
-        {
-          unsavedCategories: this.state.unsavedCategories.filter((el) => {
+      this.setState((oldState: IState) => {
+        const alwaysDelete = {
+          // remove rubric category
+          rubricCategories: newCategories,
+          // remove object from errorObjects, since the error is no longer relevant
+          errorObjects: oldState.errorObjects.filter((el) => {
+            return el !== rubricCategory.id;
+          }),
+          // deleted categories go in deleteCategories
+          unsavedCategories: oldState.unsavedCategories.filter((el) => {
             return el.id !== rubricCategory.id;
           }),
-          unsavedComments: this.state.unsavedComments.filter((el) => {
-            return rubricComments[rubricCategory.id].some((el2) => {
+          // all of these comments should no longer be saved
+          unsavedComments: oldState.unsavedComments.filter((el) => {
+            return !rubricComments[rubricCategory.id].some((el2) => {
               return el2.id === el.id;
             });
           }),
-        },
-        () => {
-          if (rubricCategory.id > 0) {
-            this.setState({
-              deletedCategories: [
-                ...this.state.deletedCategories,
-                rubricCategory,
-              ],
-              unsavedComments: [
-                ...this.state.deletedComments,
-                ...rubricComments[rubricCategory.id],
-              ],
-            });
-          }
-        },
-      );
+        };
+
+        if (rubricCategory.id > 0) {
+          // Only try to delete the category if it has been saved
+          const toRet = {
+            ...alwaysDelete,
+            deletedCategories: [...this.state.deletedCategories, rubricCategory],
+          };
+          return toRet;
+        } else {
+          return alwaysDelete;
+        }
+      });
     }
   };
 
@@ -728,8 +674,7 @@ class RubricManager extends React.Component<IProps, IState> {
     this.setState({
       rubricCategories: [...rubricCategories, payload],
       rubricComments: newComments,
-      newObjectCounter:
-        payload.id < 0 ? newObjectCounter - 1 : newObjectCounter,
+      newObjectCounter: payload.id < 0 ? newObjectCounter - 1 : newObjectCounter,
       unsavedCategories: [...this.state.unsavedCategories, payload],
     });
   };
@@ -741,9 +686,7 @@ class RubricManager extends React.Component<IProps, IState> {
   public updateRubricComment = (rubricComment: RubricCommentType) => {
     const { rubricComments } = this.state;
     const commentList = rubricComments[rubricComment.category];
-    const index = commentList.findIndex(
-      (x: RubricCommentType) => x.id === rubricComment.id,
-    );
+    const index = commentList.findIndex((x: RubricCommentType) => x.id === rubricComment.id);
 
     if (index > -1) {
       const newComments = { ...rubricComments };
@@ -756,9 +699,7 @@ class RubricManager extends React.Component<IProps, IState> {
     const { rubricComments } = this.state;
 
     const commentList = rubricComments[rubricComment.category];
-    const index = commentList.findIndex(
-      (x: RubricCommentType) => x.id === rubricComment.id,
-    );
+    const index = commentList.findIndex((x: RubricCommentType) => x.id === rubricComment.id);
 
     if (index > -1) {
       commentList.splice(index, 1);
@@ -791,9 +732,7 @@ class RubricManager extends React.Component<IProps, IState> {
       pointDelta: 0,
       category: category.id,
       comments: [],
-      sortKey: rubricComments[category.id]
-        ? rubricComments[category.id].length
-        : 0,
+      sortKey: rubricComments[category.id] ? rubricComments[category.id].length : 0,
     };
 
     newComments[category.id] = [...newComments[category.id], payload];
@@ -814,10 +753,7 @@ class RubricManager extends React.Component<IProps, IState> {
     });
   };
 
-  public onLinkedCommentsResolve = (
-    comment: RubricCommentType,
-    resolution: RESOLUTION,
-  ) => {
+  public onLinkedCommentsResolve = (comment: RubricCommentType, resolution: RESOLUTION) => {
     const { resolutions } = this.state;
     const newMap = { ...resolutions };
     newMap[comment.id] = resolution;
@@ -970,16 +906,8 @@ class RubricManager extends React.Component<IProps, IState> {
               key={cat.id}
               rubricCategory={cat}
               savedRubricCategory={savedCategory}
-              rubricComments={
-                cat.id in rubricComments
-                  ? rubricComments[cat.id].sort(RubricComment.compare)
-                  : []
-              }
-              savedRubricComments={
-                savedCategory
-                  ? this.state.savedRubricComments[savedCategory.id]
-                  : undefined
-              }
+              rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+              savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
               updateCategory={this.updateRubricCategory}
               deleteCategory={this.deleteRubricCategory}
               addComment={this.addRubricComment}
@@ -1003,7 +931,7 @@ class RubricManager extends React.Component<IProps, IState> {
 
       const actions = [
         <RubricFileUpload
-          key='2'
+          key="2"
           assignment={this.props.assignment}
           rubricComments={this.state.rubricComments}
           rubricCategories={this.state.rubricCategories}
@@ -1011,14 +939,14 @@ class RubricManager extends React.Component<IProps, IState> {
           isDisabled={false}
         />,
         <RubricFileDownload
-          key='download'
+          key="download"
           assignment={this.props.assignment}
           rubricComments={this.state.rubricComments}
           rubricCategories={this.state.rubricCategories}
           isDisabled={false}
         />,
         <MergeRubricCommentsDialog
-          key='3'
+          key="3"
           isDisabled={false}
           rubricCategories={this.state.rubricCategories}
           rubricComments={this.state.rubricComments}
@@ -1026,24 +954,26 @@ class RubricManager extends React.Component<IProps, IState> {
           reloadRubric={this.loadAssignmentRubric}
         />,
         <CPButton
-          key='0'
+          key="0"
           onClick={this.resetRubric}
-          cpType='secondary'
+          cpType="secondary"
           disabled={!changesMade}
-          icon='undo'
-          fallback='undo'
-          fallbackWidth={1250}>
+          icon="undo"
+          fallback="undo"
+          fallbackWidth={1250}
+        >
           Undo changes
         </CPButton>,
         <CPButton
-          key='1'
+          key="1"
           onClick={this.onSave.bind(this, undefined)}
           disabled={!changesMade}
-          cpType='primary'
-          icon='save'
-          fallback='save'
+          cpType="primary"
+          icon="save"
+          fallback="save"
           fallbackWidth={500}
-          loading={this.state.isSaving}>
+          loading={this.state.isSaving}
+        >
           Save
         </CPButton>,
       ];
@@ -1051,9 +981,7 @@ class RubricManager extends React.Component<IProps, IState> {
       const content = (
         <div>
           {categoryTables}
-          <CPButton
-            cpType='primary'
-            onClick={this.addRubricCategory.bind(this, undefined)}>
+          <CPButton cpType="primary" onClick={this.addRubricCategory.bind(this, undefined)}>
             Add New Category
           </CPButton>
           {this.state.activeComment ? (
@@ -1066,16 +994,8 @@ class RubricManager extends React.Component<IProps, IState> {
           ) : null}
           <LinkedCommentsAlert
             rubricComment={this.state.linkedComments[0]}
-            onDelete={this.onLinkedCommentsResolve.bind(
-              this,
-              this.state.linkedComments[0],
-              RESOLUTION.DELETE,
-            )}
-            onUnLink={this.onLinkedCommentsResolve.bind(
-              this,
-              this.state.linkedComments[0],
-              RESOLUTION.UNLINK,
-            )}
+            onDelete={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.DELETE)}
+            onUnLink={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.UNLINK)}
             onCancel={this.onLinkedAlertCancel}
             isVisible={this.state.linkedComments.length > 0}
           />
@@ -1092,7 +1012,7 @@ class RubricManager extends React.Component<IProps, IState> {
       return (
         <CPAdminRubric
           actions={actions}
-          title='Rubric'
+          title="Rubric"
           content={content}
           goBack={null}
           isEmpty={this.state.rubricCategories.length === 0}
@@ -1101,8 +1021,9 @@ class RubricManager extends React.Component<IProps, IState> {
               imageStyle={{
                 height: 60,
               }}
-              description={<span>No rubric yet</span>}>
-              <CPButton cpType='primary' onClick={this.addRubricCategory}>
+              description={<span>No rubric yet</span>}
+            >
+              <CPButton cpType="primary" onClick={this.addRubricCategory}>
                 Create a category
               </CPButton>
             </Empty>

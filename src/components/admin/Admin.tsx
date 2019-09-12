@@ -1349,6 +1349,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
               myEmail={this.props.user.email}
               user={this.props.user}
+              location={this.props.location}
             />
           );
           break;
