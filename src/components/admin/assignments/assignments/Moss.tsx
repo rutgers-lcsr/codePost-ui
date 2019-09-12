@@ -96,7 +96,7 @@ const Moss = (props: IMossProps) => {
   const [hanging, setHanging] = React.useState(false);
 
   const estimate = props.submissions.length * props.submissions.length * 80;
-  const submitTime = Math.min(Math.ceil(estimate / 30000) * 30000, 100000);
+  const submitTime = Math.ceil(estimate / 30000) * 30000;
 
   let testMode = false;
   const values = queryString.parse(props.location.search);
@@ -379,7 +379,7 @@ const Moss = (props: IMossProps) => {
       </div>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px', textAlign: 'center' }}>
-          <ProgressBar time={submitTime} />
+          <ProgressBar time={Math.min(submitTime, 100000)} />
           <Paragraph>We'll also send you an email when this is done...</Paragraph>
         </div>
       ) : null}
