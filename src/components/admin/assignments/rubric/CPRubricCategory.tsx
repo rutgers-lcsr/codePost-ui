@@ -160,7 +160,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
     this.state = {
       name: props.rubricCategory.name,
       pointLimit: props.rubricCategory.pointLimit,
-      helpText: props.rubricCategory.helpText,
+      helpText: props.rubricCategory.helpText ? props.rubricCategory.helpText : '',
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
@@ -206,7 +206,7 @@ class CPRubricCategory extends React.Component<ICPRubricCategoryProps, IState> {
         {
           name: this.props.rubricCategory.name,
           pointLimit: this.props.rubricCategory.pointLimit,
-          helpText: this.props.rubricCategory.helpText,
+          helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
         },
         () => {
           this.updateCategoryStatus();
