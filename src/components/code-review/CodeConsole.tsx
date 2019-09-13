@@ -109,6 +109,8 @@ interface ICodeConsoleState {
 
   /* demo data */
   demoCommentCounter: number;
+
+  commentCounter: number;
 }
 
 export interface ICodeConsoleProps {
@@ -362,6 +364,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       demoCommentCounter: 0,
 
       isStudent: false,
+      commentCounter: -1,
     };
   }
 
@@ -619,7 +622,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
-    this.setState({ comments, activeCommentID: comment.id });
+    this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -1203,6 +1206,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1405,6 +1409,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 

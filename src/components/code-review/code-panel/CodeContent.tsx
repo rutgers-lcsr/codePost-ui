@@ -26,11 +26,11 @@ export interface ICodeContentCoreProps {
 }
 
 export interface ICodeContentEditProps {
+  commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
-  const [commentCounter, setCommentCounter] = React.useState(-1);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   React.useEffect(() => {
@@ -56,7 +56,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   }, []);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
-    setCommentCounter(commentCounter - 1);
     props.addComment(comment, file);
   };
 
@@ -88,7 +87,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           <Markdown
             key={props.file.id}
             {...codeProps}
-            commentCounter={commentCounter}
+            commentCounter={props.commentCounter}
             addComment={addCommentAndIncrement}
           />
         </div>
@@ -137,7 +136,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           <Code
             {...codeProps}
-            commentCounter={commentCounter}
+            commentCounter={props.commentCounter}
             addComment={addCommentAndIncrement}
             onHighlightClick={props.onHighlightClick}
           />
@@ -154,7 +153,7 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
     };
 
     public render() {
-      return <Component {...this.props as ICodeContentCoreProps} addComment={this.addComment} />;
+      return <Component {...(this.props as ICodeContentCoreProps)} addComment={this.addComment} commentCounter={-1} />;
     }
   };
 };
