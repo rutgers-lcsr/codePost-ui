@@ -84,8 +84,7 @@ const anonymousUser: UserType = {
 
 const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
 
-// const inProduction = !(process.env.NODE_ENV && process.env.NODE_ENV === 'development');
-const inProduction = true;
+const inProduction = !(process.env.NODE_ENV && process.env.NODE_ENV === 'development');
 
 /*****************************************************************************/
 
