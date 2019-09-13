@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Icon, Menu } from 'antd';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -51,7 +51,6 @@ interface IFileMenuProps extends IWithWindowWatcherProps {
   comments?: IFileToCommentsMap;
   selectedFile?: FileType;
   changeSelectedFile: (fileID: number) => void;
-  canChange: () => boolean;
   getPointsInFile: (file: FileType) => number[];
   hidePoints?: boolean;
 }
@@ -319,6 +318,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     });
   };
 
+  public onFileSelect = (e: SelectParam) => {
+    if (e) {
+      const fileID = +e.key.split('-')[1];
+      this.props.changeSelectedFile(fileID);
+    }
+  };
+
   /**************************** Render *************************************/
   public render() {
     const fileStructure = this.createDirectoryStructure(this.props.files);
@@ -333,83 +339,24 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     return (
       <div id="file-menu" style={{ overflowY: 'auto' }}>
-        <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
-          <Menu
-            selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-            mode="inline"
-            className={className}
-            style={{
-              backgroundColor: this.context.consoleTheme.siderBg,
-              color: this.context.consoleTheme.siderMenuItemColor,
-            }}
-          >
-            {rootFiles}
-            {folders}
-          </Menu>
-        </UnsavedCommentsPopconfirm>
+        <Menu
+          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+          mode="inline"
+          className={className}
+          style={{
+            backgroundColor: this.context.consoleTheme.siderBg,
+            color: this.context.consoleTheme.siderMenuItemColor,
+          }}
+          onSelect={this.onFileSelect}
+        >
+          {rootFiles}
+          {folders}
+        </Menu>
       </div>
     );
   }
 }
 
-interface IUnsavedCommentsPopconfirmProps {
-  changeSelectedFile: (fileID: number) => void;
-  canChange: () => boolean;
-  children: any;
-}
-
-export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps) => {
-  const [selectedParam, setSelectedParam] = React.useState<SelectParam | null>(null);
-  const [visible, setVisible] = React.useState<boolean>(false);
-
-  const onSelect = (selectParam: SelectParam) => {
-    setSelectedParam(selectParam);
-  };
-
-  const confirm = () => {
-    if (selectedParam) {
-      const fileID = +selectedParam.key.split('-')[1];
-      props.changeSelectedFile(fileID);
-    }
-    setSelectedParam(null);
-    setVisible(false);
-  };
-
-  const cancel = () => {
-    setSelectedParam(null);
-    setVisible(false);
-  };
-
-  React.useEffect(() => {
-    if (selectedParam && props.canChange()) {
-      confirm();
-    } else if (selectedParam && !props.canChange()) {
-      setVisible(true);
-    }
-  });
-
-  // FIXME: React.cloneElement possibly very slow
-  return (
-    <Popconfirm
-      title={
-        <div>
-          <p>You have draft comments that will not be saved.</p>{' '}
-          <p>
-            <b>Are you sure you want to continue?</b>
-          </p>
-        </div>
-      }
-      visible={visible}
-      onConfirm={confirm}
-      onCancel={cancel}
-      okText="Yes"
-      cancelText="No"
-      placement="rightTop"
-    >
-      {React.cloneElement(props.children, { onSelect })}
-    </Popconfirm>
-  );
-};
 FileMenu.contextType = ConsoleThemeContext;
 
 interface IFileMenuTitleProps {

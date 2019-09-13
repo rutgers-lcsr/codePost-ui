@@ -10,7 +10,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popover, Switch, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -214,7 +214,6 @@ export const Controls = (props: IControlsProps) => {
 /**********************************************************************************************/
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
-  canToggle: () => boolean;
   toggleFinalized: () => void;
 }
 
@@ -278,13 +277,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   }, [props.submission]);
 
   const onClick = async () => {
-    setIsLoading(true);
-    if (!props.submission.isFinalized && !props.canToggle()) {
-      setPopconfirmVisible(true);
-    } else {
-      await props.toggleFinalized();
-      setIsLoading(false);
-    }
+    await props.toggleFinalized();
+    setIsLoading(false);
   };
 
   const confirm = async () => {
@@ -317,29 +311,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       <CPTooltip title={toggleNotice} placement="left">
         <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
         &nbsp;
-        <Popconfirm
-          title={
-            <div>
-              <p>You have draft comments that will not be saved.</p>{' '}
-              <p>
-                <b>Are you sure you want to continue?</b>
-              </p>
-            </div>
-          }
-          visible={popconfirmVisible}
-          onConfirm={confirm}
-          onCancel={cancel}
-          okText="Yes"
-          cancelText="No"
-          placement="bottomRight"
-        >
-          <Switch
-            checked={isFinalized}
-            onClick={onClick}
-            disabled={!isFinalized && props.submission.grader === null}
-            loading={isLoading}
-          />
-        </Popconfirm>
+        <Switch
+          checked={isFinalized}
+          onClick={onClick}
+          disabled={!isFinalized && props.submission.grader === null}
+          loading={isLoading}
+        />
       </CPTooltip>
     </div>
   );
