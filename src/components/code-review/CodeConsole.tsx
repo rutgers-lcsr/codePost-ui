@@ -101,7 +101,7 @@ interface ICodeConsoleState {
   commentRubricComments: ICommentToRubricCommentMap;
   allowGradersToEditRubric: boolean;
   activeCommentID?: number;
-  unsavedComments: IdMapType;
+  // unsavedComments: IdMapType;
   oldCommentIDs: { [currentID: number]: number };
 
   /* admin data */
@@ -146,26 +146,26 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   // --- Edits
-  public static addIdToUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
-    return { ...unsavedComments, [commentID]: true };
-  };
-
-  public static removeIdFromUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
-    const { [commentID]: flag, ...restOfUnsavedComments } = unsavedComments;
-    return restOfUnsavedComments;
-  };
-
-  public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
-    // tslint:disable
-    return comments.hasOwnProperty(file.id)
-      ? {
-          ...comments,
-          [file.id]: comments[file.id].filter((comment: CommentType) => {
-            return comment.id > 0;
-          }),
-        }
-      : comments;
-  };
+  // public static addIdToUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
+  //   return { ...unsavedComments, [commentID]: true };
+  // };
+  //
+  // public static removeIdFromUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
+  //   const { [commentID]: flag, ...restOfUnsavedComments } = unsavedComments;
+  //   return restOfUnsavedComments;
+  // };
+  //
+  // public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
+  //   // tslint:disable
+  //   return comments.hasOwnProperty(file.id)
+  //     ? {
+  //         ...comments,
+  //         [file.id]: comments[file.id].filter((comment: CommentType) => {
+  //           return comment.id > 0;
+  //         }),
+  //       }
+  //     : comments;
+  // };
   // tslint:enable
 
   // --- Linked Rubric Comments
@@ -352,7 +352,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowGradersToEditRubric: false,
 
       selectedFile: undefined,
-      unsavedComments: {},
+      // unsavedComments: {},
       oldCommentIDs: {},
 
       codeZoom: 1,
@@ -645,11 +645,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
     }
 
-    let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
-    unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
+    // let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    // unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
+
+    // this.setState({
+    //   unsavedComments,
+    //   oldCommentIDs,
+    // });
 
     this.setState({
-      unsavedComments,
       oldCommentIDs,
     });
 
@@ -666,9 +670,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
+    // const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
-    this.setState({ comments, unsavedComments, commentRubricComments }, () => {
+    // this.setState({ comments, unsavedComments, commentRubricComments }, () => {
+    this.setState({ comments, commentRubricComments }, () => {
       // We will never be in a situation in which we have an active comment immediately after
       // deleting a comment. Either
       // (1) we deleted the active comment, so it's no longer active
@@ -677,15 +682,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     });
   };
 
-  public addUnsaved = (commentID: number) => {
-    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, commentID);
-    this.setState({ unsavedComments });
-  };
-
-  public removeUnsaved = (commentID: number) => {
-    const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
-    this.setState({ unsavedComments });
-  };
+  // public addUnsaved = (commentID: number) => {
+  //   const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, commentID);
+  //   this.setState({ unsavedComments });
+  // };
+  //
+  // public removeUnsaved = (commentID: number) => {
+  //   const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
+  //   this.setState({ unsavedComments });
+  // };
 
   public updateFeedback = (fileID: number, commentID: number, feedbackNum: number) => {
     CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then((newComment) => {
@@ -708,9 +713,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       comment.id,
     );
-    const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
+    // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
 
-    this.setState({ comments, commentRubricComments, unsavedComments });
+    // this.setState({ comments, commentRubricComments, unsavedComments });
+    this.setState({ comments, commentRubricComments });
   };
 
   public onRubricCommentClick = (rubricComment: RubricCommentType): void => {
@@ -1185,8 +1191,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
               saveComment={this.saveComment}
-              addUnsaved={this.addUnsaved}
-              removeUnsaved={this.removeUnsaved}
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
@@ -1383,8 +1387,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
               saveComment={this.saveComment}
-              addUnsaved={this.addUnsaved}
-              removeUnsaved={this.removeUnsaved}
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
