@@ -12,12 +12,7 @@ import queryString from 'query-string';
 /* codePost imports */
 import Loading from '../core/Loading';
 
-import {
-  ICommentToRubricCommentMap,
-  IdMapType,
-  IFileToCommentsMap,
-  IRubricCategoryToRubricCommentsMap,
-} from '../../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
@@ -101,7 +96,6 @@ interface ICodeConsoleState {
   commentRubricComments: ICommentToRubricCommentMap;
   allowGradersToEditRubric: boolean;
   activeCommentID?: number;
-  // unsavedComments: IdMapType;
   oldCommentIDs: { [currentID: number]: number };
 
   /* admin data */
@@ -144,29 +138,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     return { ...comments, [newComment.file]: fileComments };
   };
-
-  // --- Edits
-  // public static addIdToUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
-  //   return { ...unsavedComments, [commentID]: true };
-  // };
-  //
-  // public static removeIdFromUnsavedState = (unsavedComments: IdMapType, commentID: number) => {
-  //   const { [commentID]: flag, ...restOfUnsavedComments } = unsavedComments;
-  //   return restOfUnsavedComments;
-  // };
-  //
-  // public static clearUnsavedComments = (comments: IFileToCommentsMap, file: FileType) => {
-  //   // tslint:disable
-  //   return comments.hasOwnProperty(file.id)
-  //     ? {
-  //         ...comments,
-  //         [file.id]: comments[file.id].filter((comment: CommentType) => {
-  //           return comment.id > 0;
-  //         }),
-  //       }
-  //     : comments;
-  // };
-  // tslint:enable
 
   // --- Linked Rubric Comments
   public static addToCommentRubricCommentsState = (
@@ -352,7 +323,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowGradersToEditRubric: false,
 
       selectedFile: undefined,
-      // unsavedComments: {},
       oldCommentIDs: {},
 
       codeZoom: 1,
@@ -592,8 +562,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
-    // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
-    // this.setState({unsavedComments});
     this.setState({ comments, activeCommentID: comment.id });
   };
 
@@ -645,14 +613,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
     }
 
-    // let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
-    // unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
-
-    // this.setState({
-    //   unsavedComments,
-    //   oldCommentIDs,
-    // });
-
     this.setState({
       oldCommentIDs,
     });
@@ -670,9 +630,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       comment.id,
     );
-    // const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
 
-    // this.setState({ comments, unsavedComments, commentRubricComments }, () => {
     this.setState({ comments, commentRubricComments }, () => {
       // We will never be in a situation in which we have an active comment immediately after
       // deleting a comment. Either
@@ -681,16 +639,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.changeActiveComment(undefined);
     });
   };
-
-  // public addUnsaved = (commentID: number) => {
-  //   const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, commentID);
-  //   this.setState({ unsavedComments });
-  // };
-  //
-  // public removeUnsaved = (commentID: number) => {
-  //   const unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, commentID);
-  //   this.setState({ unsavedComments });
-  // };
 
   public updateFeedback = (fileID: number, commentID: number, feedbackNum: number) => {
     CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then((newComment) => {
@@ -713,9 +661,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       comment.id,
     );
-    // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
 
-    // this.setState({ comments, commentRubricComments, unsavedComments });
     this.setState({ comments, commentRubricComments });
   };
 
@@ -869,6 +815,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     });
   };
 
+  /***********************************************************************************************/
+  /* Demo data
+  /***********************************************************************************************/
   public loadDemoData = (files: any[]) => {
     const demoAssignment: AssignmentType = {
       id: -1,
