@@ -580,7 +580,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     );
 
     this.setState({ comments, commentRubricComments });
-    console.log('setting state', comments);
   };
 
   public saveComment = async (comment: CommentType) => {
