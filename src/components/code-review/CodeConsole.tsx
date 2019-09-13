@@ -555,34 +555,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public changeSelectedFile = (fileID: number): void => {
-    const comments =
-      this.state.selectedFile !== undefined
-        ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
-        : this.state.comments;
+    // const comments =
+    //   this.state.selectedFile !== undefined
+    //     ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+    //     : this.state.comments;
 
     const selectedFile = this.state.files.find((file: FileType) => {
       return file.id === fileID;
     });
 
     // this.setState({ unsavedComments: {} });
-    this.setState({ selectedFile, comments });
+    this.setState({ selectedFile, activeCommentID: undefined });
   };
 
   // Comment Elements have a data-status attribute
   // We use plain javascript to decipher whether there are unsaved comments
   public containsUnsavedComments = (): boolean => {
-    if (this.state.selectedFile) {
-      if (this.state.comments.hasOwnProperty(this.state.selectedFile.id)) {
-        for (const comment of this.state.comments[this.state.selectedFile.id]) {
-          const commentElement = document.getElementById(`comment-${comment.id}`);
-          if (commentElement !== null) {
-            if (commentElement.dataset.status === 'edited') {
-              return false;
-            }
-          }
-        }
-      }
-    }
+    // if (this.state.selectedFile) {
+    //   if (this.state.comments.hasOwnProperty(this.state.selectedFile.id)) {
+    //     for (const comment of this.state.comments[this.state.selectedFile.id]) {
+    //       const commentElement = document.getElementById(`comment-${comment.id}`);
+    //       if (commentElement !== null) {
+    //         if (commentElement.dataset.status === 'edited') {
+    //           this.da
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
     return true;
   };
 
@@ -637,6 +637,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     );
 
     this.setState({ comments, commentRubricComments });
+    console.log('setting state', comments);
   };
 
   public saveComment = async (comment: CommentType) => {
@@ -829,7 +830,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     try {
       const submission = await Submission.update(payload);
-      let comments = this.state.comments;
+      // let comments = this.state.comments;
 
       if (!this.state.submission.isFinalized) {
         sendSlack(
@@ -838,16 +839,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             this.state.course ? this.state.course.name : ''
           } ${this.state.course ? this.state.course.period : ''}`,
         );
-        comments =
-          this.state.selectedFile !== undefined
-            ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
-            : this.state.comments;
+        // comments =
+        //   this.state.selectedFile !== undefined
+        //     ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
+        //     : this.state.comments;
         message.success('Successfully finalized submission');
       } else {
         message.success('Successfully unfinalized submission');
       }
-
-      this.setState({ submission, comments });
+      //
+      // this.setState({ submission, comments });
+      this.setState({ submission });
     } catch (error) {
       message.error(`Error updating submission: ${JSON.stringify(error)}`);
     }

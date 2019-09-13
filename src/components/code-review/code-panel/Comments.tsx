@@ -39,8 +39,6 @@ interface ICommentsEditProps {
   saveComment: (comment: CommentType) => void;
   deleteComment: (comment: CommentType) => void;
 
-  addUnsaved: (commentID: number) => void;
-  removeUnsaved: (commentID: number) => void;
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   oldCommentIDs: { [currentID: number]: number };
@@ -302,8 +300,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           changeActive={this.changeActive}
           onSave={this.props.saveComment}
           onDelete={this.props.deleteComment}
-          addUnsaved={this.props.addUnsaved}
-          removeUnsaved={this.props.removeUnsaved}
           setCommentPlacements={this.placeCommentsOnNextFrame}
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
@@ -359,8 +355,6 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           changeActive={this.changeActive}
           saveComment={this.saveComment}
           deleteComment={this.deleteComment}
-          addUnsaved={this.addUnsaved}
-          removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
           oldCommentIDs={{}}
         />

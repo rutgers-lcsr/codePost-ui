@@ -46,9 +46,6 @@ interface ICommentProps {
   changeActive: (id: number | undefined) => void;
   onSave: (comment: CommentType) => void;
   onDelete: (comment: CommentType) => void;
-
-  addUnsaved: (commentID: number) => void;
-  removeUnsaved: (commentID: number) => void;
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   setCommentPlacements: () => void;
@@ -96,7 +93,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.setState(this.init());
     }
 
-    if (prevProps.comment.id !== this.props.comment.id) {
+    // If the comment is a new comment, and if the file is the same (not switching of files), activate this comment
+    if (prevProps.comment.id !== this.props.comment.id && prevProps.file.id === this.props.file.id) {
       this.activate();
     }
 
