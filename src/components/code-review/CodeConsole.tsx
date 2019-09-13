@@ -675,7 +675,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({
       unsavedComments,
       oldCommentIDs,
-      activeCommentID: undefined,
     });
 
     this.updateComment(comment.id, savedComment);

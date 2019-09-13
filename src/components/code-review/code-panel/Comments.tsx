@@ -129,11 +129,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
-    if (prevProps.comments.length < this.props.comments.length) {
-      const codeScrollArea = document.getElementById('code-scroll-area');
-      if (codeScrollArea !== null) {
-        return codeScrollArea.scrollTop;
-      }
+    const codeScrollArea = document.getElementById('code-scroll-area');
+    if (codeScrollArea !== null) {
+      return codeScrollArea.scrollTop;
     }
 
     return null;

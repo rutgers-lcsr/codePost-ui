@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
@@ -66,6 +66,8 @@ interface ICommentState {
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
+  private saveTimeout: any;
+
   public constructor(props: ICommentProps, context: any) {
     super(props, context);
     this.state = this.init();
@@ -82,6 +84,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         points: UiComment.points(this.props.comment, this.props.rubricComment),
       });
       this.props.setCommentPlacements();
+      this.resetSaveTimeOut();
     }
 
     if (this.props.commentType !== prevProps.commentType) {
@@ -91,6 +94,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // If a comment is finalized, then reset the state
     if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
       this.setState(this.init());
+    }
+
+    if (prevProps.comment.id !== this.props.comment.id) {
+      this.activate();
     }
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
@@ -106,7 +113,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-
     return { text, points, status };
   };
 
@@ -137,6 +143,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     this.setState({ status: 'idle' });
   };
 
+  public resetSaveTimeOut = () => {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout(this.save, 500);
+  };
+
   // Ant type bug https://cl.ly/c5094e2c4526
   public onChangePointInput = (value: any) => {
     const parsed = parseFloat(value);
@@ -148,6 +161,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.idle();
     }
 
+    this.resetSaveTimeOut();
     this.setState({ points });
   };
 
@@ -196,6 +210,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.idle();
     }
 
+    this.resetSaveTimeOut();
     this.props.setCommentPlacements();
   };
 
@@ -228,6 +243,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault(); // skip OnChange method
       this.save();
+      this.deactivate();
     }
   };
 
@@ -328,7 +344,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             className="cp-label--small cp-label--italic"
             style={{ color: this.context.consoleTheme.commentTitleText }}
           >
-            Draft
+            {!this.state.text && this.props.comment.id < 0 ? '' : 'Saving...'}
           </span>
         );
         break;
@@ -373,10 +389,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             color: this.context.consoleTheme.text,
           }}
           autoFocus
+          onFocus={(e) => {
+            var temp_value = e.target.value;
+            e.target.value = '';
+            e.target.value = temp_value;
+          }}
         />
       );
 
-      commentElements.saveButton = <CPButton cpType="secondary" icon="save" onClick={this.save} />;
+      commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
       commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
 
       if (this.props.rubricComment) {
