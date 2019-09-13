@@ -172,7 +172,7 @@ const DownloadGrades = (props: IProps) => {
               <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
                 <div>
                   <Text style={{ fontWeight: 600 }} type="danger">
-                    {numMissing} students missing submissions
+                    {numMissing > 1 ? `${numMissing} students missing submissions` : '1 student missing a submission'}
                   </Text>
                 </div>
                 <Radio.Group onChange={changeMissingAsZero} value={missingAsZero} style={{ width: 250 }}>
@@ -189,7 +189,9 @@ const DownloadGrades = (props: IProps) => {
               <Divider />
               <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
                 <Text style={{ fontWeight: 600 }} type="warning">
-                  {numUngraded} students with unfinalized submissions
+                  {numUngraded > 1
+                    ? `${numUngraded} students with unfinalized submissions`
+                    : '1 student with an unfinalized submission'}
                 </Text>
                 <Radio.Group onChange={changeUngradedAsZero} value={ungradedAsZero} style={{ width: 250 }}>
                   <Radio value={false}>Leave blank (no grade)</Radio>
