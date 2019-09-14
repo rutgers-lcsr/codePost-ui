@@ -348,7 +348,7 @@ const Moss = (props: IMossProps) => {
                 <span>
                   You can obtain a Moss ID by clicking{' '}
                   <a
-                    href={`mailto: ${requestEmail}?subject = ${requestEmailSubject}& body=${requestEmailBody} `}
+                    href={`mailto: ${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody} `}
                     style={{ cursor: 'pointer' }}
                   >
                     here

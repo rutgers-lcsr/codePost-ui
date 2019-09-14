@@ -87,8 +87,6 @@ export const rosterToCsv = (
       dataToDownload = admins;
       break;
   }
-
-  console.log(dataToDownload);
   return dataToDownload;
 };
 
