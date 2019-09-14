@@ -102,6 +102,13 @@ class StudentData extends React.Component<IProps, IState> {
     });
   };
 
+  public onSubmissionClick = (submissionID: number, event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    openSubmission(submissionID);
+  };
+
   public render() {
     let toggleInactiveStudents;
 
@@ -217,12 +224,16 @@ class StudentData extends React.Component<IProps, IState> {
             const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
             if (submission && submission.isFinalized) {
               toRet[assignment.name] = (
-                <span style={{ cursor: 'pointer' }} onClick={openSubmission.bind(this, submission.id)}>
+                <span style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
                   {submission.grade}
                 </span>
               );
             } else if (submission) {
-              toRet[assignment.name] = 'Unfinalized';
+              toRet[assignment.name] = (
+                <span style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
+                  Unfinalized
+                </span>
+              );
             } else {
               toRet[assignment.name] = '--';
             }
