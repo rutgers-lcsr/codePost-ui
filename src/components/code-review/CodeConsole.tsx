@@ -1023,7 +1023,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         },
         {
           id: 3,
-          text: "Generic variable name that doesn't describe value",
+          text: "Generic variable name (e.g. `x`) that doesn't describe value",
           category: 1,
           comments: [],
           pointDelta: 1,
@@ -1033,7 +1033,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       2: [
         {
           id: 4,
-          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
           category: 2,
           comments: [],
           pointDelta: 2,
