@@ -57,6 +57,7 @@ interface ICommentProps {
   studentFeedbackOn: boolean;
 
   hideAuthor: boolean;
+  forcedRubricMode: boolean;
 }
 
 interface ICommentState {
@@ -78,9 +79,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
-      this.setState({
-        points: UiComment.points(this.props.comment, this.props.rubricComment),
-      });
+      if (this.props.forcedRubricMode && this.props.rubricComment === undefined) {
+        this.setState({ points: 0 });
+      } else {
+        this.setState({
+          points: UiComment.points(this.props.comment, this.props.rubricComment),
+        });
+      }
+
       this.props.setCommentPlacements();
     }
 
@@ -202,7 +208,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public removeRubricComment = () => {
     if (this.props.rubricComment) {
       this.edited();
+
+      if (this.props.forcedRubricMode) {
+        this.setState({ text: '' });
+      }
+
       this.props.removeRubricComment(this.props.comment, this.props.rubricComment);
+      this.props.setCommentPlacements();
     }
   };
 
@@ -347,6 +359,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (this.props.commentType === 'active') {
       const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
 
+      const shouldDisableTextArea = this.props.forcedRubricMode && this.props.rubricComment === undefined;
+
+      const forcedRubricTooltip = shouldDisableTextArea
+        ? 'You must link a Rubric Comment before writing any feedback.'
+        : null;
+
       commentElements.points = (
         <CPTooltip title={tooltip} hideThisOnHideTips={true}>
           <div>
@@ -354,26 +372,30 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               value={-points}
               size="small"
               onChange={this.onChangePointInput}
-              disabled={this.props.rubricComment ? true : false}
+              disabled={this.props.forcedRubricMode || this.props.rubricComment ? true : false}
               onKeyDown={this.handleShiftEnter}
               defaultToPositive={this.props.additiveGrading}
             />
           </div>
         </CPTooltip>
       );
+
       commentElements.comment = (
-        <TextArea
-          autosize
-          className="comment__text-area"
-          value={this.state.text}
-          onChange={this.onChangeText}
-          onPressEnter={this.handleShiftEnter}
-          style={{
-            backgroundColor: this.context.consoleTheme.commentTextArea,
-            color: this.context.consoleTheme.text,
-          }}
-          autoFocus
-        />
+        <CPTooltip title={forcedRubricTooltip} hideThisOnHideTips={true}>
+          <TextArea
+            autosize
+            className="comment__text-area"
+            value={this.state.text}
+            onChange={this.onChangeText}
+            onPressEnter={this.handleShiftEnter}
+            style={{
+              backgroundColor: this.context.consoleTheme.commentTextArea,
+              color: this.context.consoleTheme.text,
+            }}
+            autoFocus
+            disabled={shouldDisableTextArea}
+          />
+        </CPTooltip>
       );
 
       commentElements.saveButton = <CPButton cpType="secondary" icon="save" onClick={this.save} />;

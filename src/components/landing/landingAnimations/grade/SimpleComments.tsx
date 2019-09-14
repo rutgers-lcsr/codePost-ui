@@ -51,6 +51,7 @@ const SimpleComment = (props: {
       updateFeedback={empty}
       studentFeedbackOn={false}
       hideAuthor={true}
+      forcedRubricMode={false}
     />
   );
 };

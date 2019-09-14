@@ -43,6 +43,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
+      forcedRubricMode: values.forcedRubricMode,
     };
 
     this.props.onSave(payload).then(() => {
@@ -109,6 +110,7 @@ interface IFormValues {
   uploadDueDate: string;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
+  forcedRubricMode: boolean;
 }
 
 interface IFormState {
@@ -212,7 +214,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<InputNumber min={0} />)}
             </Form.Item>
             <Form.Item
-              label="Anonymous Grading"
+              label="Anonymous grading"
               extra={
                 <div>
                   When enabled, graders will not be able to see student emails associated with submissions. For more
@@ -232,7 +234,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
-              label="Hide Graders"
+              label="Hide graders"
               extra={<div>When enabled, students will not be able to see the grader associated with a submission.</div>}
               labelCol={{ span: 6 }}
               wrapperCol={{ span: 16 }}
@@ -265,7 +267,7 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
-              label="Allow Regrade Requests"
+              label="Allow regrade requests"
               extra=" When enabled, students can submit a question on their graded submission and request a regrade."
               labelCol={{ span: 6 }}
               wrapperCol={{ span: 16 }}
@@ -348,6 +350,21 @@ const CollectionCreateForm: any = Form.create()(
             >
               {getFieldDecorator('additiveGrading', {
                 initialValue: this.props.assignment.additiveGrading,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Enforce rubric use"
+              extra={
+                <div>
+                  <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
+                </div>
+              }
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('forcedRubricMode', {
+                initialValue: this.props.assignment.forcedRubricMode,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>

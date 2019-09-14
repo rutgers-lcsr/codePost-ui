@@ -647,11 +647,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (comment.id < 0) {
-        savedComment = await CommentIO.create(comment);
-        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (UiComment.isEmpty(comment)) {
+        return this.deleteComment(comment);
       } else {
-        savedComment = await CommentIO.update(comment);
+        if (comment.id < 0) {
+          savedComment = await CommentIO.create(comment);
+          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+        } else {
+          savedComment = await CommentIO.update(comment);
+        }
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
@@ -919,6 +923,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       uploadDueDate: '',
       liveFeedbackMode: false,
       additiveGrading: false,
+      forcedRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -1231,6 +1236,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
@@ -1434,6 +1440,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
