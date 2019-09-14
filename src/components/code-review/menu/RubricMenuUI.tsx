@@ -23,9 +23,13 @@ import CPButton from '../../core/CPButton';
 
 import Loading from '../../core/Loading';
 
+import { RESOLUTION } from '../../core/rubric/RubricManager';
+
 import RubricCategoryManager from '../../core/rubric/RubricCategoryManager';
 
 import RubricMenuCategoryUI from './RubricMenuCategoryUI';
+
+import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignments/rubric/LinkedCommentsAlert';
 
 /**********************************************************************************************************************/
 
@@ -173,6 +177,14 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       setNewCategoryName(e.target.value);
     };
 
+    const onDelete = () => {
+      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.DELETE);
+    };
+
+    const onUnLink = () => {
+      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
+    };
+
     const categoryForm = <Input placeholder="Category name" value={newCategoryName} onChange={onChangeCategoryName} />;
 
     const controlButtons = [
@@ -188,6 +200,20 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
         <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
           Add Category
         </CPButton>
+        <LinkedCommentsAlert
+          rubricComment={state.linkedComments[0]}
+          onDelete={onDelete}
+          onUnLink={onUnLink}
+          onCancel={helpers.onLinkedAlertCancel}
+          isVisible={state.linkedComments.length > 0}
+        />
+        <LinkedCommentsConfirm
+          onAccept={helpers.onLinkedConfirmAccept}
+          onCancel={helpers.onLinkedConfirmCancel}
+          isVisible={state.showConfirmDialog}
+          unsavedComments={state.unsavedComments}
+          savedRubricComments={state.rubricComments}
+        />
       </Popconfirm>,
       <div key="gap1" style={{ width: '10px' }} />,
       <CPButton

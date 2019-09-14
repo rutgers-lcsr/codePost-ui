@@ -131,6 +131,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       propagate these changes to the submissions to which they are applied (including any finalized submissions). Are
       you sure you want to continue?
       <div className="error-padding" />
+      <br />
       <h3>Changed Comments</h3>
       <ul>
         {contentEditedComments.map((el) => {
