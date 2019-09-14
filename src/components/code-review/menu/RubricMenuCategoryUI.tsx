@@ -2,13 +2,15 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Input, InputNumber, Menu, Popover, Tag } from 'antd';
+import { Button, Divider, Icon, Input, Menu, Popover, Tag } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
+
+import CPPointInput from '../../core/CPPointInput';
 
 import Badge from '../../core/Badge';
 
@@ -94,12 +96,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           );
 
           const pointInput = (
-            <InputNumber
-              value={thisComment.pointDelta}
-              onChange={onChangePointDelta}
-              onBlur={saveComment}
-              style={{ maxWidth: '45px' }}
-            />
+            <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
           );
 
           const linkedComments = (
@@ -154,11 +151,11 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           );
 
           const pointInput = (
-            <InputNumber
-              value={0}
+            <CPPointInput
+              value={-rubricComment.pointDelta}
+              size="small"
               onChange={updateRubricCommentPointDelta}
-              onBlur={saveComment}
-              style={{ maxWidth: '45px' }}
+              disabled={false}
             />
           );
 

@@ -84,7 +84,6 @@ const commentTableColumns = [
 ];
 
 const RubricCategoryUI = ({ props, state, helpers }: any) => {
-  console.log('zzzz', state.rubricCommentStatus);
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
