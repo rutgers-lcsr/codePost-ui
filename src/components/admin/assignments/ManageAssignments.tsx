@@ -245,7 +245,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       {
         title: (
           <div>
-            Done
+            Finalized
             <CPTooltip
               title={tooltips.admin.assignments.finalized}
               infoIcon={true}
