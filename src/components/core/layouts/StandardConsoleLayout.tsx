@@ -53,7 +53,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       : layoutVars.maxWidths.gradeSiderNormal;
 
   if (props.editRubricMode) {
-    siderWidth = 550;
+    siderWidth = 700;
   }
 
   const handleResize = async () => {
@@ -75,15 +75,16 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     }
   };
 
-  if (props.consoleTypes && props.consoleTypes.includes('grade')) {
-    React.useEffect(() => {
+  React.useEffect(() => {
+    if (props.consoleTypes && props.consoleTypes.includes('grade')) {
       handleResize();
       window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }, [props.editRubricMode]);
-  }
+    }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [props.editRubricMode]);
+
   const onCollapse = async (keys: string[]) => {
     if (window.innerHeight !== 0) {
       const rubricMenu = document.getElementById('rubric-menu');

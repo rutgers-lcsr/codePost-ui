@@ -4,9 +4,6 @@ import * as React from 'react';
 /* antd imports */
 import { Button, Divider, Icon, Input, InputNumber, Menu, Popover, Tag } from 'antd';
 
-const SubMenu = Menu.SubMenu;
-const { TextArea } = Input;
-
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
@@ -14,6 +11,9 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 import InlineMarkdown from '../../core/InlineMarkdown';
 
 import Badge from '../../core/Badge';
+
+const SubMenu = Menu.SubMenu;
+const { TextArea } = Input;
 
 const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
   // Capturing ...otherProps allows us to catch the required Ant props from

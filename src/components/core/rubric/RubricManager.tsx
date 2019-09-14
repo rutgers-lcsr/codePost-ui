@@ -603,7 +603,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     if (index > -1) {
       newCategories.splice(index, 1);
 
-      this.setState((oldState: IState) => {
+      this.setState((oldState: IRubricManagerState) => {
         const alwaysDelete = {
           // remove rubric category
           rubricCategories: newCategories,
