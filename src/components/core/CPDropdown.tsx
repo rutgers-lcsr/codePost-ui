@@ -1,18 +1,15 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { Button, Dropdown, Icon } from "antd";
+import { Button, Dropdown, Icon } from 'antd';
 
-import { DropdownButtonProps } from "antd/lib/dropdown";
+import { DropdownButtonProps } from 'antd/lib/dropdown';
 
-import {
-  ConsoleThemeContext,
-  consoleThemes
-} from "../../styles/abstracts/_console-theme-context";
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 const ButtonGroup = Button.Group;
 
-type ThemeType = "light" | "dark";
-type JustifyType = "space-between" | "center";
+type ThemeType = 'light' | 'dark';
+type JustifyType = 'space-between' | 'center';
 
 interface ICPDropdownProps {
   value: string;
@@ -21,27 +18,22 @@ interface ICPDropdownProps {
   label?: string;
 }
 
-class CPDropdown extends React.Component<
-  DropdownButtonProps & ICPDropdownProps,
-  {}
-  > {
+class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps, {}> {
   public render() {
     const { value, theme, ...props } = this.props;
-    const justifyType =
-      props.justifyContent === "space-between" ? "space-between" : "center";
+    const justifyType = props.justifyContent === 'space-between' ? 'space-between' : 'center';
 
-    const t =
-      consoleThemes.light === this.context.consoleTheme ? "light" : "dark";
+    const t = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
     return (
       <Dropdown className={`cp-dropdown cp-dropdown--${t}`} {...props}>
-        <ButtonGroup style={{ display: "flex", width: "100%" }}>
+        <ButtonGroup style={{ display: 'flex', width: '100%' }}>
           {props.label !== undefined ? (
             <Button
               disabled={true}
               style={{
                 backgroundColor: this.context.consoleTheme.commentTitle,
-                color: this.context.consoleTheme.buttonDisabledColor
+                color: this.context.consoleTheme.buttonDisabledColor,
               }}
             >
               {props.label}
@@ -50,12 +42,12 @@ class CPDropdown extends React.Component<
           <Button style={{ flexGrow: 1 }}>
             <div
               style={{
-                display: "flex",
+                display: 'flex',
                 justifyContent: justifyType,
-                alignItems: "center"
+                alignItems: 'center',
               }}
             >
-              {value} <Icon type="down" />
+              {value} &nbsp; <Icon type="down" />
             </div>
           </Button>
         </ButtonGroup>
