@@ -74,10 +74,6 @@ class StudentData extends React.Component<IProps, IState> {
     this.setState({ activeStudent: newStudent });
   };
 
-  public onRowClick = (record: any) => {
-    this.changeActiveStudent(record.student);
-  };
-
   public sortFunction = (a: any, b: any) => {
     if (typeof a === 'number' && typeof b === 'number') {
       return b - a;
@@ -139,7 +135,7 @@ class StudentData extends React.Component<IProps, IState> {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
           {
-            title: 'Expand',
+            title: 'Zoom in',
             dataIndex: 'expand',
             key: 'expand',
             align: aligner,
@@ -207,15 +203,17 @@ class StudentData extends React.Component<IProps, IState> {
         }
 
         data = rowValues.map((studentEmail) => {
-          const expandFn = () => {
+          const expandFn = (event: React.MouseEvent<HTMLElement>) => {
             this.setState({ activeStudent: studentEmail });
           };
 
           const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="folder-open" onClick={expandFn} />
-              </CPTooltip>
+              <div style={{ cursor: 'pointer' }} onClick={expandFn}>
+                <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
+                  <Icon type="folder-open" />
+                </CPTooltip>
+              </div>
             ),
             student: studentEmail,
             key: studentEmail,
@@ -246,7 +244,6 @@ class StudentData extends React.Component<IProps, IState> {
 
       return (
         <TableDetail
-          onRowClick={this.onRowClick}
           loadComplete={this.props.loadComplete}
           title={'Submissions by Student'}
           isEmpty={this.props.assignments.length === 0 || numStudents === 0}

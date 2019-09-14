@@ -92,10 +92,6 @@ class GraderData extends React.Component<IProps, IState> {
     this.setState({ activeGrader: newGrader });
   };
 
-  public onRowClick = (record: any) => {
-    this.changeActiveGrader(record.grader);
-  };
-
   public sortFunction = (a: any, b: any) => {
     if (typeof a === 'number' && typeof b === 'number') {
       return b - a;
@@ -130,7 +126,7 @@ class GraderData extends React.Component<IProps, IState> {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
           {
-            title: 'Expand',
+            title: 'Zoom in',
             dataIndex: 'expand',
             key: 'expand',
             align: aligner,
@@ -218,15 +214,17 @@ class GraderData extends React.Component<IProps, IState> {
         }
 
         data = rowValues.map((graderEmail) => {
-          const expandFn = () => {
+          const expandFn = (event: React.MouseEvent<HTMLElement>) => {
             this.setState({ activeGrader: graderEmail });
           };
 
           const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="folder-open" onClick={expandFn} />
-              </CPTooltip>
+              <div onClick={expandFn} style={{ cursor: 'pointer' }}>
+                <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
+                  <Icon type="folder-open" />
+                </CPTooltip>
+              </div>
             ),
             key: graderEmail,
             grader: graderEmail,
@@ -251,7 +249,6 @@ class GraderData extends React.Component<IProps, IState> {
       return (
         <TableDetail
           loadComplete={this.props.loadComplete}
-          onRowClick={this.onRowClick}
           title={'Submissions by Grader'}
           isEmpty={numGraders === 0 || this.props.assignments.length === 0}
           emptyNode={
