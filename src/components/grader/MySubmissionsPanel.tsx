@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
-const { Option } = Select;
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -30,9 +29,11 @@ import { compare } from '../utils/SortUtils';
 
 import { loadIDList } from '../../infrastructure/generics';
 
+import { ADMIN } from '../../routes';
+
 type alignType = 'left' | 'right' | 'center';
 
-import { ADMIN } from '../../routes';
+const { Option } = Select;
 
 /**********************************************************************************************************************/
 
@@ -232,7 +233,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       if (this.state.currentSections.length === 0) {
         this.setState({ currentSections: [match] });
       } else {
-        this.setState({ currentSections: [...this.state.currentSections, match], buttonState: BUTTON_STATE.Active });
+        this.setState({
+          currentSections: [...this.state.currentSections, match],
+          buttonState: BUTTON_STATE.Active,
+        });
       }
     }
   };
@@ -241,7 +245,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     const newSections = this.state.currentSections.filter((obj) => {
       return obj.id !== Number(sectionID);
     });
-    this.setState({ currentSections: newSections, buttonState: BUTTON_STATE.Active });
+    this.setState({
+      currentSections: newSections,
+      buttonState: BUTTON_STATE.Active,
+    });
   };
 
   public setFilterType = (filterType: FILTER_TYPE) => {
@@ -420,6 +427,10 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       const showingEmails = !this.props.isAnonymous || this.state.showStudentEmails;
 
       const data = this.state.submissions.map((sub) => {
+        const releaseSubmission = () => {
+          // @ts-ignore
+          this.releaseSubmission(sub);
+        };
         const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
         return {
           ...formatSub(sub, this.props.assignment),
@@ -430,7 +441,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
             <div>
               <Popconfirm
                 title="Are you sure you want to release this submission?"
-                onConfirm={this.releaseSubmission.bind(this, sub)}
+                onConfirm={releaseSubmission}
                 okText="Release"
                 cancelText="Cancel"
                 placement="left"

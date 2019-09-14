@@ -23,6 +23,7 @@ interface ILoginFormProps {
   error: string;
   title?: string;
   redirectAfterLogin: boolean;
+  maintenanceMode?: boolean;
 }
 
 const initialState = {
@@ -39,7 +40,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   public handleChange = (label: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[label] = newValue;
       return newState;
     });
@@ -94,8 +95,15 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
       <PreAuthLayout isLoggedIn={false}>
         <div style={{ maxWidth: 500 }}>
           <br />
+          {this.props.maintenanceMode ? (
+            <Typography.Title level={2} style={{ textAlign: 'center', color: 'orange' }}>
+              CodePost is currently down for maintenance. Please try logging back in later.
+            </Typography.Title>
+          ) : (
+            <div />
+          )}
           <br />
-          <Typography.Title level={1}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
+          <Typography.Title level={2}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
           <form>
             <Input
               prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -104,6 +112,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
               onKeyDown={this.handleKeyPress}
+              disabled={this.props.maintenanceMode}
             />
             <br />
             <br />
@@ -115,11 +124,17 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
               onChange={this.handleChange.bind(this, 'password')}
               onKeyDown={this.handleKeyPress}
               visibilityToggle={false}
+              disabled={this.props.maintenanceMode}
             />
             {this.renderError(this.props.error)}
             <br />
             <br />
-            <CPButton onClick={this.handleLogin} cpType="primary" loading={this.state.loading}>
+            <CPButton
+              onClick={this.handleLogin}
+              cpType="primary"
+              loading={this.state.loading}
+              disabled={this.props.maintenanceMode}
+            >
               Continue
             </CPButton>
           </form>

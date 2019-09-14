@@ -1,5 +1,4 @@
 import { Collapse, Divider, Icon } from 'antd';
-const Panel = Collapse.Panel;
 
 import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -12,6 +11,8 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import 'codemirror/mode/python/python';
 import CPButton from '../core/CPButton';
+
+const Panel = Collapse.Panel;
 
 const apiCodeExamples = [
   {
@@ -112,7 +113,9 @@ const dummyFunction = () => {
   return;
 };
 
+// @ts-ignore
 let instance: CodeMirror.Editor | null = null;
+// @ts-ignore
 const setEditor = (editor: CodeMirror.Editor) => {
   console.log('instance set');
   instance = editor;
@@ -144,7 +147,13 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         onBeforeChange={dummyFunction}
         editorDidMount={setEditor}
         value={apiCodeExamples[this.state.exampleIndex].code}
-        options={{ lineNumbers: true, readOnly: true, lineWrapping: true, mode: 'python', theme: 'material' }}
+        options={{
+          lineNumbers: true,
+          readOnly: true,
+          lineWrapping: true,
+          mode: 'python',
+          theme: 'material',
+        }}
       />
     );
 

@@ -7,10 +7,7 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
-const { Text, Title } = Typography;
 import { FormComponentProps } from 'antd/lib/form';
-
-type alignType = 'left' | 'right' | 'center';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
@@ -19,6 +16,10 @@ import CPAdminDetail from '../other/CPAdminDetail';
 import { CoursePatchType, CourseType } from '../../../infrastructure/course';
 
 import { timezones } from '../other/timezones';
+
+type alignType = 'left' | 'right' | 'center';
+
+const { Text, Title } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -278,8 +279,15 @@ const SettingsForm: any = Form.create()(
               {getFieldDecorator('name', {
                 initialValue: this.props.thisCourse.name,
                 rules: [
-                  { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
-                  { message: 'Course name cannot exceed 36 characters', max: 36 },
+                  {
+                    required: true,
+                    message: 'Please enter a course name with at least 4 characters',
+                    min: 4,
+                  },
+                  {
+                    message: 'Course name cannot exceed 36 characters',
+                    max: 36,
+                  },
                 ],
               })(<Input addonBefore="Course name" />)}
             </Form.Item>
@@ -288,7 +296,10 @@ const SettingsForm: any = Form.create()(
                 initialValue: this.props.thisCourse.period,
                 rules: [
                   { required: true, message: 'Please enter a course period.' },
-                  { message: 'Course period cannot exceed 32 characters', max: 32 },
+                  {
+                    message: 'Course period cannot exceed 32 characters',
+                    max: 32,
+                  },
                 ],
               })(<Input addonBefore="Course period" />)}
             </Form.Item>

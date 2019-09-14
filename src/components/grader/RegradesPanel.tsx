@@ -1,0 +1,159 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import React, { useEffect, useState } from 'react';
+
+/* antd imports */
+import { Switch } from 'antd';
+
+import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
+import { UserType } from '../../infrastructure/user';
+
+import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
+
+/**********************************************************************************************************************/
+
+interface IProps {
+  assignment: AssignmentType;
+  user: UserType;
+  isAnonymous: boolean;
+  isAdmin: boolean;
+  isSuperGrader: boolean;
+}
+
+const RegradesPanel = (props: IProps) => {
+  const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
+  const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
+  const [isLoading, setLoading] = useState(false);
+  const [viewAll, setViewAll] = useState(false);
+
+  const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
+    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
+      grader: user,
+    });
+    setSubmissions(newSubmissions);
+    setLoading(false);
+    return;
+  };
+
+  const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
+    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id);
+    setSubmissions(newSubmissions);
+    setLoading(false);
+    return;
+  };
+
+  const refreshSubmissions = () => {
+    setLoading(true);
+    viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email);
+  };
+
+  const updateSubmission = (toUpdate: AnonymousSubmissionType) => {
+    /* Make sure we are acting on a submission linked to this course */
+    const oldSubmission = submissions.find((el) => {
+      return el.id === toUpdate.id;
+    });
+
+    if (oldSubmission === undefined) {
+      return Promise.reject('Submission does not exist');
+    }
+
+    return Submission.update(toUpdate).then((updated) => {
+      /* use return value to replace existing submission */
+      const newSubmissions = [
+        ...submissions.filter((s) => {
+          return s.id !== updated.id;
+        }),
+        updated,
+      ];
+
+      setSubmissions(newSubmissions);
+    });
+  };
+
+  // Update submission if assignment changes or viewAll is triggered
+  useEffect(() => {
+    refreshSubmissions();
+  }, [props.assignment, viewAll]);
+
+  // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
+  const regradeSubmissions = submissions.filter((submission) => {
+    return (
+      submission.questionIsOpen ||
+      submission.questionText ||
+      submission.questionResponder ||
+      submission.questionResponse
+    );
+  });
+
+  const revealStudents =
+    props.isAnonymous && regradeSubmissions.length > 0 && typeof regradeSubmissions[0].students !== 'undefined' ? (
+      <div>
+        <div style={{ display: 'inline-block' }}>
+          Reveal students: &nbsp;
+          <Switch
+            defaultChecked={showStudentEmails}
+            onChange={setShowStudentEmails.bind({}, !showStudentEmails)}
+            key="toggleShowStudents"
+            style={{ display: 'inline-block' }}
+            disabled={isLoading}
+          />
+        </div>
+      </div>
+    ) : (
+      <div />
+    );
+
+  const showAllRegrades =
+    props.isAdmin || props.isSuperGrader ? (
+      <div>
+        <div style={{ display: 'inline-block', marginLeft: 15 }}>
+          View all regrades: &nbsp;
+          <Switch
+            defaultChecked={viewAll}
+            onChange={setViewAll.bind(!viewAll)}
+            key="toggleViewAll"
+            style={{ display: 'inline-block' }}
+            disabled={isLoading}
+          />
+        </div>
+      </div>
+    ) : (
+      <div />
+    );
+
+  const actions = [revealStudents, showAllRegrades];
+
+  const content = (
+    <div>
+      <RegradesTable
+        assignment={props.assignment}
+        submissions={submissions}
+        refreshCourseData={refreshSubmissions}
+        user={props.user}
+        updateSubmission={updateSubmission}
+        isLoading={isLoading}
+        isAnonymous={!showStudentEmails}
+        isAdmin={props.isAdmin}
+      />
+    </div>
+  );
+
+  return (
+    <CPAdminDetail
+      goBack={null}
+      title={<div>{`Regrade Requests: ${props.assignment.name}`}</div>}
+      titleInfo={'Quesitons or regrade requests from submissions that you have graded.'}
+      actions={actions}
+      content={content}
+      gutterSize={0}
+    />
+  );
+};
+
+export default RegradesPanel;

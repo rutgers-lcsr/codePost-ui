@@ -1,7 +1,14 @@
+///// WARNING
+///// If you change a variable in this file, you must make sure to also update the
+///// The references in other `.scss` files
+///// Currently, those include
+///// _colors, _fonts, _layouts, _typography
+/////
+///// Since migrating back to CRA, we no longer have the JS -> SCSS prebuild pipe
+
 // Ant Theme Overrides
 // https://ant.design/docs/react/customize-theme
 // https://github.com/ant-design/ant-design/blob/master/components/style/themes/default.less
-
 
 // --------------- COLORS --------------- //
 
@@ -53,7 +60,6 @@ const neutralDarkDisable = 'rgba(255, 255, 255, 0.5)';
 const neutralDarkBorder = 'rgba(255, 255, 255, 0.3)';
 const neutralDarkDivider = 'rgba(255, 255, 255, 0.2)';
 const neutralDarkBackground = 'rgba(255, 255, 255, 0.1)';
-
 
 // --------------- LAYOUT --------------- //
 
@@ -109,8 +115,8 @@ module.exports = {
     'font-size-base': '14px', // major text font size
     'heading-color': neutralTitle, // heading text color
     'text-color': neutralMainText, // major text color
-    'text-color-secondary' : neutralSecondaryText, // secondary text color
-    'disabled-color' : neutralDisable, // disable state color
+    'text-color-secondary': neutralSecondaryText, // secondary text color
+    'disabled-color': neutralDisable, // disable state color
     'border-radius-base': '4px', // major border radius
     'border-color-base': '#d9d9d9', // major border color
     'box-shadow-base': '0 2px 8px rgba(0, 0, 0, 0.15)', // major shadow for layer
@@ -215,6 +221,5 @@ module.exports = {
 
     codeTargetWidth: codeTargetWidth,
     commentsTargetWidth: commentsTargetWidth,
-  }
+  },
 };
-

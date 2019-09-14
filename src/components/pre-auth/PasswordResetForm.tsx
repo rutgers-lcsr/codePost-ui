@@ -49,7 +49,7 @@ const ForgotPasswordForm: any = Form.create({ name: 'form' })(
                 { required: true, message: 'Please enter a password' },
                 { min: 8, message: 'Password must be at least 8 characters' },
               ],
-            })(<Input.Password visibilityToggle={false} />)}
+            })(<Input.Password />)}
           </Form.Item>
           <Form.Item label="Confirm password">
             {getFieldDecorator('password2', {
@@ -58,7 +58,7 @@ const ForgotPasswordForm: any = Form.create({ name: 'form' })(
                 { required: true, message: 'Please confirm your password' },
                 { validator: this.doPasswordsMatch },
               ],
-            })(<Input.Password visibilityToggle={false} />)}
+            })(<Input.Password />)}
           </Form.Item>
           <Form.Item>
             <Button

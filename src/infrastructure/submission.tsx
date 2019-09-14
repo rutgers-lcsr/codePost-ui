@@ -25,7 +25,7 @@ import { message } from 'antd';
 /* Type Definitions
 /*****************************************************************************/
 
-const SubmissionV = t.intersection(
+export const SubmissionV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -37,12 +37,19 @@ const SubmissionV = t.intersection(
       dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
     }),
   ],
   'Submission',
 );
 
-const StudentSubmissionV = t.intersection(
+export const StudentSubmissionV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -53,7 +60,15 @@ const StudentSubmissionV = t.intersection(
     t.partial({
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
       dateUploaded: t.string,
+      hasGrader: t.boolean,
     }),
   ],
   'Submission',
@@ -84,12 +99,17 @@ const SubmissionVPatch = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
     }),
   ],
   'SubmissionPatch',
 );
 
-const AnonymousSubmissionV = t.intersection(
+export const AnonymousSubmissionV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -100,6 +120,13 @@ const AnonymousSubmissionV = t.intersection(
       dateUploaded: t.string,
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
     }),
     t.partial({
       students: t.array(t.string),
@@ -108,15 +135,15 @@ const AnonymousSubmissionV = t.intersection(
   'Submission',
 );
 
-type SubmissionType = t.TypeOf<typeof SubmissionV>;
-type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
-type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
+export type SubmissionType = t.TypeOf<typeof SubmissionV>;
+export type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
+export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
 
 /*****************************************************************************/
 /* Methods exposed
 /*****************************************************************************/
 
-class Submission {
+export class Submission {
   public static create = createObject(SubmissionV, SubmissionVPost, 'submissions');
   public static read = readObject(SubmissionV, 'submissions');
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
@@ -129,6 +156,19 @@ class Submission {
     SubmissionHistoryVPatch,
     'submissions',
     'history',
+  );
+
+  public static updateQuestion = updateObjectDetail(
+    StudentSubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'submitRegrade',
+  );
+  public static deleteQuestion = updateObjectDetail(
+    StudentSubmissionV,
+    SubmissionVPatch,
+    'submissions',
+    'deleteRegrade',
   );
 
   // FIXME, duplicate
@@ -180,12 +220,12 @@ class Submission {
 /* Exports
 /*****************************************************************************/
 
-export {
-  SubmissionType,
-  Submission,
-  SubmissionV,
-  StudentSubmissionV,
-  StudentSubmissionType,
-  AnonymousSubmissionType,
-  AnonymousSubmissionV,
-};
+// export {
+//   SubmissionType,
+//   Submission,
+//   SubmissionV,
+//   StudentSubmissionV,
+//   StudentSubmissionType,
+//   AnonymousSubmissionType,
+//   AnonymousSubmissionV,
+// };

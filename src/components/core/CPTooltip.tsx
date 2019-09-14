@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 
 import { Icon, Tooltip } from 'antd';
-import { TooltipProps } from 'antd/lib/tooltip';
+import { AbstractTooltipProps } from 'antd/lib/tooltip';
 
 import { ShowTooltipContext } from './tooltips';
 
 import themeVars from '../../styles/abstracts/_theme';
 
-interface IProps extends TooltipProps {
+interface IProps extends AbstractTooltipProps {
   children?: React.ReactNode;
   infoIcon?: boolean;
   iconStyle?: React.CSSProperties;

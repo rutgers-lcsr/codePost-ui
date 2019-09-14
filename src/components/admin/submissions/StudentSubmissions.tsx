@@ -70,7 +70,7 @@ class StudentData extends React.Component<IProps, IState> {
     }
   }
 
-  public changeActiveStudent = (newStudent: string) => {
+  public changeActiveStudent = (newStudent?: string) => {
     this.setState({ activeStudent: newStudent });
   };
 
@@ -92,7 +92,7 @@ class StudentData extends React.Component<IProps, IState> {
 
   public toggleValue = (value: string) => {
     this.setState((prevState: IState) => {
-      const newState = { ...prevState };
+      const newState: any = { ...prevState };
       newState[value] = !newState[value];
       return newState;
     });
@@ -127,7 +127,12 @@ class StudentData extends React.Component<IProps, IState> {
 
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
-          { title: 'Expand', dataIndex: 'expand', key: 'expand', align: aligner },
+          {
+            title: 'Expand',
+            dataIndex: 'expand',
+            key: 'expand',
+            align: aligner,
+          },
           {
             title: 'Student',
             dataIndex: 'student',
@@ -139,7 +144,10 @@ class StudentData extends React.Component<IProps, IState> {
                 if (this.props.students.indexOf(student) > -1) {
                   return (
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={student}
@@ -149,7 +157,10 @@ class StudentData extends React.Component<IProps, IState> {
                   return (
                     <span style={{ color: '#ccc' }}>
                       <Highlighter
-                        highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                        highlightStyle={{
+                          backgroundColor: '#5CBB8B',
+                          padding: 0,
+                        }}
                         searchWords={[searchText]}
                         autoEscape
                         textToHighlight={student}
@@ -189,7 +200,7 @@ class StudentData extends React.Component<IProps, IState> {
             this.setState({ activeStudent: studentEmail });
           };
 
-          const toRet = {
+          const toRet: any = {
             expand: (
               <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
                 <Icon type="zoom-in" onClick={expandFn} />

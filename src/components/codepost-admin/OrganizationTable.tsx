@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import { Button, Card, Drawer, Input, Table } from 'antd';
 
-const { Search } = Input;
-
 import { Link } from 'react-router-dom';
 
 import { OrganizationType } from '../../infrastructure/organization';
+
+const { Search } = Input;
 
 const cols = [
   {

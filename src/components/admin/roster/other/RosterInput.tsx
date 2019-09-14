@@ -45,6 +45,7 @@ ${props.roleType}3@myschool.edu,P02
 
   const onTabChange = (key: string) => {
     setCurrentTab(key);
+    // @ts-ignore
     setFormatSample(formatSamples[key]);
     setRosterString(key === 'without' ? rosterStringWithoutSections(rosterString) : props.rosterInput);
   };

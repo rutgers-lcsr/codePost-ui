@@ -9,7 +9,7 @@ import * as React from 'react';
 import { DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tag } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
@@ -35,11 +35,15 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       points: values.points,
       anonymousGrading: values.anonymousGrading,
       collaborativeRubricMode: values.collaborativeRubricMode,
+      hideGradersFromStudents: values.hideGradersFromStudents,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
+      allowRegradeRequests: values.allowRegradeRequests,
+      regradeDeadline: values.regradeDeadline,
       allowStudentUpload: values.allowStudentUpload,
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
+      additiveGrading: values.additiveGrading,
     };
 
     this.props.onSave(payload).then(() => {
@@ -98,15 +102,20 @@ interface IFormValues {
   points: number;
   anonymousGrading: boolean;
   collaborativeRubricMode: boolean;
+  hideGradersFromStudents: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
+  allowRegradeRequests: boolean;
+  regradeDeadline: string | null;
   allowStudentUpload: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
+  additiveGrading: boolean;
 }
 
 interface IFormState {
   studentUploadEnabled: boolean;
+  regradesEnabled: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -116,11 +125,16 @@ const CollectionCreateForm: any = Form.create()(
       super(props);
       this.state = {
         studentUploadEnabled: this.props.assignment.allowStudentUpload,
+        regradesEnabled: this.props.assignment.allowRegradeRequests,
       };
     }
 
     public handleStudentUploadCheck = (checked: boolean) => {
       this.setState({ studentUploadEnabled: checked });
+    };
+
+    public handleRegradeCheck = (checked: boolean) => {
+      this.setState({ regradesEnabled: checked });
     };
 
     public validateName = (rule: any, value: string, callback: any) => {
@@ -154,13 +168,20 @@ const CollectionCreateForm: any = Form.create()(
       const { visible, onCancel, onSave, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Update assignment settings" okText="Save" onCancel={onCancel} onOk={onSave}>
+        <Modal
+          visible={visible}
+          title="Update assignment settings"
+          okText="Save"
+          onCancel={onCancel}
+          onOk={onSave}
+          width={'70%'}
+        >
           <Form layout="horizontal" hideRequiredMark={true}>
             <Form.Item
               label="Name"
               extra="Must be unique within this course."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('name', {
                 initialValue: this.props.assignment.name,
@@ -181,8 +202,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Points"
               extra="Total points possible for this assignment."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('points', {
                 initialValue: this.props.assignment.points,
@@ -204,8 +225,8 @@ const CollectionCreateForm: any = Form.create()(
                   .
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('anonymousGrading', {
                 initialValue: this.props.assignment.anonymousGrading,
@@ -229,10 +250,21 @@ const CollectionCreateForm: any = Form.create()(
               })(<Switch />)}
             </Form.Item>
             <Form.Item
+              label="Hide Graders"
+              extra={<div>When enabled, students will not be able to see the grader associated with a submission.</div>}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
+            >
+              {getFieldDecorator('hideGradersFromStudents', {
+                initialValue: this.props.assignment.hideGradersFromStudents,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
               label="Student feedback"
               extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('commentFeedback', {
                 initialValue: this.props.assignment.commentFeedback,
@@ -242,13 +274,37 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Hide grades"
               extra=" When enabled, students won't be able to view the grades associated with their submissions."
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('hideGrades', {
                 initialValue: this.props.assignment.hideGrades,
                 valuePropName: 'checked',
               })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Allow Regrade Requests"
+              extra=" When enabled, students can submit a question on their graded submission and request a regrade."
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
+            >
+              {getFieldDecorator('allowRegradeRequests', {
+                initialValue: this.props.assignment.allowRegradeRequests,
+                valuePropName: 'checked',
+              })(<Switch onClick={this.handleRegradeCheck} />)}
+            </Form.Item>
+            <Form.Item
+              label="Deadline"
+              extra="Optional deadline for students to submit regrade requests"
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
+            >
+              {getFieldDecorator('regradeDeadline', {
+                initialValue: this.props.assignment.regradeDeadline
+                  ? moment(this.props.assignment.regradeDeadline)
+                  : null,
+                valuePropName: 'value',
+              })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.regradesEnabled} />)}
             </Form.Item>
             <Form.Item
               label="Allow student upload"
@@ -257,8 +313,8 @@ const CollectionCreateForm: any = Form.create()(
                   <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('allowStudentUpload', {
                 initialValue: this.props.assignment.allowStudentUpload,
@@ -268,8 +324,8 @@ const CollectionCreateForm: any = Form.create()(
             <Form.Item
               label="Due Date"
               extra="Due date for student uploads"
-              labelCol={{ span: 9 }}
-              wrapperCol={{ span: 12 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('uploadDueDate', {
                 initialValue: this.props.assignment.uploadDueDate ? moment(this.props.assignment.uploadDueDate) : null,
@@ -283,18 +339,33 @@ const CollectionCreateForm: any = Form.create()(
               })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
             </Form.Item>
             <Form.Item
-              label="Live Feedback mode"
+              label="Live feedback mode"
               extra={
                 <div>
                   <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
                   published.\ Ideal for office hours or ungraded feedback.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('liveFeedbackMode', {
                 initialValue: this.props.assignment.liveFeedbackMode,
+                valuePropName: 'checked',
+              })(<Switch />)}
+            </Form.Item>
+            <Form.Item
+              label="Additive grading"
+              extra={
+                <div>
+                  <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
+                </div>
+              }
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
+            >
+              {getFieldDecorator('additiveGrading', {
+                initialValue: this.props.assignment.additiveGrading,
                 valuePropName: 'checked',
               })(<Switch />)}
             </Form.Item>

@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { Empty, Menu, message } from 'antd';
+import queryString from 'query-string';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -47,7 +48,18 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import { Controls, FinalizeButton, GradeButton, HeaderMenu, StatusTags, SubheaderTitle } from '../code-review/Header';
+import { sendSlack } from '../core/slack';
+
+import {
+  Controls,
+  FinalizeButton,
+  GradeButton,
+  HeaderMenu,
+  StatusTags,
+  SubheaderTitle,
+  ViewAsStudent,
+  DownloadCode,
+} from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
@@ -102,6 +114,7 @@ interface ICodeConsoleState {
   demoCommentCounter: number;
 
   editRubricMode: boolean;
+  commentCounter: number;
 }
 
 export interface ICodeConsoleProps {
@@ -189,7 +202,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     for (const fileID of Object.keys(comments)) {
       const index = comments[+fileID].findIndex((comment: CommentType) => comment.id === activeCommentID);
       if (index !== -1) {
-        const comment = { ...comments[+fileID][index], rubricComment: rubricComment.id, pointDelta: null };
+        const comment = {
+          ...comments[+fileID][index],
+          rubricComment: rubricComment.id,
+          pointDelta: null,
+        };
         const fileComments = Immutable.arrayUpdate(comments[+fileID], comment, index);
 
         return { ...comments, [+fileID]: fileComments };
@@ -245,7 +262,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static genericCommentPoints = (comments: IFileToCommentsMap): number => {
     return Object.keys(comments)
       .map((fileID) => {
-        return comments[fileID].reduce((accumulator: number, comment: CommentType) => {
+        return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
           if (!UiComment.isNew(comment) && comment.pointDelta) {
             return accumulator + comment.pointDelta;
           } else {
@@ -262,7 +279,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static pointsPerCategory = (
     commentRubricComments: ICommentToRubricCommentMap,
   ): { [categoryID: number]: number } => {
-    const pointsPerCategory = {};
+    const pointsPerCategory: any = {};
     for (const commentID in commentRubricComments) {
       // Don't count unsaved comments
       if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
@@ -282,14 +299,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     pointsPerCategory: { [categoryID: number]: number },
     rubricCategories: RubricCategoryType[],
   ): { [categoryID: number]: number } => {
-    const pointsPerCategoryWithCaps = {};
+    const pointsPerCategoryWithCaps: any = {};
     for (const category in pointsPerCategory) {
       if (pointsPerCategory.hasOwnProperty(category)) {
         const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
           return rubricCategory.id === +category;
         });
         const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
-        pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        if (pointLimit < 0) {
+          pointsPerCategoryWithCaps[+category] = Math.max(pointsPerCategory[category], pointLimit);
+        } else {
+          pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
+        }
       }
     }
     return pointsPerCategoryWithCaps;
@@ -309,7 +330,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
-    return assignment.points - commentPoints - categoryPoints;
+    if (assignment.additiveGrading) {
+      return 0 - commentPoints - categoryPoints;
+    } else {
+      return assignment.points - commentPoints - categoryPoints;
+    }
   };
 
   /***********************************************************************************************/
@@ -342,8 +367,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       demoCommentCounter: 0,
 
       isStudent: false,
-
       editRubricMode: false,
+      commentCounter: -1,
     };
   }
 
@@ -362,7 +387,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
     document.title = `codePost | Submission - ${submissionID}`;
 
-    const permissionLevel = await this.detectPermissionType(submissionID);
+    let permissionLevel = await this.detectPermissionType(submissionID);
+
+    const values = queryString.parse(this.props.location.search);
+    if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
+      permissionLevel = PERMISSION_LEVEL.READ;
+    }
 
     // Everything we need to load
     let submission;
@@ -371,6 +401,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let comments;
     let commentRubricComments;
     let course;
+    let rubricCategories;
+    let rubricComments;
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -381,9 +413,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       case PERMISSION_LEVEL.READ:
         // load the data a reader has access to
         submission = await Submission.readReadOnly(submissionID);
-        [assignment, [files, comments, commentRubricComments]] = await Promise.all([
+        [
+          assignment,
+          [files, comments, commentRubricComments],
+          { rubricCategories, rubricComments },
+        ] = await Promise.all([
           Assignment.read(submission.assignment),
           Submission.loadData(submission),
+          this.loadRubric(submission.assignment),
         ]);
         course = await Course.read(assignment.course);
 
@@ -399,6 +436,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           files,
           comments,
           commentRubricComments,
+          rubricCategories,
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
@@ -408,8 +446,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       case PERMISSION_LEVEL.WRITE:
         // load the data a writer has access to
-        let rubricCategories;
-        let rubricComments;
 
         const writableSubmission = await Submission.readAnonymous(submissionID);
         [
@@ -463,7 +499,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const rubric = await Assignment.readRubric(assignmentID);
 
     const rubricCategories = rubric.rubricCategories.sort(RubricCategory.compare);
-    const rubricComments = {};
+    const rubricComments: any = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
       rubricComments[rubricCategory.id] = rubric.rubricComments
@@ -552,12 +588,36 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Helper functions
   /**********************************************************************************/
 
+  public submitStudentQuestion = async (submission: StudentSubmissionType, text: string, isRegrade: boolean) => {
+    const payload = {
+      id: submission.id,
+      questionText: text,
+      questionIsRegrade: isRegrade,
+    };
+
+    const newSubmission = await Submission.updateQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
+  };
+
+  public deleteStudentQuestion = async (submission: StudentSubmissionType) => {
+    const payload = {
+      id: submission.id,
+    };
+
+    const newSubmission = await Submission.deleteQuestion(payload);
+    this.setState({ readOnlySubmission: newSubmission });
+
+    return newSubmission;
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
-    this.setState({ comments, activeCommentID: comment.id });
+    this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -610,7 +670,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let unsavedComments = CodeConsole.removeIdFromUnsavedState(this.state.unsavedComments, comment.id);
     unsavedComments = CodeConsole.removeIdFromUnsavedState(unsavedComments, savedComment.id);
 
-    this.setState({ unsavedComments, oldCommentIDs, activeCommentID: undefined });
+    this.setState({
+      unsavedComments,
+      oldCommentIDs,
+      activeCommentID: undefined,
+    });
 
     this.updateComment(comment.id, savedComment);
   };
@@ -767,6 +831,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       let comments = this.state.comments;
 
       if (!this.state.submission.isFinalized) {
+        sendSlack(
+          'Submission finalized',
+          `${this.state.submission.id} ${this.state.assignment ? this.state.assignment.name : ''} | ${
+            this.state.course ? this.state.course.name : ''
+          } ${this.state.course ? this.state.course.period : ''}`,
+        );
         comments =
           this.state.selectedFile !== undefined
             ? CodeConsole.clearUnsavedComments(this.state.comments, this.state.selectedFile)
@@ -833,6 +903,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       course: -1,
       sortKey: 0,
       anonymousGrading: false,
+      allowRegradeRequests: false,
+      regradeDeadline: '',
+      hideGradersFromStudents: false,
       mean: null,
       median: null,
       points: 20,
@@ -841,6 +914,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       uploadDueDate: '',
       liveFeedbackMode: false,
       collaborativeRubricMode: false,
+      additiveGrading: false,
     };
 
     const demoCourse: CourseType = {
@@ -866,10 +940,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       dateUploaded: '',
       grade: null,
       grader: this.props.user.email,
+      questionText: '',
+      questionIsOpen: false,
+      questionResponder: 'grader0@example.edu',
+      questionResponse: '',
+      questionIsRegrade: false,
+      questionDate: '',
+      responseDate: '',
     };
 
     const fileList: FileType[] = [];
-    const commentMap = {};
+    const commentMap: any = {};
     if (files.length > 0) {
       files.forEach((file, index) => {
         fileList.push({
@@ -879,6 +960,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           extension: file.name.split('.')[1],
           name: file.name,
           submission: 1,
+          path: null,
         });
 
         commentMap[index] = [];
@@ -891,12 +973,28 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
 
     const rubricCategoryList: RubricCategoryType[] = [
-      { id: 1, name: 'Style', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 0, helpText: '' },
-      { id: 2, name: 'Performance', rubricComments: [], assignment: 1, pointLimit: null, sortKey: 1, helpText: '' },
+      {
+        id: 1,
+        name: 'Style',
+        rubricComments: [],
+        assignment: 1,
+        pointLimit: null,
+        sortKey: 0,
+        helpText: '',
+      },
+      {
+        id: 2,
+        name: 'Performance',
+        rubricComments: [],
+        assignment: 1,
+        pointLimit: null,
+        sortKey: 1,
+        helpText: '',
+      },
     ];
 
     const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
-      [1]: [
+      1: [
         {
           id: 1,
           text: 'Unnecessary comment - this code speaks for itself!',
@@ -922,7 +1020,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           sortKey: 2,
         },
       ],
-      [2]: [
+      2: [
         {
           id: 4,
           text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
@@ -1062,9 +1160,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
             Code Review Console
           </Menu.Item>
-          <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-            <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-          </Menu.Item>
+          {this.state.isStudent ? null : (
+            <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+              <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
+            </Menu.Item>
+          )}
           <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
             Help! (talk to a human from codePost)
           </Menu.Item>
@@ -1105,6 +1205,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1127,6 +1228,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 
@@ -1232,6 +1335,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={false}
             />
           );
 
@@ -1261,6 +1366,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             title="Submission Info"
             assignment={this.state.assignment}
             readOnlySubmission={this.state.readOnlySubmission!}
+            submitStudentQuestion={this.submitStudentQuestion}
+            deleteStudentQuestion={this.deleteStudentQuestion}
           />,
           <FileMenu
             key="file-menu"
@@ -1273,6 +1380,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             canChange={this.containsUnsavedComments}
           />,
         ];
+
+        siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
           <HeaderMenu menu={menu} key="menu" />,
@@ -1287,7 +1396,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
+          <DownloadCode key="download-code" files={this.state.files} />,
           controls,
+          <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
             key="subheader-finalize"
             submission={this.state.submission!}
@@ -1307,6 +1418,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1329,6 +1441,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
+              hideAuthor={this.state.assignment.hideGradersFromStudents}
+              additiveGrading={this.state.assignment.additiveGrading}
             />
           );
 

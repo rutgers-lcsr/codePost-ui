@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { GenericObject } from './generics';
 
-const SubmissionHistoryV = t.intersection(
+export const SubmissionHistoryV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -14,7 +14,7 @@ const SubmissionHistoryV = t.intersection(
   'SubmissionHistory',
 );
 
-const SubmissionHistoryVPatch = t.intersection(
+export const SubmissionHistoryVPatch = t.intersection(
   [
     GenericObject,
     t.type({
@@ -24,6 +24,6 @@ const SubmissionHistoryVPatch = t.intersection(
   'SubmissionHistory',
 );
 
-type SubmissionHistoryType = t.TypeOf<typeof SubmissionHistoryV>;
+export type SubmissionHistoryType = t.TypeOf<typeof SubmissionHistoryV>;
 
-export { SubmissionHistoryType, SubmissionHistoryV, SubmissionHistoryVPatch };
+// export { SubmissionHistoryType, SubmissionHistoryV, SubmissionHistoryVPatch };

@@ -7,10 +7,11 @@ import * as React from 'react';
 
 /* ant imports */
 import { Layout } from 'antd';
-const { Header, Content } = Layout;
 
 import CPFlex from '../../../core/CPFlex';
 import CPTooltip from '../../../core/CPTooltip';
+
+const { Header, Content } = Layout;
 /**********************************************************************************************************************/
 
 interface ICPAdminRubricProps {
@@ -38,7 +39,7 @@ const CPAdminRubric = (props: ICPAdminRubricProps) => {
   );
 
   const subheaderLeft = [
-    <div key="title" style={{ display: 'flex', alignItem: 'center' }}>
+    <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
       <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
       {titleTooltip}
     </div>,

@@ -29,7 +29,13 @@ interface IProps {
 
 interface IState {
   comments: CommentType[];
-  commentToSubMap: { [commentID: number]: { submission: number; fileName: string; students: string[] } };
+  commentToSubMap: {
+    [commentID: number]: {
+      submission: number;
+      fileName: string;
+      students: string[];
+    };
+  };
   isLoading: boolean;
 }
 
@@ -78,9 +84,13 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         });
       }),
     ).then((data) => {
-      const commentToSubMap = {};
+      const commentToSubMap: any = {};
       data.forEach((el) => {
-        commentToSubMap[el[0] as number] = { fileName: el[1], submission: el[2], students: el[3] };
+        commentToSubMap[el[0] as number] = {
+          fileName: el[1],
+          submission: el[2],
+          students: el[3],
+        };
       });
       return commentToSubMap;
     });

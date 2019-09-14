@@ -115,7 +115,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -127,7 +127,8 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
+      // @ts-ignore
       newState[label] = !this.state[label];
       return newState;
     });
@@ -177,9 +178,14 @@ class CreateSignup extends React.Component<IProps, IState> {
                 if (newProgress >= 100) {
                   clearInterval(this.interval);
                   clearInterval(this.progressInterval);
-                  this.setState({ progress: 100, status: STATUS.VALIDATION_ONGOING });
+                  this.setState({
+                    progress: 100,
+                    status: STATUS.VALIDATION_ONGOING,
+                  });
                 } else {
-                  this.setState({ progress: parseInt(newProgress.toFixed(0), 10) });
+                  this.setState({
+                    progress: parseInt(newProgress.toFixed(0), 10),
+                  });
                 }
               }, PROGRESS_INCREMENT_TIME);
             });
@@ -349,6 +355,8 @@ class CreateSignup extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.VALIDATION_SUCCESS:
+        const mailToString = `mailto:team@codepost.io?subject=Never%20Received%20Signup%20Email&body=Hi,%20I%20never
+        %20received%20my%20codePost%20signup%20email.%20Could%20you%20please%20look%20into%20it%3f`;
         content = (
           <div>
             <Progress percent={this.state.progress} />
@@ -356,7 +364,26 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <Alert
               message="You're all set!"
-              description="Check your email to finish setting up your account."
+              description={
+                <div>
+                  Check your email to finish setting up your account. If you don't see an email within a couple of
+                  minutes, please check your spam inbox.
+                  <div style={{ marginTop: 20 }}>
+                    If you still can't find
+                    <CPTooltip
+                      title={
+                        <div>
+                          Sometimes emails can get blocked by your institution's mail server. If you let us know, we can
+                          resolve this with the mail server admins.
+                        </div>
+                      }
+                    >
+                      <Icon type="question-circle" style={{ color: 'grey', marginLeft: 3, marginRight: 2 }} />
+                    </CPTooltip>{' '}
+                    it, <a href={mailToString}>let us know</a>!
+                  </div>
+                </div>
+              }
               type="success"
             />
           </div>

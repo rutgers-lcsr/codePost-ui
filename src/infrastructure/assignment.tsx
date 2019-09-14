@@ -26,11 +26,15 @@ const AssignmentV = t.intersection(
       allowStudentUpload: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
+      additiveGrading: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
       sortKey: t.number,
       anonymousGrading: t.boolean,
       collaborativeRubricMode: t.boolean,
+      allowRegradeRequests: t.boolean,
+      regradeDeadline: t.union([t.null, t.string]),
+      hideGradersFromStudents: t.boolean,
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
     }),
@@ -50,10 +54,14 @@ const AssignmentVStudent = t.intersection(
     t.partial({
       hideGrades: t.boolean,
       allowStudentUpload: t.boolean,
+      additiveGrading: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       sortKey: t.number,
       anonymousGrading: t.boolean,
+      allowRegradeRequests: t.boolean,
+      regradeDeadline: t.union([t.null, t.string]),
+      hideGradersFromStudents: t.boolean,
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
@@ -74,6 +82,7 @@ const AssignmentVPost = t.intersection(
     }),
     t.partial({
       anonymousGrading: t.boolean,
+      hideGradersFromStudents: t.boolean,
       course: t.number,
     }),
   ],
@@ -91,18 +100,22 @@ const AssignmentVPatch = t.intersection(
       rubricCategories: t.array(t.number),
       course: t.number,
       anonymousGrading: t.boolean,
+      hideGradersFromStudents: t.boolean,
       commentFeedback: t.boolean,
+      allowRegradeRequests: t.boolean,
+      regradeDeadline: t.union([t.null, t.string]),
       allowStudentUpload: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       collaborativeRubricMode: t.boolean,
+      additiveGrading: t.boolean,
     }),
   ],
   'AssignmentPatch',
 );
 
-type AssignmentType = t.TypeOf<typeof AssignmentV>;
-type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
+export type AssignmentType = t.TypeOf<typeof AssignmentV>;
+export type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
 
 const RubricV = t.intersection(
   [
@@ -116,9 +129,9 @@ const RubricV = t.intersection(
   'Roster',
 );
 
-type RubricType = t.TypeOf<typeof RubricV>;
+export type RubricType = t.TypeOf<typeof RubricV>;
 
-class Assignment {
+export class Assignment {
   public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
   public static read = readObject(AssignmentV, 'assignments');
   public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
@@ -160,7 +173,7 @@ const StudentUploadData = t.intersection([
 ]);
 
 // tslint:disable
-class AssignmentStudent {
+export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
   public static updateStudentUpload = updateObjectDetail(
@@ -172,7 +185,7 @@ class AssignmentStudent {
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
 }
 
-const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
+export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   // First sort by Assignment 'sortKey', then by ID
   const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
     if (a.sortKey === b.sortKey) {
@@ -185,4 +198,4 @@ const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
   return assignments.sort(compareAssignments);
 };
 
-export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };
+// export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };

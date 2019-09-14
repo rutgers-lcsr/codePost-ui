@@ -8,10 +8,9 @@ import * as React from 'react';
 /* antd imports */
 import { Button, Icon, Menu, Spin, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
-const { Text } = Typography;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -45,6 +44,8 @@ import layoutVars from '../../styles/layout/_layoutVars';
 import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
 
 import ViewUpload from './ViewUpload';
+
+const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -114,7 +115,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           this.loadSubmissions(this.state.assignments[course.id]).then((submissions) => {
             this.loadHistories(Object.values(submissions), this.props.user.email).then(
               (viewMap: { [submissionID: number]: boolean }) => {
-                this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+                this.setState({
+                  submissions,
+                  viewsBySubmission: viewMap,
+                  isLoadingSubmissions: false,
+                });
               },
             );
           });
@@ -170,7 +175,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         return loadIDList(course.assignments, AssignmentStudent);
       }),
     ).then((assignments) => {
-      const toRet = {};
+      const toRet: any = {};
       courses.forEach((course, i) => {
         toRet[course.id] = assignments[i];
       });
@@ -180,9 +185,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public loadSubmissions = async (assignments: AssignmentType[]) => {
-    const submissions = {};
+    const submissions: any = {};
     for (const assignment of assignments) {
-      if (assignment.isReleased || assignment.allowStudentUpload) {
+      if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
         });
@@ -193,13 +198,15 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   public loadHistories = async (submissions: IAssignmentToSubmissionStudentMap, email: string) => {
-    const toRet = {};
+    const toRet: any = {};
     const keys = Object.keys(submissions);
     for (const key of keys) {
-      const submissionList: StudentSubmissionType[] = submissions[key];
+      const submissionList: StudentSubmissionType[] = submissions[+key];
       if (submissionList.length > 0) {
         const submission = submissionList[0];
-        const history = await Submission.readHistory(submission.id, { student: email });
+        const history = await Submission.readHistory(submission.id, {
+          student: email,
+        });
         for (const historyItem of history) {
           if (historyItem.student === email) {
             toRet[submission.id] = historyItem.hasViewed;
@@ -221,7 +228,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
   public markViewed = async (submission: StudentSubmissionType) => {
     // Get the history
-    const history = await Submission.readHistory(submission.id, { student: this.props.user.email });
+    const history = await Submission.readHistory(submission.id, {
+      student: this.props.user.email,
+    });
     // If it has a history object, and has not been viewed, mark it as viewed
     if (history && history[0] && !history[0].hasViewed) {
       return await Submission.updateHistory({ id: submission.id, hasViewed: true }, { student: this.props.user.email });
@@ -247,7 +256,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             this.loadSubmissions(this.state.assignments[currentCourse.id]).then((submissions) => {
               this.loadHistories(Object.values(submissions), this.props.user.email).then(
                 (viewMap: { [submissionID: number]: boolean }) => {
-                  this.setState({ submissions, viewsBySubmission: viewMap, isLoadingSubmissions: false });
+                  this.setState({
+                    submissions,
+                    viewsBySubmission: viewMap,
+                    isLoadingSubmissions: false,
+                  });
                 },
               );
             });
@@ -280,7 +293,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!currentCourse) {
       return undefined;
     }
-    return { value: this.getCourseValue(currentCourse), label: this.getCourseName(currentCourse) };
+    return {
+      value: this.getCourseValue(currentCourse),
+      label: this.getCourseName(currentCourse),
+    };
   };
 
   public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType) => {
@@ -299,7 +315,11 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     const formattedFiles = files.map((file) => {
-      return { name: file.name, code: file.data, extension: this.getFileExtension(file.name) };
+      return {
+        name: file.name,
+        code: file.data,
+        extension: this.getFileExtension(file.name),
+      };
     });
 
     const payload = {
@@ -358,18 +378,37 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       } else {
         // Case 2: No submission has been uploaded and due date has not passed
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              lineHeight: 2.2,
+              alignItems: 'center',
+            }}
+          >
             {dueDateText}
             {uploadButton('Upload Files')}
           </div>
         );
       }
     } else {
-      if (submission.isFinalized || (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())) {
+      if (
+        (submission.hasGrader && !assignment.liveFeedbackMode) ||
+        submission.isFinalized ||
+        (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
+      ) {
         // Case 3: Submission exists, and cannot be replaced, either because
-        // it's finalized, re-sbumitting is not allowed, or the due date has passed
+        // it has a grader and is not in live feeedback mode, is finalized
+        // (hasGrader isn't exposed), or the due date has passed
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2, alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              lineHeight: 2.2,
+              alignItems: 'center',
+            }}
+          >
             <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
             {dueDateText}
             {viewButton}
@@ -378,7 +417,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       } else {
         // Case 4: Submission exists, and can be replaced
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 2.2 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              lineHeight: 2.2,
+            }}
+          >
             <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
             {dueDateText}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -429,7 +474,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         title: 'Partners',
         dataIndex: 'partners',
         key: 'partners',
-        render: modifyIf({ [SUBMISSION_STATUS.NO_SUBMISSION]: 3, [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3 }),
+        render: modifyIf({
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 3,
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3,
+        }),
         align: aligner,
       },
       {

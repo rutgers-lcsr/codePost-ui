@@ -136,7 +136,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   };
 
   public loadFeedbackScores = async (rubricComments: RubricCommentType[]) => {
-    const newMap = {};
+    const newMap: any = {};
     for (const rComment of rubricComments) {
       // feedback scores
       let numNegative = 0;
@@ -155,7 +155,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           }
         }
 
-        newMap[rComment.id] = { negative: numNegative / totalComments, positive: numPositive / totalComments };
+        newMap[rComment.id] = {
+          negative: numNegative / totalComments,
+          positive: numPositive / totalComments,
+        };
       }
     }
 
@@ -234,7 +237,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   };
 
   public onCategoryEdit = (category: RubricCategoryType) => {
-    this.setState({ unsavedCategories: [...this.state.unsavedCategories, category] });
+    this.setState({
+      unsavedCategories: [...this.state.unsavedCategories, category],
+    });
   };
 
   public onCommentEdit = (comment: RubricCommentType) => {
@@ -243,7 +248,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         return comment.id === unsavedComment.id;
       }) === undefined
     ) {
-      this.setState({ unsavedComments: [...this.state.unsavedComments, comment] });
+      this.setState({
+        unsavedComments: [...this.state.unsavedComments, comment],
+      });
     }
   };
 
@@ -505,7 +512,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   /***********************************************************************/
 
   public buildCommentMap = (rubricCategories: RubricCategoryType[], rubricComments: RubricCommentType[]) => {
-    const commentMap = {};
+    const commentMap: any = {};
     rubricCategories.forEach((category) => {
       commentMap[category.id] = []; // ensures that categories with no comments will have an entry
     });
@@ -574,7 +581,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       this.setState({ rubricCategories: newCategories });
       if (hasError !== undefined) {
         if (hasError) {
-          this.setState({ errorObjects: [...this.state.errorObjects, rubricCategory.id] });
+          this.setState({
+            errorObjects: [...this.state.errorObjects, rubricCategory.id],
+          });
         } else {
           this.setState({
             errorObjects: this.state.errorObjects.filter((el) => {
@@ -589,35 +598,42 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   public deleteRubricCategory = (rubricCategory: RubricCategoryType) => {
     const { rubricCategories, rubricComments } = this.state;
     const newCategories = [...rubricCategories];
-
     const index = rubricCategories.findIndex((x: RubricCategoryType) => x.id === rubricCategory.id);
 
     if (index > -1) {
       newCategories.splice(index, 1);
-      this.setState({
-        rubricCategories: newCategories,
-      });
 
-      this.setState(
-        {
-          unsavedCategories: this.state.unsavedCategories.filter((el) => {
+      this.setState((oldState: IState) => {
+        const alwaysDelete = {
+          // remove rubric category
+          rubricCategories: newCategories,
+          // remove object from errorObjects, since the error is no longer relevant
+          errorObjects: oldState.errorObjects.filter((el) => {
+            return el !== rubricCategory.id;
+          }),
+          // deleted categories go in deleteCategories
+          unsavedCategories: oldState.unsavedCategories.filter((el) => {
             return el.id !== rubricCategory.id;
           }),
-          unsavedComments: this.state.unsavedComments.filter((el) => {
-            return rubricComments[rubricCategory.id].some((el2) => {
+          // all of these comments should no longer be saved
+          unsavedComments: oldState.unsavedComments.filter((el) => {
+            return !rubricComments[rubricCategory.id].some((el2) => {
               return el2.id === el.id;
             });
           }),
-        },
-        () => {
-          if (rubricCategory.id > 0) {
-            this.setState({
-              deletedCategories: [...this.state.deletedCategories, rubricCategory],
-              unsavedComments: [...this.state.deletedComments, ...rubricComments[rubricCategory.id]],
-            });
-          }
-        },
-      );
+        };
+
+        if (rubricCategory.id > 0) {
+          // Only try to delete the category if it has been saved
+          const toRet = {
+            ...alwaysDelete,
+            deletedCategories: [...this.state.deletedCategories, rubricCategory],
+          };
+          return toRet;
+        } else {
+          return alwaysDelete;
+        }
+      });
     }
   };
 
@@ -764,9 +780,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     const changesMade = this.changesMade();
 
     if (changesMade && !this.state.changeLock) {
+      /* eslint-disable */
       const wantsToLeave = confirm(
         'You will lose your unsaved changes if you leave this page without saving. Are you sure you want to leave?',
       );
+      /* eslint-enable */
       if (wantsToLeave) {
         this.props.onCancel();
       }
@@ -839,7 +857,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       });
 
       this.setState({
-        rubricComments: { ...this.state.rubricComments, [categoryID]: reorderedComments },
+        rubricComments: {
+          ...this.state.rubricComments,
+          [categoryID]: reorderedComments,
+        },
         unsavedComments: [...this.state.unsavedComments, ...toAdd],
         hasMoved: true,
       });

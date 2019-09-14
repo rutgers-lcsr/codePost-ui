@@ -1,6 +1,5 @@
 import { Icon, Layout } from 'antd';
 import React from 'react';
-const { useState, useEffect } = React;
 
 import { SimpleAssignments } from './SimpleAssignments';
 import { SimpleGraderRoster } from './SimpleGraderRoster';
@@ -8,6 +7,8 @@ import { SimpleMenu } from './SimpleMenu';
 import { SimpleRubric } from './SimpleRubric';
 import { SimpleStudentDrilldown } from './SimpleStudentDrilldown';
 import { SimpleStudentSubmissions } from './SimpleStudentSubmissions';
+
+const { useState, useEffect } = React;
 
 const { Content, Sider } = Layout;
 
@@ -32,24 +33,21 @@ function AdminAnimation() {
   const numSteps = 11;
 
   // set the interval to incremnet the counter
-  useEffect(
-    () => {
-      const interval = setInterval(() => {
-        if (!pause) {
-          setCounter((x: number) => {
-            return x === numSteps ? 0 : x + 1;
-          });
-        } else {
-          clearInterval(interval);
-        }
-      }, 2000);
-
-      return () => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!pause) {
+        setCounter((x: number) => {
+          return x === numSteps ? 0 : x + 1;
+        });
+      } else {
         clearInterval(interval);
-      };
-    },
-    [pause],
-  );
+      }
+    }, 2000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [pause]);
 
   const calculateKeys = (time: number) => {
     switch (time) {
@@ -64,15 +62,31 @@ function AdminAnimation() {
       case 4:
         return { select: '2', open: 'submissions', content: SCREEN.Rubric };
       case 5:
-        return { select: '0', open: 'submissions', content: SCREEN.Submissions };
+        return {
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.Submissions,
+        };
       case 6:
-        return { select: '0', open: 'submissions', content: SCREEN.SubmissionsMouseover };
+        return {
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.SubmissionsMouseover,
+        };
       case 7:
-        return { select: '0', open: 'submissions', content: SCREEN.StudentDrilldown };
+        return {
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.StudentDrilldown,
+        };
       case 8:
         return { select: '0', open: '', content: SCREEN.StudentDrilldown };
       case 9:
-        return { select: '0', open: 'roster', content: SCREEN.StudentDrilldown };
+        return {
+          select: '0',
+          open: 'roster',
+          content: SCREEN.StudentDrilldown,
+        };
       case 10:
         return { select: '4', open: 'roster', content: SCREEN.GraderRoster };
       case 11:
@@ -93,11 +107,24 @@ function AdminAnimation() {
 
   return (
     <div style={{ transform: 'scale(0.77)' }}>
-      <div style={{ maxWidth: 800, minWidth: 800, maxHeight: 500, position: 'relative' }}>
+      <div
+        style={{
+          maxWidth: 800,
+          minWidth: 800,
+          maxHeight: 500,
+          position: 'relative',
+        }}
+      >
         <div
           id="landing-pause"
           onClick={togglePause}
-          style={{ cursor: 'pointer', position: 'absolute', bottom: 15, right: 10, zIndex: 99 }}
+          style={{
+            cursor: 'pointer',
+            position: 'absolute',
+            bottom: 15,
+            right: 10,
+            zIndex: 99,
+          }}
         >
           {pauseButton}
         </div>

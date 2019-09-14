@@ -22,7 +22,7 @@ const Dashboard = (props: any) => {
 
   const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]) => {
     return _rosters
-      .map((roster: RosterType, index: number) => {
+      .map((roster: any, index: number) => {
         return roster.courseAdmins.map((email: string) => {
           const org = _organizations.find((_org: OrganizationType) => {
             return _org['id'] === roster['organization'];
@@ -93,7 +93,14 @@ const Dashboard = (props: any) => {
 
   return (
     <div style={{ margin: '0px 0px 90px' }}>
-      <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', marginBottom: '20px' }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexWrap: 'wrap',
+          marginBottom: '20px',
+        }}
+      >
         <SummaryCard objects={organizations} title="Organizations" onClick={setCurrent} />
         <div style={{ width: '20px' }} />
         <SummaryCard objects={courses} title="Courses" onClick={setCurrent} />

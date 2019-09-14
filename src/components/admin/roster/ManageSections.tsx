@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table } from 'antd';
-const confirm = Modal.confirm;
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -23,6 +22,8 @@ import AddSectionDialog from './sections/AddSectionDialog';
 import { tooltips } from '../../../components/core/tooltips';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
+
+const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
@@ -151,7 +152,10 @@ class ManageSections extends React.Component<IProps, IState> {
                 return (
                   <div>
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={record.leaderData.length === 0 ? 'No leaders' : record.leaderData.join(', ')}

@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import { Icon, Layout, Menu } from 'antd';
 
-const { Content, Sider } = Layout;
-
 import { Link } from 'react-router-dom';
 
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
 
 import Dashboard from './Dashboard';
+
+const { Content, Sider } = Layout;
 
 const DashboardLayout = (props: any) => {
   useFixedWindow();

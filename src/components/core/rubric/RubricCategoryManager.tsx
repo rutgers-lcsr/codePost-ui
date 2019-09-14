@@ -91,7 +91,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     this.state = {
       name: props.rubricCategory.name,
       pointLimit: props.rubricCategory.pointLimit,
-      helpText: props.rubricCategory.helpText,
+      helpText: props.rubricCategory.helpText ? props.rubricCategory.helpText : '',
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
@@ -137,7 +137,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
         {
           name: this.props.rubricCategory.name,
           pointLimit: this.props.rubricCategory.pointLimit,
-          helpText: this.props.rubricCategory.helpText,
+          helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
         },
         () => {
           this.updateCategoryStatus();
@@ -160,12 +160,15 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
           newMap[rubricComment.id] = _.cloneDeep(rubricComment);
         }
       }
-      this.setState({ rubricComments: newMap });
+      this.setState({
+        rubricComments: newMap,
+        rubricCommentStatus: this.initializeRubricCommentStatus(this.props.rubricComments),
+      });
     }
   }
 
   public buildLocalRubricCommentsStructure = (rubricComments: RubricCommentType[]) => {
-    const toRet = {};
+    const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = _.cloneDeep(rubricComment);
     }
@@ -173,7 +176,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
   };
 
   public initializeRubricCommentStatus = (rubricComments: RubricCommentType[]) => {
-    const toRet = {};
+    const toRet: any = {};
     for (const rubricComment of rubricComments) {
       toRet[rubricComment.id] = STATUS.NONE;
     }
@@ -211,7 +214,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
   public setValue = (label: string, value: any) => {
     this.setState(
       (prevstate) => {
-        const newState = { ...prevstate };
+        const newState: any = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
           if (value !== null) {
@@ -226,6 +229,9 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       },
       () => {
         this.updateCategoryStatus();
+        if (label === 'pointLimit') {
+          this.saveCategory();
+        }
       },
     );
   };
@@ -259,10 +265,10 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       };
     }
 
-    if (pointLimit !== null && (!Number.isInteger(pointLimit) || pointLimit < 0)) {
+    if (pointLimit !== null && !Number.isInteger(pointLimit)) {
       return {
         valid: false,
-        message: 'pointLimit must be a positive integer.',
+        message: 'pointLimit must be a valid integer.',
       };
     }
 
@@ -401,20 +407,32 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
       case 'number':
-        rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event };
+        rubricComments[rubricCommentID] = {
+          ...rubricComments[rubricCommentID],
+          [key]: event,
+        };
         break;
       case 'string':
         if (key !== 'pointDelta') {
-          rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event };
+          rubricComments[rubricCommentID] = {
+            ...rubricComments[rubricCommentID],
+            [key]: event,
+          };
         }
         break;
       case 'object':
-        rubricComments[rubricCommentID] = { ...rubricComments[rubricCommentID], [key]: event.target.value };
+        rubricComments[rubricCommentID] = {
+          ...rubricComments[rubricCommentID],
+          [key]: event.target.value,
+        };
         break;
     }
 
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
+      if (key === 'pointDelta') {
+        this.saveComment(rubricCommentID);
+      }
     });
   };
 

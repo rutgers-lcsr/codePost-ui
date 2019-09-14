@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { googlecode, tomorrowNight } from 'react-syntax-highlighter/dist/styles/hljs';
+import { googlecode, tomorrowNight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import themeVars from './_theme.js';
 

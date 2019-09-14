@@ -48,7 +48,8 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
 
   public render() {
     const { cpType, fallback, fallbackWidth, isLoading, small, windowwidth, windowheight, ...props } = this.props;
-    const customProps = {};
+    const customProps: any = {};
+
     customProps['className'] = `cp-button cp-button--${cpType}`;
 
     if (['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)) {
@@ -58,6 +59,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
     if (cpType === 'danger') {
       customProps['style'] = {
         backgroundColor: this.context.consoleTheme.buttonDangerBg,
+        color: this.context.consoleTheme.buttonSecondaryColor,
         border: this.context.consoleTheme.buttonDangerBorder,
       };
     }

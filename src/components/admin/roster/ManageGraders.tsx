@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
-const confirm = Modal.confirm;
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -25,6 +24,12 @@ import AddGraderDialog from './graders/AddGraderDialog';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
+import { sendEmailToUser } from './other/RosterUtils';
+
+import SendEmailModal from '../other/SendEmailModal';
+
+const confirm = Modal.confirm;
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -36,6 +41,7 @@ interface IProps {
   sections: SectionType[];
   currentCourse: CourseType;
   sectionsByStudent: { [studentEmail: string]: SectionType };
+  notActivated: string[];
 
   /* loading state */
   loadComplete: boolean;
@@ -44,6 +50,9 @@ interface IProps {
   updateSection: (section: SectionType) => Promise<void>;
   updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
+
+  /* misc */
+  myEmail: string;
 }
 
 interface IState {
@@ -57,6 +66,10 @@ class ManageGraders extends React.Component<IProps, IState> {
       activeGrader: '',
     };
   }
+
+  public sendActivationEmail = (grader: string) => {
+    sendEmailToUser(grader, 'add_grader', this.props.currentCourse, true, undefined);
+  };
 
   public removeGrader = (toRemove: string) => {
     confirm({
@@ -101,13 +114,40 @@ class ManageGraders extends React.Component<IProps, IState> {
     }
   };
 
+  public toInvite = () => {
+    return this.props.graders.filter((grader) => {
+      return this.props.notActivated.indexOf(grader) > -1;
+    });
+  };
+
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
+    const hasInactives = this.props.notActivated.some((el) => {
+      return this.props.graders.indexOf(el) > -1;
+    });
+
     if (this.props.loadComplete) {
       actions = [
+        hasInactives ? (
+          <SendEmailModal
+            key="activation"
+            buttonText="Send invites"
+            title="Send activation emails to graders"
+            template="add_graders"
+            course={this.props.currentCourse}
+            me={this.props.myEmail}
+            filterFunction={this.toInvite}
+            body={
+              <div>
+                Send activation emails to all graders who have not yet joined codePost. Users who have signed up won't
+                be emailed.
+              </div>
+            }
+          />
+        ) : null,
         <DownloadRoster
           sectionsByStudent={this.props.sectionsByStudent}
           key={0}
@@ -132,6 +172,7 @@ class ManageGraders extends React.Component<IProps, IState> {
           updateSection={this.props.updateSection}
           emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
+          course={this.props.currentCourse}
         />,
         <AddGraderDialog
           key={3}
@@ -169,14 +210,15 @@ class ManageGraders extends React.Component<IProps, IState> {
         },
       ];
 
-      data = this.props.graders.map((grader, i) => {
+      data = this.props.graders.map((graderEmail, i) => {
+        const hasActivated = this.props.notActivated.indexOf(graderEmail) === -1;
         let statusElement;
-        if (grader === this.state.activeGrader) {
+        if (graderEmail === this.state.activeGrader) {
           statusElement = (
             <div>
               <Switch
-                checked={this.props.superGraders.includes(grader)}
-                onChange={this.toggleSuperGrader.bind(this, grader)}
+                checked={this.props.superGraders.includes(graderEmail)}
+                onChange={this.toggleSuperGrader.bind(this, graderEmail)}
               />
               &nbsp;&nbsp;
               <Icon type="edit" onClick={this.setActiveGrader.bind(this, '')} />
@@ -185,16 +227,22 @@ class ManageGraders extends React.Component<IProps, IState> {
         } else {
           statusElement = (
             <div>
-              <Switch checked={this.props.superGraders.includes(grader)} disabled={true} />
+              <Switch checked={this.props.superGraders.includes(graderEmail)} disabled={true} />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, grader)} />
+              <Icon type="edit" onClick={this.setActiveGrader.bind(this, graderEmail)} />
             </div>
           );
         }
 
         const menu = (
           <Menu>
-            <Menu.Item key="1" onClick={this.removeGrader.bind(this, grader)}>
+            {hasActivated ? null : (
+              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, graderEmail)}>
+                <Icon type="mail" />
+                Send activation email
+              </Menu.Item>
+            )}
+            <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
               <Icon type="user-delete" />
               Unenroll
             </Menu.Item>
@@ -202,10 +250,18 @@ class ManageGraders extends React.Component<IProps, IState> {
         );
 
         return {
-          key: grader,
-          grader,
+          key: graderEmail,
+          grader: hasActivated ? (
+            graderEmail
+          ) : (
+            <span style={{ color: '#80808082' }}>
+              <CPTooltip title="This user has not yet signed up for codePost.">
+                {graderEmail} &nbsp; <Icon type="disconnect" />
+              </CPTooltip>
+            </span>
+          ),
           status: statusElement,
-          superGrader: this.props.superGraders.includes(grader),
+          superGrader: this.props.superGraders.includes(graderEmail),
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />
@@ -247,6 +303,7 @@ class ManageGraders extends React.Component<IProps, IState> {
               updateSection={this.props.updateSection}
               emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
+              course={this.props.currentCourse}
             />
             ,
           </Empty>

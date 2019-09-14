@@ -7,16 +7,17 @@ import * as React from 'react';
 
 /* antd imports */
 import { Icon, Typography } from 'antd';
-const { Text } = Typography;
 
 /* other library imports */
-import * as moment from 'moment';
+import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
 
 import CPTooltip from '../core/CPTooltip';
+
+const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -106,7 +107,7 @@ const sortByGrade = (
   return a.grade - b.grade;
 };
 
-interface ISubDataBasic {
+export interface ISubDataBasic {
   gradeText: string | React.ReactElement;
   grader: string | React.ReactElement;
   lastEdited: string;
@@ -151,4 +152,4 @@ const formatSub = (
   }
 };
 
-export { getViewIcon, formatSub, sortByGrade, ISubDataBasic };
+export { getViewIcon, formatSub, sortByGrade };

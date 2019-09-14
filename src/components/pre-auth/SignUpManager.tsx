@@ -41,7 +41,10 @@ const SignUpManager = () => {
               paddingBottom: 30,
             }}
           >
-            <Typography.Title level={titleFontLevel}>Create a Course</Typography.Title>
+            <Typography.Title level={titleFontLevel} style={{ marginBottom: '3px' }}>
+              Create a Course
+            </Typography.Title>
+            <span style={{ fontSize: 18, fontWeight: 500, marginBottom: '19px' }}>Instructors</span>
             <span style={{ fontSize: 14, textAlign: 'center' }}>
               For course leaders (e.g. TAs, teaching faculty) interested in setting up codePost for their course.
             </span>
@@ -61,9 +64,10 @@ const SignUpManager = () => {
               paddingBottom: 30,
             }}
           >
-            <Typography.Title style={{ color: 'rgba(0,0,0,0.6)' }} level={titleFontLevel}>
+            <Typography.Title style={{ color: 'rgba(0,0,0,0.6)', marginBottom: '3px' }} level={titleFontLevel}>
               Join a Course
             </Typography.Title>
+            <span style={{ fontSize: 18, fontWeight: 500, marginBottom: '19px' }}>Course Staff / Students</span>
             <span style={{ fontSize: 14, textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>
               For staff and students who have been added to a course on codePost.
             </span>

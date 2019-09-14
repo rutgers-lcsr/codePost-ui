@@ -24,7 +24,12 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
-    if (selection === null || selection.toString() === '') {
+    if (
+      selection === null ||
+      selection.toString() === '' ||
+      selection.anchorNode === null ||
+      selection.focusNode === null
+    ) {
       return;
     }
 
@@ -32,8 +37,8 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     if (
       // This selection ended on top of the code but outside of a text highlight
       // The Node is an HTMLElement
-      selection.anchorNode.nodeName === 'DIV' &&
       selection.anchorNode &&
+      selection.anchorNode.nodeName === 'DIV' &&
       // @ts-ignore
       selection.anchorNode.id.includes('line')
     ) {
@@ -48,8 +53,8 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     if (
       // This selection ended on top of the code but outside of a text highlight
       // The Node is an HTMLElement
-      selection.focusNode.nodeName === 'DIV' &&
       selection.focusNode &&
+      selection.focusNode.nodeName === 'DIV' &&
       // @ts-ignore
       selection.focusNode.id.includes('line')
     ) {

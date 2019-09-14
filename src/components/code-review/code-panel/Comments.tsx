@@ -19,6 +19,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
+  additiveGrading: boolean;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
@@ -27,6 +28,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   isStudent: boolean;
   updateFeedback: (commentID: number, feedback: number) => void;
   studentFeedbackOn: boolean;
+  hideAuthor: boolean;
 }
 
 interface ICommentsEditProps {
@@ -63,6 +65,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     return readOnly ? 'readonly' : commentID === activeCommentID ? 'active' : 'inactive';
   };
 
+  // @ts-ignore
   public nextFrameActionId: number;
   public wrapperRef: any;
 
@@ -74,7 +77,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     this.state = {
       placements: this.props.comments.map((comment: CommentType, index: number) => {
-        return { commentID: comment.id, placement: comment.startLine * themeVars.grade.codeLineHeight };
+        return {
+          commentID: comment.id,
+          placement: comment.startLine * themeVars.grade.codeLineHeight,
+        };
       }),
     };
   }
@@ -124,9 +130,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     if (prevProps.comments.length < this.props.comments.length) {
-      const codePanel = document.getElementById('code-panel');
-      if (codePanel !== null) {
-        return codePanel.scrollTop;
+      const codeScrollArea = document.getElementById('code-scroll-area');
+      if (codeScrollArea !== null) {
+        return codeScrollArea.scrollTop;
       }
     }
 
@@ -152,9 +158,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     snapshot: any,
   ) => {
     if (snapshot !== null) {
-      const codePanel = document.getElementById('code-panel');
-      if (codePanel !== null) {
-        codePanel.scrollTop = snapshot;
+      const codeScrollArea = document.getElementById('code-scroll-area');
+      if (codeScrollArea !== null) {
+        codeScrollArea.scrollTop = snapshot;
       }
     }
 
@@ -304,6 +310,8 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
           studentFeedbackOn={this.props.studentFeedbackOn}
+          hideAuthor={this.props.hideAuthor}
+          additiveGrading={this.props.additiveGrading}
         />
       );
     });
@@ -324,7 +332,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
       return;
     };
 
-    public changeActive = (id: number) => {
+    public changeActive = (id: number | undefined) => {
       return;
     };
 
@@ -347,7 +355,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
     public render() {
       return (
         <Component
-          {...this.props as ICommentsCoreProps}
+          {...(this.props as ICommentsCoreProps)}
           readOnly={this.readOnly}
           activeCommentID={this.activeCommentID}
           changeActive={this.changeActive}

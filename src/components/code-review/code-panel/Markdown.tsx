@@ -12,11 +12,11 @@ import ReactMarkdown from 'react-markdown';
 import TurndownService from 'turndown';
 import * as turndownPluginGfm from 'turndown-plugin-gfm';
 
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
 const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
-
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
 
 interface IMarkdownProps {
   commentCounter: number;
@@ -126,7 +126,12 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   };
 
   const listRenderer = (props: any) => {
-    return React.createElement(props.ordered ? 'ol' : 'ul', blockProps(props), props.children);
+    return React.createElement(
+      props.ordered ? 'ol' : 'ul',
+      // @ts-ignore
+      blockProps(props),
+      props.children,
+    );
   };
 
   const codeRenderer = (props: any) => {

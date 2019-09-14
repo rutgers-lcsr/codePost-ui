@@ -1,0 +1,194 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import * as React from 'react';
+
+/* style imports */
+import { Button, List, message, Modal } from 'antd';
+
+/* codePost imports */
+
+// type definitions
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { CourseType } from '../../../infrastructure/course';
+
+import CPButton from '../../core/CPButton';
+import CPTooltip from '../../core/CPTooltip';
+
+/**********************************************************************************************************************/
+
+interface IProps {
+  buttonText: string;
+  title: string;
+  filterFunction: () => string[];
+  template: string;
+  course: CourseType;
+  assignment?: AssignmentType;
+  me: string;
+  body: React.ReactNode;
+  button?: (toggleDialog: () => void) => React.ReactNode;
+}
+
+interface IState {
+  /* are we in the middle of sending an email? */
+  isSending: boolean;
+
+  /* list of users who will be emailed on confirm */
+  usersToEmail?: string[];
+
+  /* number of recipients to show in list */
+  usersToShow: number;
+
+  modalVisible: boolean;
+}
+
+const MAX_USERS_IN_INITIAL_LIST = 5;
+
+class SendEmailModal extends React.Component<IProps, IState> {
+  public constructor(props: IProps) {
+    super(props);
+    this.state = {
+      isSending: false,
+      modalVisible: false,
+      usersToShow: MAX_USERS_IN_INITIAL_LIST,
+    };
+  }
+
+  public componentDidUpdate(oldProps: IProps, oldState: IState) {
+    const isFirstOpen = !oldState.modalVisible && this.state.modalVisible && this.state.usersToEmail === undefined;
+    const changedRecipients = oldProps.filterFunction !== this.props.filterFunction;
+    if (isFirstOpen || changedRecipients) {
+      this.setState({
+        usersToEmail: this.props.filterFunction(),
+      });
+    }
+
+    if (oldState.modalVisible && !this.state.modalVisible) {
+      this.setState({
+        usersToShow: MAX_USERS_IN_INITIAL_LIST,
+      });
+    }
+  }
+
+  public sendTestEmail = () => {
+    this.sendEmails([this.props.me], false);
+  };
+
+  public sendLiveEmails = () => {
+    this.setState({ isSending: true }, () => {
+      const toEmail = this.props.filterFunction();
+      this.sendEmails(toEmail, true);
+    });
+    this.toggleDialog();
+  };
+
+  public showMore = () => {
+    this.setState((oldState: IState) => {
+      return {
+        usersToShow: oldState.usersToShow + 5,
+      };
+    });
+  };
+
+  public sendEmails = (toSend: string[], livemode: boolean) => {
+    this.setState({ isSending: true }, () => {
+      toSend.forEach((users) => {
+        fetch(`${process.env.REACT_APP_API_URL}/users/${users}/email/`, {
+          body: JSON.stringify({
+            token: localStorage.getItem('token'),
+            template: this.props.template,
+            assignment: this.props.assignment !== undefined ? this.props.assignment.id : undefined,
+            course: this.props.course.id,
+            livemode,
+          }),
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+      });
+    });
+
+    this.setState({ isSending: false });
+    message.success(`Email${livemode ? 's' : ''} successfully sent.`);
+  };
+
+  public toggleDialog = () => {
+    this.setState({
+      modalVisible: !this.state.modalVisible,
+    });
+  };
+
+  public render() {
+    return (
+      <span>
+        {this.props.button !== undefined ? (
+          this.props.button(this.toggleDialog)
+        ) : (
+          <CPButton cpType="secondary" icon="mail" loading={this.state.isSending} onClick={this.toggleDialog}>
+            {this.props.buttonText}
+          </CPButton>
+        )}
+        <Modal
+          visible={this.state.modalVisible}
+          onCancel={this.toggleDialog}
+          title={this.props.title}
+          width={600}
+          footer={[
+            <Button key="back" onClick={this.toggleDialog}>
+              Cancel
+            </Button>,
+            <Button key="submit" type="primary" disabled={false} onClick={this.sendLiveEmails}>
+              Send
+            </Button>,
+          ]}
+        >
+          {this.props.body}
+          <br />
+          <div>
+            <CPButton onClick={this.sendTestEmail} cpType="secondary">
+              Send myself a test email
+            </CPButton>
+            &nbsp;{' '}
+            <CPTooltip
+              title="This will send you an email example of what the recipients will receive."
+              infoIcon={true}
+            />
+          </div>
+          {this.state.usersToEmail !== undefined ? (
+            <div>
+              <br />
+              <h3>{this.state.usersToEmail.length} users will be emailed</h3>
+              <List
+                itemLayout="horizontal"
+                loadMore={
+                  this.state.usersToEmail.length > this.state.usersToShow ? (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        marginTop: 12,
+                        height: 32,
+                        lineHeight: '32px',
+                      }}
+                    >
+                      <Button onClick={this.showMore}>show more</Button>
+                    </div>
+                  ) : null
+                }
+                dataSource={this.state.usersToEmail.slice(
+                  0,
+                  Math.min(this.state.usersToShow, this.state.usersToEmail.length),
+                )}
+                renderItem={(item) => <List.Item>{item}</List.Item>}
+              />
+            </div>
+          ) : null}
+        </Modal>
+      </span>
+    );
+  }
+}
+export default SendEmailModal;

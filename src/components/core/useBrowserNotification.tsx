@@ -4,6 +4,7 @@ import { notification } from 'antd';
 
 const useBrowserNotification = () => {
   const openNotificationWithIcon = (type: string) => {
+    // @ts-ignore
     notification[type]({
       message: 'Browser Warning',
       description: 'codePost has been primarily tested using Google Chrome. Please use Chrome, or tread carefully!',

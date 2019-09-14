@@ -36,7 +36,7 @@ class JoinSignup extends React.Component<{}, IState> {
   public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });

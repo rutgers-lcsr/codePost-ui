@@ -198,6 +198,9 @@ class CodePanelHighlighting {
 
     if (!currNode) {
       currentSelection = window.getSelection();
+      if (currentSelection === null) {
+        return -1;
+      }
       currentRange = currentSelection.getRangeAt(0);
       if (position === POSITION.Start) {
         currNode = currentRange.startContainer;

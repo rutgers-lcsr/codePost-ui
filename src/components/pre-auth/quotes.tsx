@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-interface IQuoteType {
+export interface IQuoteType {
   author: string;
   website: string;
   quote: string;
@@ -64,4 +64,4 @@ const quotes = [
 ];
 // tslint:enable
 
-export { quotes, IQuoteType };
+export { quotes };

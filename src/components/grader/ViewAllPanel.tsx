@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Icon, Select, Switch, Table } from 'antd';
-const { Option } = Select;
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -22,9 +21,12 @@ import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { compare } from '../utils/SortUtils';
-type alignType = 'left' | 'right' | 'center';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+type alignType = 'left' | 'right' | 'center';
+
+const { Option } = Select;
 
 /**********************************************************************************************************************/
 
@@ -66,7 +68,12 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
       await Course.readRoster(this.props.currentCourse.id),
     ]);
 
-    this.setState({ graders: roster.graders, viewsBySubmission, submissions, isLoading: false });
+    this.setState({
+      graders: roster.graders,
+      viewsBySubmission,
+      submissions,
+      isLoading: false,
+    });
   }
 
   public componentDidMount() {
@@ -81,7 +88,7 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
 
   public loadSubmissionsViews = async () => {
     const histories = await Assignment.readSubmissionHistories(this.props.currentAssignment.id);
-    const viewsBySubmission = {};
+    const viewsBySubmission: any = {};
     histories.forEach((history: SubmissionHistoryType) => {
       const submissionID = history.submission;
       if (!(submissionID in viewsBySubmission)) {
@@ -208,7 +215,9 @@ class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
         <Select
           placeholder="Select Graders..."
           mode="multiple"
+          // @ts-ignore
           onSelect={this.handleSelect}
+          // @ts-ignore
           onDeselect={this.handleDeselect}
           style={{ width: 500, marginBottom: 20 }}
         >

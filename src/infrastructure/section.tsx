@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { compare } from '../components/utils/SortUtils';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
-const SectionV = t.intersection(
+export const SectionV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -27,9 +27,9 @@ const SectionVPatch = t.intersection(
   'SectionPatch',
 );
 
-type SectionType = t.TypeOf<typeof SectionV>;
+export type SectionType = t.TypeOf<typeof SectionV>;
 
-class Section {
+export class Section {
   public static create = createObject(SectionV, SectionV, 'sections');
   public static read = readObject(SectionV, 'sections');
   public static update = updateObject(SectionV, SectionVPatch, 'sections');
@@ -41,7 +41,7 @@ export enum SECTION_SORT_TYPE {
   leader,
 }
 
-function sectionSort(sortType: SECTION_SORT_TYPE, ascending: boolean, a: SectionType, b: SectionType) {
+export function sectionSort(sortType: SECTION_SORT_TYPE, ascending: boolean, a: SectionType, b: SectionType) {
   // Sort by email
   if (sortType === SECTION_SORT_TYPE.name) {
     if (a.name < b.name) return ascending ? -1 : 1;
@@ -57,4 +57,4 @@ function sectionSort(sortType: SECTION_SORT_TYPE, ascending: boolean, a: Section
   return 0;
 }
 
-export { SectionType, Section, SectionV, sectionSort };
+// export { SectionType, Section, SectionV, sectionSort };

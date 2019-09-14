@@ -2,12 +2,13 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { Collapse, Icon } from 'antd';
-const Panel = Collapse.Panel;
 
 import landingVars from '../../styles/pages/_landingVars';
 
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';
+
+const Panel = Collapse.Panel;
 
 const LandingHeader = () => {
   const windowSize = useWindowSize();
@@ -29,7 +30,11 @@ const LandingHeader = () => {
 
   const logo = (
     <Link
-      style={{ fontSize: smallScreen ? 24 : 34, color: 'black', paddingLeft: 10 }}
+      style={{
+        fontSize: smallScreen ? 24 : 34,
+        color: 'black',
+        paddingLeft: 10,
+      }}
       className="link--header"
       to={'/'}
     >

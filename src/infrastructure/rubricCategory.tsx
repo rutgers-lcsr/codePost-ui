@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
-const RubricCategoryV = t.intersection(
+export const RubricCategoryV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -10,6 +10,8 @@ const RubricCategoryV = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       sortKey: t.number,
+    }),
+    t.partial({
       helpText: t.string,
     }),
   ],
@@ -30,7 +32,7 @@ const RubricCategoryStudentV = t.intersection(
   'RubricCategory',
 );
 
-const RubricCategoryVPatch = t.intersection(
+export const RubricCategoryVPatch = t.intersection(
   [
     GenericObject,
     t.partial({
@@ -45,11 +47,11 @@ const RubricCategoryVPatch = t.intersection(
   'RubricCategoryPatch',
 );
 
-type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
-type RubricCategoryStudentType = t.TypeOf<typeof RubricCategoryStudentV>;
-type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
+export type RubricCategoryType = t.TypeOf<typeof RubricCategoryV>;
+export type RubricCategoryStudentType = t.TypeOf<typeof RubricCategoryStudentV>;
+export type RubricCategoryPatchType = t.TypeOf<typeof RubricCategoryVPatch>;
 
-class RubricCategory {
+export class RubricCategory {
   public static create = createObject(RubricCategoryV, RubricCategoryV, 'rubricCategories');
   public static read = readObject(RubricCategoryV, 'rubricCategories');
   public static update = updateObject(RubricCategoryV, RubricCategoryVPatch, 'rubricCategories');
@@ -64,7 +66,7 @@ class RubricCategory {
   };
 }
 
-const RubricCategoryMock: RubricCategoryType = {
+export const RubricCategoryMock: RubricCategoryType = {
   id: 1,
   name: 'Mocked Category',
   helpText: 'mocked category help text',
@@ -74,12 +76,12 @@ const RubricCategoryMock: RubricCategoryType = {
   sortKey: 0,
 };
 
-export {
-  RubricCategoryType,
-  RubricCategoryPatchType,
-  RubricCategory,
-  RubricCategoryV,
-  RubricCategoryVPatch,
-  RubricCategoryStudentType,
-  RubricCategoryMock,
-};
+// export {
+//   RubricCategoryType,
+//   RubricCategoryPatchType,
+//   RubricCategory,
+//   RubricCategoryV,
+//   RubricCategoryVPatch,
+//   RubricCategoryStudentType,
+//   RubricCategoryMock,
+// };

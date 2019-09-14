@@ -3,8 +3,6 @@ import * as React from 'react';
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
 import { Input, message, Popover, Typography } from 'antd';
-const { TextArea } = Input;
-const { Paragraph } = Typography;
 
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
@@ -23,6 +21,9 @@ import { consoleThemes } from '../../../../styles/abstracts/_console-theme-conte
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
+
+const { TextArea } = Input;
+const { Paragraph } = Typography;
 
 interface ISimpleCommentProps {
   commentType: UICommentType;
@@ -61,7 +62,9 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
   public componentDidUpdate(prevProps: ISimpleCommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
-      this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
+      this.setState({
+        points: UiComment.points(this.props.comment, this.props.rubricComment),
+      });
       this.props.setCommentPlacements();
     }
 
@@ -130,16 +133,6 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
 
   public roundUpToNearestMultiple = (n: number, m: number) => {
     return Math.ceil(n / m) * m;
-  };
-
-  public onPlus = () => {
-    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
-    this.onChangePointInput(points);
-  };
-
-  public onMinus = () => {
-    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
-    this.onChangePointInput(points);
   };
 
   public onCommentClick = (e: React.MouseEvent) => {
@@ -318,8 +311,6 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
         <CPPointInput
           value={points}
           size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
           onChange={this.onChangePointInput}
           disabled={this.props.rubricComment ? true : false}
           onKeyDown={this.handleShiftEnter}
@@ -332,7 +323,10 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
-          style={{ backgroundColor: consoleThemes.light.commentTextArea, color: consoleThemes.light.text }}
+          style={{
+            backgroundColor: consoleThemes.light.commentTextArea,
+            color: consoleThemes.light.text,
+          }}
           autoFocus
         />
       );
@@ -380,8 +374,16 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
       commentElements.comment = (
         <Paragraph
           className="comment__comment"
-          style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', marginBottom: '0px' }}
-          ellipsis={{ rows: 2, expandable: false, onExpand: this.props.setCommentPlacements }}
+          style={{
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+            marginBottom: '0px',
+          }}
+          ellipsis={{
+            rows: 2,
+            expandable: false,
+            onExpand: this.props.setCommentPlacements,
+          }}
         >
           <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
         </Paragraph>

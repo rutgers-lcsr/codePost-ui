@@ -3,7 +3,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
-const { TextArea } = Input;
 
 /* other library imports */
 import _ from 'lodash';
@@ -11,12 +10,15 @@ import _ from 'lodash';
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
+import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
+
+const { TextArea } = Input;
 
 const aligner: 'left' | 'center' | 'right' = 'center';
 const commentTableColumns = [
@@ -119,7 +121,9 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
         return {
           key: thisComment.id,
           text: <TextArea autosize value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />,
-          deduction: <InputNumber value={thisComment.pointDelta} onChange={onChangePointDelta} onBlur={saveComment} />,
+          deduction: (
+            <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
+          ),
           linked: (
             <span onClick={activateCommentExplorer}>
               <Badge
@@ -164,7 +168,14 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
         return {
           key: rubricComment.id,
           text: <TextArea autosize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
-          deduction: <InputNumber value={0} onChange={updateRubricCommentPointDelta} onBlur={saveComment} />,
+          deduction: (
+            <CPPointInput
+              value={-rubricComment.pointDelta}
+              size="small"
+              onChange={updateRubricCommentPointDelta}
+              disabled={false}
+            />
+          ),
           linked: null,
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
@@ -247,12 +258,23 @@ const RubricCategoryUI = ({ props, state, helpers }: any) => {
           iconStyle={{ paddingLeft: 5 }}
         />
       </div>
-      <InputNumber
-        value={state.pointLimit !== null ? state.pointLimit : undefined}
-        onChange={setVal}
-        onBlur={helpers.saveCategory}
-        min={0}
-      />
+      <div className="display-flex align-items-center">
+        <CPPointInput
+          value={state.pointLimit !== null ? -state.pointLimit : undefined}
+          size="small"
+          onChange={setVal}
+          disabled={false}
+          step={1}
+        />
+        <span onBlur={helpers.saveCategory}>
+          <CPTooltip
+            title={`Clear this category's point limit (so any number of points can
+              be added or deducted using its rubric comments)`}
+          >
+            <Icon style={{ cursor: 'pointer' }} type="close-circle" onClick={setVal} />
+          </CPTooltip>
+        </span>
+      </div>
     </div>
   );
 

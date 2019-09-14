@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Layout } from 'antd';
-const { Header, Content } = Layout;
 
 import layoutVars from '../../../styles/layout/_layoutVars';
 
@@ -15,6 +14,8 @@ import CPFlex from '../../core/CPFlex';
 import CPTooltip from '../../core/CPTooltip';
 
 import useWindowSize from '../../core/useWindowSize';
+
+const { Header, Content } = Layout;
 
 /**********************************************************************************************************************/
 
@@ -49,7 +50,7 @@ const CPAdminDetail = (props: ICPAdminDetailProps) => {
   );
 
   const subheaderLeft = [
-    <div key="title" style={{ display: 'flex', alignItem: 'center' }}>
+    <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
       <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
       {titleTooltip}
     </div>,
@@ -63,7 +64,11 @@ const CPAdminDetail = (props: ICPAdminDetailProps) => {
   return (
     <Content
       className={`layout--admin__detail${props.className ? `--${props.className}` : ''}`}
-      style={{ padding: contentPadding, margin: contentMargin, transition: '0.3s' }}
+      style={{
+        padding: contentPadding,
+        margin: contentMargin,
+        transition: '0.3s',
+      }}
     >
       <Layout>
         <Header className="layout--admin__subheader">

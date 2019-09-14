@@ -17,6 +17,7 @@ const InlineMarkdown = (props: IInlineMarkdownProps) => {
 
   return (
     <ReactMarkdown
+      // @ts-ignore
       allowedTypes={allowedTypes}
       renderers={renderers}
       source={props.source}

@@ -8,10 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Button, Divider, Icon, Input, InputNumber, Menu, Popover, Tag } from 'antd';
 
-const SubMenu = Menu.SubMenu;
-const InputGroup = Input.Group;
-const { TextArea } = Input;
-
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
@@ -26,6 +22,10 @@ import InlineMarkdown from '../../core/InlineMarkdown';
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
+
+const SubMenu = Menu.SubMenu;
+const InputGroup = Input.Group;
+const { TextArea } = Input;
 
 /**********************************************************************************************************************/
 
@@ -61,6 +61,13 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
+  public focusSearch = () => {
+    const el = document.getElementById('rubric-search');
+    if (el !== null) {
+      el.focus();
+    }
+  };
+
   public handleKeyDown = (e: any) => {
     const os = getOperatingSystem();
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
@@ -68,10 +75,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     // Keyboard shortcuts
     if (e.which === O_KEY && triggerKey) {
       e.preventDefault();
-      const el = document.getElementById('rubric-search');
-      if (el !== null) {
-        el.focus();
-      }
+      this.focusSearch();
     }
   };
 
@@ -101,9 +105,35 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         return rubricCategory.pointLimit !== null || rubricCategory.helpText !== '' || rubricCategory.name.length > 35;
       }).length > 0;
 
-    return rubricCategories.map((rubricCategory: RubricCategoryType) => {
+    // sample search: category:dfdfdfdf some other text
+    // sample search: category:"some text" some other text
+
+    // If user has specified a category with category:[some text], respect it
+    const categoryMatches = this.state.searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+
+    let filteredCatgories = rubricCategories;
+    let commentSearchTerm = this.state.searchTerm;
+    if (categoryMatches !== null && categoryMatches.length > 0) {
+      const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
+      filteredCatgories = rubricCategories.filter((el) => {
+        return el.name.toUpperCase().includes(categoryName.toUpperCase());
+      });
+      commentSearchTerm = this.state.searchTerm
+        .split(' ')
+        .filter((el) => {
+          return !el.includes('category:');
+        })
+        .join(' ');
+    }
+
+    // if user is trying to invoke category search, don't try searching for the search term
+    if ('category:'.includes(commentSearchTerm)) {
+      commentSearchTerm = '';
+    }
+
+    return filteredCatgories.map((rubricCategory: RubricCategoryType) => {
       const rubricComments = rubricCommentMap[rubricCategory.id].filter((rubricComment: RubricCommentType) => {
-        return rubricComment.text.toUpperCase().includes(this.state.searchTerm.toUpperCase());
+        return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
       });
       const rows = rubricComments.map((rubricComment: RubricCommentType) => {
         const key = `comment-${rubricCategory.id}-${rubricComment.id}`;
@@ -126,6 +156,11 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
           </Menu.Item>
         );
       });
+
+      // hide categories with no matching comments
+      if (rows.length === 0 && commentSearchTerm.length > 0) {
+        return null;
+      }
 
       const info = (
         <div>
@@ -244,6 +279,17 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
     this.setState({ tmpEditing: [] });
   };
 
+  public insertCategorySearch = () => {
+    if (!this.state.searchTerm.includes('category:')) {
+      this.setState((oldState) => {
+        return {
+          searchTerm: oldState.searchTerm === '' ? 'category:' : `${oldState.searchTerm} category:`,
+        };
+      });
+      this.focusSearch();
+    }
+  };
+
   public render() {
     const rubricMenu = this.buildRubricMenu(this.state.tmpRubricCategories, this.state.tmpRubricComments);
     const rubricKeys = this.state.tmpRubricCategories.map((rubricCategory: RubricCategoryType) => {
@@ -271,6 +317,19 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
         <div id="rubric-menu-title" style={{ marginBottom: '5px', width: '100%', textAlign: 'center' }}>
           <div style={{ margin: '0px 18px 5px 0px' }}>
             <CPFlex left={[]} right={controls} gutterSize={10} />
+            <Tag
+              style={{
+                background: this.context.consoleTheme.siderBg,
+                color: this.context.consoleTheme.siderTitle,
+                borderStyle: 'dashed',
+                marginBottom: '4px',
+                marginRight: '0px',
+                cursor: 'pointer',
+              }}
+              onClick={this.insertCategorySearch}
+            >
+              category:
+            </Tag>
           </div>
           <Input
             placeholder="Search rubric... (⌘ O)"
@@ -281,7 +340,8 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
               backgroundColor: this.context.consoleTheme.siderBg,
               border: this.context.consoleTheme.buttonSecondaryBorder,
               color: this.context.consoleTheme.buttonSecondaryColor,
-              width: '90%',
+              width: '100%',
+              margin: '0 auto',
             }}
           />
         </div>

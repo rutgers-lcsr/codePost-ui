@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -29,7 +29,21 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import { getOperatingSystem, OS } from '../useHotkeys';
 
-/**********************************************************************************************************************/
+const { SubMenu } = Menu;
+
+/*************************************** Helper Interfaces for Directory rendering ******************************/
+
+interface IFolder {
+  files: FileType[];
+  folders: IFolder[];
+  name: string;
+}
+interface IDirectoryStructure {
+  files: FileType[]; // Files without a path specified
+  folders: IFolder[];
+}
+
+/*************************************** State and Props Interfaces **********************************/
 
 interface IFileMenuProps extends IWithWindowWatcherProps {
   title?: string;
@@ -42,8 +56,37 @@ interface IFileMenuProps extends IWithWindowWatcherProps {
   hidePoints?: boolean;
 }
 
-class FileMenu extends React.Component<IFileMenuProps, {}> {
-  public componentWillMount() {
+interface IFileMenuState {
+  // Storing both of these in state for speed (avoid recreating directory on each render)
+  directoryStructure: IDirectoryStructure; // The nested directory of the files, after path is parsed
+  sortedFiles: FileType[]; // The ordered array of files that will be visually rendered (for shortcut mapping)
+}
+
+class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
+  public constructor(props: IFileMenuProps) {
+    super(props);
+    const directoryStructure = this.createDirectoryStructure(props.files);
+    const sortedFiles = this.sortFiles(directoryStructure);
+    this.state = {
+      directoryStructure,
+      sortedFiles,
+    };
+    if (sortedFiles.length > 0) {
+      // If the file has a directory, then the order of the files in the UI might be different than the order passed in
+      // After getting the order, we want to change the selected file to be the first in the list
+      this.props.changeSelectedFile(sortedFiles[0].id);
+    }
+  }
+
+  public componentDidUpdate(prevProps: IFileMenuProps) {
+    if (prevProps.files !== this.props.files) {
+      const fileStructure = this.createDirectoryStructure(this.props.files);
+      const orderedFiles = this.sortFiles(fileStructure);
+      this.setState({ directoryStructure: fileStructure, sortedFiles: orderedFiles });
+    }
+  }
+
+  public componentDidMount() {
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -58,7 +101,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
     if (e.which >= 49 && e.which <= 57 && triggerKey) {
       e.preventDefault();
       if (e.which - 49 < this.props.files.length) {
-        this.props.changeSelectedFile(this.props.files[e.which - 49].id);
+        this.props.changeSelectedFile(this.state.sortedFiles[e.which - 49].id);
       }
     }
   };
@@ -68,10 +111,109 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
     this.props.changeSelectedFile(fileID);
   };
 
-  public buildFileMenu = (files: FileType[]) => {
+  /**************************** File Menu Functions *************************************/
+  // Create a nested directory corresponding to the folder and file structure
+  public createDirectoryStructure = (files: FileType[]) => {
+    const root: IDirectoryStructure = { folders: [], files: [] };
+
+    // Search through a list of folders match with same name
+    const search = (nameKey: string, folderList: IFolder[]) => {
+      for (const i of folderList) {
+        if (i['name'] === nameKey) {
+          return i;
+        }
+      }
+      return false;
+    };
+    // Loop through files and process them
+    files.forEach((f) => {
+      if (!f.path) {
+        // If no path specified, add them to root.files
+        root.files.push(f);
+      } else {
+        // remove starting and trailing slashes
+        const cleanedPath = f.path.replace(/^\/+|\/+$/g, '');
+        const dirs = cleanedPath.split('/');
+        dirs.reduce((acc, dirName, index) => {
+          const el = search(dirName, acc['folders']);
+          if (el) {
+            if (index === dirs.length - 1) {
+              // Reached the last directory in the path, so push the file
+              el['files'].push(f);
+            }
+            return el;
+          } else {
+            acc['folders'].push({
+              name: dirName,
+              folders: [],
+              files: index === dirs.length - 1 ? [f] : [],
+            });
+            return acc['folders'][acc['folders'].length - 1];
+          }
+        }, root);
+      }
+    });
+    return root;
+  };
+
+  // Figure out the file order to be shown in the UI based on the nested file directory
+  public sortFiles = (directoryStructure: IDirectoryStructure) => {
+    const sortedFiles: FileType[] = [];
+
+    // Put the files in the root directory last
+    const sortedDirectFiles = directoryStructure.files.sort((f1: FileType, f2: FileType) => {
+      return f1.id - f2.id;
+    });
+
+    sortedDirectFiles.forEach((f) => {
+      sortedFiles.push(f);
+    });
+
+    // Put the files in the root directory first
+    const addFilesOfFolder = (folder: IFolder, currentList: FileType[]) => {
+      folder.files.forEach((f: FileType) => {
+        currentList.push(f);
+      });
+      folder.folders.forEach((f: IFolder) => {
+        addFilesOfFolder(f, currentList);
+      });
+    };
+    directoryStructure.folders.forEach((f: IFolder) => {
+      addFilesOfFolder(f, sortedFiles);
+    });
+
+    return sortedFiles;
+  };
+
+  // Recursive function to build a Sub Menu for a folder
+  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+    const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
+    const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
+    return (
+      <SubMenu
+        key={`${parentPath}'/'${folder.name}`}
+        title={
+          <div>
+            <Icon type="folder" />
+            {folder.name}
+          </div>
+        }
+        className={className}
+      >
+        {fileItems}
+        {folder.folders.map((f: IFolder) => {
+          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
+        })}
+      </SubMenu>
+    );
+  };
+
+  // Build a list of Menu.Items from a set of files
+  public buildFileMenu = (files: FileType[], sortedFiles: FileType[]) => {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
 
-    return files.map((file: FileType, index: number) => {
+    return files.map((file: FileType) => {
       const [deductions, bonuses] = this.props.getPointsInFile(file);
 
       let commentCount = 0;
@@ -126,6 +268,11 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
           };
       /* tslint:enable */
 
+      // Find the file order in the list to sync the keyboard shortcuts with the UI order
+      const sortedIndex = sortedFiles.findIndex((f) => {
+        return f.id === file.id;
+      });
+
       return (
         <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
           <div
@@ -134,7 +281,7 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
               lineHeight: '12px',
             }}
           >
-            <span style={shortcutStyle}>[⌘{index + 1}]</span>
+            <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{
@@ -172,8 +319,14 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
     });
   };
 
+  /**************************** Render *************************************/
   public render() {
-    const fileMenu = this.buildFileMenu(this.props.files);
+    const fileStructure = this.createDirectoryStructure(this.props.files);
+    const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
+    const folders = fileStructure.folders.map((f: IFolder) => {
+      return this.buildFolderMenu('', f);
+    });
+
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
     const className = theme === 'light' ? 'sider-menu sider-menu--light' : 'sider-menu sider-menu--dark';
@@ -190,7 +343,8 @@ class FileMenu extends React.Component<IFileMenuProps, {}> {
               color: this.context.consoleTheme.siderMenuItemColor,
             }}
           >
-            {fileMenu}
+            {rootFiles}
+            {folders}
           </Menu>
         </UnsavedCommentsPopconfirm>
       </div>

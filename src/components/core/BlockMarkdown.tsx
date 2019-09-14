@@ -12,15 +12,12 @@ interface IBlockMarkdownProps {
 }
 
 const BlockMarkdown = (props: IBlockMarkdownProps) => {
-  const renderers =
-    props.extraRenderers === undefined
-      ? useBlockMarkdownRenderers()
-      : { ...useBlockMarkdownRenderers(), ...props.extraRenderers };
+  const renderers = useBlockMarkdownRenderers(props.extraRenderers);
 
   return <ReactMarkdown renderers={renderers} source={props.source} />;
 };
 
-const useBlockMarkdownRenderers = () => {
+const useBlockMarkdownRenderers = (extraRenderers: any) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const blockProps = () => {
@@ -74,13 +71,19 @@ const useBlockMarkdownRenderers = () => {
     return <hr {...blockProps()}>{props.children}</hr>;
   };
 
-  return {
+  const ret = {
     heading: headingRenderer,
     inlineCode: inlineCodeRenderer,
     code: codeRenderer,
     thematicBreak: thematicBreakRenderer,
     link: linkRenderer,
   };
+
+  if (extraRenderers === undefined) {
+    return ret;
+  } else {
+    return { ...ret, ...extraRenderers };
+  }
 };
 
 export default BlockMarkdown;

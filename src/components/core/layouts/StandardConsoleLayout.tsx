@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Collapse, Icon, Layout } from 'antd';
-const { Content, Header, Sider } = Layout;
 
 /* codePost imports */
 import themeVars from '../../../styles/abstracts/_theme.js';
@@ -17,13 +16,15 @@ import useBrowserNotification from '../useBrowserNotification';
 import useFixedWindow from '../useFixedWindow';
 import useWindowSize from '../useWindowSize';
 
-export type ConsoleType = 'grade' | 'subheader';
-
-type ConsoleTheme = 'light' | 'dark';
-
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import { wait } from '../../../infrastructure/animation';
+
+const { Content, Header, Sider } = Layout;
+
+export type ConsoleType = 'grade' | 'subheader';
+
+type ConsoleTheme = 'light' | 'dark';
 
 /**********************************************************************************************************************/
 
@@ -75,18 +76,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   };
 
   if (props.consoleTypes && props.consoleTypes.includes('grade')) {
-    React.useEffect(
-      () => {
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => {
-          window.removeEventListener('resize', handleResize);
-        };
-      },
-      [props.editRubricMode],
-    );
+    React.useEffect(() => {
+      handleResize();
+      window.addEventListener('resize', handleResize);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }, [props.editRubricMode]);
   }
-
   const onCollapse = async (keys: string[]) => {
     if (window.innerHeight !== 0) {
       const rubricMenu = document.getElementById('rubric-menu');
@@ -140,11 +137,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             }}
           >
             {props.sider.length === 0 ? null : (
+              // @ts-ignore
               <Collapse
                 expandIconPosition="right"
                 defaultActiveKey={props.sider.map((el, index) => index.toString())}
                 bordered={false}
+                // @ts-ignore
                 onChange={onCollapse}
+                // @ts-ignore
                 expandIcon={collapseIcon}
                 style={{
                   backgroundColor: consoleTheme.siderBg,
@@ -155,7 +155,12 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                   return (
                     <Collapse.Panel
                       header={
-                        <div style={{ padding: '0px 10px 5px 0px', color: consoleTheme.siderTitle }}>
+                        <div
+                          style={{
+                            padding: '0px 10px 5px 0px',
+                            color: consoleTheme.siderTitle,
+                          }}
+                        >
                           <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
                         </div>
                       }
@@ -173,6 +178,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               backgroundColor: consoleTheme.mainBg,
               minWidth: layoutVars.minWidths.grade,
             }}
+            id="code-scroll-area"
           >
             <Content className="layout--standard-console__content">{props.content}</Content>
             {props.children}

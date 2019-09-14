@@ -2,12 +2,13 @@ import * as React from 'react';
 
 /* ant imports */
 import { Collapse, Icon, Radio, Statistic, Upload } from 'antd';
-const Panel = Collapse.Panel;
-const Dragger = Upload.Dragger;
 
 import ReactMarkdown from 'react-markdown';
 
 import BlockMarkdown from '../../../core/BlockMarkdown';
+
+const Panel = Collapse.Panel;
+const Dragger = Upload.Dragger;
 
 interface IUploadFormProps {
   rawFiles: File[];

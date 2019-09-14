@@ -17,7 +17,7 @@ import CPAdminDetail from '../other/CPAdminDetail';
 
 /**********************************************************************************************************************/
 
-interface ITableDetailColumn extends ColumnProps<any> {
+export interface ITableDetailColumn extends ColumnProps<any> {
   renderForSearch?: (searchText: string) => (text: string, record: any, index: number) => React.ReactNode;
 }
 
@@ -118,7 +118,7 @@ class TableDetail extends React.Component<IProps, IState> {
           <Input.Search disabled={true} placeholder={'Search...'} style={{ width: 300 }} />
           <br />
           <br />
-          <Table columns={...this.props.columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
+          <Table columns={this.props.columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
         </div>
       );
     } else {
@@ -128,7 +128,10 @@ class TableDetail extends React.Component<IProps, IState> {
         const oldColumns = this.props.columns;
         const newColumns: Array<ColumnProps<any>> = [];
         oldColumns.forEach((column, i) => {
-          newColumns[i] = { ...oldColumns[i], ...this.getColumnSearchProps(oldColumns[i]) };
+          newColumns[i] = {
+            ...oldColumns[i],
+            ...this.getColumnSearchProps(oldColumns[i]),
+          };
         });
 
         // Cache keys so we can search each field of the row
@@ -177,7 +180,10 @@ class TableDetail extends React.Component<IProps, IState> {
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination
-                  : { showSizeChanger: true, pageSizeOptions: ['10', '50', '100'] }
+                  : {
+                      showSizeChanger: true,
+                      pageSizeOptions: ['10', '50', '100'],
+                    }
               }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
             />
@@ -202,4 +208,4 @@ class TableDetail extends React.Component<IProps, IState> {
   }
 }
 
-export { TableDetail, ITableDetailColumn };
+export { TableDetail };

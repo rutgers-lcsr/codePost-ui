@@ -28,10 +28,10 @@ const UserV = t.intersection(
   'User',
 );
 
-type UserType = t.TypeOf<typeof UserV>;
+export type UserType = t.TypeOf<typeof UserV>;
 
-class UserIO {
+export class UserIO {
   public static read = readObject(UserV, 'comments');
 }
 
-export { UserType, UserIO };
+// export { UserType, UserIO };

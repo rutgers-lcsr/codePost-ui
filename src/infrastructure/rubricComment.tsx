@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
-const RubricCommentV = t.intersection(
+export const RubricCommentV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -41,10 +41,10 @@ const RubricCommentVPatch = t.intersection(
   'RubricCommentPatch',
 );
 
-type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
-type RubricCommentPatchType = t.TypeOf<typeof RubricCommentVPatch>;
+export type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
+export type RubricCommentPatchType = t.TypeOf<typeof RubricCommentVPatch>;
 
-class RubricComment {
+export class RubricComment {
   public static create = createObject(RubricCommentV, RubricCommentVPost, 'rubricComments');
   public static read = readObject(RubricCommentV, 'rubricComments');
   public static update = updateObject(RubricCommentV, RubricCommentVPatch, 'rubricComments');
@@ -59,7 +59,7 @@ class RubricComment {
   };
 }
 
-const RubricCommentMock: RubricCommentType = {
+export const RubricCommentMock: RubricCommentType = {
   id: 1,
   text: 'Mocked rubric comment',
   pointDelta: 3,
@@ -68,4 +68,4 @@ const RubricCommentMock: RubricCommentType = {
   sortKey: 0,
 };
 
-export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV, RubricCommentMock };
+// export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV, RubricCommentMock };

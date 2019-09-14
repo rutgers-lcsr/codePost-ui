@@ -33,6 +33,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
           Files
         </div>
       </div>
+      // @ts-ignore
       <AnimatedMenu
         theme="light"
         style={{ width: 150, maxWidth: 150, minWidth: 150, borderRadius: 5 }}

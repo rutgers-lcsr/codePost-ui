@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* antd imports */
 import { Button, Collapse, Icon, Modal, Spin, Steps, Typography, Upload } from 'antd';
-const { Step } = Steps;
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +19,8 @@ import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import CPButton from '../../../../components/core/CPButton';
+
+const { Step } = Steps;
 
 /**********************************************************************************************************************/
 
@@ -111,7 +112,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
   // Turn nested rubric into standard structure
   public parseRubric = (rubric: IDownloadCategory[]) => {
     const categories: RubricCategoryType[] = [];
-    const comments = {};
+    const comments: any = {};
 
     let categoryID = -1;
     let commentID = -1;
@@ -170,7 +171,11 @@ class RubricFileUpload extends React.Component<IProps, IState> {
             uploadFileName: file.name,
           });
         } else {
-          this.setState({ uploadErrors, status: STATUS.UPLOAD_ERRORS, uploadFileName: file.name });
+          this.setState({
+            uploadErrors,
+            status: STATUS.UPLOAD_ERRORS,
+            uploadFileName: file.name,
+          });
         }
       } catch (error) {
         this.setState({

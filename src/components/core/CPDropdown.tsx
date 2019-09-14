@@ -4,12 +4,12 @@ import { Button, Dropdown, Icon } from 'antd';
 
 import { DropdownButtonProps } from 'antd/lib/dropdown';
 
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+
 const ButtonGroup = Button.Group;
 
 type ThemeType = 'light' | 'dark';
 type JustifyType = 'space-between' | 'center';
-
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 interface ICPDropdownProps {
   value: string;
@@ -40,8 +40,14 @@ class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps,
             </Button>
           ) : null}
           <Button style={{ flexGrow: 1 }}>
-            <div style={{ display: 'flex', justifyContent: justifyType, alignItems: 'center' }}>
-              {value} <Icon type="down" />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: justifyType,
+                alignItems: 'center',
+              }}
+            >
+              {value} &nbsp; <Icon type="down" />
             </div>
           </Button>
         </ButtonGroup>

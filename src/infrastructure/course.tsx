@@ -10,7 +10,7 @@ import {
   updateObjectDetail,
 } from './generics';
 
-const CourseV = t.intersection(
+export const CourseV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -44,8 +44,8 @@ const CourseVPatch = t.intersection(
   'CoursePatch',
 );
 
-type CourseType = t.TypeOf<typeof CourseV>;
-type CoursePatchType = t.TypeOf<typeof CourseVPatch>;
+export type CourseType = t.TypeOf<typeof CourseV>;
+export type CoursePatchType = t.TypeOf<typeof CourseVPatch>;
 
 const RosterV = t.intersection(
   [
@@ -58,6 +58,7 @@ const RosterV = t.intersection(
       graders: t.array(t.string),
       superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
+      not_activated: t.array(t.string),
     }),
     t.partial({}),
   ],
@@ -77,7 +78,7 @@ const RosterVPatch = t.intersection(
   'RosterPatch',
 );
 
-type RosterType = t.TypeOf<typeof RosterV>;
+export type RosterType = t.TypeOf<typeof RosterV>;
 
 const CourseSettingsV = t.intersection(
   [
@@ -92,9 +93,9 @@ const CourseSettingsV = t.intersection(
   'CourseSettings',
 );
 
-type CourseSettingsType = t.TypeOf<typeof CourseSettingsV>;
+export type CourseSettingsType = t.TypeOf<typeof CourseSettingsV>;
 
-class Course {
+export class Course {
   public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
   public static list = listObject(CourseV, 'courses');
@@ -107,4 +108,4 @@ class Course {
   public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
 }
 
-export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };
+// export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };

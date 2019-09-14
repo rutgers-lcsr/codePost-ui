@@ -54,12 +54,16 @@ interface IState {
 }
 
 class GraderData extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = { showActive: true, showInactive: false, means: {} };
+  public state: Readonly<IState> = {
+    showActive: true,
+    showInactive: false,
+    means: {},
+  };
 
   public componentDidMount() {
-    const newMeans = {};
+    const newMeans: any = {};
     for (const key of Object.keys(this.props.submissionsByAssignment)) {
-      const submissions: SubmissionType[] = this.props.submissionsByAssignment[key];
+      const submissions: SubmissionType[] = this.props.submissionsByAssignment[+key];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of submissions) {
@@ -106,7 +110,7 @@ class GraderData extends React.Component<IProps, IState> {
 
   public toggleValue = (value: string) => {
     this.setState((prevState: IState) => {
-      const newState = { ...prevState };
+      const newState: any = { ...prevState };
       newState[value] = !newState[value];
       return newState;
     });
@@ -121,7 +125,12 @@ class GraderData extends React.Component<IProps, IState> {
       if (this.props.loadComplete) {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
-          { title: 'Expand', dataIndex: 'expand', key: 'expand', align: aligner },
+          {
+            title: 'Expand',
+            dataIndex: 'expand',
+            key: 'expand',
+            align: aligner,
+          },
           {
             title: 'Grader',
             dataIndex: 'grader',
@@ -133,7 +142,10 @@ class GraderData extends React.Component<IProps, IState> {
                 if (this.props.graders.indexOf(grader) > -1) {
                   return (
                     <Highlighter
-                      highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                      highlightStyle={{
+                        backgroundColor: '#5CBB8B',
+                        padding: 0,
+                      }}
                       searchWords={[searchText]}
                       autoEscape
                       textToHighlight={grader}
@@ -143,7 +155,10 @@ class GraderData extends React.Component<IProps, IState> {
                   return (
                     <span style={{ color: '#ccc' }}>
                       <Highlighter
-                        highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
+                        highlightStyle={{
+                          backgroundColor: '#5CBB8B',
+                          padding: 0,
+                        }}
                         searchWords={[searchText]}
                         autoEscape
                         textToHighlight={grader}
@@ -203,7 +218,7 @@ class GraderData extends React.Component<IProps, IState> {
             this.setState({ activeGrader: graderEmail });
           };
 
-          const toRet = {
+          const toRet: any = {
             expand: (
               <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
                 <Icon type="zoom-in" onClick={expandFn} />

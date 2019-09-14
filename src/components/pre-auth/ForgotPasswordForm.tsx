@@ -32,7 +32,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
   public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState = { ...prevstate };
+      const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -44,6 +44,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
 
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
+        // @ts-ignore
         payload.append(key, data[key]);
       }
     }

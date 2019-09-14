@@ -3,11 +3,13 @@ import * as React from 'react';
 // We use ts-ignore since Popover never explicitly used. We just use the classNames
 // @ts-ignore: no-unused-variable
 import { Button, Input, message, Popover, Tooltip } from 'antd';
-const { TextArea } = Input;
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
+import CPTooltip from '../../core/CPTooltip';
+
+import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
 import InlineMarkdown from '../../core/InlineMarkdown';
@@ -28,7 +30,10 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
+const { TextArea } = Input;
+
 interface ICommentProps {
+  additiveGrading: boolean;
   commentType: UICommentType;
   comment: CommentType;
   file: FileType;
@@ -50,6 +55,8 @@ interface ICommentProps {
 
   updateFeedback: (feedback: number) => void;
   studentFeedbackOn: boolean;
+
+  hideAuthor: boolean;
 }
 
 interface ICommentState {
@@ -71,7 +78,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
     if (this.props.rubricComment !== prevProps.rubricComment) {
-      this.setState({ points: UiComment.points(this.props.comment, this.props.rubricComment) });
+      this.setState({
+        points: UiComment.points(this.props.comment, this.props.rubricComment),
+      });
       this.props.setCommentPlacements();
     }
 
@@ -86,7 +95,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
     if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
-      if (this.state.text.length === 0 && this.state.points === 0) {
+      if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
         this.props.onDelete(this.props.comment);
       }
     }
@@ -151,12 +160,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public onPlus = () => {
-    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) + 0.5;
+    const points = this.roundDownToNearestMultiple(this.state.points, 0.5) - 0.5;
+
     this.onChangePointInput(points);
   };
 
   public onMinus = () => {
-    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) - 0.5;
+    const points = this.roundUpToNearestMultiple(this.state.points, 0.5) + 0.5;
     this.onChangePointInput(points);
   };
 
@@ -335,16 +345,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     if (this.props.commentType === 'active') {
+      const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
+
       commentElements.points = (
-        <CPPointInput
-          value={points}
-          size="small"
-          onPlus={this.onPlus}
-          onMinus={this.onMinus}
-          onChange={this.onChangePointInput}
-          disabled={this.props.rubricComment ? true : false}
-          onKeyDown={this.handleShiftEnter}
-        />
+        <CPTooltip title={tooltip} hideThisOnHideTips={true}>
+          <div>
+            <CPPointInput
+              value={-points}
+              size="small"
+              onChange={this.onChangePointInput}
+              disabled={this.props.rubricComment ? true : false}
+              onKeyDown={this.handleShiftEnter}
+              defaultToPositive={this.props.additiveGrading}
+            />
+          </div>
+        </CPTooltip>
       );
       commentElements.comment = (
         <TextArea
@@ -353,7 +368,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           value={this.state.text}
           onChange={this.onChangeText}
           onPressEnter={this.handleShiftEnter}
-          style={{ backgroundColor: this.context.consoleTheme.commentTextArea, color: this.context.consoleTheme.text }}
+          style={{
+            backgroundColor: this.context.consoleTheme.commentTextArea,
+            color: this.context.consoleTheme.text,
+          }}
           autoFocus
         />
       );
@@ -364,7 +382,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
           <span
-            style={{ position: 'absolute', right: '20px', top: '42px', cursor: 'pointer' }}
+            style={{
+              position: 'absolute',
+              right: '20px',
+              top: '42px',
+              cursor: 'pointer',
+            }}
             onClick={this.removeRubricComment}
           >
             X
@@ -484,6 +507,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     // Sets zIndex explicitly to avoid style conflict when modals open on this page
     // Per: https://github.com/ant-design/ant-design/issues/6722
+    // this.context.consoleTheme.commentBody
+    // this.context.consoleTheme.commentBody
     return (
       <div
         className={className}
@@ -495,9 +520,24 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
-          <div className="ant-popover-arrow" style={{ borderColor: this.context.consoleTheme.commentBody }} />
+          <div
+            className="ant-popover-arrow"
+            style={{
+              borderColor:
+                this.props.comment.color !== undefined && this.props.comment.color !== null
+                  ? this.props.comment.color
+                  : this.context.consoleTheme.commentBody,
+            }}
+          />
           <div className="ant-popover-inner" style={shadow}>
-            <div style={{ backgroundColor: this.context.consoleTheme.commentBody }}>
+            <div
+              style={{
+                backgroundColor:
+                  this.props.comment.color !== undefined && this.props.comment.color !== null
+                    ? this.props.comment.color
+                    : this.context.consoleTheme.commentBody,
+              }}
+            >
               <div
                 className="ant-popover-title"
                 style={{
@@ -511,7 +551,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 {commentElements.rubricComment}
                 {commentElements.comment}
               </div>
-              {this.props.commentType !== 'readonly' ? (
+              {this.props.commentType === 'readonly' && this.props.hideAuthor ? null : (
                 <div
                   style={{
                     margin: '0px 20px 0px 20px',
@@ -521,7 +561,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 >
                   <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>

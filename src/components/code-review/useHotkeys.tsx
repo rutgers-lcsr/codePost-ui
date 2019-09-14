@@ -16,6 +16,10 @@ export const O_KEY = 79;
 
 /*******************************************************************************/
 
+export const L_KEY = 76;
+
+/*******************************************************************************/
+
 export enum OS {
   MAC,
   WINDOWS,
@@ -25,14 +29,19 @@ export const getOperatingSystem = () => {
   return navigator.platform.indexOf('Win') > -1 ? OS.WINDOWS : OS.MAC;
 };
 
-const useHotkeys = (hotkey: number, callback: any) => {
+const useHotkeys = (hotkey: number, callback: any, shift?: boolean) => {
   const os = getOperatingSystem();
 
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
       const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
-      if (e.which === hotkey && triggerKey) {
+      let trigger = e.which === hotkey && triggerKey;
+      if (shift !== undefined && shift) {
+        trigger = e.which === hotkey && triggerKey && e.shiftKey;
+      }
+
+      if (trigger) {
         e.preventDefault();
         e.stopPropagation();
         callback();

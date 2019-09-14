@@ -9,6 +9,7 @@ interface IProps {
   collapsed: boolean;
   isSuperGrader: boolean;
   isSectionLeader: boolean;
+  regradesAllowed: boolean;
 }
 
 class GraderNav extends React.Component<IProps, {}> {
@@ -43,6 +44,12 @@ class GraderNav extends React.Component<IProps, {}> {
               <Menu.Item key="2">
                 <Icon type="inbox" />
                 <span>All Submissions</span>
+              </Menu.Item>
+            ) : null}
+            {this.props.regradesAllowed ? (
+              <Menu.Item key="3">
+                <Icon type="message" />
+                <span>Regrade Requests</span>
               </Menu.Item>
             ) : null}
           </Menu>

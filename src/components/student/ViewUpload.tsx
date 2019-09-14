@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
+import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { Button, Layout, Menu, Modal, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
@@ -40,12 +40,9 @@ function ViewUpload(props: IProps) {
     }
   };
 
-  useEffect(
-    () => {
-      fetchUpload();
-    },
-    [props.assignment],
-  );
+  useEffect(() => {
+    fetchUpload();
+  }, [props.assignment]);
 
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
@@ -58,7 +55,7 @@ function ViewUpload(props: IProps) {
   );
 
   return (
-    <Modal visible={props.isVisible} title="Submitted Files" footer={[cancel]} width={1100}>
+    <Modal visible={props.isVisible} title="Submitted Files" onCancel={props.onCancel} footer={[cancel]} width={1100}>
       {!loadComplete ? (
         <Spin />
       ) : files.length === 0 ? (

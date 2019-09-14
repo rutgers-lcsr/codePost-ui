@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* ant imports */
 import { Layout } from 'antd';
-const { Header, Sider } = Layout;
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -23,6 +22,8 @@ import layoutVars from '../../../styles/layout/_layoutVars';
 import useBrowserNotification from '../../core/useBrowserNotification';
 import useFixedWindow from '../../core/useFixedWindow';
 import useWindowSize from '../../core/useWindowSize';
+
+const { Header, Sider } = Layout;
 
 /**********************************************************************************************************************/
 
@@ -81,7 +82,12 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
               </div>
             )}
           </Header>
-          <div style={{ maxHeight: windowSize.height - 64 - 85 - 48, overflow: 'auto' }}>
+          <div
+            style={{
+              maxHeight: windowSize.height - 64 - 85 - 48,
+              overflow: 'auto',
+            }}
+          >
             {props.navigation(collapsed)}
           </div>
         </Sider>

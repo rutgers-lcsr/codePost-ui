@@ -6,7 +6,7 @@ phases:
   install:
     commands:
       - echo "install step"
-      - npm i
+      - npm install
   pre_build:
     commands:
       - echo "pre_build step"
