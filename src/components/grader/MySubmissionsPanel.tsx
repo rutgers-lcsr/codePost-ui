@@ -451,7 +451,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
               <Popconfirm
                 title="Are you sure you want to unclaim this submission?"
                 onConfirm={releaseSubmission}
-                okText="Unclaim"
+                okText={sub.isFinalized ? 'Unclaim and unfinalize' : 'Unclaim'}
                 cancelText="Cancel"
                 placement="left"
               >
