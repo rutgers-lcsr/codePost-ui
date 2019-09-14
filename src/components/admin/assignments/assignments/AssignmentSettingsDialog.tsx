@@ -174,7 +174,7 @@ const CollectionCreateForm: any = Form.create()(
           okText="Save"
           onCancel={onCancel}
           onOk={onSave}
-          width={'70%'}
+          width={'60%'}
         >
           <Form layout="horizontal" hideRequiredMark={true}>
             <Form.Item
@@ -327,7 +327,7 @@ const CollectionCreateForm: any = Form.create()(
               extra={
                 <div>
                   <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
-                  published.\ Ideal for office hours or ungraded feedback.
+                  published. Ideal for office hours or ungraded feedback.
                 </div>
               }
               labelCol={{ span: 6 }}
@@ -360,7 +360,7 @@ const CollectionCreateForm: any = Form.create()(
                   <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
                 </div>
               }
-              labelCol={{ span: 8 }}
+              labelCol={{ span: 6 }}
               wrapperCol={{ span: 15 }}
             >
               {getFieldDecorator('forcedRubricMode', {
