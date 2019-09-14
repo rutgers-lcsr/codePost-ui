@@ -325,7 +325,7 @@ const CollectionCreateForm: any = Form.create()(
               extra={
                 <div>
                   <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized or
-                  published.\ Ideal for office hours or ungraded feedback.
+                  published. Ideal for office hours or ungraded feedback.
                 </div>
               }
               labelCol={{ span: 6 }}
