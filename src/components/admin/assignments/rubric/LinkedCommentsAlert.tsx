@@ -51,7 +51,10 @@ const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
       <br />
       <b>Comment</b>: {props.rubricComment.text}
       <br />
-      Applied to {props.rubricComment.comments.length} submissions
+      <br />
+      {`> Applied to ${props.rubricComment.comments.length} submission${
+        props.rubricComment.comments.length === 1 ? '' : 's'
+      }`}
       <br />
       <br />
       <br />
