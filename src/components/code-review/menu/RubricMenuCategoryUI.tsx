@@ -230,57 +230,64 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
     </Popover>
   ) : null;
 
-  // FIXME: https://github.com/ant-design/ant-design/issues/4853
   return (
-    <SubMenu
-      key={`category-${props.rubricCategory.id}`}
-      title={
-        <div
-          style={{
-            position: 'absolute',
-            width: '100%',
-            paddingLeft: '20px',
-            backgroundColor: consoleTheme.siderSubmenuTitleBg,
-            color: consoleTheme.siderSubmenuTitleColor,
-            borderBottom: consoleTheme.siderSubmenuBorder,
-          }}
-        >
-          <div style={{ paddingRight: '30px' }}>
-            <div className="display-flex justify-content-space-between">
-              {props.editRubricMode ? (
-                <Input
-                  value={state.name}
-                  onChange={helpers.changeName}
-                  onBlur={helpers.saveCategory}
-                  ref={helpers.nameInput}
-                  style={{ height: '27px', width: '60%', alignSelf: 'center' }}
-                />
-              ) : (
-                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
-              )}
-              <span style={{ float: 'right' }}>{capTag}</span>
+    <Menu
+      defaultOpenKeys={[`category-${props.rubricCategory.id}`]}
+      selectedKeys={[]}
+      mode="inline"
+      className="rubric-menu"
+      style={{ backgroundColor: consoleTheme.siderBg }}
+    >
+      <SubMenu
+        key={`category-${props.rubricCategory.id}`}
+        title={
+          <div
+            style={{
+              position: 'absolute',
+              width: '100%',
+              paddingLeft: '20px',
+              backgroundColor: consoleTheme.siderSubmenuTitleBg,
+              color: consoleTheme.siderSubmenuTitleColor,
+              borderBottom: consoleTheme.siderSubmenuBorder,
+            }}
+          >
+            <div style={{ paddingRight: '30px' }}>
+              <div className="display-flex justify-content-space-between">
+                {props.editRubricMode ? (
+                  <Input
+                    value={state.name}
+                    onChange={helpers.changeName}
+                    onBlur={helpers.saveCategory}
+                    ref={helpers.nameInput}
+                    style={{ height: '27px', width: '60%', alignSelf: 'center', fontWeight: 500 }}
+                  />
+                ) : (
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
+                )}
+                <span style={{ float: 'right' }}>{capTag}</span>
+              </div>
             </div>
           </div>
-        </div>
-      }
-      {...otherProps}
-    >
-      {rows}
-      {props.editRubricMode ? (
-        <Menu.Item
-          key={`comment-${props.rubricCategory.id}-add`}
-          style={{
-            backgroundColor: consoleTheme.siderBg,
-            color: consoleTheme.siderMenuItemColor,
-            textAlign: 'center',
-          }}
-        >
-          <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={helpers.addComment}>
-            Add
-          </Button>
-        </Menu.Item>
-      ) : null}
-    </SubMenu>
+        }
+        {...otherProps}
+      >
+        {rows}
+        {props.editRubricMode ? (
+          <Menu.Item
+            key={`comment-${props.rubricCategory.id}-add`}
+            style={{
+              backgroundColor: consoleTheme.siderBg,
+              color: consoleTheme.siderMenuItemColor,
+              textAlign: 'center',
+            }}
+          >
+            <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={helpers.addComment}>
+              Add
+            </Button>
+          </Menu.Item>
+        ) : null}
+      </SubMenu>
+    </Menu>
   );
 };
 

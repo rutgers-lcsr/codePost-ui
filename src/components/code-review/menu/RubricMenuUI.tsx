@@ -298,22 +298,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   if (state.loadComplete) {
     const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
 
-    const rubricKeys = state.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-      return `category-${rubricCategory.id}`;
-    });
-
-    content = (
-      <Menu
-        defaultOpenKeys={rubricKeys}
-        selectedKeys={[]}
-        mode="inline"
-        className="rubric-menu"
-        id="rubric-menu"
-        style={{ backgroundColor: consoleTheme.siderBg }}
-      >
-        {rubricMenu}
-      </Menu>
-    );
+    content = <div id="rubric-menu">{rubricMenu}</div>;
   }
 
   return (
