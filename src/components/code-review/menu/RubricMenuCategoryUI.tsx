@@ -247,7 +247,17 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
         >
           <div style={{ paddingRight: '30px' }}>
             <div className="display-flex justify-content-space-between">
-              <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
+              {props.editRubricMode ? (
+                <Input
+                  value={state.name}
+                  onChange={helpers.changeName}
+                  onBlur={helpers.saveCategory}
+                  ref={helpers.nameInput}
+                  style={{ height: '27px', width: '60%', alignSelf: 'center' }}
+                />
+              ) : (
+                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
+              )}
               <span style={{ float: 'right' }}>{capTag}</span>
             </div>
           </div>
@@ -256,18 +266,20 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
       {...otherProps}
     >
       {rows}
-      <Menu.Item
-        key={`comment-${props.rubricCategory.id}-add`}
-        style={{
-          backgroundColor: consoleTheme.siderBg,
-          color: consoleTheme.siderMenuItemColor,
-          textAlign: 'center',
-        }}
-      >
-        <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={helpers.addComment}>
-          Add
-        </Button>
-      </Menu.Item>
+      {props.editRubricMode ? (
+        <Menu.Item
+          key={`comment-${props.rubricCategory.id}-add`}
+          style={{
+            backgroundColor: consoleTheme.siderBg,
+            color: consoleTheme.siderMenuItemColor,
+            textAlign: 'center',
+          }}
+        >
+          <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={helpers.addComment}>
+            Add
+          </Button>
+        </Menu.Item>
+      ) : null}
     </SubMenu>
   );
 };

@@ -302,8 +302,12 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     }
   };
 
-  public changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setValue('name', event.target.value);
+  public changeName = (event: React.ChangeEvent<HTMLInputElement> | string) => {
+    if (typeof event === 'string') {
+      this.setValue('name', event);
+    } else {
+      this.setValue('name', event.target.value);
+    }
   };
 
   public changeHelpText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

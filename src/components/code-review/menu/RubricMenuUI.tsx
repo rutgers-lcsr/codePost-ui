@@ -207,20 +207,6 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
         <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
           Add Category
         </CPButton>
-        <LinkedCommentsAlert
-          rubricComment={state.linkedComments[0]}
-          onDelete={onDelete}
-          onUnLink={onUnLink}
-          onCancel={helpers.onLinkedAlertCancel}
-          isVisible={state.linkedComments.length > 0}
-        />
-        <LinkedCommentsConfirm
-          onAccept={onLinkedConfirmAccept}
-          onCancel={helpers.onLinkedConfirmCancel}
-          isVisible={state.showConfirmDialog}
-          unsavedComments={state.unsavedComments}
-          savedRubricComments={state.rubricComments}
-        />
       </Popconfirm>,
       <div key="gap1" style={{ width: '10px' }} />,
       <CPButton
@@ -245,6 +231,22 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       >
         Save
       </CPButton>,
+      <div key="modals">
+        <LinkedCommentsAlert
+          rubricComment={state.linkedComments[0]}
+          onDelete={onDelete}
+          onUnLink={onUnLink}
+          onCancel={helpers.onLinkedAlertCancel}
+          isVisible={state.linkedComments.length > 0}
+        />
+        <LinkedCommentsConfirm
+          onAccept={onLinkedConfirmAccept}
+          onCancel={helpers.onLinkedConfirmCancel}
+          isVisible={state.showConfirmDialog}
+          unsavedComments={state.unsavedComments}
+          savedRubricComments={state.rubricComments}
+        />
+      </div>,
     ];
 
     controls = controlButtons;
