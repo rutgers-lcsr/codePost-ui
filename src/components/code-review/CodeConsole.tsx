@@ -838,7 +838,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public calculateGradeFromState = (): number | undefined => {
-    if (!this.state.submission || !this.state.assignment) {
+    if (!(this.state.submission || this.state.readOnlySubmission) || !this.state.assignment) {
       return undefined;
     }
 
