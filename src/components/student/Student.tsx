@@ -707,7 +707,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       <Link className="internal-link" key="settings" to="/settings">
         <Icon type="setting" />
       </Link>,
-      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
+      <Button key="header-logout" onClick={this.props.handleLogout}>
         Logout
       </Button>,
     ];
