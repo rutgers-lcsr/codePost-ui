@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Spin, Tag, Typography } from 'antd';
+import { Button, Icon, Menu, Modal, Spin, Tag, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -61,6 +61,7 @@ interface IStudentState {
 
   currentPanel: CURRENT_PANEL;
   detailAssignment?: AssignmentType;
+  detailSubmission?: StudentSubmissionType;
 }
 
 enum SUBMISSION_STATUS {
@@ -99,6 +100,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       isLoadingSubmissions: true,
       currentPanel: CURRENT_PANEL.TABLE,
       detailAssignment: undefined,
+      detailSubmission: undefined,
     };
   }
 
@@ -300,8 +302,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     };
   };
 
-  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType) => {
-    this.setState({ currentPanel: newPanel, detailAssignment: assignment });
+  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType, submission?: StudentSubmissionType) => {
+    this.setState({ currentPanel: newPanel, detailAssignment: assignment, detailSubmission: submission });
   };
 
   public getFileExtension = (fileName: string): string => {
@@ -337,6 +339,23 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     this.setState({ submissions });
   };
 
+  public onUploadSuccess = () => {
+    const assignment = this.state.detailAssignment;
+    const submissions = assignment ? this.state.submissions[assignment.id] : undefined;
+
+    if (!assignment || !submissions || !submissions[0]) {
+      this.changePanel(CURRENT_PANEL.TABLE, undefined);
+      return;
+    }
+
+    if (assignment.liveFeedbackMode) {
+      openSubmission(submissions[0].id);
+      this.changePanel(CURRENT_PANEL.TABLE, undefined);
+    } else {
+      this.changePanel(CURRENT_PANEL.VIEWFILES, assignment, undefined);
+    }
+  };
+
   public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
     if (!assignment.allowStudentUpload) {
       // Case 0: Student upload not allowed
@@ -352,7 +371,21 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           icon="upload"
           type="primary"
           style={{ maxWidth: 180 }}
-          onClick={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment)}
+          onClick={() => {
+            if (submission && assignment.liveFeedbackMode) {
+              Modal.confirm({
+                title: 'Confirm File Replacement',
+                content: `Replacing your files will delete existing files, including any comments on those files.
+                  If you want to add a file to your submission click 'Add Files' instead.
+                  Are you sure you want to continue?`,
+                okText: 'Continue',
+                cancelText: 'Cancel',
+                onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+              });
+            } else {
+              this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
+            }
+          }}
         >
           {text}
         </Button>
@@ -366,7 +399,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       <Button
         icon="plus"
         style={{ maxWidth: 160 }}
-        onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment)}
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
       >
         Add files
       </Button>
@@ -379,7 +412,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       <Button
         icon="eye"
         style={{ maxWidth: 160 }}
-        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment)}
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment, undefined)}
       >
         View files
       </Button>
@@ -685,13 +718,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               this.state.currentPanel === CURRENT_PANEL.UPLOADFILES ||
               this.state.currentPanel === CURRENT_PANEL.ADDFILES
             }
-            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
             assignments={[]}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
-            selectedStudents={[this.props.user.email]}
+            selectedStudents={
+              this.state.detailSubmission && this.state.detailSubmission.students
+                ? this.state.detailSubmission.students
+                : [this.props.user.email]
+            }
             submissions={{}}
             uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
+            disableStudentSelect={true}
+            onSuccess={this.onUploadSuccess}
           />
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}

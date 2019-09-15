@@ -23,6 +23,8 @@ import { tooltips } from '../../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import CodeConsole from '../CodeConsole';
+
 import layoutVars from '../../../styles/layout/_layoutVars';
 
 import Badge from '../../core/Badge';
@@ -245,19 +247,25 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   // OLD VERSIONS MENU BUILD
   public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
     const { oldVersionsMap } = this.state;
-    const items = oldVersions.map((f2: FileType) => {
+
+    const sortedOldVersions = oldVersions.sort((f1: FileType, f2: FileType) => {
+      return f1.id - f2.id;
+    });
+
+    const items = sortedOldVersions.map((f2: FileType) => {
       const numComments = this.getNumCommentsInFile(f2);
       return (
         <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
           {
             <div className="display-flex align-items-center justify-content-space-between">
-              {moment(f2.created).format('llll')}
-              <Badge count={numComments} forcedStyle="neutral" size="small" />
+              {moment(f2.created).format('lll')}
+              {numComments > 0 ? <Badge count={numComments} forcedStyle="neutral" size="small" /> : <div />}
             </div>
           }
         </Menu.Item>
       );
     });
+    const currentFileNumComments = this.getNumCommentsInFile(currentFile);
     const menu = (
       <UnsavedCommentsPopconfirm
         changeSelectedFile={this.props.changeSelectedFile}
@@ -271,7 +279,22 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
           defaultOpenKeys={[`${path}-old-versions`]}
           style={{ minWidth: 280 }}
         >
-          <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
+          <Menu.SubMenu key={`${path}-old-versions`} title="File History">
+            <Menu.Item key={`file-${currentFile.id}`} style={{ minWidth: 200 }}>
+              {
+                <div className="display-flex align-items-center justify-content-space-between">
+                  <div style={{ lineHeight: 1.5, marginTop: 4 }}>
+                    <div style={{ fontSize: 10, fontStyle: 'italic' }}>Current Version</div>
+                    <div>{moment(currentFile.created).format('lll')}</div>
+                  </div>
+                  {currentFileNumComments > 0 ? (
+                    <Badge count={currentFileNumComments} forcedStyle="neutral" size="small" />
+                  ) : (
+                    <div />
+                  )}
+                </div>
+              }
+            </Menu.Item>
             {items}
           </Menu.SubMenu>
         </Menu>
@@ -279,10 +302,16 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     );
 
     return (
-      <Dropdown overlay={menu} trigger={['hover']}>
+      <Dropdown overlay={menu} placement="bottomCenter" trigger={['hover']}>
         <AntBadge
           count={oldVersionsMap[path].length + 1}
-          style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
+          style={{
+            backgroundColor: '#fff',
+            color: '#999',
+            boxShadow: '0 0 0 1px #d9d9d9 inset',
+            marginLeft: 6,
+            borderRadius: 0,
+          }}
         />
       </Dropdown>
     );
@@ -382,7 +411,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               lineHeight: '12px',
             }}
           >
-            {oldVersionsMenu}
             <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
@@ -397,6 +425,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             >
               {file.name}
             </div>
+            {oldVersionsMenu}
           </div>
           {this.buildFileBadges(file, shrunkSider)}
         </Menu.Item>
@@ -538,18 +567,36 @@ interface IFileMenuTitleProps {
 export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  const numUniqueFiles = CodeConsole.filterCurrentFileVersions(props.files)[0].size;
+  const badge = (
+    <AntBadge
+      style={{
+        backgroundColor: consoleTheme.siderBg,
+        color: consoleTheme.commentRubricCommentNeutral,
+        boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
+      }}
+      count={numUniqueFiles}
+    />
+  );
+
+  const numOldVersions = props.files.length - numUniqueFiles;
+
   return (
     <span>
       Files
       <div style={{ display: 'inline-block', marginLeft: '8px', position: 'absolute', transform: 'translateY(-6%)' }}>
-        <AntBadge
-          style={{
-            backgroundColor: consoleTheme.siderBg,
-            color: consoleTheme.commentRubricCommentNeutral,
-            boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
-          }}
-          count={props.files.length}
-        />
+        {numOldVersions ? (
+          <CPTooltip
+            title={`This submission contains ${numOldVersions} older version${
+              numOldVersions > 1 ? 's' : ''
+            } of these files.`}
+            placement="right"
+          >
+            {badge}
+          </CPTooltip>
+        ) : (
+          badge
+        )}
       </div>
     </span>
   );
