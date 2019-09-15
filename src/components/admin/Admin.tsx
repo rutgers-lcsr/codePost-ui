@@ -1269,7 +1269,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <Icon type="setting" />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" size="small" onClick={this.props.logout}>
+      <Button key="header-logout" onClick={this.props.logout}>
         Logout
       </Button>,
     ];

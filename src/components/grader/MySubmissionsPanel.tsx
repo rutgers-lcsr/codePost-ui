@@ -35,6 +35,9 @@ type alignType = 'left' | 'right' | 'center';
 
 const { Option } = Select;
 
+// 5 minute interval for automatic reload
+const LOADING_INTERVAL = 15000;
+
 /**********************************************************************************************************************/
 
 /* for type checking functions that operate on table rows */
@@ -74,6 +77,9 @@ interface IState {
 }
 
 class MySubmissionsPanel extends React.Component<IProps, IState> {
+  // @ts-ignore
+  private interval: number;
+
   public constructor(props: IProps) {
     super(props);
     this.state = {
@@ -96,6 +102,9 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
 
   public componentDidMount() {
     this.changeAssignment(this.props.assignment);
+    this.interval = window.setInterval(() => {
+      this.changeAssignment(this.props.assignment);
+    }, LOADING_INTERVAL);
   }
 
   public componentDidUpdate(oldProps: IProps) {
