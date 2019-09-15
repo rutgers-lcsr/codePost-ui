@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, Menu, message } from 'antd';
+import { Empty, Icon, Menu, message } from 'antd';
 import queryString from 'query-string';
 
 /* codePost imports */
@@ -46,6 +46,8 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import { openSubmission } from '../admin/other/AdminUtils';
+
 import { sendSlack } from '../core/slack';
 
 import {
@@ -64,8 +66,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { demoFiles } from './demoCode';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 /**********************************************************************************************************************/
 
@@ -1067,6 +1067,39 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   /***********************************************************************************
+  /* Claim from console feature (triggered via console menu)
+  /**********************************************************************************/
+
+  public fetchSubmission = async (assignment: AssignmentType): Promise<AnonymousSubmissionType | undefined> => {
+    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        return json;
+      });
+  };
+
+  public claimSubmission = async () => {
+    if (this.state.assignment) {
+      const submission = await this.fetchSubmission(this.state.assignment);
+      if (submission !== undefined) {
+        openSubmission(submission.id);
+        message.success('Successfully claimed another submission. Start reviewing!');
+      } else {
+        message.success('The ungraded queue is empty, so there are no more submissions to claim.');
+      }
+    }
+  };
+
+  /***********************************************************************************
   /* Render
   /**********************************************************************************/
 
@@ -1141,50 +1174,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       /*********************************************************
       /* Build header
       /*********************************************************/
-      const groupStyle = {
-        padding: '5px 20px',
-        lineHeight: '40px',
-        fontSize: '14px',
-        color: '#8d9298',
-        background: '#f4f4f4',
-        fontWeight: 600,
-        cursor: 'default',
-      };
-      const itemStyle = {
-        padding: '5px 20px',
-        lineHeight: '35px',
-        fontSize: '14px',
-        cursor: 'pointer',
-      };
-
-      const openIntercom = () => {
-        (window as any).Intercom('show');
-      };
-
-      const menu = (
-        <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
-          <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
-            Code Review Console
-          </Menu.Item>
-          {this.state.isStudent ? null : (
-            <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-              <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-            </Menu.Item>
-          )}
-          <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
-            Help! (talk to a human from codePost)
-          </Menu.Item>
-          <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
-            Other
-          </Menu.Item>
-          <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
-            <a href="/">Home</a>
-          </Menu.Item>
-          <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-            <a href="/logout">Logout</a>
-          </Menu.Item>
-        </Menu>
-      );
 
       middleHeader = [
         <GradeButton
@@ -1284,7 +1273,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1351,7 +1340,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1381,7 +1370,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"
