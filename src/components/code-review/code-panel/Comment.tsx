@@ -221,6 +221,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public delete = async (e: any) => {
     try {
+      if (this.saveTimeout) {
+        clearTimeout(this.saveTimeout);
+      }
       e.preventDefault();
       e.stopPropagation();
       await this.props.onDelete(this.props.comment);
