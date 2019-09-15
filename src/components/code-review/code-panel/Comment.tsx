@@ -93,8 +93,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.setState(this.init());
     }
 
-    // If the comment is a new comment, and if the file is the same (not switching of files), activate this comment
-    if (prevProps.comment.id !== this.props.comment.id && prevProps.file.id === this.props.file.id) {
+    // If the comment is a new comment, and was previously active, and if the file is the same (not switching of files), activate this comment
+    if (
+      prevProps.comment.id !== this.props.comment.id &&
+      prevProps.commentType === 'active' &&
+      prevProps.file.id === this.props.file.id
+    ) {
       this.activate();
     }
 
