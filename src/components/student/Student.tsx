@@ -474,10 +474,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
             {dueDateText}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              {viewButton}
               <div style={{ marginLeft: 15 }} />
               {uploadButton('Replace Files')}
               <div style={{ marginLeft: 15 }} />
+              {viewButton}
               {addFileButton}
             </div>
           </div>
