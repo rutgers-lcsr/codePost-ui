@@ -318,9 +318,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   };
 
   // FILE MENU HELPER - BADGE STYLING
-  public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
-    const [deductions, bonuses] = this.props.getPointsInFile(file);
-    const commentCount = this.getNumCommentsInFile(file);
+  public buildFileBadges = (file: FileType, commentCount: number, deductions: number, bonuses: number) => {
     let faded = true;
     if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
       faded = false;
@@ -348,9 +346,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       bonusBadge = null;
     }
 
-    const badgesStyle: React.CSSProperties = !shrunkSider
-      ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
-      : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+    const badgesStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '0px', width: '96px' };
 
     return (
       <div style={badgesStyle}>
@@ -393,7 +389,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             fontSize: '9px',
             color: '#ccc',
             position: 'absolute',
-            right: '-28px',
+            right: '-27px',
             top: '10px',
           };
       /* tslint:enable */
@@ -402,6 +398,9 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       const sortedIndex = sortedFiles.findIndex((f) => {
         return f.id === file.id;
       });
+
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
+      const commentCount = this.getNumCommentsInFile(file);
 
       const menuItem = (
         <div>
@@ -429,12 +428,9 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             </div>
             {oldVersionsMenu}
           </div>
-          {!shrunkSider ? this.buildFileBadges(file, shrunkSider) : <div />}
+          {!shrunkSider ? this.buildFileBadges(file, commentCount, deductions, bonuses) : <div />}
         </div>
       );
-
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
-      const commentCount = this.getNumCommentsInFile(file);
 
       const badgeStyle = {
         fontSize: 10,
