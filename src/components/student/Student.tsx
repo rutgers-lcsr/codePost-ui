@@ -74,6 +74,7 @@ enum CURRENT_PANEL {
   TABLE,
   VIEWFILES,
   UPLOADFILES,
+  ADDFILES,
 }
 
 export interface IStudentProps extends IWithWindowWatcherProps {
@@ -309,12 +310,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   };
 
   // Upload a submission as a student
-  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+  public uploadSubmission = async (isNew: boolean, assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       return Promise.reject();
     }
 
-    const formattedFiles = files.map((file) => {
+    let formattedFiles = files.map((file) => {
       return {
         name: file.name,
         code: file.data,
@@ -327,13 +328,13 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       files: formattedFiles,
     };
 
-    const submission = AssignmentStudent.updateStudentUpload(payload).then((sub) => {
-      const submissions = this.state.submissions;
-      submissions[assignment.id] = [sub];
-      this.setState({ submissions });
-    });
+    const submission1 = isNew
+      ? await AssignmentStudent.createStudentUpload(payload)
+      : await AssignmentStudent.updateStudentUpload(payload);
 
-    return submission;
+    const submissions = this.state.submissions;
+    submissions[assignment.id] = [submission1];
+    this.setState({ submissions });
   };
 
   public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
@@ -357,6 +358,19 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         </Button>
       );
     };
+
+    // If the assignment is in live feedback mode, allow students to add file verisons
+    const addFileButton = !assignment.liveFeedbackMode ? (
+      <div />
+    ) : (
+      <Button
+        icon="plus"
+        style={{ maxWidth: 160 }}
+        onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment)}
+      >
+        Add files
+      </Button>
+    );
 
     // If live feedback mode is on, we don't want to show the view files button
     const viewButton = assignment.liveFeedbackMode ? (
@@ -430,6 +444,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
               {viewButton}
               <div style={{ marginLeft: 15 }} />
               {uploadButton('Replace Files')}
+              <div style={{ marginLeft: 15 }} />
+              {addFileButton}
             </div>
           </div>
         );
@@ -665,14 +681,17 @@ class Student extends React.Component<IStudentProps, IStudentState> {
             tableProps={{ rowClassName, bordered: true }}
           />
           <UploadSubmissionDialog
-            isVisible={this.state.currentPanel === CURRENT_PANEL.UPLOADFILES}
+            isVisible={
+              this.state.currentPanel === CURRENT_PANEL.UPLOADFILES ||
+              this.state.currentPanel === CURRENT_PANEL.ADDFILES
+            }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
             assignments={[]}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
             selectedStudents={[this.props.user.email]}
             submissions={{}}
-            uploadSubmission={this.uploadSubmission}
+            uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
           />
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}

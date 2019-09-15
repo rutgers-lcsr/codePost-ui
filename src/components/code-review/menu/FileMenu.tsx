@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Icon, Menu, Popconfirm } from 'antd';
+import { Badge as AntBadge, Dropdown, Icon, Menu, Popconfirm, Tag } from 'antd';
+
+import moment from 'moment';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
@@ -28,6 +30,8 @@ import Badge from '../../core/Badge';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 import { getOperatingSystem, OS } from '../useHotkeys';
+
+import { slack } from '../../core/slack';
 
 const { SubMenu } = Menu;
 
@@ -60,16 +64,28 @@ interface IFileMenuState {
   // Storing both of these in state for speed (avoid recreating directory on each render)
   directoryStructure: IDirectoryStructure; // The nested directory of the files, after path is parsed
   sortedFiles: FileType[]; // The ordered array of files that will be visually rendered (for shortcut mapping)
+  oldVersionsMap: { [path: string]: FileType[] };
 }
 
 class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   public constructor(props: IFileMenuProps) {
     super(props);
-    const directoryStructure = this.createDirectoryStructure(props.files);
+    const separatedFiles = this.separateFilesByVersion(props.files);
+    const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
     const sortedFiles = this.sortFiles(directoryStructure);
+    const oldVersionsMap = separatedFiles.old;
+    if (oldVersionsMap) {
+      const payload = {
+        message: `File versioning:`,
+        url: window.location.href,
+        channel: '#user_notifications_beta_use',
+      };
+      slack(`${process.env.REACT_APP_API_URL}/log/`, payload);
+    }
     this.state = {
       directoryStructure,
       sortedFiles,
+      oldVersionsMap,
     };
     if (sortedFiles.length > 0) {
       // If the file has a directory, then the order of the files in the UI might be different than the order passed in
@@ -80,9 +96,10 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
   public componentDidUpdate(prevProps: IFileMenuProps) {
     if (prevProps.files !== this.props.files) {
-      const fileStructure = this.createDirectoryStructure(this.props.files);
-      const orderedFiles = this.sortFiles(fileStructure);
-      this.setState({ directoryStructure: fileStructure, sortedFiles: orderedFiles });
+      const separatedFiles = this.separateFilesByVersion(this.props.files);
+      const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
+      const sortedFiles = this.sortFiles(directoryStructure);
+      this.setState({ directoryStructure, sortedFiles, oldVersionsMap: separatedFiles.old });
     }
   }
 
@@ -111,7 +128,32 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     this.props.changeSelectedFile(fileID);
   };
 
-  /**************************** File Menu Functions *************************************/
+  /**************************** FILE VERSIONING AND DIRECTORY HELPERS*************************************/
+  // Go through the list of files and separate the latest files from the old files
+  public separateFilesByVersion = (files: FileType[]) => {
+    const olderFiles: { [pathName: string]: FileType[] } = {};
+    const latestFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path : ''}/${file.name}`;
+      if (!latestFiles[path]) latestFiles[path] = file;
+      else {
+        if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
+          const oldLatest = latestFiles[path];
+          olderFiles[path] ? olderFiles[path].push(oldLatest) : (olderFiles[path] = [oldLatest]);
+          latestFiles[path] = file;
+        } else olderFiles[path] ? olderFiles[path].push(file) : (olderFiles[path] = [file]);
+      }
+    });
+
+    const latestFilesArr: FileType[] = [];
+    Object.keys(latestFiles).forEach((path) => {
+      const file = latestFiles[path];
+      latestFilesArr.push(file);
+    });
+
+    return { new: latestFilesArr, old: olderFiles };
+  };
+
   // Create a nested directory corresponding to the folder and file structure
   public createDirectoryStructure = (files: FileType[]) => {
     const root: IDirectoryStructure = { folders: [], files: [] };
@@ -185,76 +227,135 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     return sortedFiles;
   };
 
-  // Recursive function to build a Sub Menu for a folder
-  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
-    const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
-    const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
-    return (
-      <SubMenu
-        key={`${parentPath}'/'${folder.name}`}
-        title={
-          <div>
-            <Icon type="folder" />
-            {folder.name}
-          </div>
-        }
-        className={className}
+  /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
+  // Get the latest number of comments in a file (file.comments might be out of date because
+  //   we re-calculate sort on change of props.file, which doesn't update when comments change
+  public getNumCommentsInFile = (file: FileType) => {
+    let commentCount;
+    if (this.props.comments === undefined) {
+      commentCount = file.comments.length;
+    } else {
+      commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
+        return comment.id > 0;
+      }).length;
+    }
+    return commentCount;
+  };
+
+  // OLD VERSIONS MENU BUILD
+  public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
+    const { oldVersionsMap } = this.state;
+    const items = oldVersions.map((f2: FileType) => {
+      const numComments = this.getNumCommentsInFile(f2);
+      return (
+        <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
+          {
+            <div className="display-flex align-items-center justify-content-space-between">
+              {moment(f2.created).format('llll')}
+              <Badge count={numComments} forcedStyle="neutral" size="small" />
+            </div>
+          }
+        </Menu.Item>
+      );
+    });
+    const menu = (
+      <UnsavedCommentsPopconfirm
+        changeSelectedFile={this.props.changeSelectedFile}
+        canChange={this.props.canChange}
+        oldVersions={true}
       >
-        {fileItems}
-        {folder.folders.map((f: IFolder) => {
-          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
-        })}
-      </SubMenu>
+        <Menu
+          mode="inline"
+          inlineCollapsed={false}
+          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
+          defaultOpenKeys={[`${path}-old-versions`]}
+          style={{ minWidth: 280 }}
+        >
+          <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
+            {items}
+          </Menu.SubMenu>
+        </Menu>
+      </UnsavedCommentsPopconfirm>
+    );
+
+    return (
+      <Dropdown overlay={menu} trigger={['hover']}>
+        <AntBadge
+          count={oldVersionsMap[path].length + 1}
+          style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
+        />
+      </Dropdown>
     );
   };
 
-  // Build a list of Menu.Items from a set of files
+  // FILE MENU HELPER - BADGE STYLING
+  public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
+    const [deductions, bonuses] = this.props.getPointsInFile(file);
+    const commentCount = this.getNumCommentsInFile(file);
+    let faded = true;
+    if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
+      faded = false;
+    }
+
+    let commentCountBadge = null;
+    if (commentCount > 0) {
+      commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
+    } else {
+      commentCountBadge = null;
+    }
+
+    let deductionBadge = null;
+    let bonusBadge = null;
+
+    if (deductions > 0) {
+      deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
+    } else {
+      deductionBadge = null;
+    }
+
+    if (bonuses > 0) {
+      bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
+    } else {
+      bonusBadge = null;
+    }
+
+    const badgesStyle: React.CSSProperties = !shrunkSider
+      ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
+      : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+
+    return (
+      <div style={badgesStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {!this.props.hidePoints ? (
+            <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+              <div>{bonusBadge}</div>
+            </CPTooltip>
+          ) : null}
+          {!this.props.hidePoints ? (
+            <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+              <div>{deductionBadge}</div>
+            </CPTooltip>
+          ) : null}
+          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+            <div>{commentCountBadge}</div>
+          </CPTooltip>
+        </div>
+      </div>
+    );
+  };
+
+  // FILE MEN BUILD
   public buildFileMenu = (files: FileType[], sortedFiles: FileType[]) => {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
+    const { oldVersionsMap } = this.state;
 
     return files.map((file: FileType) => {
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
+      let oldVersionsMenu: any = null;
+      const path = `${file.path ? file.path : ''}/${file.name}`;
 
-      let commentCount = 0;
-      if (this.props.comments === undefined) {
-        commentCount = file.comments.length;
-      } else {
-        commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-          return comment.id > 0;
-        }).length;
+      if (oldVersionsMap[path]) {
+        oldVersionsMenu = this.buildOldVersionsMenu(file, oldVersionsMap[path], path);
       }
-
-      let faded = true;
-      if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-        faded = false;
-      }
-
-      let commentCountBadge = null;
-      if (commentCount > 0) {
-        commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
-      } else {
-        commentCountBadge = null;
-      }
-
-      let deductionBadge = null;
-      let bonusBadge = null;
-
-      if (deductions > 0) {
-        deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
-      } else {
-        deductionBadge = null;
-      }
-
-      if (bonuses > 0) {
-        bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
-      } else {
-        bonusBadge = null;
-      }
-
-      const badgesStyle: React.CSSProperties = !shrunkSider
-        ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
-        : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
 
       /* tslint:disable */
       const shortcutStyle: React.CSSProperties = !shrunkSider
@@ -281,6 +382,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               lineHeight: '12px',
             }}
           >
+            {oldVersionsMenu}
             <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
@@ -296,34 +398,41 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               {file.name}
             </div>
           </div>
-
-          <div style={badgesStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              {!this.props.hidePoints ? (
-                <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-                  <div>{bonusBadge}</div>
-                </CPTooltip>
-              ) : null}
-              {!this.props.hidePoints ? (
-                <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-                  <div>{deductionBadge}</div>
-                </CPTooltip>
-              ) : null}
-              <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-                <div>{commentCountBadge}</div>
-              </CPTooltip>
-            </div>
-          </div>
+          {this.buildFileBadges(file, shrunkSider)}
         </Menu.Item>
       );
     });
   };
 
-  /**************************** Render *************************************/
+  // FOLDER MENU BUILD
+  public buildFolderMenu = (parentPath: string, folder: { name: string; files: FileType[]; folders: IFolder[] }) => {
+    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+    const className = theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
+    const fileItems = this.buildFileMenu(folder.files, this.state.sortedFiles);
+    return (
+      <SubMenu
+        key={`${parentPath}'/'${folder.name}`}
+        title={
+          <div>
+            <Icon type="folder" />
+            {folder.name}
+          </div>
+        }
+        className={className}
+      >
+        {fileItems}
+        {folder.folders.map((f: IFolder) => {
+          return this.buildFolderMenu(`${parentPath}'/'${folder.name}`, f);
+        })}
+      </SubMenu>
+    );
+  };
+
+  /**************************** RENDER *************************************/
   public render() {
-    const fileStructure = this.createDirectoryStructure(this.props.files);
-    const rootFiles = this.buildFileMenu(fileStructure.files, this.state.sortedFiles);
-    const folders = fileStructure.folders.map((f: IFolder) => {
+    const { directoryStructure } = this.state;
+    const rootFiles = this.buildFileMenu(directoryStructure.files, this.state.sortedFiles);
+    const folders = directoryStructure.folders.map((f: IFolder) => {
       return this.buildFolderMenu('', f);
     });
 
@@ -333,7 +442,11 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     return (
       <div id="file-menu" style={{ overflowY: 'auto' }}>
-        <UnsavedCommentsPopconfirm changeSelectedFile={this.props.changeSelectedFile} canChange={this.props.canChange}>
+        <UnsavedCommentsPopconfirm
+          changeSelectedFile={this.props.changeSelectedFile}
+          canChange={this.props.canChange}
+          oldVersions={false}
+        >
           <Menu
             selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
             mode="inline"
@@ -355,6 +468,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 interface IUnsavedCommentsPopconfirmProps {
   changeSelectedFile: (fileID: number) => void;
   canChange: () => boolean;
+  oldVersions: boolean;
   children: any;
 }
 
@@ -364,6 +478,11 @@ export const UnsavedCommentsPopconfirm = (props: IUnsavedCommentsPopconfirmProps
 
   const onSelect = (selectParam: SelectParam) => {
     setSelectedParam(selectParam);
+    if (selectParam && props.oldVersions) {
+      // IF this is a child menu, we want to avoid the parent onSelect method from being triggered
+      selectParam.domEvent.preventDefault();
+      selectParam.domEvent.stopPropagation();
+    }
   };
 
   const confirm = () => {

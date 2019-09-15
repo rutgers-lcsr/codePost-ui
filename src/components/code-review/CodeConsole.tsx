@@ -255,9 +255,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   // Points from generic comments
-  public static genericCommentPoints = (comments: IFileToCommentsMap): number => {
+  public static genericCommentPoints = (comments: IFileToCommentsMap, filterFileSet?: Set<Number>): number => {
     return Object.keys(comments)
       .map((fileID) => {
+        // If there's a filter set, and this file isn't in the set, then ignore it
+        if (filterFileSet && !filterFileSet.has(parseInt(fileID))) return 0;
+
         return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
           if (!UiComment.isNew(comment) && comment.pointDelta) {
             return accumulator + comment.pointDelta;
@@ -274,9 +277,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // Points from RubricComments, ignoring category caps
   public static pointsPerCategory = (
     commentRubricComments: ICommentToRubricCommentMap,
+    filterCommentSet?: Set<Number>,
   ): { [categoryID: number]: number } => {
     const pointsPerCategory: any = {};
     for (const commentID in commentRubricComments) {
+      // If there's a filter set, and this comment isn't in the set, then ignore it
+      if (filterCommentSet && !filterCommentSet.has(parseInt(commentID))) continue;
+
       // Don't count unsaved comments
       if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
         if (!pointsPerCategory[commentRubricComments[commentID].category]) {
@@ -317,9 +324,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     comments: IFileToCommentsMap,
     commentRubricComments: ICommentToRubricCommentMap,
     rubricCategories: RubricCategoryType[],
+    files: FileType[],
   ): number => {
-    const commentPoints = CodeConsole.genericCommentPoints(comments);
-    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments);
+    // Get the set of fileIDs and commentIDs for the current files
+    // This filters out any old file versions
+    const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(files);
+    const commentPoints = CodeConsole.genericCommentPoints(comments, currentFileSet);
+    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments, currentCommentSet);
     const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
 
     const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
@@ -331,6 +342,31 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     } else {
       return assignment.points - commentPoints - categoryPoints;
     }
+  };
+
+  // This function filters out old file versions, and keeps only the current file versions
+  // It outputs a set of the current file IDs and the current comment IDs
+  public static filterCurrentFileVersions = (files: FileType[]) => {
+    const currentFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path : ''}/${file.name}`;
+      if (!currentFiles[path]) currentFiles[path] = file;
+      else {
+        if (Date.parse(currentFiles[path].created) <= Date.parse(file.created)) {
+          currentFiles[path] = file;
+        }
+      }
+    });
+
+    const currentFileSet: Set<Number> = new Set();
+    const currentCommentSet: Set<Number> = new Set();
+    Object.keys(currentFiles).forEach((path) => {
+      const file = currentFiles[path];
+      currentFileSet.add(file.id);
+      file.comments.forEach((commentID) => currentCommentSet.add(commentID));
+    });
+
+    return [currentFileSet, currentCommentSet];
   };
 
   /***********************************************************************************************/
@@ -469,6 +505,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             comments,
             commentRubricComments,
             rubricCategories,
+            files,
           );
         }
 
@@ -782,6 +819,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.comments,
       this.state.commentRubricComments,
       this.state.rubricCategories,
+      this.state.files,
     );
   };
 
@@ -971,6 +1009,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           name: file.name,
           submission: 1,
           path: null,
+          created: '',
         });
 
         commentMap[index] = [];
@@ -1195,6 +1234,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           rubricCategories={this.state.rubricCategories}
           comments={this.state.comments}
           commentRubricComments={this.state.commentRubricComments}
+          files={this.state.files}
         />,
       ];
 
