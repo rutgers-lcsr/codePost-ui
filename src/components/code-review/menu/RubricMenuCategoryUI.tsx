@@ -6,6 +6,7 @@ import { Button, Divider, Icon, Input, Menu, Popover, Tag } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { AssignmentType } from '../../../infrastructure/assignment';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
@@ -14,10 +15,35 @@ import CPPointInput from '../../core/CPPointInput';
 
 import Badge from '../../core/Badge';
 
+import {
+  IRubricCategoryManagerProps,
+  IRubricCategoryManagerState,
+  IRubricCategoryManagerHelpers,
+} from '../../core/rubric/RubricCategoryManager';
+
 const SubMenu = Menu.SubMenu;
 const { TextArea } = Input;
 
-const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
+interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
+  hasActiveComment: boolean;
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
+  editingStatuses: { [id: number]: number };
+  startEditing: (rubricCommentID: number) => void;
+  linkToComment: (rubricComment: RubricCommentType) => void;
+  searchTerm: string;
+  assignment: AssignmentType;
+  editRubricMode: boolean;
+}
+
+const RubricMenuCategoryUI = ({
+  props,
+  state,
+  helpers,
+}: {
+  props: IRubricMenuCategoryUIProps;
+  state: IRubricCategoryManagerState;
+  helpers: IRubricCategoryManagerHelpers;
+}) => {
   // Capturing ...otherProps allows us to catch the required Ant props from
   // ParentMenu -> Menu.SubMenu
   const {
@@ -61,7 +87,7 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
         return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
       })
       .map((rubricComment) => {
-        const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id];
+        const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
 
         const thisComment = commentMap[rubricComment.id];
 

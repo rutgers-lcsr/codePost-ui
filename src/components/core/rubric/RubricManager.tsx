@@ -16,6 +16,7 @@ import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/
 import { CommentIO } from '../../../infrastructure/comment';
 import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
@@ -26,13 +27,58 @@ export enum RESOLUTION {
   UNLINK,
 }
 
+export interface IRubricManagerParams {
+  props: IRubricManagerProps;
+  state: IRubricManagerState;
+  helpers: IRubricManagerHelpers;
+}
+
+export interface IRubricManagerHelpers {
+  loadAssignmentRubric: any;
+  loadFeedbackScores: any;
+  resetRubric: any;
+  setNewRubric: any;
+  replaceRubric: any;
+  onCategoryEdit: any;
+  onCategoryUndo: any;
+  onCommentEdit: any;
+  onCommentUndo: any;
+  saveRubric: any;
+  deleteLinkedComments: any;
+  unlinkLinkedComments: any;
+  buildLinkedList: any;
+  onSave: any;
+  buildCommentMap: any;
+  moveCategory: any;
+  updateRubricCategory: any;
+  deleteRubricCategory: any;
+  addRubricCategory: any;
+  updateRubricComment: any;
+  deleteRubricComment: any;
+  addRubricComment: any;
+  onLinkedAlertCancel: any;
+  onLinkedCommentsResolve: any;
+  onLinkedConfirmCancel: any;
+  onLinkedConfirmAccept: any;
+  onBack: any;
+  onUnload: any;
+  toggleLock: any;
+  changesMade: any;
+  activateCommentExplorer: any;
+  clearCommentExplorer: any;
+  onCommentDragEnd: any;
+}
+
 export interface IRubricManagerProps {
   /* assignment data */
   assignment: AssignmentType;
+  submissions: SubmissionType[];
 
   onCancel: () => void;
 
   reloadInterval?: number;
+
+  children: (params: IRubricManagerParams) => React.ReactNode;
 }
 
 export interface IRubric {
@@ -902,7 +948,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   /* Render
   /***********************************************************************/
 
-  public collectClass = () => {
+  public collectClass = (): IRubricManagerParams => {
     return {
       props: this.props,
       state: this.state,
@@ -945,7 +991,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   };
 
   public render() {
-    // @ts-ignore
     return this.props.children(this.collectClass());
   }
 }

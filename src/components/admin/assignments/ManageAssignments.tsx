@@ -36,7 +36,7 @@ import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 
 import RubricUI from './rubric/RubricUI';
 
-import RubricManager from '../../../components/core/rubric/RubricManager';
+import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
@@ -561,10 +561,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             return (
               <RubricManager
                 assignment={this.state.activeAssignment!}
-                // submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               >
-                {({ props, state, helpers }: any) => {
+                {({ props, state, helpers }: IRubricManagerParams) => {
                   return <RubricUI props={props} state={state} helpers={helpers} />;
                 }}
               </RubricManager>

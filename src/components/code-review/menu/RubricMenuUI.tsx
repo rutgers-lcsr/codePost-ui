@@ -25,7 +25,9 @@ import Loading from '../../core/Loading';
 
 import { RESOLUTION } from '../../core/rubric/RubricManager';
 
-import RubricCategoryManager from '../../core/rubric/RubricCategoryManager';
+import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from '../../core/rubric/RubricManager';
+
+import RubricCategoryManager, { IRubricCategoryManagerParams } from '../../core/rubric/RubricCategoryManager';
 
 import RubricMenuCategoryUI from './RubricMenuCategoryUI';
 
@@ -33,23 +35,31 @@ import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignme
 
 /**********************************************************************************************************************/
 
-// interface IRubricMenuProps {
-//   rubricCategories: RubricCategoryType[];
-//   rubricComments: IRubricCategoryToRubricCommentsMap;
-//   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
-//   hasActiveComment: boolean;
-// }
-
-// interface IRubricMenuState {
-//   searchTerm: string;
-// }
-
 enum EDITING_STATUS {
   NOT_EDITING,
   EDITING,
 }
 
-const RubricMenuUI = ({ props, state, helpers }: any) => {
+interface IRubricMenuUIProps extends IRubricManagerProps {
+  handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
+  hasActiveComment: boolean;
+  toggleEditRubricMode: () => void;
+  editRubricMode: boolean;
+  setRubric: (rubric: {
+    rubricCategories: RubricCategoryType[];
+    rubricComments: IRubricCategoryToRubricCommentsMap;
+  }) => void;
+}
+
+const RubricMenuUI = ({
+  props,
+  state,
+  helpers,
+}: {
+  props: IRubricMenuUIProps;
+  state: IRubricManagerState;
+  helpers: IRubricManagerHelpers;
+}) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingStatuses, setEditingStatuses] = React.useState({});
@@ -148,7 +158,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
           feedbackScores={state.feedbackScores}
           commentFeedbackOn={props.assignment.commentFeedback}
         >
-          {({ propz, statez, helperz }: any) => {
+          {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
             const propsz = {
               ...propz,
               hasActiveComment: props.hasActiveComment,

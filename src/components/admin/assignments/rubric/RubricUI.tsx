@@ -33,9 +33,21 @@ import RubricCategoryUI from './RubricCategoryUI';
 
 import { RESOLUTION } from '../../../../components/core/rubric/RubricManager';
 
-import RubricCategoryManager from '../../../../components/core/rubric/RubricCategoryManager';
+import RubricCategoryManager, {
+  IRubricCategoryManagerParams,
+} from '../../../../components/core/rubric/RubricCategoryManager';
 
-const RubricUI = ({ props, state, helpers }: any) => {
+import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from '../../../core/rubric/RubricManager';
+
+const RubricUI = ({
+  props,
+  state,
+  helpers,
+}: {
+  props: IRubricManagerProps;
+  state: IRubricManagerState;
+  helpers: IRubricManagerHelpers;
+}) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
 
   if (loadComplete) {
@@ -73,7 +85,7 @@ const RubricUI = ({ props, state, helpers }: any) => {
             feedbackScores={state.feedbackScores}
             commentFeedbackOn={props.assignment.commentFeedback}
           >
-            {({ propz, statez, helperz }: any) => {
+            {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={propz} state={statez} helpers={helperz} />;
             }}
           </RubricCategoryManager>

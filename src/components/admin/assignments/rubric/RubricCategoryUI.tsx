@@ -14,6 +14,12 @@ import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
+import {
+  IRubricCategoryManagerProps,
+  IRubricCategoryManagerState,
+  IRubricCategoryManagerHelpers,
+} from '../../../core/rubric/RubricCategoryManager';
+
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
@@ -83,7 +89,15 @@ const commentTableColumns = [
   },
 ];
 
-const RubricCategoryUI = ({ props, state, helpers }: any) => {
+const RubricCategoryUI = ({
+  props,
+  state,
+  helpers,
+}: {
+  props: IRubricCategoryManagerProps;
+  state: IRubricCategoryManagerState;
+  helpers: IRubricCategoryManagerHelpers;
+}) => {
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },

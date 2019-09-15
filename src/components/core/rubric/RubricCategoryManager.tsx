@@ -27,6 +27,30 @@ import { IFeedbackScore } from './RubricManager';
 
 /************************************************************************/
 
+export interface IRubricCategoryManagerParams {
+  propz: IRubricCategoryManagerProps;
+  statez: IRubricCategoryManagerState;
+  helperz: IRubricCategoryManagerHelpers;
+}
+
+export interface IRubricCategoryManagerState {
+  /* local rubric category data */
+  name: string;
+  pointLimit: number | null;
+  helpText: string;
+  status: STATUS;
+
+  /* local rubric comment data */
+  rubricComments: { [id: number]: RubricCommentType };
+  rubricCommentStatus: { [id: number]: STATUS };
+
+  /* validation status */
+  hasError: boolean;
+  errorMessage: string;
+  hasCommentError: boolean;
+  commentErrorMessage: string;
+}
+
 export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   // data
   rubricCategory: RubricCategoryType;
@@ -59,25 +83,25 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   feedbackScores?: { [commentID: number]: IFeedbackScore };
   commentFeedbackOn: boolean;
 
-  children: React.ReactNode;
+  children: (params: IRubricCategoryManagerParams) => React.ReactNode;
 }
 
-interface IRubricCategoryManagerState {
-  /* local rubric category data */
-  name: string;
-  pointLimit: number | null;
-  helpText: string;
-  status: STATUS;
-
-  /* local rubric comment data */
-  rubricComments: { [id: number]: RubricCommentType };
-  rubricCommentStatus: { [id: number]: STATUS };
-
-  /* validation status */
-  hasError: boolean;
-  errorMessage: string;
-  hasCommentError: boolean;
-  commentErrorMessage: string;
+export interface IRubricCategoryManagerHelpers {
+  buildLocalRubricCommentsStructure: any;
+  initializeRubricCommentStatus: any;
+  updateCategoryStatus: any;
+  setValue: any;
+  validateCategory: any;
+  saveCategory: any;
+  changeName: any;
+  changeHelpText: any;
+  addComment: any;
+  deleteComment: any;
+  validateComments: any;
+  saveComment: any;
+  updateCommentStatus: any;
+  updateRubricComment: any;
+  nameInput: any;
 }
 
 class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps, IRubricCategoryManagerState> {
@@ -440,7 +464,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     });
   };
 
-  public collectClass = () => {
+  public collectClass = (): IRubricCategoryManagerParams => {
     return {
       propz: this.props,
       statez: this.state,
@@ -459,12 +483,12 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
         saveComment: this.saveComment,
         updateCommentStatus: this.updateCommentStatus,
         updateRubricComment: this.updateRubricComment,
+        nameInput: this.nameInput,
       },
     };
   };
 
   public render() {
-    // @ts-ignore
     return this.props.children(this.collectClass());
   }
 }
