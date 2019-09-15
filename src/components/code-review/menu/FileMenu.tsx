@@ -23,6 +23,8 @@ import { tooltips } from '../../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import CodeConsole from '../CodeConsole';
+
 import layoutVars from '../../../styles/layout/_layoutVars';
 
 import Badge from '../../core/Badge';
@@ -134,7 +136,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const olderFiles: { [pathName: string]: FileType[] } = {};
     const latestFiles: { [pathName: string]: FileType } = {};
     files.forEach((file) => {
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
       if (!latestFiles[path]) latestFiles[path] = file;
       else {
         if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
@@ -245,19 +247,25 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   // OLD VERSIONS MENU BUILD
   public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
     const { oldVersionsMap } = this.state;
-    const items = oldVersions.map((f2: FileType) => {
+
+    const sortedOldVersions = oldVersions.sort((f1: FileType, f2: FileType) => {
+      return f2.id - f1.id;
+    });
+
+    const items = sortedOldVersions.map((f2: FileType) => {
       const numComments = this.getNumCommentsInFile(f2);
       return (
         <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
           {
             <div className="display-flex align-items-center justify-content-space-between">
-              {moment(f2.created).format('llll')}
-              <Badge count={numComments} forcedStyle="neutral" size="small" />
+              {moment(f2.created).format('lll')}
+              {numComments > 0 ? <Badge count={numComments} forcedStyle="neutral" size="small" /> : <div />}
             </div>
           }
         </Menu.Item>
       );
     });
+    const currentFileNumComments = this.getNumCommentsInFile(currentFile);
     const menu = (
       <UnsavedCommentsPopconfirm
         changeSelectedFile={this.props.changeSelectedFile}
@@ -271,7 +279,22 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
           defaultOpenKeys={[`${path}-old-versions`]}
           style={{ minWidth: 280 }}
         >
-          <Menu.SubMenu key={`${path}-old-versions`} title="Older Versions">
+          <Menu.SubMenu key={`${path}-old-versions`} title="File History">
+            <Menu.Item key={`file-${currentFile.id}`} style={{ minWidth: 200 }}>
+              {
+                <div className="display-flex align-items-center justify-content-space-between">
+                  <div style={{ lineHeight: 1.5, marginTop: 4 }}>
+                    <div style={{ fontSize: 10, fontStyle: 'italic' }}>Current Version</div>
+                    <div>{moment(currentFile.created).format('lll')}</div>
+                  </div>
+                  {currentFileNumComments > 0 ? (
+                    <Badge count={currentFileNumComments} forcedStyle="neutral" size="small" />
+                  ) : (
+                    <div />
+                  )}
+                </div>
+              }
+            </Menu.Item>
             {items}
           </Menu.SubMenu>
         </Menu>
@@ -279,19 +302,23 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     );
 
     return (
-      <Dropdown overlay={menu} trigger={['hover']}>
+      <Dropdown overlay={menu} placement="bottomCenter" trigger={['hover']}>
         <AntBadge
           count={oldVersionsMap[path].length + 1}
-          style={{ backgroundColor: '#fff', color: '#999', boxShadow: '0 0 0 1px #d9d9d9 inset', marginRight: 4 }}
+          style={{
+            backgroundColor: '#fff',
+            color: '#999',
+            boxShadow: '0 0 0 1px #d9d9d9 inset',
+            marginLeft: 6,
+            borderRadius: 0,
+          }}
         />
       </Dropdown>
     );
   };
 
   // FILE MENU HELPER - BADGE STYLING
-  public buildFileBadges = (file: FileType, shrunkSider: boolean) => {
-    const [deductions, bonuses] = this.props.getPointsInFile(file);
-    const commentCount = this.getNumCommentsInFile(file);
+  public buildFileBadges = (file: FileType, commentCount: number, deductions: number, bonuses: number) => {
     let faded = true;
     if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
       faded = false;
@@ -319,25 +346,23 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       bonusBadge = null;
     }
 
-    const badgesStyle: React.CSSProperties = !shrunkSider
-      ? { position: 'absolute', right: '12px', top: '0px', width: '96px' }
-      : { position: 'absolute', left: '24px', top: '16px', width: '96px' };
+    const badgesStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '0px', width: '96px' };
 
     return (
       <div style={badgesStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {!this.props.hidePoints ? (
             <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-              <div>{bonusBadge}</div>
+              <div style={{ minWidth: 25 }}>{bonusBadge}</div>
             </CPTooltip>
           ) : null}
           {!this.props.hidePoints ? (
             <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-              <div>{deductionBadge}</div>
+              <div style={{ minWidth: 25 }}>{deductionBadge}</div>
             </CPTooltip>
           ) : null}
           <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-            <div>{commentCountBadge}</div>
+            <div style={{ minWidth: 25 }}>{commentCountBadge}</div>
           </CPTooltip>
         </div>
       </div>
@@ -351,7 +376,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     return files.map((file: FileType) => {
       let oldVersionsMenu: any = null;
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
 
       if (oldVersionsMap[path]) {
         oldVersionsMenu = this.buildOldVersionsMenu(file, oldVersionsMap[path], path);
@@ -364,8 +389,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             fontSize: '9px',
             color: '#ccc',
             position: 'absolute',
-            right: '15px',
-            top: '17px',
+            right: '-27px',
+            top: '10px',
           };
       /* tslint:enable */
 
@@ -374,31 +399,63 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         return f.id === file.id;
       });
 
-      return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
+      const commentCount = this.getNumCommentsInFile(file);
+
+      const menuItem = (
+        <div>
           <div
             style={{
               display: 'inline-block',
               lineHeight: '12px',
             }}
           >
-            {oldVersionsMenu}
             <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{
                 display: 'inline-block',
                 maxWidth: !shrunkSider ? '134px' : '124px',
+                minWidth: !shrunkSider ? 0 : '124px',
                 verticalAlign: 'middle',
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
                 textOverflow: 'ellipsis',
+                fontSize: 12,
               }}
             >
               {file.name}
+              {oldVersionsMenu}
             </div>
           </div>
-          {this.buildFileBadges(file, shrunkSider)}
+          {!shrunkSider ? this.buildFileBadges(file, commentCount, deductions, bonuses) : <div />}
+        </div>
+      );
+
+      const badgeStyle = {
+        fontSize: 10,
+        padding: '0 2px',
+        opacity: this.props.selectedFile && this.props.selectedFile.id === file.id ? 1 : 0.7,
+      };
+
+      const menuItemShrunkSider = (
+        <AntBadge count={bonuses} dot={false} offset={[-6, -5]} style={{ backgroundColor: '#24be85', ...badgeStyle }}>
+          <AntBadge count={deductions} dot={false} offset={[12, -5]} style={{ backgroundColor: 'red', ...badgeStyle }}>
+            <AntBadge
+              count={commentCount}
+              dot={false}
+              offset={[30, -5]}
+              style={{ backgroundColor: 'grey', ...badgeStyle }}
+            >
+              {menuItem}
+            </AntBadge>
+          </AntBadge>
+        </AntBadge>
+      );
+
+      return (
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
+          {shrunkSider ? menuItemShrunkSider : menuItem}
         </Menu.Item>
       );
     });
@@ -538,18 +595,36 @@ interface IFileMenuTitleProps {
 export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  const numUniqueFiles = CodeConsole.filterCurrentFileVersions(props.files)[0].size;
+  const badge = (
+    <AntBadge
+      style={{
+        backgroundColor: consoleTheme.siderBg,
+        color: consoleTheme.commentRubricCommentNeutral,
+        boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
+      }}
+      count={numUniqueFiles}
+    />
+  );
+
+  const numOldVersions = props.files.length - numUniqueFiles;
+
   return (
     <span>
       Files
       <div style={{ display: 'inline-block', marginLeft: '8px', position: 'absolute', transform: 'translateY(-6%)' }}>
-        <AntBadge
-          style={{
-            backgroundColor: consoleTheme.siderBg,
-            color: consoleTheme.commentRubricCommentNeutral,
-            boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
-          }}
-          count={props.files.length}
-        />
+        {numOldVersions ? (
+          <CPTooltip
+            title={`This submission contains ${numOldVersions} older version${
+              numOldVersions > 1 ? 's' : ''
+            } of these files.`}
+            placement="right"
+          >
+            {badge}
+          </CPTooltip>
+        ) : (
+          badge
+        )}
       </div>
     </span>
   );
