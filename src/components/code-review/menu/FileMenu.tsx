@@ -249,7 +249,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const { oldVersionsMap } = this.state;
 
     const sortedOldVersions = oldVersions.sort((f1: FileType, f2: FileType) => {
-      return f1.id - f2.id;
+      return f2.id - f1.id;
     });
 
     const items = sortedOldVersions.map((f2: FileType) => {
@@ -425,8 +425,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               }}
             >
               {file.name}
+              {oldVersionsMenu}
             </div>
-            {oldVersionsMenu}
           </div>
           {!shrunkSider ? this.buildFileBadges(file, commentCount, deductions, bonuses) : <div />}
         </div>
