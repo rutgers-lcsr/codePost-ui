@@ -18,9 +18,7 @@ import CPAdminDetail from '../other/CPAdminDetail';
 /**********************************************************************************************************************/
 
 export interface ITableDetailColumn extends ColumnProps<any> {
-  renderForSearch?: (
-    searchText: string,
-  ) => (text: string, record: any, index: number) => React.ReactNode;
+  renderForSearch?: (searchText: string) => (text: string, record: any, index: number) => React.ReactNode;
 }
 
 interface IProps {
@@ -37,6 +35,7 @@ interface IProps {
   pagination?: any;
   hideSearch?: boolean;
   titleInfo?: string | React.ReactNode;
+  onRowClick?: (record: any) => void;
 }
 
 interface IState {
@@ -65,9 +64,7 @@ class TableDetail extends React.Component<IProps, IState> {
    * Otherwise, we have no way to inject highlighting into the cell, so
    * just render the cell value as is.
    */
-  public getColumnSearchProps = (
-    column: ITableDetailColumn,
-  ): ColumnProps<any> => {
+  public getColumnSearchProps = (column: ITableDetailColumn): ColumnProps<any> => {
     let renderFunction;
     if (column.render !== undefined) {
       renderFunction = column.render;
@@ -119,19 +116,10 @@ class TableDetail extends React.Component<IProps, IState> {
     if (!this.props.loadComplete) {
       content = (
         <div>
-          <Input.Search
-            disabled={true}
-            placeholder={'Search...'}
-            style={{ width: 300 }}
-          />
+          <Input.Search disabled={true} placeholder={'Search...'} style={{ width: 300 }} />
           <br />
           <br />
-          <Table
-            columns={this.props.columns}
-            dataSource={[]}
-            loading={true}
-            locale={{ emptyText: '-' }}
-          />
+          <Table columns={this.props.columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
         </div>
       );
     } else {
@@ -148,8 +136,7 @@ class TableDetail extends React.Component<IProps, IState> {
         });
 
         // Cache keys so we can search each field of the row
-        const keys =
-          this.props.data.length > 0 ? Object.keys(this.props.data[0]) : [];
+        const keys = this.props.data.length > 0 ? Object.keys(this.props.data[0]) : [];
         const data = this.props.data.filter((el: any) => {
           if (this.state.searchText === '') {
             return true;
@@ -191,6 +178,19 @@ class TableDetail extends React.Component<IProps, IState> {
             <Table
               columns={newColumns}
               dataSource={data}
+              onRow={
+                this.props.onRowClick === undefined
+                  ? undefined
+                  : (record, rowIndex) => {
+                      return {
+                        onClick: (event) => {
+                          if (this.props.onRowClick) {
+                            return this.props.onRowClick(record);
+                          }
+                        },
+                      };
+                    }
+              }
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination

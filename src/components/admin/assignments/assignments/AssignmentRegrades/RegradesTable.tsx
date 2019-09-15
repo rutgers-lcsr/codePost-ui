@@ -95,7 +95,6 @@ const RegradesTable = (props: IRegradesTableProps) => {
 
   const submitResponse = (questionIsOpen: boolean) => {
     if (activeSubmission) {
-      console.log(questionIsOpen);
       const newSubmission = JSON.parse(JSON.stringify(activeSubmission));
       newSubmission['questionIsOpen'] = questionIsOpen;
       newSubmission['questionResponse'] = responseText;

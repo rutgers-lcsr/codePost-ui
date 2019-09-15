@@ -109,6 +109,8 @@ interface ICodeConsoleState {
 
   /* demo data */
   demoCommentCounter: number;
+
+  commentCounter: number;
 }
 
 export interface ICodeConsoleProps {
@@ -398,6 +400,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       demoCommentCounter: 0,
 
       isStudent: false,
+      commentCounter: -1,
     };
   }
 
@@ -656,7 +659,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
-    this.setState({ comments, activeCommentID: comment.id });
+    this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -681,11 +684,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (comment.id < 0) {
-        savedComment = await CommentIO.create(comment);
-        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (UiComment.isEmpty(comment)) {
+        return this.deleteComment(comment);
       } else {
-        savedComment = await CommentIO.update(comment);
+        if (comment.id < 0) {
+          savedComment = await CommentIO.create(comment);
+          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+        } else {
+          savedComment = await CommentIO.update(comment);
+        }
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
@@ -954,6 +961,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       uploadDueDate: '',
       liveFeedbackMode: false,
       additiveGrading: false,
+      forcedRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -1054,7 +1062,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         },
         {
           id: 3,
-          text: "Generic variable name that doesn't describe value",
+          text: "Generic variable name (e.g. `x`) that doesn't describe value",
           category: 1,
           comments: [],
           pointDelta: 1,
@@ -1064,7 +1072,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       2: [
         {
           id: 4,
-          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
           category: 2,
           comments: [],
           pointDelta: 2,
@@ -1243,6 +1251,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1267,6 +1276,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
@@ -1445,6 +1455,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1469,6 +1480,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
