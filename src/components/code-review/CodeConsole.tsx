@@ -1512,7 +1512,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             changeSelectedFile={this.changeSelectedFile}
             canChange={this.containsUnsavedComments}
           />,
-          <RubricManager key="rubric-menu" assignment={this.state.assignment} onCancel={onCancel}>
+          <RubricManager
+            key="rubric-menu"
+            assignment={this.state.assignment}
+            onCancel={onCancel}
+            reloadInterval={
+              this.state.assignment.collaborativeRubricMode && this.state.editRubricMode ? 5000 : undefined
+            }
+          >
             {({ props, state, helpers }: any) => {
               const propz = {
                 ...props,

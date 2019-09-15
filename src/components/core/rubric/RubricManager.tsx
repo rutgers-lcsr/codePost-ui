@@ -31,6 +31,8 @@ export interface IRubricManagerProps {
   assignment: AssignmentType;
 
   onCancel: () => void;
+
+  reloadInterval?: number;
 }
 
 export interface IRubric {
@@ -82,6 +84,9 @@ export interface IRubricManagerState {
 /**********************************************************************************************************************/
 
 class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerState> {
+  // @ts-ignore
+  private interval: number;
+
   constructor(props: IRubricManagerProps) {
     super(props);
     this.state = {
@@ -167,10 +172,32 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
+
+    if (this.props.reloadInterval !== undefined) {
+      this.interval = window.setInterval(async () => {
+        // to remove before prod
+        message.success('updating rubric');
+        await this.loadAssignmentRubric(this.props.assignment);
+      }, this.props.reloadInterval);
+    }
+  }
+
+  public componentDidUpdate(prevProps: IRubricManagerProps) {
+    if (prevProps.reloadInterval !== this.props.reloadInterval && this.props.reloadInterval !== undefined) {
+      this.interval = window.setInterval(async () => {
+        // to remove before prod
+        message.success('updating rubric');
+        await this.loadAssignmentRubric(this.props.assignment);
+      }, this.props.reloadInterval);
+    }
   }
 
   public componentWillUnmount() {
     window.removeEventListener('beforeunload', this.onUnload);
+
+    if (this.props.reloadInterval) {
+      clearInterval(this.interval);
+    }
   }
 
   /************************************************************************
