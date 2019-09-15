@@ -136,7 +136,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const olderFiles: { [pathName: string]: FileType[] } = {};
     const latestFiles: { [pathName: string]: FileType } = {};
     files.forEach((file) => {
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
       if (!latestFiles[path]) latestFiles[path] = file;
       else {
         if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
@@ -376,7 +376,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     return files.map((file: FileType) => {
       let oldVersionsMenu: any = null;
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
 
       if (oldVersionsMap[path]) {
         oldVersionsMenu = this.buildOldVersionsMenu(file, oldVersionsMap[path], path);

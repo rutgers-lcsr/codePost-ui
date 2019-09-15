@@ -347,7 +347,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static filterCurrentFileVersions = (files: FileType[]) => {
     const currentFiles: { [pathName: string]: FileType } = {};
     files.forEach((file) => {
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
       if (!currentFiles[path]) currentFiles[path] = file;
       else {
         if (Date.parse(currentFiles[path].created) <= Date.parse(file.created)) {
