@@ -241,8 +241,8 @@ const CollectionCreateForm: any = Form.create()(
                   console.
                 </div>
               }
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 15 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 16 }}
             >
               {getFieldDecorator('collaborativeRubricMode', {
                 initialValue: this.props.assignment.collaborativeRubricMode,
