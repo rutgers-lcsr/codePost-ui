@@ -150,7 +150,6 @@ class ManageAssignments extends React.Component<IProps, IState> {
   public render() {
     let content;
 
-    const hoverStyle = { cursor: 'pointer' };
     const statsForRow: IFullStats = this.calculateStats(
       this.props.assignment,
       this.props.submissions,
@@ -213,7 +212,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
           />
         ),
         data: (
-          <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
+          <span
+            onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Submitted)}
+            className="text-link"
+          >
             {numSubmissions}
           </span>
         ),
@@ -230,7 +232,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
               />
             ),
             data: (
-              <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
+              <span
+                onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Graded)}
+                className="text-link"
+              >
                 {numGraded}
               </span>
             ),
@@ -249,7 +254,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 data: (
                   <span
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unviewed)}
-                    style={hoverStyle}
+                    className="text-link"
                   >
                     {numUnviewed}
                   </span>
@@ -269,7 +274,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                 data: (
                   <span
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Viewed)}
-                    style={hoverStyle}
+                    className="text-link"
                   >
                     {numViewed}
                   </span>
@@ -289,7 +294,10 @@ class ManageAssignments extends React.Component<IProps, IState> {
               />
             ),
             data: (
-              <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+              <span
+                onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)}
+                className="text-link"
+              >
                 {numInProgress}
               </span>
             ),
@@ -308,7 +316,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
             data: (
               <span
                 onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unclaimed)}
-                style={hoverStyle}
+                className="text-link"
               >
                 {numUnclaimed}
               </span>
@@ -328,7 +336,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
           />
         ),
         data: (
-          <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+          <span onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)} className="text-link">
             {numMissing}
           </span>
         ),

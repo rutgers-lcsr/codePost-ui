@@ -222,13 +222,13 @@ class StudentData extends React.Component<IProps, IState> {
             const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
             if (submission && submission.isFinalized) {
               toRet[assignment.name] = (
-                <span style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
+                <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
                   {submission.grade}
                 </span>
               );
             } else if (submission) {
               toRet[assignment.name] = (
-                <span style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
+                <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
                   Unfinalized
                 </span>
               );

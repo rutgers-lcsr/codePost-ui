@@ -410,8 +410,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             publishToggleText = 'Are you sure you want to publish this assignment?';
           }
 
-          const hoverStyle = { cursor: 'pointer' };
-
           const notifyButton = (toggleDialog: () => void) => {
             return (
               <CPTooltip title="Notify students via email. ">
@@ -466,17 +464,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               </span>
             ),
             submissions: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
                 {statsForRow.numSubmissions}
               </span>
             ),
             finalized: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} className="text-link">
                 {statsForRow.numGraded}
               </span>
             ),
             missing: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} className="text-link">
                 {statsForRow.numMissing}
               </span>
             ),
