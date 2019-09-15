@@ -234,7 +234,7 @@ class SectionPanel extends React.Component<IProps, IState> {
             student: shownStudent,
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
-            open: <Icon type="code" onClick={openGradePage} />,
+            open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
           };
         });
       }

@@ -10,7 +10,20 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Modal, Popconfirm, Popover, Switch, Tag } from 'antd';
+import {
+  Button,
+  Descriptions,
+  Divider,
+  Dropdown,
+  Icon,
+  message,
+  Menu,
+  Modal,
+  Popconfirm,
+  Popover,
+  Switch,
+  Tag,
+} from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -29,9 +42,11 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import useHotkeys, { MINUS_KEY, PLUS_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, S_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
+
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 const ButtonGroup = Button.Group;
 
@@ -233,6 +248,18 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setNudge(false);
   };
 
+  const onClick = async () => {
+    setIsLoading(true);
+    if (!props.submission.isFinalized && !props.canToggle()) {
+      setPopconfirmVisible(true);
+    } else {
+      await props.toggleFinalized();
+      setIsLoading(false);
+    }
+  };
+
+  useHotkeys(F_KEY, onClick, true);
+
   React.useEffect(() => {
     // Activate the nudge when these elements are clicked
     const codeContainer = document.getElementById('code-container');
@@ -277,16 +304,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     };
   }, [props.submission]);
 
-  const onClick = async () => {
-    setIsLoading(true);
-    if (!props.submission.isFinalized && !props.canToggle()) {
-      setPopconfirmVisible(true);
-    } else {
-      await props.toggleFinalized();
-      setIsLoading(false);
-    }
-  };
-
   const confirm = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
@@ -309,8 +326,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       : !showTooltips
       ? null
       : props.submission.isFinalized
-      ? 'This submission is finalized. Unfinalize to modify it.'
-      : 'This submission is unfinalized. Finalize it to mark it as complete.';
+      ? 'This submission is finalized. Unfinalize to modify it. [⌘ shift f]'
+      : 'This submission is unfinalized. Finalize it to mark it as complete. [⌘ shift f]';
 
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
@@ -655,13 +672,69 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 };
 
 interface IHeaderMenuProps {
-  menu: React.ReactNode;
+  claimSubmission: () => void;
+  isStudent: boolean;
 }
 
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  useHotkeys(S_KEY, props.claimSubmission, true);
+
+  const groupStyle = {
+    padding: '5px 20px',
+    lineHeight: '40px',
+    fontSize: '14px',
+    color: '#8d9298',
+    background: '#f4f4f4',
+    fontWeight: 600,
+    cursor: 'default',
+  };
+  const itemStyle = {
+    padding: '5px 20px',
+    lineHeight: '35px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  };
+
+  const openIntercom = () => {
+    (window as any).Intercom('show');
+  };
+
+  const menu = (
+    <Menu mode="vertical" style={{ width: 320, padding: 0 }}>
+      <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
+        Code Review Console
+      </Menu.Item>
+      {props.isStudent ? null : (
+        <Menu.Item key="claim" style={itemStyle} className="header-menu">
+          <span onClick={props.claimSubmission}>
+            <Icon type="plus-circle" /> Claim another submission <span style={{ color: '#ccc' }}>[⌘ shift s]</span>
+          </span>
+        </Menu.Item>
+      )}
+      {props.isStudent ? null : (
+        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
+          <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
+        </Menu.Item>
+      )}
+      <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
+        Help! (talk to a human from codePost)
+      </Menu.Item>
+      <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
+        Other
+      </Menu.Item>
+      <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
+        <a href="/">Home</a>
+      </Menu.Item>
+      <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+        <a href="/logout">Logout</a>
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
-    <Dropdown overlay={props.menu} trigger={['click']}>
+    <Dropdown overlay={menu} trigger={['click']}>
       <Icon type="menu" style={{ color: consoleTheme.text }} />
     </Dropdown>
   );

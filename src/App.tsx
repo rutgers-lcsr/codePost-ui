@@ -107,7 +107,17 @@ class App extends React.Component<{}, IState> {
       has_token: localStorage.getItem('token') ? true : false,
       toRedirect: false,
       triedLoading: false,
-      isSuperUser: false,
+
+      // Used to account for situation in which a superUser uses loginas to login
+      // as a user, and then refreshes or opens app in a new window.
+      // In these situations, the user will remain loggedinas (because the
+      // JWT they obtained via loginas persists), but this.state.isSuperUser will reset.
+      // We want to be able to distinguish these sessions from genuine user sessions,
+      // so we can record the latter but not the former with FS.
+      //
+      // This token persists the value of this.state.isSuperUser across app instances,
+      // while the session orginally triggered via loginas is active.
+      isSuperUser: localStorage.getItem('isSuperUser') !== null,
     };
   }
 
@@ -116,12 +126,34 @@ class App extends React.Component<{}, IState> {
       this.setState({ toRedirect: false });
     }
 
-    // On login, initiate fullstory logging
+    // Keep this token in sync with this.state.isSuperUser
+    if (this.state.isSuperUser) {
+      localStorage.setItem('isSuperUser', 'true');
+    } else {
+      localStorage.removeItem('isSuperUser');
+    }
+
+    // On login, identify user to Fullstory
     if (inProduction) {
-      if (prevState.user !== this.state.user && this.state.user !== undefined && !this.state.isSuperUser) {
-        identifyUserForFS(this.state.user.email);
-      } else {
-        shutdownFS();
+      if (prevState.user !== this.state.user && this.state.user !== undefined) {
+        // we experienced a login or loginas event
+        if (this.state.isSuperUser) {
+          if (!prevState.isSuperUser) {
+            // If we were previously recording a non-superUser (logged in or pre-auth) with FS, then stop.
+            // Note: without this check, we'll try to shutdown a non-existant FS session when superusers
+            // login.
+            shutdownFS();
+          }
+        } else {
+          if (prevState.isSuperUser) {
+            // We need to start the FS session before we identify it
+            runFSSetup();
+            identifyUserForFS(this.state.user.email);
+          } else {
+            // FS session was initiated in componentDidMount
+            identifyUserForFS(this.state.user.email);
+          }
+        }
       }
     }
   }
@@ -142,7 +174,7 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
-    if (inProduction) {
+    if (inProduction && !this.state.isSuperUser) {
       runFSSetup();
     }
 
@@ -159,8 +191,13 @@ class App extends React.Component<{}, IState> {
           return Promise.reject();
         })
         .then((json) => {
-          const isSuperUser = superUsers.indexOf(json.email) > -1;
-          this.setState({ user: json, triedLoading: true, isSuperUser });
+          this.setState((oldState) => {
+            return {
+              user: json,
+              triedLoading: true,
+              isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+            };
+          });
           this.refreshToken();
         })
         .catch((error) => {

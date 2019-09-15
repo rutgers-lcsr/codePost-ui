@@ -40,6 +40,8 @@ import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
 import AssignmentRegrades from './assignments/AssignmentRegrades';
 
+import DownloadGrades from './assignments/DownloadGrades';
+
 import Moss from './assignments/Moss';
 
 import { sendSlack } from '../../../components/core/slack';
@@ -106,6 +108,7 @@ export enum DETAIL_TYPE {
   Stats,
   Regrades,
   Moss,
+  DownloadGrades,
 }
 
 interface IManageAssignmentsState {
@@ -191,76 +194,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
     }
   };
 
-  public downloadGrades = (assignment: AssignmentType) => {
-    const { currentCourse, submissions } = this.props;
-    if (!currentCourse) {
-      return;
-    }
-
-    const subs = submissions[assignment.id];
-
-    const grades: string[] = [`Student,${assignment.name} Grade`];
-    subs.forEach((sub) => {
-      sub.students.forEach((student) => {
-        if (this.props.students.includes(student)) {
-          grades.push(`${student},${sub.grade}`);
-        }
-      });
-    });
-
-    const csv = grades.join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8, ${csv}`;
-    a.download = `${currentCourse.name}-${currentCourse.period}-${assignment.name}-grades.csv`;
-
-    document.body.appendChild(a);
-    a.click();
-  };
-
-  public getAllGrades = (
-    assignments: AssignmentType[],
-    submissions: IAssignmentToSubmissionsMap,
-    students: string[],
-  ) => {
-    const columns: string[] = ['Active Student'].concat(
-      assignments.map((assignment: AssignmentType) => {
-        return assignment.name;
-      }),
-    );
-
-    const csv = [columns];
-    students.forEach((student: string) => {
-      const row: string[] = [student];
-      assignments.forEach((assignment: AssignmentType) => {
-        const sub = submissions[assignment.id].find((submission: SubmissionType) => {
-          return submission.students.includes(student);
-        });
-        const grade = sub && sub.grade ? sub.grade.toString() : '';
-        row.push(grade);
-      });
-      csv.push(row);
-    });
-
-    return csv;
-  };
-
-  public downloadAllGrades = () => {
-    if (!this.props.currentCourse) {
-      return;
-    }
-
-    this.setState({ isDownloading: true });
-    const csv = this.getAllGrades(this.props.assignments, this.props.submissions, this.props.students).join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8, ${csv}`;
-    a.download = `${this.props.currentCourse.name}-${this.props.currentCourse.period}-grades.csv`;
-
-    document.body.appendChild(a);
-    a.click();
-
-    this.setState({ isDownloading: false });
-  };
-
   /******************************************************************************
    * Render
    ******************************************************************************/
@@ -312,7 +245,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       {
         title: (
           <div>
-            Done
+            Finalized
             <CPTooltip
               title={tooltips.admin.assignments.finalized}
               infoIcon={true}
@@ -383,7 +316,12 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             assignments={this.props.assignments}
             createAssignment={this.props.createAssignment}
           />,
-          <CPButton onClick={this.downloadAllGrades} cpType="secondary" key={2} icon="download">
+          <CPButton
+            onClick={this.changeDetailType.bind(this, DETAIL_TYPE.DownloadGrades, undefined)}
+            cpType="secondary"
+            key={2}
+            icon="download"
+          >
             Download grades
           </CPButton>,
         ];
@@ -404,7 +342,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 <Icon type="ordered-list" />
                 Edit rubric
               </Menu.Item>
-              <Menu.Item key="2" onClick={this.downloadGrades.bind(this, assignment)}>
+              <Menu.Item key="2" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.DownloadGrades, assignment)}>
                 <Icon type="download" />
                 Download grades
               </Menu.Item>
@@ -472,8 +410,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             publishToggleText = 'Are you sure you want to publish this assignment?';
           }
 
-          const hoverStyle = { cursor: 'pointer' };
-
           const notifyButton = (toggleDialog: () => void) => {
             return (
               <CPTooltip title="Notify students via email. ">
@@ -528,17 +464,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               </span>
             ),
             submissions: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
                 {statsForRow.numSubmissions}
               </span>
             ),
             finalized: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} className="text-link">
                 {statsForRow.numGraded}
               </span>
             ),
             missing: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} style={hoverStyle}>
+              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Missing)} className="text-link">
                 {statsForRow.numMissing}
               </span>
             ),
@@ -661,6 +597,18 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
                 user={this.props.user}
                 updateSubmission={this.props.updateSubmission}
+              />
+            );
+            break;
+          case DETAIL_TYPE.DownloadGrades:
+            detailComponent = (
+              <DownloadGrades
+                activeAssignment={this.state.activeAssignment}
+                assignments={this.props.assignments}
+                submissionsByStudent={this.props.submissionsByStudent}
+                students={this.props.students}
+                currentCourse={this.props.currentCourse!}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
               />
             );
             break;

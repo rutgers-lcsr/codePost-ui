@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
+
 import { Empty, Menu, message, notification } from 'antd';
+
 import queryString from 'query-string';
 
 /* codePost imports */
@@ -46,6 +48,8 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
+import { openSubmission } from '../admin/other/AdminUtils';
+
 import { sendSlack } from '../core/slack';
 
 import {
@@ -64,8 +68,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { demoFiles } from './demoCode';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 /**********************************************************************************************************************/
 
@@ -109,6 +111,8 @@ interface ICodeConsoleState {
 
   /* demo data */
   demoCommentCounter: number;
+
+  commentCounter: number;
 }
 
 export interface ICodeConsoleProps {
@@ -402,6 +406,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       demoCommentCounter: 0,
 
       isStudent: false,
+      commentCounter: -1,
     };
   }
 
@@ -691,7 +696,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     // const unsavedComments = CodeConsole.addIdToUnsavedState(this.state.unsavedComments, comment.id);
     // this.setState({unsavedComments});
-    this.setState({ comments, activeCommentID: comment.id });
+    this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
@@ -716,11 +721,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (comment.id < 0) {
-        savedComment = await CommentIO.create(comment);
-        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (UiComment.isEmpty(comment)) {
+        return this.deleteComment(comment);
       } else {
-        savedComment = await CommentIO.update(comment);
+        if (comment.id < 0) {
+          savedComment = await CommentIO.create(comment);
+          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+        } else {
+          savedComment = await CommentIO.update(comment);
+        }
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
@@ -989,6 +998,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       uploadDueDate: '',
       liveFeedbackMode: false,
       additiveGrading: false,
+      forcedRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -1089,7 +1099,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         },
         {
           id: 3,
-          text: "Generic variable name that doesn't describe value",
+          text: "Generic variable name (e.g. `x`) that doesn't describe value",
           category: 1,
           comments: [],
           pointDelta: 1,
@@ -1099,7 +1109,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       2: [
         {
           id: 4,
-          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
           category: 2,
           comments: [],
           pointDelta: 2,
@@ -1130,6 +1140,39 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
     this.setState({ dimensions });
+  };
+
+  /***********************************************************************************
+  /* Claim from console feature (triggered via console menu)
+  /**********************************************************************************/
+
+  public fetchSubmission = async (assignment: AssignmentType): Promise<AnonymousSubmissionType | undefined> => {
+    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        return json;
+      });
+  };
+
+  public claimSubmission = async () => {
+    if (this.state.assignment) {
+      const submission = await this.fetchSubmission(this.state.assignment);
+      if (submission !== undefined) {
+        openSubmission(submission.id);
+        message.success('Successfully claimed another submission. Start reviewing!');
+      } else {
+        message.success('The ungraded queue is empty, so there are no more submissions to claim.');
+      }
+    }
   };
 
   /***********************************************************************************
@@ -1207,50 +1250,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       /*********************************************************
       /* Build header
       /*********************************************************/
-      const groupStyle = {
-        padding: '5px 20px',
-        lineHeight: '40px',
-        fontSize: '14px',
-        color: '#8d9298',
-        background: '#f4f4f4',
-        fontWeight: 600,
-        cursor: 'default',
-      };
-      const itemStyle = {
-        padding: '5px 20px',
-        lineHeight: '35px',
-        fontSize: '14px',
-        cursor: 'pointer',
-      };
-
-      const openIntercom = () => {
-        (window as any).Intercom('show');
-      };
-
-      const menu = (
-        <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
-          <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
-            Code Review Console
-          </Menu.Item>
-          {this.state.isStudent ? null : (
-            <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-              <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-            </Menu.Item>
-          )}
-          <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
-            Help! (talk to a human from codePost)
-          </Menu.Item>
-          <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
-            Other
-          </Menu.Item>
-          <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
-            <a href="/">Home</a>
-          </Menu.Item>
-          <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-            <a href="/logout">Logout</a>
-          </Menu.Item>
-        </Menu>
-      );
 
       middleHeader = [
         <GradeButton
@@ -1278,6 +1277,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1302,6 +1302,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
@@ -1349,7 +1350,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1416,7 +1417,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1446,7 +1447,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"
@@ -1480,6 +1481,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
+              commentCounter={this.state.commentCounter}
             />
           );
 
@@ -1504,6 +1506,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
