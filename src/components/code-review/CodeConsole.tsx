@@ -558,7 +558,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public checkForNewFiles = async () => {
     const newSubmission = await Submission.readAnonymous(this.state.submission!.id);
-    if (newSubmission.files !== this.state.submission!.files) {
+    if (newSubmission.files.length !== this.state.submission!.files.length) {
       notification['warning']({
         message: 'New files uploaded',
         description:

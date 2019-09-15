@@ -357,16 +357,16 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {!this.props.hidePoints ? (
             <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-              <div>{bonusBadge}</div>
+              <div style={{ minWidth: 25 }}>{bonusBadge}</div>
             </CPTooltip>
           ) : null}
           {!this.props.hidePoints ? (
             <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-              <div>{deductionBadge}</div>
+              <div style={{ minWidth: 25 }}>{deductionBadge}</div>
             </CPTooltip>
           ) : null}
           <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-            <div>{commentCountBadge}</div>
+            <div style={{ minWidth: 25 }}>{commentCountBadge}</div>
           </CPTooltip>
         </div>
       </div>
@@ -393,8 +393,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             fontSize: '9px',
             color: '#ccc',
             position: 'absolute',
-            right: '15px',
-            top: '17px',
+            right: '-28px',
+            top: '10px',
           };
       /* tslint:enable */
 
@@ -403,8 +403,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         return f.id === file.id;
       });
 
-      return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
+      const menuItem = (
+        <div>
           <div
             style={{
               display: 'inline-block',
@@ -417,6 +417,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               style={{
                 display: 'inline-block',
                 maxWidth: !shrunkSider ? '134px' : '124px',
+                minWidth: !shrunkSider ? 0 : '124px',
                 verticalAlign: 'middle',
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
@@ -427,7 +428,37 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             </div>
             {oldVersionsMenu}
           </div>
-          {this.buildFileBadges(file, shrunkSider)}
+          {!shrunkSider ? this.buildFileBadges(file, shrunkSider) : <div />}
+        </div>
+      );
+
+      const [deductions, bonuses] = this.props.getPointsInFile(file);
+      const commentCount = this.getNumCommentsInFile(file);
+
+      const badgeStyle = {
+        fontSize: 10,
+        padding: '0 2px',
+        opacity: this.props.selectedFile && this.props.selectedFile.id === file.id ? 1 : 0.7,
+      };
+
+      const menuItemShrunkSider = (
+        <AntBadge count={bonuses} dot={false} offset={[-6, -5]} style={{ backgroundColor: '#24be85', ...badgeStyle }}>
+          <AntBadge count={deductions} dot={false} offset={[12, -5]} style={{ backgroundColor: 'red', ...badgeStyle }}>
+            <AntBadge
+              count={commentCount}
+              dot={false}
+              offset={[30, -5]}
+              style={{ backgroundColor: 'grey', ...badgeStyle }}
+            >
+              {menuItem}
+            </AntBadge>
+          </AntBadge>
+        </AntBadge>
+      );
+
+      return (
+        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
+          {shrunkSider ? menuItemShrunkSider : menuItem}
         </Menu.Item>
       );
     });
