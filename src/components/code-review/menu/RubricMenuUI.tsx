@@ -15,7 +15,7 @@ import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import useHotkeys, { O_KEY } from '../useHotkeys';
 
@@ -269,10 +269,8 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
             style={{ color: '#24be85', cursor: 'pointer' }}
           />
         }
+        className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
         style={{
-          backgroundColor: consoleTheme.siderBg,
-
-          color: consoleTheme.buttonSecondaryColor,
           width: '100%',
         }}
       />

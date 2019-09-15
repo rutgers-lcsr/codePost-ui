@@ -92,7 +92,13 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           // };
 
           const textInput = (
-            <TextArea autosize={{ minRows: 2 }} value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />
+            <TextArea
+              style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
+              autosize={{ minRows: 2 }}
+              value={thisComment.text}
+              onChange={onChangeText}
+              onBlur={saveComment}
+            />
           );
 
           const pointInput = (
@@ -147,7 +153,13 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           };
 
           const textInput = (
-            <TextArea autosize={{ minRows: 2 }} value={''} onChange={updateRubricCommentText} onBlur={saveComment} />
+            <TextArea
+              style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
+              autosize={{ minRows: 2 }}
+              value={''}
+              onChange={updateRubricCommentText}
+              onBlur={saveComment}
+            />
           );
 
           const pointInput = (
@@ -259,7 +271,14 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
                     onChange={helpers.changeName}
                     onBlur={helpers.saveCategory}
                     ref={helpers.nameInput}
-                    style={{ height: '27px', width: '60%', alignSelf: 'center', fontWeight: 500 }}
+                    style={{
+                      height: '27px',
+                      width: '60%',
+                      alignSelf: 'center',
+                      fontWeight: 500,
+                      backgroundColor: consoleTheme.commentTextArea,
+                      color: consoleTheme.text,
+                    }}
                   />
                 ) : (
                   <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
@@ -276,12 +295,16 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
           <Menu.Item
             key={`comment-${props.rubricCategory.id}-add`}
             style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
               textAlign: 'center',
             }}
           >
-            <Button type="dashed" icon="plus" size="small" style={{ width: '100%' }} onClick={helpers.addComment}>
+            <Button
+              type="dashed"
+              icon="plus"
+              size="small"
+              style={{ width: '100%', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
+              onClick={helpers.addComment}
+            >
               Add
             </Button>
           </Menu.Item>

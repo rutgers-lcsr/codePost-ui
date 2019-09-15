@@ -189,6 +189,8 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         message.success('updating rubric');
         await this.loadAssignmentRubric(this.props.assignment);
       }, this.props.reloadInterval);
+    } else {
+      clearInterval(this.interval);
     }
   }
 

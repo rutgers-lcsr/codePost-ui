@@ -97,6 +97,25 @@
   }
 }
 
+.search {
+  &--light {
+    input {
+      background-color: #fff;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  &--dark {
+    .ant-input-group-addon {
+      background-color: #323435;
+    }
+    input {
+      background-color: #18191b;
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
 @keyframes slide-in {
   from {
     bottom: -50px;

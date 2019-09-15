@@ -136,7 +136,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         style={{
           height: '8px',
           width: '8px',
-          fill: this.context.consoleTheme.commentTitleText,
+          fill: 'rgba(0, 0, 0, 0.8)',
           position: 'absolute',
           top: '50%',
           left: '50%',
@@ -151,7 +151,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         style={{
           height: '8px',
           width: '8px',
-          fill: this.context.consoleTheme.commentTitleText,
+          fill: 'rgba(0, 0, 0, 0.8)',
           position: 'absolute',
           top: '50%',
           left: '50%',
