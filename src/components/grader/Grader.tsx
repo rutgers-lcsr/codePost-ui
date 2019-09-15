@@ -429,7 +429,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
           <Icon type="setting" />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" size="small" onClick={this.props.handleLogout}>
+      <Button key="header-logout" onClick={this.props.handleLogout}>
         Logout
       </Button>,
     ];

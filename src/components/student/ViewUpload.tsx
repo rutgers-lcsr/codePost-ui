@@ -41,8 +41,10 @@ function ViewUpload(props: IProps) {
   };
 
   useEffect(() => {
-    fetchUpload();
-  }, [props.assignment]);
+    if (props.isVisible) {
+      fetchUpload();
+    }
+  }, [props.assignment, props.isVisible]);
 
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);

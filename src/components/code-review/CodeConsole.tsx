@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, Menu, message } from 'antd';
+
+import { Empty, Menu, message, notification } from 'antd';
+
 import queryString from 'query-string';
 
 /* codePost imports */
@@ -47,6 +49,8 @@ import RubricMenuUI from './menu/RubricMenuUI';
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
+
+import { openSubmission } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
 
@@ -259,9 +263,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   // Points from generic comments
-  public static genericCommentPoints = (comments: IFileToCommentsMap): number => {
+  public static genericCommentPoints = (comments: IFileToCommentsMap, filterFileSet?: Set<Number>): number => {
     return Object.keys(comments)
       .map((fileID) => {
+        // If there's a filter set, and this file isn't in the set, then ignore it
+        if (filterFileSet && !filterFileSet.has(parseInt(fileID))) return 0;
+
         return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
           if (!UiComment.isNew(comment) && comment.pointDelta) {
             return accumulator + comment.pointDelta;
@@ -278,9 +285,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // Points from RubricComments, ignoring category caps
   public static pointsPerCategory = (
     commentRubricComments: ICommentToRubricCommentMap,
+    filterCommentSet?: Set<Number>,
   ): { [categoryID: number]: number } => {
     const pointsPerCategory: any = {};
     for (const commentID in commentRubricComments) {
+      // If there's a filter set, and this comment isn't in the set, then ignore it
+      if (filterCommentSet && !filterCommentSet.has(parseInt(commentID))) continue;
+
       // Don't count unsaved comments
       if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
         if (!pointsPerCategory[commentRubricComments[commentID].category]) {
@@ -321,9 +332,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     comments: IFileToCommentsMap,
     commentRubricComments: ICommentToRubricCommentMap,
     rubricCategories: RubricCategoryType[],
+    files: FileType[],
   ): number => {
-    const commentPoints = CodeConsole.genericCommentPoints(comments);
-    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments);
+    // Get the set of fileIDs and commentIDs for the current files
+    // This filters out any old file versions
+    const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(files);
+    const commentPoints = CodeConsole.genericCommentPoints(comments, currentFileSet);
+    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments, currentCommentSet);
     const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
 
     const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
@@ -337,9 +352,38 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  // This function filters out old file versions, and keeps only the current file versions
+  // It outputs a set of the current file IDs and the current comment IDs
+  public static filterCurrentFileVersions = (files: FileType[]) => {
+    const currentFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
+      if (!currentFiles[path]) currentFiles[path] = file;
+      else {
+        if (Date.parse(currentFiles[path].created) <= Date.parse(file.created)) {
+          currentFiles[path] = file;
+        }
+      }
+    });
+
+    const currentFileSet: Set<Number> = new Set();
+    const currentCommentSet: Set<Number> = new Set();
+    Object.keys(currentFiles).forEach((path) => {
+      const file = currentFiles[path];
+      currentFileSet.add(file.id);
+      file.comments.forEach((commentID) => currentCommentSet.add(commentID));
+    });
+
+    return [currentFileSet, currentCommentSet];
+  };
+
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
+
+  // Interval for live feedback mode to reloda the submission to see if there are new files
+  private checkNewFilesInterval: any;
+  private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
 
   public constructor(props: ICodeConsoleProps) {
     super(props);
@@ -471,29 +515,68 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             comments,
             commentRubricComments,
             rubricCategories,
+            files,
           );
         }
-
-        this.setState({
-          assignment,
-          course,
-          submission: writableSubmission,
-          files,
-          comments,
-          commentRubricComments,
-          rubricCategories,
-          rubricComments,
-          graders,
-          isLoading: false,
-          selectedFile: files.length > 0 ? files[0] : undefined,
-          permissionLevel,
-        });
+        
+        this.setState(
+          {
+            assignment,
+            course,
+            submission: writableSubmission,
+            files,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+            rubricComments,
+            graders,
+            allowGradersToEditRubric,
+            isLoading: false,
+            selectedFile: files.length > 0 ? files[0] : undefined,
+            permissionLevel,
+          },
+          () => this.setNewFilesWarning(),
+        );
     }
   }
 
   /***********************************************************************************
   /* Loading methods
   /**********************************************************************************/
+
+  public loadSettings = async (assignment: AssignmentType) => {
+    const courseID = assignment.course;
+    const settings: CourseSettingsType = await Course.readSettings(courseID);
+    return settings;
+  };
+
+  public setNewFilesWarning = () => {
+    if (
+      this.state.permissionLevel !== PERMISSION_LEVEL.WRITE ||
+      !this.state.submission ||
+      !this.state.assignment ||
+      !this.state.assignment.liveFeedbackMode
+    ) {
+      return;
+    }
+
+    this.checkNewFilesInterval = window.setInterval(() => {
+      this.checkForNewFiles();
+    }, this.LIVE_FEEDBACK_FILES_RELOAD_INTERVAL);
+  };
+
+  public checkForNewFiles = async () => {
+    const newSubmission = await Submission.readAnonymous(this.state.submission!.id);
+    if (newSubmission.files.length !== this.state.submission!.files.length) {
+      notification['warning']({
+        message: 'New files uploaded',
+        description:
+          'There are new files for this submission. Please refresh this page to view the new files, before continuing to grade. ',
+        duration: null,
+      });
+      clearInterval(this.checkNewFilesInterval);
+    }
+  };
 
   public loadRubric = async (assignmentID: number) => {
     const rubric = await Assignment.readRubric(assignmentID);
@@ -642,11 +725,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (comment.id < 0) {
-        savedComment = await CommentIO.create(comment);
-        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (UiComment.isEmpty(comment)) {
+        return this.deleteComment(comment);
       } else {
-        savedComment = await CommentIO.update(comment);
+        if (comment.id < 0) {
+          savedComment = await CommentIO.create(comment);
+          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+        } else {
+          savedComment = await CommentIO.update(comment);
+        }
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
@@ -764,7 +851,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public calculateGradeFromState = (): number | undefined => {
-    if (!this.state.submission || !this.state.assignment) {
+    if (!(this.state.submission || this.state.readOnlySubmission) || !this.state.assignment) {
       return undefined;
     }
 
@@ -773,6 +860,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.comments,
       this.state.commentRubricComments,
       this.state.rubricCategories,
+      this.state.files,
     );
   };
 
@@ -915,6 +1003,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       liveFeedbackMode: false,
       collaborativeRubricMode: false,
       additiveGrading: false,
+      forcedRubricMode: false,
     };
 
     const demoCourse: CourseType = {
@@ -961,6 +1050,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           name: file.name,
           submission: 1,
           path: null,
+          created: '',
         });
 
         commentMap[index] = [];
@@ -1013,7 +1103,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         },
         {
           id: 3,
-          text: "Generic variable name that doesn't describe value",
+          text: "Generic variable name (e.g. `x`) that doesn't describe value",
           category: 1,
           comments: [],
           pointDelta: 1,
@@ -1023,7 +1113,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       2: [
         {
           id: 4,
-          text: 'Sorting followed by binary search would be faster than performing a quadratic search every time',
+          text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
           category: 2,
           comments: [],
           pointDelta: 2,
@@ -1086,6 +1176,39 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricComments: rubric.rubricComments,
       commentRubricComments: newCommentRubricComments,
     });
+  };
+
+  /***********************************************************************************
+  /* Claim from console feature (triggered via console menu)
+  /**********************************************************************************/
+
+  public fetchSubmission = async (assignment: AssignmentType): Promise<AnonymousSubmissionType | undefined> => {
+    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          return undefined;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        return json;
+      });
+  };
+
+  public claimSubmission = async () => {
+    if (this.state.assignment) {
+      const submission = await this.fetchSubmission(this.state.assignment);
+      if (submission !== undefined) {
+        openSubmission(submission.id);
+        message.success('Successfully claimed another submission. Start reviewing!');
+      } else {
+        message.success('The ungraded queue is empty, so there are no more submissions to claim.');
+      }
+    }
   };
 
   /***********************************************************************************
@@ -1163,50 +1286,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       /*********************************************************
       /* Build header
       /*********************************************************/
-      const groupStyle = {
-        padding: '5px 20px',
-        lineHeight: '40px',
-        fontSize: '14px',
-        color: '#8d9298',
-        background: '#f4f4f4',
-        fontWeight: 600,
-        cursor: 'default',
-      };
-      const itemStyle = {
-        padding: '5px 20px',
-        lineHeight: '35px',
-        fontSize: '14px',
-        cursor: 'pointer',
-      };
-
-      const openIntercom = () => {
-        (window as any).Intercom('show');
-      };
-
-      const menu = (
-        <Menu mode="vertical" style={{ width: 280, padding: 0 }}>
-          <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
-            Code Review Console
-          </Menu.Item>
-          {this.state.isStudent ? null : (
-            <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-              <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-            </Menu.Item>
-          )}
-          <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
-            Help! (talk to a human from codePost)
-          </Menu.Item>
-          <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
-            Other
-          </Menu.Item>
-          <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
-            <a href="/">Home</a>
-          </Menu.Item>
-          <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-            <a href="/logout">Logout</a>
-          </Menu.Item>
-        </Menu>
-      );
 
       middleHeader = [
         <GradeButton
@@ -1217,6 +1296,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           rubricCategories={this.state.rubricCategories}
           comments={this.state.comments}
           commentRubricComments={this.state.commentRubricComments}
+          files={this.state.files}
         />,
       ];
 
@@ -1258,6 +1338,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 
@@ -1316,7 +1397,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1383,7 +1464,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1413,7 +1494,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu menu={menu} key="menu" />,
+          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"
@@ -1472,6 +1553,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
+              forcedRubricMode={this.state.assignment.forcedRubricMode}
             />
           );
 

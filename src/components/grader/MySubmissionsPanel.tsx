@@ -35,6 +35,9 @@ type alignType = 'left' | 'right' | 'center';
 
 const { Option } = Select;
 
+// 5 minute interval for automatic reload
+const LOADING_INTERVAL = 15000;
+
 /**********************************************************************************************************************/
 
 /* for type checking functions that operate on table rows */
@@ -74,6 +77,9 @@ interface IState {
 }
 
 class MySubmissionsPanel extends React.Component<IProps, IState> {
+  // @ts-ignore
+  private interval: number;
+
   public constructor(props: IProps) {
     super(props);
     this.state = {
@@ -96,6 +102,9 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
 
   public componentDidMount() {
     this.changeAssignment(this.props.assignment);
+    this.interval = window.setInterval(() => {
+      this.changeAssignment(this.props.assignment);
+    }, LOADING_INTERVAL);
   }
 
   public componentDidUpdate(oldProps: IProps) {
@@ -418,7 +427,16 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
           },
         },
         {
-          title: 'Release',
+          title: (
+            <span>
+              Unclaim &nbsp;
+              <CPTooltip
+                title="Remove yourself as the grader of this submission, and return the submission to the ungraded queue."
+                hideThisOnHideTips={true}
+                infoIcon={true}
+              />
+            </span>
+          ),
           dataIndex: 'release',
           align: centerAlign,
         },
@@ -440,9 +458,9 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
           release: (
             <div>
               <Popconfirm
-                title="Are you sure you want to release this submission?"
+                title="Are you sure you want to unclaim this submission?"
                 onConfirm={releaseSubmission}
-                okText="Release"
+                okText={sub.isFinalized ? 'Unclaim and unfinalize' : 'Unclaim'}
                 cancelText="Cancel"
                 placement="left"
               >

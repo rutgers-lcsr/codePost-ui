@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import {
   createObject,
+  createObjectDetail,
   deleteObject,
   GenericObject,
   readObject,
@@ -35,6 +36,7 @@ const AssignmentV = t.intersection(
       allowRegradeRequests: t.boolean,
       regradeDeadline: t.union([t.null, t.string]),
       hideGradersFromStudents: t.boolean,
+      forcedRubricMode: t.boolean,
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
     }),
@@ -109,6 +111,7 @@ const AssignmentVPatch = t.intersection(
       liveFeedbackMode: t.boolean,
       collaborativeRubricMode: t.boolean,
       additiveGrading: t.boolean,
+      forcedRubricMode: t.boolean,
     }),
   ],
   'AssignmentPatch',
@@ -176,6 +179,12 @@ const StudentUploadData = t.intersection([
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static createStudentUpload = createObjectDetail(
+    StudentSubmissionV,
+    StudentUploadData,
+    'assignments',
+    'studentUpload',
+  );
   public static updateStudentUpload = updateObjectDetail(
     StudentSubmissionV,
     StudentUploadData,

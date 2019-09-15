@@ -35,6 +35,7 @@ interface IProps {
   pagination?: any;
   hideSearch?: boolean;
   titleInfo?: string | React.ReactNode;
+  onRowClick?: (record: any) => void;
 }
 
 interface IState {
@@ -177,6 +178,19 @@ class TableDetail extends React.Component<IProps, IState> {
             <Table
               columns={newColumns}
               dataSource={data}
+              onRow={
+                this.props.onRowClick === undefined
+                  ? undefined
+                  : (record, rowIndex) => {
+                      return {
+                        onClick: (event) => {
+                          if (this.props.onRowClick) {
+                            return this.props.onRowClick(record);
+                          }
+                        },
+                      };
+                    }
+              }
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination

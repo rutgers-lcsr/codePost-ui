@@ -32,6 +32,9 @@ interface IProps {
   selectedStudents: string[];
   submissions: IStudentSubmissionsDataTable;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+
+  disableStudentSelect?: boolean;
+  onSuccess?: () => void;
 }
 
 enum STATUS {
@@ -95,6 +98,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public cancel = () => {
     this.setState({ status: STATUS.NONE, files: [], fileList: [] });
     this.props.onCancel();
+  };
+
+  public onSuccess = () => {
+    this.setState({ status: STATUS.NONE, files: [], fileList: [] });
+    this.props.onSuccess ? this.props.onSuccess() : this.props.onCancel();
   };
 
   public toggleDirectoryUpload = () => {
@@ -294,6 +302,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               value={selectedStudents}
               options={studentOptions}
               onChange={this.changeStudents}
+              isDisabled={this.props.disableStudentSelect}
             />
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
@@ -337,7 +346,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     switch (this.state.status) {
       case STATUS.NONE:
         goBackButton = (
-          <Button key="back" onClick={this.cancel}>
+          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
             Cancel
           </Button>
         );
@@ -370,7 +379,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.COMPLETE:
         goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.cancel}>
+          <Button key="submit" type="primary" onClick={this.onSuccess}>
             Close
           </Button>
         );

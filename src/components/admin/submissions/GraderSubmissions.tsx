@@ -126,7 +126,7 @@ class GraderData extends React.Component<IProps, IState> {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
           {
-            title: 'Expand',
+            title: 'Zoom in',
             dataIndex: 'expand',
             key: 'expand',
             align: aligner,
@@ -214,15 +214,17 @@ class GraderData extends React.Component<IProps, IState> {
         }
 
         data = rowValues.map((graderEmail) => {
-          const expandFn = () => {
+          const expandFn = (event: React.MouseEvent<HTMLElement>) => {
             this.setState({ activeGrader: graderEmail });
           };
 
           const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="zoom-in" onClick={expandFn} />
-              </CPTooltip>
+              <div onClick={expandFn} style={{ cursor: 'pointer' }}>
+                <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
+                  <Icon type="folder-open" />
+                </CPTooltip>
+              </div>
             ),
             key: graderEmail,
             grader: graderEmail,

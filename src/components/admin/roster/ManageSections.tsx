@@ -191,7 +191,7 @@ class ManageSections extends React.Component<IProps, IState> {
           key: section.id,
           section: section.name,
           students: (
-            <span onClick={this.setOpenSection.bind(this, section)} style={hoverStyle}>
+            <span onClick={this.setOpenSection.bind(this, section)} className="text-link" style={hoverStyle}>
               {section.students.length}
             </span>
           ),

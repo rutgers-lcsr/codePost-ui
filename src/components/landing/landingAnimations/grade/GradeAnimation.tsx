@@ -165,7 +165,7 @@ function GradeAnimation() {
         <Sider theme="light" width={150} style={{ background: '#FFFFFF' }}>
           <SimpleGradeMenu
             selectedKeys={['2']}
-            secondFileDeduction={saveCommentSpring.index.interpolate((x) => {
+            secondFileDeduction={saveCommentSpring.index.interpolate((x: number) => {
               return Math.round(x) * -1;
             })}
           />
@@ -173,7 +173,7 @@ function GradeAnimation() {
         <Layout style={{ maxWidth: 690 }}>
           <Header style={{ background: '#FFFFFF', paddingLeft: 20, paddingRight: 20 }}>
             <SimpleGradeHeader
-              grade={saveCommentSpring.index.interpolate((i) => {
+              grade={saveCommentSpring.index.interpolate((i: number) => {
                 return Math.round(i) === 0 ? '20/20' : '19/20';
               })}
             />
@@ -184,10 +184,10 @@ function GradeAnimation() {
               <animated.div
                 style={{
                   top: 164,
-                  left: commentSpring.width.interpolate((x) => {
+                  left: commentSpring.width.interpolate((x: any) => {
                     return Number(x) + 350;
                   }),
-                  opacity: commentSpring.width.interpolate((x) => {
+                  opacity: commentSpring.width.interpolate((x: any) => {
                     return x === 0 || x === 102 ? 0 : 1;
                   }),
                   position: 'absolute',
@@ -211,7 +211,7 @@ function GradeAnimation() {
                       height: 160,
                       opacity: commentBoxSpring.opacity,
                       overflowX: 'hidden',
-                      transform: commentBoxSpring.opacity.interpolate((x) => {
+                      transform: commentBoxSpring.opacity.interpolate((x: any) => {
                         return `translateY(${Number(x) * 30 - 30}px)`;
                       }),
                       display: 'inline-block',
@@ -220,7 +220,7 @@ function GradeAnimation() {
                     <div style={{ position: 'absolute', float: 'left' }}>
                       <div style={{ minWidth: 230, minHeight: 250, width: 230, position: 'absolute' }}>
                         <AnimatedComment
-                          text={length.interpolate((l) => {
+                          text={length.interpolate((l: number) => {
                             return textAnimation(
                               '*Variable naming*: How about `arr` and `el` instead of `x` and `y`?',
                               l,
@@ -229,7 +229,7 @@ function GradeAnimation() {
                           line={3}
                           points={1}
                           top={0}
-                          classType={saveCommentSpring.index.interpolate((x) => {
+                          classType={saveCommentSpring.index.interpolate((x: number) => {
                             return Math.round(x) === 1 ? 'inactive' : 'active';
                           })}
                         />

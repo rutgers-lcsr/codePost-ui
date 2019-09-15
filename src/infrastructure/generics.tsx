@@ -259,6 +259,37 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   return foo;
 }
 
+function createObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
+  output: t.Type<T, O, I>,
+  input: t.Type<Q, K, J>,
+  url: string,
+  detail: string,
+): (object: Q, urlArgs?: { [arg: string]: string }) => Promise<T> {
+  const foo = async (object: Q, urlArgs?: { [arg: string]: string }) => {
+    const urlString = getURLString(urlArgs);
+
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(object),
+    });
+
+    if ((await res.status) === 200) {
+      const data = await res.json();
+      return await decodeToPromise(output, data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
+    }
+  };
+
+  return foo;
+}
+
 async function loadIDList(ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) {
   const ignoreRejects = (p: Promise<any>) => {
     return p.catch((e: any) => {
@@ -280,6 +311,7 @@ async function loadIDList(ids: number[], klass: any, method: string = 'read', ur
 
 export {
   createObject,
+  createObjectDetail,
   readObject,
   listObject,
   updateObject,

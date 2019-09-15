@@ -98,6 +98,13 @@ class StudentData extends React.Component<IProps, IState> {
     });
   };
 
+  public onSubmissionClick = (submissionID: number, event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    openSubmission(submissionID);
+  };
+
   public render() {
     let toggleInactiveStudents;
 
@@ -128,7 +135,7 @@ class StudentData extends React.Component<IProps, IState> {
         const aligner: 'left' | 'center' | 'right' = 'center';
         columns = [
           {
-            title: 'Expand',
+            title: 'Zoom in',
             dataIndex: 'expand',
             key: 'expand',
             align: aligner,
@@ -196,15 +203,17 @@ class StudentData extends React.Component<IProps, IState> {
         }
 
         data = rowValues.map((studentEmail) => {
-          const expandFn = () => {
+          const expandFn = (event: React.MouseEvent<HTMLElement>) => {
             this.setState({ activeStudent: studentEmail });
           };
 
           const toRet: any = {
             expand: (
-              <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                <Icon type="zoom-in" onClick={expandFn} />
-              </CPTooltip>
+              <div style={{ cursor: 'pointer' }} onClick={expandFn}>
+                <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
+                  <Icon type="folder-open" />
+                </CPTooltip>
+              </div>
             ),
             student: studentEmail,
             key: studentEmail,
@@ -213,12 +222,16 @@ class StudentData extends React.Component<IProps, IState> {
             const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
             if (submission && submission.isFinalized) {
               toRet[assignment.name] = (
-                <span style={{ cursor: 'pointer' }} onClick={openSubmission.bind(this, submission.id)}>
+                <span className="text-link" style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
                   {submission.grade}
                 </span>
               );
             } else if (submission) {
-              toRet[assignment.name] = 'Unfinalized';
+              toRet[assignment.name] = (
+                <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
+                  Unfinalized
+                </span>
+              );
             } else {
               toRet[assignment.name] = '--';
             }
