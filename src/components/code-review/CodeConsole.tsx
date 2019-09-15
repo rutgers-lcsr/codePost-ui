@@ -518,7 +518,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             files,
           );
         }
-        
+
         this.setState(
           {
             assignment,
@@ -530,7 +530,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories,
             rubricComments,
             graders,
-            allowGradersToEditRubric,
             isLoading: false,
             selectedFile: files.length > 0 ? files[0] : undefined,
             permissionLevel,
@@ -543,12 +542,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************
   /* Loading methods
   /**********************************************************************************/
-
-  public loadSettings = async (assignment: AssignmentType) => {
-    const courseID = assignment.course;
-    const settings: CourseSettingsType = await Course.readSettings(courseID);
-    return settings;
-  };
 
   public setNewFilesWarning = () => {
     if (
