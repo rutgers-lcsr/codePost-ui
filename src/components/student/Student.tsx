@@ -322,6 +322,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         name: file.name,
         code: file.data,
         extension: this.getFileExtension(file.name),
+        path: file.path,
       };
     });
 
