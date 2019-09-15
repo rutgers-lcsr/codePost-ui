@@ -422,6 +422,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
                 textOverflow: 'ellipsis',
+                fontSize: 12,
               }}
             >
               {file.name}
