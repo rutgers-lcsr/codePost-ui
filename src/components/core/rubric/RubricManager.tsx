@@ -381,15 +381,15 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           this.loadFeedbackScores(newRubric.rubricComments);
 
           return {
-            newCategories: newRubric.rubricCategories,
-            newComments: commentMap,
+            rubricCategories: newRubric.rubricCategories,
+            rubricComments: commentMap,
           };
         });
       })
       .catch((errors) => {
         return {
-          newCategories: categories,
-          newComments: comments,
+          rubricCategories: categories,
+          rubricComments: comments,
         };
       });
   };
@@ -448,7 +448,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     };
   };
 
-  public onSave = (fnc?: () => void) => {
+  public onSave = (fnc?: (rubric: any) => void) => {
     const {
       rubricComments,
       rubricCategories,
@@ -467,7 +467,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     this.setState({ isSaving: true }, () => {
       const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
-
       // Do we need to figure out what to do with applied rubric comments that are being deleted?
       if (conflicts.deleted.length > 0) {
         this.setState({ linkedComments: conflicts.deleted, isSaving: false });
@@ -491,10 +490,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       ).then((savedRubric) => {
         message.success('Rubric saved!');
         this.setState({
-          rubricCategories: savedRubric.newCategories,
-          rubricComments: savedRubric.newComments,
-          savedRubricCategories: _.cloneDeep(savedRubric.newCategories),
-          savedRubricComments: _.cloneDeep(savedRubric.newComments),
+          rubricCategories: savedRubric.rubricCategories,
+          rubricComments: savedRubric.rubricComments,
+          savedRubricCategories: _.cloneDeep(savedRubric.rubricCategories),
+          savedRubricComments: _.cloneDeep(savedRubric.rubricComments),
           unsavedComments: [],
           deletedComments: [],
           unsavedCategories: [],
@@ -503,6 +502,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           confirmedPropagation: false,
           isSaving: false,
         });
+        if (fnc !== undefined) {
+          fnc(savedRubric);
+        }
       });
     });
   };
@@ -760,14 +762,14 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     });
   };
 
-  public onLinkedConfirmAccept = () => {
+  public onLinkedConfirmAccept = (fnc?: () => void) => {
     this.setState(
       {
         showConfirmDialog: false,
         confirmedPropagation: true,
       },
       () => {
-        this.onSave(undefined);
+        this.onSave(fnc);
       },
     );
   };

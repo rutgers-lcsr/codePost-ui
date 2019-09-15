@@ -1060,6 +1060,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ editRubricMode: !this.state.editRubricMode });
   };
 
+  // public setRubric = (rubricCategories: RubricCategoryType[], rubricComments: IRubricCategoryToRubricCommentsMap) => {
+  public setRubric = (rubric: {
+    rubricCategories: RubricCategoryType[];
+    rubricComments: IRubricCategoryToRubricCommentsMap;
+  }) => {
+    const newCommentRubricComments: any = {};
+
+    for (const commentID of Object.keys(this.state.commentRubricComments)) {
+      const oldRubricComment = this.state.commentRubricComments[+commentID];
+
+      const newRubricComment = rubric.rubricComments[oldRubricComment.category].find(
+        (rubricComment: RubricCommentType) => {
+          return rubricComment.id === oldRubricComment.id;
+        },
+      );
+
+      if (newRubricComment) {
+        newCommentRubricComments[+commentID] = newRubricComment;
+      }
+    }
+
+    this.setState({
+      rubricCategories: rubric.rubricCategories,
+      rubricComments: rubric.rubricComments,
+      commentRubricComments: newCommentRubricComments,
+    });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -1278,6 +1306,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 hasActiveComment: this.state.activeCommentID !== undefined,
                 toggleEditRubricMode: this.toggleEditRubricMode,
                 editRubricMode: this.state.editRubricMode,
+                setRubric: this.setRubric,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1491,6 +1520,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 hasActiveComment: this.state.activeCommentID !== undefined,
                 toggleEditRubricMode: this.toggleEditRubricMode,
                 editRubricMode: this.state.editRubricMode,
+                setRubric: this.setRubric,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

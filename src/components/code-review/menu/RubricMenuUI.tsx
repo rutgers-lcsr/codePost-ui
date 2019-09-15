@@ -56,6 +56,8 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
   const [editRubricClass, setEditRubricClass] = React.useState('');
   const [newCategoryName, setNewCategoryName] = React.useState('');
 
+  // console.log(props, state, helpers);
+
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
     setEditingStatuses(newEditingStatuses);
@@ -155,7 +157,8 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     const changesMade = helpers.changesMade();
 
     const onSave = (e: any) => {
-      helpers.onSave(undefined, e);
+      helpers.onSave(props.setRubric, e);
+
       setEditingStatuses({});
     };
 
@@ -185,6 +188,10 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
     };
 
+    const onLinkedConfirmAccept = () => {
+      helpers.onLinkedConfirmAccept(props.setRubric);
+    };
+
     const categoryForm = <Input placeholder="Category name" value={newCategoryName} onChange={onChangeCategoryName} />;
 
     const controlButtons = [
@@ -208,7 +215,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
           isVisible={state.linkedComments.length > 0}
         />
         <LinkedCommentsConfirm
-          onAccept={helpers.onLinkedConfirmAccept}
+          onAccept={onLinkedConfirmAccept}
           onCancel={helpers.onLinkedConfirmCancel}
           isVisible={state.showConfirmDialog}
           unsavedComments={state.unsavedComments}
