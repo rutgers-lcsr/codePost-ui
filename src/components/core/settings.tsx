@@ -106,6 +106,26 @@ class Settings extends React.Component<IProps, IState> {
     this.setState({ askedToReset: !this.state.askedToReset });
   };
 
+  public sendPasswordResetEmail = () => {
+    fetch(`${process.env.REACT_APP_API_URL}/registration/emailPasswordReset/`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: this.props.user.email }),
+      method: 'POST',
+    })
+      .then((res) => {
+        if (res.ok || res.status === 400) {
+          return res.json();
+        } else {
+          return Promise.reject();
+        }
+      })
+      .then((json) => {
+        message.success('Check your email for a link to reset your password.');
+      });
+  };
+
   public render() {
     const { user } = this.props;
 
@@ -144,6 +164,11 @@ class Settings extends React.Component<IProps, IState> {
       <div>
         <Typography.Title level={4}>User info</Typography.Title>
         <Input addonBefore="Email" className="input--disabled-normal" disabled={true} value={user.email} />
+        <br />
+        <br />
+        <CPButton cpType="secondary" onClick={this.sendPasswordResetEmail}>
+          Reset password
+        </CPButton>
         <br />
         <br />
         <Typography.Title level={4}>Organization info</Typography.Title>

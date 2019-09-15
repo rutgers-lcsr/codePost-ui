@@ -117,6 +117,14 @@ export class UiComment {
       return comment.pointDelta ? comment.pointDelta : 0;
     }
   };
+
+  public static isEmpty = (comment: CommentType) => {
+    return (
+      (comment.text === null || comment.text.length === 0) &&
+      (comment.pointDelta === null || comment.pointDelta === 0) &&
+      (comment.rubricComment === undefined || comment.rubricComment === null)
+    );
+  };
 }
 
 export const CommentMock: CommentType = {

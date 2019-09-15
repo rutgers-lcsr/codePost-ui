@@ -13,10 +13,27 @@ const FileV = t.intersection(
       name: t.string,
       submission: t.number,
       path: t.union([t.string, t.null]),
+      created: t.string,
     }),
     t.partial({}),
   ],
   'File',
+);
+
+const FileVPost = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      code: t.string,
+      comments: t.array(t.number),
+      extension: t.string,
+      name: t.string,
+      submission: t.number,
+      path: t.union([t.string, t.null]),
+    }),
+    t.partial({}),
+  ],
+  'FilePost',
 );
 
 const FileVPatch = t.intersection(
@@ -42,7 +59,7 @@ const JupyterExtensions = ['ipynb', '.ipynb'];
 type CodeType = 'code' | 'markdown' | 'jupyter';
 
 export class File {
-  public static create = createObject(FileV, FileV, 'files');
+  public static create = createObject(FileV, FileVPost, 'files');
   public static read = readObject(FileV, 'files');
   public static update = updateObject(FileV, FileVPatch, 'files');
   public static delete = deleteObject(FileV, 'files');
@@ -90,6 +107,7 @@ export const FileMock: FileType = {
   comments: [1],
   submission: 1,
   path: null,
+  created: '',
 };
 
 // export { CodeType, FileType, File, FileMock };

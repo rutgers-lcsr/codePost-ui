@@ -138,7 +138,7 @@ class GraderDetail extends React.Component<IProps, IState> {
     if (!selectedAssignment) {
       const columns = [
         {
-          title: 'Expand',
+          title: 'Zoom in',
           dataIndex: 'expand',
           key: 'expand',
           align: aligner,
@@ -191,8 +191,8 @@ class GraderDetail extends React.Component<IProps, IState> {
         const menu = (
           <Menu>
             <Menu.Item onClick={this.changeActiveAssignment.bind(this, assignment)}>
-              <Icon type="zoom-in" />
-              Expand
+              <Icon type="folder-open" />
+              Zoom in
             </Menu.Item>
           </Menu>
         );
@@ -217,9 +217,11 @@ class GraderDetail extends React.Component<IProps, IState> {
         return {
           key: assignment.name,
           expand: (
-            <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
-              <Icon type="zoom-in" onClick={this.changeActiveAssignment.bind(this, assignment)} />
-            </CPTooltip>
+            <div onClick={this.changeActiveAssignment.bind(this, assignment)} style={{ cursor: 'pointer' }}>
+              <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
+                <Icon type="folder-open" />
+              </CPTooltip>
+            </div>
           ),
           assignment: assignment.name,
           claimed: graded ? graded.length : 0,

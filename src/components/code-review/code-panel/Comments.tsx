@@ -41,6 +41,8 @@ interface ICommentsEditProps {
 
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
+  forcedRubricMode: boolean;
+
   oldCommentIDs: { [currentID: number]: number };
 }
 
@@ -306,6 +308,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           studentFeedbackOn={this.props.studentFeedbackOn}
           hideAuthor={this.props.hideAuthor}
           additiveGrading={this.props.additiveGrading}
+          forcedRubricMode={this.props.forcedRubricMode}
         />
       );
     });
@@ -356,6 +359,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           saveComment={this.saveComment}
           deleteComment={this.deleteComment}
           removeRubricComment={this.removeRubricComment}
+          forcedRubricMode={false}
           oldCommentIDs={{}}
         />
       );
