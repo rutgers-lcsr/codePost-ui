@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Menu, Popconfirm } from 'antd';
+import { Icon, Input, Menu, Popconfirm, Tag } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -92,7 +92,33 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     rubricCategories: RubricCategoryType[],
     rubricComments: IRubricCategoryToRubricCommentsMap,
   ) => {
-    return rubricCategories.sort(RubricCategory.compare).map((cat: RubricCategoryType, catIndex: number) => {
+    // sample search: category:dfdfdfdf some other text
+    // sample search: category:"some text" some other text
+
+    // If user has specified a category with category:[some text], respect it
+    const categoryMatches = searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+
+    let filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    let commentSearchTerm = searchTerm;
+    if (categoryMatches !== null && categoryMatches.length > 0) {
+      const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
+      filteredCatgories = rubricCategories.filter((el) => {
+        return el.name.toUpperCase().includes(categoryName.toUpperCase());
+      });
+      commentSearchTerm = searchTerm
+        .split(' ')
+        .filter((el: any) => {
+          return !el.includes('category:');
+        })
+        .join(' ');
+    }
+
+    // if user is trying to invoke category search, don't try searching for the search term
+    if ('category:'.includes(commentSearchTerm)) {
+      commentSearchTerm = '';
+    }
+
+    return filteredCatgories.map((cat: RubricCategoryType, catIndex: number) => {
       const savedCategory = state.savedRubricCategories.find((el: any) => {
         return el.id === cat.id;
       });
@@ -130,7 +156,7 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
               editingStatuses,
               startEditing,
               linkToComment,
-              searchTerm,
+              searchTerm: commentSearchTerm,
               assignment: props.assignment,
               editRubricMode: props.editRubricMode,
             };
@@ -252,6 +278,18 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
     controls = controlButtons;
   }
 
+  const insertCategorySearch = () => {
+    if (!searchTerm.includes('category:')) {
+      setSearchTerm(searchTerm === '' ? 'category:' : `${searchTerm} category:`);
+      // this.setState((oldState) => {
+      //   return {
+      //     searchTerm: oldState.searchTerm === '' ? 'category:' : `${oldState.searchTerm} category:`,
+      //   };
+      // });
+      focusSearch();
+    }
+  };
+
   let searchBar;
 
   if (props.assignment.collaborativeRubricMode) {
@@ -305,6 +343,21 @@ const RubricMenuUI = ({ props, state, helpers }: any) => {
         id="rubric-menu-title"
         style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
       >
+        <div style={{ textAlign: 'right' }}>
+          <Tag
+            style={{
+              background: consoleTheme.siderBg,
+              color: consoleTheme.siderTitle,
+              borderStyle: 'dashed',
+              marginBottom: '4px',
+              marginRight: '0px',
+              cursor: 'pointer',
+            }}
+            onClick={insertCategorySearch}
+          >
+            category:
+          </Tag>
+        </div>
         {searchBar}
       </div>
       <div id="rubric-menu" style={{ height: '100%', overflow: 'auto' }}>

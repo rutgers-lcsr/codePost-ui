@@ -203,6 +203,11 @@ const RubricMenuCategoryUI = ({ props, state, helpers }: any) => {
 
   const rows = buildCommentRows(props.rubricComments, state.rubricComments);
 
+  // hide categories with no matching comments
+  if (rows.length === 0 && props.searchTerm.length > 0) {
+    return null;
+  }
+
   const showDetailTag =
     props.rubricCategory.pointLimit !== null ||
     props.rubricCategory.helpText !== '' ||
