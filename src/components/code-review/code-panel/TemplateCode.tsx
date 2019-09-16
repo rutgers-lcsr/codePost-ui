@@ -4,6 +4,10 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
 
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { FileType } from '../../../infrastructure/file';
+import { FileTemplateType } from '../../../infrastructure/fileTemplate';
+
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 // interface ICodeProps {
@@ -26,8 +30,14 @@ public class LoopUtils {
   }
 }`;
 
-const TemplateCode = (props: any) => {
+interface ITemplateCodeProps {
+  file: FileType;
+}
+
+const TemplateCode = (props: ITemplateCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  console.log('template', props.file);
 
   const tokens = template.split('\n').filter((l: string) => {
     if (l.trim().length > 2) {

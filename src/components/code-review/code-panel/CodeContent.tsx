@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
+import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
 // @ts-ignore
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -29,7 +30,7 @@ export interface ICodeContentCoreProps {
 export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
-  templateMode: boolean;
+  fileTemplate?: FileTemplateType;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -126,7 +127,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           {props.file.code}
         </SyntaxHighlighter>
-        {props.templateMode ? (
+        {props.fileTemplate !== undefined ? (
           <div
             id="code-template"
             className="code code--template"
@@ -137,7 +138,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
               paddingBottom: '10px',
             }}
           >
-            <TemplateCode file={props.file} />
+            <TemplateCode file={props.file} fileTemplate={props.fileTemplate} />
           </div>
         ) : null}
         <div
@@ -174,7 +175,7 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           {...(this.props as ICodeContentCoreProps)}
           addComment={this.addComment}
           commentCounter={-1}
-          templateMode={false}
+          fileTemplate={undefined}
         />
       );
     }

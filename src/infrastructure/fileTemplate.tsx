@@ -16,7 +16,7 @@ const FileTemplateV = t.intersection(
   'FileTemplate',
 );
 
-const FileVPost = t.intersection(
+const FileTemplateVPost = t.intersection(
   [
     GenericObject,
     t.type({

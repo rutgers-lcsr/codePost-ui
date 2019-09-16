@@ -37,6 +37,7 @@ const AssignmentV = t.intersection(
       hideGradersFromStudents: t.boolean,
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
+      fileTemplates: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
     }),
