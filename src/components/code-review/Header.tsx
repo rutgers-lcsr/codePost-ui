@@ -334,6 +334,7 @@ interface IGradeBreakdownProps {
   rubricCategories: RubricCategoryType[];
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
+  files: FileType[];
 }
 
 // FIXME: Although the calculate methods that compose this component are modularized,
@@ -341,7 +342,8 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments);
+  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files);
+  const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);
 
@@ -529,6 +531,7 @@ export const GradeButton = (props: IGradeButtonProps) => {
           rubricCategories={props.rubricCategories}
           comments={props.comments}
           commentRubricComments={props.commentRubricComments}
+          files={props.files}
         />
       </Modal>
     </div>

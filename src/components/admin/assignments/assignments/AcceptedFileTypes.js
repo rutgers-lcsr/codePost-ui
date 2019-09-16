@@ -19,7 +19,6 @@ export const acceptedFiles = [
   '.json',
   '.fla',
   '.h',
-  '.class',
   '.py',
   '.dtd',
   '.xcodeproj',

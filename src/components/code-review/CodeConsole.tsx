@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, Icon, Menu, message } from 'antd';
+
+import { Empty, Menu, message, notification } from 'antd';
+
 import queryString from 'query-string';
 
 /* other library imports */
@@ -323,7 +325,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static filterCurrentFileVersions = (files: FileType[]) => {
     const currentFiles: { [pathName: string]: FileType } = {};
     files.forEach((file) => {
-      const path = `${file.path ? file.path : ''}/${file.name}`;
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
       if (!currentFiles[path]) currentFiles[path] = file;
       else {
         if (Date.parse(currentFiles[path].created) <= Date.parse(file.created)) {
@@ -346,6 +348,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
+
+  // Interval for live feedback mode to reloda the submission to see if there are new files
+  private checkNewFilesInterval: any;
+  private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
 
   public constructor(props: ICodeConsoleProps) {
     super(props);
@@ -482,21 +488,24 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
-        this.setState({
-          assignment,
-          course,
-          submission: writableSubmission,
-          files,
-          comments,
-          commentRubricComments,
-          rubricCategories,
-          rubricComments,
-          graders,
-          allowGradersToEditRubric,
-          isLoading: false,
-          selectedFile: files.length > 0 ? files[0] : undefined,
-          permissionLevel,
-        });
+        this.setState(
+          {
+            assignment,
+            course,
+            submission: writableSubmission,
+            files,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+            rubricComments,
+            graders,
+            allowGradersToEditRubric,
+            isLoading: false,
+            selectedFile: files.length > 0 ? files[0] : undefined,
+            permissionLevel,
+          },
+          () => this.setNewFilesWarning(),
+        );
     }
   }
 
@@ -508,6 +517,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const courseID = assignment.course;
     const settings: CourseSettingsType = await Course.readSettings(courseID);
     return settings;
+  };
+
+  public setNewFilesWarning = () => {
+    if (
+      this.state.permissionLevel !== PERMISSION_LEVEL.WRITE ||
+      !this.state.submission ||
+      !this.state.assignment ||
+      !this.state.assignment.liveFeedbackMode
+    ) {
+      return;
+    }
+
+    this.checkNewFilesInterval = window.setInterval(() => {
+      this.checkForNewFiles();
+    }, this.LIVE_FEEDBACK_FILES_RELOAD_INTERVAL);
+  };
+
+  public checkForNewFiles = async () => {
+    const newSubmission = await Submission.readAnonymous(this.state.submission!.id);
+    if (newSubmission.files.length !== this.state.submission!.files.length) {
+      notification['warning']({
+        message: 'New files uploaded',
+        description:
+          'There are new files for this submission. Please refresh this page to view the new files, before continuing to grade. ',
+        duration: null,
+      });
+      clearInterval(this.checkNewFilesInterval);
+    }
   };
 
   public loadRubric = async (assignmentID: number) => {
@@ -750,7 +787,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public calculateGradeFromState = (): number | undefined => {
-    if (!this.state.submission || !this.state.assignment) {
+    if (!(this.state.submission || this.state.readOnlySubmission) || !this.state.assignment) {
       return undefined;
     }
 
