@@ -266,20 +266,14 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     });
     const currentFileNumComments = this.getNumCommentsInFile(currentFile);
     const menu = (
-      <Menu
-        mode="inline"
-        inlineCollapsed={false}
-        selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-        defaultOpenKeys={[`${path}-old-versions`]}
-        style={{ minWidth: 280 }}
-        onSelect={this.onFileSelect.bind(this, true)}
-      >
+      <div>
         <Menu
           mode="inline"
           inlineCollapsed={false}
           selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
           defaultOpenKeys={[`${path}-old-versions`]}
           style={{ minWidth: 280 }}
+          onSelect={this.onFileSelect.bind(this, true)}
         >
           <Menu.SubMenu key={`${path}-old-versions`} title="File History">
             <Menu.Item key={`file-${currentFile.id}`} style={{ minWidth: 200 }}>
@@ -300,6 +294,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             {items}
           </Menu.SubMenu>
         </Menu>
+      </div>
     );
 
     return (
