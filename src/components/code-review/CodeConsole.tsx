@@ -1217,6 +1217,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
+              templateMode={false}
             />
           );
 
@@ -1415,6 +1416,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
+              templateMode={this.state.assignment !== undefined ? this.state.assignment.templateMode : false}
             />
           );
 

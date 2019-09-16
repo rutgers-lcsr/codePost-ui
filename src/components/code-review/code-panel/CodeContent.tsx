@@ -29,6 +29,7 @@ export interface ICodeContentCoreProps {
 export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
+  templateMode: boolean;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -37,7 +38,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   React.useEffect(() => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
-    const codeTemplate = document.getElementById('code-template');
 
     const horizontalCodeScroll = () => {
       // Scroll horizontally
@@ -46,37 +46,13 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       }
     };
 
-    const lm = () => {
-      console.log('main');
-    };
-
-    const ls = () => {
-      console.log('syntax');
-    };
-
-    const lt = () => {
-      console.log('template');
-    };
-
     if (codeMain !== null && codeSyntax !== null) {
       codeMain.addEventListener('scroll', horizontalCodeScroll);
-    }
-
-    if (codeMain !== null && codeSyntax !== null && codeTemplate !== null) {
-      codeMain.addEventListener('mousedown', lm);
-      codeSyntax.addEventListener('mousedown', ls);
-      codeTemplate.addEventListener('mousedown', lt);
     }
 
     return () => {
       if (codeMain !== null && codeSyntax !== null) {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
-      }
-
-      if (codeMain !== null && codeSyntax !== null && codeTemplate !== null) {
-        codeMain.removeEventListener('mousedown', lm);
-        codeSyntax.removeEventListener('mousedown', ls);
-        codeTemplate.removeEventListener('mousedown', lt);
       }
     };
   }, []);
@@ -150,18 +126,20 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           {props.file.code}
         </SyntaxHighlighter>
-        <div
-          id="code-template"
-          className="code code--template"
-          style={{
-            lineHeight: `${themeVars.grade.codeLineHeight}px`,
-            fontSize: `${themeVars.grade.codeFontSize}px`,
-            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
-            paddingBottom: '10px',
-          }}
-        >
-          <TemplateCode file={props.file} />
-        </div>
+        {props.templateMode ? (
+          <div
+            id="code-template"
+            className="code code--template"
+            style={{
+              lineHeight: `${themeVars.grade.codeLineHeight}px`,
+              fontSize: `${themeVars.grade.codeFontSize}px`,
+              paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+              paddingBottom: '10px',
+            }}
+          >
+            <TemplateCode file={props.file} />
+          </div>
+        ) : null}
         <div
           id="code-main"
           className="code code--underlay"
@@ -191,7 +169,14 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
     };
 
     public render() {
-      return <Component {...(this.props as ICodeContentCoreProps)} addComment={this.addComment} commentCounter={-1} />;
+      return (
+        <Component
+          {...(this.props as ICodeContentCoreProps)}
+          addComment={this.addComment}
+          commentCounter={-1}
+          templateMode={false}
+        />
+      );
     }
   };
 };
