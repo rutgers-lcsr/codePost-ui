@@ -937,6 +937,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       liveFeedbackMode: false,
       additiveGrading: false,
       forcedRubricMode: false,
+      templateMode: false,
     };
 
     const demoCourse: CourseType = {

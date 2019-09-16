@@ -44,6 +44,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
+      templateMode: values.templateMode,
     };
 
     this.props.onSave(payload).then(() => {
@@ -111,6 +112,7 @@ interface IFormValues {
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
   forcedRubricMode: boolean;
+  templateMode: boolean;
 }
 
 interface IFormState {
@@ -316,6 +318,22 @@ const CollectionCreateForm: any = Form.create()(
                 >
                   {getFieldDecorator('forcedRubricMode', {
                     initialValue: this.props.assignment.forcedRubricMode,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
+                <Form.Item
+                  label="Include file templates"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> Use file templates to help speed up grading by de-emphasizing template-provided
+                      versus student-written code.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('templateMode', {
+                    initialValue: this.props.assignment.templateMode,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>
