@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import {
   createObject,
+  createObjectDetail,
   deleteObject,
   GenericObject,
   readObject,
@@ -176,6 +177,12 @@ const StudentUploadData = t.intersection([
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+  public static createStudentUpload = createObjectDetail(
+    StudentSubmissionV,
+    StudentUploadData,
+    'assignments',
+    'studentUpload',
+  );
   public static updateStudentUpload = updateObjectDetail(
     StudentSubmissionV,
     StudentUploadData,

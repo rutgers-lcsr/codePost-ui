@@ -13,6 +13,7 @@ export const demoFiles = [
     comments: [],
     submission: 1,
     path: null,
+    created: '',
   },
   {
     id: 1,
@@ -24,5 +25,6 @@ export const demoFiles = [
     comments: [],
     submission: 1,
     path: null,
+    created: '',
   },
 ];
