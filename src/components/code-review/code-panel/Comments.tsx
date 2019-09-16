@@ -318,8 +318,27 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         />
       );
     });
+
+    const highlightMessage =
+      !this.props.readOnly && this.props.comments.length === 0 ? (
+        <div
+          style={{
+            top: '40vh',
+            maxWidth: 250,
+            textAlign: 'center',
+            whiteSpace: 'normal',
+            position: 'absolute',
+            left: 35,
+          }}
+        >
+          Highlight some code to leave a comment.
+        </div>
+      ) : (
+        <div />
+      );
     return (
       <div id="comments" style={{ position: 'relative' }} className="comments" ref={this.setWrapperRef}>
+        {highlightMessage}
         {commentNodes}
       </div>
     );
