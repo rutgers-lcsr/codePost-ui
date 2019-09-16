@@ -13,6 +13,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import Markdown from './Markdown';
+import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
 
@@ -36,6 +37,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   React.useEffect(() => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
+    const codeTemplate = document.getElementById('code-template');
 
     const horizontalCodeScroll = () => {
       // Scroll horizontally
@@ -44,13 +46,37 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       }
     };
 
+    const lm = () => {
+      console.log('main');
+    };
+
+    const ls = () => {
+      console.log('syntax');
+    };
+
+    const lt = () => {
+      console.log('template');
+    };
+
     if (codeMain !== null && codeSyntax !== null) {
       codeMain.addEventListener('scroll', horizontalCodeScroll);
+    }
+
+    if (codeMain !== null && codeSyntax !== null && codeTemplate !== null) {
+      codeMain.addEventListener('mousedown', lm);
+      codeSyntax.addEventListener('mousedown', ls);
+      codeTemplate.addEventListener('mousedown', lt);
     }
 
     return () => {
       if (codeMain !== null && codeSyntax !== null) {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
+      }
+
+      if (codeMain !== null && codeSyntax !== null && codeTemplate !== null) {
+        codeMain.removeEventListener('mousedown', lm);
+        codeSyntax.removeEventListener('mousedown', ls);
+        codeTemplate.removeEventListener('mousedown', lt);
       }
     };
   }, []);
@@ -124,6 +150,18 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           {props.file.code}
         </SyntaxHighlighter>
+        <div
+          id="code-template"
+          className="code code--template"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+            paddingBottom: '10px',
+          }}
+        >
+          <TemplateCode file={props.file} />
+        </div>
         <div
           id="code-main"
           className="code code--underlay"
