@@ -20,7 +20,12 @@ export const slack = (url: string, payload: any) => {
     });
 };
 
-export const sendSlack = (message: string, text = '', color = '#24be85', channel = '#user_nofications_everything') => {
+export const sendSlack = (
+  message: string,
+  text = '',
+  color = '#24be85',
+  channel = '#user_notifications_everything',
+) => {
   const targetURL = `${process.env.REACT_APP_API_URL}/logs/log/`;
 
   const attachments = [
