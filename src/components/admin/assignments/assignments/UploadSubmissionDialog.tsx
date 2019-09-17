@@ -145,8 +145,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public onRemove = (file: any) => {
     const filePath = this.getPath(file.webkitRelativePath);
     const newFiles = this.state.files.filter((el) => {
-      const ret = el.name !== file.name || el.path !== filePath;
-      return ret;
+      return el.name !== file.name || el.path !== filePath;
     });
     const newFileList = this.state.fileList.filter((el) => {
       const elPath = this.getPath(el.webkitRelativePath);
