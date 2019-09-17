@@ -146,7 +146,6 @@ export const acceptedFiles = [
   '.rsrc',
   '.spec',
   '.a',
-  '.o',
   '.so',
   '.p',
   '.eql',
