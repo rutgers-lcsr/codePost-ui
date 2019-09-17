@@ -68,7 +68,15 @@ function ViewUpload(props: IProps) {
             <Sider theme="light">
               <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
                 {files.map((file, index) => {
-                  return <Menu.Item key={index.toString()}>{file.name}</Menu.Item>;
+                  const pathName = `${file.path ? `${file.path}/` : ''}`;
+                  return (
+                    <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
+                      <div style={{ lineHeight: pathName ? 1.5 : 3, marginTop: 4 }}>
+                        <div style={{ fontSize: 10, fontStyle: 'italic', whiteSpace: 'normal' }}>{pathName}</div>
+                        <div>{file.name}</div>
+                      </div>
+                    </Menu.Item>
+                  );
                 })}
               </Menu>
             </Sider>
