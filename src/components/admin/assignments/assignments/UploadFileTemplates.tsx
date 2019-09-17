@@ -37,8 +37,17 @@ const UploadFileTemplates = (props: any) => {
     }
   };
 
-  const onRemove = async (fileTemplate: any) => {
-    await FileTemplate.delete(fileTemplate.uid);
+  const onRemove = async (f: any) => {
+    if (typeof f.uid === 'string') {
+      const toDelete = defaultFileList.find((x: any) => {
+        return x.name === f.name;
+      });
+      if (toDelete !== undefined) {
+        await FileTemplate.delete(toDelete.id);
+      }
+    } else {
+      await FileTemplate.delete(f.uid);
+    }
   };
 
   const customRequest = async (r: any) => {
@@ -60,6 +69,7 @@ const UploadFileTemplates = (props: any) => {
         };
 
         const ft = await FileTemplate.create(fileTemplate);
+        setDefaultFileList([...defaultFileList, ft]);
         r.onSuccess(ft, r.file);
       } else {
         message.error(`${r.file.name} cannot be uploaded because it is empty.`);
