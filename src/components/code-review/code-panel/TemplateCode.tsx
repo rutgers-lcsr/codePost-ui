@@ -23,7 +23,7 @@ const TemplateCode = (props: ITemplateCodeProps) => {
       return true;
     }
 
-    if (l.trim() === '*') {
+    if (l.trim() === '*' || l.trim() === '#') {
       return true;
     }
 
