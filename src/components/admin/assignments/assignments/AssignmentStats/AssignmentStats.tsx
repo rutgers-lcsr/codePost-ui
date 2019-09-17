@@ -295,7 +295,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
             ),
             data: (
               <span
-                onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Missing)}
+                onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.InProgress)}
                 className="text-link"
               >
                 {numInProgress}
