@@ -14,6 +14,8 @@ import moment from 'moment';
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
 
+import UploadFileTemplates from './UploadFileTemplates';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -117,6 +119,7 @@ interface IFormValues {
 
 interface IFormState {
   studentUploadEnabled: boolean;
+  templateModeEnabled: boolean;
   regradesEnabled: boolean;
 }
 
@@ -127,12 +130,17 @@ const CollectionCreateForm: any = Form.create()(
       super(props);
       this.state = {
         studentUploadEnabled: this.props.assignment.allowStudentUpload,
+        templateModeEnabled: this.props.assignment.templateMode,
         regradesEnabled: this.props.assignment.allowRegradeRequests,
       };
     }
 
     public handleStudentUploadCheck = (checked: boolean) => {
       this.setState({ studentUploadEnabled: checked });
+    };
+
+    public handleTemplateModeCheck = (checked: boolean) => {
+      this.setState({ templateModeEnabled: checked });
     };
 
     public handleRegradeCheck = (checked: boolean) => {
@@ -335,8 +343,13 @@ const CollectionCreateForm: any = Form.create()(
                   {getFieldDecorator('templateMode', {
                     initialValue: this.props.assignment.templateMode,
                     valuePropName: 'checked',
-                  })(<Switch />)}
+                  })(<Switch onClick={this.handleTemplateModeCheck} />)}
                 </Form.Item>
+                {this.state.templateModeEnabled ? (
+                  <div style={{ paddingLeft: '25%' }}>
+                    <UploadFileTemplates assignment={this.props.assignment} />
+                  </div>
+                ) : null}
               </Tabs.TabPane>
               <Tabs.TabPane tab="Publishing" key="4">
                 <Form.Item

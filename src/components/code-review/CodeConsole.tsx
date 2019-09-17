@@ -362,6 +362,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       assignment: undefined,
       commentRubricComments: {},
       comments: {},
+      fileTemplates: undefined,
+
       files: [],
       graders: [],
       isLoading: true,

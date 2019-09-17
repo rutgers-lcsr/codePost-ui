@@ -39,11 +39,16 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   React.useEffect(() => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
+    const codeTemplate = document.getElementById('code-template');
 
     const horizontalCodeScroll = () => {
       // Scroll horizontally
       if (codeMain !== null && codeSyntax !== null) {
         codeSyntax.scrollLeft = codeMain.scrollLeft;
+      }
+
+      if (codeMain !== null && codeTemplate !== null) {
+        codeTemplate.scrollLeft = codeMain.scrollLeft;
       }
     };
 

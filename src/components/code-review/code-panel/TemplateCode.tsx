@@ -10,36 +10,15 @@ import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-// interface ICodeProps {
-//   commentCounter: number;
-// }
-
-const template = `/******************************************************************************
- *
- *  Description:  Includes a few utility functions useful for working with
- *  arrays (implemented with loops).
- *
- ******************************************************************************/
-
-public class LoopUtils {
-
-  // Find the max element of an array
-  public static int max(int[] arr) {
-
-
-  }
-}`;
-
 interface ITemplateCodeProps {
   file: FileType;
+  fileTemplate: FileTemplateType;
 }
 
 const TemplateCode = (props: ITemplateCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  console.log('template', props.file);
-
-  const tokens = template.split('\n').filter((l: string) => {
+  const tokens = props.fileTemplate.code.split('\n').filter((l: string) => {
     if (l.trim().length > 2) {
       return true;
     }
@@ -63,7 +42,11 @@ const TemplateCode = (props: ITemplateCodeProps) => {
       }
 
       return (
-        <div key={i} id={`template-line-${i}`} style={{ color: templatized ? '#fafafa' : 'transparent' }}>
+        <div
+          key={i}
+          id={`template-line-${i}`}
+          style={{ color: templatized ? consoleTheme.templateCode : 'transparent' }}
+        >
           {text === '' ? ' ' : text}
         </div>
       );
