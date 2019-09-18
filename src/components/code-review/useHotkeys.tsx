@@ -58,9 +58,9 @@ const useHotkeys = (hotkey: number, callback: any, shift?: boolean) => {
       }
 
       if (trigger) {
+        callback();
         e.preventDefault();
         e.stopPropagation();
-        callback();
       }
     };
     document.addEventListener('keydown', handleKeydown);

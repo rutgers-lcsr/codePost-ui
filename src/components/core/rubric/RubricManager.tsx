@@ -526,6 +526,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   };
 
   public onSave = (fnc?: (rubric: any) => void) => {
+    console.log('unsavedcomments', this.state.unsavedComments, this.state.rubricComments);
     const {
       rubricComments,
       rubricCategories,

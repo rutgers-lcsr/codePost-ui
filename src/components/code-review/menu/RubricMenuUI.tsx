@@ -218,8 +218,16 @@ const RubricMenuUI = ({
     props.turnOnReload();
   };
 
+  const clickSaveButton = () => {
+    const saveButton = document.getElementById('rubric-save-button');
+    if (saveButton !== undefined) {
+      saveButton!.click();
+    }
+  };
+
   const onSave = () => {
     if (changesMade) {
+      console.log('helpers onsave', state.rubricComments);
       helpers.onSave(props.setRubric);
 
       setEditingStatuses({});
@@ -242,7 +250,7 @@ const RubricMenuUI = ({
   };
 
   useHotkeys(E_KEY, toggleEditRubricMode);
-  useHotkeys(S_KEY, onSave);
+  useHotkeys(S_KEY, clickSaveButton);
 
   let controls = null;
   if (state.loadComplete && props.assignment.collaborativeRubricMode) {
@@ -315,6 +323,7 @@ const RubricMenuUI = ({
       >
         <CPButton
           key="save"
+          id="rubric-save-button"
           disabled={!changesMade}
           onClick={onSave}
           cpType="primary"
