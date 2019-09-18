@@ -11,6 +11,7 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
+import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 
 import Badge from '../../core/Badge';
@@ -273,6 +274,35 @@ const RubricMenuCategoryUI = ({
     </Popover>
   ) : null;
 
+  const errorTag = state.hasError ? (
+    <Tag color="volcano" key="warning">
+      Error: {state.errorMessage}
+    </Tag>
+  ) : state.hasCommentError ? (
+    <Tag color="volcano" key="warning">
+      Error: {state.commentErrorMessage}
+    </Tag>
+  ) : null;
+
+  const title = props.editRubricMode ? (
+    <Input
+      value={state.name}
+      onChange={helpers.changeName}
+      onBlur={helpers.saveCategory}
+      ref={helpers.nameInput}
+      style={{
+        height: '27px',
+        width: '60%',
+        alignSelf: 'center',
+        fontWeight: 500,
+        backgroundColor: consoleTheme.commentTextArea,
+        color: consoleTheme.text,
+      }}
+    />
+  ) : (
+    <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
+  );
+
   return (
     <Menu
       defaultOpenKeys={[`category-${props.rubricCategory.id}`]}
@@ -295,27 +325,7 @@ const RubricMenuCategoryUI = ({
             }}
           >
             <div style={{ paddingRight: '30px' }}>
-              <div className="display-flex justify-content-space-between">
-                {props.editRubricMode ? (
-                  <Input
-                    value={state.name}
-                    onChange={helpers.changeName}
-                    onBlur={helpers.saveCategory}
-                    ref={helpers.nameInput}
-                    style={{
-                      height: '27px',
-                      width: '60%',
-                      alignSelf: 'center',
-                      fontWeight: 500,
-                      backgroundColor: consoleTheme.commentTextArea,
-                      color: consoleTheme.text,
-                    }}
-                  />
-                ) : (
-                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
-                )}
-                <span style={{ float: 'right' }}>{capTag}</span>
-              </div>
+              <CPFlex left={[title, errorTag]} right={[capTag]} gutterSize={14} />
             </div>
           </div>
         }

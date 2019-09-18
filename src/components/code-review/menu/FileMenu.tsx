@@ -82,7 +82,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         url: window.location.href,
         channel: '#user_notifications_beta_use',
       };
-      slack(`${process.env.REACT_APP_API_URL}/log/`, payload);
+      slack(`${process.env.REACT_APP_API_URL}/logs/log/`, payload);
     }
     this.state = {
       directoryStructure,
