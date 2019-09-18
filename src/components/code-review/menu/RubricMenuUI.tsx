@@ -52,6 +52,8 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
     rubricCategories: RubricCategoryType[];
     rubricComments: IRubricCategoryToRubricCommentsMap;
   }) => void;
+  turnOnReload: () => void;
+  turnOffReload: () => void;
 }
 
 const RubricMenuUI = ({
@@ -77,6 +79,7 @@ const RubricMenuUI = ({
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
     setEditingStatuses(newEditingStatuses);
+    props.turnOffReload();
   };
 
   const focusSearch = () => {
@@ -85,6 +88,12 @@ const RubricMenuUI = ({
       el.focus();
     }
   };
+
+  React.useEffect(() => {
+    if (props.assignment.collaborativeRubricMode) {
+      props.turnOnReload();
+    }
+  }, []);
 
   useHotkeys(O_KEY, focusSearch);
 
@@ -186,6 +195,7 @@ const RubricMenuUI = ({
   const toggleEditRubricMode = () => {
     if (props.assignment.collaborativeRubricMode) {
       setEditingStatuses({});
+      props.turnOnReload();
       if (!props.editRubricMode) {
         setEditRubricClass('slide-in');
         props.toggleEditRubricMode();
@@ -205,6 +215,7 @@ const RubricMenuUI = ({
   const onUndo = () => {
     helpers.resetRubric();
     setEditingStatuses({});
+    props.turnOnReload();
   };
 
   const onSave = () => {
@@ -212,6 +223,7 @@ const RubricMenuUI = ({
       helpers.onSave(props.setRubric);
 
       setEditingStatuses({});
+      props.turnOnReload();
     }
   };
 

@@ -230,7 +230,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public componentDidUpdate(prevProps: IRubricManagerProps) {
     if (prevProps.reloadInterval !== this.props.reloadInterval) {
-      if (this.props.reloadInterval !== undefined) {
+      if (this.props.reloadInterval === undefined) {
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
@@ -565,6 +565,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         deletedCategories,
         resolutions,
       ).then((savedRubric) => {
+        console.log('saved rubric', savedRubric);
         message.success('Rubric saved!');
         this.setState({
           rubricCategories: savedRubric.rubricCategories,

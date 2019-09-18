@@ -119,6 +119,8 @@ interface ICodeConsoleState {
 
   editRubricMode: boolean;
   commentCounter: number;
+
+  rubricReload?: number;
 }
 
 export interface ICodeConsoleProps {
@@ -413,6 +415,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       isStudent: false,
       editRubricMode: false,
       commentCounter: -1,
+
+      rubricReload: undefined,
     };
   }
 
@@ -1204,6 +1208,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  public turnOnReload = () => {
+    this.setState({ rubricReload: 5000 });
+  };
+
+  public turnOffReload = () => {
+    this.setState({ rubricReload: undefined });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -1381,6 +1393,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 toggleEditRubricMode: this.toggleEditRubricMode,
                 editRubricMode: this.state.editRubricMode,
                 setRubric: this.setRubric,
+                turnOnReload: this.turnOnReload,
+                turnOffReload: this.turnOffReload,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1592,7 +1606,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             assignment={this.state.assignment}
             submissions={[]}
             onCancel={onCancel}
-            reloadInterval={this.state.assignment.collaborativeRubricMode ? 5000 : undefined}
+            reloadInterval={this.state.rubricReload}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
@@ -1602,6 +1616,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 toggleEditRubricMode: this.toggleEditRubricMode,
                 editRubricMode: this.state.editRubricMode,
                 setRubric: this.setRubric,
+                turnOnReload: this.turnOnReload,
+                turnOffReload: this.turnOffReload,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
