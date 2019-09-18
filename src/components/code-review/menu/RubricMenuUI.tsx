@@ -102,14 +102,8 @@ const RubricMenuUI = ({
   };
 
   const linkToComment = (rubricComment: RubricCommentType) => {
-    if (props.hasActiveComment) {
-      // const rubricComment = this.props.rubricComments[categoryID].find((comment: RubricCommentType) => {
-      //   return comment.id === commentID;
-      // });
-
-      if (rubricComment !== undefined) {
-        props.handleRubricCommentClick(rubricComment);
-      }
+    if (rubricComment !== undefined) {
+      props.handleRubricCommentClick(rubricComment);
     }
   };
 

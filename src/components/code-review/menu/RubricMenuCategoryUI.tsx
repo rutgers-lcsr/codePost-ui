@@ -47,41 +47,6 @@ const RubricMenuCategoryUI = ({
   state: IRubricCategoryManagerState;
   helpers: IRubricCategoryManagerHelpers;
 }) => {
-  // Capturing ...otherProps allows us to catch the required Ant props from
-  // ParentMenu -> Menu.SubMenu
-  const {
-    rubricCategory,
-    savedRubricCategory,
-    rubricComments,
-    savedRubricComments,
-    updateCategory,
-    deleteCategory,
-    addComment,
-    updateComment,
-    deleteComment,
-    onEdit,
-    onUndo,
-    onCommentEdit,
-    onCommentUndo,
-    activateCommentExplorer,
-    onCommentDragEnd,
-    moveCategory,
-    index,
-    numCategories,
-    otherCategories,
-    feedbackScores,
-    commentFeedbackOn,
-    handleRubricCommentClick,
-    hasActiveComment,
-    editingStatuses,
-    startEditing,
-    linkToComment,
-    searchTerm,
-    assignment,
-    editRubricMode,
-    ...otherProps
-  } = props;
-
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
@@ -246,17 +211,17 @@ const RubricMenuCategoryUI = ({
     <div>
       <div className="rubric-menu__info">
         <div>Name:</div>
-        <div>{rubricCategory.name}</div>
+        <div>{props.rubricCategory.name}</div>
       </div>
       <Divider style={{ margin: '10px 0px' }} />
       <div className="rubric-menu__info">
         <div>Point Limit: </div>
-        <div>{rubricCategory.pointLimit === null ? 'None set' : rubricCategory.pointLimit}</div>
+        <div>{props.rubricCategory.pointLimit === null ? 'None set' : props.rubricCategory.pointLimit}</div>
       </div>
       <Divider style={{ margin: '10px 0px' }} />
       <div className="rubric-menu__info">
         <div>Details:</div>
-        <div>{rubricCategory.helpText ? rubricCategory.helpText : 'None set'}</div>
+        <div>{props.rubricCategory.helpText ? props.rubricCategory.helpText : 'None set'}</div>
       </div>
     </div>
   );
@@ -340,7 +305,6 @@ const RubricMenuCategoryUI = ({
             </div>
           </div>
         }
-        {...otherProps}
       >
         {rows}
         {props.editRubricMode ? (
