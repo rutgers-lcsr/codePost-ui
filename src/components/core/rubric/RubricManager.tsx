@@ -815,7 +815,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     });
   };
 
-  public onLinkedCommentsResolve = (comment: RubricCommentType, resolution: RESOLUTION) => {
+  public onLinkedCommentsResolve = (comment: RubricCommentType, resolution: RESOLUTION, fnc?: () => void) => {
     const { resolutions } = this.state;
     const newMap = { ...resolutions };
     newMap[comment.id] = resolution;
@@ -827,7 +827,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         // If the user has finished figuring out what to do with deleted linked comments,
         // then trigger a save
         if (this.state.linkedComments.length === 0) {
-          this.onSave(undefined);
+          this.onSave(fnc);
         }
       },
     );

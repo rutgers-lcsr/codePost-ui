@@ -273,11 +273,11 @@ const RubricMenuUI = ({
     };
 
     const onDelete = () => {
-      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.DELETE);
+      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.DELETE, props.setRubric);
     };
 
     const onUnLink = () => {
-      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
+      helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK, props.setRubric);
     };
 
     const onLinkedConfirmAccept = () => {

@@ -1147,7 +1147,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ editRubricMode: !this.state.editRubricMode });
   };
 
-  // public setRubric = (rubricCategories: RubricCategoryType[], rubricComments: IRubricCategoryToRubricCommentsMap) => {
+  // This is a bit of a hacky way to rebase the CodeConsole state comments with an updated rubric
+  // Given an updated rubric, we make sure that all relevant objects stored in state reflect the changes
   public setRubric = (rubric: {
     rubricCategories: RubricCategoryType[];
     rubricComments: IRubricCategoryToRubricCommentsMap;
