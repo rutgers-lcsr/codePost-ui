@@ -526,7 +526,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   };
 
   public onSave = (fnc?: (rubric: any) => void) => {
-    console.log('unsavedcomments', this.state.unsavedComments, this.state.rubricComments);
     const {
       rubricComments,
       rubricCategories,
@@ -566,7 +565,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         deletedCategories,
         resolutions,
       ).then((savedRubric) => {
-        console.log('saved rubric', savedRubric);
         message.success('Rubric saved!');
         this.setState({
           rubricCategories: savedRubric.rubricCategories,

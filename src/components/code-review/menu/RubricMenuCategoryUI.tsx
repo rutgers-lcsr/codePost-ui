@@ -125,7 +125,6 @@ const RubricMenuCategoryUI = ({
               value={thisComment.text}
               onChange={onChangeText}
               onBlur={saveComment}
-              className="rubricComment"
             />
           );
 
@@ -187,7 +186,6 @@ const RubricMenuCategoryUI = ({
               value={''}
               onChange={updateRubricCommentText}
               onBlur={saveComment}
-              className="rubricComment"
             />
           );
 

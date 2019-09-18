@@ -218,21 +218,25 @@ const RubricMenuUI = ({
     props.turnOnReload();
   };
 
-  const clickSaveButton = () => {
-    const saveButton = document.getElementById('rubric-save-button');
-    if (saveButton !== undefined) {
-      saveButton!.click();
-    }
+  const blurAll = () => {
+    const tmp = document.createElement('input');
+    document.body.appendChild(tmp);
+    tmp.focus();
+    document.body.removeChild(tmp);
   };
 
   const onSave = () => {
     if (changesMade) {
-      console.log('helpers onsave', state.rubricComments);
       helpers.onSave(props.setRubric);
 
       setEditingStatuses({});
       props.turnOnReload();
     }
+  };
+
+  const blurAndSave = () => {
+    blurAll();
+    onSave();
   };
 
   const confirm = () => {
@@ -250,7 +254,7 @@ const RubricMenuUI = ({
   };
 
   useHotkeys(E_KEY, toggleEditRubricMode);
-  useHotkeys(S_KEY, clickSaveButton);
+  useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
   if (state.loadComplete && props.assignment.collaborativeRubricMode) {
@@ -321,18 +325,20 @@ const RubricMenuUI = ({
         cancelText="No, undo"
         key="save-confirm"
       >
-        <CPButton
-          key="save"
-          id="rubric-save-button"
-          disabled={!changesMade}
-          onClick={onSave}
-          cpType="primary"
-          icon="save"
-          loading={state.isSaving}
-          style={{ minWidth: '80px' }}
-        >
-          Save
-        </CPButton>
+        <CPTooltip title={tooltips.grade.rubric.save} hideThisOnHideTips={true}>
+          <CPButton
+            key="save"
+            id="rubric-save-button"
+            disabled={!changesMade}
+            onClick={onSave}
+            cpType="primary"
+            icon="save"
+            loading={state.isSaving}
+            style={{ minWidth: '80px' }}
+          >
+            Save
+          </CPButton>
+        </CPTooltip>
       </Popconfirm>,
       <div key="modals">
         <LinkedCommentsAlert
