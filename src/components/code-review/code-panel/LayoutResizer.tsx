@@ -14,6 +14,8 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
 
+import { osControlKey } from '../../core/operatingSystem';
+
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 
@@ -195,8 +197,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   const tooltip = (
     <div>
       Resize window
-      <br />
-      [⌘ + left / right arrow]
+      <br />[{osControlKey()} + left / right arrow]
     </div>
   );
 

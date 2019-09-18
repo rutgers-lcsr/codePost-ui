@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { getOperatingSystem, OS } from '../core/operatingSystem';
+
 /************************** SHORTCUTS **************************************/
 
 export const PLUS_KEY = 187;
@@ -27,15 +29,6 @@ export const F_KEY = 70;
 export const S_KEY = 83;
 
 /*******************************************************************************/
-
-export enum OS {
-  MAC,
-  WINDOWS,
-}
-
-export const getOperatingSystem = () => {
-  return navigator.platform.indexOf('Win') > -1 ? OS.WINDOWS : OS.MAC;
-};
 
 const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: boolean) => {
   const os = getOperatingSystem();
