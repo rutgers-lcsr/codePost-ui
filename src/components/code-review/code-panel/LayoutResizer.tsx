@@ -14,6 +14,8 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 
@@ -28,8 +30,11 @@ export type CodeConsoleDimensionsType = {
 };
 
 export const getInitialDimensions = (): CodeConsoleDimensionsType => {
+  const storedWidth = LOCAL_SETTINGS.codeWidth.getter();
+
   const dimensions = {
-    codeWidth: Math.max(Math.min(themeVars.grade.codeTargetWidth, window.innerWidth - 700), 400),
+    codeWidth:
+      storedWidth > 0 ? storedWidth : Math.max(Math.min(themeVars.grade.codeTargetWidth, window.innerWidth - 700), 400),
     commentsWidth: themeVars.grade.commentsTargetWidth,
   };
   return dimensions;

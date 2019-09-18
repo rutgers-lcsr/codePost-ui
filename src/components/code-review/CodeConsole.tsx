@@ -51,6 +51,8 @@ import { openSubmission } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 import {
   Controls,
   FinalizeButton,
@@ -382,7 +384,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       selectedFile: undefined,
       oldCommentIDs: {},
 
-      codeZoom: 1,
+      codeZoom: LOCAL_SETTINGS.codeZoom.getter(),
       codeVerticalOffset: 0,
       dimensions: getInitialDimensions(),
 
@@ -1090,6 +1092,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
     this.setState({ dimensions });
+    LOCAL_SETTINGS.codeWidth.setter(dimensions.codeWidth);
   };
 
   /***********************************************************************************
@@ -1141,7 +1144,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let rightHeader: React.ReactNode[] = [];
     let content;
     let siderTitles: Array<React.ReactNode | string> = [];
-    let sider: React.ReactNode[] = [];
+    let sider: React.ReactElement[] = [];
 
     const toolbarWidgets = [];
     if (!this.props.inDemoMode) {
