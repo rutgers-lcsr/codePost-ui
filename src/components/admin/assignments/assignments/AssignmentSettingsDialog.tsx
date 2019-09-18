@@ -14,6 +14,8 @@ import moment from 'moment';
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
 
+import UploadFileTemplates from './UploadFileTemplates';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -45,6 +47,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
+      templateMode: values.templateMode,
     };
 
     this.props.onSave(payload).then(() => {
@@ -113,10 +116,12 @@ interface IFormValues {
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
   forcedRubricMode: boolean;
+  templateMode: boolean;
 }
 
 interface IFormState {
   studentUploadEnabled: boolean;
+  templateModeEnabled: boolean;
   regradesEnabled: boolean;
 }
 
@@ -127,12 +132,17 @@ const CollectionCreateForm: any = Form.create()(
       super(props);
       this.state = {
         studentUploadEnabled: this.props.assignment.allowStudentUpload,
+        templateModeEnabled: this.props.assignment.templateMode,
         regradesEnabled: this.props.assignment.allowRegradeRequests,
       };
     }
 
     public handleStudentUploadCheck = (checked: boolean) => {
       this.setState({ studentUploadEnabled: checked });
+    };
+
+    public handleTemplateModeCheck = (checked: boolean) => {
+      this.setState({ templateModeEnabled: checked });
     };
 
     public handleRegradeCheck = (checked: boolean) => {
@@ -307,7 +317,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
                 <Form.Item
-                  label="Enforce rubric use"
+                  label="Rubric-only mode"
                   extra={
                     <div>
                       <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
@@ -327,16 +337,36 @@ const CollectionCreateForm: any = Form.create()(
                     <div>
                       When enabled, admins and graders will be able to edit the assignment rubric inline in the code
                       console. Graders will have full permission to create, modify and delete rubric items.
+                      </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                 {getFieldDecorator('collaborativeRubricMode', {
+                    initialValue: this.props.assignment.collaborativeRubricMode,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
+                 <Form.Item
+                  label="Include file templates"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> Use file templates to help speed up grading by de-emphasizing template-provided
+                      versus student-written code. Template names must match submission file names.
                     </div>
                   }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
-                  {getFieldDecorator('collaborativeRubricMode', {
-                    initialValue: this.props.assignment.collaborativeRubricMode,
+                  {getFieldDecorator('templateMode', {
+                    initialValue: this.props.assignment.templateMode,
                     valuePropName: 'checked',
-                  })(<Switch />)}
+                  })(<Switch onClick={this.handleTemplateModeCheck} />)}
                 </Form.Item>
+                {this.state.templateModeEnabled ? (
+                  <div style={{ paddingLeft: '25%' }}>
+                    <UploadFileTemplates assignment={this.props.assignment} />
+                  </div>
+                ) : null}
               </Tabs.TabPane>
               <Tabs.TabPane tab="Publishing" key="4">
                 <Form.Item

@@ -51,6 +51,24 @@
       }
     }
 
+    &--template {
+      font-family: $fontCode !important;
+
+      color: blue !important;
+
+      position: absolute;
+      top: 30px;
+
+      // z-index: 1;
+
+      background-color: transparent !important;
+
+      // We can hide code-syntax scrollbar while showing code-main scrollbar
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
     &--markdown {
       white-space: pre-wrap;
       word-wrap: normal;

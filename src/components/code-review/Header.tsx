@@ -10,20 +10,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import {
-  Button,
-  Descriptions,
-  Divider,
-  Dropdown,
-  Icon,
-  message,
-  Menu,
-  Modal,
-  Popconfirm,
-  Popover,
-  Switch,
-  Tag,
-} from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -229,7 +216,6 @@ export const Controls = (props: IControlsProps) => {
 /**********************************************************************************************/
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
-  canToggle: () => boolean;
   toggleFinalized: () => void;
 }
 
@@ -249,13 +235,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   const onClick = async () => {
-    setIsLoading(true);
-    if (!props.submission.isFinalized && !props.canToggle()) {
-      setPopconfirmVisible(true);
-    } else {
-      await props.toggleFinalized();
-      setIsLoading(false);
-    }
+    await props.toggleFinalized();
+    setIsLoading(false);
   };
 
   useHotkeys(F_KEY, onClick, true);
@@ -334,29 +315,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       <CPTooltip title={toggleNotice} placement="left">
         <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
         &nbsp;
-        <Popconfirm
-          title={
-            <div>
-              <p>You have draft comments that will not be saved.</p>{' '}
-              <p>
-                <b>Are you sure you want to continue?</b>
-              </p>
-            </div>
-          }
-          visible={popconfirmVisible}
-          onConfirm={confirm}
-          onCancel={cancel}
-          okText="Yes"
-          cancelText="No"
-          placement="bottomRight"
-        >
-          <Switch
-            checked={isFinalized}
-            onClick={onClick}
-            disabled={!isFinalized && props.submission.grader === null}
-            loading={isLoading}
-          />
-        </Popconfirm>
+        <Switch
+          checked={isFinalized}
+          onClick={onClick}
+          disabled={!isFinalized && props.submission.grader === null}
+          loading={isLoading}
+        />
       </CPTooltip>
     </div>
   );
@@ -378,7 +342,7 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files);
+  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files, props.comments);
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);

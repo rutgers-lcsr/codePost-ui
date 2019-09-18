@@ -46,6 +46,7 @@ export const consoleThemes = {
     avatarBackground: '#ccc',
     resizerTrack: '#e9e9e9',
     resizerTrackActive: themeVars.theme.neutralBackground,
+    templateCode: '#fafafa',
   },
   dark: {
     text: themeVars.theme.neutralDarkMainText,
@@ -88,6 +89,7 @@ export const consoleThemes = {
     avatarBackground: '#24be85',
     resizerTrack: '#323435',
     resizerTrackActive: '#17181a',
+    templateCode: '#494d4f',
   },
 };
 

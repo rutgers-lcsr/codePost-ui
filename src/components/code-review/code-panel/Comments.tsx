@@ -39,8 +39,6 @@ interface ICommentsEditProps {
   saveComment: (comment: CommentType) => void;
   deleteComment: (comment: CommentType) => void;
 
-  addUnsaved: (commentID: number) => void;
-  removeUnsaved: (commentID: number) => void;
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
 
   forcedRubricMode: boolean;
@@ -131,11 +129,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
-    if (prevProps.comments.length < this.props.comments.length) {
-      const codeScrollArea = document.getElementById('code-scroll-area');
-      if (codeScrollArea !== null) {
-        return codeScrollArea.scrollTop;
-      }
+    const codeScrollArea = document.getElementById('code-scroll-area');
+    if (codeScrollArea !== null) {
+      return codeScrollArea.scrollTop;
     }
 
     return null;
@@ -306,8 +302,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           changeActive={this.changeActive}
           onSave={this.props.saveComment}
           onDelete={this.props.deleteComment}
-          addUnsaved={this.props.addUnsaved}
-          removeUnsaved={this.props.removeUnsaved}
           setCommentPlacements={this.placeCommentsOnNextFrame}
           removeRubricComment={this.props.removeRubricComment}
           updateFeedback={this.props.updateFeedback.bind(this, comment.id)}
@@ -318,8 +312,27 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         />
       );
     });
+
+    const highlightMessage =
+      !this.props.readOnly && this.props.comments.length === 0 ? (
+        <div
+          style={{
+            top: '40vh',
+            maxWidth: 250,
+            textAlign: 'center',
+            whiteSpace: 'normal',
+            position: 'absolute',
+            left: 35,
+          }}
+        >
+          Highlight some code to leave a comment.
+        </div>
+      ) : (
+        <div />
+      );
     return (
       <div id="comments" style={{ position: 'relative' }} className="comments" ref={this.setWrapperRef}>
+        {highlightMessage}
         {commentNodes}
       </div>
     );
@@ -364,8 +377,6 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           changeActive={this.changeActive}
           saveComment={this.saveComment}
           deleteComment={this.deleteComment}
-          addUnsaved={this.addUnsaved}
-          removeUnsaved={this.removeUnsaved}
           removeRubricComment={this.removeRubricComment}
           forcedRubricMode={false}
           oldCommentIDs={{}}

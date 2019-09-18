@@ -42,6 +42,7 @@ interface ILayoutResizerProps {
   initialDimensions: CodeConsoleDimensionsType;
   setDimensions: (dimensions: CodeConsoleDimensionsType) => void;
   hasComments: boolean;
+  isEditingComment: boolean;
 }
 
 const LayoutResizer = (props: ILayoutResizerProps) => {
@@ -188,8 +189,8 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     afterChange(newRanges);
   };
 
-  useHotkeys(LEFT_ARROW, () => shrink(80));
-  useHotkeys(RIGHT_ARROW, () => grow(80));
+  useHotkeys(LEFT_ARROW, () => shrink(80), undefined, props.isEditingComment);
+  useHotkeys(RIGHT_ARROW, () => grow(80), undefined, props.isEditingComment);
 
   const tooltip = (
     <div>

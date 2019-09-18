@@ -62,12 +62,16 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
       const codeSyntax = document.getElementById('code-syntax');
       const commentsContainer = document.getElementById('code-panel--comments');
       const comments = document.getElementById('comments');
+      const codeTemplate = document.getElementById('code-template');
 
       if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
         const codeMainWidth = codeContainer.offsetWidth;
         codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {
           codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
+        }
+        if (codeTemplate !== null) {
+          codeTemplate.style.setProperty('width', `${codeMainWidth}px`);
         }
 
         const commentsContainerHeight =

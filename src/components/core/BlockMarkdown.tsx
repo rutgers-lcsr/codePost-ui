@@ -37,23 +37,27 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   };
 
   const codeRenderer = (props: any) => {
-    return (
-      <div>
-        <div
-          style={{
-            border: `1px solid ${consoleTheme.commentTitleBorder}`,
-            borderRadius: '4px',
-            backgroundColor: consoleTheme.commentCode,
-          }}
-          className="markdown-code"
-        >
-          <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
-            {props.value}
-          </SyntaxHighlighter>
+    if (props.value === undefined) {
+      return <div></div>;
+    } else {
+      return (
+        <div>
+          <div
+            style={{
+              border: `1px solid ${consoleTheme.commentTitleBorder}`,
+              borderRadius: '4px',
+              backgroundColor: consoleTheme.commentCode,
+            }}
+            className="markdown-code"
+          >
+            <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
+              {props.value}
+            </SyntaxHighlighter>
+          </div>
+          <div style={{ height: '14px' }} />
         </div>
-        <div style={{ height: '14px' }} />
-      </div>
-    );
+      );
+    }
   };
 
   const inlineCodeRenderer = (props: any) => {

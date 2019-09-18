@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
+import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
 // @ts-ignore
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -13,6 +14,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import Markdown from './Markdown';
+import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
 
@@ -28,6 +30,7 @@ export interface ICodeContentCoreProps {
 export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
+  fileTemplate?: FileTemplateType;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -36,11 +39,16 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   React.useEffect(() => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
+    const codeTemplate = document.getElementById('code-template');
 
     const horizontalCodeScroll = () => {
       // Scroll horizontally
       if (codeMain !== null && codeSyntax !== null) {
         codeSyntax.scrollLeft = codeMain.scrollLeft;
+      }
+
+      if (codeMain !== null && codeTemplate !== null) {
+        codeTemplate.scrollLeft = codeMain.scrollLeft;
       }
     };
 
@@ -124,6 +132,20 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         >
           {props.file.code}
         </SyntaxHighlighter>
+        {props.fileTemplate !== undefined ? (
+          <div
+            id="code-template"
+            className="code code--template"
+            style={{
+              lineHeight: `${themeVars.grade.codeLineHeight}px`,
+              fontSize: `${themeVars.grade.codeFontSize}px`,
+              paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+              paddingBottom: '10px',
+            }}
+          >
+            <TemplateCode file={props.file} fileTemplate={props.fileTemplate} />
+          </div>
+        ) : null}
         <div
           id="code-main"
           className="code code--underlay"
@@ -153,7 +175,14 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
     };
 
     public render() {
-      return <Component {...(this.props as ICodeContentCoreProps)} addComment={this.addComment} commentCounter={-1} />;
+      return (
+        <Component
+          {...(this.props as ICodeContentCoreProps)}
+          addComment={this.addComment}
+          commentCounter={-1}
+          fileTemplate={undefined}
+        />
+      );
     }
   };
 };

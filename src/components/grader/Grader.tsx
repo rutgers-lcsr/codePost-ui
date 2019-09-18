@@ -393,7 +393,13 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         })}
       </Menu>
     );
-    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} />;
+    const courseDropdown = (
+      <CPDropdown
+        value={courseSelectorText}
+        overlay={courseMenu}
+        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
+      />
+    );
 
     let assignmentSelectorText = 'Select an assignment';
     if (this.state.currentAssignment) {
@@ -414,6 +420,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
         value={assignmentSelectorText}
         overlay={assignmentMenu}
         disabled={this.state.currentCourse === undefined}
+        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
       />
     );
 
