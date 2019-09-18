@@ -337,16 +337,17 @@ const CollectionCreateForm: any = Form.create()(
                     <div>
                       When enabled, admins and graders will be able to edit the assignment rubric inline in the code
                       console. Graders will have full permission to create, modify and delete rubric items.
-                      </div>
+                    </div>
                   }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
-                 {getFieldDecorator('collaborativeRubricMode', {
+                >
+                  {getFieldDecorator('collaborativeRubricMode', {
                     initialValue: this.props.assignment.collaborativeRubricMode,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>
-                 <Form.Item
+                <Form.Item
                   label="Include file templates"
                   extra={
                     <div>
