@@ -37,7 +37,7 @@ export const getOperatingSystem = () => {
   return navigator.platform.indexOf('Win') > -1 ? OS.WINDOWS : OS.MAC;
 };
 
-const useHotkeys = (hotkey: number, callback: any, shift?: boolean) => {
+const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: boolean) => {
   const os = getOperatingSystem();
 
   React.useEffect(() => {
@@ -49,7 +49,7 @@ const useHotkeys = (hotkey: number, callback: any, shift?: boolean) => {
         trigger = e.which === hotkey && triggerKey && e.shiftKey;
       }
 
-      if (trigger) {
+      if (trigger && !override) {
         e.preventDefault();
         e.stopPropagation();
         callback();

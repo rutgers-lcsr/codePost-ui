@@ -1,10 +1,10 @@
-import * as React from "react";
+import * as React from 'react';
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown from 'react-markdown';
 
-import SyntaxHighlighter from "react-syntax-highlighter";
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
-import { ConsoleThemeContext } from "../../styles/abstracts/_console-theme-context";
+import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
 interface IBlockMarkdownProps {
   source: string;
@@ -23,8 +23,8 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   const blockProps = () => {
     return {
       style: {
-        color: consoleTheme.text
-      }
+        color: consoleTheme.text,
+      },
     };
   };
 
@@ -37,34 +37,35 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   };
 
   const codeRenderer = (props: any) => {
-    return (
-      <div>
-        <div
-          style={{
-            border: `1px solid ${consoleTheme.commentTitleBorder}`,
-            borderRadius: "4px",
-            backgroundColor: consoleTheme.commentCode
-          }}
-          className="markdown-code"
-        >
-          <SyntaxHighlighter
-            language={props.language}
-            style={consoleTheme.codeTheme}
+    if (props.value === undefined) {
+      return <div></div>;
+    } else {
+      return (
+        <div>
+          <div
+            style={{
+              border: `1px solid ${consoleTheme.commentTitleBorder}`,
+              borderRadius: '4px',
+              backgroundColor: consoleTheme.commentCode,
+            }}
+            className="markdown-code"
           >
-            {props.value}
-          </SyntaxHighlighter>
+            <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
+              {props.value}
+            </SyntaxHighlighter>
+          </div>
+          <div style={{ height: '14px' }} />
         </div>
-        <div style={{ height: "14px" }} />
-      </div>
-    );
+      );
+    }
   };
 
   const inlineCodeRenderer = (props: any) => {
     const style = {
       backgroundColor: consoleTheme.commentCode, // #e3e3e3
       color: consoleTheme.text,
-      padding: "0px 2px",
-      borderRadius: "2px"
+      padding: '0px 2px',
+      borderRadius: '2px',
     };
 
     return <code style={style}>{props.children}</code>;
@@ -79,7 +80,7 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
     inlineCode: inlineCodeRenderer,
     code: codeRenderer,
     thematicBreak: thematicBreakRenderer,
-    link: linkRenderer
+    link: linkRenderer,
   };
 
   if (extraRenderers === undefined) {

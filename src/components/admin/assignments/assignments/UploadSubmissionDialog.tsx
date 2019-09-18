@@ -136,13 +136,22 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
+  public getPath = (webkitRelativePath: string) => {
+    const pathDirs = webkitRelativePath.split('/');
+    const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
+    return filePath;
+  };
+
   public onRemove = (file: any) => {
+    const filePath = this.getPath(file.webkitRelativePath);
     const newFiles = this.state.files.filter((el) => {
-      return el.name !== file.name;
+      return el.name !== file.name || el.path !== filePath;
     });
     const newFileList = this.state.fileList.filter((el) => {
-      return el.name !== file.name;
+      const elPath = this.getPath(el.webkitRelativePath);
+      return el.name !== file.name || elPath !== filePath;
     });
+
     this.setState({ files: newFiles, fileList: newFileList });
   };
 
@@ -239,14 +248,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           const reader = new FileReader();
           reader.onload = () => {
             if (reader.result) {
+              const filePath = this.getPath(file.webkitRelativePath);
               const newFiles = this.state.files.filter((el) => {
-                return el.name !== file.name;
+                return el.name !== file.name || el.path !== filePath;
               });
               const newFileList = this.state.fileList.filter((el) => {
-                return el.name !== file.name;
+                const elPath = this.getPath(el.webkitRelativePath);
+                return el.name !== file.name || elPath !== filePath;
               });
-              const pathDirs = file.webkitRelativePath.split('/');
-              const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
               this.setState({
                 files: [
                   ...newFiles,

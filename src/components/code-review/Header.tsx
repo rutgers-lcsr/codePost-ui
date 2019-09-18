@@ -342,7 +342,7 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files);
+  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files, props.comments);
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);

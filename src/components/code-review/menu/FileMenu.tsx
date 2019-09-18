@@ -33,7 +33,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import { getOperatingSystem, OS } from '../useHotkeys';
 
-import { slack } from '../../core/slack';
+import { sendSlack } from '../../core/slack';
 
 const { SubMenu } = Menu;
 
@@ -75,13 +75,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const directoryStructure = this.createDirectoryStructure(separatedFiles.new);
     const sortedFiles = this.sortFiles(directoryStructure);
     const oldVersionsMap = separatedFiles.old;
-    if (oldVersionsMap) {
-      const payload = {
-        message: `File versioning:`,
-        url: window.location.href,
-        channel: '#user_notifications_beta_use',
-      };
-      slack(`${process.env.REACT_APP_API_URL}/logs/log/`, payload);
+    if (oldVersionsMap && Object.keys(oldVersionsMap).length > 0) {
+      sendSlack('File Versioning', window.location.href, '#f9f9f9', '#user_notifications_beta_use');
     }
     this.state = {
       directoryStructure,

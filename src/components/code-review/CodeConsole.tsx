@@ -304,7 +304,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   ): number => {
     // Get the set of fileIDs and commentIDs for the current files
     // This filters out any old file versions
-    const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(files);
+    const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(files, comments);
     const commentPoints = CodeConsole.genericCommentPoints(comments, currentFileSet);
     const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments, currentCommentSet);
     const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
@@ -322,7 +322,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   // This function filters out old file versions, and keeps only the current file versions
   // It outputs a set of the current file IDs and the current comment IDs
-  public static filterCurrentFileVersions = (files: FileType[]) => {
+  public static filterCurrentFileVersions = (files: FileType[], currentComments?: IFileToCommentsMap) => {
     const currentFiles: { [pathName: string]: FileType } = {};
     files.forEach((file) => {
       const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
@@ -339,7 +339,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     Object.keys(currentFiles).forEach((path) => {
       const file = currentFiles[path];
       currentFileSet.add(file.id);
-      file.comments.forEach((commentID) => currentCommentSet.add(commentID));
+      if (currentComments) {
+        // If current comment Map is specified, use that instead of file.comments
+        const comments = currentComments[file.id];
+        if (comments) {
+          comments.forEach((comment) => currentCommentSet.add(comment.id));
+        }
+      } else {
+        file.comments.forEach((commentID) => currentCommentSet.add(commentID));
+      }
     });
 
     return [currentFileSet, currentCommentSet];
@@ -1142,6 +1150,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           initialDimensions={this.state.dimensions}
           setDimensions={this.setDimensions}
           hasComments={hasComments}
+          isEditingComment={this.state.activeCommentID !== undefined}
         />,
       );
     }
