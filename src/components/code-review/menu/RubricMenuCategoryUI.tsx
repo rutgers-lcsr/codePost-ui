@@ -34,6 +34,8 @@ interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
   searchTerm: string;
   assignment: AssignmentType;
   editRubricMode: boolean;
+  turnOnReload: () => void;
+  turnOffReload: () => void;
 }
 
 const RubricMenuCategoryUI = ({
@@ -284,15 +286,24 @@ const RubricMenuCategoryUI = ({
     </Tag>
   ) : null;
 
+  const changeName = (e: any) => {
+    props.turnOffReload();
+    helpers.changeName(e);
+  };
+
+  const onBlur = () => {
+    props.turnOnReload();
+    helpers.saveCategory();
+  };
+
   const title = props.editRubricMode ? (
     <Input
       value={state.name}
-      onChange={helpers.changeName}
-      onBlur={helpers.saveCategory}
+      onChange={changeName}
+      onBlur={onBlur}
       ref={helpers.nameInput}
       style={{
         height: '27px',
-        width: '60%',
         alignSelf: 'center',
         fontWeight: 500,
         backgroundColor: consoleTheme.commentTextArea,

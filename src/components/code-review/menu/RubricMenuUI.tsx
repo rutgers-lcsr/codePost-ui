@@ -184,6 +184,8 @@ const RubricMenuUI = ({
               searchTerm: commentSearchTerm,
               assignment: props.assignment,
               editRubricMode: props.editRubricMode,
+              turnOnReload: props.turnOnReload,
+              turnOffReload: props.turnOffReload,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
