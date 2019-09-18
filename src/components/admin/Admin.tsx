@@ -889,14 +889,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     const oldStudents = [...oldSection.students];
 
     return Section.update(toUpdate).then((newSection) => {
-      const cleanedSections = [
-        ...this.state.sections.filter((el) => {
-          return el.id !== newSection.id;
-        }),
-        newSection,
-      ];
+      // We need to do two things here:
+      // (1) Update this.state.sectionsByStudent to reflect new section assignments
+      // (2) Update this.state.sections to reflect both newSection, and changes
+      // to other sections (removed students).
 
-      // have the students changed?
+      // calculate changes made
       const newStudents = toUpdate.students;
       const removedStudents = oldStudents.filter((student) => {
         return !newStudents.includes(student);
@@ -906,7 +904,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return !oldStudents.includes(student);
       });
 
-      // update cached data structure
+      // Task 1: update this.state.sectionsByStudent
       const sectionMap = { ...this.state.sectionsByStudent };
       for (const removed of removedStudents) {
         delete sectionMap[removed];
@@ -915,8 +913,22 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         sectionMap[added] = newSection;
       }
 
+      // Task 2: update this.state.sections
+      const otherSections = this.state.sections
+        .filter((el) => {
+          return el.id !== newSection.id;
+        })
+        .map((el) => {
+          return {
+            ...el,
+            students: el.students.filter((stu) => {
+              return addedStudents.indexOf(stu) === -1;
+            }),
+          };
+        });
+
       this.setState({
-        sections: cleanedSections,
+        sections: [...otherSections, newSection],
         sectionsByStudent: sectionMap,
       });
       return;
