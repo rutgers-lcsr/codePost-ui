@@ -262,6 +262,7 @@ const RubricMenuUI = ({
     const addRubricCategory = (e: any) => {
       helpers.addRubricCategory(newCategoryName, e);
       setNewCategoryName('');
+      props.turnOffReload();
     };
 
     const onCancel = () => {

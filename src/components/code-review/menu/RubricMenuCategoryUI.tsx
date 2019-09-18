@@ -279,6 +279,11 @@ const RubricMenuCategoryUI = ({
     <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
   );
 
+  const addComment = () => {
+    props.turnOffReload();
+    helpers.addComment();
+  };
+
   return (
     <Menu
       defaultOpenKeys={[`category-${props.rubricCategory.id}`]}
@@ -319,7 +324,7 @@ const RubricMenuCategoryUI = ({
               icon="plus"
               size="small"
               style={{ width: '100%', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
-              onClick={helpers.addComment}
+              onClick={addComment}
             >
               Add
             </Button>
