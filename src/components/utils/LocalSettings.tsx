@@ -56,6 +56,14 @@ const floatIParser = (value: number) => {
   return value.toString();
 };
 
+const intOParser = (value: string) => {
+  return parseInt(value);
+};
+
+const intIParser = (value: number) => {
+  return value.toString();
+};
+
 /******************************************************************************************************************/
 
 // key: darkMode
@@ -88,6 +96,11 @@ const codeZoom = generateSettingFunctions('codeZoom', 1.0, floatIParser, floatOP
 // defalut value: 1.0
 const codeWidth = generateSettingFunctions('codeWidth', 0, floatIParser, floatOParser);
 
+// key: defaultCourse
+// return type: int. Represents the id of the default course rendered in the admin console
+// defalut value: 0
+const defaultCourse = generateSettingFunctions('defaultCourse', 0, intIParser, intOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -96,6 +109,7 @@ const LOCAL_SETTINGS = {
   rubricMenuHidden,
   codeZoom,
   codeWidth,
+  defaultCourse,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };
