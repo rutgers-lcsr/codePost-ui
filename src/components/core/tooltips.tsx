@@ -54,6 +54,7 @@ const GRADE_HEADER_ALIGNMENT = (
     [⌘ click highlights]
   </div>
 );
+const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_HEADER_DOWNLOAD_CODE = 'Download the code for this submission.';
@@ -199,6 +200,9 @@ export const tooltips = {
     },
     comments: {
       pointsDisabled: GRADE_COMMENT_POINTSDISABLED,
+    },
+    rubric: {
+      edit: GRADE_RUBRIC_EDIT,
     },
   },
   settings: {

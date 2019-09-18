@@ -17,7 +17,7 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { O_KEY } from '../useHotkeys';
+import useHotkeys, { E_KEY, O_KEY } from '../useHotkeys';
 
 import CPButton from '../../core/CPButton';
 
@@ -32,6 +32,9 @@ import RubricCategoryManager, { IRubricCategoryManagerParams } from '../../core/
 import RubricMenuCategoryUI from './RubricMenuCategoryUI';
 
 import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignments/rubric/LinkedCommentsAlert';
+
+import CPTooltip from '../../core/CPTooltip';
+import { tooltips } from '../../core/tooltips';
 
 /**********************************************************************************************************************/
 
@@ -178,15 +181,21 @@ const RubricMenuUI = ({
   };
 
   const toggleEditRubricMode = () => {
-    setEditingStatuses({});
-    if (!props.editRubricMode) {
-      setEditRubricClass('slide-in');
-      props.toggleEditRubricMode();
+    if (props.assignment.collaborativeRubricMode) {
+      setEditingStatuses({});
+      if (!props.editRubricMode) {
+        setEditRubricClass('slide-in');
+        props.toggleEditRubricMode();
+      } else {
+        setEditRubricClass('slide-out');
+        props.toggleEditRubricMode();
+      }
     } else {
-      setEditRubricClass('slide-out');
-      props.toggleEditRubricMode();
+      return;
     }
   };
+
+  useHotkeys(E_KEY, toggleEditRubricMode);
 
   let controls = null;
   if (state.loadComplete && props.assignment.collaborativeRubricMode) {
@@ -310,12 +319,14 @@ const RubricMenuUI = ({
         onChange={onSearch}
         value={searchTerm}
         addonBefore={
-          <Icon
-            type="edit"
-            theme="filled"
-            onClick={toggleEditRubricMode}
-            style={{ color: '#24be85', cursor: 'pointer' }}
-          />
+          <CPTooltip title={tooltips.grade.rubric.edit}>
+            <Icon
+              type="edit"
+              theme="filled"
+              onClick={toggleEditRubricMode}
+              style={{ color: '#24be85', cursor: 'pointer' }}
+            />
+          </CPTooltip>
         }
         className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
         style={{
