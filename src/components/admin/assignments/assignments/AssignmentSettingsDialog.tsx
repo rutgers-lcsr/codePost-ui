@@ -315,7 +315,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
                 <Form.Item
-                  label="Enforce rubric use"
+                  label="Rubric-only mode"
                   extra={
                     <div>
                       <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
@@ -334,7 +334,7 @@ const CollectionCreateForm: any = Form.create()(
                   extra={
                     <div>
                       <Tag>NEW</Tag> Use file templates to help speed up grading by de-emphasizing template-provided
-                      versus student-written code.
+                      versus student-written code. Template names must match submission file names.
                     </div>
                   }
                   labelCol={{ span: 6 }}
