@@ -17,7 +17,7 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { E_KEY, O_KEY } from '../useHotkeys';
+import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
 
 import CPButton from '../../core/CPButton';
 
@@ -68,6 +68,9 @@ const RubricMenuUI = ({
   const [editingStatuses, setEditingStatuses] = React.useState({});
   const [editRubricClass, setEditRubricClass] = React.useState('');
   const [newCategoryName, setNewCategoryName] = React.useState('');
+
+  const [changesMade, setChangesMade] = React.useState(false);
+  const [confirmChanges, setConfirmChanges] = React.useState(false);
 
   // console.log(props, state, helpers);
 
@@ -187,25 +190,54 @@ const RubricMenuUI = ({
         setEditRubricClass('slide-in');
         props.toggleEditRubricMode();
       } else {
-        setEditRubricClass('slide-out');
-        props.toggleEditRubricMode();
+        if (changesMade) {
+          setConfirmChanges(true);
+        } else {
+          setEditRubricClass('slide-out');
+          props.toggleEditRubricMode();
+        }
       }
     } else {
       return;
     }
   };
 
+  const onUndo = () => {
+    helpers.resetRubric();
+    setEditingStatuses({});
+  };
+
+  const onSave = () => {
+    if (changesMade) {
+      helpers.onSave(props.setRubric);
+
+      setEditingStatuses({});
+    }
+  };
+
+  const confirm = () => {
+    onSave();
+    setConfirmChanges(false);
+    setEditRubricClass('slide-out');
+    props.toggleEditRubricMode();
+  };
+
+  const cancel = () => {
+    onUndo();
+    setConfirmChanges(false);
+    setEditRubricClass('slide-out');
+    props.toggleEditRubricMode();
+  };
+
   useHotkeys(E_KEY, toggleEditRubricMode);
+  useHotkeys(S_KEY, onSave);
 
   let controls = null;
   if (state.loadComplete && props.assignment.collaborativeRubricMode) {
-    const changesMade = helpers.changesMade();
-
-    const onSave = (e: any) => {
-      helpers.onSave(props.setRubric, e);
-
-      setEditingStatuses({});
-    };
+    const x = helpers.changesMade();
+    if (x !== changesMade) {
+      setChangesMade(x);
+    }
 
     const addRubricCategory = (e: any) => {
       helpers.addRubricCategory(newCategoryName, e);
@@ -214,11 +246,6 @@ const RubricMenuUI = ({
 
     const onCancel = () => {
       setNewCategoryName('');
-    };
-
-    const onUndo = (e: any) => {
-      helpers.resetRubric();
-      setEditingStatuses({});
     };
 
     const onChangeCategoryName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,17 +292,27 @@ const RubricMenuUI = ({
         Undo
       </CPButton>,
       <div key="gap2" style={{ width: '10px' }} />,
-      <CPButton
-        key="save"
-        disabled={!changesMade}
-        onClick={onSave}
-        cpType="primary"
-        icon="save"
-        loading={state.isSaving}
-        style={{ minWidth: '80px' }}
+      <Popconfirm
+        title="You have unsaved changes. Would you like to save?"
+        visible={confirmChanges}
+        onConfirm={confirm}
+        onCancel={cancel}
+        okText="Yes"
+        cancelText="No, undo"
+        key="save-confirm"
       >
-        Save
-      </CPButton>,
+        <CPButton
+          key="save"
+          disabled={!changesMade}
+          onClick={onSave}
+          cpType="primary"
+          icon="save"
+          loading={state.isSaving}
+          style={{ minWidth: '80px' }}
+        >
+          Save
+        </CPButton>
+      </Popconfirm>,
       <div key="modals">
         <LinkedCommentsAlert
           rubricComment={state.linkedComments[0]}
