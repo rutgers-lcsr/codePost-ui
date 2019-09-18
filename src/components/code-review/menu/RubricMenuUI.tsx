@@ -380,7 +380,7 @@ const RubricMenuUI = ({
         onChange={onSearch}
         value={searchTerm}
         addonBefore={
-          <CPTooltip title={tooltips.grade.rubric.edit}>
+          <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
             <Icon
               type="edit"
               theme="filled"
