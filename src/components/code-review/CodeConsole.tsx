@@ -1592,9 +1592,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             assignment={this.state.assignment}
             submissions={[]}
             onCancel={onCancel}
-            reloadInterval={
-              this.state.assignment.collaborativeRubricMode && this.state.editRubricMode ? 5000 : undefined
-            }
+            reloadInterval={this.state.assignment.collaborativeRubricMode ? 5000 : undefined}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
