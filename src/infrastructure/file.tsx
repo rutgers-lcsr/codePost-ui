@@ -77,6 +77,14 @@ export class File {
       ? 'markdown'
       : 'code';
   };
+
+  public static extension = (filename: string): string => {
+    const l = filename.split('.').length;
+    if (l > 0) {
+      return filename.split('.')[l - 1];
+    }
+    return '';
+  };
 }
 
 const codeString = `/******************************************************************

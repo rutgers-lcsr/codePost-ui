@@ -23,6 +23,7 @@ import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
+import { FileTemplate, FileTemplateType } from '../../infrastructure/fileTemplate';
 import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
@@ -93,13 +94,13 @@ interface ICodeConsoleState {
   course?: CourseType;
   files: FileType[];
   comments: IFileToCommentsMap;
+  fileTemplates?: FileTemplateType[];
 
   /* writer data */
   submission?: AnonymousSubmissionType;
   rubricCategories: RubricCategoryType[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
-  allowGradersToEditRubric: boolean;
   activeCommentID?: number;
   oldCommentIDs: { [currentID: number]: number };
 
@@ -369,13 +370,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       assignment: undefined,
       commentRubricComments: {},
       comments: {},
+      fileTemplates: undefined,
+
       files: [],
       graders: [],
       isLoading: true,
       rubricCategories: [],
       rubricComments: {},
       submission: undefined,
-      allowGradersToEditRubric: false,
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -477,8 +479,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           this.loadRubric(writableSubmission.assignment),
         ]);
         course = await Course.read(assignment.course);
-        const settings = await this.loadSettings(assignment);
-        const allowGradersToEditRubric = settings.allowGradersToEditRubric;
+
+        let fileTemplates;
+        if (assignment.templateMode) {
+          fileTemplates = await Promise.all(
+            assignment.fileTemplates.map((fileTemplateID: number) => {
+              return FileTemplate.read(fileTemplateID);
+            }),
+          );
+        }
 
         // load the data only an admin has access to
         const graders = this.isCourseAdmin(assignment)
@@ -507,10 +516,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories,
             rubricComments,
             graders,
-            allowGradersToEditRubric,
             isLoading: false,
             selectedFile: files.length > 0 ? files[0] : undefined,
             permissionLevel,
+            fileTemplates,
           },
           () => this.setNewFilesWarning(),
         );
@@ -520,12 +529,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************
   /* Loading methods
   /**********************************************************************************/
-
-  public loadSettings = async (assignment: AssignmentType) => {
-    const courseID = assignment.course;
-    const settings: CourseSettingsType = await Course.readSettings(courseID);
-    return settings;
-  };
 
   public setNewFilesWarning = () => {
     if (
@@ -945,6 +948,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       liveFeedbackMode: false,
       additiveGrading: false,
       forcedRubricMode: false,
+      templateMode: false,
+      fileTemplates: [],
     };
 
     const demoCourse: CourseType = {
@@ -958,7 +963,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       timezone: '',
       emailNewUsers: false,
       anonymousGradingDefault: false,
-      allowGradersToEditRubric: false,
     };
 
     const demoSubmission: AnonymousSubmissionType = {
@@ -1225,6 +1229,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
+              fileTemplate={undefined}
             />
           );
 
@@ -1411,7 +1416,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           />,
         ];
 
-        if (this.state.selectedFile) {
+        if (this.state.selectedFile !== undefined) {
+          let fileTemplate: FileTemplateType | undefined;
+          if (this.state.fileTemplates !== undefined) {
+            fileTemplate = this.state.fileTemplates.find((template: FileTemplateType) => {
+              // FIXME: could be more flexible here
+              // Find the first match
+              return template.name === this.state.selectedFile!.name;
+            });
+          }
+
           const code = (onHighlightClick: any) => (
             <GradeCode
               key={this.state.selectedFile!.id}
@@ -1423,6 +1437,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               onHighlightClick={onHighlightClick}
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
+              fileTemplate={fileTemplate}
             />
           );
 
