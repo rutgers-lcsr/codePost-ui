@@ -34,6 +34,7 @@ interface IStandardConsoleLayoutProps {
   content: React.ReactNode;
   children?: React.ReactNode;
   siderTitles: Array<string | React.ReactNode>;
+  editRubricMode: boolean;
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
@@ -44,12 +45,64 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
   };
 
-  const siderWidth =
+  let siderWidth =
     windowSize.width < layoutVars.breakpoints.smallScreen.grade
       ? layoutVars.maxWidths.gradeSiderSmallScreen
       : layoutVars.maxWidths.gradeSiderNormal;
 
-  useGradeResizer(props.consoleTypes);
+  if (props.editRubricMode) {
+    siderWidth = 700;
+  }
+
+  const handleResize = async () => {
+    if (window.innerHeight !== 0) {
+      const fileMenu = document.getElementById('file-menu');
+      const rubricMenu = document.getElementById('rubric-menu');
+      const submissionInfo = document.getElementById('submission-info');
+      const rubricMenuTitle = document.getElementById('rubric-menu-title');
+
+      if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
+        // Don't let the file menu take up more than half of the vertical space
+        // allowable for files and rubric
+        const fileMenuMaxHeight =
+          (window.innerHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
+        fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
+
+        setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    if (props.consoleTypes && props.consoleTypes.includes('grade')) {
+      handleResize();
+      window.addEventListener('resize', handleResize);
+    }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [props.editRubricMode]);
+
+  const onCollapse = async (keys: string[]) => {
+    if (window.innerHeight !== 0) {
+      const rubricMenu = document.getElementById('rubric-menu');
+      const rubricMenuTitle = document.getElementById('rubric-menu-title');
+
+      if (rubricMenu !== null && rubricMenuTitle !== null) {
+        // Force the rubric to fill any extra space created by a collapsed component
+        // by removing max-height restriction. This prevents the rubric from occupying
+        // less than the available space created by a collapse before
+        // update below has completed.
+        rubricMenu.style.setProperty('max-height', 'none');
+
+        // wait for collapse/uncover animation to complete
+        await wait(500);
+
+        // Update max-height to facilitate scrolling
+        setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
+      }
+    }
+  };
 
   // Manually set collapse icon so we can change color for dark mode
   const collapseIcon = ({ isActive }: { isActive: boolean }) => {
@@ -137,63 +190,12 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
 /**********************************************************************************************************************/
 
-const handleResize = async () => {
-  if (window.innerHeight !== 0) {
-    const fileMenu = document.getElementById('file-menu');
-    const rubricMenu = document.getElementById('rubric-menu');
-    const submissionInfo = document.getElementById('submission-info');
-    const rubricMenuTitle = document.getElementById('rubric-menu-title');
-
-    if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
-      // Don't let the file menu take up more than half of the vertical space
-      // allowable for files and rubric
-      const fileMenuMaxHeight =
-        (window.innerHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
-      fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
-
-      setBottomElementMaxHeight(rubricMenuTitle, rubricMenu);
-    }
-  }
-};
-
-const onCollapse = async (keys: string[]) => {
-  if (window.innerHeight !== 0) {
-    const rubricMenu = document.getElementById('rubric-menu');
-    const rubricMenuTitle = document.getElementById('rubric-menu-title');
-
-    if (rubricMenu !== null && rubricMenuTitle !== null) {
-      // Force the rubric to fill any extra space created by a collapsed component
-      // by removing max-height restriction. This prevents the rubric from occupying
-      // less than the available space created by a collapse before
-      // update below has completed.
-      rubricMenu.style.setProperty('max-height', 'none');
-
-      // wait for collapse/uncover animation to complete
-      await wait(500);
-
-      // Update max-height to facilitate scrolling
-      setBottomElementMaxHeight(rubricMenuTitle, rubricMenu);
-    }
-  }
-};
-
-const setBottomElementMaxHeight = (above: HTMLElement, toSet: HTMLElement) => {
-  const maxHeight = window.innerHeight - above.getBoundingClientRect().bottom;
+const setBottomElementMaxHeight = (above: HTMLElement, toSet: HTMLElement, editRubricMode: boolean) => {
+  const rubricControlHeight = 50;
+  const maxHeight = editRubricMode
+    ? window.innerHeight - above.getBoundingClientRect().bottom - rubricControlHeight
+    : window.innerHeight - above.getBoundingClientRect().bottom;
   toSet.style.setProperty('max-height', `${maxHeight}px`);
-};
-
-const useGradeResizer = (consoleTypes: any) => {
-  React.useEffect(() => {
-    if (consoleTypes && consoleTypes.includes('grade')) {
-      handleResize();
-      window.addEventListener('resize', handleResize);
-    }
-    return () => {
-      if (consoleTypes && consoleTypes.includes('grade')) {
-        window.removeEventListener('resize', handleResize);
-      }
-    };
-  }, []); // only run on mount, unmount
 };
 
 export default StandardConsoleLayout;

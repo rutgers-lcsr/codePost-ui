@@ -144,40 +144,24 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         author: comment.author,
         text:
           comment.text === null || comment.text.length === 0 ? (
-            <Icon type='pushpin' />
+            <Icon type="pushpin" />
           ) : (
             <CPTooltip title={comment.text}>
-              <Icon type='pushpin' theme='filled' />
+              <Icon type="pushpin" theme="filled" />
             </CPTooltip>
           ),
-        open: (
-          <Icon
-            type='code'
-            onClick={openSubmission.bind(
-              this,
-              commentToSubMap[comment.id].submission,
-            )}
-          />
-        ),
+        open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
       };
     });
 
     const content = (
       <div>
         <span>
-          Comment:{' '}
-          <Typography.Text code>
-            {this.props.rubricComment.text}
-          </Typography.Text>
+          Comment: <Typography.Text code>{this.props.rubricComment.text}</Typography.Text>
         </span>
         <br />
         <br />
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={false}
-          loading={this.state.isLoading}
-        />
+        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
       </div>
     );
 
@@ -188,10 +172,11 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         width={800}
         onCancel={closeCommentExplorer}
         footer={[
-          <Button key='close' onClick={closeCommentExplorer}>
+          <Button key="close" onClick={closeCommentExplorer}>
             Close
           </Button>,
-        ]}>
+        ]}
+      >
         {content}
       </Modal>
     );

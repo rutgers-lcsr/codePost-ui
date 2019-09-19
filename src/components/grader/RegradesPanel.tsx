@@ -77,12 +77,9 @@ const RegradesPanel = (props: IProps) => {
   };
 
   // Update submission if assignment changes or viewAll is triggered
-  useEffect(
-    () => {
-      refreshSubmissions();
-    },
-    [props.assignment, viewAll],
-  );
+  useEffect(() => {
+    refreshSubmissions();
+  }, [props.assignment, viewAll]);
 
   // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
   const regradeSubmissions = submissions.filter((submission) => {

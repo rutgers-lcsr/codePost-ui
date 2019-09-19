@@ -36,6 +36,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       name: values.name,
       points: values.points,
       anonymousGrading: values.anonymousGrading,
+      collaborativeRubricMode: values.collaborativeRubricMode,
       hideGradersFromStudents: values.hideGradersFromStudents,
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
@@ -104,6 +105,7 @@ interface IFormValues {
   name: string;
   points: number;
   anonymousGrading: boolean;
+  collaborativeRubricMode: boolean;
   hideGradersFromStudents: boolean;
   hideGrades: boolean;
   commentFeedback: boolean;
@@ -326,6 +328,22 @@ const CollectionCreateForm: any = Form.create()(
                 >
                   {getFieldDecorator('forcedRubricMode', {
                     initialValue: this.props.assignment.forcedRubricMode,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
+                <Form.Item
+                  label="Collaborative Rubric"
+                  extra={
+                    <div>
+                      When enabled, admins and graders will be able to edit the assignment rubric inline in the code
+                      console. Graders will have full permission to create, modify and delete rubric items.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('collaborativeRubricMode', {
+                    initialValue: this.props.assignment.collaborativeRubricMode,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>

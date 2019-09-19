@@ -3,13 +3,13 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import { Layout } from "antd";
+import { Layout } from 'antd';
 
-import CPFlex from "../../../core/CPFlex";
-import CPTooltip from "../../../core/CPTooltip";
+import CPFlex from '../../../core/CPFlex';
+import CPTooltip from '../../../core/CPTooltip';
 
 const { Header, Content } = Layout;
 /**********************************************************************************************************************/
@@ -35,32 +35,24 @@ const CPAdminRubric = (props: ICPAdminRubricProps) => {
       iconStyle={{ paddingLeft: 10 }}
     />
   ) : (
-      <div />
-    );
+    <div />
+  );
 
   const subheaderLeft = [
-    <div key="title" style={{ display: "flex", alignItems: "center" }}>
-      <span className="cp-label cp-label--large cp-label--bold">
-        {props.title}
-      </span>
+    <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
+      <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
       {titleTooltip}
-    </div>
+    </div>,
   ];
 
   return (
     <Content className="layout--admin__detail--rubric">
       <Layout>
         <Header className="layout--admin__rubric__subheader">
-          <CPFlex
-            left={[<div key="breadcrumbs">{props.breadcrumbs}</div>]}
-            right={[]}
-            gutterSize={10}
-          />
+          <CPFlex left={[<div key="breadcrumbs">{props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
           <CPFlex left={subheaderLeft} right={props.actions} gutterSize={10} />
         </Header>
-        <Content className="layout--admin__rubric__content">
-          {props.isEmpty ? props.emptyNode : props.content}
-        </Content>
+        <Content className="layout--admin__rubric__content">{props.isEmpty ? props.emptyNode : props.content}</Content>
       </Layout>
     </Content>
   );

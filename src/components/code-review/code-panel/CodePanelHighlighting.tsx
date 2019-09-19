@@ -9,11 +9,7 @@ type StyleType = {
 };
 
 class CodePanelHighlighting {
-  public static getHighlights = (
-    sortedComments: CommentType[],
-    thetext: string,
-    line: number,
-  ): number[][] => {
+  public static getHighlights = (sortedComments: CommentType[], thetext: string, line: number): number[][] => {
     // const highlights: is an array of tuples for a highlight's placement on a given line
     // (startChar, endChar, highlight.id)
     // Note that these are different from highlight.startChar and highlight.endChar
@@ -31,21 +27,11 @@ class CodePanelHighlighting {
         // we may be in a partial highlight situation
         // is the whole comment in one line?
         if (highlight.endLine === highlight.startLine) {
-          highlights.push([
-            highlight.startChar,
-            highlight.endChar,
-            highlight.id,
-          ]);
+          highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
         } else {
           // Avoid starting and stopping a highlight on the same char
-          const end =
-            thetext[thetext.length - 1] === '\r'
-              ? thetext.length - 1
-              : thetext.length;
-          const start =
-            highlight.startChar === thetext.length
-              ? end - 1
-              : highlight.startChar;
+          const end = thetext[thetext.length - 1] === '\r' ? thetext.length - 1 : thetext.length;
+          const start = highlight.startChar === thetext.length ? end - 1 : highlight.startChar;
           highlights.push([start, end, highlight.id]);
         }
       } else if (highlight.endLine === line) {
@@ -59,11 +45,7 @@ class CodePanelHighlighting {
     return highlights;
   };
 
-  public static buildHTMLString = (
-    highlights: number[][],
-    thetext: string,
-    line: number,
-  ): [string, StyleType] => {
+  public static buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, StyleType] => {
     const elements: any[] = [];
     let prevIDs: number[] = [];
     let styles: StyleType = {};
@@ -97,9 +79,7 @@ class CodePanelHighlighting {
             ...styles,
             [`${updatedIDs[i]}`]: Math.max(
               i,
-              styles[`highlight-${updatedIDs}`]
-                ? styles[`highlight-${updatedIDs}`]
-                : 0,
+              styles[`highlight-${updatedIDs}`] ? styles[`highlight-${updatedIDs}`] : 0,
             ),
           };
         }
@@ -122,17 +102,13 @@ class CodePanelHighlighting {
           element = `${thetext.charAt(i)}`;
           // Starting new highlights with none existing -> ret: `<strong>{char}`
         } else if (prevIDs.length === 0 && newIDs.length >= 1) {
-          element = `<strong id=line-${line} class="${className}">${thetext.charAt(
-            i,
-          )}`;
+          element = `<strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
           // Closing highlights with no new or existing -> ret: `</strong>{char}`
         } else if (updatedIDs.length === 0 && remIDs.length >= 1) {
           element = `</strong>${thetext.charAt(i)}`;
           // Starting and/or closing highlights -> ret: `</strong><strong>{char}`
         } else {
-          element = `</strong><strong id=line-${line} class="${className}">${thetext.charAt(
-            i,
-          )}`;
+          element = `</strong><strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
         }
       }
       prevIDs = updatedIDs;
@@ -151,9 +127,7 @@ class CodePanelHighlighting {
     const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
     const returnElements = components.map((html: string, i: number) => {
       if (html.includes('</strong>')) {
-        let className = html.match(/class=".*?"/g)
-          ? html.match(/class=".*?"/g)![0]
-          : '';
+        let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
         let commentID = 0;
         if (className !== '') {
           className = className.split('=')[1];
@@ -189,17 +163,9 @@ class CodePanelHighlighting {
     color: string,
     onHighlightClick: (e: React.MouseEvent) => void,
   ) => {
-    const highlights = CodePanelHighlighting.getHighlights(
-      sortedComments,
-      thetext,
-      line,
-    );
+    const highlights = CodePanelHighlighting.getHighlights(sortedComments, thetext, line);
 
-    const [htmlString, styles] = CodePanelHighlighting.buildHTMLString(
-      highlights,
-      thetext,
-      line,
-    );
+    const [htmlString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
 
     // This code doesn't quite work yet
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
@@ -211,12 +177,7 @@ class CodePanelHighlighting {
       );
     }
 
-    const returnElements = CodePanelHighlighting.convertStringToJSX(
-      htmlString,
-      line,
-      readOnly,
-      onHighlightClick,
-    );
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
 
     return returnElements;
   };
@@ -269,12 +230,7 @@ class CodePanelHighlighting {
     }
 
     return (
-      offset +
-      CodePanelHighlighting.getSelectionOffsetRelativeToParent(
-        parentElement,
-        currNode.parentNode,
-        position,
-      )
+      offset + CodePanelHighlighting.getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position)
     );
   };
 
