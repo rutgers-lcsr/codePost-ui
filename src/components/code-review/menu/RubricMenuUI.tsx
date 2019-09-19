@@ -322,7 +322,7 @@ const RubricMenuUI = ({
         cancelText="No, undo"
         key="save-confirm"
       >
-        <CPTooltip title={tooltips.grade.rubric.save} hideThisOnHideTips={true}>
+        <CPTooltip title={changesMade ? tooltips.grade.rubric.save : null} hideThisOnHideTips={true}>
           <CPButton
             key="save"
             id="rubric-save-button"
