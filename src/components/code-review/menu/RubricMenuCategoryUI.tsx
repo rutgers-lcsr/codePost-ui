@@ -261,11 +261,17 @@ const RubricMenuCategoryUI = ({
     helpers.saveCategory();
   };
 
+  const onClick = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const title = props.editRubricMode ? (
     <Input
       value={state.name}
       onChange={changeName}
       onBlur={onBlur}
+      onClick={onClick}
       ref={helpers.nameInput}
       style={{
         height: '27px',
