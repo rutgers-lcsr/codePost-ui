@@ -11,17 +11,11 @@ import {
   updateObjectDetail,
 } from './generics';
 
-import {
-  ICommentToRubricCommentMap,
-  IFileToCommentsMap,
-} from '../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
 import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
-import {
-  SubmissionHistoryV,
-  SubmissionHistoryVPatch,
-} from './submissionHistory';
+import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 
 import { slack } from '../components/core/slack';
 
@@ -150,25 +144,13 @@ export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
 /*****************************************************************************/
 
 export class Submission {
-  public static create = createObject(
-    SubmissionV,
-    SubmissionVPost,
-    'submissions',
-  );
+  public static create = createObject(SubmissionV, SubmissionVPost, 'submissions');
   public static read = readObject(SubmissionV, 'submissions');
-  public static update = updateObject(
-    SubmissionV,
-    SubmissionVPatch,
-    'submissions',
-  );
+  public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
-  public static readHistory = readObjectDetail(
-    t.array(SubmissionHistoryV),
-    'submissions',
-    'history',
-  );
+  public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,
     SubmissionHistoryVPatch,
@@ -191,10 +173,7 @@ export class Submission {
 
   // FIXME, duplicate
   public static loadData = async (
-    submission:
-      | SubmissionType
-      | StudentSubmissionType
-      | AnonymousSubmissionType,
+    submission: SubmissionType | StudentSubmissionType | AnonymousSubmissionType,
   ): Promise<[FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
     if (!submission.files) {
       return [[], {}, {}];
@@ -205,9 +184,7 @@ export class Submission {
       const comments: IFileToCommentsMap = {};
       await Promise.all(
         files.map(async (file: FileType) => {
-          comments[file.id] = (await loadIDList(file.comments, CommentIO)).sort(
-            CommentIO.compare,
-          );
+          comments[file.id] = (await loadIDList(file.comments, CommentIO)).sort(CommentIO.compare);
           return;
         }),
       );
@@ -218,9 +195,7 @@ export class Submission {
           .flat()
           .map(async (comment: CommentType) => {
             if (comment.rubricComment) {
-              commentRubricComments[comment.id] = await RubricComment.read(
-                comment.rubricComment,
-              );
+              commentRubricComments[comment.id] = await RubricComment.read(comment.rubricComment);
             }
             return;
           }),
@@ -235,9 +210,7 @@ export class Submission {
 
       slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
 
-      message.error(
-        'Something went wrong loading the submission. Please try again or contact team@codepost.io',
-      );
+      message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
       return [[], {}, {}];
     }
   };

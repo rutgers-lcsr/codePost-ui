@@ -3,25 +3,24 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import { Layout } from "antd";
+import { Layout } from 'antd';
 
 /* other library imports */
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import CPLogo from "../../core/CPLogo";
+import CPLogo from '../../core/CPLogo';
 
-import { USER_TYPE } from "../../../types/common";
+import { USER_TYPE } from '../../../types/common';
 
-import themeVars from "../../../styles/abstracts/_theme.js";
-import layoutVars from "../../../styles/layout/_layoutVars";
+import themeVars from '../../../styles/abstracts/_theme.js';
+import layoutVars from '../../../styles/layout/_layoutVars';
 
-import useBrowserNotification from "../../core/useBrowserNotification";
-import useFixedWindow from "../../core/useFixedWindow";
-import useWindowSize from "../../core/useWindowSize";
+import useFixedWindow from '../../core/useFixedWindow';
+import useWindowSize from '../../core/useWindowSize';
 
 const { Header, Sider } = Layout;
 
@@ -40,7 +39,6 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
   const [collapsed, setCollapsed] = React.useState(false);
   const windowSize = useWindowSize();
   useFixedWindow();
-  useBrowserNotification();
 
   const onCollapse = (c: boolean) => {
     setCollapsed(c);
@@ -53,7 +51,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
 
   // FIXME: Hardcoded height variables
   return (
-    <Layout id="Admin" className="layout--admin" style={{ overflowX: "auto" }}>
+    <Layout id="Admin" className="layout--admin" style={{ overflowX: 'auto' }}>
       {props.hasSider !== undefined && !props.hasSider ? null : (
         <Sider
           collapsible={props.collapsible ? props.collapsible : false}
@@ -61,34 +59,31 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           collapsed={collapsed}
           onCollapse={onCollapse}
         >
-          <Header
-            className="layout--admin__sider__header"
-            style={{ height: "fit-content" }}
-          >
+          <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
             {collapsed ? (
               <Link to="/">
                 <CPLogo cpType="icon" />
               </Link>
             ) : (
-                <div>
-                  <Link to="/">
-                    <CPLogo cpType="main" />
-                  </Link>
-                  <div
-                    style={{
-                      textAlign: "center",
-                      color: themeVars.theme.green4,
-                      lineHeight: 1,
-                      paddingTop: 10
-                    }}
-                  >{`${props.role} Console`}</div>
-                </div>
-              )}
+              <div>
+                <Link to="/">
+                  <CPLogo cpType="main" />
+                </Link>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    color: themeVars.theme.green4,
+                    lineHeight: 1,
+                    paddingTop: 10,
+                  }}
+                >{`${props.role} Console`}</div>
+              </div>
+            )}
           </Header>
           <div
             style={{
               maxHeight: windowSize.height - 64 - 85 - 48,
-              overflow: "auto"
+              overflow: 'auto',
             }}
           >
             {props.navigation(collapsed)}

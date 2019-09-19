@@ -31,7 +31,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, S_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -645,7 +645,7 @@ interface IHeaderMenuProps {
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  useHotkeys(S_KEY, props.claimSubmission, true);
+  useHotkeys(P_KEY, props.claimSubmission, true);
 
   const groupStyle = {
     padding: '5px 20px',

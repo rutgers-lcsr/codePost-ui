@@ -1,11 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 
 /* ant imports */
-import { Collapse, Icon, Radio, Statistic, Upload } from "antd";
+import { Collapse, Icon, Radio, Statistic, Upload } from 'antd';
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown from 'react-markdown';
 
-import BlockMarkdown from "../../../core/BlockMarkdown";
+import BlockMarkdown from '../../../core/BlockMarkdown';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
@@ -19,27 +19,23 @@ interface IUploadFormProps {
 const UploadForm = (props: IUploadFormProps) => {
   let content;
   switch (props.mode) {
-    case "canvas":
+    case 'canvas':
       content = <Canvas {...props} />;
       break;
-    case "blackboard":
+    case 'blackboard':
       content = <Blackboard {...props} />;
       break;
-    case "brightspace":
+    case 'brightspace':
       content = <Brightspace {...props} />;
       break;
-    case "github":
+    case 'github':
       content = <GitHub {...props} />;
       break;
-    case "jupyter":
+    case 'jupyter':
       content = <Jupyter {...props} />;
       break;
-    case "more":
-      content = (
-        <div>
-          Can't find what you're looking for? Let us know at team@codepost.io.
-        </div>
-      );
+    case 'more':
+      content = <div>Can't find what you're looking for? Let us know at team@codepost.io.</div>;
       break;
     default:
       content = <Normal {...props} />;
@@ -64,14 +60,14 @@ const Normal = (props: IUploadFormProps) => {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -94,18 +90,12 @@ const Normal = (props: IUploadFormProps) => {
       </Collapse>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={true}
-        beforeUpload={beforeUpload}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">
-          Make sure you use the format specified in the Instructions above.
-        </p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
       <Statistic title="Uploaded files" value={props.rawFiles.length} />
@@ -119,14 +109,14 @@ const Canvas = (props: IUploadFormProps) => {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -137,9 +127,7 @@ const Canvas = (props: IUploadFormProps) => {
     return false;
   };
 
-  const [selection, setSelection] = React.useState<boolean | undefined>(
-    undefined
-  );
+  const [selection, setSelection] = React.useState<boolean | undefined>(undefined);
 
   const yesKey = () => {
     setSelection(true);
@@ -154,7 +142,7 @@ const Canvas = (props: IUploadFormProps) => {
   if (selection) {
     const scriptUrl =
       // tslint:disable-next-line:max-line-length
-      "https://raw.githubusercontent.com/codepost-io/integration-canvas/master/A_ImportingWithAPIKey/canvas_to_codepost_api.py";
+      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/A_ImportingWithAPIKey/canvas_to_codepost_api.py';
     instructions = `
 See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
@@ -181,7 +169,7 @@ You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepo
   } else {
     const scriptUrl =
       // tslint:disable-next-line:max-line-length
-      "https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/canvas_to_codepost_manual.py";
+      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/canvas_to_codepost_manual.py';
     instructions = `
 See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
 
@@ -212,23 +200,11 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
 
   return (
     <div>
-      <Radio.Group
-        buttonStyle="solid"
-        style={{ width: "100%", textAlign: "center" }}
-        value={selection}
-      >
-        <Radio.Button
-          value={true}
-          style={{ width: "40%", textAlign: "center" }}
-          onClick={yesKey}
-        >
+      <Radio.Group buttonStyle="solid" style={{ width: '100%', textAlign: 'center' }} value={selection}>
+        <Radio.Button value={true} style={{ width: '40%', textAlign: 'center' }} onClick={yesKey}>
           I have a Canvas API Key
         </Radio.Button>
-        <Radio.Button
-          value={false}
-          style={{ width: "40%", textAlign: "center" }}
-          onClick={noKey}
-        >
+        <Radio.Button value={false} style={{ width: '40%', textAlign: 'center' }} onClick={noKey}>
           I do not have a Canvas API Key
         </Radio.Button>
       </Radio.Group>
@@ -236,25 +212,19 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
       <br />
       {selection !== undefined ? (
         <div>
-          <Collapse defaultActiveKey={["1"]}>
+          <Collapse defaultActiveKey={['1']}>
             <Panel header="Instructions" key="1">
               <BlockMarkdown source={instructions} />
             </Panel>
           </Collapse>
           <br />
           <br />
-          <Dragger
-            showUploadList={false}
-            directory={true}
-            beforeUpload={beforeUpload}
-          >
+          <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
             <p className="ant-upload-drag-icon">
               <Icon type="inbox" />
             </p>
             <p className="ant-upload-text">Click or drag a folder to upload</p>
-            <p className="ant-upload-hint">
-              Make sure you use the format specified in the Instructions above.
-            </p>
+            <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
           </Dragger>
           <br />
           <br />
@@ -272,14 +242,14 @@ const Brightspace = (props: IUploadFormProps) => {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -318,25 +288,19 @@ You can also fork \`brightspace_to_codepost_manual.py\` [here](https://github.co
 
   return (
     <div>
-      <Collapse defaultActiveKey={["1"]}>
+      <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
           <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={true}
-        beforeUpload={beforeUpload}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">
-          Make sure you use the format specified in the Instructions above.
-        </p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
       <br />
@@ -352,14 +316,14 @@ const Blackboard = (props: IUploadFormProps) => {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -398,25 +362,19 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
 
   return (
     <div>
-      <Collapse defaultActiveKey={["1"]}>
+      <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
           <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={true}
-        beforeUpload={beforeUpload}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">
-          Make sure you use the format specified in the Instructions above.
-        </p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
       <br />
@@ -432,14 +390,14 @@ const GitHub = (props: IUploadFormProps) => {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -467,25 +425,19 @@ You can also fork the scripts included [here](https://github.com/codepost-io/int
 
   return (
     <div>
-      <Collapse defaultActiveKey={["1"]}>
+      <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
           <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={true}
-        beforeUpload={beforeUpload}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">
-          Make sure you use the format specified in the Instructions above.
-        </p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
       <br />
@@ -515,14 +467,14 @@ Upload a folder with the following file structure.
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
       props.setRawFiles(
-        fileList.filter(el => {
-          return el.name[0] !== "."; // filter our system files
-        })
+        fileList.filter((el) => {
+          return el.name[0] !== '.'; // filter our system files
+        }),
       );
     } else {
       // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
       // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== ".") {
+      if (file.name[0] !== '.') {
         // ignore system files
         const newList = [...props.rawFiles, file];
         props.setRawFiles(newList);
@@ -535,25 +487,19 @@ Upload a folder with the following file structure.
 
   return (
     <div>
-      <Collapse defaultActiveKey={["1"]}>
+      <Collapse defaultActiveKey={['1']}>
         <Panel header="Instructions" key="1">
           <BlockMarkdown source={instructions} />
         </Panel>
       </Collapse>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={true}
-        beforeUpload={beforeUpload}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">
-          Make sure you use the format specified in the Instructions above.
-        </p>
+        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
       <Statistic title="Uploaded files" value={props.rawFiles.length} />

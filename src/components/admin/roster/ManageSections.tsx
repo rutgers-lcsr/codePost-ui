@@ -176,6 +176,7 @@ class ManageSections extends React.Component<IProps, IState> {
         },
       ];
 
+      const hoverStyle = { cursor: 'pointer' };
       data = this.props.sections.map((section, i) => {
         const menu = (
           <Menu>
@@ -190,7 +191,7 @@ class ManageSections extends React.Component<IProps, IState> {
           key: section.id,
           section: section.name,
           students: (
-            <span onClick={this.setOpenSection.bind(this, section)} className="text-link">
+            <span onClick={this.setOpenSection.bind(this, section)} className="text-link" style={hoverStyle}>
               {section.students.length}
             </span>
           ),

@@ -51,7 +51,10 @@ const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
       <br />
       <b>Comment</b>: {props.rubricComment.text}
       <br />
-      Applied to {props.rubricComment.comments.length} submissions
+      <br />
+      {`> Applied to ${props.rubricComment.comments.length} submission${
+        props.rubricComment.comments.length === 1 ? '' : 's'
+      }`}
       <br />
       <br />
       <br />
@@ -128,6 +131,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       propagate these changes to the submissions to which they are applied (including any finalized submissions). Are
       you sure you want to continue?
       <div className="error-padding" />
+      <br />
       <h3>Changed Comments</h3>
       <ul>
         {contentEditedComments.map((el) => {

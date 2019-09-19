@@ -1,12 +1,6 @@
 import * as t from 'io-ts';
 import { compare } from '../components/utils/SortUtils';
-import {
-  createObject,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-} from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 export const SectionV = t.intersection(
   [
@@ -47,12 +41,7 @@ export enum SECTION_SORT_TYPE {
   leader,
 }
 
-export function sectionSort(
-  sortType: SECTION_SORT_TYPE,
-  ascending: boolean,
-  a: SectionType,
-  b: SectionType,
-) {
+export function sectionSort(sortType: SECTION_SORT_TYPE, ascending: boolean, a: SectionType, b: SectionType) {
   // Sort by email
   if (sortType === SECTION_SORT_TYPE.name) {
     if (a.name < b.name) return ascending ? -1 : 1;
