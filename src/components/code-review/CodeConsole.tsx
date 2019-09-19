@@ -691,7 +691,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             return el.id === comment.id;
           })
         ) {
-          console.log('deleting 2');
           this.deleteComment(savedComment);
           return;
         }

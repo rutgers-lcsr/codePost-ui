@@ -109,7 +109,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
-    // Only destroy if the comment id is the same. Otherwise you destroy after point input change on new comment
+    // Only destroy if the comment id is the same. Otherwise, if a user only changes pointInput on a new comment it will delete.
+    // This is because new comments temporarily de-activate because the comment ID has changed.
     // NOTE: This is the only place where we delete empty comments. There is a known bug that empty comments will persist
     //       if they are refreshed while still active.
     if (
@@ -368,7 +369,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             className="cp-label--small cp-label--italic"
             style={{ color: this.context.consoleTheme.commentTitleText }}
           >
-            {!this.state.text || this.props.comment.id < 0 ? '' : 'Saving...'}
+            {!this.state.text ? '' : 'Saving...'}
           </span>
         );
         break;
