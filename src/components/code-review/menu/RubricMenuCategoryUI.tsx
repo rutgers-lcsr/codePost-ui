@@ -282,7 +282,7 @@ const RubricMenuCategoryUI = ({
       }}
     />
   ) : (
-    <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>{props.rubricCategory.name}</span>
+    <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '150px' }}>{props.rubricCategory.name}</div>
   );
 
   const addComment = () => {

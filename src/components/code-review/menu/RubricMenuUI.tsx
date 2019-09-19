@@ -274,14 +274,17 @@ const RubricMenuUI = ({
     };
 
     const onDelete = () => {
+      blurAll();
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.DELETE, props.setRubric);
     };
 
     const onUnLink = () => {
+      blurAll();
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK, props.setRubric);
     };
 
     const onLinkedConfirmAccept = () => {
+      blurAll();
       helpers.onLinkedConfirmAccept(props.setRubric);
     };
 
