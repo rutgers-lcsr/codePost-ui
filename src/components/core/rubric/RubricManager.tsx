@@ -6,35 +6,19 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty, message } from 'antd';
+import { message } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
 import _ from 'lodash';
 
-/* codePost imports */
-import RubricCommentExplorer from './RubricCommentExplorer';
+import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
+import { CommentIO } from '../../../infrastructure/comment';
+import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { SubmissionType } from '../../../infrastructure/submission';
 
-import { LinkedCommentsAlert, LinkedCommentsConfirm } from './LinkedCommentsAlert';
-
-import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
-import RubricFileDownload from './RubricFileDownload';
-import RubricFileUpload from './RubricFileUpload';
-
-import { Assignment, AssignmentType, RubricType } from '../../../../infrastructure/assignment';
-import { CommentIO } from '../../../../infrastructure/comment';
-import { RubricCategory, RubricCategoryType } from '../../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
-import { SubmissionType } from '../../../../infrastructure/submission';
-
-import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
-
-import CPButton from '../../../../components/core/CPButton';
-import Loading from '../../../../components/core/Loading';
-import { tooltips } from '../../../../components/core/tooltips';
-
-import CPAdminRubric from './CPAdminRubric';
-import CPRubricCategory from './CPRubricCategory';
+import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
 /**********************************************************************************************************************/
 
@@ -43,12 +27,63 @@ export enum RESOLUTION {
   UNLINK,
 }
 
-export interface IProps {
+export interface IRubricManagerParams {
+  props: IRubricManagerProps;
+  state: IRubricManagerState;
+  helpers: IRubricManagerHelpers;
+}
+
+export interface IRubricManagerHelpers {
+  loadAssignmentRubric: any;
+  loadFeedbackScores: any;
+  resetRubric: any;
+  setNewRubric: any;
+  replaceRubric: any;
+  onCategoryEdit: any;
+  onCategoryUndo: any;
+  onCommentEdit: any;
+  onCommentUndo: any;
+  saveRubric: any;
+  deleteLinkedComments: any;
+  unlinkLinkedComments: any;
+  buildLinkedList: any;
+  onSave: any;
+  buildCommentMap: any;
+  moveCategory: any;
+  updateRubricCategory: any;
+  deleteRubricCategory: any;
+  addRubricCategory: any;
+  updateRubricComment: any;
+  deleteRubricComment: any;
+  addRubricComment: any;
+  onLinkedAlertCancel: any;
+  onLinkedCommentsResolve: any;
+  onLinkedConfirmCancel: any;
+  onLinkedConfirmAccept: any;
+  onBack: any;
+  onUnload: any;
+  toggleLock: any;
+  changesMade: any;
+  activateCommentExplorer: any;
+  clearCommentExplorer: any;
+  onCommentDragEnd: any;
+}
+
+export interface IRubricManagerProps {
   /* assignment data */
   assignment: AssignmentType;
   submissions: SubmissionType[];
 
   onCancel: () => void;
+
+  reloadInterval?: number;
+
+  setRubric?: (rubric: {
+    rubricCategories: RubricCategoryType[];
+    rubricComments: IRubricCategoryToRubricCommentsMap;
+  }) => void;
+
+  children: (params: IRubricManagerParams) => React.ReactNode;
 }
 
 export interface IRubric {
@@ -61,7 +96,7 @@ export interface IFeedbackScore {
   positive: number;
 }
 
-export interface IState {
+export interface IRubricManagerState {
   // status cache
   loadComplete: boolean;
   changeLock: boolean;
@@ -99,8 +134,11 @@ export interface IState {
 
 /**********************************************************************************************************************/
 
-class RubricManager extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
+class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerState> {
+  // @ts-ignore
+  private interval: number;
+
+  constructor(props: IRubricManagerProps) {
     super(props);
     this.state = {
       loadComplete: false,
@@ -135,6 +173,12 @@ class RubricManager extends React.Component<IProps, IState> {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
+        if (this.props.setRubric !== undefined) {
+          this.props.setRubric({
+            rubricCategories: rubric.rubricCategories,
+            rubricComments: commentMap,
+          });
+        }
         this.setState(
           {
             rubricCategories: rubric.rubricCategories,
@@ -185,10 +229,32 @@ class RubricManager extends React.Component<IProps, IState> {
 
   public componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
+
+    if (this.props.reloadInterval !== undefined) {
+      this.interval = window.setInterval(() => {
+        this.loadAssignmentRubric(this.props.assignment);
+      }, this.props.reloadInterval);
+    }
+  }
+
+  public componentDidUpdate(prevProps: IRubricManagerProps) {
+    if (prevProps.reloadInterval !== this.props.reloadInterval) {
+      if (this.props.reloadInterval === undefined) {
+        clearInterval(this.interval);
+      } else {
+        this.interval = window.setInterval(async () => {
+          await this.loadAssignmentRubric(this.props.assignment);
+        }, this.props.reloadInterval);
+      }
+    }
   }
 
   public componentWillUnmount() {
     window.removeEventListener('beforeunload', this.onUnload);
+
+    if (this.props.reloadInterval) {
+      clearInterval(this.interval);
+    }
   }
 
   /************************************************************************
@@ -399,15 +465,15 @@ class RubricManager extends React.Component<IProps, IState> {
           this.loadFeedbackScores(newRubric.rubricComments);
 
           return {
-            newCategories: newRubric.rubricCategories,
-            newComments: commentMap,
+            rubricCategories: newRubric.rubricCategories,
+            rubricComments: commentMap,
           };
         });
       })
       .catch((errors) => {
         return {
-          newCategories: categories,
-          newComments: comments,
+          rubricCategories: categories,
+          rubricComments: comments,
         };
       });
   };
@@ -466,7 +532,7 @@ class RubricManager extends React.Component<IProps, IState> {
     };
   };
 
-  public onSave = (fnc?: () => void) => {
+  public onSave = (fnc?: (rubric: any) => void) => {
     const {
       rubricComments,
       rubricCategories,
@@ -485,7 +551,6 @@ class RubricManager extends React.Component<IProps, IState> {
 
     this.setState({ isSaving: true }, () => {
       const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
-
       // Do we need to figure out what to do with applied rubric comments that are being deleted?
       if (conflicts.deleted.length > 0) {
         this.setState({ linkedComments: conflicts.deleted, isSaving: false });
@@ -509,10 +574,10 @@ class RubricManager extends React.Component<IProps, IState> {
       ).then((savedRubric) => {
         message.success('Rubric saved!');
         this.setState({
-          rubricCategories: savedRubric.newCategories,
-          rubricComments: savedRubric.newComments,
-          savedRubricCategories: _.cloneDeep(savedRubric.newCategories),
-          savedRubricComments: _.cloneDeep(savedRubric.newComments),
+          rubricCategories: savedRubric.rubricCategories,
+          rubricComments: savedRubric.rubricComments,
+          savedRubricCategories: _.cloneDeep(savedRubric.rubricCategories),
+          savedRubricComments: _.cloneDeep(savedRubric.rubricComments),
           unsavedComments: [],
           deletedComments: [],
           unsavedCategories: [],
@@ -521,6 +586,9 @@ class RubricManager extends React.Component<IProps, IState> {
           confirmedPropagation: false,
           isSaving: false,
         });
+        if (fnc !== undefined) {
+          fnc(savedRubric);
+        }
       });
     });
   };
@@ -621,7 +689,7 @@ class RubricManager extends React.Component<IProps, IState> {
     if (index > -1) {
       newCategories.splice(index, 1);
 
-      this.setState((oldState: IState) => {
+      this.setState((oldState: IRubricManagerState) => {
         const alwaysDelete = {
           // remove rubric category
           rubricCategories: newCategories,
@@ -655,13 +723,13 @@ class RubricManager extends React.Component<IProps, IState> {
     }
   };
 
-  public addRubricCategory = () => {
+  public addRubricCategory = (name?: string) => {
     const { rubricCategories, rubricComments, newObjectCounter } = this.state;
     const newComments = { ...rubricComments };
 
     const payload = {
       id: newObjectCounter, // indicates unsaved
-      name: '',
+      name: name !== undefined ? name : '',
       pointLimit: null,
       assignment: this.props.assignment.id,
       rubricComments: [], // ignored by API,
@@ -736,6 +804,7 @@ class RubricManager extends React.Component<IProps, IState> {
     };
 
     newComments[category.id] = [...newComments[category.id], payload];
+
     this.setState({
       rubricComments: newComments,
       newObjectCounter: newObjectCounter - 1,
@@ -753,7 +822,7 @@ class RubricManager extends React.Component<IProps, IState> {
     });
   };
 
-  public onLinkedCommentsResolve = (comment: RubricCommentType, resolution: RESOLUTION) => {
+  public onLinkedCommentsResolve = (comment: RubricCommentType, resolution: RESOLUTION, fnc?: () => void) => {
     const { resolutions } = this.state;
     const newMap = { ...resolutions };
     newMap[comment.id] = resolution;
@@ -765,7 +834,7 @@ class RubricManager extends React.Component<IProps, IState> {
         // If the user has finished figuring out what to do with deleted linked comments,
         // then trigger a save
         if (this.state.linkedComments.length === 0) {
-          this.onSave(undefined);
+          this.onSave(fnc);
         }
       },
     );
@@ -777,14 +846,14 @@ class RubricManager extends React.Component<IProps, IState> {
     });
   };
 
-  public onLinkedConfirmAccept = () => {
+  public onLinkedConfirmAccept = (fnc?: () => void) => {
     this.setState(
       {
         showConfirmDialog: false,
         confirmedPropagation: true,
       },
       () => {
-        this.onSave(undefined);
+        this.onSave(fnc);
       },
     );
   };
@@ -888,161 +957,50 @@ class RubricManager extends React.Component<IProps, IState> {
   /* Render
   /***********************************************************************/
 
+  public collectClass = (): IRubricManagerParams => {
+    return {
+      props: this.props,
+      state: this.state,
+      helpers: {
+        loadAssignmentRubric: this.loadAssignmentRubric,
+        loadFeedbackScores: this.loadFeedbackScores,
+        resetRubric: this.resetRubric,
+        setNewRubric: this.setNewRubric,
+        replaceRubric: this.replaceRubric,
+        onCategoryEdit: this.onCategoryEdit,
+        onCategoryUndo: this.onCategoryUndo,
+        onCommentEdit: this.onCommentEdit,
+        onCommentUndo: this.onCommentUndo,
+        saveRubric: this.saveRubric,
+        deleteLinkedComments: this.deleteLinkedComments,
+        unlinkLinkedComments: this.unlinkLinkedComments,
+        buildLinkedList: this.buildLinkedList,
+        onSave: this.onSave,
+        buildCommentMap: this.buildCommentMap,
+        moveCategory: this.moveCategory,
+        updateRubricCategory: this.updateRubricCategory,
+        deleteRubricCategory: this.deleteRubricCategory,
+        addRubricCategory: this.addRubricCategory,
+        updateRubricComment: this.updateRubricComment,
+        deleteRubricComment: this.deleteRubricComment,
+        addRubricComment: this.addRubricComment,
+        onLinkedAlertCancel: this.onLinkedAlertCancel,
+        onLinkedCommentsResolve: this.onLinkedCommentsResolve,
+        onLinkedConfirmCancel: this.onLinkedConfirmCancel,
+        onLinkedConfirmAccept: this.onLinkedConfirmAccept,
+        onBack: this.onBack,
+        onUnload: this.onUnload,
+        toggleLock: this.toggleLock,
+        changesMade: this.changesMade,
+        activateCommentExplorer: this.activateCommentExplorer,
+        clearCommentExplorer: this.clearCommentExplorer,
+        onCommentDragEnd: this.onCommentDragEnd,
+      },
+    };
+  };
+
   public render() {
-    const { rubricCategories, rubricComments, loadComplete } = this.state;
-
-    if (loadComplete) {
-      const changesMade = this.changesMade();
-
-      const categoryTables = rubricCategories
-        .sort(RubricCategory.compare)
-        .map((cat: RubricCategoryType, catIndex: number) => {
-          const savedCategory = this.state.savedRubricCategories.find((el) => {
-            return el.id === cat.id;
-          });
-
-          return (
-            <CPRubricCategory
-              key={cat.id}
-              rubricCategory={cat}
-              savedRubricCategory={savedCategory}
-              rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
-              savedRubricComments={savedCategory ? this.state.savedRubricComments[savedCategory.id] : undefined}
-              updateCategory={this.updateRubricCategory}
-              deleteCategory={this.deleteRubricCategory}
-              addComment={this.addRubricComment}
-              updateComment={this.updateRubricComment}
-              deleteComment={this.deleteRubricComment}
-              onEdit={this.onCategoryEdit}
-              onUndo={this.onCategoryUndo}
-              onCommentEdit={this.onCommentEdit}
-              onCommentUndo={this.onCommentUndo}
-              activateCommentExplorer={this.activateCommentExplorer}
-              onCommentDragEnd={this.onCommentDragEnd}
-              moveCategory={this.moveCategory}
-              index={catIndex}
-              numCategories={this.state.rubricCategories.length}
-              otherCategories={this.state.rubricCategories}
-              feedbackScores={this.state.feedbackScores}
-              commentFeedbackOn={this.props.assignment.commentFeedback}
-            />
-          );
-        });
-
-      const actions = [
-        <RubricFileUpload
-          key="2"
-          assignment={this.props.assignment}
-          rubricComments={this.state.rubricComments}
-          rubricCategories={this.state.rubricCategories}
-          onRubricUpload={this.replaceRubric}
-          isDisabled={false}
-        />,
-        <RubricFileDownload
-          key="download"
-          assignment={this.props.assignment}
-          rubricComments={this.state.rubricComments}
-          rubricCategories={this.state.rubricCategories}
-          isDisabled={false}
-        />,
-        <MergeRubricCommentsDialog
-          key="3"
-          isDisabled={false}
-          rubricCategories={this.state.rubricCategories}
-          rubricComments={this.state.rubricComments}
-          assignment={this.props.assignment}
-          reloadRubric={this.loadAssignmentRubric}
-        />,
-        <CPButton
-          key="0"
-          onClick={this.resetRubric}
-          cpType="secondary"
-          disabled={!changesMade}
-          icon="undo"
-          fallback="undo"
-          fallbackWidth={1250}
-        >
-          Undo changes
-        </CPButton>,
-        <CPButton
-          key="1"
-          onClick={this.onSave.bind(this, undefined)}
-          disabled={!changesMade}
-          cpType="primary"
-          icon="save"
-          fallback="save"
-          fallbackWidth={500}
-          loading={this.state.isSaving}
-        >
-          Save
-        </CPButton>,
-      ];
-
-      const content = (
-        <div>
-          {categoryTables}
-          <CPButton cpType="primary" onClick={this.addRubricCategory.bind(this, undefined)}>
-            Add New Category
-          </CPButton>
-          {this.state.activeComment ? (
-            <RubricCommentExplorer
-              rubricComment={this.state.activeComment}
-              isVisible={typeof this.state.activeComment !== 'undefined'}
-              closeCommentExplorer={this.clearCommentExplorer}
-              submissions={this.props.submissions}
-            />
-          ) : null}
-          <LinkedCommentsAlert
-            rubricComment={this.state.linkedComments[0]}
-            onDelete={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.DELETE)}
-            onUnLink={this.onLinkedCommentsResolve.bind(this, this.state.linkedComments[0], RESOLUTION.UNLINK)}
-            onCancel={this.onLinkedAlertCancel}
-            isVisible={this.state.linkedComments.length > 0}
-          />
-          <LinkedCommentsConfirm
-            onAccept={this.onLinkedConfirmAccept}
-            onCancel={this.onLinkedConfirmCancel}
-            isVisible={this.state.showConfirmDialog}
-            unsavedComments={this.state.unsavedComments}
-            savedRubricComments={this.state.rubricComments}
-          />
-        </div>
-      );
-
-      return (
-        <CPAdminRubric
-          actions={actions}
-          title="Rubric"
-          content={content}
-          goBack={null}
-          isEmpty={this.state.rubricCategories.length === 0}
-          emptyNode={
-            <Empty
-              imageStyle={{
-                height: 60,
-              }}
-              description={<span>No rubric yet</span>}
-            >
-              <CPButton cpType="primary" onClick={this.addRubricCategory}>
-                Create a category
-              </CPButton>
-            </Empty>
-          }
-          breadcrumbs={
-            <Breadcrumb>
-              <Breadcrumb.Item onClick={this.props.onCancel}>
-                <a>Assignments</a>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-              <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
-            </Breadcrumb>
-          }
-          titleInfo={tooltips.admin.rubric.title}
-        />
-      );
-    } else {
-      return <Loading />;
-    }
+    return this.props.children(this.collectClass());
   }
 }
 
