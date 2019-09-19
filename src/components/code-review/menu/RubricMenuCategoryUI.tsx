@@ -375,7 +375,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className="rubric-row--active"
         onClick={onClick}
       >
-        <InlineMarkdown source={props.text} />
+        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
       </div>
     );
@@ -413,7 +413,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
-        <InlineMarkdown source={props.text} />
+        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">
