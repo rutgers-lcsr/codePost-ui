@@ -41,6 +41,8 @@ import NewCourseDialog from './other/NewCourseDialog';
 
 import AdminNav from './other/AdminNav';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 /* types */
 import {
   IAssignmentToSubmissionsMap,
@@ -247,12 +249,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       if (currentCourse) {
         currentPanel = this.panelFromString(`${panelName1}/${panelName2 ? panelName2 : ''}`);
+        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
       }
 
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses.sort((a, b) => {
-          return b.id - a.id;
-        })[0];
+        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
+        if (stored_id !== 0) {
+          const found = courses.find((course: CourseType) => {
+            return course.id === stored_id;
+          });
+          if (found !== undefined) {
+            currentCourse = found;
+          }
+        }
+        if (currentCourse === undefined) {
+          currentCourse = courses.sort((a, b) => {
+            return b.id - a.id;
+          })[0];
+        }
       }
 
       return { course: currentCourse, panel: currentPanel };
@@ -317,6 +331,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (newCourse) {
       this.updateNewCourse(newCourse);
+      LOCAL_SETTINGS.defaultCourse.setter(newCourse.id);
     }
   };
 

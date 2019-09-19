@@ -19,6 +19,8 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import { wait } from '../../../infrastructure/animation';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 const { Content, Header, Sider } = Layout;
 
 export type ConsoleType = 'grade' | 'subheader';
@@ -30,7 +32,7 @@ type ConsoleTheme = 'light' | 'dark';
 interface IStandardConsoleLayoutProps {
   consoleTypes?: ConsoleType[];
   header: React.ReactNode;
-  sider: React.ReactNode[];
+  sider: React.ReactElement[];
   content: React.ReactNode;
   children?: React.ReactNode;
   siderTitles: Array<string | React.ReactNode>;
@@ -83,7 +85,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     };
   }, [props.editRubricMode]);
 
-  const onCollapse = async (keys: string[]) => {
+  const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
     if (window.innerHeight !== 0) {
       const rubricMenu = document.getElementById('rubric-menu');
       const rubricMenuTitle = document.getElementById('rubric-menu-title');
@@ -100,6 +102,19 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
         // Update max-height to facilitate scrolling
         setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
+
+        /* set local settings */
+        nodes.forEach((node, index) => {
+          const indexString = index.toString();
+          switch (node.key) {
+            case 'submission-info':
+              LOCAL_SETTINGS.infoMenuHidden.setter(keys.indexOf(indexString) === -1);
+            case 'file-menu':
+              LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
+            case 'rubric-menu':
+              LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
+          }
+        });
       }
     }
   };
@@ -109,6 +124,30 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     const iconType = isActive ? 'up' : 'down';
     return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
   };
+
+  const openSiderPanels = props.sider
+    .map((el, index) => {
+      switch (el.key) {
+        case 'submission-info':
+          return !LOCAL_SETTINGS.infoMenuHidden.getter();
+        case 'file-menu':
+          return !LOCAL_SETTINGS.fileMenuHidden.getter();
+        case 'rubric-menu':
+          return !LOCAL_SETTINGS.rubricMenuHidden.getter();
+        default:
+          return index;
+      }
+    })
+    .map((el, index) => {
+      if (el) {
+        return index;
+      } else {
+        return -1;
+      }
+    })
+    .filter((el) => {
+      return el > -1;
+    });
 
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
@@ -139,10 +178,12 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               // @ts-ignore
               <Collapse
                 expandIconPosition="right"
-                defaultActiveKey={props.sider.map((el, index) => index.toString())}
+                defaultActiveKey={openSiderPanels.map((el) => {
+                  return el.toString();
+                })}
                 bordered={false}
                 // @ts-ignore
-                onChange={onCollapse}
+                onChange={onCollapse.bind(false, props.sider)}
                 // @ts-ignore
                 expandIcon={collapseIcon}
                 style={{

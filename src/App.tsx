@@ -37,6 +37,8 @@ import { ShowTooltipContext } from './components/core/tooltips';
 
 import { consoleArt } from './components/utils/consoleArt';
 
+import { clearLocalSettings } from './components/utils/LocalSettings';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -223,6 +225,7 @@ class App extends React.Component<{}, IState> {
 
   public handleLogout = () => {
     localStorage.removeItem('token');
+    clearLocalSettings();
     this.setState({
       has_token: false,
       user: undefined,

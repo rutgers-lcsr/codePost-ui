@@ -37,6 +37,8 @@ import useWindowSize from '../core/useWindowSize';
 
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 const ButtonGroup = Button.Group;
 
 /**********************************************************************************************************************/
@@ -48,18 +50,24 @@ interface IMagnifierProps {
 const Magnifier = (props: IMagnifierProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
-  const [zoom, setZoom] = React.useState(1);
+  const [zoom, setZoom] = React.useState(LOCAL_SETTINGS.codeZoom.getter());
+
+  React.useEffect(() => {
+    props.updateZoom(zoom);
+  }, []);
 
   function zoomOut() {
     const newZoom = Math.max(0.5, zoom - 0.1);
     setZoom(newZoom);
     props.updateZoom(newZoom);
+    LOCAL_SETTINGS.codeZoom.setter(newZoom);
   }
 
   function zoomIn() {
     const newZoom = Math.min(2, zoom + 0.1);
     setZoom(newZoom);
     props.updateZoom(newZoom);
+    LOCAL_SETTINGS.codeZoom.setter(newZoom);
   }
 
   useHotkeys(MINUS_KEY, zoomOut);
