@@ -188,6 +188,21 @@ class StudentData extends React.Component<IProps, IState> {
               },
               align: aligner,
               className: 'student-table',
+              renderForSearch: (searchText: string) => {
+                return (text: string, record: any, index: number) => {
+                  const score: string | number = record[assignment.name];
+                  if (score === '--') {
+                    return '--';
+                  } else {
+                    const submission = this.props.submissionsByStudent[record.student][assignment.id];
+                    return (
+                      <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
+                        {score}
+                      </span>
+                    );
+                  }
+                };
+              },
             };
           }),
         ];
@@ -221,17 +236,9 @@ class StudentData extends React.Component<IProps, IState> {
           for (const assignment of this.props.assignments) {
             const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
             if (submission && submission.isFinalized) {
-              toRet[assignment.name] = (
-                <span className="text-link" style={{ cursor: 'pointer' }} onClick={this.onSubmissionClick.bind(this, submission.id)}>
-                  {submission.grade}
-                </span>
-              );
+              toRet[assignment.name] = submission.grade;
             } else if (submission) {
-              toRet[assignment.name] = (
-                <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
-                  Unfinalized
-                </span>
-              );
+              toRet[assignment.name] = 'Unfinalized';
             } else {
               toRet[assignment.name] = '--';
             }

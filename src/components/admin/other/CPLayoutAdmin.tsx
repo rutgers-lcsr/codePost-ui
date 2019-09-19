@@ -19,7 +19,6 @@ import { USER_TYPE } from '../../../types/common';
 import themeVars from '../../../styles/abstracts/_theme.js';
 import layoutVars from '../../../styles/layout/_layoutVars';
 
-import useBrowserNotification from '../../core/useBrowserNotification';
 import useFixedWindow from '../../core/useFixedWindow';
 import useWindowSize from '../../core/useWindowSize';
 
@@ -40,7 +39,6 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
   const [collapsed, setCollapsed] = React.useState(false);
   const windowSize = useWindowSize();
   useFixedWindow();
-  useBrowserNotification();
 
   const onCollapse = (c: boolean) => {
     setCollapsed(c);
