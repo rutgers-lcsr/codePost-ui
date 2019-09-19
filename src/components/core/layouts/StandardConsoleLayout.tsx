@@ -85,7 +85,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     };
   }, [props.editRubricMode]);
 
-  const onCollapse = async (keys: string[]) => {
+  const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
     if (window.innerHeight !== 0) {
       const rubricMenu = document.getElementById('rubric-menu');
       const rubricMenuTitle = document.getElementById('rubric-menu-title');
@@ -102,6 +102,19 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
         // Update max-height to facilitate scrolling
         setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
+
+        /* set local settings */
+        nodes.forEach((node, index) => {
+          const indexString = index.toString();
+          switch (node.key) {
+            case 'submission-info':
+              LOCAL_SETTINGS.infoMenuHidden.setter(keys.indexOf(indexString) === -1);
+            case 'file-menu':
+              LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
+            case 'rubric-menu':
+              LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
+          }
+        });
       }
     }
   };
@@ -217,60 +230,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 };
 
 /**********************************************************************************************************************/
-
-const handleResize = async () => {
-  if (window.innerHeight !== 0) {
-    const fileMenu = document.getElementById('file-menu');
-    const rubricMenu = document.getElementById('rubric-menu');
-    const submissionInfo = document.getElementById('submission-info');
-    const rubricMenuTitle = document.getElementById('rubric-menu-title');
-
-    if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
-      // Don't let the file menu take up more than half of the vertical space
-      // allowable for files and rubric
-      const fileMenuMaxHeight =
-        (window.innerHeight - themeVars.grade.headerHeight) / 2 - themeVars.grade.subheaderHeight;
-      fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
-
-      setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
-    }
-  }
-};
-
-const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
-  /* update height of sider menus */
-  if (window.innerHeight !== 0) {
-    const rubricMenu = document.getElementById('rubric-menu');
-    const rubricMenuTitle = document.getElementById('rubric-menu-title');
-
-    if (rubricMenu !== null && rubricMenuTitle !== null) {
-      // Force the rubric to fill any extra space created by a collapsed component
-      // by removing max-height restriction. This prevents the rubric from occupying
-      // less than the available space created by a collapse before
-      // update below has completed.
-      rubricMenu.style.setProperty('max-height', 'none');
-
-      // wait for collapse/uncover animation to complete
-      await wait(500);
-
-      // Update max-height to facilitate scrolling
-      setBottomElementMaxHeight(rubricMenuTitle, rubricMenu, props.editRubricMode);
-    }
-  }
-
-  /* set local settings */
-  nodes.forEach((node, index) => {
-    const indexString = index.toString();
-    switch (node.key) {
-      case 'submission-info':
-        LOCAL_SETTINGS.infoMenuHidden.setter(keys.indexOf(indexString) === -1);
-      case 'file-menu':
-        LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
-      case 'rubric-menu':
-        LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
-    }
-  });
-};
 
 const setBottomElementMaxHeight = (above: HTMLElement, toSet: HTMLElement, editRubricMode: boolean) => {
   const rubricControlHeight = 50;
