@@ -232,8 +232,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
-        // to remove before prod
-        message.success('updating rubric');
         this.loadAssignmentRubric(this.props.assignment);
       }, this.props.reloadInterval);
     }
@@ -245,8 +243,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
-          // to remove before prod
-          message.success('updating rubric');
           await this.loadAssignmentRubric(this.props.assignment);
         }, this.props.reloadInterval);
       }
