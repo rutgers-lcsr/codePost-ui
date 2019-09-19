@@ -109,7 +109,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
-    if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
+    // Only destroy if the comment id is the same. Otherwise, if a user only changes pointInput on a new comment it will delete.
+    // This is because new comments temporarily de-activate because the comment ID has changed.
+    // NOTE: This is the only place where we delete empty comments. There is a known bug that empty comments will persist
+    //       if they are refreshed while still active.
+    if (
+      prevProps.commentType === 'active' &&
+      this.props.commentType === 'inactive' &&
+      prevProps.comment.id === this.props.comment.id
+    ) {
       if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
         this.props.onDelete(this.props.comment);
       }
@@ -165,11 +173,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (points !== UiComment.points(this.props.comment, this.props.rubricComment)) {
       this.edited();
+      // Avoid save on meaningless change in sign of zero points
+      this.resetSaveTimeOut();
     } else {
       this.idle();
     }
-
-    this.resetSaveTimeOut();
     this.setState({ points });
   };
 
@@ -361,7 +369,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             className="cp-label--small cp-label--italic"
             style={{ color: this.context.consoleTheme.commentTitleText }}
           >
-            {!this.state.text && this.props.comment.id < 0 ? '' : 'Saving...'}
+            {!this.state.text ? '' : 'Saving...'}
           </span>
         );
         break;

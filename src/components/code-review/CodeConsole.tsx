@@ -678,28 +678,24 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
-      if (UiComment.isEmpty(comment)) {
-        return this.deleteComment(comment);
-      } else {
-        if (comment.id < 0) {
-          savedComment = await CommentIO.create(comment);
-          oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (comment.id < 0) {
+        savedComment = await CommentIO.create(comment);
+        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
 
-          // We need to prevent the following race condition error:
-          // 1. User creates a comment => triggers a POST
-          // 2. User deletes comment before the POST returns. The UI will treat this comment as unsaved
-          // 3. POST returns, saving the comment.
-          if (
-            !_.flatten(Object.values(this.state.comments)).find((el: CommentType) => {
-              return el.id === comment.id;
-            })
-          ) {
-            this.deleteComment(savedComment);
-            return;
-          }
-        } else {
-          savedComment = await CommentIO.update(comment);
+        // We need to prevent the following race condition error:
+        // 1. User creates a comment => triggers a POST
+        // 2. User deletes comment before the POST returns. The UI will treat this comment as unsaved
+        // 3. POST returns, saving the comment.
+        if (
+          !_.flatten(Object.values(this.state.comments)).find((el: CommentType) => {
+            return el.id === comment.id;
+          })
+        ) {
+          this.deleteComment(savedComment);
+          return;
         }
+      } else {
+        savedComment = await CommentIO.update(comment);
       }
     } else {
       // In demo mode, we want to simulate the saving of a comment without actually saving anything.
