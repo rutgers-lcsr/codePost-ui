@@ -78,6 +78,11 @@ export interface IRubricManagerProps {
 
   reloadInterval?: number;
 
+  setRubric?: (rubric: {
+    rubricCategories: RubricCategoryType[];
+    rubricComments: IRubricCategoryToRubricCommentsMap;
+  }) => void;
+
   children: (params: IRubricManagerParams) => React.ReactNode;
 }
 
@@ -168,6 +173,12 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
+        if (this.props.setRubric !== undefined) {
+          this.props.setRubric({
+            rubricCategories: rubric.rubricCategories,
+            rubricComments: commentMap,
+          });
+        }
         this.setState(
           {
             rubricCategories: rubric.rubricCategories,

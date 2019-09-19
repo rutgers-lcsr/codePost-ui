@@ -499,7 +499,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             }),
           );
         }
-        
+
         // load the data only an admin has access to
         const graders = this.isCourseAdmin(assignment)
           ? (await Course.readRoster(assignment.course))['graders'].sort()
@@ -1572,6 +1572,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             submissions={[]}
             onCancel={onCancel}
             reloadInterval={this.state.rubricReload}
+            setRubric={this.setRubric}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
