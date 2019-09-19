@@ -373,6 +373,7 @@ const RubricMenuUI = ({
   let searchBar;
 
   if (props.assignment.collaborativeRubricMode) {
+    const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
         placeholder="Search rubric... (⌘ O)"
@@ -382,7 +383,7 @@ const RubricMenuUI = ({
         addonBefore={
           <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
             <Icon
-              type="edit"
+              type={iconType}
               theme="filled"
               onClick={toggleEditRubricMode}
               style={{ color: '#24be85', cursor: 'pointer' }}
