@@ -218,6 +218,10 @@ const RubricCategoryUI = ({
     helpers.setValue('pointLimit', e);
   };
 
+  const clearPointLimit = () => {
+    helpers.setValue('pointLimit', null);
+  };
+
   const titleLeft = [
     <span key="title" className="cp-label cp-label--plus cp-label--bold">
       Category: {props.rubricCategory.name}
@@ -284,7 +288,7 @@ const RubricCategoryUI = ({
             title={`Clear this category's point limit (so any number of points can
               be added or deducted using its rubric comments)`}
           >
-            <Icon style={{ cursor: 'pointer' }} type="close-circle" onClick={setVal} />
+            <Icon style={{ cursor: 'pointer' }} type="close-circle" onClick={clearPointLimit} />
           </CPTooltip>
         </span>
       </div>

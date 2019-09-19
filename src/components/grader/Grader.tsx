@@ -41,6 +41,8 @@ import RegradesPanel from './RegradesPanel';
 
 import RoleMenu from '../core/RoleMenu';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 /**********************************************************************************************************************/
 
 export enum PANELS {
@@ -193,6 +195,8 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
       }
 
       if (currentCourse) {
+        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
+
         // is the URL trying to set the assignment?
         if (assignmentName) {
           const formattedAssignmentName = assignmentName.replace(/_/g, ' ');
@@ -210,9 +214,23 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
 
       // By default open first course in course list
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses.sort((a, b) => {
-          return b.id - a.id;
-        })[0];
+        // First, see if we have a locally cached course
+        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
+        if (stored_id !== 0) {
+          const found = courses.find((course: CourseType) => {
+            return course.id === stored_id;
+          });
+          if (found !== undefined) {
+            currentCourse = found;
+          }
+        }
+
+        // Otherwise, load the most recently created course
+        if (currentCourse === undefined) {
+          currentCourse = courses.sort((a, b) => {
+            return b.id - a.id;
+          })[0];
+        }
       }
 
       return {
@@ -268,6 +286,7 @@ class Grader extends React.Component<IGraderProps, IGraderState> {
     });
 
     if (thisCourse !== undefined) {
+      LOCAL_SETTINGS.defaultCourse.setter(thisCourse.id);
       this.setState({
         currentAssignment: undefined,
         currentCourse: thisCourse,

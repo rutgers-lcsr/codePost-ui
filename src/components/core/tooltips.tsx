@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { osControlKey } from './operatingSystem';
+
 // ************************ Console Tooltips ************************
 const CONSOLE_HEADER_DARKMODE = 'Switch to light mode';
 const CONSOLE_HEADER_LIGHTMODE = 'Switch to dark mode';
@@ -16,42 +18,42 @@ const GRADE_HEADER_DARKMODE = (
   <div>
     Toggle Dark Mode
     <br />
-    [⌘ shift l]
+    {`[${osControlKey()} shift l]`}
   </div>
 );
 const GRADE_HEADER_ZOOMIN = (
   <div>
     Magnify code
     <br />
-    [⌘ +]
+    {`[${osControlKey()} plus]`}
   </div>
 );
 const GRADE_HEADER_ZOOMOUT = (
   <div>
     Shrink code
     <br />
-    [⌘ -]
+    {`[${osControlKey()} minus]`}
   </div>
 );
 const GRADE_HEADER_GROW = (
   <div>
     Expand code window
     <br />
-    [⌘ →]
+    {`[${osControlKey()} →]`}
   </div>
 );
 const GRADE_HEADER_SHRINK = (
   <div>
     Shrink code window
     <br />
-    [⌘ ←]
+    {`[${osControlKey()} ←]`}
   </div>
 );
 const GRADE_HEADER_ALIGNMENT = (
   <div>
     reset comment alignments
     <br />
-    [⌘ click highlights]
+    {`[${osControlKey()} click highlights]`}
   </div>
 );
 const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;

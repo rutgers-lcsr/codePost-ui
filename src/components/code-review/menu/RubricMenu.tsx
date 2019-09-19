@@ -16,7 +16,9 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { getOperatingSystem, O_KEY, OS } from '../useHotkeys';
+import { O_KEY } from '../useHotkeys';
+
+import { getOperatingSystem, osControlKey, OS } from '../../core/operatingSystem';
 
 import InlineMarkdown from '../../core/InlineMarkdown';
 
@@ -332,7 +334,7 @@ class RubricMenu extends React.Component<IRubricMenuProps, IRubricMenuState> {
             </Tag>
           </div>
           <Input
-            placeholder="Search rubric... (⌘ O)"
+            placeholder={`Search rubric... (${osControlKey()} O)`}
             id="rubric-search"
             onChange={this.onSearch}
             value={this.state.searchTerm}
