@@ -52,6 +52,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
 
     this.props.onSave(payload).then(() => {
       message.success('Assignment settings updated!');
+      this.props.onCancel();
     });
   };
 
@@ -332,7 +333,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
                 <Form.Item
-                  label="Collaborative Rubric"
+                  label="Collaborative rubric"
                   extra={
                     <div>
                       When enabled, admins and graders will be able to edit the assignment rubric inline in the code
