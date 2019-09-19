@@ -45,6 +45,8 @@ import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmi
 
 import ViewUpload from './ViewUpload';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
@@ -151,11 +153,29 @@ class Student extends React.Component<IStudentProps, IStudentState> {
         });
       }
 
+      if (currentCourse) {
+        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
+      }
+
       // By default open first course in course list
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses.sort((a, b) => {
-          return b.id - a.id;
-        })[0];
+        // First, see if we have a locally cached course
+        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
+        if (stored_id !== 0) {
+          const found = courses.find((course: CourseType) => {
+            return course.id === stored_id;
+          });
+          if (found !== undefined) {
+            currentCourse = found;
+          }
+        }
+
+        // By default open first course in course list
+        if (currentCourse === undefined) {
+          currentCourse = courses.sort((a, b) => {
+            return b.id - a.id;
+          })[0];
+        }
       }
 
       return { course: currentCourse };
@@ -249,6 +269,7 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     });
 
     if (currentCourse) {
+      LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
       this.setState(
         {
           currentCourse,
