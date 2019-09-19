@@ -318,7 +318,7 @@ const RubricMenuCategoryUI = ({
         }
       >
         {rows}
-        {props.editRubricMode ? (
+        {props.editRubricMode && props.searchTerm.length === 0 ? (
           <Menu.Item
             key={`comment-${props.rubricCategory.id}-add`}
             style={{
