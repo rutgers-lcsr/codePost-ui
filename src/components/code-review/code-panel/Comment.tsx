@@ -109,7 +109,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     // Destroy when un-focusing and comments remains empty (this was probably a mistake comment)
-    if (prevProps.commentType === 'active' && this.props.commentType === 'inactive') {
+    // Only destroy if the comment id is the same. Otherwise you destroy after point input change on new comment
+    if (
+      prevProps.commentType === 'active' &&
+      this.props.commentType === 'inactive' &&
+      prevProps.comment.id === this.props.comment.id
+    ) {
       if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
         this.props.onDelete(this.props.comment);
       }
@@ -165,11 +170,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (points !== UiComment.points(this.props.comment, this.props.rubricComment)) {
       this.edited();
+      // Avoid save on meaningless change in sign of zero points
+      this.resetSaveTimeOut();
     } else {
       this.idle();
     }
-
-    this.resetSaveTimeOut();
     this.setState({ points });
   };
 
