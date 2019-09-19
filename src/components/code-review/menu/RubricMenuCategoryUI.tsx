@@ -320,13 +320,13 @@ const RubricMenuCategoryUI = ({
             }}
           >
             <Button
-              type="dashed"
+              type="default"
               icon="plus"
               size="small"
-              style={{ width: '100%', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
+              style={{ width: '180px', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
               onClick={addComment}
             >
-              Add
+              Add Comment
             </Button>
           </Menu.Item>
         ) : null}
