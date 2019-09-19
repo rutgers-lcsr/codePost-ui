@@ -17,6 +17,8 @@ import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
 import { ShowTooltipContext, tooltips } from '../core/tooltips';
 
+import { osControlKey } from '../core/operatingSystem';
+
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 import { wait } from '../../infrastructure/animation';
@@ -315,8 +317,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       : !showTooltips
       ? null
       : props.submission.isFinalized
-      ? 'This submission is finalized. Unfinalize to modify it. [⌘ shift f]'
-      : 'This submission is unfinalized. Finalize it to mark it as complete. [⌘ shift f]';
+      ? `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`
+      : `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
 
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
@@ -681,7 +683,8 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       {props.isStudent ? null : (
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
-            <Icon type="plus-circle" /> Claim another submission <span style={{ color: '#ccc' }}>[⌘ shift p]</span>
+            <Icon type="plus-circle" /> Claim another submission{' '}
+            <span style={{ color: '#ccc' }}>[{osControlKey()} shift s]</span>
           </span>
         </Menu.Item>
       )}

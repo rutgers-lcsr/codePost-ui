@@ -1299,6 +1299,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <Button key="header-logout" onClick={this.props.logout}>
         Logout
       </Button>,
+      <AdminOnboardingSelector
+        visible={this.state.onboardingModalVisible}
+        onCancel={this.closeModal}
+        email={this.props.user.email}
+        onDemoCreate={this.handleDemoCourse}
+        demoCourseExists={this.state.courses.some((el) => {
+          return el.period === 'demo';
+        })}
+      />,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
@@ -1464,18 +1473,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const navigation = (collapsed: boolean) => (
-      <span>
-        <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
-        <AdminOnboardingSelector
-          visible={this.state.onboardingModalVisible}
-          onCancel={this.closeModal}
-          email={this.props.user.email}
-          onDemoCreate={this.handleDemoCourse}
-          demoCourseExists={this.state.courses.some((el) => {
-            return el.period === 'demo';
-          })}
-        />
-      </span>
+      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
     );
 
     return (

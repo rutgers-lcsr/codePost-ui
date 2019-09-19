@@ -21,7 +21,6 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
-
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
     if (
@@ -114,10 +113,19 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
   };
 
+  const onMouseDown = (event: React.MouseEvent) => {
+    const callback = () => {
+      onMouseUp(event);
+      document.removeEventListener('mouseup', callback);
+    };
+
+    document.addEventListener('mouseup', callback);
+  };
+
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
       return (
-        <div key={i} id={`line-${i}`} onMouseUp={readOnly ? undefined : onMouseUp}>
+        <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown}>
           {text === ''
             ? ' '
             : CodePanelHighlighting.highlight(

@@ -16,6 +16,8 @@ import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
+import { osControlKey } from '../../core/operatingSystem';
+
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 
@@ -200,8 +202,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
   const tooltip = (
     <div>
       Resize window
-      <br />
-      [⌘ + left / right arrow]
+      <br />[{osControlKey()} + left / right arrow]
     </div>
   );
 
