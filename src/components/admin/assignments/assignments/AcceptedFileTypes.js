@@ -1,6 +1,12 @@
 // Source: https://fileinfo.com/filetypes/developer-all; .rtf,.txt,.csv,.ipynp, .ts,.tsx,.jsx,.json added
 
 export const acceptedFiles = [
+  '.',
+  '.xcworkspacedata',
+  '.plist',
+  '.xcuserstate',
+  '.xcplayground',
+  '.class',
   '.html',
   '.css',
   '.rtf',
