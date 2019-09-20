@@ -13,13 +13,14 @@ import Select from 'react-select';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
+import { File } from '../../../../infrastructure/file';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { acceptedFilesString } from './AcceptedFileTypes';
+import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
 
 /**********************************************************************************************************************/
 
@@ -242,6 +243,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         const beforeUpload = (file: any, fileList: any) => {
           // Ignore hidden files
           if (file.name[0] === '.') {
+            return false;
+          }
+
+          const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+          if (!acceptedFilesSet.has(`.${extension}`)) {
             return false;
           }
 
