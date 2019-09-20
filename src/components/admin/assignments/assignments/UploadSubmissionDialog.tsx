@@ -263,7 +263,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               // message.error(`${file.name} cannot be uploaded because it is empty.`);
               const joined = this.state.rejectedFiles.concat(file.name);
               this.setState({ rejectedFiles: joined });
-              console.log(this.state.rejectedFiles);
               return;
             }
 
