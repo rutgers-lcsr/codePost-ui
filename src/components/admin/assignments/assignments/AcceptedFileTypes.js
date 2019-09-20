@@ -2,6 +2,10 @@
 
 export const acceptedFiles = [
   '.',
+  '.xcworkspacedata',
+  '.plist',
+  '.xcuserstate',
+  '.xcplayground',
   '.class',
   '.html',
   '.css',
