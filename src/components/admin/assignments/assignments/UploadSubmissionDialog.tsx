@@ -256,12 +256,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 const elPath = this.getPath(el.webkitRelativePath);
                 return el.name !== file.name || elPath !== filePath;
               });
+              const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
               this.setState({
                 files: [
                   ...newFiles,
                   {
                     name: file.name,
-                    data: reader.result,
+                    data: cleanedData,
                     path: filePath,
                   },
                 ],
