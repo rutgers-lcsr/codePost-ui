@@ -2,6 +2,7 @@
 
 export const acceptedFiles = [
   '.',
+  '.class',
   '.html',
   '.css',
   '.rtf',
