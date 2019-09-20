@@ -153,7 +153,7 @@ const RubricCategoryUI = ({
           ) : thisFeedback === undefined ? (
             <Spin />
           ) : (
-            `👎 ${thisFeedback.negative * 100}%   👍 ${thisFeedback.positive * 100}%`
+            `👎 ${Math.trunc(thisFeedback.negative * 100)}%   👍 ${Math.trunc(thisFeedback.positive * 100)}%`
           ),
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>

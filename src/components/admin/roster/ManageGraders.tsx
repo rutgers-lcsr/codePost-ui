@@ -8,6 +8,9 @@ import * as React from 'react';
 /* style imports */
 import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
 
+/* other library imports */
+import Highlighter from 'react-highlight-words';
+
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
@@ -189,6 +192,32 @@ class ManageGraders extends React.Component<IProps, IState> {
           dataIndex: 'grader',
           key: 'primary',
           sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          renderForSearch: (searchText: string) => {
+            return (text: string, record: any, index: number) => {
+              const graderEmail = record.grader;
+              const highlightedEmail = (
+                <Highlighter
+                  highlightStyle={{
+                    backgroundColor: '#5CBB8B',
+                    padding: 0,
+                  }}
+                  searchWords={[searchText]}
+                  autoEscape
+                  textToHighlight={graderEmail}
+                />
+              );
+              const hasActivated = this.props.notActivated.indexOf(graderEmail) === -1;
+              return hasActivated ? (
+                highlightedEmail
+              ) : (
+                <span style={{ color: '#80808082' }}>
+                  <CPTooltip title="This user has not yet signed up for codePost.">
+                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                  </CPTooltip>
+                </span>
+              );
+            };
+          },
         },
         {
           title: (
@@ -251,15 +280,7 @@ class ManageGraders extends React.Component<IProps, IState> {
 
         return {
           key: graderEmail,
-          grader: hasActivated ? (
-            graderEmail
-          ) : (
-            <span style={{ color: '#80808082' }}>
-              <CPTooltip title="This user has not yet signed up for codePost.">
-                {graderEmail} &nbsp; <Icon type="disconnect" />
-              </CPTooltip>
-            </span>
-          ),
+          grader: graderEmail,
           status: statusElement,
           superGrader: this.props.superGraders.includes(graderEmail),
           actions: (

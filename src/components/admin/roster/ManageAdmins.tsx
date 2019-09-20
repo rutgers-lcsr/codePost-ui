@@ -7,7 +7,9 @@ import * as React from 'react';
 
 /* style imports */
 import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
+
+/* other library imports */
+import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -23,7 +25,7 @@ import { tooltips } from '../../../components/core/tooltips';
 
 import AddAdminDialog from './admins/AddAdminDialog';
 
-import { TableDetail } from '../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 import { sendEmailToUser } from './other/RosterUtils';
 
@@ -92,7 +94,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
 
   public render() {
     let actions: React.ReactNode[] = [];
-    let columns: Array<ColumnProps<any>> = [];
+    let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
     const hasInactives = this.props.notActivated.some((el) => {
@@ -159,6 +161,32 @@ class ManageAdmins extends React.Component<IProps, IState> {
           dataIndex: 'admin',
           key: 'primary',
           sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          renderForSearch: (searchText: string) => {
+            return (text: string, record: any, index: number) => {
+              const adminEmail = record.admin;
+              const highlightedEmail = (
+                <Highlighter
+                  highlightStyle={{
+                    backgroundColor: '#5CBB8B',
+                    padding: 0,
+                  }}
+                  searchWords={[searchText]}
+                  autoEscape
+                  textToHighlight={adminEmail}
+                />
+              );
+              const hasActivated = this.props.notActivated.indexOf(adminEmail) === -1;
+              return hasActivated ? (
+                highlightedEmail
+              ) : (
+                <span style={{ color: '#80808082' }}>
+                  <CPTooltip title="This user has not yet signed up for codePost.">
+                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                  </CPTooltip>
+                </span>
+              );
+            };
+          },
         },
 
         {
@@ -195,15 +223,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
 
         return {
           key: adminEmail,
-          admin: hasActivated ? (
-            adminEmail
-          ) : (
-            <span style={{ color: '#80808082' }}>
-              <CPTooltip title="This user has not yet signed up for codePost.">
-                {adminEmail} &nbsp; <Icon type="disconnect" />
-              </CPTooltip>
-            </span>
-          ),
+          admin: adminEmail,
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
               <Icon type="menu" />

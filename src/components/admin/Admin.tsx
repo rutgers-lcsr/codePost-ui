@@ -1030,11 +1030,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newSubsByGrader[grader][assignment.id] = [];
       });
 
-      currentCourse.assignments.push(assignment.id);
+      // A hard-to-reproduce bug is causing duplicate assignments to appear in the Admin Console
+      // after assignment creation: https://github.com/jamesaevans/codePost-ui/issues/699
+      //
+      // To protect against this, the code cautiously removes duplicate assignments
+      // whereever they might live (in state).
+      const newCourse = { ...currentCourse, assignments: _.uniq([...currentCourse.assignments, assignment.id]) };
+      const newAssignments = _.uniqBy([...assignments, assignment], (a: AssignmentType) => {
+        return a.name;
+      });
       submissions[assignment.id] = [];
-      const newAssignments = [...assignments, assignment];
+
       this.setState({
-        currentCourse,
+        currentCourse: newCourse,
         submissions,
         assignments: newAssignments,
         submissionsByGrader: newSubsByGrader,
