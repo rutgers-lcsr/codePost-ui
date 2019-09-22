@@ -111,16 +111,15 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       return savedComment.id === unsavedComment.id;
     });
 
-    if (match) {
-      return match.text !== unsavedComment.text || match.pointDelta !== unsavedComment.pointDelta;
-    }
-    return false;
+    return match !== undefined;
   });
 
   if (contentEditedComments.length === 0) {
     // FIXME: This throws a console warning
     // > Warning: Cannot update during an existing state transition (such as within `render`). R
     // > Render methods should be a pure function of props and state.
+    console.log(props.unsavedComments);
+    console.log(savedComments);
     props.onAccept();
     return <div />;
   }

@@ -181,8 +181,8 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         }
         this.setState(
           {
-            rubricCategories: rubric.rubricCategories,
-            rubricComments: commentMap,
+            rubricCategories: _.cloneDeep(rubric.rubricCategories),
+            rubricComments: _.cloneDeep(commentMap),
             savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
             savedRubricComments: _.cloneDeep(commentMap),
             loadComplete: true,
@@ -853,7 +853,13 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         confirmedPropagation: true,
       },
       () => {
-        this.onSave(fnc);
+        // Protect against accidental (i.e. not caught by typescript)
+        // passes of non-function variables into fnc
+        if (typeof fnc === 'function') {
+          this.onSave(fnc);
+        } else {
+          this.onSave();
+        }
       },
     );
   };
