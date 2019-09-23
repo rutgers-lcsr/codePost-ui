@@ -443,7 +443,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     if (!submission) {
       if (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now()) {
         // Case 1: No submission has been uploaded and due date has passed
-        return <div>{dueDateText}</div>;
+        return (
+          <div>
+            {dueDateText} <br />
+            <Tag color="volcano">DUE DATE PASSED</Tag>
+          </div>
+        );
       } else {
         // Case 2: No submission has been uploaded and due date has not passed
         return (
