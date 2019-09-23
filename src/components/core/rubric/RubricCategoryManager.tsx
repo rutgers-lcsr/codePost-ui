@@ -82,6 +82,8 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   otherCategories: RubricCategoryType[];
   feedbackScores?: { [commentID: number]: IFeedbackScore };
   commentFeedbackOn: boolean;
+  showPointLimits: boolean;
+  showHelpText: boolean;
 
   children: (params: IRubricCategoryManagerParams) => React.ReactNode;
 }
