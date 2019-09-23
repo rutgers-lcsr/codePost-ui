@@ -84,6 +84,8 @@ export interface IRubricManagerProps {
   }) => void;
 
   children: (params: IRubricManagerParams) => React.ReactNode;
+
+  defaultRubric?: IRubric;
 }
 
 export interface IRubric {
@@ -140,8 +142,18 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   constructor(props: IRubricManagerProps) {
     super(props);
+
+    // If defaultRubric exists, format it correctly
+    const defaultRubric =
+      props.defaultRubric !== undefined
+        ? {
+            categories: props.defaultRubric.categories,
+            comments: this.buildCommentMap(props.defaultRubric.categories, props.defaultRubric.comments),
+          }
+        : undefined;
+
     this.state = {
-      loadComplete: false,
+      loadComplete: props.defaultRubric !== undefined,
       changeLock: true,
       isSaving: false,
       errorObjects: [],
@@ -157,16 +169,19 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       confirmedPropagation: false,
       showConfirmDialog: false,
 
-      rubricCategories: [],
-      rubricComments: {},
+      rubricCategories: defaultRubric ? defaultRubric.categories : [],
+      rubricComments: defaultRubric ? defaultRubric.comments : {},
 
-      savedRubricCategories: [],
-      savedRubricComments: {},
+      savedRubricCategories: defaultRubric ? defaultRubric.categories : [],
+      savedRubricComments: defaultRubric ? defaultRubric.comments : {},
 
       newObjectCounter: -1,
     };
     this.onUnload = this.onUnload.bind(this);
-    this.loadAssignmentRubric(props.assignment);
+
+    if (!props.defaultRubric) {
+      this.loadAssignmentRubric(props.assignment);
+    }
   }
 
   public loadAssignmentRubric = (assignment: AssignmentType) => {

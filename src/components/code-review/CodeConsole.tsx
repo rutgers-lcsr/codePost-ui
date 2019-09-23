@@ -1349,7 +1349,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
           />,
-          <RubricManager key="rubric-menu" assignment={this.state.assignment} submissions={[]} onCancel={onCancel}>
+          <RubricManager
+            key="rubric-menu"
+            assignment={this.state.assignment}
+            submissions={[]}
+            onCancel={onCancel}
+            defaultRubric={{
+              categories: this.state.rubricCategories,
+              comments: _.flatten(Object.values(this.state.rubricComments)),
+            }}
+          >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
                 ...props,
