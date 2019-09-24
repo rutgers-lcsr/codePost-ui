@@ -237,6 +237,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           if (typeof result === 'string') {
             const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
             if (['png', 'jpeg', 'jpg'].includes(extension)) {
+              // We want to limit the image to a certain size so we don't slow down file load
               result = await resizeImage(result);
             }
             const cleanedResult = result.replace(/\0/g, '');
@@ -244,8 +245,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             this.setState({ fileMap });
           }
         };
-
-        // studentsReader.readAsBinaryString(anyFile);
 
         const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
         if (['png', 'jpg', 'jpeg'].includes(extension)) {
