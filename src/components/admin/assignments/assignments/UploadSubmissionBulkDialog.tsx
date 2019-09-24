@@ -23,6 +23,8 @@ import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
+import { resizeImage } from '../../other/AdminUtils';
+
 const Panel = Collapse.Panel;
 const { Step } = Steps;
 
@@ -229,16 +231,28 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             status: STATUS.FILE_ERROR,
           });
         };
-        studentsReader.onload = () => {
-          const result = studentsReader.result;
+        studentsReader.onload = async () => {
+          let result: any = studentsReader.result;
           const fileMap = this.state.fileMap;
           if (typeof result === 'string') {
+            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+            if (['png', 'jpeg', 'jpg'].includes(extension)) {
+              result = await resizeImage(result);
+            }
             const cleanedResult = result.replace(/\0/g, '');
             fileMap[anyFile.webkitRelativePath] = cleanedResult;
             this.setState({ fileMap });
           }
         };
-        studentsReader.readAsBinaryString(file);
+
+        // studentsReader.readAsBinaryString(anyFile);
+
+        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+        if (['png', 'jpg', 'jpeg'].includes(extension)) {
+          studentsReader.readAsDataURL(file);
+        } else {
+          studentsReader.readAsBinaryString(file);
+        }
       }
     });
   };
