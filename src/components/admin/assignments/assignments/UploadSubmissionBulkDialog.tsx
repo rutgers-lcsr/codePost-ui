@@ -233,7 +233,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           const result = studentsReader.result;
           const fileMap = this.state.fileMap;
           if (typeof result === 'string') {
-            fileMap[anyFile.webkitRelativePath] = result;
+            const cleanedResult = result.replace(/\0/g, '');
+            fileMap[anyFile.webkitRelativePath] = cleanedResult;
             this.setState({ fileMap });
           }
         };
