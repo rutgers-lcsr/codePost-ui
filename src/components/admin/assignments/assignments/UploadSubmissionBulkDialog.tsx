@@ -487,6 +487,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
       if (!acceptedFilesSet.has(`.${extension}`)) {
         invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
+      } else if (
+        el.webkitRelativePath.split('/').find((pathEl: string) => {
+          return pathEl.startsWith('.');
+        })
+      ) {
+        invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
       } else {
         if (folderName in folderMap) {
           folderMap[folderName].files.push(el);
