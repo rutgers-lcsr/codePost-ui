@@ -22,12 +22,12 @@ interface IMarkdownProps {
   commentCounter: number;
 }
 
-const Markdown = (
-  props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps,
-) => {
+const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
   let markdown;
   if (File.codeType(props.file) === 'jupyter') {
     markdown = jupyterToMarkdown(props.file.code);
+  } else if (File.codeType(props.file) === 'image') {
+    markdown = '![](' + props.file.code + ')';
   } else {
     markdown = props.file.code;
   }
@@ -70,27 +70,16 @@ const Markdown = (
     return className;
   };
 
-  const renderers = useMarkdownRenderers(
-    getClassName,
-    props.readOnly ? undefined : onBlockElementClick,
-  );
+  const renderers = useMarkdownRenderers(getClassName, props.readOnly ? undefined : onBlockElementClick);
 
   return (
-    <ReactMarkdown
-      includeNodeIndex={true}
-      sourcePos={true}
-      rawSourcePos={true}
-      escapeHtml={true}
-      renderers={renderers}>
+    <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
       {markdown}
     </ReactMarkdown>
   );
 };
 
-const useMarkdownRenderers = (
-  getClassName: (index: number) => string,
-  onMouseUp?: (e: React.MouseEvent) => void,
-) => {
+const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp?: (e: React.MouseEvent) => void) => {
   // Hack to determine which block elements are nested
   // topLevelChildren is initialized when the rootRenderer is called
   let topLevelChildren: number | undefined;
@@ -119,10 +108,7 @@ const useMarkdownRenderers = (
   const rootRenderer = (props: any) => {
     topLevelChildren = props.children.length;
     return (
-      <div
-        id='code-markdown'
-        className='markdown'
-        style={{ padding: '5px 0px' }}>
+      <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
         {props.children}
       </div>
     );
@@ -130,18 +116,12 @@ const useMarkdownRenderers = (
 
   const headingRenderer = (props: any) => {
     const fontSize = 24 * Math.pow(0.9, props.level);
-    return React.createElement(
-      `h${props.level}`,
-      { ...blockProps(props), style: { fontSize } },
-      props.children,
-    );
+    return React.createElement(`h${props.level}`, { ...blockProps(props), style: { fontSize } }, props.children);
   };
 
   const paragraphRenderer = (props: any) => {
     return (
-      <p
-        {...blockProps(props)}
-        style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
+      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
         {props.children}
       </p>
     );
@@ -171,7 +151,8 @@ const useMarkdownRenderers = (
           }}
           showLineNumbers={false}
           wrapLines={false}
-          {...blockProps(props)}>
+          {...blockProps(props)}
+        >
           {props.value ? props.value : ' '}
         </SyntaxHighlighter>
       );
@@ -186,7 +167,8 @@ const useMarkdownRenderers = (
               fontFamily: 'monospace',
               padding: '4px',
               wordBreak: 'break-word',
-            }}>
+            }}
+          >
             {props.value ? props.value : ' '}
           </div>
         </div>
@@ -202,19 +184,15 @@ const useMarkdownRenderers = (
   const blockQuoteRenderer = (props: any) => {
     return (
       <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
-        <blockquote style={{ marginBottom: '0px' }}>
-          {props.children}
-        </blockquote>
+        <blockquote style={{ marginBottom: '0px' }}>{props.children}</blockquote>
       </div>
     );
   };
 
   const tableRenderer = (props: any) => {
     return (
-      <div
-        {...blockProps(props)}
-        style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
-        <table className='markdown-table'>{props.children}</table>
+      <div {...blockProps(props)} style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
+        <table className="markdown-table">{props.children}</table>
       </div>
     );
   };
@@ -251,11 +229,7 @@ const useMarkdownRenderers = (
       paragraph: paragraphRend,
     };
 
-    return (
-      <ReactMarkdown renderers={renderers}>
-        {turndown.turndown(props.value)}
-      </ReactMarkdown>
-    );
+    return <ReactMarkdown renderers={renderers}>{turndown.turndown(props.value)}</ReactMarkdown>;
   };
 
   return {
