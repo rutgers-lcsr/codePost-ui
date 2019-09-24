@@ -14,6 +14,8 @@ import Select from 'react-select';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 
+import { File } from '../../../../infrastructure/file';
+
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
@@ -115,6 +117,38 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       fileList: [],
       rejectedFiles: [],
       uploadDirectory: !this.state.uploadDirectory,
+    });
+  };
+
+  public resizeImage = (imageStringInBase64: string) => {
+    const MAX_IMAGE_SIZE = 500;
+    return new Promise(function(resolved, rejected) {
+      var i = new Image();
+      i.onload = function() {
+        if (i.width < MAX_IMAGE_SIZE && i.height < MAX_IMAGE_SIZE) {
+          resolved(imageStringInBase64);
+        } else {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // set its dimension to target size
+          const scale = i.height > i.width ? i.height / MAX_IMAGE_SIZE : i.width / MAX_IMAGE_SIZE;
+          canvas.width = i.width / scale;
+          canvas.height = i.height / scale;
+
+          // draw source image into the off-screen canvas:
+          if (ctx) {
+            ctx.drawImage(i, 0, 0, canvas.width, canvas.height);
+
+            // encode image to data-uri with base64 version of compressed image
+            resolved(canvas.toDataURL());
+          } else {
+            resolved(imageStringInBase64);
+          }
+        }
+        resolved({ w: i.width, h: i.height });
+      };
+      i.src = imageStringInBase64;
     });
   };
 
@@ -257,7 +291,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           }
 
           const reader = new FileReader();
-          reader.onload = () => {
+          reader.onload = async () => {
             const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
             if (!acceptedFilesSet.has(`.${extension}`)) {
               // message.error(`${file.name} cannot be uploaded because it is empty.`);
@@ -267,6 +301,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             }
 
             if (reader.result) {
+              let result: any = reader.result;
+              if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof result === 'string') {
+                result = await this.resizeImage(result);
+              }
+
               const filePath = this.getPath(file.webkitRelativePath);
               const newFiles = this.state.files.filter((el) => {
                 return el.name !== file.name || el.path !== filePath;
@@ -275,7 +314,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 const elPath = this.getPath(el.webkitRelativePath);
                 return el.name !== file.name || elPath !== filePath;
               });
-              const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
+              const cleanedData = typeof result === 'string' ? result.replace(/\0/g, '') : result;
               this.setState({
                 files: [
                   ...newFiles,
@@ -291,7 +330,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               message.error(`${file.name} cannot be uploaded because it is empty.`);
             }
           };
-          reader.readAsText(file);
+
+          if (['png', 'jpg', 'jpeg'].includes(File.extension(file.name))) {
+            reader.readAsDataURL(file);
+          } else {
+            reader.readAsText(file);
+          }
 
           // prevent upload
           return false;
