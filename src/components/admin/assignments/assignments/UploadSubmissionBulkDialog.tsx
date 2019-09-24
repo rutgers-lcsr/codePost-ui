@@ -236,7 +236,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           const fileMap = this.state.fileMap;
           if (typeof result === 'string') {
             const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-            if (['png', 'jpeg', 'jpg'].includes(extension)) {
+            // Optimization: The resizing takes time so we only want to do it on bigger images (>50Kb)
+            if (['png', 'jpeg', 'jpg'].includes(extension) && file.size > 50000) {
               // We want to limit the image to a certain size so we don't slow down file load
               result = await resizeImage(result);
             }
