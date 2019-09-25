@@ -32,6 +32,7 @@ import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 import RoleMenu from '../core/RoleMenu';
 
 import CPDropdown from '../core/CPDropdown';
+// import CPTooltip from '../core/CPTooltip';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
@@ -384,133 +385,110 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       return <div />;
     }
 
-    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
-    const dueDateText = <Text type="warning">{dueDate}</Text>;
+    const hasSubmission = submission !== undefined;
 
-    const uploadButton = (text: string) => {
-      return (
-        <Button
-          icon="upload"
-          type="primary"
-          style={{ maxWidth: 180 }}
-          onClick={() => {
-            if (submission && assignment.liveFeedbackMode) {
-              Modal.confirm({
-                title: 'Confirm File Replacement',
-                content: `Replacing your files will delete existing files, including any comments on those files.
+    // Algorithm for computing
+    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
+    const isFinalized = submission === undefined || submission.isFinalized;
+    const alreadyClaimed = submission === undefined || (submission.hasGrader && !assignment.liveFeedbackMode);
+
+    const canUpload = !dueDatePassed && !isFinalized && !alreadyClaimed;
+
+    // Present the assignment's due date to the student
+    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDateText = (
+      <span>
+        <Text>{dueDate}</Text>
+        {dueDatePassed ? (
+          <span>
+            &nbsp; <Tag color="volcano">PASSED</Tag>
+          </span>
+        ) : null}
+      </span>
+    );
+
+    // If the student has submitted, show the datetime of the student's most recent upload
+    const uploadDateText =
+      submission !== undefined ? <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div> : null;
+
+    // If the student can upload, give them the option to POST or PATCH submission
+    let buttonText;
+    if (hasSubmission) {
+      buttonText = 'Replace files';
+    } else {
+      buttonText = 'Upload files';
+    }
+    const uploadButton = (
+      <Button
+        icon="upload"
+        type="primary"
+        style={{ maxWidth: 180 }}
+        disabled={!canUpload}
+        onClick={() => {
+          if (submission && assignment.liveFeedbackMode) {
+            Modal.confirm({
+              title: 'Confirm File Replacement',
+              content: `Replacing your files will delete existing files, including any comments on those files.
                   If you want to add a file to your submission click 'Add Files' instead.
                   Are you sure you want to continue?`,
-                okText: 'Continue',
-                cancelText: 'Cancel',
-                onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
-              });
-            } else {
-              this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
-            }
-          }}
+              okText: 'Continue',
+              cancelText: 'Cancel',
+              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+            });
+          } else {
+            this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
+          }
+        }}
+      >
+        {buttonText}
+      </Button>
+    );
+
+    // If the student has uploaded, give them the option to view their uploaded files
+    // If live feedback mode is on, we don't want to show the view files button
+    const viewButton =
+      assignment.liveFeedbackMode || !hasSubmission ? null : (
+        <Button
+          icon="eye"
+          style={{ maxWidth: 160 }}
+          onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment, undefined)}
         >
-          {text}
+          View files
         </Button>
       );
-    };
 
-    // If the assignment is in live feedback mode, allow students to add file verisons
-    const addFileButton = !assignment.liveFeedbackMode ? (
-      <div />
-    ) : (
-      <Button
-        icon="plus"
-        style={{ maxWidth: 160 }}
-        onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
+    // Special case: if assignment.liveFeedbackMode is turned on, give the student the option to add files
+    const addFileButton =
+      !assignment.liveFeedbackMode || !hasSubmission ? null : (
+        <Button
+          icon="plus"
+          style={{ maxWidth: 160 }}
+          onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
+          disabled={!canUpload}
+        >
+          Add files
+        </Button>
+      );
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          lineHeight: 2.2,
+        }}
       >
-        Add files
-      </Button>
+        <div>{uploadDateText}</div>
+        {dueDateText}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginLeft: 15 }} />
+          {uploadButton}
+          <div style={{ marginLeft: 15 }} />
+          {viewButton}
+          {addFileButton}
+        </div>
+      </div>
     );
-
-    // If live feedback mode is on, we don't want to show the view files button
-    const viewButton = assignment.liveFeedbackMode ? (
-      <div />
-    ) : (
-      <Button
-        icon="eye"
-        style={{ maxWidth: 160 }}
-        onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment, undefined)}
-      >
-        View files
-      </Button>
-    );
-
-    if (!submission) {
-      if (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now()) {
-        // Case 1: No submission has been uploaded and due date has passed
-        return (
-          <div>
-            {dueDateText} <br />
-            <Tag color="volcano">DUE DATE PASSED</Tag>
-          </div>
-        );
-      } else {
-        // Case 2: No submission has been uploaded and due date has not passed
-        return (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              lineHeight: 2.2,
-              alignItems: 'center',
-            }}
-          >
-            {dueDateText}
-            {uploadButton('Upload Files')}
-          </div>
-        );
-      }
-    } else {
-      if (
-        (submission.hasGrader && !assignment.liveFeedbackMode) ||
-        submission.isFinalized ||
-        (assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now())
-      ) {
-        // Case 3: Submission exists, and cannot be replaced, either because
-        // it has a grader and is not in live feeedback mode, is finalized
-        // (hasGrader isn't exposed), or the due date has passed
-        return (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              lineHeight: 2.2,
-              alignItems: 'center',
-            }}
-          >
-            <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div>
-            {dueDateText}
-            {viewButton}
-          </div>
-        );
-      } else {
-        // Case 4: Submission exists, and can be replaced
-        return (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              lineHeight: 2.2,
-            }}
-          >
-            <div>Last uploaded: {moment(submission.dateUploaded).format('llll')}</div>
-            {dueDateText}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ marginLeft: 15 }} />
-              {uploadButton('Replace Files')}
-              <div style={{ marginLeft: 15 }} />
-              {viewButton}
-              {addFileButton}
-            </div>
-          </div>
-        );
-      }
-    }
   };
 
   /***********************************************************************************

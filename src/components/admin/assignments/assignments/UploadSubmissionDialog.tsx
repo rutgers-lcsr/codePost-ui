@@ -317,7 +317,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}
             <div style={{ marginBottom: 15 }}>
-              Upload a Directory{' '}
+              Upload a directory{' '}
               <CPTooltip
                 title={`If the submission has nested directories, turn this on and upload a single
                   directory that contains the submission.`}
