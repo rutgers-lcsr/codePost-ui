@@ -1,9 +1,7 @@
 import { Collapse, Divider, Icon } from 'antd';
 
 import * as React from 'react';
-import withWindowWatcher, {
-  IWithWindowWatcherProps,
-} from '../core/withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import landingVars from '../../styles/pages/_landingVars';
 
@@ -145,7 +143,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
     const codeMirror = (
       <CodeMirror
         key={`codeMirror${this.state.exampleIndex}`}
-        className='api-codemirror'
+        className="api-codemirror"
         onBeforeChange={dummyFunction}
         editorDidMount={setEditor}
         value={apiCodeExamples[this.state.exampleIndex].code}
@@ -161,15 +159,13 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
     const customPanelStyle = {
       background: 'rgb(38, 50, 56, 0.95)',
-      borderRadius: 24,
+      borderRadius: 8,
       color: 'white',
       fontSize: 20,
       paddingTop: 10,
       paddingBottom: 10,
-      paddingRight:
-        this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
-      paddingLeft:
-        this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
+      paddingRight: this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
+      paddingLeft: this.props.windowwidth < landingVars.breakpoints.mobile ? 5 : 20,
     };
 
     const selectedStyle = {
@@ -198,9 +194,9 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         style={{
           maxWidth: 600,
           width: '100%',
-          minHeight:
-            this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
-        }}>
+          minHeight: this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
+        }}
+      >
         {codeMirror}
       </div>
     );
@@ -208,26 +204,15 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
     const buttons = (
       <div
         style={{
-          maxWidth:
-            this.props.windowwidth < landingVars.breakpoints.verticalPanels
-              ? 600
-              : 300,
-          marginLeft:
-            this.props.windowwidth < landingVars.breakpoints.verticalPanels
-              ? 0
-              : 30,
-          marginTop:
-            this.props.windowwidth < landingVars.breakpoints.verticalPanels
-              ? 20
-              : 0,
-          marginBottom:
-            this.props.windowwidth < landingVars.breakpoints.verticalPanels
-              ? 20
-              : 0,
+          maxWidth: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 600 : 300,
+          marginLeft: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 0 : 30,
+          marginTop: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
+          marginBottom: this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 20 : 0,
           position: 'relative',
           width: '100%',
         }}
-        className='display-flex flex-direction-column align-items-flex-start'>
+        className="display-flex flex-direction-column align-items-flex-start"
+      >
         <span
           style={{
             position: 'absolute',
@@ -236,14 +221,10 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             top: 5,
             background: 'white',
             zIndex: 0,
-            borderRadius: 10,
+            borderRadius: 5,
             transition: '.3s',
             transform: `translateY(${
-              exampleIndex === 1
-                ? 'calc(100% + 10px)'
-                : exampleIndex === 2
-                ? 'calc(200% + 20px)'
-                : '0%'
+              exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
             })`,
           }}
         />
@@ -251,75 +232,71 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           onClick={this.changeAPITabIndex.bind(this, 0)}
           style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 0 ? '' : 'apiexample__link'}
-          cpType='link'
-          icon='export'
-          ghost={true}>
+          cpType="link"
+          icon="export"
+          ghost={true}
+        >
           {apiCodeExamples[0].title}
         </CPButton>
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 1)}
           style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 1 ? '' : 'apiexample__link'}
-          cpType='link'
-          icon='team'
-          ghost={true}>
+          cpType="link"
+          icon="team"
+          ghost={true}
+        >
           {apiCodeExamples[1].title}
         </CPButton>
         <CPButton
           onClick={this.changeAPITabIndex.bind(this, 2)}
           style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 2 ? '' : 'apiexample__link'}
-          cpType='link'
-          icon='bar-chart'
-          ghost={true}>
+          cpType="link"
+          icon="bar-chart"
+          ghost={true}
+        >
           {apiCodeExamples[2].title}
         </CPButton>
-        <Divider type='horizontal' style={{ margin: '16px 0px' }} />
+        <Divider type="horizontal" style={{ margin: '16px 0px' }} />
         <CPButton
-          key='APIDocs'
-          href='http://docs.codepost.io/reference'
-          target='_blank'
-          cpType='link'
+          key="APIDocs"
+          href="http://docs.codepost.io/reference"
+          target="_blank"
+          cpType="link"
           ghost={true}
           style={{ fontWeight: 600, fontSize: 18 }}
-          className='apiexample__docs'>
+          className="apiexample__docs"
+        >
           Full API reference
-          <Icon type='arrow-right' className='apiexample__docs__arrow' />
+          <Icon type="arrow-right" className="apiexample__docs__arrow" />
         </CPButton>
       </div>
     );
 
     return (
-      <div id='APIExample' style={{ width: '100%' }}>
+      <div id="APIExample" style={{ width: '100%' }}>
         <Collapse bordered={false}>
           <Panel
             header={
-              <div className='apiexample__header display-flex justify-content-space-between'>
+              <div className="apiexample__header display-flex justify-content-space-between">
                 <div>Think we were joking about short scripts? Click here</div>
-                <Icon type='api' className='apiexample__header__icon' />
+                <Icon type="api" className="apiexample__header__icon" />
               </div>
             }
-            key='1'
-            style={customPanelStyle}>
+            key="1"
+            style={customPanelStyle}
+          >
             <div
               style={{
                 fontSize: 12,
               }}
               className={`display-flex flex-direction-${
-                this.props.windowwidth < landingVars.breakpoints.verticalPanels
-                  ? 'column'
-                  : 'row'
-              } align-items-${
-                this.props.windowwidth < landingVars.breakpoints.verticalPanels
-                  ? 'center'
-                  : 'start'
-              }`}>
-              {this.props.windowwidth < landingVars.breakpoints.verticalPanels
-                ? buttons
-                : codebox}
-              {this.props.windowwidth < landingVars.breakpoints.verticalPanels
-                ? codebox
-                : buttons}
+                this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
+              } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
+            >
+              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
+              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}
             </div>
           </Panel>
         </Collapse>

@@ -184,3 +184,25 @@
     transform: scale(0.9) perspective(2000px) rotateY(-10deg) rotateX(1deg) rotate(1deg);
   }
 }
+
+#panelTwo .landing__link {
+  color: #24be85;
+  transition: 0.3s ease;
+
+  .landing__link__arrow {
+    transform: translateX(0px);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    color: #aaa;
+    .landing__link__arrow {
+      transform: translateX(5px);
+      transition: transform 0.3s ease;
+    }
+  }
+  &:focus {
+    color: #aaa;
+    transition: 0.3s ease;
+  }
+}
