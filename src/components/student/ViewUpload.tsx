@@ -30,7 +30,7 @@ function ViewUpload(props: IProps) {
   const [loadComplete, setLoadComplete] = useState(false);
 
   const fetchUpload = async () => {
-    if (props.assignment) {
+    if (props.assignment && props.isVisible) {
       const data = await AssignmentStudent.readStudentUpload(props.assignment.id);
       setFiles(data.files);
       setLoadComplete(true);
@@ -43,9 +43,7 @@ function ViewUpload(props: IProps) {
   };
 
   useEffect(() => {
-    if (props.isVisible) {
-      fetchUpload();
-    }
+    fetchUpload();
   }, [props.assignment, props.isVisible]);
 
   const changeIndex = (e: ClickParam) => {
