@@ -444,10 +444,12 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       </Button>
     );
 
-    // If the student has uploaded, give them the option to view their uploaded files
-    // If live feedback mode is on, we don't want to show the view files button
+    // If the student has uploaded, give them the option to view their uploaded files, unless
+    // their submission is viewable in the code console
     const viewButton =
-      assignment.liveFeedbackMode || !hasSubmission ? null : (
+      assignment.liveFeedbackMode ||
+      !hasSubmission ||
+      (hasSubmission && submission!.isFinalized && assignment.isReleased) ? null : (
         <Button
           icon="eye"
           style={{ maxWidth: 160 }}
