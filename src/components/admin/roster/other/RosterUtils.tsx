@@ -1,3 +1,5 @@
+import { message } from 'antd';
+
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
 
@@ -21,7 +23,13 @@ const sendEmailToUser = (
       'Content-Type': 'application/json',
     },
     method: 'POST',
-  });
+  })
+    .then(() => {
+      message.success(`Email sent to ${user} successfully.`);
+    })
+    .catch(() => {
+      message.error(`Failed to send email to ${user}. Please contact our team.`);
+    });
 };
 
 export { sendEmailToUser };

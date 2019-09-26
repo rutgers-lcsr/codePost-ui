@@ -21,7 +21,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
-import { Course, CourseSettingsType, CourseType } from '../../infrastructure/course';
+import { Course, CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { FileTemplate, FileTemplateType } from '../../infrastructure/fileTemplate';
 import * as Immutable from '../../infrastructure/immutable';
@@ -42,7 +42,9 @@ import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from '
 import ThemeToggle from '../core/ThemeToggle';
 
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
-import RubricMenu from './menu/RubricMenu';
+
+import RubricMenuUI from './menu/RubricMenuUI';
+
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
@@ -50,6 +52,8 @@ import layoutVars from '../../styles/layout/_layoutVars';
 import { openSubmission } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
+
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import {
   Controls,
@@ -67,6 +71,10 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { demoFiles } from './demoCode';
+
+import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+
+import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
 /**********************************************************************************************************************/
 
@@ -110,7 +118,10 @@ interface ICodeConsoleState {
   /* demo data */
   demoCommentCounter: number;
 
+  editRubricMode: boolean;
   commentCounter: number;
+
+  rubricReload?: number;
 }
 
 export interface ICodeConsoleProps {
@@ -382,14 +393,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       selectedFile: undefined,
       oldCommentIDs: {},
 
-      codeZoom: 1,
+      codeZoom: LOCAL_SETTINGS.codeZoom.getter(),
       codeVerticalOffset: 0,
       dimensions: getInitialDimensions(),
 
       demoCommentCounter: 0,
 
       isStudent: false,
+      editRubricMode: false,
       commentCounter: -1,
+
+      rubricReload: undefined,
     };
   }
 
@@ -479,7 +493,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           this.loadRubric(writableSubmission.assignment),
         ]);
         course = await Course.read(assignment.course);
-
         let fileTemplates;
         if (assignment.templateMode) {
           fileTemplates = await Promise.all(
@@ -674,7 +687,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public saveComment = async (comment: CommentType) => {
-    let savedComment;
+    let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
@@ -698,29 +711,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         savedComment = await CommentIO.update(comment);
       }
     } else {
-      // In demo mode, we want to simulate the saving of a comment without actually saving anything.
-      // To do this, we need to make up a positive comment id for the comments we "save"
-      //
-      // Note that the id we use can collide with existing comment IDs, because we never
-      // make any API call to interact with the comment whose ID corresponds to the ID we assign here
-      savedComment = { ...comment, id: this.state.demoCommentCounter + 1 };
-      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (comment.id < 0) {
+        // In demo mode, we want to simulate the saving of a comment without actually saving anything.
+        // To do this, we need to make up a positive comment id for the comments we "save"
+        //
+        // Note that the id we use can collide with existing comment IDs, because we never
+        // make any API call to interact with the comment whose ID corresponds to the ID we assign here
+        savedComment = { ...comment, id: this.state.demoCommentCounter + 1 };
+        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
 
-      // we want to keep track of the order in which demo comments are created, so we can highlight
-      // them precisely. For example, we may want to show one tooltip for the first comment made by
-      // a user participating in the demo, and a different tooltip for the second comment.
-      this.setState((oldState) => {
-        return {
-          demoCommentCounter: oldState.demoCommentCounter + 1,
-        };
-      });
+        // we want to keep track of the order in which demo comments are created, so we can highlight
+        // them precisely. For example, we may want to show one tooltip for the first comment made by
+        // a user participating in the demo, and a different tooltip for the second comment.
+        this.setState((oldState) => {
+          return {
+            demoCommentCounter: oldState.demoCommentCounter + 1,
+          };
+        });
+      }
     }
 
-    this.setState({
-      oldCommentIDs,
-    });
-
-    this.updateComment(comment.id, savedComment);
+    this.setState(
+      {
+        oldCommentIDs,
+      },
+      () => {
+        this.updateComment(comment.id, savedComment);
+      },
+    );
   };
 
   public deleteComment = async (comment: CommentType) => {
@@ -942,6 +960,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       allowStudentUpload: false,
       uploadDueDate: '',
       liveFeedbackMode: false,
+      collaborativeRubricMode: false,
       additiveGrading: false,
       forcedRubricMode: false,
       templateMode: false,
@@ -1086,6 +1105,40 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
     this.setState({ dimensions });
+    LOCAL_SETTINGS.codeWidth.setter(dimensions.codeWidth);
+  };
+
+  public toggleEditRubricMode = () => {
+    this.setState({ editRubricMode: !this.state.editRubricMode });
+  };
+
+  // This is a bit of a hacky way to rebase the CodeConsole state comments with an updated rubric
+  // Given an updated rubric, we make sure that all relevant objects stored in state reflect the changes
+  public setRubric = (rubric: {
+    rubricCategories: RubricCategoryType[];
+    rubricComments: IRubricCategoryToRubricCommentsMap;
+  }) => {
+    const newCommentRubricComments: any = {};
+
+    for (const commentID of Object.keys(this.state.commentRubricComments)) {
+      const oldRubricComment = this.state.commentRubricComments[+commentID];
+
+      const newRubricComment = rubric.rubricComments[oldRubricComment.category].find(
+        (rubricComment: RubricCommentType) => {
+          return rubricComment.id === oldRubricComment.id;
+        },
+      );
+
+      if (newRubricComment) {
+        newCommentRubricComments[+commentID] = newRubricComment;
+      }
+    }
+
+    this.setState({
+      rubricCategories: rubric.rubricCategories,
+      rubricComments: rubric.rubricComments,
+      commentRubricComments: newCommentRubricComments,
+    });
   };
 
   /***********************************************************************************
@@ -1121,6 +1174,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  public turnOnReload = () => {
+    this.setState({ rubricReload: 5000 });
+  };
+
+  public turnOffReload = () => {
+    this.setState({ rubricReload: undefined });
+  };
+
   /***********************************************************************************
   /* Render
   /**********************************************************************************/
@@ -1137,7 +1198,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let rightHeader: React.ReactNode[] = [];
     let content;
     let siderTitles: Array<React.ReactNode | string> = [];
-    let sider: React.ReactNode[] = [];
+    let sider: React.ReactElement[] = [];
 
     const toolbarWidgets = [];
     if (!this.props.inDemoMode) {
@@ -1265,6 +1326,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
+        const onCancel = () => {
+          return;
+        };
+
         sider = [
           <SubmissionInfo
             key="submission-info"
@@ -1284,12 +1349,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
           />,
-          <RubricMenu
+          <RubricManager
             key="rubric-menu"
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            handleRubricCommentClick={this.onRubricCommentClick}
-          />,
+            assignment={this.state.assignment}
+            submissions={[]}
+            onCancel={onCancel}
+            defaultRubric={{
+              categories: this.state.rubricCategories,
+              comments: _.flatten(Object.values(this.state.rubricComments)),
+            }}
+          >
+            {({ props, state, helpers }: IRubricManagerParams) => {
+              const propz = {
+                ...props,
+                handleRubricCommentClick: this.onRubricCommentClick,
+                hasActiveComment: this.state.activeCommentID !== undefined,
+                toggleEditRubricMode: this.toggleEditRubricMode,
+                editRubricMode: this.state.editRubricMode,
+                setRubric: this.setRubric,
+                turnOnReload: this.turnOnReload,
+                turnOffReload: this.turnOffReload,
+              };
+              return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
+            }}
+          </RubricManager>,
         ];
 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
@@ -1473,6 +1556,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
+        const onCancel = () => {
+          return;
+        };
+
         sider = [
           <SubmissionInfo
             key="submission-info"
@@ -1492,12 +1579,28 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
           />,
-          <RubricMenu
+          <RubricManager
             key="rubric-menu"
-            rubricCategories={this.state.rubricCategories}
-            rubricComments={this.state.rubricComments}
-            handleRubricCommentClick={this.onRubricCommentClick}
-          />,
+            assignment={this.state.assignment}
+            submissions={[]}
+            onCancel={onCancel}
+            reloadInterval={this.state.rubricReload}
+            setRubric={this.setRubric}
+          >
+            {({ props, state, helpers }: IRubricManagerParams) => {
+              const propz = {
+                ...props,
+                handleRubricCommentClick: this.onRubricCommentClick,
+                hasActiveComment: this.state.activeCommentID !== undefined,
+                toggleEditRubricMode: this.toggleEditRubricMode,
+                editRubricMode: this.state.editRubricMode,
+                setRubric: this.setRubric,
+                turnOnReload: this.turnOnReload,
+                turnOffReload: this.turnOffReload,
+              };
+              return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
+            }}
+          </RubricManager>,
         ];
 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
@@ -1535,6 +1638,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           sider={sider}
           siderTitles={siderTitles}
           content={content}
+          editRubricMode={this.state.editRubricMode}
         />
       </div>
     );

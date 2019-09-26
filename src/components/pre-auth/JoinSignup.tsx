@@ -33,10 +33,7 @@ class JoinSignup extends React.Component<{}, IState> {
     confirmEmailSent: false,
   };
 
-  public handleChange = (
-    name: string,
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     this.setState((prevstate) => {
       const newState: any = { ...prevstate };
@@ -53,16 +50,13 @@ class JoinSignup extends React.Component<{}, IState> {
         email: this.state.email,
       };
 
-      fetch(
-        `${process.env.REACT_APP_API_URL}/registration/emailRegistration/`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-          body: JSON.stringify(payload),
+      fetch(`${process.env.REACT_APP_API_URL}/registration/emailRegistration/`, {
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
         .then((res) => {
           if (res.status === 200) {
             return res.json();
@@ -85,10 +79,7 @@ class JoinSignup extends React.Component<{}, IState> {
     let content;
     if (hasSubmitted) {
       content = confirmEmailSent ? (
-        <Alert
-          message={'Success!'}
-          description='Check your email to finish signing up.'
-        />
+        <Alert message={'Success!'} description="Check your email to finish signing up." />
       ) : (
         <span>
           Hang tight...sending you an email &nbsp; &nbsp; <Spin />
@@ -98,21 +89,20 @@ class JoinSignup extends React.Component<{}, IState> {
       content = (
         <div>
           <Input
-            placeholder='jill@princeton.edu'
+            placeholder="jill@princeton.edu"
             value={this.state.email}
             onChange={this.handleChange.bind(this, 'email')}
           />
           <div>
-            Don't forget to use your organization's{' '}
-            <Typography.Text code>.edu</Typography.Text> address!
+            Don't forget to use your organization's <Typography.Text code>.edu</Typography.Text> address!
           </div>
           <br />
           <div style={{ display: 'flex' }}>
-            <Link to='/signup'>
-              <CPButton cpType='secondary'>Back</CPButton>
+            <Link to="/signup">
+              <CPButton cpType="secondary">Back</CPButton>
             </Link>
             &nbsp; &nbsp; &nbsp; &nbsp;
-            <CPButton cpType='primary' onClick={this.handleSignup}>
+            <CPButton cpType="primary" onClick={this.handleSignup}>
               Continue
             </CPButton>
           </div>
@@ -125,9 +115,7 @@ class JoinSignup extends React.Component<{}, IState> {
         <div style={{ maxWidth: 500 }}>
           <br />
           <br />
-          <Typography.Title level={1}>
-            Join a course on codePost
-          </Typography.Title>
+          <Typography.Title level={1}>Join a course on codePost</Typography.Title>
           {content}
         </div>
       </PreAuthSignupLayout>

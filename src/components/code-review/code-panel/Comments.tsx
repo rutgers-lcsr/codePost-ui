@@ -18,6 +18,8 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import { CodeConsoleDimensionsType } from './LayoutResizer';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
   comments: CommentType[];
@@ -323,6 +325,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
             whiteSpace: 'normal',
             position: 'absolute',
             left: 35,
+            color: this.context.consoleTheme.text,
           }}
         >
           Highlight some code to leave a comment.
@@ -338,6 +341,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     );
   }
 }
+Comments.contextType = ConsoleThemeContext;
 
 const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & ICommentsEditProps>) => {
   return class WrappedComponent extends React.Component<ICommentsCoreProps, {}> {

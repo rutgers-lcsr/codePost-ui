@@ -3,9 +3,13 @@ import * as React from 'react';
 import { Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
+import CPFlex from '../../core/CPFlex';
+
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
+
 const SubMenu = Menu.SubMenu;
 
-interface IAdminNavProps {
+interface IAdminNavProps extends IWithWindowWatcherProps {
   onClick: (e: ClickParam) => void;
   selectedPanel: number;
   collapsed: boolean;
@@ -90,73 +94,90 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   };
 
   public render() {
-    return (
-      <div>
-        <Menu
-          onOpenChange={this.onOpenChange}
-          onClick={this.props.onClick}
-          theme="dark"
-          openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
-          selectedKeys={[this.props.selectedPanel.toString()]}
-          mode="inline"
+    const main = (
+      <Menu
+        onOpenChange={this.onOpenChange}
+        onClick={this.props.onClick}
+        theme="dark"
+        openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
+        selectedKeys={[this.props.selectedPanel.toString()]}
+        mode="inline"
+      >
+        <SubMenu
+          key="submissions"
+          title={
+            <span>
+              <Icon type="inbox" />
+              <span>Submissions</span>
+            </span>
+          }
         >
-          <SubMenu
-            key="submissions"
-            title={
-              <span>
-                <Icon type="inbox" />
-                <span>Submissions</span>
-              </span>
-            }
-          >
-            <Menu.Item key="0">By Student</Menu.Item>
-            <Menu.Item key="1">By Grader</Menu.Item>
-          </SubMenu>
-          <Menu.Item key="2">
-            <Icon type="file-text" />
-            <span>Assignments</span>
+          <Menu.Item key="0">By Student</Menu.Item>
+          <Menu.Item key="1">By Grader</Menu.Item>
+        </SubMenu>
+        <Menu.Item key="2">
+          <Icon type="file-text" />
+          <span>Assignments</span>
+        </Menu.Item>
+        <SubMenu
+          key="roster"
+          title={
+            <span>
+              <Icon type="team" />
+              <span>Roster</span>
+            </span>
+          }
+        >
+          <Menu.Item key="3">Students</Menu.Item>
+          <Menu.Item key="4">Graders</Menu.Item>
+          <Menu.Item key="5">Admin</Menu.Item>
+          <Menu.Item key="6">Sections</Menu.Item>
+        </SubMenu>
+        <Menu.Item key="7">
+          <Icon type="setting" />
+          <span>Course Settings</span>
+        </Menu.Item>
+      </Menu>
+    );
+
+    const footer = (
+      <div>
+        <Menu theme="dark" mode="inline" selectedKeys={[]}>
+          <Menu.Item key="features" onClick={this.openLink.bind(this, 'https://codepost.io/why-use-codePost')}>
+            <Icon type="star" />
+            <span>Features</span>
           </Menu.Item>
-          <SubMenu
-            key="roster"
-            title={
-              <span>
-                <Icon type="team" />
-                <span>Roster</span>
-              </span>
-            }
-          >
-            <Menu.Item key="3">Students</Menu.Item>
-            <Menu.Item key="4">Graders</Menu.Item>
-            <Menu.Item key="5">Admin</Menu.Item>
-            <Menu.Item key="6">Sections</Menu.Item>
-          </SubMenu>
-          <Menu.Item key="7">
-            <Icon type="setting" />
-            <span>Course Settings</span>
+          <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
+            <Icon type="pushpin" />
+            <span>Docs</span>
+          </Menu.Item>
+          <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
+            <Icon type="api" />
+            <span>API Reference</span>
           </Menu.Item>
         </Menu>
-        <div style={{ height: '100%' }}>
-          <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 95 }} selectedKeys={[]}>
-            <Menu.Item key="features" onClick={this.openLink.bind(this, 'https://codepost.io/why-use-codePost')}>
-              <Icon type="star" />
-              <span>Features</span>
-            </Menu.Item>
-            <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
-              <Icon type="pushpin" />
-              <span>Docs</span>
-            </Menu.Item>
-            <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
-              <Icon type="api" />
-              <span>API Reference</span>
-            </Menu.Item>
-          </Menu>
-        </div>
-        <div className="version" style={{ position: 'absolute', bottom: 68, color: '#848484', paddingLeft: 24 }}>
+        <div className="version" style={{ color: '#848484', paddingLeft: 24, paddingBottom: 14 }}>
           {this.props.collapsed ? null : `v${process.env.REACT_APP_VERSION}`}
         </div>
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          height: this.props.windowheight - 90 - 48,
+          overflow: 'auto',
+        }}
+      >
+        <div>{main}</div>
+        <div style={{ margin: 'auto auto', flexGrow: 1 }} />
+        <div>{footer}</div>
       </div>
     );
   }
 }
 
-export default AdminNav;
+export default withWindowWatcher(AdminNav);

@@ -7,9 +7,7 @@ export interface IWithWindowWatcherProps {
   windowheight: number;
 }
 
-const withWindowWatcher = <P extends IWithWindowWatcherProps>(
-  Component: React.ComponentType<P>,
-) => {
+const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
   return class WrappedComponent extends React.Component<
     // @ts-ignore
     Subtract<P, IWithWindowWatcherProps>,
@@ -35,13 +33,7 @@ const withWindowWatcher = <P extends IWithWindowWatcherProps>(
     };
 
     public render() {
-      return (
-        <Component
-          {...(this.props as P)}
-          windowwidth={this.state.width}
-          windowheight={this.state.height}
-        />
-      );
+      return <Component {...(this.props as P)} windowwidth={this.state.width} windowheight={this.state.height} />;
     }
   };
 };

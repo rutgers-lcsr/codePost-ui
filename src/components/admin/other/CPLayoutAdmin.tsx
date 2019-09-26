@@ -80,14 +80,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
               </div>
             )}
           </Header>
-          <div
-            style={{
-              maxHeight: windowSize.height - 64 - 85 - 48,
-              overflow: 'auto',
-            }}
-          >
-            {props.navigation(collapsed)}
-          </div>
+          {props.navigation(collapsed)}
         </Sider>
       )}
       <Layout style={{ minWidth: layoutVars.minWidths.admin }}>

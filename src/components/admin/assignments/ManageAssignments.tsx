@@ -34,7 +34,9 @@ import NewAssignmentDialog from './assignments/NewAssignmentDialog';
 
 import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 
-import RubricManager from './rubric/RubricManager';
+import RubricUI from './rubric/RubricUI';
+
+import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
 
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 
@@ -463,11 +465,20 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 ) : null}
               </span>
             ),
-            submissions: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
-                {statsForRow.numSubmissions}
-              </span>
-            ),
+            submissions:
+              statsForRow.numSubmissions === 0 ? (
+                <CPButton
+                  cpType="secondary"
+                  onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Multiple, assignment)}
+                >
+                  <Icon type="upload" />
+                  Upload
+                </CPButton>
+              ) : (
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
+                  {statsForRow.numSubmissions}
+                </span>
+              ),
             finalized: (
               <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} className="text-link">
                 {statsForRow.numGraded}
@@ -559,7 +570,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-              />
+              >
+                {({ props, state, helpers }: IRubricManagerParams) => {
+                  return <RubricUI props={props} state={state} helpers={helpers} />;
+                }}
+              </RubricManager>
             );
             break;
           case DETAIL_TYPE.Stats:

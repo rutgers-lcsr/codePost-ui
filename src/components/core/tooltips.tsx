@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { osControlKey } from './operatingSystem';
+
 // ************************ Console Tooltips ************************
 const CONSOLE_HEADER_DARKMODE = 'Switch to light mode';
 const CONSOLE_HEADER_LIGHTMODE = 'Switch to dark mode';
@@ -16,44 +18,46 @@ const GRADE_HEADER_DARKMODE = (
   <div>
     Toggle Dark Mode
     <br />
-    [⌘ shift l]
+    {`[${osControlKey()} shift l]`}
   </div>
 );
 const GRADE_HEADER_ZOOMIN = (
   <div>
     Magnify code
     <br />
-    [⌘ +]
+    {`[${osControlKey()} plus]`}
   </div>
 );
 const GRADE_HEADER_ZOOMOUT = (
   <div>
     Shrink code
     <br />
-    [⌘ -]
+    {`[${osControlKey()} minus]`}
   </div>
 );
 const GRADE_HEADER_GROW = (
   <div>
     Expand code window
     <br />
-    [⌘ →]
+    {`[${osControlKey()} →]`}
   </div>
 );
 const GRADE_HEADER_SHRINK = (
   <div>
     Shrink code window
     <br />
-    [⌘ ←]
+    {`[${osControlKey()} ←]`}
   </div>
 );
 const GRADE_HEADER_ALIGNMENT = (
   <div>
     reset comment alignments
     <br />
-    [⌘ click highlights]
+    {`[${osControlKey()} click highlights]`}
   </div>
 );
+const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;
+const GRADE_RUBRIC_SAVE = <div>save rubric [⌘ s]</div>;
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_HEADER_DOWNLOAD_CODE = 'Download the code for this submission.';
@@ -114,38 +118,36 @@ const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
 
 const ADMIN_RUBRIC_DELETECOMMENT = 'Delete this comment';
 const ADMIN_RUBRIC_CATEGORYPOINTLIMIT =
-  'The maximum amount of points a student can lose in this category.\
-   For example, if the limit is set at 4 points, no student will lose more than 4 points in this category,\
-    even if more deductions are applied. If left blank, no limit will be set.';
+  'The maximum number of points that can be deducted or added from a category.\
+   For example, if the limit of a category is -4, no student can lose more than 4 points from the category,\
+    even if more deductions are applied. If left blank, no limit will be applied.';
 const ADMIN_RUBRIC_CATEGORYHELPTEXT =
-  'Use this text to explain the rubric category to graders.\
-   It will appear alongside the rubric category in the Code Review console.';
-const ADMIN_RUBRIC_DEDUCTION =
-  'The deduction associated with this comment.\
- Reminder: Deductions are negative by default! So a deduction of 1 => -1 points.';
-const ADMIN_RUBRIC_INSTANCES = 'The places where this rubric comment is used.';
+  'Use this text to explain a rubric category to graders.\
+   It will appear alongside the rubric category in the Code Console.';
+const ADMIN_RUBRIC_DEDUCTION = 'The deduction (or addition) associated with this comment';
+const ADMIN_RUBRIC_INSTANCES = 'The comments that apply this rubric comment';
 const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up';
 const ADMIN_RUBRIC_CATEGORYDOWN = 'Move this category down';
 const ADMIN_RUBRIC_TITLE =
   "Each assignment has a rubric associated with it.\
-   In the grade console, you'll be able to reference and add rubric items to each submission.";
+   In the Code Console, you'll be able to reference and add rubric items to each submission.";
 
-const ADMIN_STUDENTROSTER_TITLE = 'Students currently enrolled in this course.';
+const ADMIN_STUDENTROSTER_TITLE = 'Students currently enrolled in this course';
 const ADMIN_STUDENTROSTER_EDITSECTION = 'Edit section';
 const ADMIN_STUDENTROSTER_LOCKSECTION = 'Finish editing';
-const ADMIN_GRADERROSTER_TITLE = 'Users who have grader privileges in this course.';
+const ADMIN_GRADERROSTER_TITLE = 'Graders currently enrolled in this course';
 const ADMIN_GRADERROSTER_SUPERGRADER = (
   <div>
     Supergraders have elevated privileges. Read more about them in{' '}
     <a href="https://help.codepost.io/en/articles/3165427-faq-what-s-a-supergrader">our docs</a>.
   </div>
 );
-const ADMIN_ADMINROSTER_TITLE = 'Users who have admin privileges of this course. ';
-const ADMIN_ADMINROSTER_REMOVESELF = 'You cannot remove yourself as an admin.';
+const ADMIN_ADMINROSTER_TITLE = 'Admins who are enrolled in this course';
+const ADMIN_ADMINROSTER_REMOVESELF = 'You cannot remove yourself as an admin';
 const ADMIN_SECTIONROSTER_TITLE =
   'Sections (or Precepts) are groupings of students. Each student can only belong to one section.';
 const ADMIN_DOWNLOADROSTER_CHOOSEGROUP = 'You must select at least one group to include.';
-const ADMIN_UPLOADROSTER_ERROR = 'You must fix all errors before proceeding.';
+const ADMIN_UPLOADROSTER_ERROR = 'Fix all errors before proceeding';
 
 const ADMIN_NEWCOURSE_CLONE =
   "Cloning a course will copy all assignments (including rubrics) and course settings\
@@ -199,6 +201,10 @@ export const tooltips = {
     },
     comments: {
       pointsDisabled: GRADE_COMMENT_POINTSDISABLED,
+    },
+    rubric: {
+      edit: GRADE_RUBRIC_EDIT,
+      save: GRADE_RUBRIC_SAVE,
     },
   },
   settings: {

@@ -182,7 +182,7 @@ class MergeRubricCommentsDialog extends React.Component<
           fallback="branches"
           fallbackWidth={1250}
         >
-          Merge Comments
+          Merge
         </CPButton>
         <Modal
           visible={this.state.visible}

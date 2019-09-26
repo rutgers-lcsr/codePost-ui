@@ -186,6 +186,32 @@ class ManageStudents extends React.Component<IProps, IState> {
           dataIndex: 'student',
           key: 'primary',
           sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          renderForSearch: (searchText: string) => {
+            return (text: string, record: any, index: number) => {
+              const studentEmail = record.student;
+              const highlightedEmail = (
+                <Highlighter
+                  highlightStyle={{
+                    backgroundColor: '#5CBB8B',
+                    padding: 0,
+                  }}
+                  searchWords={[searchText]}
+                  autoEscape
+                  textToHighlight={studentEmail}
+                />
+              );
+              const hasActivated = this.props.notActivated.indexOf(studentEmail) === -1;
+              return hasActivated ? (
+                highlightedEmail
+              ) : (
+                <span style={{ color: '#80808082' }}>
+                  <CPTooltip title="This user has not yet signed up for codePost.">
+                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                  </CPTooltip>
+                </span>
+              );
+            };
+          },
         },
         {
           title: 'Section',
@@ -286,15 +312,7 @@ class ManageStudents extends React.Component<IProps, IState> {
 
         return {
           key: studentEmail,
-          student: hasActivated ? (
-            studentEmail
-          ) : (
-            <span style={{ color: '#80808082' }}>
-              <CPTooltip title="This user has not yet signed up for codePost.">
-                {studentEmail} &nbsp; <Icon type="disconnect" />
-              </CPTooltip>
-            </span>
-          ),
+          student: studentEmail,
           section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>

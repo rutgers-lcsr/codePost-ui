@@ -3,30 +3,21 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from "react";
+import * as React from 'react';
 
 /* style imports */
-import {
-  Breadcrumb,
-  Form,
-  Input,
-  message,
-  Select,
-  Switch,
-  Table,
-  Typography
-} from "antd";
-import { FormComponentProps } from "antd/lib/form";
+import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
+import { FormComponentProps } from 'antd/lib/form';
 
-import CPButton from "../../../components/core/CPButton";
-import CPAdminDetail from "../other/CPAdminDetail";
+import CPButton from '../../../components/core/CPButton';
+import CPAdminDetail from '../other/CPAdminDetail';
 
 /* codePost imports */
-import { CoursePatchType, CourseType } from "../../../infrastructure/course";
+import { CoursePatchType, CourseType } from '../../../infrastructure/course';
 
-import { timezones } from "../other/timezones";
+import { timezones } from '../other/timezones';
 
-type alignType = "left" | "right" | "center";
+type alignType = 'left' | 'right' | 'center';
 
 const { Text, Title } = Typography;
 
@@ -49,7 +40,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       isLoading: false,
-      isDirty: false
+      isDirty: false,
     };
   }
 
@@ -57,7 +48,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
     if (oldProps.currentCourse.id !== this.props.currentCourse.id) {
       this.setState({
         isLoading: false,
-        isDirty: false
+        isDirty: false,
       });
 
       const formRefCast: any = this.formRef;
@@ -103,11 +94,11 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         allowGradersToEditRubric: values.allowGradersToEditRubric,
         anonymousGradingDefault: values.anonymousGradingDefault,
         assignments: [], // ignored by API
-        sections: [] // ignored by API
+        sections: [], // ignored by API
       };
 
       this.props.updateSettings(payload).then(() => {
-        message.success("Your settings were saved!");
+        message.success('Your settings were saved!');
         this.setState({ isLoading: false, isDirty: false });
       });
     });
@@ -144,7 +135,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         disabled={!this.state.isDirty}
       >
         Save changes
-      </CPButton>
+      </CPButton>,
     ];
 
     return (
@@ -177,99 +168,92 @@ const SettingsForm: any = Form.create()(
     public render() {
       const { getFieldDecorator } = this.props.form;
       /* create misc. settings table */
-      const aligner: alignType = "center";
+      const aligner: alignType = 'center';
       const columns = [
         {
-          title: "Setting",
-          dataIndex: "setting",
-          key: "setting"
+          title: 'Setting',
+          dataIndex: 'setting',
+          key: 'setting',
         },
         {
-          title: "Description",
-          dataIndex: "description",
-          key: "description"
+          title: 'Description',
+          dataIndex: 'description',
+          key: 'description',
         },
         {
-          title: "Action",
-          dataIndex: "action",
-          key: "action",
-          align: aligner
-        }
+          title: 'Action',
+          dataIndex: 'action',
+          key: 'action',
+          align: aligner,
+        },
       ];
 
       /* UPDATE TABLE HERE */
       const data = [
         {
-          key: "1",
+          key: '1',
           setting: <Text strong>Show statistics to students</Text>,
-          description:
-            "Selecting will show assignment mean and median to students when the assignment is released.",
+          description: 'Selecting will show assignment mean and median to students when the assignment is released.',
           action: (
             <Form.Item>
-              {getFieldDecorator("showStudentsStatistics", {
+              {getFieldDecorator('showStudentsStatistics', {
                 initialValue: this.props.thisCourse.showStudentsStatistics,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
-          )
+          ),
         },
         {
-          key: "2",
-          setting: (
-            <Text strong>
-              Send released submissions to back of grader queue
-            </Text>
-          ),
+          key: '2',
+          setting: <Text strong>Send released submissions to back of grader queue</Text>,
           description: `Selecting will move released assignments to the back of the course queue, preventing
          situations in which a grader reclaims a submission that was just released. For more information see our
          docs.`,
           action: (
             <Form.Item>
-              {getFieldDecorator("sendReleasedSubmissionsToBack", {
-                initialValue: this.props.thisCourse
-                  .sendReleasedSubmissionsToBack,
-                valuePropName: "checked"
+              {getFieldDecorator('sendReleasedSubmissionsToBack', {
+                initialValue: this.props.thisCourse.sendReleasedSubmissionsToBack,
+                valuePropName: 'checked',
               })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
-          )
+          ),
         },
         {
-          key: "3",
+          key: '3',
           setting: <Text strong>Email users when added to roster</Text>,
           description: `If selected, emails will be sent to users notifying them that they have been added
          to this course's roster. New codePost users will be prompted to create an account.`,
           action: (
             <Form.Item>
-              {getFieldDecorator("emailNewUsers", {
+              {getFieldDecorator('emailNewUsers', {
                 initialValue: this.props.thisCourse.emailNewUsers,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
-          )
+          ),
         },
         {
-          key: "4",
+          key: '4',
           setting: <Text strong>Default to Anonymous Grading Mode</Text>,
           description: `If selected, new Assignments will default to Anonymous Grading Mode. You can
           toggle this setting at the assignment level from Assignment settings.`,
           action: (
             <Form.Item>
-              {getFieldDecorator("anonymousGradingDefault", {
+              {getFieldDecorator('anonymousGradingDefault', {
                 initialValue: this.props.thisCourse.anonymousGradingDefault,
-                valuePropName: "checked"
+                valuePropName: 'checked',
               })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
-          )
+          ),
         },
         {
-          key: "5",
+          key: '5',
           setting: <Text strong>Course timezone</Text>,
-          description:
-            "Timezone in which all time fields for this course (for all users) will appear.",
+          description: 'Timezone in which all time fields for this course (for all users) will appear.',
           action: (
             <Form.Item>
-              {getFieldDecorator("timezone", {
-                initialValue: this.props.thisCourse.timezone
+              {getFieldDecorator('timezone', {
+                initialValue: this.props.thisCourse.timezone,
               })(
                 <Select style={{ width: 200 }} onChange={this.props.makeDirty}>
                   {timezones.map((tz, i) => {
@@ -279,62 +263,52 @@ const SettingsForm: any = Form.create()(
                       </Select.Option>
                     );
                   })}
-                </Select>
+                </Select>,
               )}
             </Form.Item>
-          )
-        }
+          ),
+        },
       ];
 
       const tableTitle = () => <Title level={4}>Misc. settings</Title>;
 
       return (
-        <Form
-          layout="horizontal"
-          hideRequiredMark={true}
-          onChange={this.props.makeDirty}
-        >
+        <Form layout="horizontal" hideRequiredMark={true} onChange={this.props.makeDirty}>
           <div style={{ width: 500 }}>
             <Form.Item>
-              {getFieldDecorator("name", {
+              {getFieldDecorator('name', {
                 initialValue: this.props.thisCourse.name,
                 rules: [
                   {
                     required: true,
-                    message:
-                      "Please enter a course name with at least 4 characters",
-                    min: 4
+                    message: 'Please enter a course name with at least 4 characters',
+                    min: 4,
                   },
                   {
-                    message: "Course name cannot exceed 36 characters",
-                    max: 36
-                  }
-                ]
+                    message: 'Course name cannot exceed 36 characters',
+                    max: 36,
+                  },
+                ],
               })(<Input addonBefore="Course name" />)}
             </Form.Item>
             <Form.Item>
-              {getFieldDecorator("period", {
+              {getFieldDecorator('period', {
                 initialValue: this.props.thisCourse.period,
                 rules: [
-                  { required: true, message: "Please enter a course period." },
+                  { required: true, message: 'Please enter a course period.' },
                   {
-                    message: "Course period cannot exceed 32 characters",
-                    max: 32
-                  }
-                ]
+                    message: 'Course period cannot exceed 32 characters',
+                    max: 32,
+                  },
+                ],
               })(<Input addonBefore="Course period" />)}
             </Form.Item>
           </div>
-          <Table
-            title={tableTitle}
-            pagination={false}
-            columns={columns}
-            dataSource={data}
-          />
+          <Table title={tableTitle} pagination={false} columns={columns} dataSource={data} />
         </Form>
       );
     }
-  }
+  },
 );
 
 export default CourseSettingsPanel;
