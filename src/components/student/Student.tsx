@@ -389,8 +389,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
 
     // Algorithm for computing
     const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
-    const isFinalized = submission === undefined || submission.isFinalized;
-    const alreadyClaimed = submission === undefined || (submission.hasGrader && !assignment.liveFeedbackMode);
+    const isFinalized = submission !== undefined && submission.isFinalized;
+    const alreadyClaimed = submission !== undefined && (submission.hasGrader && !assignment.liveFeedbackMode);
 
     const canUpload = !dueDatePassed && !isFinalized && !alreadyClaimed;
 
