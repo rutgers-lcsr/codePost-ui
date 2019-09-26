@@ -72,7 +72,7 @@ class RubricFileDownload extends React.Component<IProps, {}> {
         fallback="download"
         fallbackWidth={1250}
       >
-        Download Rubric
+        Download
       </CPButton>
     );
   }

@@ -1,12 +1,12 @@
-import * as React from "react";
-import { Link } from "react-router-dom";
+import * as React from 'react';
+import { Link } from 'react-router-dom';
 
-import { Collapse, Icon } from "antd";
+import { Collapse, Icon } from 'antd';
 
-import landingVars from "../../styles/pages/_landingVars";
+import landingVars from '../../styles/pages/_landingVars';
 
-import CPButton from "../core/CPButton";
-import useWindowSize from "../core/useWindowSize";
+import CPButton from '../core/CPButton';
+import useWindowSize from '../core/useWindowSize';
 
 const Panel = Collapse.Panel;
 
@@ -17,11 +17,11 @@ const LandingHeader = () => {
   const linkStyle = {
     fontSize: smallScreen ? 14 : 18,
     fontWeight: 600,
-    color: "#313131",
+    color: '#313131',
     paddingLeft: smallScreen ? 15 : 40,
     paddingTop: smallScreen ? 15 : 0,
     paddingBottom: smallScreen ? 15 : 10,
-    cursor: "pointer"
+    cursor: 'pointer',
   };
 
   const expandIcon = (_: any) => {
@@ -32,21 +32,17 @@ const LandingHeader = () => {
     <Link
       style={{
         fontSize: smallScreen ? 24 : 34,
-        color: "black",
-        paddingLeft: 10
+        color: 'black',
+        paddingLeft: 10,
       }}
       className="link--header"
-      to={"/"}
+      to={'/'}
     >
       code<b>Post</b>
     </Link>
   );
   const docs = (
-    <a
-      style={{ ...linkStyle }}
-      className="link--header"
-      href="https://help.codepost.io"
-    >
+    <a style={{ ...linkStyle }} className="link--header" href="https://help.codepost.io">
       Docs
     </a>
   );
@@ -66,11 +62,7 @@ const LandingHeader = () => {
     </Link>
   );
   const features = (
-    <Link
-      style={{ ...linkStyle }}
-      className="link--header"
-      to="/why-use-codePost"
-    >
+    <Link style={{ ...linkStyle }} className="link--header" to="/why-use-codePost">
       Features
     </Link>
   );
@@ -78,27 +70,15 @@ const LandingHeader = () => {
   if (windowSize.width < landingVars.breakpoints.header) {
     // Small Screen View
     return (
-      <Collapse
-        bordered={false}
-        expandIconPosition="right"
-        expandIcon={expandIcon}
-      >
-        <Panel
-          header={logo}
-          style={{ paddingBottom: 5, paddingTop: 5 }}
-          key="1"
-        >
+      <Collapse bordered={false} expandIconPosition="right" expandIcon={expandIcon}>
+        <Panel header={logo} style={{ paddingBottom: 5, paddingTop: 5 }} key="1">
           <div className="display-flex flex-direction-column align-items-left justify-content-space-between">
             {docs}
             {pricing}
             {faqs}
             {features}
             {login}
-            <Link
-              style={{ ...linkStyle, background: "#24be85", color: "white" }}
-              className="link--header"
-              to="/signup"
-            >
+            <Link style={{ ...linkStyle, background: '#24be85', color: 'white' }} className="link--header" to="/signup">
               Sign Up
             </Link>
           </div>
@@ -108,19 +88,16 @@ const LandingHeader = () => {
   } else {
     // Normal View
     return (
-      <div
-        style={{ width: "100%" }}
-        className="display-flex justify-content-center"
-      >
+      <div style={{ width: '100%' }} className="display-flex justify-content-center">
         <div
           style={{
-            background: "none",
+            background: 'none',
             maxWidth: landingVars.maxWidths.header,
-            width: "100%",
+            width: '100%',
             paddingRight: 40,
             paddingLeft: 40,
             paddingTop: 35,
-            paddingBottom: 35
+            paddingBottom: 35,
           }}
           className="display-flex justify-content-space-between align-items-flex-end"
         >
@@ -134,11 +111,7 @@ const LandingHeader = () => {
           <div style={{ paddingBottom: 4 }}>
             {login}
             <Link to="/signup">
-              <CPButton
-                style={{ width: 120, height: 40, fontSize: 17, marginLeft: 45 }}
-                cpType="primary"
-                key="SignUp"
-              >
+              <CPButton style={{ width: 120, height: 40, fontSize: 17, marginLeft: 45 }} cpType="primary" key="SignUp">
                 Sign Up
               </CPButton>
             </Link>

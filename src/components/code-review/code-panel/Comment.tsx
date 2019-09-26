@@ -80,6 +80,10 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     if (this.props.rubricComment !== prevProps.rubricComment) {
       if (this.props.forcedRubricMode && this.props.rubricComment === undefined) {
         this.setState({ points: 0 });
+      } else if (prevProps.rubricComment !== undefined && this.props.rubricComment === undefined) {
+        this.setState({
+          points: prevProps.rubricComment.pointDelta,
+        });
       } else {
         this.setState({
           points: UiComment.points(this.props.comment, this.props.rubricComment),

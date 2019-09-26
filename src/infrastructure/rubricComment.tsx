@@ -1,11 +1,5 @@
 import * as t from 'io-ts';
-import {
-  createObject,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-} from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 export const RubricCommentV = t.intersection(
   [
@@ -51,17 +45,9 @@ export type RubricCommentType = t.TypeOf<typeof RubricCommentV>;
 export type RubricCommentPatchType = t.TypeOf<typeof RubricCommentVPatch>;
 
 export class RubricComment {
-  public static create = createObject(
-    RubricCommentV,
-    RubricCommentVPost,
-    'rubricComments',
-  );
+  public static create = createObject(RubricCommentV, RubricCommentVPost, 'rubricComments');
   public static read = readObject(RubricCommentV, 'rubricComments');
-  public static update = updateObject(
-    RubricCommentV,
-    RubricCommentVPatch,
-    'rubricComments',
-  );
+  public static update = updateObject(RubricCommentV, RubricCommentVPatch, 'rubricComments');
   public static delete = deleteObject(RubricCommentV, 'rubricComments');
 
   public static compare = (a: RubricCommentType, b: RubricCommentType) => {

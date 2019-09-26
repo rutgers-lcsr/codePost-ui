@@ -1,12 +1,12 @@
-import { Icon, Layout } from "antd";
-import React from "react";
+import { Icon, Layout } from 'antd';
+import React from 'react';
 
-import { SimpleAssignments } from "./SimpleAssignments";
-import { SimpleGraderRoster } from "./SimpleGraderRoster";
-import { SimpleMenu } from "./SimpleMenu";
-import { SimpleRubric } from "./SimpleRubric";
-import { SimpleStudentDrilldown } from "./SimpleStudentDrilldown";
-import { SimpleStudentSubmissions } from "./SimpleStudentSubmissions";
+import { SimpleAssignments } from './SimpleAssignments';
+import { SimpleGraderRoster } from './SimpleGraderRoster';
+import { SimpleMenu } from './SimpleMenu';
+import { SimpleRubric } from './SimpleRubric';
+import { SimpleStudentDrilldown } from './SimpleStudentDrilldown';
+import { SimpleStudentSubmissions } from './SimpleStudentSubmissions';
 
 const { useState, useEffect } = React;
 
@@ -20,7 +20,7 @@ enum SCREEN {
   SubmissionsMouseover, // Submission Student Overview with first row Highlighted
   StudentDrilldown, // Submission Student Drilldown
   GraderRoster, // Roster Grader
-  None // No screen showing
+  None, // No screen showing
 }
 
 // The main Admin animation and the only one with state
@@ -52,47 +52,47 @@ function AdminAnimation() {
   const calculateKeys = (time: number) => {
     switch (time) {
       case 0:
-        return { select: "2", open: "", content: SCREEN.Assignments };
+        return { select: '2', open: '', content: SCREEN.Assignments };
       case 1:
-        return { select: "2", open: "", content: SCREEN.AssignmentsMouseover };
+        return { select: '2', open: '', content: SCREEN.AssignmentsMouseover };
       case 2:
-        return { select: "2", open: "", content: SCREEN.Rubric };
+        return { select: '2', open: '', content: SCREEN.Rubric };
       case 3:
-        return { select: "2", open: "", content: SCREEN.Rubric };
+        return { select: '2', open: '', content: SCREEN.Rubric };
       case 4:
-        return { select: "2", open: "submissions", content: SCREEN.Rubric };
+        return { select: '2', open: 'submissions', content: SCREEN.Rubric };
       case 5:
         return {
-          select: "0",
-          open: "submissions",
-          content: SCREEN.Submissions
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.Submissions,
         };
       case 6:
         return {
-          select: "0",
-          open: "submissions",
-          content: SCREEN.SubmissionsMouseover
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.SubmissionsMouseover,
         };
       case 7:
         return {
-          select: "0",
-          open: "submissions",
-          content: SCREEN.StudentDrilldown
+          select: '0',
+          open: 'submissions',
+          content: SCREEN.StudentDrilldown,
         };
       case 8:
-        return { select: "0", open: "", content: SCREEN.StudentDrilldown };
+        return { select: '0', open: '', content: SCREEN.StudentDrilldown };
       case 9:
         return {
-          select: "0",
-          open: "roster",
-          content: SCREEN.StudentDrilldown
+          select: '0',
+          open: 'roster',
+          content: SCREEN.StudentDrilldown,
         };
       case 10:
-        return { select: "4", open: "roster", content: SCREEN.GraderRoster };
+        return { select: '4', open: 'roster', content: SCREEN.GraderRoster };
       case 11:
-        return { select: "4", open: "", content: SCREEN.GraderRoster };
+        return { select: '4', open: '', content: SCREEN.GraderRoster };
       default:
-        return { select: "", open: "", content: SCREEN.None };
+        return { select: '', open: '', content: SCREEN.None };
     }
   };
 
@@ -102,42 +102,35 @@ function AdminAnimation() {
   const pauseButton = pause ? (
     <Icon type="play-circle" style={{ fontSize: 40, zIndex: 99 }} />
   ) : (
-      <Icon type="pause-circle" style={{ fontSize: 40, zIndex: 99 }} />
-    );
+    <Icon type="pause-circle" style={{ fontSize: 40, zIndex: 99 }} />
+  );
 
   return (
-    <div style={{ transform: "scale(0.77)" }}>
+    <div style={{ transform: 'scale(0.77)' }}>
       <div
         style={{
           maxWidth: 800,
           minWidth: 800,
           maxHeight: 500,
-          position: "relative"
+          position: 'relative',
         }}
       >
         <div
           id="landing-pause"
           onClick={togglePause}
           style={{
-            cursor: "pointer",
-            position: "absolute",
+            cursor: 'pointer',
+            position: 'absolute',
             bottom: 15,
             right: 10,
-            zIndex: 99
+            zIndex: 99,
           }}
         >
           {pauseButton}
         </div>
         <Layout>
-          <Sider
-            width={160}
-            className="Animation2__sider"
-            style={{ paddingTop: 15 }}
-          >
-            <SimpleMenu
-              number={[calculateKeys(counter).select]}
-              openKey={[calculateKeys(counter).open]}
-            />
+          <Sider width={160} className="Animation2__sider" style={{ paddingTop: 15 }}>
+            <SimpleMenu number={[calculateKeys(counter).select]} openKey={[calculateKeys(counter).open]} />
           </Sider>
           <Content>
             <RenderContent screen={calculateKeys(counter).content} />

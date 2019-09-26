@@ -118,6 +118,17 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
       callback();
     };
 
+    public validateName = (rule: any, value: string, callback: any) => {
+      const isInvalid = ['/', '?', '\\'].some((token: string) => {
+        return value.indexOf(token) >= 0;
+      });
+      if (isInvalid) {
+        callback('Please enter a valid course name.');
+      }
+      // Call callback with no arguments to signal that value passed validation
+      callback();
+    };
+
     public render() {
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
@@ -140,6 +151,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     rules: [
                       { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
                       { message: 'Course name cannot exceed 36 characters', max: 36 },
+                      { validator: this.validateName },
                     ],
                   },
                 ],

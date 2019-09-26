@@ -16,14 +16,11 @@ interface ICodeProps {
   commentCounter: number;
 }
 
-const Code = (
-  props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps,
-) => {
+const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
-
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
     if (
@@ -113,23 +110,22 @@ const Code = (
     // FIXME: we can come up with a better solution
     await wait(5);
 
-    CodePanelHighlighting.brightenHighlight(
-      newComment.id,
-      consoleTheme.highlightActive,
-    );
+    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
   };
 
-  const linesOfCode = (
-    readOnly: boolean,
-    code: string,
-    comments: CommentType[],
-  ) => {
+  const onMouseDown = (event: React.MouseEvent) => {
+    const callback = () => {
+      onMouseUp(event);
+      document.removeEventListener('mouseup', callback);
+    };
+
+    document.addEventListener('mouseup', callback);
+  };
+
+  const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
       return (
-        <div
-          key={i}
-          id={`line-${i}`}
-          onMouseUp={readOnly ? undefined : onMouseUp}>
+        <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown}>
           {text === ''
             ? ' '
             : CodePanelHighlighting.highlight(
@@ -144,9 +140,7 @@ const Code = (
       );
     });
   };
-  return (
-    <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>
-  );
+  return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
 };
 
 export default Code;

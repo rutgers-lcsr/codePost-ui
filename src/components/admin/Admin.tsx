@@ -41,6 +41,8 @@ import NewCourseDialog from './other/NewCourseDialog';
 
 import AdminNav from './other/AdminNav';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 /* types */
 import {
   IAssignmentToSubmissionsMap,
@@ -247,12 +249,24 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
       if (currentCourse) {
         currentPanel = this.panelFromString(`${panelName1}/${panelName2 ? panelName2 : ''}`);
+        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
       }
 
       if (!currentCourse && courses.length > 0) {
-        currentCourse = courses.sort((a, b) => {
-          return b.id - a.id;
-        })[0];
+        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
+        if (stored_id !== 0) {
+          const found = courses.find((course: CourseType) => {
+            return course.id === stored_id;
+          });
+          if (found !== undefined) {
+            currentCourse = found;
+          }
+        }
+        if (currentCourse === undefined) {
+          currentCourse = courses.sort((a, b) => {
+            return b.id - a.id;
+          })[0];
+        }
       }
 
       return { course: currentCourse, panel: currentPanel };
@@ -317,6 +331,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     if (newCourse) {
       this.updateNewCourse(newCourse);
+      LOCAL_SETTINGS.defaultCourse.setter(newCourse.id);
     }
   };
 
@@ -1015,11 +1030,19 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         newSubsByGrader[grader][assignment.id] = [];
       });
 
-      currentCourse.assignments.push(assignment.id);
+      // A hard-to-reproduce bug is causing duplicate assignments to appear in the Admin Console
+      // after assignment creation: https://github.com/jamesaevans/codePost-ui/issues/699
+      //
+      // To protect against this, the code cautiously removes duplicate assignments
+      // whereever they might live (in state).
+      const newCourse = { ...currentCourse, assignments: _.uniq([...currentCourse.assignments, assignment.id]) };
+      const newAssignments = _.uniqBy([...assignments, assignment], (a: AssignmentType) => {
+        return a.name;
+      });
       submissions[assignment.id] = [];
-      const newAssignments = [...assignments, assignment];
+
       this.setState({
-        currentCourse,
+        currentCourse: newCourse,
         submissions,
         assignments: newAssignments,
         submissionsByGrader: newSubsByGrader,
@@ -1284,6 +1307,15 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       <Button key="header-logout" onClick={this.props.logout}>
         Logout
       </Button>,
+      <AdminOnboardingSelector
+        visible={this.state.onboardingModalVisible}
+        onCancel={this.closeModal}
+        email={this.props.user.email}
+        onDemoCreate={this.handleDemoCourse}
+        demoCourseExists={this.state.courses.some((el) => {
+          return el.period === 'demo';
+        })}
+      />,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
@@ -1449,18 +1481,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     }
 
     const navigation = (collapsed: boolean) => (
-      <span>
-        <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
-        <AdminOnboardingSelector
-          visible={this.state.onboardingModalVisible}
-          onCancel={this.closeModal}
-          email={this.props.user.email}
-          onDemoCreate={this.handleDemoCourse}
-          demoCourseExists={this.state.courses.some((el) => {
-            return el.period === 'demo';
-          })}
-        />
-      </span>
+      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
     );
 
     return (

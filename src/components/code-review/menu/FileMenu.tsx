@@ -31,7 +31,7 @@ import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
-import { getOperatingSystem, OS } from '../useHotkeys';
+import { getOperatingSystem, osControlKey, OS } from '../../core/operatingSystem';
 
 import { sendSlack } from '../../core/slack';
 
@@ -401,7 +401,10 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               lineHeight: '12px',
             }}
           >
-            <span style={shortcutStyle}>[⌘{sortedIndex + 1}]</span>
+            <span style={shortcutStyle}>
+              [{osControlKey()}
+              {sortedIndex + 1}]
+            </span>
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{

@@ -33,13 +33,47 @@
     line-height: 15.75px !important;
     letter-spacing: -0.05px !important;
 
-    padding: 4px 40px 4px 26px !important;
+    padding: 4px 10px 4px 26px !important;
 
     overflow: visible;
     white-space: pre-wrap;
 
-    &:hover {
-      color: $brandPrimary !important;
+    .ant-input {
+      font-size: 12px;
+      margin-right: 8px;
+    }
+
+    .rubric-row {
+      &--active {
+        &:hover {
+          color: $brandPrimary !important;
+        }
+      }
+
+      &--inactive {
+        &:hover {
+          .overlay {
+            opacity: 1;
+          }
+          color: transparent;
+          text-shadow: rgba(0, 0, 0, 0.5) 0px 0px 5px;
+        }
+
+        .overlay {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: black;
+          opacity: 0;
+        }
+      }
+
+      &--editing {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
     }
   }
 
@@ -61,4 +95,64 @@
       }
     }
   }
+}
+
+.search {
+  &--light {
+    input {
+      background-color: #fff;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  &--dark {
+    .ant-input-group-addon {
+      background-color: #323435;
+    }
+    input {
+      background-color: #18191b;
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    bottom: -50px;
+  }
+  to {
+    bottom: 0px;
+  }
+}
+
+@keyframes slide-out {
+  from {
+    bottom: 0px;
+  }
+  to {
+    bottom: -50px;
+  }
+}
+
+#rubric-menu-controls {
+  display: none;
+  width: 100%;
+  height: 50px;
+  border-top: 1px solid #ececec;
+  padding: 5px;
+  position: absolute;
+}
+
+#rubric-menu-controls.slide-in {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  animation: slide-in 0.5s forwards;
+}
+
+#rubric-menu-controls.slide-out {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  animation: slide-out 1s forwards;
 }

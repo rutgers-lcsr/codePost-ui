@@ -108,7 +108,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
             <Input
               prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
               placeholder="Email address"
-              autoComplete="email"
+              name="email"
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
               onKeyDown={this.handleKeyPress}

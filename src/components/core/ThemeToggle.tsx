@@ -9,6 +9,8 @@ import ToggleButton from 'react-toggle-button';
 
 import useHotkeys, { L_KEY } from '../code-review/useHotkeys';
 
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
 import CPTooltip from './CPTooltip';
 import { tooltips } from './tooltips';
 
@@ -18,7 +20,15 @@ interface IProps {
 
 const ThemeToggle = (props: IProps) => {
   const { toggleConsoleTheme } = React.useContext(ConsoleThemeContext);
-  const [checked, setChecked] = React.useState(false);
+  const [checked, setChecked] = React.useState(LOCAL_SETTINGS.darkMode.getter());
+
+  React.useEffect(() => {
+    if (LOCAL_SETTINGS.darkMode.getter()) {
+      toggleConsoleTheme('dark');
+    } else {
+      toggleConsoleTheme('light');
+    }
+  }, []);
 
   const onClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -29,9 +39,11 @@ const ThemeToggle = (props: IProps) => {
     if (checked) {
       setChecked(false);
       toggleConsoleTheme('light');
+      LOCAL_SETTINGS.darkMode.setter(false);
     } else {
       setChecked(true);
       toggleConsoleTheme('dark');
+      LOCAL_SETTINGS.darkMode.setter(true);
     }
   };
 
