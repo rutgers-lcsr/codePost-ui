@@ -21,6 +21,8 @@ import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 
+import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
+
 // Animations
 // import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
@@ -226,6 +228,7 @@ class Landing extends React.PureComponent<{}, {}> {
             <Testimonials />
           </div>
         }
+        flowChart={<LandingFlowChart />}
         whyPanel={whyPanel}
         panelOne={panelOne}
         panelTwo={panelTwo}

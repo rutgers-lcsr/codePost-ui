@@ -17,6 +17,7 @@ interface IProps {
   panelThree: React.ReactNode;
   getStarted: React.ReactNode;
   footer: React.ReactNode;
+  flowChart: React.ReactNode;
 }
 
 const LandingLayout = (props: IProps) => {
@@ -118,6 +119,8 @@ const LandingLayout = (props: IProps) => {
             {props.hero}
           </div>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>{props.flowChart}</div>
+        <Divider style={{ margin: 0 }} />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
           <img
             src={

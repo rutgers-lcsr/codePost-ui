@@ -206,3 +206,10 @@
     transition: 0.3s ease;
   }
 }
+
+.flowNode {
+  transition: 0.3s ease;
+  &:hover {
+    transform: scale(1.3);
+  }
+}
