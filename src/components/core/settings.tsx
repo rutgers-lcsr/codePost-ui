@@ -6,9 +6,10 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Icon, Input, message, Modal, Switch, Typography } from 'antd';
+import { Icon, Input, message, Modal, Switch, Table, Typography } from 'antd';
 
 /* codePost imports */
+import { CourseType } from '../../infrastructure/course';
 import { UserType } from '../../infrastructure/user';
 
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
@@ -126,6 +127,53 @@ class Settings extends React.Component<IProps, IState> {
       });
   };
 
+  public buildCourseTable = (courses: CourseType[]) => {
+    const columns = [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: 'Period',
+        dataIndex: 'period',
+        key: 'period',
+      },
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+      },
+    ];
+
+    const rows = courses.filter((course) => {
+      return course.period !== 'demo';
+    });
+
+    return (
+      <Table
+        title={() => {
+          return (
+            <div>
+              <Typography.Title level={4}>Courses you can interact with via the API</Typography.Title>
+              You can always{' '}
+              <a target="_window" href="https://docs.codepost.io/reference#retrieve-a-specific-course">
+                retrieve a course
+              </a>{' '}
+              by its ID. If you're using the{' '}
+              <a target="_window" href="https://docs.codepost.io/docs/first-steps-with-the-codepost-python-sdk">
+                codePost SDK
+              </a>
+              , you can retrieve a course by ID or (name, period) -- both are unique.
+            </div>
+          );
+        }}
+        columns={columns}
+        dataSource={rows}
+      />
+    );
+  };
+
   public render() {
     const { user } = this.props;
 
@@ -133,23 +181,28 @@ class Settings extends React.Component<IProps, IState> {
     if (user.canModifyRosters) {
       if (user.api_token) {
         inputComponent = (
-          <Input.Password
-            addonBefore="Your API key"
-            className="input--disabled-normal"
-            id="api-key"
-            value={user.api_token}
-            prefix={
-              <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
-                <Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
-              </CPTooltip>
-            }
-            disabled={true}
-            addonAfter={
-              <CPTooltip title={tooltips.settings.token.reset}>
-                <Icon type="redo" onClick={this.toggleResetStatus} />
-              </CPTooltip>
-            }
-          />
+          <div>
+            <Input.Password
+              addonBefore="Your API key"
+              className="input--disabled-normal"
+              id="api-key"
+              value={user.api_token}
+              prefix={
+                <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
+                  <Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
+                </CPTooltip>
+              }
+              disabled={true}
+              addonAfter={
+                <CPTooltip title={tooltips.settings.token.reset}>
+                  <Icon type="redo" onClick={this.toggleResetStatus} />
+                </CPTooltip>
+              }
+            />
+            <br />
+            <br />
+            {this.buildCourseTable(user.courseadminCourses)}
+          </div>
         );
       } else {
         inputComponent = (
