@@ -1,16 +1,14 @@
 import * as React from 'react';
 import { hexToRGB } from '../api/Utils';
 
-import { Popover } from 'antd';
-
-import CPTooltip from '../../../core/CPTooltip';
+import { Icon, Popover } from 'antd';
 
 export interface FlowNodePosition {
   x: number;
   y: number;
 }
-const NODE_WIDTH = 100;
-const NODE_HEIGHT = 50;
+const NODE_WIDTH = 130;
+const NODE_HEIGHT = 60;
 
 const NODE_CATEGORY_WIDTH = 150;
 const NODE_CATEGORY_HEIGHT = 75;
@@ -18,18 +16,22 @@ const NODE_CATEGORY_HEIGHT = 75;
 export interface FlowNodeProps {
   id: number;
   position: FlowNodePosition;
-  outgoingNodes: number[];
   icon: string;
   title: string;
   color: string;
   tint: number;
   canvasWidth?: number;
   canvasHeight?: number;
+  isCategory?: boolean;
+  popoverContent?: string;
+  outgoingNodes?: number[];
 }
 
 interface ArrowPosition {
-  start: FlowNodePosition;
-  end: FlowNodePosition;
+  start: FlowNodeProps;
+  end: FlowNodeProps;
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 interface IProps {
@@ -46,17 +48,25 @@ export const FlowChart = (props: IProps) => {
   const arrowPositions: ArrowPosition[] = [];
 
   props.nodeList.forEach((node) => {
+    if (!node.isCategory || !node.outgoingNodes) return;
     node.outgoingNodes.forEach((nodeID) => {
       const outgoingNode = props.nodeList.find((n) => {
         return n.id === nodeID;
       });
       if (outgoingNode) {
-        arrowPositions.push({ start: node.position, end: outgoingNode.position });
+        arrowPositions.push({ start: node, end: outgoingNode });
       }
     });
   });
   const arrows = arrowPositions.map((arrowPosition) => {
-    return <FlowArrow start={arrowPosition.start} end={arrowPosition.end} />;
+    return (
+      <FlowArrow
+        start={arrowPosition.start}
+        end={arrowPosition.end}
+        canvasWidth={props.canvasWidth}
+        canvasHeight={props.canvasHeight}
+      />
+    );
   });
 
   return (
@@ -70,64 +80,72 @@ export const FlowChart = (props: IProps) => {
 const FlowNode = (props: FlowNodeProps) => {
   const widthMultiplier = props.canvasWidth ? props.canvasWidth / 100 : 1;
   const heightMultipler = props.canvasHeight ? props.canvasHeight / 100 : 1;
-  const leftOffset = props.position.x * widthMultiplier - NODE_WIDTH / 2;
-  const topOffset = props.position.y * heightMultipler - NODE_HEIGHT / 2;
-  return (
-    <div style={{ position: 'absolute', left: leftOffset, top: topOffset }}>
-      <Popover content="Title" placement={props.position.x <= 50 ? 'left' : 'right'} trigger="click">
-        <div
-          style={{
-            borderRadius: 12,
-            width: NODE_WIDTH,
-            height: NODE_HEIGHT,
-            backgroundColor: hexToRGB(props.color, (props.tint / 100).toString()),
-            color: props.tint < 35 ? props.color : 'white',
-            display: 'flex',
-            justifyContent: 'center',
-            textAlign: 'center',
-            alignItems: 'center',
-            boxShadow: '0 22px 25px 0 rgba(228,228,234,.22), 0 9px 23px 0 rgba(228,228,234,.5)',
-            cursor: 'pointer',
-          }}
-          className="flowNode"
-        >
-          {props.title}
-        </div>
-      </Popover>
-    </div>
-  );
-};
+  const width = props.isCategory ? NODE_CATEGORY_WIDTH : NODE_WIDTH;
+  const height = props.isCategory ? NODE_CATEGORY_HEIGHT : NODE_HEIGHT;
 
-const FlowCategory = (props: FlowNodeProps) => {
-  const widthMultiplier = props.canvasWidth ? props.canvasWidth / 100 : 1;
-  const heightMultipler = props.canvasHeight ? props.canvasHeight / 100 : 1;
-  const leftOffset = props.position.x * widthMultiplier - NODE_CATEGORY_WIDTH / 2;
-  const topOffset = props.position.y * heightMultipler - NODE_CATEGORY_HEIGHT / 2;
-  return (
-    <div style={{ position: 'absolute', left: leftOffset, top: topOffset }}>
-      <div
-        style={{
-          borderRadius: 12,
-          width: NODE_CATEGORY_WIDTH,
-          height: NODE_CATEGORY_HEIGHT,
-          border: hexToRGB(props.color, (props.tint / 100).toString()),
-          borderStyle: '2px solid',
-          color: props.color,
-          display: 'flex',
-          justifyContent: 'center',
-          textAlign: 'center',
-          alignItems: 'center',
-          boxShadow: '0 22px 25px 0 rgba(228,228,234,.22), 0 9px 23px 0 rgba(228,228,234,.5)',
-          cursor: 'pointer',
-        }}
-        className="flowCategory"
-      >
-        {props.title}
-      </div>
+  const leftOffset = props.position.x * widthMultiplier - width / 2;
+  const topOffset = props.position.y * heightMultipler - height / 2;
+
+  const node = (
+    <div
+      style={{
+        borderRadius: 12,
+        fontSize: props.isCategory ? 18 : 14,
+        width: width,
+        height: height,
+        backgroundColor: props.isCategory ? '#FFF' : hexToRGB(props.color, (props.tint / 100).toString()),
+        color: props.isCategory ? props.color : props.tint < 35 ? props.color : 'white',
+        border: props.isCategory ? `5px solid ${hexToRGB(props.color, (props.tint / 100).toString())}` : '',
+        display: 'flex',
+        justifyContent: 'center',
+        fontWeight: props.isCategory ? 500 : 400,
+        textAlign: 'center',
+        alignItems: 'center',
+        boxShadow: '0 22px 25px 0 rgba(228,228,234,.22), 0 9px 23px 0 rgba(228,228,234,.5)',
+        cursor: props.isCategory ? '' : 'pointer',
+      }}
+      className={props.isCategory ? 'flowNodeCategory' : 'flowNode'}
+    >
+      <Icon
+        type={props.icon}
+        style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }}
+      />
+      <div style={{ maxWidth: 80, minWidth: 80 }}>{props.title}</div>
     </div>
   );
+
+  const nestedNode = props.isCategory ? (
+    node
+  ) : (
+    <Popover
+      content={props.popoverContent ? props.popoverContent : ''}
+      placement={props.position.x <= 50 ? 'right' : 'left'}
+      trigger="hover"
+      mouseEnterDelay={0.3}
+      overlayStyle={{ maxWidth: 250, textAlign: 'center' }}
+    >
+      {node}
+    </Popover>
+  );
+
+  return <div style={{ position: 'absolute', left: leftOffset, top: topOffset }}>{nestedNode}</div>;
 };
 
 const FlowArrow = (props: ArrowPosition) => {
-  return <div />;
+  const startColor = hexToRGB(props.start.color, (props.start.tint / 100).toString());
+  const endColor = hexToRGB(props.end.color, (props.end.tint / 100).toString());
+  const xPostition =
+    props.start.position.x * (props.canvasWidth ? props.canvasWidth / 100 : 1) + NODE_CATEGORY_WIDTH / 2;
+  const yPosition = props.start.position.y * (props.canvasHeight ? props.canvasHeight / 100 : 1);
+  return (
+    <div
+      className="flowArrow"
+      style={{
+        background: `linear-gradient(to right, ${startColor}, ${endColor})`,
+        left: xPostition,
+        top: yPosition,
+        zIndex: -1,
+      }}
+    />
+  );
 };
