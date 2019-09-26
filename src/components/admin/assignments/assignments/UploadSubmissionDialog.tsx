@@ -14,12 +14,16 @@ import Select from 'react-select';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 
+import { File } from '../../../../infrastructure/file';
+
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { acceptedFilesString } from './AcceptedFileTypes';
+import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
+
+import { resizeImage } from '../../other/AdminUtils';
 
 /**********************************************************************************************************************/
 
@@ -53,6 +57,8 @@ interface IState {
   fileList: any[];
   status: STATUS;
 
+  rejectedFiles: string[];
+
   uploadDirectory: boolean;
 }
 
@@ -69,6 +75,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     selectedAssignment: this.props.selectedAssignment,
     files: [],
     fileList: [],
+    rejectedFiles: [],
     status: STATUS.NONE,
     uploadDirectory: false,
   };
@@ -96,17 +103,23 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [] });
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
     this.props.onCancel();
   };
 
   public onSuccess = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [] });
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
     this.props.onSuccess ? this.props.onSuccess() : this.props.onCancel();
   };
 
   public toggleDirectoryUpload = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], uploadDirectory: !this.state.uploadDirectory });
+    this.setState({
+      status: STATUS.NONE,
+      files: [],
+      fileList: [],
+      rejectedFiles: [],
+      uploadDirectory: !this.state.uploadDirectory,
+    });
   };
 
   public upload = () => {
@@ -120,6 +133,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 status: STATUS.COMPLETE,
                 files: [],
                 fileList: [],
+                rejectedFiles: [],
                 selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
               });
@@ -200,7 +214,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public onCancel = () => {
-    this.setState({ files: [], fileList: [], status: STATUS.NONE });
+    this.setState({ files: [], fileList: [], rejectedFiles: [], status: STATUS.NONE });
     this.props.onCancel();
   };
 
@@ -239,6 +253,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
+
         const beforeUpload = (file: any, fileList: any) => {
           // Ignore hidden files
           if (file.name[0] === '.') {
@@ -246,8 +261,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           }
 
           const reader = new FileReader();
-          reader.onload = () => {
+          reader.onload = async () => {
+            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+            if (!acceptedFilesSet.has(`.${extension}`)) {
+              // message.error(`${file.name} cannot be uploaded because it is empty.`);
+              const joined = this.state.rejectedFiles.concat(file.name);
+              this.setState({ rejectedFiles: joined });
+              return;
+            }
+
             if (reader.result) {
+              let result: any = reader.result;
+              if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof result === 'string') {
+                result = await resizeImage(result);
+              }
+
               const filePath = this.getPath(file.webkitRelativePath);
               const newFiles = this.state.files.filter((el) => {
                 return el.name !== file.name || el.path !== filePath;
@@ -256,12 +284,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 const elPath = this.getPath(el.webkitRelativePath);
                 return el.name !== file.name || elPath !== filePath;
               });
+              const cleanedData = typeof result === 'string' ? result.replace(/\0/g, '') : result;
               this.setState({
                 files: [
                   ...newFiles,
                   {
                     name: file.name,
-                    data: reader.result,
+                    data: cleanedData,
                     path: filePath,
                   },
                 ],
@@ -271,7 +300,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               message.error(`${file.name} cannot be uploaded because it is empty.`);
             }
           };
-          reader.readAsText(file);
+
+          if (['png', 'jpg', 'jpeg'].includes(File.extension(file.name))) {
+            reader.readAsDataURL(file);
+          } else {
+            reader.readAsText(file);
+          }
 
           // prevent upload
           return false;
@@ -288,6 +322,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             value: student,
           };
         });
+
+        const rejectedFiles =
+          this.state.rejectedFiles.length === 0 ? (
+            <div />
+          ) : (
+            <div>
+              <div style={{ color: 'red', marginBottom: 10 }}>
+                The following files were not uploaded:{' '}
+                {this.state.rejectedFiles.map((fileName, index) => {
+                  return `${fileName}${index === this.state.rejectedFiles.length - 1 ? '' : ', '}`;
+                })}
+              </div>
+              <div>
+                If you think codePost should support files of this type,{' '}
+                <a href="mailto:team@codepost.io?subject=File Support Request">let us know</a>.
+              </div>
+            </div>
+          );
 
         content = (
           <div>
@@ -345,6 +397,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 iconStyle={{ paddingLeft: 5 }}
               />
             </div>
+            <br />
+            {rejectedFiles}
           </div>
         );
         break;

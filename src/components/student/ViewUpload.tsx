@@ -14,6 +14,8 @@ import { ClickParam } from 'antd/lib/menu';
 import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { File } from '../../infrastructure/file';
 
+import ReactMarkdown from 'react-markdown';
+
 const { Sider, Content } = Layout;
 
 interface IProps {
@@ -28,7 +30,7 @@ function ViewUpload(props: IProps) {
   const [loadComplete, setLoadComplete] = useState(false);
 
   const fetchUpload = async () => {
-    if (props.assignment) {
+    if (props.assignment && props.isVisible) {
       const data = await AssignmentStudent.readStudentUpload(props.assignment.id);
       setFiles(data.files);
       setLoadComplete(true);
@@ -41,9 +43,7 @@ function ViewUpload(props: IProps) {
   };
 
   useEffect(() => {
-    if (props.isVisible) {
-      fetchUpload();
-    }
+    fetchUpload();
   }, [props.assignment, props.isVisible]);
 
   const changeIndex = (e: ClickParam) => {
@@ -81,14 +81,18 @@ function ViewUpload(props: IProps) {
               </Menu>
             </Sider>
             <Content style={{ maxHeight: '70vh', overflow: 'auto' }}>
-              <SyntaxHighlighter
-                language={File.language(files[parseInt(currentIndex, 10)])}
-                style={googlecode}
-                showLineNumbers={true}
-                wrapLines={true}
-              >
-                {files[parseInt(currentIndex, 10)].code}
-              </SyntaxHighlighter>
+              {File.codeType(files[parseInt(currentIndex, 10)]) === 'image' ? (
+                <ReactMarkdown>{'![](' + files[parseInt(currentIndex, 10)].code + ')'}</ReactMarkdown>
+              ) : (
+                <SyntaxHighlighter
+                  language={File.language(files[parseInt(currentIndex, 10)])}
+                  style={googlecode}
+                  showLineNumbers={true}
+                  wrapLines={true}
+                >
+                  {files[parseInt(currentIndex, 10)].code}
+                </SyntaxHighlighter>
+              )}
             </Content>
           </Layout>
         </div>

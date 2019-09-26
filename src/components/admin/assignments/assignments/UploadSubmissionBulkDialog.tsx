@@ -23,6 +23,8 @@ import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
+import { resizeImage } from '../../other/AdminUtils';
+
 const Panel = Collapse.Panel;
 const { Step } = Steps;
 
@@ -229,15 +231,28 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
             status: STATUS.FILE_ERROR,
           });
         };
-        studentsReader.onload = () => {
-          const result = studentsReader.result;
+        studentsReader.onload = async () => {
+          let result: any = studentsReader.result;
           const fileMap = this.state.fileMap;
           if (typeof result === 'string') {
-            fileMap[anyFile.webkitRelativePath] = result;
+            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+            // Optimization: The resizing takes time so we only want to do it on bigger images (>50Kb)
+            if (['png', 'jpeg', 'jpg'].includes(extension) && file.size > 50000) {
+              // We want to limit the image to a certain size so we don't slow down file load
+              result = await resizeImage(result);
+            }
+            const cleanedResult = result.replace(/\0/g, '');
+            fileMap[anyFile.webkitRelativePath] = cleanedResult;
             this.setState({ fileMap });
           }
         };
-        studentsReader.readAsBinaryString(file);
+
+        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+        if (['png', 'jpg', 'jpeg'].includes(extension)) {
+          studentsReader.readAsDataURL(file);
+        } else {
+          studentsReader.readAsBinaryString(file);
+        }
       }
     });
   };
@@ -473,6 +488,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
       if (!acceptedFilesSet.has(`.${extension}`)) {
         invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
+      } else if (
+        el.webkitRelativePath.split('/').find((pathEl: string) => {
+          return pathEl.startsWith('.');
+        })
+      ) {
+        invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
       } else {
         if (folderName in folderMap) {
           folderMap[folderName].files.push(el);

@@ -67,7 +67,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     props.addComment(comment, file);
   };
 
-  if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
+  if (['markdown', 'jupyter', 'image'].includes(File.codeType(props.file))) {
     const { addComment, ...codeProps } = { ...props };
     return (
       <div

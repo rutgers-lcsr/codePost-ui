@@ -26,6 +26,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   let markdown;
   if (File.codeType(props.file) === 'jupyter') {
     markdown = jupyterToMarkdown(props.file.code);
+  } else if (File.codeType(props.file) === 'image') {
+    markdown = '![](' + props.file.code + ')';
   } else {
     markdown = props.file.code;
   }
