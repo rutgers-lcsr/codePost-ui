@@ -558,10 +558,10 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           <div>
             {!this.state.showImportOptions ? (
               <div style={{ margin: '15px 0px' }}>
-                Looking to import submissions from a third-party service?{' '}
+                Looking to import submissions from a third-party tool (like your LMS)?{' '}
                 <span>
                   <Button size="small" onClick={this.showImportOptions}>
-                    Click here
+                    View instructions
                   </Button>
                 </span>
               </div>

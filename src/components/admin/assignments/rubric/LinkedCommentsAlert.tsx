@@ -111,10 +111,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       return savedComment.id === unsavedComment.id;
     });
 
-    if (match) {
-      return match.text !== unsavedComment.text || match.pointDelta !== unsavedComment.pointDelta;
-    }
-    return false;
+    return match !== undefined;
   });
 
   if (contentEditedComments.length === 0) {

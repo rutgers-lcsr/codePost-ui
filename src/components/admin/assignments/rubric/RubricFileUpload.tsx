@@ -387,7 +387,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           fallback="upload"
           fallbackWidth={1250}
         >
-          Upload Rubric
+          Upload
         </CPButton>
 
         <Modal

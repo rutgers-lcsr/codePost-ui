@@ -264,7 +264,7 @@ const RubricCategoryUI = ({
     </div>
   );
 
-  const categoryPoints = (
+  const categoryPoints = props.showPointLimits ? (
     <div key="points">
       <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
         Category Point Limit
@@ -293,9 +293,9 @@ const RubricCategoryUI = ({
         </span>
       </div>
     </div>
-  );
+  ) : null;
 
-  const helpText = (
+  const helpText = props.showHelpText ? (
     <div key="help-text" style={{ maxWidth: 300 }}>
       <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
         Category Help Text
@@ -314,7 +314,7 @@ const RubricCategoryUI = ({
         autosize={true}
       />
     </div>
-  );
+  ) : null;
 
   const contentLeft =
     props.windowwidth < 1200 ? (

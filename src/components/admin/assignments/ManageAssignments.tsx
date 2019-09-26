@@ -465,11 +465,20 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 ) : null}
               </span>
             ),
-            submissions: (
-              <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
-                {statsForRow.numSubmissions}
-              </span>
-            ),
+            submissions:
+              statsForRow.numSubmissions === 0 ? (
+                <CPButton
+                  cpType="secondary"
+                  onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Upload_Multiple, assignment)}
+                >
+                  <Icon type="upload" />
+                  Upload
+                </CPButton>
+              ) : (
+                <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Submitted)} className="text-link">
+                  {statsForRow.numSubmissions}
+                </span>
+              ),
             finalized: (
               <span onClick={this.openDrawer.bind(this, assignment, DRAWER_TYPE.Graded)} className="text-link">
                 {statsForRow.numGraded}

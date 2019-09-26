@@ -687,7 +687,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public saveComment = async (comment: CommentType) => {
-    let savedComment;
+    let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode) {
@@ -711,29 +711,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         savedComment = await CommentIO.update(comment);
       }
     } else {
-      // In demo mode, we want to simulate the saving of a comment without actually saving anything.
-      // To do this, we need to make up a positive comment id for the comments we "save"
-      //
-      // Note that the id we use can collide with existing comment IDs, because we never
-      // make any API call to interact with the comment whose ID corresponds to the ID we assign here
-      savedComment = { ...comment, id: this.state.demoCommentCounter + 1 };
-      oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
+      if (comment.id < 0) {
+        // In demo mode, we want to simulate the saving of a comment without actually saving anything.
+        // To do this, we need to make up a positive comment id for the comments we "save"
+        //
+        // Note that the id we use can collide with existing comment IDs, because we never
+        // make any API call to interact with the comment whose ID corresponds to the ID we assign here
+        savedComment = { ...comment, id: this.state.demoCommentCounter + 1 };
+        oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
 
-      // we want to keep track of the order in which demo comments are created, so we can highlight
-      // them precisely. For example, we may want to show one tooltip for the first comment made by
-      // a user participating in the demo, and a different tooltip for the second comment.
-      this.setState((oldState) => {
-        return {
-          demoCommentCounter: oldState.demoCommentCounter + 1,
-        };
-      });
+        // we want to keep track of the order in which demo comments are created, so we can highlight
+        // them precisely. For example, we may want to show one tooltip for the first comment made by
+        // a user participating in the demo, and a different tooltip for the second comment.
+        this.setState((oldState) => {
+          return {
+            demoCommentCounter: oldState.demoCommentCounter + 1,
+          };
+        });
+      }
     }
 
-    this.setState({
-      oldCommentIDs,
-    });
-
-    this.updateComment(comment.id, savedComment);
+    this.setState(
+      {
+        oldCommentIDs,
+      },
+      () => {
+        this.updateComment(comment.id, savedComment);
+      },
+    );
   };
 
   public deleteComment = async (comment: CommentType) => {
@@ -1344,7 +1349,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             getPointsInFile={this.getPointsInFile}
             changeSelectedFile={this.changeSelectedFile}
           />,
-          <RubricManager key="rubric-menu" assignment={this.state.assignment} submissions={[]} onCancel={onCancel}>
+          <RubricManager
+            key="rubric-menu"
+            assignment={this.state.assignment}
+            submissions={[]}
+            onCancel={onCancel}
+            defaultRubric={{
+              categories: this.state.rubricCategories,
+              comments: _.flatten(Object.values(this.state.rubricComments)),
+            }}
+          >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
                 ...props,

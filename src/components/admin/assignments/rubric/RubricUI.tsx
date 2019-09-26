@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Empty } from 'antd';
+import { Checkbox, Breadcrumb, Empty } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -25,7 +25,6 @@ import { RubricComment } from '../../../../infrastructure/rubricComment';
 
 import CPButton from '../../../../components/core/CPButton';
 import Loading from '../../../../components/core/Loading';
-import { tooltips } from '../../../../components/core/tooltips';
 
 import CPAdminRubric from './CPAdminRubric';
 
@@ -39,6 +38,14 @@ import RubricCategoryManager, {
 
 import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from '../../../core/rubric/RubricManager';
 
+import CPTooltip from '../../../core/CPTooltip';
+import { tooltips } from '../../../core/tooltips';
+
+// interface IRubricUIState extends IRubricManagerState {
+//   showPointLimits: boolean;
+//   showHelpText: boolean;
+// }
+
 const RubricUI = ({
   props,
   state,
@@ -49,6 +56,24 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+  const [showPointLimits, setShowPointLimits] = React.useState(false);
+  const [showHelpText, setShowHelpText] = React.useState(false);
+  const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
+  const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
+
+  React.useEffect(() => {
+    for (const cat of rubricCategories) {
+      if (!showPointLimits && typeof cat.pointLimit === 'number') {
+        setShowPointLimits(true);
+        setShowPointLimitCheckbox(false);
+      }
+
+      if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
+        setShowHelpText(true);
+        setShowHelpTextCheckbox(false);
+      }
+    }
+  });
 
   if (loadComplete) {
     const changesMade = helpers.changesMade();
@@ -84,6 +109,8 @@ const RubricUI = ({
             otherCategories={state.rubricCategories}
             feedbackScores={state.feedbackScores}
             commentFeedbackOn={props.assignment.commentFeedback}
+            showPointLimits={showPointLimits}
+            showHelpText={showHelpText}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={propz} state={statez} helpers={helperz} />;
@@ -129,7 +156,7 @@ const RubricUI = ({
         fallback="undo"
         fallbackWidth={1250}
       >
-        Undo changes
+        Undo
       </CPButton>,
       <CPButton
         key="1"
@@ -157,8 +184,40 @@ const RubricUI = ({
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
     };
 
+    const toggleShowPointLimit = () => {
+      setShowPointLimits(!showPointLimits);
+    };
+
+    const toggleShowHelpText = () => {
+      setShowHelpText(!showHelpText);
+    };
+
     const content = (
       <div>
+        <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
+          {showPointLimitCheckbox ? (
+            <div>
+              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryPointLimit}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showHelpTextCheckbox ? (
+            <div>
+              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryHelpText}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+        </div>
         {categoryTables}
         <CPButton cpType="primary" onClick={addRubricCategory}>
           Add New Category

@@ -270,10 +270,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       if (grader !== null) {
         grader.addEventListener('click', triggerNudge);
       }
-
-      if (rubricMenu !== null) {
-        rubricMenu.addEventListener('click', triggerNudge);
-      }
     }
 
     return () => {
@@ -287,10 +283,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
       if (grader !== null) {
         grader.removeEventListener('click', triggerNudge);
-      }
-
-      if (rubricMenu !== null) {
-        rubricMenu.removeEventListener('click', triggerNudge);
       }
     };
   }, [props.submission]);
