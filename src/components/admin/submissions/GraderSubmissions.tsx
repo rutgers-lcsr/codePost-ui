@@ -14,7 +14,7 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
 
-import { AssignmentType } from '../../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
@@ -169,7 +169,7 @@ class GraderData extends React.Component<IProps, IState> {
               };
             },
           },
-          ...this.props.assignments.map((assignment) => {
+          ...sortAssignments(this.props.assignments).map((assignment) => {
             return {
               title: assignment.name,
               dataIndex: assignment.name,

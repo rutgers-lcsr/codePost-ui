@@ -16,7 +16,7 @@ import { IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { openSubmission } from '../other/AdminUtils';
 
-import { AssignmentType } from '../../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
@@ -178,7 +178,7 @@ class StudentData extends React.Component<IProps, IState> {
               };
             },
           },
-          ...this.props.assignments.map((assignment) => {
+          ...sortAssignments(this.props.assignments).map((assignment) => {
             return {
               title: assignment.name,
               dataIndex: assignment.name,

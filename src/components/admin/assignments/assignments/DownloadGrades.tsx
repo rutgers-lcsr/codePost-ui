@@ -159,20 +159,25 @@ const DownloadGrades = (props: IProps) => {
     return <div />;
   } else {
     return (
-      <Modal visible={true} title="Missing Submissions" okText="Download" onCancel={props.onCancel} onOk={onDownload}>
+      <Modal
+        visible={true}
+        width={550}
+        title="Missing Submissions"
+        okText="Download"
+        onCancel={props.onCancel}
+        onOk={onDownload}
+      >
         <div>
           <div>{`Some students in your course have ${numMissing ? 'missing' : ''} ${
             numMissing && numUngraded ? 'and' : ''
-          } ${
-            numUngraded ? 'unfinalized' : ''
-          } submissions. How would you like to handle these in your grades download?`}</div>
+          } ${numUngraded ? 'unfinalized' : ''} submissions. How would you like to handle these?`}</div>
           {numMissing ? (
             <div>
               <Divider />
               <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
                 <div>
                   <Text style={{ fontWeight: 600 }} type="danger">
-                    {numMissing > 1 ? `${numMissing} students missing submissions` : '1 student missing a submission'}
+                    {numMissing > 1 ? `${numMissing} missing submissions` : '1 missing submission'}
                   </Text>
                 </div>
                 <Radio.Group onChange={changeMissingAsZero} value={missingAsZero} style={{ width: 250 }}>
@@ -189,9 +194,7 @@ const DownloadGrades = (props: IProps) => {
               <Divider />
               <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
                 <Text style={{ fontWeight: 600 }} type="warning">
-                  {numUngraded > 1
-                    ? `${numUngraded} students with unfinalized submissions`
-                    : '1 student with an unfinalized submission'}
+                  {numUngraded > 1 ? `${numUngraded} unfinalized submissions` : '1 unfinalized submission'}
                 </Text>
                 <Radio.Group onChange={changeUngradedAsZero} value={ungradedAsZero} style={{ width: 250 }}>
                   <Radio value={false}>Leave blank (no grade)</Radio>

@@ -325,11 +325,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
+    let grade = 0;
     if (assignment.additiveGrading) {
-      return 0 - commentPoints - categoryPoints;
+      grade = 0 - commentPoints - categoryPoints;
     } else {
-      return assignment.points - commentPoints - categoryPoints;
+      grade = assignment.points - commentPoints - categoryPoints;
     }
+
+    // Prevent floating point arithmetic causing weird rounding errors
+    return parseFloat(grade.toFixed(2));
   };
 
   // This function filters out old file versions, and keeps only the current file versions

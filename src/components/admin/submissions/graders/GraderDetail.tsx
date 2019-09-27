@@ -12,7 +12,7 @@ import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
 import moment from 'moment';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
@@ -186,7 +186,7 @@ class GraderDetail extends React.Component<IProps, IState> {
         },
       ];
 
-      const data = this.props.assignments.map((assignment) => {
+      const data = sortAssignments(this.props.assignments).map((assignment) => {
         const graded = this.props.submissionsByAssignment[assignment.id];
         const menu = (
           <Menu>
