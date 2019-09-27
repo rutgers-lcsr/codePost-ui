@@ -26,7 +26,7 @@ import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart
 // Animations
 // import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
-import { AdminModule } from './AdminModule';
+// import { AdminModule } from './AdminModule';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
@@ -176,10 +176,10 @@ class Landing extends React.PureComponent<{}, {}> {
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
         subTitle="Less time configuring software, more time teaching"
-        module={<AdminModule />}
+        module={<LandingFlowChart />}
         type="right"
-        moduleMaxWidth={610}
-        moduleMaxHeight={375}
+        moduleMaxWidth={700}
+        moduleMaxHeight={405}
         textSize="normal"
         removeModelSmallScreen={false}
         bevel={false}
@@ -228,7 +228,6 @@ class Landing extends React.PureComponent<{}, {}> {
             <Testimonials />
           </div>
         }
-        flowChart={<LandingFlowChart />}
         whyPanel={whyPanel}
         panelOne={panelOne}
         panelTwo={panelTwo}

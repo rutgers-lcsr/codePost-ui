@@ -7,10 +7,10 @@ export interface FlowNodePosition {
   x: number;
   y: number;
 }
-const NODE_WIDTH = 130;
-const NODE_HEIGHT = 60;
+const NODE_WIDTH = 100;
+const NODE_HEIGHT = 50;
 
-const NODE_CATEGORY_WIDTH = 150;
+const NODE_CATEGORY_WIDTH = 120;
 const NODE_CATEGORY_HEIGHT = 75;
 
 export interface FlowNodeProps {
@@ -70,7 +70,15 @@ export const FlowChart = (props: IProps) => {
   });
 
   return (
-    <div style={{ position: 'relative', width: props.canvasWidth, height: props.canvasHeight }}>
+    <div
+      style={{
+        position: 'relative',
+        width: props.canvasWidth,
+        height: props.canvasHeight,
+        marginLeft: NODE_CATEGORY_WIDTH / 2,
+        marginRight: NODE_CATEGORY_WIDTH / 2,
+      }}
+    >
       {nodes}
       {arrows}
     </div>
@@ -90,7 +98,7 @@ const FlowNode = (props: FlowNodeProps) => {
     <div
       style={{
         borderRadius: 12,
-        fontSize: props.isCategory ? 18 : 14,
+        fontSize: props.isCategory ? 16 : 12,
         width: width,
         height: height,
         backgroundColor: props.isCategory ? '#FFF' : hexToRGB(props.color, (props.tint / 100).toString()),
@@ -110,7 +118,7 @@ const FlowNode = (props: FlowNodeProps) => {
         type={props.icon}
         style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }}
       />
-      <div style={{ maxWidth: 80, minWidth: 80 }}>{props.title}</div>
+      <div style={{ maxWidth: 60, minWidth: 60 }}>{props.title}</div>
     </div>
   );
 

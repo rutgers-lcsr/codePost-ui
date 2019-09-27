@@ -132,7 +132,7 @@ const nodes: any[] = [
 export const LandingFlowChart = () => {
   return (
     <div className="flowChart">
-      <FlowChart nodeList={nodes} canvasWidth={750} canvasHeight={500} />
+      <FlowChart nodeList={nodes} canvasWidth={500} canvasHeight={400} />
     </div>
   );
 };
