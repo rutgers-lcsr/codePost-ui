@@ -676,7 +676,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
             <Icon type="plus-circle" /> Claim another submission{' '}
-            <span style={{ color: '#ccc' }}>[{osControlKey()} shift s]</span>
+            <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
           </span>
         </Menu.Item>
       )}

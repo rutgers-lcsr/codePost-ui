@@ -49,7 +49,7 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import { openSubmission } from '../admin/other/AdminUtils';
+import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
 
@@ -1170,7 +1170,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (this.state.assignment) {
       const submission = await this.fetchSubmission(this.state.assignment);
       if (submission !== undefined) {
-        openSubmission(submission.id);
+        openSubmissionInSameTab(submission.id);
         message.success('Successfully claimed another submission. Start reviewing!');
       } else {
         message.success('The ungraded queue is empty, so there are no more submissions to claim.');
