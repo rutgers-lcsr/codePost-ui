@@ -10,6 +10,12 @@ function openSubmission(submissionID: number | string) {
   }
 }
 
+function openSubmissionInSameTab(submissionID: number | string) {
+  if (window) {
+    window.open(`/code/${submissionID}`, '_self');
+  }
+}
+
 // Upload Utils
 
 // Resize Image takes an image (in base64 string) and resizes it to a smaller image
@@ -47,4 +53,4 @@ const resizeImage = (imageStringInBase64: string) => {
   });
 };
 
-export { openSubmission, resizeImage };
+export { openSubmission, openSubmissionInSameTab, resizeImage };
