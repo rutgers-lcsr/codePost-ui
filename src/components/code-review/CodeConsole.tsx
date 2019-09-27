@@ -49,7 +49,7 @@ import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMen
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import { openSubmission } from '../admin/other/AdminUtils';
+import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
 
@@ -325,11 +325,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
+    let grade = 0;
     if (assignment.additiveGrading) {
-      return 0 - commentPoints - categoryPoints;
+      grade = 0 - commentPoints - categoryPoints;
     } else {
-      return assignment.points - commentPoints - categoryPoints;
+      grade = assignment.points - commentPoints - categoryPoints;
     }
+
+    // Prevent floating point arithmetic causing weird rounding errors
+    return parseFloat(grade.toFixed(2));
   };
 
   // This function filters out old file versions, and keeps only the current file versions
@@ -1166,7 +1170,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (this.state.assignment) {
       const submission = await this.fetchSubmission(this.state.assignment);
       if (submission !== undefined) {
-        openSubmission(submission.id);
+        openSubmissionInSameTab(submission.id);
         message.success('Successfully claimed another submission. Start reviewing!');
       } else {
         message.success('The ungraded queue is empty, so there are no more submissions to claim.');

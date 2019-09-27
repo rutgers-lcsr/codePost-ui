@@ -14,7 +14,7 @@ import moment from 'moment';
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
@@ -201,7 +201,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       },
     ];
 
-    const data = this.props.assignments.map((assignment) => {
+    const data = sortAssignments(this.props.assignments).map((assignment) => {
       const submission = this.props.submissionsMap[assignment.id];
       let gradeString = 'Not submitted';
       // colorClass is to color the text based on status of submission
