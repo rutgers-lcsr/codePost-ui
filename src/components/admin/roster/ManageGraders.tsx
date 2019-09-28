@@ -139,7 +139,7 @@ class ManageGraders extends React.Component<IProps, IState> {
             key="activation"
             buttonText="Send invites"
             title="Send activation emails to graders"
-            template="add_graders"
+            template="add_grader"
             course={this.props.currentCourse}
             me={this.props.myEmail}
             filterFunction={this.toInvite}

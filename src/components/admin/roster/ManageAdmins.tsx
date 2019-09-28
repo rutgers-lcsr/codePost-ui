@@ -108,7 +108,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
             key="activation"
             buttonText="Send invites"
             title="Send activation emails to admins"
-            template="add_admins"
+            template="add_admin"
             course={this.props.currentCourse}
             me={this.props.myEmail}
             filterFunction={this.toInvite}
