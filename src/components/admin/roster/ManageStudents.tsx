@@ -10,6 +10,7 @@ import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
+import memoizeOne from 'memoize-one';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -110,23 +111,22 @@ class ManageStudents extends React.Component<IProps, IState> {
     });
   };
 
-  public toInvite = () => {
-    return this.props.students.filter((student) => {
-      return this.props.notActivated.indexOf(student) > -1;
+  public toInvite = memoizeOne((students: string[], inactiveUsers: string[]) => {
+    return students.filter((student) => {
+      return inactiveUsers.indexOf(student) > -1;
     });
-  };
+  });
 
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
-    const hasInactives = this.props.notActivated.some((el) => {
-      return this.props.students.indexOf(el) > -1;
-    });
+
+    const inactiveEmails = this.toInvite(this.props.students, this.props.notActivated);
 
     if (this.props.students.length > 0) {
       actions = [
-        hasInactives ? (
+        inactiveEmails.length > 0 ? (
           <SendEmailModal
             key="activation"
             buttonText="Send invites"
@@ -134,7 +134,7 @@ class ManageStudents extends React.Component<IProps, IState> {
             template="add_student"
             course={this.props.currentCourse}
             me={this.props.myEmail}
-            filterFunction={this.toInvite}
+            emails={inactiveEmails}
             body={
               <div>
                 Send activation emails to all students who have not yet joined codePost. Users who have signed up won't
