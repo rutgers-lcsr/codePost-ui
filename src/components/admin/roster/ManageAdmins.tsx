@@ -210,10 +210,12 @@ class ManageAdmins extends React.Component<IProps, IState> {
             </Menu>
           ) : (
             <Menu>
-              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
-                <Icon type="mail" />
-                Send activation email
-              </Menu.Item>
+              {hasActivated ? null : (
+                <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
+                  <Icon type="mail" />
+                  Send activation email
+                </Menu.Item>
+              )}
               <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
                 <Icon type="user-delete" />
                 Unenroll
