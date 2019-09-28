@@ -32,8 +32,8 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
 
   const getOpenRegradeGraders = (submissions: SubmissionType[]) => {
     return submissions
-      .filter((s) => s.questionIsOpen && s.grader)
-      .map((s) => (s.questionResponder ? s.questionResponder : s.grader!));
+      .filter((s) => s.questionIsOpen && s.grader && (!s.questionResponder || s.grader === s.questionResponder))
+      .map((s) => s.grader!);
   };
   const reminderEmails = useMemo(() => getOpenRegradeGraders(props.submissions), [props.submissions]);
 
@@ -47,13 +47,7 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
         assignment={props.assignment}
         me={props.user.email}
         emails={reminderEmails}
-        body={
-          <div>
-            Notify graders of submissions with open regrades that they open regrades to be finished. If the question has
-            already been claimed by a responder, the responder will be emailed. If not, the original grader of the
-            submission will be emailed.{' '}
-          </div>
-        }
+        body={<div>Notify graders of submissions with unclaimed or unfinished regrades. </div>}
       />
     ) : null;
 
