@@ -22,7 +22,7 @@ import CPTooltip from '../../core/CPTooltip';
 interface IProps {
   buttonText: string;
   title: string;
-  filterFunction: () => string[];
+  emails: string[];
   template: string;
   course: CourseType;
   assignment?: AssignmentType;
@@ -34,10 +34,6 @@ interface IProps {
 interface IState {
   /* are we in the middle of sending an email? */
   isSending: boolean;
-
-  /* list of users who will be emailed on confirm */
-  usersToEmail?: string[];
-
   /* number of recipients to show in list */
   usersToShow: number;
 
@@ -57,14 +53,6 @@ class SendEmailModal extends React.Component<IProps, IState> {
   }
 
   public componentDidUpdate(oldProps: IProps, oldState: IState) {
-    const isFirstOpen = !oldState.modalVisible && this.state.modalVisible && this.state.usersToEmail === undefined;
-    const changedRecipients = oldProps.filterFunction !== this.props.filterFunction;
-    if (isFirstOpen || changedRecipients) {
-      this.setState({
-        usersToEmail: this.props.filterFunction(),
-      });
-    }
-
     if (oldState.modalVisible && !this.state.modalVisible) {
       this.setState({
         usersToShow: MAX_USERS_IN_INITIAL_LIST,
@@ -78,8 +66,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
 
   public sendLiveEmails = () => {
     this.setState({ isSending: true }, () => {
-      const toEmail = this.props.filterFunction();
-      this.sendEmails(toEmail, true);
+      this.sendEmails(this.props.emails, true);
     });
     this.toggleDialog();
   };
@@ -158,14 +145,14 @@ class SendEmailModal extends React.Component<IProps, IState> {
               infoIcon={true}
             />
           </div>
-          {this.state.usersToEmail !== undefined ? (
+          {this.props.emails !== undefined ? (
             <div>
               <br />
-              <h3>{this.state.usersToEmail.length} users will be emailed</h3>
+              <h3>{this.props.emails.length} users will be emailed</h3>
               <List
                 itemLayout="horizontal"
                 loadMore={
-                  this.state.usersToEmail.length > this.state.usersToShow ? (
+                  this.props.emails.length > this.state.usersToShow ? (
                     <div
                       style={{
                         textAlign: 'center',
@@ -178,10 +165,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
                     </div>
                   ) : null
                 }
-                dataSource={this.state.usersToEmail.slice(
-                  0,
-                  Math.min(this.state.usersToShow, this.state.usersToEmail.length),
-                )}
+                dataSource={this.props.emails.slice(0, Math.min(this.state.usersToShow, this.props.emails.length))}
                 renderItem={(item) => <List.Item>{item}</List.Item>}
               />
             </div>
