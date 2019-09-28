@@ -359,7 +359,11 @@ const RegradesTable = (props: IRegradesTableProps) => {
         <Divider />
         <div className="display-flex flex-direction-column">
           <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
-            {activeSubmission && activeSubmission.questionResponder ? activeSubmission.questionResponder : ''}
+            {activeSubmission && activeSubmission.questionResponder
+              ? activeSubmission.questionResponder
+              : activeSubmission && activeSubmission.grader
+              ? `Graded by: ${activeSubmission.grader}`
+              : ''}
             &nbsp; &nbsp;
             <span style={{ fontSize: 12, color: '#ccc' }}>
               {activeSubmission && activeSubmission.responseDate ? formatDate(activeSubmission.responseDate) : ''}

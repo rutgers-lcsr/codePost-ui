@@ -419,9 +419,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               </CPTooltip>
             );
           };
-          const listStudents = () => {
-            return this.props.students;
-          };
 
           const onConfirm = () => {
             if (!assignment.isReleased) {
@@ -457,7 +454,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                       course={this.props.currentCourse!}
                       assignment={assignment}
                       me={this.props.myEmail}
-                      filterFunction={listStudents}
+                      emails={this.props.students}
                       body={<div>Notify students via email that {assignment.name} has been published.</div>}
                       button={notifyButton}
                     />
@@ -612,6 +609,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
                 user={this.props.user}
                 updateSubmission={this.props.updateSubmission}
+                currentCourse={this.props.currentCourse!}
               />
             );
             break;

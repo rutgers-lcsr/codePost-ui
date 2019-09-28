@@ -10,6 +10,7 @@ import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
+import memoizeOne from 'memoize-one';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -86,32 +87,30 @@ class ManageAdmins extends React.Component<IProps, IState> {
     return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
   };
 
-  public toInvite = () => {
-    return this.props.admins.filter((admin) => {
-      return this.props.notActivated.indexOf(admin) > -1;
+  public toInvite = memoizeOne((admins: string[], inactiveUsers: string[]) => {
+    return admins.filter((admin) => {
+      return inactiveUsers.indexOf(admin) > -1;
     });
-  };
+  });
 
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
-    const hasInactives = this.props.notActivated.some((el) => {
-      return this.props.admins.indexOf(el) > -1;
-    });
+    const inactiveEmails = this.toInvite(this.props.admins, this.props.notActivated);
 
     if (this.props.loadComplete) {
       actions = [
-        hasInactives ? (
+        inactiveEmails.length > 0 ? (
           <SendEmailModal
             key="activation"
             buttonText="Send invites"
             title="Send activation emails to admins"
-            template="add_admins"
+            template="add_admin"
             course={this.props.currentCourse}
             me={this.props.myEmail}
-            filterFunction={this.toInvite}
+            emails={inactiveEmails}
             body={
               <div>
                 Send activation emails to all admins who have not yet joined codePost. Users who have signed up won't be
@@ -210,10 +209,12 @@ class ManageAdmins extends React.Component<IProps, IState> {
             </Menu>
           ) : (
             <Menu>
-              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
-                <Icon type="mail" />
-                Send activation email
-              </Menu.Item>
+              {hasActivated ? null : (
+                <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
+                  <Icon type="mail" />
+                  Send activation email
+                </Menu.Item>
+              )}
               <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
                 <Icon type="user-delete" />
                 Unenroll

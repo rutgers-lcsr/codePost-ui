@@ -132,16 +132,16 @@ class ManageAssignments extends React.Component<IProps, IState> {
     });
   };
 
-  public sendReminders = () => {
+  public sendReminders = memoizeOne((submissions: SubmissionType[]) => {
     const toEmail = new Set();
-    for (const submission of this.props.submissions) {
+    for (const submission of submissions) {
       if (submission.grader !== null && !submission.isFinalized) {
         toEmail.add(submission.grader);
       }
     }
 
     return Array.from(toEmail) as string[];
-  };
+  });
 
   /******************************************************************************
    * Render
@@ -378,6 +378,8 @@ class ManageAssignments extends React.Component<IProps, IState> {
         />
       );
 
+    const reminderEmails = this.sendReminders(this.props.submissions);
+
     const divStyle = { padding: '20px 40px' };
     content = (
       <div>
@@ -398,7 +400,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
               <CPButton onClick={this.refreshData} cpType="primary" icon="redo" loading={this.state.isLoading}>
                 Refresh data
               </CPButton>
-              {statsForRow.numInProgress > 0 ? (
+              {reminderEmails.length > 0 ? (
                 <SendEmailModal
                   buttonText={'Remind graders'}
                   title="Send reminder emails"
@@ -406,7 +408,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                   course={this.props.course}
                   assignment={this.props.assignment}
                   me={this.props.myEmail}
-                  filterFunction={this.sendReminders}
+                  emails={reminderEmails}
                   body={
                     <div>
                       Send a reminder email to graders with pending submissions for {this.props.assignment.name} asking
