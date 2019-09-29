@@ -56,8 +56,9 @@ export type FileType = t.TypeOf<typeof FileV>;
 const MarkdownExtensions = ['md', '.md'];
 const JupyterExtensions = ['ipynb', '.ipynb'];
 const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
+const PDFExtensions = ['pdf', '.pdf'];
 
-type CodeType = 'code' | 'markdown' | 'jupyter' | 'image';
+type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 
 export class File {
   public static create = createObject(FileV, FileVPost, 'files');
@@ -78,6 +79,8 @@ export class File {
       ? 'markdown'
       : ImageExtensions.includes(file.extension)
       ? 'image'
+      : PDFExtensions.includes(file.extension)
+      ? 'pdf'
       : 'code';
   };
 
