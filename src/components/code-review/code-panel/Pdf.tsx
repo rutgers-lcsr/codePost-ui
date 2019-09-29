@@ -9,25 +9,12 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import { CommentType } from '../../../infrastructure/comment';
 import { File } from '../../../infrastructure/file';
 
+import { getBlockClassName } from './BlockUtils.tsx';
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [numPages, setPages] = useState(null);
-  const blockContainsComment = (index: number): boolean => {
-    return (
-      props.comments.filter((comment: CommentType) => {
-        return comment.startLine === index;
-      }).length > 0
-    );
-  };
-  const getClassName = (index: number): string => {
-    const editable = props.readOnly ? 'readonly' : 'active';
-    let className = `markdown-block markdown-block--empty ${editable}`;
-    if (blockContainsComment(index)) {
-      className = `markdown-block markdown-block--commented ${editable}`;
-    }
-    return className;
-  };
 
   const onBlockElementClick = (e: React.MouseEvent) => {
     const index = e.currentTarget.getAttribute('data-page-number');
@@ -71,7 +58,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         {Array.from(new Array(numPages), (el, index) => (
           <Page
             key={`page_${index + 1}`}
-            className={getClassName(index + 1)}
+            className={getBlockClassName(props.comments, props.readOnly, index + 1)}
             pageNumber={index + 1}
             renderTextLayer={false}
             onRenderSuccess={dispatch}

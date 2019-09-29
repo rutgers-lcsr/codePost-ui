@@ -102,7 +102,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         </div>
       </div>
     );
-  } else if (['pdf'].includes(File.codeType(props.file))) {
+  } else if (File.codeType(props.file) === 'pdf') {
     const { addComment, ...codeProps } = { ...props };
     return (
       <div

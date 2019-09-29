@@ -18,6 +18,8 @@ import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
 
+import { getBlockClassName } from './BlockUtils.tsx';
+
 interface IMarkdownProps {
   commentCounter: number;
 }
@@ -53,24 +55,10 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     }
   };
 
-  const blockContainsComment = (index: number): boolean => {
-    return (
-      props.comments.filter((comment: CommentType) => {
-        return comment.startLine === index;
-      }).length > 0
-    );
-  };
-
-  const getClassName = (index: number): string => {
-    const editable = props.readOnly ? 'readonly' : 'active';
-    let className = `markdown-block markdown-block--empty ${editable}`;
-    if (blockContainsComment(index)) {
-      className = `markdown-block markdown-block--commented ${editable}`;
-    }
-    return className;
-  };
-
-  const renderers = useMarkdownRenderers(getClassName, props.readOnly ? undefined : onBlockElementClick);
+  const renderers = useMarkdownRenderers(
+    getBlockClassName.bind(props.comments, props.readOnly),
+    props.readOnly ? undefined : onBlockElementClick,
+  );
 
   return (
     <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>

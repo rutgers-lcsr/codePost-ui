@@ -20,6 +20,8 @@ import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { findBlockElement } from './BlockUtils.tsx';
+
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
   comments: CommentType[];
@@ -215,12 +217,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         this.props.verticalOffset;
 
       // Find position of markdown block elements
-      let blockElement: HTMLElement | null;
-      if (File.codeType(this.props.file) === 'pdf') {
-        blockElement = document.querySelector(`[data-page-number="${comment.startLine}"]`);
-      } else {
-        blockElement = document.querySelector(`[index-number="${comment.startLine}"]`);
-      }
+      const blockElement: HTMLElement | null = findBlockElement(this.props.file, comment.startLine);
 
       if (blockElement) {
         startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element

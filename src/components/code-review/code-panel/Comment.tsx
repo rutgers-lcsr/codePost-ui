@@ -30,6 +30,8 @@ export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
+import { findBlockElement } from './BlockUtils.tsx';
+
 const { TextArea } = Input;
 
 interface ICommentProps {
@@ -280,13 +282,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
 
     // For handling markdown
-
-    let blockElement: HTMLElement | null;
-    if (File.codeType(this.props.file) === 'pdf') {
-      blockElement = document.querySelector(`[data-page-number="${this.props.comment.startLine}"]`);
-    } else {
-      blockElement = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
-    }
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
 
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--focused ${
@@ -299,12 +295,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
 
     // For handling markdown
-    let blockElement: HTMLElement | null;
-    if (File.codeType(this.props.file) === 'pdf') {
-      blockElement = document.querySelector(`[data-page-number="${this.props.comment.startLine}"]`);
-    } else {
-      blockElement = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
-    }
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--commented ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
