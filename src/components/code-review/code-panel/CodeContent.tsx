@@ -14,6 +14,7 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import Markdown from './Markdown';
+import { Pdf } from './Pdf';
 import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
@@ -93,6 +94,40 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           }}
         >
           <Markdown
+            key={props.file.id}
+            {...codeProps}
+            commentCounter={props.commentCounter}
+            addComment={addCommentAndIncrement}
+          />
+        </div>
+      </div>
+    );
+  } else if (['pdf'].includes(File.codeType(props.file))) {
+    const { addComment, ...codeProps } = { ...props };
+    return (
+      <div
+        id="code-container"
+        className="code-container"
+        style={{
+          width: `${props.dimensions.codeWidth}px`,
+          overflowX: 'hidden',
+          backgroundColor: consoleTheme.codeBg,
+          border: `1px solid ${consoleTheme.codeBorder}`,
+        }}
+      >
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: '20px',
+            backgroundColor: 'white',
+            paddingTop: '3px',
+            paddingRight: '20px',
+          }}
+        >
+          <Pdf
             key={props.file.id}
             {...codeProps}
             commentCounter={props.commentCounter}

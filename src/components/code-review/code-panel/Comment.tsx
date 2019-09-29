@@ -280,7 +280,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+
+    let blockElement: HTMLElement | null;
+    if (File.codeType(this.props.file) === 'pdf') {
+      blockElement = document.querySelector(`[data-page-number="${this.props.comment.startLine}"]`);
+    } else {
+      blockElement = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    }
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--focused ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -292,7 +299,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    let blockElement: HTMLElement | null;
+    if (File.codeType(this.props.file) === 'pdf') {
+      blockElement = document.querySelector(`[data-page-number="${this.props.comment.startLine}"]`);
+    } else {
+      blockElement = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    }
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--commented ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'

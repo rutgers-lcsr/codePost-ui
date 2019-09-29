@@ -5,7 +5,7 @@ import Comment from './Comment';
 import CodePanelSizing from './CodePanelSizing';
 
 import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
+import { File, FileType } from '../../../infrastructure/file';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../../types/common';
@@ -114,6 +114,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleKeyPress);
+
+    // FIXME: This is a hack to trigger comment placements to reload after a PDF has loaded.
+    // The PDF can take some time to load, and if the placement isn't triggered the comments will stay on top
+    // Passing in refs to the <Comments /> and triggering comment placement from <CodeConent /> doesn't work because
+    // of a typescript issue with being unable to use react.forwardRef(), which we need to do because each <Comments />
+    // object is wrapped in a HOC with withWindowWatcher.
+    document.addEventListener('pdf-loaded', this.setCommentPlacements);
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -128,6 +135,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
     document.removeEventListener('keydown', this.handleKeyPress);
+    document.removeEventListener('loaded', this.setCommentPlacements);
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
@@ -193,7 +201,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
-    // console.log('!! Calculating Placements !!');
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
@@ -208,7 +215,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         this.props.verticalOffset;
 
       // Find position of markdown block elements
-      const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+      let blockElement: HTMLElement | null;
+      if (File.codeType(this.props.file) === 'pdf') {
+        blockElement = document.querySelector(`[data-page-number="${comment.startLine}"]`);
+      } else {
+        blockElement = document.querySelector(`[index-number="${comment.startLine}"]`);
+      }
+
       if (blockElement) {
         startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }
