@@ -330,7 +330,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         rubricComments,
       },
       () => {
-        this.onSave(this.setNewRubric.bind(this, rubricCategories, rubricComments));
+        this.onSave(undefined);
       },
     );
   };
@@ -369,7 +369,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     });
   };
 
-  public saveRubric = (
+  public saveRubric = async (
     categories: RubricCategoryType[],
     comments: IRubricCategoryToRubricCommentsMap,
     unsavedComments: RubricCommentType[],
@@ -448,49 +448,48 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             return this.deleteLinkedComments(rubricComment).then(() => {
               return RubricComment.delete(rubricComment.id);
             });
-            break;
           case RESOLUTION.UNLINK:
             return this.unlinkLinkedComments(rubricComment).then(() => {
               return RubricComment.delete(rubricComment.id);
             });
-            break;
           default:
             return Promise.resolve();
-            break;
         }
       } else {
         return RubricComment.delete(rubricComment.id);
       }
     });
 
+    // Wait until comments are deleted before deleting categories
+    await Promise.all(deleteComments);
     const deleteCategories = deletedCategories.map((rubricCategory) => {
       return RubricCategory.delete(rubricCategory.id);
     });
 
-    const allPromises: Array<Promise<any>> = [...promises, ...deleteComments, ...deleteCategories];
-    return Promise.all(allPromises)
-      .then(() => {
-        // retrieve rubric
-        return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
-          const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
-            newRubric.rubricCategories,
-            newRubric.rubricComments,
-          );
+    const allPromises: Array<Promise<any>> = [...promises, ...deleteCategories];
+    await Promise.all(allPromises);
 
-          this.loadFeedbackScores(newRubric.rubricComments);
+    // retrieve rubric
+    try {
+      return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
+        const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
+          newRubric.rubricCategories,
+          newRubric.rubricComments,
+        );
 
-          return {
-            rubricCategories: newRubric.rubricCategories,
-            rubricComments: commentMap,
-          };
-        });
-      })
-      .catch((errors) => {
+        this.loadFeedbackScores(newRubric.rubricComments);
+
         return {
-          rubricCategories: categories,
-          rubricComments: comments,
+          rubricCategories: newRubric.rubricCategories,
+          rubricComments: commentMap,
         };
       });
+    } catch (errors) {
+      return {
+        rubricCategories: categories,
+        rubricComments: comments,
+      };
+    }
   };
 
   public deleteLinkedComments = (rubricComment: RubricCommentType) => {
