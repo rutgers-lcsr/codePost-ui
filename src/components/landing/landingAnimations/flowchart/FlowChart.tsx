@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { hexToRGB } from '../api/Utils';
 
+import useWindowSize from '../../../core/useWindowSize';
+
+import landingVars from '../../../../styles/pages/_landingVars';
+
 import { Icon, Popover } from 'antd';
 
 export interface FlowNodePosition {
@@ -86,6 +90,7 @@ export const FlowChart = (props: IProps) => {
 };
 
 const FlowNode = (props: FlowNodeProps) => {
+  const windowSize = useWindowSize();
   const widthMultiplier = props.canvasWidth ? props.canvasWidth / 100 : 1;
   const heightMultipler = props.canvasHeight ? props.canvasHeight / 100 : 1;
   const width = props.isCategory ? NODE_CATEGORY_WIDTH : NODE_WIDTH;
@@ -127,7 +132,13 @@ const FlowNode = (props: FlowNodeProps) => {
   ) : (
     <Popover
       content={props.popoverContent ? props.popoverContent : ''}
-      placement={props.position.x <= 50 ? 'right' : 'left'}
+      placement={
+        windowSize.width < landingVars.breakpoints.mobile && props.position.x > 30 && props.position.x < 67
+          ? 'bottom'
+          : props.position.x <= 50
+          ? 'right'
+          : 'left'
+      }
       trigger="hover"
       mouseEnterDelay={0.3}
       overlayStyle={{ maxWidth: 250, textAlign: 'center' }}

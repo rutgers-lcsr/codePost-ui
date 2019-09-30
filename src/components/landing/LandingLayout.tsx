@@ -72,12 +72,12 @@ const LandingLayout = (props: IProps) => {
 
   const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
-  const whyPanelBackgroundMobile = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
+  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/panelTwo.png');
+  const whyPanelBackgroundMobile = undefined;
   const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.png');
   const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
-  const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.png');
-  const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
+  const panelTwoBackground = undefined;
+  const panelTwoBackgroundMobile = undefined;
 
   return (
     <div
@@ -118,7 +118,6 @@ const LandingLayout = (props: IProps) => {
             {props.hero}
           </div>
         </div>
-        <Divider style={{ margin: 0 }} />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
           <img
             src={
