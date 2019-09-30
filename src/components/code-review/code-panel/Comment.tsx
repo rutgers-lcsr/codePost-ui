@@ -26,11 +26,11 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import { findBlockElement } from './BlockUtils.tsx';
+
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
-
-import { findBlockElement } from './BlockUtils.tsx';
 
 const { TextArea } = Input;
 

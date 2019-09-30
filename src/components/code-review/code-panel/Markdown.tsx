@@ -1,10 +1,11 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
-import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
-
-import { CommentType } from '../../../infrastructure/comment';
-import { File } from '../../../infrastructure/file';
-
+/* other library imports */
 import { jupyterToMarkdown } from './Jupyter';
 
 import ReactMarkdown from 'react-markdown';
@@ -15,10 +16,18 @@ import * as turndownPluginGfm from 'turndown-plugin-gfm';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-const turndown = new TurndownService();
-turndown.use(turndownPluginGfm.tables);
+/* codePost imports */
+import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
+
+import { CommentType } from '../../../infrastructure/comment';
+import { File } from '../../../infrastructure/file';
 
 import { getBlockClassName } from './BlockUtils.tsx';
+
+/**********************************************************************************************************************/
+
+const turndown = new TurndownService();
+turndown.use(turndownPluginGfm.tables);
 
 interface IMarkdownProps {
   commentCounter: number;
@@ -56,7 +65,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   };
 
   const renderers = useMarkdownRenderers(
-    getBlockClassName.bind(props.comments, props.readOnly),
+    getBlockClassName.bind({}, props.comments, props.readOnly),
     props.readOnly ? undefined : onBlockElementClick,
   );
 

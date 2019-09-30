@@ -1,15 +1,24 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import React, { useState } from 'react';
 
+/* other library imports */
 import { Document, Page } from 'react-pdf';
 
 import { pdfjs } from 'react-pdf';
 
+/* codePost imports */
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 
 import { CommentType } from '../../../infrastructure/comment';
 import { File } from '../../../infrastructure/file';
 
 import { getBlockClassName } from './BlockUtils.tsx';
+
+/**********************************************************************************************************************/
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
