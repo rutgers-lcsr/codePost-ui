@@ -3,8 +3,6 @@ import * as React from 'react';
 import { Icon, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import CPFlex from '../../core/CPFlex';
-
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 const SubMenu = Menu.SubMenu;
@@ -66,13 +64,11 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
       case 0:
       case 1:
         return 'submissions';
-        break;
       case 3:
       case 4:
       case 5:
       case 6:
         return 'roster';
-        break;
     }
 
     return '';

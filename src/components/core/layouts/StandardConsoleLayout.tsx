@@ -83,7 +83,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [props.editRubricMode]);
+    // Really, handleResize() should implement React.useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.editRubricMode, props.consoleTypes]);
 
   const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
     if (window.innerHeight !== 0) {
@@ -109,10 +111,13 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           switch (node.key) {
             case 'submission-info':
               LOCAL_SETTINGS.infoMenuHidden.setter(keys.indexOf(indexString) === -1);
+              break;
             case 'file-menu':
               LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
+              break;
             case 'rubric-menu':
               LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
+              break;
           }
         });
       }

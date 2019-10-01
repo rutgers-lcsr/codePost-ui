@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Dropdown, Icon, Menu, Tag } from 'antd';
+import { Badge as AntBadge, Dropdown, Icon, Menu } from 'antd';
 
 import moment from 'moment';
 
