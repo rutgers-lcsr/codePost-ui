@@ -479,7 +479,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
-          isStudent: submission.students.indexOf(this.props.user.email) > -1,
+          isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
         });
         break;
 
