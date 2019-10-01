@@ -401,10 +401,12 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               lineHeight: '12px',
             }}
           >
-            <span style={shortcutStyle}>
-              [{osControlKey()}
-              {sortedIndex + 1}]
-            </span>
+            {sortedIndex < 9 ? (
+              <span style={shortcutStyle}>
+                [{osControlKey()}
+                {sortedIndex + 1}]
+              </span>
+            ) : null}
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{
@@ -417,6 +419,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 textOverflow: 'ellipsis',
                 fontSize: 12,
               }}
+              title={file.name}
             >
               {file.name}
               {oldVersionsMenu}
