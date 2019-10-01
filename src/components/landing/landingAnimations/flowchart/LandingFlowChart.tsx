@@ -5,12 +5,13 @@ import { FlowChart } from './FlowChart.tsx';
 const nodes: any[] = [
   {
     id: 0,
-    title: 'Import submissions',
+    title: 'Import code',
     position: { x: 0, y: 40 },
     icon: 'import',
     color: '#24be85',
     tint: 10,
-    popoverContent: 'Easily integrate the submissions of your existing upload system (LMS, homegrown tool).',
+    popoverContent:
+      'You can integrate codePost with any system for code submission -- LMS, GitHub, or your own tool. Students submit there, and then you can review their code in codePost after import.',
   },
   {
     id: 1,
@@ -19,7 +20,7 @@ const nodes: any[] = [
     icon: 'cloud-upload',
     color: '#24be85',
     tint: 10,
-    popoverContent: `Use codePost's built in student upload system if you don't already have a preferred upload tool.`,
+    popoverContent: `Use codePost's built-in submission system for an easy way to collect student work.`,
   },
   {
     id: 2,
@@ -29,7 +30,7 @@ const nodes: any[] = [
     color: '#24be85',
     tint: 10,
     popoverContent:
-      'codePost has an office hours mode where students can submit code questions for grader feedback, and share links to their code. ',
+      'Use codePost office hours mode to give students quick feedback on their code. Students share a link to their code, you add comments, then students see the comments.',
   },
   {
     id: 3,
@@ -38,7 +39,7 @@ const nodes: any[] = [
     icon: 'code',
     color: '#24be85',
     tint: 25,
-    popoverContent: `Integrate your autograder so that test outputs are included in your students' submission. codePost built-in autograder is coming soon!`,
+    popoverContent: `Integrate with your autograder to view test output alongside student code. Or use codePost's built-in autograder...coming soon.`,
   },
   {
     id: 4,
@@ -47,7 +48,7 @@ const nodes: any[] = [
     icon: 'highlight',
     color: '#24be85',
     tint: 25,
-    popoverContent: `Annotate your students' code with the easiest code annotation tool.`,
+    popoverContent: `Effortlessly annotate your students' code with comments, points, and rubric items.`,
   },
   {
     id: 5,
@@ -56,7 +57,7 @@ const nodes: any[] = [
     icon: 'exception',
     color: '#24be85',
     tint: 25,
-    popoverContent: `Run all your students' submissions through plagiarism detection (MOSS) with a single click.`,
+    popoverContent: `With two clicks, check submissions in codePost for evidence of plagiarism via Moss.`,
   },
   {
     id: 6,
@@ -65,7 +66,8 @@ const nodes: any[] = [
     icon: 'profile',
     color: '#24be85',
     tint: 25,
-    popoverContent: 'Write standard rubrics to structure grading for your TA.',
+    popoverContent:
+      'Write standard rubrics to ensure consistent grading, capture pedagogical data, and minimize copy-pasting.',
   },
   {
     id: 7,
@@ -74,7 +76,7 @@ const nodes: any[] = [
     icon: 'dashboard',
     color: '#24be85',
     tint: 75,
-    popoverContent: `Track grading progress with a central dashboard, and view stats across TAs to identify areas to review.`,
+    popoverContent: `Manage a large course? codePost provides a birds-eye-view of the grading process to make sure everything gets graded by the right person. Monitor the work of your TAs to ensure consistent quality and fairness.`,
   },
   {
     id: 8,
@@ -83,7 +85,7 @@ const nodes: any[] = [
     icon: 'bar-chart',
     color: '#24be85',
     tint: 75,
-    popoverContent: `See data across all your submissions, such as most common errors, in order to find areas to updating grading (e.g., updating rubric) or to focus on in the next lecture.`,
+    popoverContent: `Mine pedagogical data: learn what types of errors your students make most often.`,
   },
   {
     id: 9,
@@ -92,7 +94,7 @@ const nodes: any[] = [
     icon: 'inbox',
     color: '#24be85',
     tint: 100,
-    popoverContent: `Distribute student feedback with a single click, and allow them to access a modern interface. `,
+    popoverContent: `Distribute student feedback with a single click.`,
   },
   {
     id: 10,
@@ -101,7 +103,7 @@ const nodes: any[] = [
     icon: 'export',
     color: '#24be85',
     tint: 100,
-    popoverContent: `Export your grades from codePost to your LMS, or other system of record.`,
+    popoverContent: `Export grades from codePost to your LMS or any other system of record.`,
   },
   {
     id: 11,
@@ -110,7 +112,7 @@ const nodes: any[] = [
     icon: 'like',
     color: '#24be85',
     tint: 100,
-    popoverContent: `Collect feedback from your students on their grading. codePost allows for students to mark which comments were most helpful, and to optionally submit regrade requests.`,
+    popoverContent: `Learn whether your feedback was helpful to your students, so you can become a better feedback-giver.`,
   },
   {
     id: 12,
@@ -134,7 +136,7 @@ const nodes: any[] = [
   },
   {
     id: 14,
-    title: 'Review',
+    title: 'Analyze',
     position: { x: 66, y: 20 },
     outgoingNodes: [15],
     icon: 'dummy',
@@ -151,6 +153,15 @@ const nodes: any[] = [
     color: '#24be85',
     tint: 100,
     isCategory: true,
+  },
+  {
+    id: 16,
+    title: 'Regrade requests',
+    position: { x: 100, y: 85 },
+    icon: 'redo',
+    color: '#24be85',
+    tint: 100,
+    popoverContent: `Allow students to request a regrade, and then respond to their requests without leaving codePost.`,
   },
 ];
 
