@@ -645,9 +645,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           return {
             ...toRet,
             partners:
-              submission.students.length === 1
+              submission.students !== undefined && submission.students.length === 1
                 ? '--'
-                : submission.students
+                : submission.students !== undefined &&
+                  submission.students
                     .filter((student) => {
                       return student !== this.props.user.email;
                     })
