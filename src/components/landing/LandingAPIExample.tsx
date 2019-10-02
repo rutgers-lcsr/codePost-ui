@@ -14,6 +14,7 @@ import CPButton from '../core/CPButton';
 
 const Panel = Collapse.Panel;
 
+/* eslint-disable no-multi-str */
 const apiCodeExamples = [
   {
     title: 'Export grades',
@@ -104,6 +105,7 @@ for category in rubric_categories:\n\
   print(_freq_list)',
   },
 ];
+/* eslint-enable no-multi-str */
 
 interface IState {
   exampleIndex: number;
@@ -117,7 +119,6 @@ const dummyFunction = () => {
 let instance: CodeMirror.Editor | null = null;
 // @ts-ignore
 const setEditor = (editor: CodeMirror.Editor) => {
-  console.log('instance set');
   instance = editor;
 };
 

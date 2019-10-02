@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 
-import { Empty, Menu, message, notification } from 'antd';
+import { Empty, message, notification } from 'antd';
 
 import queryString from 'query-string';
 
@@ -71,8 +71,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { demoFiles } from './demoCode';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 

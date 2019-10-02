@@ -124,6 +124,7 @@ class NoMatch extends React.Component<IProps, IState> {
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
           <Typography.Title level={3}>Whoops! This page doesn't exist!</Typography.Title>
           <Typography.Title level={4}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             You can <Link to="/">return to our homepage</Link>, or <a onClick={this.openIntercom}>let us know</a> if you
             can't find what you're looking for...
           </Typography.Title>

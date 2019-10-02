@@ -20,8 +20,6 @@ import CPFlex from '../core/CPFlex';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
-import _ from 'lodash';
-
 /* codePost imports */
 import MySubmissionsPanel from './MySubmissionsPanel';
 import SectionPanel from './SectionPanel';

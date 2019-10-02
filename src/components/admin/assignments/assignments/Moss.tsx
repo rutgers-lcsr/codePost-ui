@@ -299,6 +299,7 @@ const Moss = (props: IMossProps) => {
           Want help getting started with Moss? Check out our guide{' '}
           <a
             target="_blank"
+            rel="noopener noreferrer"
             href="https://help.codepost.io/en/articles/3324264-faq-does-codepost-do-plagiarism-detection"
           >
             here
@@ -460,6 +461,8 @@ const ProgressBar = (props: any) => {
     return () => {
       clearInterval(interval);
     };
+    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <Progress percent={counter} showInfo={false} />;

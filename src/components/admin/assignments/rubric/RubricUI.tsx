@@ -8,9 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Checkbox, Breadcrumb, Empty } from 'antd';
 
-/* other library imports */
-import _ from 'lodash';
-
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
 
@@ -61,6 +58,7 @@ const RubricUI = ({
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     for (const cat of rubricCategories) {
       if (!showPointLimits && typeof cat.pointLimit === 'number') {
