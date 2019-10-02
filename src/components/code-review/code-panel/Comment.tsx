@@ -537,7 +537,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={negTheme}
               onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
             >
-              👎
+              <span role="img" aria-label="downvote">
+                👎
+              </span>
             </CPButton>
           </Tooltip>
           <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
@@ -546,7 +548,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={posTheme}
               onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
             >
-              👍
+              <span role="img" aria-label="upvote">
+                👍
+              </span>
             </CPButton>
           </Tooltip>
         </Button.Group>

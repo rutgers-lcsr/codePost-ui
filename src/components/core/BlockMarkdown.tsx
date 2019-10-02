@@ -33,6 +33,7 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   };
 
   const linkRenderer = (props: any) => {
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
     return <a {...props} target="_blank" />;
   };
 

@@ -85,7 +85,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     };
     // Really, handleResize() should implement React.useCallback()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.editRubricMode, props.consoleTypes]);
+  }, [props.editRubricMode]);
 
   const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
     if (window.innerHeight !== 0) {

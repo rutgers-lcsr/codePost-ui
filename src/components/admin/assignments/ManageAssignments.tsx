@@ -573,7 +573,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 }}
               </RubricManager>
             );
-            break;
           case DETAIL_TYPE.Stats:
             return (
               <AssignmentStats
@@ -599,7 +598,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 location={this.props.location}
               />
             );
-            break;
           case DETAIL_TYPE.Regrades:
             return (
               <AssignmentRegrades
@@ -612,7 +610,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 currentCourse={this.props.currentCourse!}
               />
             );
-            break;
           case DETAIL_TYPE.DownloadGrades:
             detailComponent = (
               <DownloadGrades

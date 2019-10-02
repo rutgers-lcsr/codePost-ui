@@ -448,15 +448,12 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             return this.deleteLinkedComments(rubricComment).then(() => {
               return RubricComment.delete(rubricComment.id);
             });
-            break;
           case RESOLUTION.UNLINK:
             return this.unlinkLinkedComments(rubricComment).then(() => {
               return RubricComment.delete(rubricComment.id);
             });
-            break;
           default:
             return Promise.resolve();
-            break;
         }
       } else {
         return RubricComment.delete(rubricComment.id);
@@ -495,7 +492,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public deleteLinkedComments = (rubricComment: RubricCommentType) => {
     const promises = rubricComment.comments.map((commentID) => {
-      CommentIO.delete(commentID);
+      return CommentIO.delete(commentID);
     });
 
     return Promise.all(promises);
@@ -509,7 +506,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         pointDelta: rubricComment.pointDelta,
         rubricComment: null,
       };
-      CommentIO.update(payload);
+      return CommentIO.update(payload);
     });
 
     return Promise.all(promises);

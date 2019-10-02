@@ -269,6 +269,7 @@ const RubricUI = ({
         breadcrumbs={
           <Breadcrumb>
             <Breadcrumb.Item onClick={props.onCancel}>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Assignments</a>
             </Breadcrumb.Item>
             <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
