@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "2.1.27",
+  "version": "2.1.28",
   "private": true,
   "dependencies": {
     "@types/jest": "24.0.18",
