@@ -19,3 +19,4 @@ phases:
       - echo "post_build step"
       - printenv
       - aws s3 sync --delete build/ $S3_BUCKET
+      - aws lambda invoke --function-name invalidate_CF_from_S3
