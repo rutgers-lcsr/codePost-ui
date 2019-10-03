@@ -159,7 +159,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
     const customPanelStyle = {
       background: 'rgb(38, 50, 56, 0.95)',
-      borderRadius: 24,
+      borderRadius: 8,
       color: 'white',
       fontSize: 20,
       paddingTop: 10,
@@ -221,7 +221,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             top: 5,
             background: 'white',
             zIndex: 0,
-            borderRadius: 10,
+            borderRadius: 5,
             transition: '.3s',
             transform: `translateY(${
               exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'

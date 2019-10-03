@@ -10,6 +10,7 @@ import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
+import memoizeOne from 'memoize-one';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -117,32 +118,30 @@ class ManageGraders extends React.Component<IProps, IState> {
     }
   };
 
-  public toInvite = () => {
-    return this.props.graders.filter((grader) => {
-      return this.props.notActivated.indexOf(grader) > -1;
+  public toInvite = memoizeOne((graders: string[], inactiveUsers: string[]) => {
+    return graders.filter((grader) => {
+      return inactiveUsers.indexOf(grader) > -1;
     });
-  };
+  });
 
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
     let data: any[] = [];
 
-    const hasInactives = this.props.notActivated.some((el) => {
-      return this.props.graders.indexOf(el) > -1;
-    });
+    const inactiveEmails = this.toInvite(this.props.graders, this.props.notActivated);
 
     if (this.props.loadComplete) {
       actions = [
-        hasInactives ? (
+        inactiveEmails.length > 0 ? (
           <SendEmailModal
             key="activation"
             buttonText="Send invites"
             title="Send activation emails to graders"
-            template="add_graders"
+            template="add_grader"
             course={this.props.currentCourse}
             me={this.props.myEmail}
-            filterFunction={this.toInvite}
+            emails={inactiveEmails}
             body={
               <div>
                 Send activation emails to all graders who have not yet joined codePost. Users who have signed up won't

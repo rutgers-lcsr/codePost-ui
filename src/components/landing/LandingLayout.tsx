@@ -70,14 +70,14 @@ const LandingLayout = (props: IProps) => {
         : landingVars.maxWidths.backgroundImageNormal,
   };
 
-  const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.jpg');
+  const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/whyPanel.jpg');
-  const whyPanelBackgroundMobile = require('../../img/landing/compressed/backgrounds/whyPanel-MOBILE.jpg');
-  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.jpg');
+  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/panelTwo.png');
+  const whyPanelBackgroundMobile = undefined;
+  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.png');
   const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
-  const panelTwoBackground = require('../../img/landing/compressed/backgrounds/panelTwo.jpg');
-  const panelTwoBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelTwo-MOBILE.jpg');
+  const panelTwoBackground = undefined;
+  const panelTwoBackgroundMobile = undefined;
 
   return (
     <div

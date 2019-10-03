@@ -54,10 +54,10 @@ export const StudentSubmissionV = t.intersection(
     GenericObject,
     t.type({
       isFinalized: t.boolean,
-      students: t.array(t.string),
       assignment: t.number,
     }),
     t.partial({
+      students: t.array(t.string),
       files: t.array(t.number),
       grade: t.union([t.number, t.null]),
       questionIsOpen: t.boolean,

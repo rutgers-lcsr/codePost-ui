@@ -50,10 +50,10 @@ const panelHPaddingMobile = 25;
 
 // Background Image offsets -- These are the vertical offsets for the background images,
 // in number of pixels relative to the start of their respective panel
-const testimonialImgOffset = 25;
-const whyPanelImgOffset = 300;
-const panelOneImgOffset = 125;
-const panelTwoImgOffset = 225;
+const testimonialImgOffset = 75;
+const whyPanelImgOffset = 450;
+const panelOneImgOffset = 250;
+const panelTwoImgOffset = 0;
 const panelThreeImgOffset = 200;
 const testimonialImgOffsetMobile = 25;
 const whyPanelImgOffsetMobile = 50;
