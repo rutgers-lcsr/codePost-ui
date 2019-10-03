@@ -19,5 +19,5 @@ phases:
       - echo "post_build step"
       - printenv
       - aws s3 sync --delete build/ $S3_BUCKET
-      - aws lambda invoke --function-name arn:aws:lambda:us-east-2:401180085381:function:invalidate_CF_from_S3 --payload '{"key":"$S3_BUCKET"}' --log-type Tail out
+      - aws lambda invoke --function-name arn:aws:lambda:us-east-2:401180085381:function:invalidate_CF_from_S3 --payload '{"key":$S3_BUCKET}' --log-type Tail out
          
