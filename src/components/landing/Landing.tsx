@@ -24,9 +24,7 @@ import LandingPanel from './LandingPanel';
 import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
 
 // Animations
-// import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
-// import { AdminModule } from './AdminModule';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
