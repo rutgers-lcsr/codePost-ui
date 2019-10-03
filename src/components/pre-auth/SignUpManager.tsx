@@ -20,11 +20,15 @@ import useWindowSize from '../core/useWindowSize';
 
 const buttonStyle = { fontSize: 18 };
 
+const studentImg = require('../../img/landing/compressed/student_cartoon.png');
+const teacherImg = require('../../img/landing/compressed/teacher_cartoon.png');
+
 const SignUpManager = () => {
   const windowSize = useWindowSize();
   const breakpoint = 750;
-  const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
-  const dividerType = windowSize.width < breakpoint ? 'horizontal' : 'vertical';
+  const flexDirection = 'column';
+  const flexDirectionButtons = windowSize.width < 950 ? 'column' : 'row';
+  const dividerType = 'horizontal';
   const titleFontLevel = windowSize.width < breakpoint ? 2 : 1;
   return (
     <PreAuthSignupLayout step={0}>
@@ -32,50 +36,63 @@ const SignUpManager = () => {
         <br />
         <br />
         <div style={{ display: 'flex', flexDirection, justifyContent: 'center', alignItems: 'center' }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              maxWidth: 400,
-              alignItems: 'center',
-              paddingBottom: 30,
-            }}
-          >
-            <Typography.Title level={titleFontLevel} style={{ marginBottom: '3px' }}>
-              Create a Course
-            </Typography.Title>
-            <span style={{ fontSize: 18, fontWeight: 500, marginBottom: '19px' }}>Instructors</span>
-            <span style={{ fontSize: 14, textAlign: 'center' }}>
-              For course leaders (e.g. TAs, teaching faculty) interested in setting up codePost for their course.
-            </span>
-            <Link to="/signup/create" style={{ marginTop: 25 }}>
-              <Button icon="user-add" type="primary" style={buttonStyle}>
-                Sign Up
-              </Button>
-            </Link>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                maxWidth: 400,
+                alignItems: 'center',
+                paddingBottom: 30,
+              }}
+            >
+              <Typography.Title style={{ marginBottom: 0, textAlign: 'center' }} level={titleFontLevel}>
+                Instructors and Staff
+              </Typography.Title>
+              <div style={{ display: 'flex', flexDirection: flexDirectionButtons, alignItems: 'center' }}>
+                <Link to="/signup/create" style={{ marginTop: 25 }}>
+                  <Button icon="user-add" type="primary" style={buttonStyle}>
+                    Create Course
+                  </Button>
+                </Link>
+                <Link to="/signup/join" style={{ marginTop: 25, marginLeft: windowSize.width < 950 ? 0 : 20 }}>
+                  <Button icon="team" style={buttonStyle}>
+                    Join Existing Course
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <img
+              src={teacherImg}
+              style={{ maxWidth: 500, paddingLeft: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
+              alt=""
+            />
           </div>
-          <Divider type={dividerType} style={{ fontSize: 250, marginLeft: 15, marginRight: 15 }} />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              maxWidth: 400,
-              alignItems: 'center',
-              paddingBottom: 30,
-            }}
-          >
-            <Typography.Title style={{ color: 'rgba(0,0,0,0.6)', marginBottom: '3px' }} level={titleFontLevel}>
-              Join a Course
-            </Typography.Title>
-            <span style={{ fontSize: 18, fontWeight: 500, marginBottom: '19px' }}>Course Staff / Students</span>
-            <span style={{ fontSize: 14, textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>
-              For staff and students who have been added to a course on codePost.
-            </span>
-            <Link to="/signup/join" style={{ marginTop: 25 }}>
-              <Button icon="team" style={buttonStyle}>
-                Join
-              </Button>
-            </Link>
+          <Divider type={dividerType} style={{ fontSize: 250, marginTop: 35, marginBottom: 35 }} />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              src={studentImg}
+              style={{ maxWidth: 500, paddingRight: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
+              alt=""
+            />
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                maxWidth: 400,
+                alignItems: 'center',
+                paddingBottom: 30,
+              }}
+            >
+              <Typography.Title style={{ marginBottom: 0 }} level={titleFontLevel}>
+                Students
+              </Typography.Title>
+              <Link to="/signup/join" style={{ marginTop: 25 }}>
+                <Button icon="team" style={buttonStyle}>
+                  Join Existing Course
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
