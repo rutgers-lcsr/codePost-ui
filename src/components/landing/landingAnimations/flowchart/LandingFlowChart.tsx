@@ -11,7 +11,7 @@ const nodes: any[] = [
     color: '#24be85',
     tint: 10,
     popoverContent:
-      'You can integrate codePost with any system for code submission -- LMS, GitHub, or your own tool. Students submit there, and then you can review their code in codePost after import.',
+      'You can integrate any system for code submission -- LMS, GitHub, or your own tool. Students submit there, and then you can review their code in codePost after import.',
   },
   {
     id: 1,
@@ -30,7 +30,7 @@ const nodes: any[] = [
     color: '#24be85',
     tint: 10,
     popoverContent:
-      'Use codePost office hours mode to give students quick feedback on their code. Students share a link to their code, you add comments, then students see the comments.',
+      'Use office hours mode to give students quick feedback on their code. Students share a link to their code, you add comments, then students see the comments.',
   },
   {
     id: 3,
