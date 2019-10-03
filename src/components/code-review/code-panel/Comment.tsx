@@ -336,6 +336,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           Block {this.props.comment.startLine + 1}
         </span>
       );
+    } else if (File.codeType(this.props.file) === 'pdf') {
+      commentElements.line = (
+        <span
+          className="cp-label--mid-bold cp-label--italic"
+          style={{ color: this.context.consoleTheme.commentTitleText }}
+        >
+          Page {this.props.comment.startLine}
+        </span>
+      );
     } else {
       commentElements.line = (
         <span

@@ -20,7 +20,7 @@ import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { findBlockElement } from './BlockUtils.tsx';
+import { findBlockElement, getPDFStartPlacement } from './BlockUtils.tsx';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
@@ -81,9 +81,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     this.state = {
       placements: this.props.comments.map((comment: CommentType, index: number) => {
+        const placement =
+          File.codeType(props.file) === 'pdf'
+            ? getPDFStartPlacement(comment)
+            : comment.startLine * themeVars.grade.codeLineHeight;
         return {
           commentID: comment.id,
-          placement: comment.startLine * themeVars.grade.codeLineHeight,
+          placement,
         };
       }),
     };
@@ -211,10 +215,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
       let startAt =
-        comment.startLine * lineHeight -
-        themeVars.grade.arrowDisplacement +
-        containerDifference -
-        this.props.verticalOffset;
+        File.codeType(this.props.file) === 'pdf'
+          ? getPDFStartPlacement(comment)
+          : comment.startLine * lineHeight -
+            themeVars.grade.arrowDisplacement +
+            containerDifference -
+            this.props.verticalOffset;
 
       // Find position of markdown block elements
       const blockElement: HTMLElement | null = findBlockElement(this.props.file, comment.startLine);

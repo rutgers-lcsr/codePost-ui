@@ -2,6 +2,8 @@
 import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 
+import themeVars from '../../../styles/abstracts/_theme.js';
+
 const blockContainsComment = (comments: CommentType[], index: number): boolean => {
   return (
     comments.filter((comment: CommentType) => {
@@ -9,6 +11,7 @@ const blockContainsComment = (comments: CommentType[], index: number): boolean =
     }).length > 0
   );
 };
+
 export const getBlockClassName = (comments: CommentType[], readOnly: boolean, index: number): string => {
   const editable = readOnly ? 'readonly' : 'active';
   let className = `markdown-block markdown-block--empty ${editable}`;
@@ -25,4 +28,8 @@ export const findBlockElement = (file: FileType, startLine: number) => {
   } else {
     return document.querySelector(`[index-number="${startLine}"]`);
   }
+};
+
+export const getPDFStartPlacement = (comment: CommentType) => {
+  return themeVars.grade.pageHeight * (comment.startLine - 1);
 };
