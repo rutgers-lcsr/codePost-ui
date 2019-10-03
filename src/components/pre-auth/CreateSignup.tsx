@@ -326,8 +326,6 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Divider />
             <span>
               Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
-              <Link to="/signup/join">Want to join a course instead?</Link>
-              <br />
             </span>
           </div>
         );
@@ -443,6 +441,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection,
+            paddingTop: 20,
           }}
         >
           <div>
