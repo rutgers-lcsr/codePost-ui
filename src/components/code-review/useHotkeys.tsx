@@ -38,6 +38,10 @@ export const P_KEY = 80;
 
 /*******************************************************************************/
 
+export const K_KEY = 75;
+
+/*******************************************************************************/
+
 const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: boolean) => {
   const os = getOperatingSystem();
 

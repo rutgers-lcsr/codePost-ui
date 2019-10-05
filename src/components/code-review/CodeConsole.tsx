@@ -76,6 +76,9 @@ import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import Foobar from '../core/Foobar';
+import { helpQueryMap } from './HelpQueries';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -1615,6 +1618,80 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     };
 
+    /*************************************************************************************/
+    /* Foobar config */
+    /*************************************************************************************/
+
+    /* callbacks */
+    const assigner = (queryValue?: string) => {
+      if (queryValue !== undefined) {
+        this.updateGrader(this.state.submission!, queryValue);
+      }
+    };
+
+    const downloadCode = () => {
+      (document as any).getElementById('download-code').click();
+    };
+
+    const viewAsStudent = () => {
+      (document as any).getElementById('view-as-student').click();
+    };
+
+    const toggleTheme = () => {
+      (document as any).getElementById('theme-toggle').click();
+    };
+
+    const goToFile = (queryValue?: string) => {
+      if (queryValue !== undefined) {
+        const foundFile = this.state.files.find((file) => {
+          return file.name === queryValue;
+        });
+        if (foundFile) {
+          this.changeSelectedFile(foundFile.id);
+        }
+      }
+    };
+
+    const assignToMe = assigner.bind(this, `Assign to ${this.props.user.email}`);
+
+    /* option generators */
+    const genGraders = () => {
+      return this.state.graders.map((grader) => {
+        return { value: grader, label: `Assign to ${grader}`, callback: assigner };
+      });
+    };
+
+    const genFiles = () => {
+      return this.state.files.map((file) => {
+        return { value: file.name, label: `Jump to ${file.name}`, callback: goToFile };
+      });
+    };
+
+    const finalizeText = this.state.submission && this.state.submission.isFinalized ? 'Unfinalize' : 'Finalize';
+
+    let defaultOptions = [
+      {
+        value: 'Assign to ',
+        label: 'Assign to {{grader}}',
+        genQueries: genGraders,
+      } /* dynamic query */,
+      {
+        value: 'Jump to ',
+        label: 'Jump to {{file}}',
+        genQueries: genFiles,
+      } /* dynamic query */,
+      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized } /* static query */,
+      { value: 'Download code', label: 'Download code', callback: downloadCode } /* static query */,
+      { value: 'View as student', label: 'View as student', callback: viewAsStudent } /* static query */,
+      ...helpQueryMap,
+    ];
+
+    if (this.state.graders.indexOf(this.props.user.email) > -1) {
+      defaultOptions = [{ value: 'Claim', label: 'Claim', callback: assignToMe }, ...defaultOptions];
+    }
+
+    /*************************************************************************************/
+
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
@@ -1644,6 +1721,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           content={content}
           editRubricMode={this.state.editRubricMode}
         />
+        <Foobar queryMap={defaultOptions} />
       </div>
     );
   }
