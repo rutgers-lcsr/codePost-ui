@@ -1373,6 +1373,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit:
+                  this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1601,6 +1603,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit:
+                  this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

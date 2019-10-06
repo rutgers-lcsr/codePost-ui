@@ -44,6 +44,9 @@ enum EDITING_STATUS {
 }
 
 interface IRubricMenuUIProps extends IRubricManagerProps {
+  /* is the user allowed to edit the rubric? */
+  canUserEdit: boolean;
+
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
   toggleEditRubricMode: () => void;
@@ -90,7 +93,7 @@ const RubricMenuUI = ({
   };
 
   React.useEffect(() => {
-    if (props.assignment.collaborativeRubricMode) {
+    if (props.canUserEdit) {
       props.turnOnReload();
     }
   }, []);
@@ -189,7 +192,7 @@ const RubricMenuUI = ({
   };
 
   const toggleEditRubricMode = () => {
-    if (props.assignment.collaborativeRubricMode) {
+    if (props.canUserEdit) {
       setEditingStatuses({});
       props.turnOnReload();
       if (!props.editRubricMode) {
@@ -253,7 +256,7 @@ const RubricMenuUI = ({
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
-  if (state.loadComplete && props.assignment.collaborativeRubricMode) {
+  if (state.loadComplete && props.canUserEdit) {
     const x = helpers.changesMade();
     if (x !== changesMade) {
       setChangesMade(x);
@@ -375,7 +378,7 @@ const RubricMenuUI = ({
 
   let searchBar;
 
-  if (props.assignment.collaborativeRubricMode) {
+  if (props.canUserEdit) {
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
