@@ -1179,7 +1179,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public turnOnReload = () => {
-    this.setState({ rubricReload: 5000 });
+    this.setState({ rubricReload: 15000 });
   };
 
   public turnOffReload = () => {
@@ -1355,6 +1355,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           />,
           <RubricManager
             key="rubric-menu"
+            shouldLoadFeedback={false}
             assignment={this.state.assignment}
             submissions={[]}
             onCancel={onCancel}
@@ -1590,6 +1591,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             onCancel={onCancel}
             reloadInterval={this.state.rubricReload}
             setRubric={this.setRubric}
+            shouldLoadFeedback={false}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
