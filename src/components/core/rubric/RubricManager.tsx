@@ -74,6 +74,8 @@ export interface IRubricManagerProps {
   assignment: AssignmentType;
   submissions: SubmissionType[];
 
+  demoMode: boolean;
+
   onCancel: () => void;
 
   reloadInterval?: number;
@@ -390,7 +392,13 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           const innerPromises = commentList.map((comment) => {
             // assume all comments are also new
             comment.category = newCategory.id;
-            return RubricComment.create(comment);
+
+            // If in demo mode, just simulate a save by returning the latest state of the rubric
+            if (this.props.demoMode) {
+              return comment;
+            } else {
+              return RubricComment.create(comment);
+            }
           });
 
           return Promise.all(innerPromises);
@@ -405,7 +413,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         });
 
         let categoryPromise: Promise<any>;
-        if (categoryNeedsSaving) {
+        if (categoryNeedsSaving && !this.props.demoMode) {
           // We don't want to pass in the ids of comments on update
           // Passing in these comments can create race conditions
           const { rubricComments, ...payload } = category;
@@ -416,14 +424,14 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
         const commentList = comments[category.id];
         const commentPromises = commentList.map((comment) => {
-          if (comment.id < 0) {
+          if (comment.id < 0 && !this.props.demoMode) {
             return RubricComment.create(comment);
           } else {
             const commentNeedsSaving = unsavedComments.some((el) => {
               return el.id === comment.id;
             });
 
-            if (commentNeedsSaving) {
+            if (commentNeedsSaving && !this.props.demoMode) {
               // We don't want to pass in the ids of linked comments on update
               // Passing in these comments can create race conditions
               // An example is if a linked comment gets deleted between rubric saves
@@ -440,50 +448,61 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     });
 
     // Perform all deletes
-    const deleteComments = deletedComments.map((rubricComment) => {
-      if (Object.keys(resolved).includes(rubricComment.id.toString())) {
-        const howToResolve = resolved[rubricComment.id];
-        switch (howToResolve) {
-          case RESOLUTION.DELETE:
-            return this.deleteLinkedComments(rubricComment).then(() => {
-              return RubricComment.delete(rubricComment.id);
-            });
-          case RESOLUTION.UNLINK:
-            return this.unlinkLinkedComments(rubricComment).then(() => {
-              return RubricComment.delete(rubricComment.id);
-            });
-          default:
-            return Promise.resolve();
-        }
-      } else {
-        return RubricComment.delete(rubricComment.id);
-      }
-    });
+    const deleteComments = this.props.demoMode
+      ? []
+      : deletedComments.map((rubricComment) => {
+          if (Object.keys(resolved).includes(rubricComment.id.toString())) {
+            const howToResolve = resolved[rubricComment.id];
+            switch (howToResolve) {
+              case RESOLUTION.DELETE:
+                return this.deleteLinkedComments(rubricComment).then(() => {
+                  return RubricComment.delete(rubricComment.id);
+                });
+              case RESOLUTION.UNLINK:
+                return this.unlinkLinkedComments(rubricComment).then(() => {
+                  return RubricComment.delete(rubricComment.id);
+                });
+              default:
+                return Promise.resolve();
+            }
+          } else {
+            return RubricComment.delete(rubricComment.id);
+          }
+        });
 
     // Wait until comments are deleted before deleting categories
     await Promise.all(deleteComments);
-    const deleteCategories = deletedCategories.map((rubricCategory) => {
-      return RubricCategory.delete(rubricCategory.id);
-    });
+    const deleteCategories = this.props.demoMode
+      ? []
+      : deletedCategories.map((rubricCategory) => {
+          return RubricCategory.delete(rubricCategory.id);
+        });
 
     const allPromises: Array<Promise<any>> = [...promises, ...deleteCategories];
     await Promise.all(allPromises);
 
     // retrieve rubric
     try {
-      return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
-        const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
-          newRubric.rubricCategories,
-          newRubric.rubricComments,
-        );
-
-        this.loadFeedbackScores(newRubric.rubricComments);
-
+      if (this.props.demoMode) {
         return {
-          rubricCategories: newRubric.rubricCategories,
-          rubricComments: commentMap,
+          rubricCategories: categories,
+          rubricComments: comments,
         };
-      });
+      } else {
+        return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
+          const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
+            newRubric.rubricCategories,
+            newRubric.rubricComments,
+          );
+
+          this.loadFeedbackScores(newRubric.rubricComments);
+
+          return {
+            rubricCategories: newRubric.rubricCategories,
+            rubricComments: commentMap,
+          };
+        });
+      }
     } catch (errors) {
       return {
         rubricCategories: categories,

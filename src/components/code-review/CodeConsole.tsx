@@ -1362,6 +1362,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               categories: this.state.rubricCategories,
               comments: _.flatten(Object.values(this.state.rubricComments)),
             }}
+            demoMode={true}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
@@ -1373,8 +1374,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
-                canUserEdit:
-                  this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
+                canUserEdit: true, // showcase in-console rubric editing in demo
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1592,6 +1592,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             onCancel={onCancel}
             reloadInterval={this.state.rubricReload}
             setRubric={this.setRubric}
+            demoMode={false}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
