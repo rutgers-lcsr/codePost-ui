@@ -381,71 +381,67 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     resolved: { [key: number]: RESOLUTION },
   ) => {
     // Perform all creates and updates
-    const promises = categories.map((category) => {
-      if (category.id < 0) {
-        // Category is new
-        // Step 1: create rubric category
-        // Step 2: create rubric comments, using new category ID
+    const promises = this.props.demoMode
+      ? []
+      : categories.map((category) => {
+          if (category.id < 0) {
+            // Category is new
+            // Step 1: create rubric category
+            // Step 2: create rubric comments, using new category ID
 
-        return RubricCategory.create(category).then((newCategory) => {
-          const commentList = comments[category.id];
-          const innerPromises = commentList.map((comment) => {
-            // assume all comments are also new
-            comment.category = newCategory.id;
+            return RubricCategory.create(category).then((newCategory) => {
+              const commentList = comments[category.id];
+              const innerPromises = commentList.map((comment) => {
+                // assume all comments are also new
+                comment.category = newCategory.id;
+                return RubricComment.create(comment);
+              });
 
-            // If in demo mode, just simulate a save by returning the latest state of the rubric
-            if (this.props.demoMode) {
-              return comment;
-            } else {
-              return RubricComment.create(comment);
-            }
-          });
-
-          return Promise.all(innerPromises);
-        });
-      } else {
-        // Category already exists
-        // Step 1: update category, if necessary
-        // Step 2: loop through comments, updating if necessary
-
-        const categoryNeedsSaving = unsavedCategories.some((el) => {
-          return el.id === category.id;
-        });
-
-        let categoryPromise: Promise<any>;
-        if (categoryNeedsSaving && !this.props.demoMode) {
-          // We don't want to pass in the ids of comments on update
-          // Passing in these comments can create race conditions
-          const { rubricComments, ...payload } = category;
-          categoryPromise = RubricCategory.update(payload);
-        } else {
-          categoryPromise = Promise.resolve();
-        }
-
-        const commentList = comments[category.id];
-        const commentPromises = commentList.map((comment) => {
-          if (comment.id < 0 && !this.props.demoMode) {
-            return RubricComment.create(comment);
+              return Promise.all(innerPromises);
+            });
           } else {
-            const commentNeedsSaving = unsavedComments.some((el) => {
-              return el.id === comment.id;
+            // Category already exists
+            // Step 1: update category, if necessary
+            // Step 2: loop through comments, updating if necessary
+
+            const categoryNeedsSaving = unsavedCategories.some((el) => {
+              return el.id === category.id;
             });
 
-            if (commentNeedsSaving && !this.props.demoMode) {
-              // We don't want to pass in the ids of linked comments on update
+            let categoryPromise: Promise<any>;
+            if (categoryNeedsSaving) {
+              // We don't want to pass in the ids of comments on update
               // Passing in these comments can create race conditions
-              // An example is if a linked comment gets deleted between rubric saves
-              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
-              return RubricComment.update(payload);
+              const { rubricComments, ...payload } = category;
+              categoryPromise = RubricCategory.update(payload);
             } else {
-              return Promise.resolve();
+              categoryPromise = Promise.resolve();
             }
+
+            const commentList = comments[category.id];
+            const commentPromises = commentList.map((comment) => {
+              if (comment.id < 0) {
+                return RubricComment.create(comment);
+              } else {
+                const commentNeedsSaving = unsavedComments.some((el) => {
+                  return el.id === comment.id;
+                });
+
+                if (commentNeedsSaving) {
+                  // We don't want to pass in the ids of linked comments on update
+                  // Passing in these comments can create race conditions
+                  // An example is if a linked comment gets deleted between rubric saves
+                  const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+                  return RubricComment.update(payload);
+                } else {
+                  return Promise.resolve();
+                }
+              }
+            });
+
+            return Promise.all([...commentPromises, categoryPromise]).then();
           }
         });
-
-        return Promise.all([...commentPromises, categoryPromise]).then();
-      }
-    });
 
     // Perform all deletes
     const deleteComments = this.props.demoMode
