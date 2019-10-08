@@ -179,7 +179,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
   return (
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
       <ButtonGroup>
-        <CPButton id="view-as-student" cpType={cpType} small={true} onClick={onClick}>
+        <CPButton id="download-code" cpType={cpType} small={true} onClick={onClick}>
           <Icon type="download" />
         </CPButton>
       </ButtonGroup>
