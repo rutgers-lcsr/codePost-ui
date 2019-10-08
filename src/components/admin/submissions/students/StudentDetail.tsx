@@ -309,9 +309,11 @@ class StudentDetail extends React.Component<IProps, IState> {
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item onClick={this.props.onBack}>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a>Submissions</a>
               </Breadcrumb.Item>
               <Breadcrumb.Item onClick={this.props.onBack}>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a>Students</a>
               </Breadcrumb.Item>
               <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>

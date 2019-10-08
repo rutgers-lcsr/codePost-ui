@@ -27,6 +27,8 @@ const useKeyPress = (targetKey: any) => {
       // @ts-ignore
       window.removeEventListener('keyup', upHandler);
     };
+    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return keyPressed;

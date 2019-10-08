@@ -212,7 +212,9 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           if (!(typeof comm.pointDelta === 'number')) {
             uploadErrors.push('Make sure every comment pointDelta field contains a number');
           }
+          return true;
         });
+        return true;
       });
       return uploadErrors;
     }
@@ -277,6 +279,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         content = <Spin />;
         break;
       case STATUS.OPEN:
+        /* eslint-disable no-multi-str */
         const exampleText =
           '    [\n\
         {\n\
@@ -289,6 +292,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         }\n\
         ...\n\
       ]';
+        /* eslint-enable no-multi-str */
 
         content = (
           <div>

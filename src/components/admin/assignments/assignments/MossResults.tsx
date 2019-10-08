@@ -21,7 +21,7 @@ const MossResults = (props: any) => {
       align: aligner,
       render: (url: string) => {
         return (
-          <a href={url} target="_blank">
+          <a href={url} target="_blank" rel="noopener noreferrer">
             Inspect
           </a>
         );
@@ -34,7 +34,7 @@ const MossResults = (props: any) => {
       align: aligner,
       render: (open1: string) => {
         return (
-          <Link to={`/code/${open1}`} target="_blank">
+          <Link to={`/code/${open1}`} target="_blank" rel="noopener noreferrer">
             <Icon type="code" />
           </Link>
         );
@@ -52,7 +52,7 @@ const MossResults = (props: any) => {
       align: aligner,
       render: (open2: string) => {
         return (
-          <Link to={`/code/${open2}`} target="_blank">
+          <Link to={`/code/${open2}`} target="_blank" rel="noopener noreferrer">
             <Icon type="code" />
           </Link>
         );

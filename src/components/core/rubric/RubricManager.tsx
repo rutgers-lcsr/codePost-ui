@@ -500,7 +500,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public deleteLinkedComments = (rubricComment: RubricCommentType) => {
     const promises = rubricComment.comments.map((commentID) => {
-      CommentIO.delete(commentID);
+      return CommentIO.delete(commentID);
     });
 
     return Promise.all(promises);
@@ -514,7 +514,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         pointDelta: rubricComment.pointDelta,
         rubricComment: null,
       };
-      CommentIO.update(payload);
+      return CommentIO.update(payload);
     });
 
     return Promise.all(promises);

@@ -79,7 +79,9 @@ const RegradesPanel = (props: IProps) => {
   // Update submission if assignment changes or viewAll is triggered
   useEffect(() => {
     refreshSubmissions();
-  }, [props.assignment, viewAll]);
+    // Really, refreshSubmissions() should implement React.useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.assignment]);
 
   // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
   const regradeSubmissions = submissions.filter((submission) => {
