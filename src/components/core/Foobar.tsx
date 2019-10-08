@@ -106,12 +106,11 @@ const Foobar = (props: IPropsType) => {
   const onChange = () => {
     setVisible(!visible);
     setOptions(props.queryMap);
-    if (!visible && refContainer !== null) {
+    if (!visible && refContainer.current !== null) {
       // Autofocus whenever the bar is mounted
       refContainer.current.focus();
 
       // Clear any existing searches
-      setSearchText('');
       setDynamicPrefix('');
     }
   };
@@ -126,12 +125,14 @@ const Foobar = (props: IPropsType) => {
   const onInputSelect = (record: IQueryType) => {
     /* when option is selected a second time, execute callback */
     if (searchText === record.label && record.callback !== undefined) {
-      record.callback(record.value);
       setVisible(false);
-    } else {
-      // Set placeholder text, but remove any placeholders present
-      onInputChange(record.label.replace(/{{.*}}/g, ''));
+      record.callback(record.value);
     }
+
+    // Set placeholder text, but remove any placeholders present
+    // We call this regardless of whether the callback is executed above,
+    // because we want the selected text to remain in the searchbar on every select
+    onInputChange(record.label.replace(/{{.*}}/g, ''));
   };
 
   return (
