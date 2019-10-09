@@ -250,9 +250,11 @@ class GraderDetail extends React.Component<IProps, IState> {
               <Breadcrumb>
                 <Breadcrumb.Item onClick={this.props.onBack}>Submissions</Breadcrumb.Item>
                 <Breadcrumb.Item onClick={this.props.onBack}>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#">Graders</a>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#">{this.props.grader}</a>
                 </Breadcrumb.Item>
               </Breadcrumb>
@@ -357,12 +359,15 @@ class GraderDetail extends React.Component<IProps, IState> {
               <Breadcrumb>
                 <Breadcrumb.Item onClick={this.props.onBack}>Submissions</Breadcrumb.Item>
                 <Breadcrumb.Item onClick={this.props.onBack}>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#">Graders</a>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item onClick={this.changeActiveAssignment.bind(this, undefined)}>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a>{this.props.grader}</a>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a>{selectedAssignment.name}</a>
                 </Breadcrumb.Item>
               </Breadcrumb>

@@ -23,6 +23,7 @@ const PreAuthFooter = () => {
     <div style={{ textAlign: 'center' }}>
       <div style={{ color: '4d4d4d', fontSize: '14px' }}>Share on Snapchat!</div>
       <img
+        alt="snapcode"
         src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
         height="144"
         width="144"
@@ -54,6 +55,7 @@ const PreAuthFooter = () => {
         <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>
           <Popover content={content}>
             <img
+              alt="snapcode"
               src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
               height="24"
               width="24"
@@ -69,6 +71,7 @@ const PreAuthFooter = () => {
           <a style={linkStyle} href="https://updates.codepost.io">
             Updates
           </a>{' '}
+          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <a style={linkStyle} id="calendly-button-footer">
             Demo
           </a>{' '}

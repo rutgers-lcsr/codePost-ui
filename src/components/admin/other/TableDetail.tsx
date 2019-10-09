@@ -82,7 +82,6 @@ class TableDetail extends React.Component<IProps, IState> {
                 textToHighlight={text.toString()}
               />
             );
-            break;
           case 'number':
             return (
               <Highlighter
@@ -92,7 +91,6 @@ class TableDetail extends React.Component<IProps, IState> {
                 textToHighlight={text.toString()}
               />
             );
-            break;
           default:
             return text;
         }

@@ -1,7 +1,7 @@
 import React from 'react';
 
-// We use ts-ignore since Popover never explicitly used. We just use the classNames
-// @ts-ignore: no-unused-variable
+// We ignore eslint since Popover never explicitly used. We just use the classNames
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, Input, message, Popover, Tooltip } from 'antd';
 
 import CPButton from '../../core/CPButton';
@@ -537,7 +537,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={negTheme}
               onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
             >
-              👎
+              <span role="img" aria-label="downvote">
+                👎
+              </span>
             </CPButton>
           </Tooltip>
           <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
@@ -546,7 +548,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={posTheme}
               onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
             >
-              👍
+              <span role="img" aria-label="upvote">
+                👍
+              </span>
             </CPButton>
           </Tooltip>
         </Button.Group>

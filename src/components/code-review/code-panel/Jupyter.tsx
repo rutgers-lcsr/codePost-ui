@@ -58,6 +58,7 @@ export const jupyterToMarkdown = (content: string) => {
             markdown += '\n```\n';
           }
         }
+        return true;
       });
     }
 

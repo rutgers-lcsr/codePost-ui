@@ -47,9 +47,24 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       if (this.props.type === 'codepanel') {
         return (
           <div style={{ padding: '40px' }}>
-            <h1>😬 Something went wrong</h1>
-            <h2>🕑 We will investigate the issue as soon as possible.</h2>
-            <h2>🙏 Feel free to try again or email us at team@codepost.io.</h2>
+            <h1>
+              <span role="img" aria-label="downvote">
+                😬
+              </span>{' '}
+              Something went wrong
+            </h1>
+            <h2>
+              <span role="img" aria-label="downvote">
+                🕑
+              </span>{' '}
+              We will investigate the issue as soon as possible.
+            </h2>
+            <h2>
+              <span role="img" aria-label="downvote">
+                🙏
+              </span>{' '}
+              Feel free to try again or email us at team@codepost.io.
+            </h2>
             <br />
             <div style={{ padding: '50px' }}>
               <h3>Details:</h3>
@@ -75,10 +90,23 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       } else {
         return (
           <div style={{ padding: '40px' }}>
-            <h1>😬 Something went wrong.</h1>
-            <h2>🕑 We will investigate the issue as soon as possible.</h2>
+            <h1>
+              <span role="img" aria-label="downvote">
+                😬
+              </span>{' '}
+              Something went wrong.
+            </h1>
             <h2>
-              🙏 Try refreshing the page to get back to codePost! Or,{' '}
+              <span role="img" aria-label="downvote">
+                🕑
+              </span>{' '}
+              We will investigate the issue as soon as possible.
+            </h2>
+            <h2>
+              <span role="img" aria-label="downvote">
+                🙏
+              </span>{' '}
+              Try refreshing the page to get back to codePost! Or,{' '}
               <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
               <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
             </h2>

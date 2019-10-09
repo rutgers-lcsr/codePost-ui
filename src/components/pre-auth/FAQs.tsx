@@ -155,7 +155,7 @@ const FAQs = (props: IProps) => {
       <div className="display-flex flex-direction-column">
         {questions.map((q, i) => {
           if (i % 2 === 1) {
-            return;
+            return null;
           }
           return (
             <div key={i} className="display-flex flex-direction-row justify-content-space-between">

@@ -567,13 +567,13 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                shouldLoadFeedback={true}
               >
                 {({ props, state, helpers }: IRubricManagerParams) => {
                   return <RubricUI props={props} state={state} helpers={helpers} />;
                 }}
               </RubricManager>
             );
-            break;
           case DETAIL_TYPE.Stats:
             return (
               <AssignmentStats
@@ -599,7 +599,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 location={this.props.location}
               />
             );
-            break;
           case DETAIL_TYPE.Regrades:
             return (
               <AssignmentRegrades
@@ -612,7 +611,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 currentCourse={this.props.currentCourse!}
               />
             );
-            break;
           case DETAIL_TYPE.DownloadGrades:
             detailComponent = (
               <DownloadGrades

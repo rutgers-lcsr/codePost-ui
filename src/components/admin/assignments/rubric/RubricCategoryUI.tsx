@@ -2,10 +2,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, InputNumber, Popconfirm, Spin, Table, Tag } from 'antd';
-
-/* other library imports */
-import _ from 'lodash';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';

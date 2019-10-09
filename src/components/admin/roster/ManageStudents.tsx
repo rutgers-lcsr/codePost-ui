@@ -367,6 +367,7 @@ class ManageStudents extends React.Component<IProps, IState> {
           <Breadcrumb>
             <Breadcrumb.Item>Roster</Breadcrumb.Item>
             <Breadcrumb.Item>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Students</a>
             </Breadcrumb.Item>
           </Breadcrumb>

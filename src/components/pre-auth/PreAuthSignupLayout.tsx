@@ -78,7 +78,7 @@ const PreAuthSignupLayout = (props: { step: SignupStep; children: React.ReactChi
         <div
           style={{
             background: '#fff',
-            padding: '40px 50px 25px 50px',
+            padding: '0px 50px 25px 50px',
             maxWidth: 1100,
             margin: '0 auto',
           }}

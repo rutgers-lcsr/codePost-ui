@@ -1,10 +1,5 @@
 import * as React from 'react';
 
-import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
-
-import CodePanelHighlighting from './CodePanelHighlighting';
-
-import { AssignmentType } from '../../../infrastructure/assignment';
 import { FileType } from '../../../infrastructure/file';
 import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
