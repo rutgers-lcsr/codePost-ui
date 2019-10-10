@@ -44,6 +44,12 @@ enum EDITING_STATUS {
 }
 
 interface IRubricMenuUIProps extends IRubricManagerProps {
+  /* is the user allowed to edit the rubric? */
+  canUserEdit: boolean;
+
+  /* if true, simulate rubric save */
+  demoMode: boolean;
+
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
   toggleEditRubricMode: () => void;
@@ -90,7 +96,7 @@ const RubricMenuUI = ({
   };
 
   React.useEffect(() => {
-    if (props.assignment.collaborativeRubricMode) {
+    if (props.canUserEdit) {
       props.turnOnReload();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -190,7 +196,7 @@ const RubricMenuUI = ({
   };
 
   const toggleEditRubricMode = () => {
-    if (props.assignment.collaborativeRubricMode) {
+    if (props.canUserEdit) {
       setEditingStatuses({});
       props.turnOnReload();
       if (!props.editRubricMode) {
@@ -224,7 +230,7 @@ const RubricMenuUI = ({
 
   const onSave = () => {
     if (changesMade) {
-      helpers.onSave(props.setRubric);
+      helpers.onSave(props.setRubric, props.demoMode);
 
       setEditingStatuses({});
       props.turnOnReload();
@@ -254,7 +260,7 @@ const RubricMenuUI = ({
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
-  if (state.loadComplete && props.assignment.collaborativeRubricMode) {
+  if (state.loadComplete && props.canUserEdit) {
     const x = helpers.changesMade();
     if (x !== changesMade) {
       setChangesMade(x);
@@ -376,7 +382,7 @@ const RubricMenuUI = ({
 
   let searchBar;
 
-  if (props.assignment.collaborativeRubricMode) {
+  if (props.canUserEdit) {
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input

@@ -336,8 +336,8 @@ const CollectionCreateForm: any = Form.create()(
                   label="Collaborative rubric"
                   extra={
                     <div>
-                      When enabled, admins and graders will be able to edit the assignment rubric inline in the code
-                      console. Graders will have full permission to create, modify and delete rubric items.
+                      When enabled, graders will be able to edit this assignment's rubric from the code console. Graders
+                      will have full permission to create, modify and delete rubric items.
                     </div>
                   }
                   labelCol={{ span: 6 }}

@@ -1372,6 +1372,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit: true, // showcase in-console rubric editing in demo
+                demoMode: true,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1601,6 +1603,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit:
+                  this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
+                demoMode: false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
