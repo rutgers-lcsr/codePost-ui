@@ -1213,7 +1213,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           initialDimensions={this.state.dimensions}
           setDimensions={this.setDimensions}
           hasComments={hasComments}
-          isEditingComment={this.state.activeCommentID !== undefined}
+          isEditingComment={this.state.activeCommentID !== undefined || this.state.editRubricMode}
         />,
       );
     }
