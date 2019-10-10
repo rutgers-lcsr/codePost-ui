@@ -74,6 +74,8 @@ export interface IRubricManagerProps {
   assignment: AssignmentType;
   submissions: SubmissionType[];
 
+  shouldLoadFeedback: boolean;
+
   onCancel: () => void;
 
   reloadInterval?: number;
@@ -180,11 +182,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     this.onUnload = this.onUnload.bind(this);
 
     if (!props.defaultRubric) {
-      this.loadAssignmentRubric(props.assignment);
+      this.loadAssignmentRubric(props.assignment, props.shouldLoadFeedback);
     }
   }
 
-  public loadAssignmentRubric = (assignment: AssignmentType) => {
+  public loadAssignmentRubric = (assignment: AssignmentType, shouldLoadFeedback: boolean) => {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
@@ -203,7 +205,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             loadComplete: true,
           },
           () => {
-            this.loadFeedbackScores(rubric.rubricComments);
+            if (shouldLoadFeedback) {
+              this.loadFeedbackScores(rubric.rubricComments);
+            }
           },
         );
       })
@@ -247,7 +251,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
-        this.loadAssignmentRubric(this.props.assignment);
+        this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
       }, this.props.reloadInterval);
     }
   }
@@ -258,7 +262,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
-          await this.loadAssignmentRubric(this.props.assignment);
+          await this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
         }, this.props.reloadInterval);
       }
     }
@@ -479,6 +483,16 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     // retrieve rubric
     try {
       if (demoMode) {
+      return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
+        const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
+          newRubric.rubricCategories,
+          newRubric.rubricComments,
+        );
+
+        if (this.props.shouldLoadFeedback) {
+          this.loadFeedbackScores(newRubric.rubricComments);
+        }
+        
         return {
           rubricCategories: categories,
           rubricComments: comments,
@@ -508,7 +522,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public deleteLinkedComments = (rubricComment: RubricCommentType) => {
     const promises = rubricComment.comments.map((commentID) => {
-      CommentIO.delete(commentID);
+      return CommentIO.delete(commentID);
     });
 
     return Promise.all(promises);
@@ -522,7 +536,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         pointDelta: rubricComment.pointDelta,
         rubricComment: null,
       };
-      CommentIO.update(payload);
+      return CommentIO.update(payload);
     });
 
     return Promise.all(promises);

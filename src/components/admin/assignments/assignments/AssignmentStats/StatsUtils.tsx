@@ -349,6 +349,7 @@ export const StatsDrawer = (props: {
     return {
       students: el.email,
       open: el.subID ? (
+        // eslint-disable-next-line jsx-a11y/anchor-is-valid
         <a onClick={openSub} className="internal-link">
           <Icon type="code" />
         </a>

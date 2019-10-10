@@ -304,6 +304,7 @@ export const Students = (props: {
     } else {
       return (
         <div>
+          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Tag color={'geekblue'}>Anonymized</Tag> <a onClick={reveal}>reveal</a>
         </div>
       );

@@ -1339,6 +1339,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.SUBMISSION_STUDENTS:
           detail = (
             <StudentData
+              key={+new Date()}
               loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
               assignments={this.state.assignments}
               submissionsByStudent={this.state.submissionsByStudent}
@@ -1356,6 +1357,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.SUBMISSION_GRADERS:
           detail = (
             <GraderData
+              key={+new Date()}
               loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
               assignments={this.state.assignments}
               submissionsByAssignment={this.state.submissions}
@@ -1372,7 +1374,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ASSIGNMENTS:
           detail = (
             <ManageAssignments
-              key={this.state.currentCourse!.id}
+              key={+new Date()}
               loadComplete={
                 this.state.submissionsLoadComplete &&
                 this.state.assignmentsLoadComplete &&
@@ -1400,6 +1402,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_STUDENTS:
           detail = (
             <ManageStudents
+              key={+new Date()}
               notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
@@ -1419,6 +1422,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_GRADERS:
           detail = (
             <ManageGraders
+              key={+new Date()}
               notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
@@ -1438,6 +1442,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_ADMINS:
           detail = (
             <ManageAdmins
+              key={+new Date()}
               notActivated={this.state.notActivated}
               sections={this.state.sections}
               students={this.state.students}
@@ -1456,6 +1461,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         case PANELS.ROSTER_SECTIONS:
           detail = (
             <ManageSections
+              key={+new Date()}
               sections={this.state.sections}
               students={this.state.students}
               graders={this.state.graders}

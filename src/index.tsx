@@ -14,10 +14,10 @@ import 'typeface-pt-mono';
 
 import * as serviceWorker from './serviceWorker';
 
-// @ts-ignore
+// eslint-disable-next-line
 import CPLayoutGrade from './components/core/CPLayoutGrade';
 
-// @ts-ignore
+// eslint-disable-next-line
 import CPLayoutAdmin from './components/core/CPLayoutAdmin';
 
 import App from './App';

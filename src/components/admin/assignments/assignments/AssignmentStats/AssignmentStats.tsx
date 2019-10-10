@@ -453,6 +453,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
         breadcrumbs={
           <Breadcrumb>
             <Breadcrumb.Item onClick={this.props.onCancel}>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Assignments</a>
             </Breadcrumb.Item>
             <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>

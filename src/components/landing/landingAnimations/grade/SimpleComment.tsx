@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-// We use ts-ignore since Popover never explicitly used. We just use the classNames
-// @ts-ignore: no-unused-variable
+// We ignore eslint since Popover never explicitly used. We just use the classNames
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Input, message, Popover, Typography } from 'antd';
 
 import CPButton from '../../../core/CPButton';

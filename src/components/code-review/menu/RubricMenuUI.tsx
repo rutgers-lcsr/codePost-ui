@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Menu, Popconfirm, Tag } from 'antd';
+import { Icon, Input, Popconfirm, Tag } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -99,6 +99,7 @@ const RubricMenuUI = ({
     if (props.canUserEdit) {
       props.turnOnReload();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useHotkeys(O_KEY, focusSearch);
