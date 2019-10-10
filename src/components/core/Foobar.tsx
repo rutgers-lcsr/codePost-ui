@@ -5,13 +5,20 @@ import Select from 'react-select';
 
 import Fuse from 'fuse.js';
 
-import { Modal } from 'antd';
+import { Breadcrumb, Icon, Modal } from 'antd';
 
-import useHotkeys, { K_KEY } from '../code-review/useHotkeys';
+import useHotkeys, { ESCAPE_KEY, K_KEY } from '../code-review/useHotkeys';
 
 import { osControlKey } from '../core/operatingSystem';
 
 /*******************************************************************************/
+
+// To-do List:
+// (1) escape to revert to previous query (all the way back)
+// (2) optional shortcut specification
+// (3) icon to specify what type of query
+//     - action
+//     - link
 
 interface IOptionType {
   value: string /* what gets searched */;
@@ -20,37 +27,65 @@ interface IOptionType {
 
 interface IQueryType extends IOptionType {
   /* what gets called when a value is selected */
-  callback?: (value?: string) => void;
+  callback?: (value: string) => void;
+  generator?: (value: string) => Promise<IQueryType[]>;
 
-  /* Produces options to fill in a variable within a dynamic query */
-  /* Example:
-   *    - Dynamic query: "Increment {{variable}}"
-   *    - When the user types in "Increment" or selects "Increment {{variable}}",
-   *      genOptions will produce the following queries for the user to select
-   *          - "Increment fizz"
-   *          - "Increment buzz"
-   *          - "Increment bazz"
-   */
-
-  genQueries?: (value?: string) => IOptionType[];
+  isDynamic?: boolean;
+  confirm?: boolean;
+  confirmText?: string;
+  isList?: boolean;
 }
+
+type IParameterList = Record<string, string[]>;
+
+type IHistoryType = Array<{ searchText: string; options: IQueryType[] }>;
 
 /* build a Fuse object for fuzzy matching on options */
 const buildFuse = (options: IOptionType[], threshold: number) => {
-  return new Fuse(options, { threshold: threshold, keys: ['value'], shouldSort: true });
+  return new Fuse(options, { threshold: threshold, keys: ['label', 'tags'], shouldSort: true });
 };
 
 interface IPropsType {
   queryMap: IQueryType[];
+  parameters?: IParameterList;
 }
+
+const genericGenerator = (query: IQueryType, parameters: IParameterList): IQueryType[] => {
+  const extractedParameters = query.label.match(/{{.*}}/g);
+  if (extractedParameters === null || extractedParameters.length !== 1) {
+    throw 'query.label does not include a single parameter (0 or >1).';
+  } else {
+    const parameter = extractedParameters[0].substring(2, extractedParameters[0].length - 2);
+    const options = parameters[parameter];
+    if (options === undefined) {
+      throw `${parameter} is not specified in parameters input.`;
+    } else {
+      return options.map((option) => {
+        return {
+          value: option,
+          label: query.label.replace(/{{.*}}/g, option),
+          callback: query.callback,
+          generator: query.generator !== undefined ? query.generator.bind(false, option) : undefined,
+          isList: query.isList,
+        };
+      });
+    }
+  }
+
+  return [];
+};
 
 const Foobar = (props: IPropsType) => {
   /******************************************************************/
   /* is Foobar visible in the DOM? */
   const [visible, setVisible] = React.useState(false);
 
+  /* are we performing some async action? */
+  const [loading, setLoading] = React.useState(false);
+
   /* what options are displayed in the select? */
   const [options, setOptions] = React.useState(props.queryMap);
+  const [oldOptions, setOldOptions] = React.useState([] as IHistoryType);
 
   /* what has the user typed? */
   const [searchText, setSearchText] = React.useState('');
@@ -90,14 +125,14 @@ const Foobar = (props: IPropsType) => {
     if (matches.length === 1) {
       // If the query is dynamic and isn't already active, make it active
       const loneMatch = matches[0];
-      if (loneMatch.value !== dynamicPrefix && loneMatch.genQueries !== undefined) {
-        const newOptions = loneMatch.genQueries();
+      if (loneMatch.value !== dynamicPrefix && loneMatch.isDynamic) {
+        const newOptions = genericGenerator(loneMatch, props.parameters!);
+        setOldOptions([...oldOptions, { searchText: loneMatch.label, options }]);
         setOptions(newOptions);
         setDynamicPrefix(loneMatch.value);
       }
     } else {
       // If we could activate multiple queries, show the original menu options
-      setOptions(props.queryMap);
       setDynamicPrefix('');
     }
   }, [searchText]);
@@ -106,6 +141,7 @@ const Foobar = (props: IPropsType) => {
   const onChange = () => {
     setVisible(!visible);
     setOptions(props.queryMap);
+    setOldOptions([]);
     if (!visible && refContainer.current !== null) {
       // Autofocus whenever the bar is mounted
       refContainer.current.focus();
@@ -115,18 +151,54 @@ const Foobar = (props: IPropsType) => {
     }
   };
 
+  const revertOptions = () => {
+    if (oldOptions.length > 0) {
+      const copiedOldOptions = [...oldOptions];
+      const toRevert = copiedOldOptions.pop();
+      setOldOptions(copiedOldOptions);
+      setOptions(toRevert!.options);
+      onInputChange('');
+    }
+  };
+
   useHotkeys(K_KEY, onChange);
+  useHotkeys(K_KEY, revertOptions, true);
 
   const onInputChange = (searchValue: string) => {
     setSearchText(searchValue);
   };
 
   /* if the user selects on option, handle it appropriaetly */
-  const onInputSelect = (record: IQueryType) => {
+  const onInputSelect = async (record: IQueryType) => {
     /* when option is selected a second time, execute callback */
-    if (searchText === record.label && record.callback !== undefined) {
-      setVisible(false);
-      record.callback(record.value);
+    if (searchText === record.label) {
+      if (record.isList && record.generator !== undefined) {
+        setLoading(true);
+        const newOptions = await record.generator(record.value);
+        setLoading(false);
+        setDynamicPrefix('');
+        onInputChange('');
+        setOldOptions([...oldOptions, { searchText: `{{${record.value}}}`, options }]);
+        setOptions(newOptions);
+        return;
+      } else {
+        if (record.callback !== undefined) {
+          setVisible(false);
+          if (record.confirm) {
+            Modal.confirm({
+              title: record.confirmText ? record.confirmText : 'Are you sure?',
+              onOk() {
+                return new Promise((resolve, reject) => {
+                  return resolve(record.callback!(record.value));
+                }).catch(() => console.log('Oops errors!'));
+              },
+              onCancel() {},
+            });
+          } else {
+            record.callback(record.value);
+          }
+        }
+      }
     }
 
     // Set placeholder text, but remove any placeholders present
@@ -149,6 +221,15 @@ const Foobar = (props: IPropsType) => {
       onCancel={onChange}
       closable={false}
     >
+      <Breadcrumb style={{ fontSize: 12 }}>
+        <Breadcrumb.Item>
+          <Icon type="home" />
+        </Breadcrumb.Item>
+        {oldOptions.map((el) => {
+          return <Breadcrumb.Item>{el.searchText}</Breadcrumb.Item>;
+        })}
+      </Breadcrumb>
+      <div style={{ height: 3 }} />
       <Select
         onInputChange={onInputChange}
         onChange={onInputSelect}
@@ -165,6 +246,7 @@ const Foobar = (props: IPropsType) => {
         value={null}
         menuIsOpen={true}
         filterOption={() => true}
+        loading={loading}
       />
     </Modal>
   );
