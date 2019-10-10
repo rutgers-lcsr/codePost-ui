@@ -567,7 +567,6 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 assignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
-                demoMode={false}
               >
                 {({ props, state, helpers }: IRubricManagerParams) => {
                   return <RubricUI props={props} state={state} helpers={helpers} />;

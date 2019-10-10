@@ -74,8 +74,6 @@ export interface IRubricManagerProps {
   assignment: AssignmentType;
   submissions: SubmissionType[];
 
-  demoMode: boolean;
-
   onCancel: () => void;
 
   reloadInterval?: number;
@@ -379,9 +377,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     unsavedCategories: RubricCategoryType[],
     deletedCategories: RubricCategoryType[],
     resolved: { [key: number]: RESOLUTION },
+    demoMode?: boolean,
   ) => {
     // Perform all creates and updates
-    const promises = this.props.demoMode
+    const promises = demoMode
       ? []
       : categories.map((category) => {
           if (category.id < 0) {
@@ -444,7 +443,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         });
 
     // Perform all deletes
-    const deleteComments = this.props.demoMode
+    const deleteComments = demoMode
       ? []
       : deletedComments.map((rubricComment) => {
           if (Object.keys(resolved).includes(rubricComment.id.toString())) {
@@ -468,7 +467,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     // Wait until comments are deleted before deleting categories
     await Promise.all(deleteComments);
-    const deleteCategories = this.props.demoMode
+    const deleteCategories = demoMode
       ? []
       : deletedCategories.map((rubricCategory) => {
           return RubricCategory.delete(rubricCategory.id);
@@ -479,7 +478,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     // retrieve rubric
     try {
-      if (this.props.demoMode) {
+      if (demoMode) {
         return {
           rubricCategories: categories,
           rubricComments: comments,
@@ -561,7 +560,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     };
   };
 
-  public onSave = (fnc?: (rubric: any) => void) => {
+  public onSave = (fnc?: (rubric: any) => void, demoMode?: boolean) => {
     const {
       rubricComments,
       rubricCategories,
@@ -600,6 +599,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         unsavedCategories,
         deletedCategories,
         resolutions,
+        demoMode,
       ).then((savedRubric) => {
         message.success('Rubric saved!');
         this.setState({

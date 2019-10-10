@@ -47,6 +47,9 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* is the user allowed to edit the rubric? */
   canUserEdit: boolean;
 
+  /* if true, simulate rubric save */
+  demoMode: boolean;
+
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
   toggleEditRubricMode: () => void;
@@ -226,7 +229,7 @@ const RubricMenuUI = ({
 
   const onSave = () => {
     if (changesMade) {
-      helpers.onSave(props.setRubric);
+      helpers.onSave(props.setRubric, props.demoMode);
 
       setEditingStatuses({});
       props.turnOnReload();
