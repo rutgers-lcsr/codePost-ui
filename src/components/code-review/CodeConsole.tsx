@@ -117,6 +117,7 @@ interface ICodeConsoleState {
 
   /* admin data */
   graders: string[];
+  students: string[];
 
   /* demo data */
   demoCommentCounter: number;
@@ -392,6 +393,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       files: [],
       graders: [],
+      students: [],
       isLoading: true,
       rubricCategories: [],
       rubricComments: {},
@@ -510,9 +512,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         // load the data only an admin has access to
-        const graders = this.isCourseAdmin(assignment)
-          ? (await Course.readRoster(assignment.course))['graders'].sort()
-          : [];
+        let graders: string[] = [];
+        let students: string[] = [];
+        if (this.isCourseAdmin(assignment)) {
+          const roster = await Course.readRoster(assignment.course);
+          graders = roster['graders'];
+          students = roster['students'];
+        }
 
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
@@ -536,6 +542,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories,
             rubricComments,
             graders,
+            students,
             isLoading: false,
             selectedFile: files.length > 0 ? files[0] : undefined,
             permissionLevel,
@@ -1652,43 +1659,69 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       }
     };
 
-    const assignToMe = assigner.bind(this, `Assign to ${this.props.user.email}`);
-
-    /* option generators */
-    const genGraders = () => {
-      return this.state.graders.map((grader) => {
-        return { value: grader, label: `Assign to ${grader}`, callback: assigner };
+    const findGraderSubmissions = async (grader: string) => {
+      const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { grader });
+      return submissions.map((sub) => {
+        return {
+          value: `${sub.id}`,
+          label: `Open submission ${sub.id}`,
+          callback: () => openSubmissionInSameTab(sub.id),
+          tags: sub.students,
+        };
       });
     };
 
-    const genFiles = () => {
-      return this.state.files.map((file) => {
-        return { value: file.name, label: `Jump to ${file.name}`, callback: goToFile };
-      });
+    const findStudentSubmission = async (student: string) => {
+      const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { student });
+      if (submissions.length === 1) {
+        const sub = submissions[0];
+        return [
+          {
+            value: `${sub.id}`,
+            label: `Open submission ${sub.id}`,
+            callback: () => openSubmissionInSameTab(sub.id),
+            tags: sub.students,
+          },
+        ];
+      } else {
+        return [];
+      }
     };
 
     const finalizeText = this.state.submission && this.state.submission.isFinalized ? 'Unfinalize' : 'Finalize';
 
     let defaultOptions = [
       {
+        value: 'Find submission of ',
+        label: 'Find submission of {{student}}',
+        isDynamic: true,
+        isList: true,
+        generator: findStudentSubmission,
+      },
+      {
+        value: 'Find submissions graded by ',
+        label: 'Find submissions graded by {{grader}}',
+        isDynamic: true,
+        isList: true,
+        generator: findGraderSubmissions,
+      },
+      {
         value: 'Assign to ',
         label: 'Assign to {{grader}}',
-        genQueries: genGraders,
-      } /* dynamic query */,
+        callback: assigner,
+        isDynamic: true,
+      },
       {
         value: 'Jump to ',
         label: 'Jump to {{file}}',
-        genQueries: genFiles,
-      } /* dynamic query */,
-      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized } /* static query */,
-      { value: 'Download code', label: 'Download code', callback: downloadCode } /* static query */,
-      { value: 'View as student', label: 'View as student', callback: viewAsStudent } /* static query */,
+        callback: goToFile,
+        isDynamic: true,
+      },
+      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized },
+      { value: 'Download code', label: 'Download code', callback: downloadCode },
+      { value: 'View as student', label: 'View as student', callback: viewAsStudent },
       ...helpQueryMap,
     ];
-
-    if (this.state.graders.indexOf(this.props.user.email) > -1) {
-      defaultOptions = [{ value: 'Claim', label: 'Claim', callback: assignToMe }, ...defaultOptions];
-    }
 
     /*************************************************************************************/
 
@@ -1721,7 +1754,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           content={content}
           editRubricMode={this.state.editRubricMode}
         />
-        <Foobar queryMap={defaultOptions} />
+        <Foobar
+          queryMap={defaultOptions}
+          parameters={{
+            grader: this.state.graders,
+            student: this.state.students,
+            file: this.state.files.map((file) => file.name),
+          }}
+        />
       </div>
     );
   }
