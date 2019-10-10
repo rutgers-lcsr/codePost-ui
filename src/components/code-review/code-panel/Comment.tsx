@@ -501,9 +501,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         };
       }
 
-      const rubricCategoryTitle = this.props.rubricCategories.find((cat) => {
+      // Note: we should always be able to find the rubricComment's category in
+      // this.props.rubricCategories, but we're playing it safe here.
+      let rubricCategoryTitle = '';
+      const matchedCategory = this.props.rubricCategories.find((cat) => {
         return cat.id === this.props.rubricComment!.category;
-      })!.name;
+      });
+      if (matchedCategory !== undefined) {
+        rubricCategoryTitle = matchedCategory.name;
+      }
 
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
