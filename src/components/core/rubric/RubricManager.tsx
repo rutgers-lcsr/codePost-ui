@@ -483,16 +483,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     // retrieve rubric
     try {
       if (demoMode) {
-      return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
-        const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
-          newRubric.rubricCategories,
-          newRubric.rubricComments,
-        );
-
-        if (this.props.shouldLoadFeedback) {
-          this.loadFeedbackScores(newRubric.rubricComments);
-        }
-        
         return {
           rubricCategories: categories,
           rubricComments: comments,
@@ -504,7 +494,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             newRubric.rubricComments,
           );
 
-          this.loadFeedbackScores(newRubric.rubricComments);
+          if (this.props.shouldLoadFeedback) {
+            this.loadFeedbackScores(newRubric.rubricComments);
+          }
 
           return {
             rubricCategories: newRubric.rubricCategories,
