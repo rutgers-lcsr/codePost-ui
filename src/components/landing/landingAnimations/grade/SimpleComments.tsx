@@ -34,6 +34,7 @@ const SimpleComment = (props: {
   const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
+      rubricCategories={[]}
       additiveGrading={false}
       isStudent={false}
       commentType={props.classType}

@@ -6,6 +6,7 @@ import CodePanelSizing from './CodePanelSizing';
 
 import { CommentType } from '../../../infrastructure/comment';
 import { FileType } from '../../../infrastructure/file';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../../types/common';
@@ -31,6 +32,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   updateFeedback: (commentID: number, feedback: number) => void;
   studentFeedbackOn: boolean;
   hideAuthor: boolean;
+  rubricCategories: RubricCategoryType[];
 }
 
 interface ICommentsEditProps {
@@ -311,6 +313,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           hideAuthor={this.props.hideAuthor}
           additiveGrading={this.props.additiveGrading}
           forcedRubricMode={this.props.forcedRubricMode}
+          rubricCategories={this.props.rubricCategories}
         />
       );
     });
