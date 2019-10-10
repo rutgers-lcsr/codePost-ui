@@ -1312,6 +1312,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
@@ -1432,6 +1433,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={false}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
@@ -1545,6 +1547,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
