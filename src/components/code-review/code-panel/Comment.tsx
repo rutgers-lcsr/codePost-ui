@@ -18,6 +18,7 @@ import Badge from '../../core/Badge';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
@@ -38,6 +39,7 @@ interface ICommentProps {
   comment: CommentType;
   file: FileType;
   rubricComment?: RubricCommentType;
+  rubricCategories: RubricCategoryType[];
 
   isStudent: boolean;
 
@@ -486,14 +488,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.rubricComment) {
       let rubricCommentClassName = 'comment__rubric-comment';
-      let pointsString = '';
       let style = {};
       if (this.props.rubricComment.pointDelta > 0) {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--negative');
-        pointsString = `${points * -1}`;
       } else if (this.props.rubricComment.pointDelta < 0) {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--positive');
-        pointsString = `+${points * -1}`;
       } else {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--neutral');
         style = {
@@ -502,9 +501,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         };
       }
 
+      const rubricCategoryTitle = this.props.rubricCategories.find((cat) => {
+        return cat.id === this.props.rubricComment!.category;
+      })!.name;
+
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
-          <span className="cp-label--very-bold">{pointsString}</span>
+          <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
           <InlineMarkdown source={this.props.rubricComment.text} />
           {commentElements.rubricCommentAction}
         </div>
