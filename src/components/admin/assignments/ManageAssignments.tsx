@@ -158,7 +158,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       this.props.submissions[assignment.id],
       this.props.viewsBySubmission,
       this.props.students,
-    );
+    ).sort((a, b) => {
+      return a.email.localeCompare(b.email);
+    });
 
     const title = getDrawerTitle(type, newContent.length);
 

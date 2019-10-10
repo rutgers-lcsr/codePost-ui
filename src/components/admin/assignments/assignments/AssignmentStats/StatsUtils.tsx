@@ -326,12 +326,16 @@ export const StatsDrawer = (props: {
   // const alignCenter: alignType = 'center';
   const alignLeft: alignType = 'left';
 
-  const drawerColumns = [
+  const drawerColumns: any[] = [
     {
       title: 'Students',
       dataIndex: 'students',
       key: 'students',
       align: alignLeft,
+      defaultSortOrder: 'ascend',
+      sorter: (a: any, b: any) => {
+        return a.students.localeCompare(b.students);
+      },
     },
   ];
   if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
