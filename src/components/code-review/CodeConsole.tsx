@@ -1011,6 +1011,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       forcedRubricMode: false,
       templateMode: false,
       fileTemplates: [],
+      testCases: [],
+      solutionFiles: [],
+      testLanguage: null,
     };
 
     const demoCourse: CourseType = {
