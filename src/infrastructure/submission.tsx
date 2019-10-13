@@ -44,6 +44,7 @@ export const SubmissionV = t.intersection(
       questionResponder: t.union([t.string, t.null]),
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
     }),
   ],
   'Submission',
