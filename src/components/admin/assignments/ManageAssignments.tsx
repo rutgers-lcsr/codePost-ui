@@ -46,6 +46,8 @@ import DownloadGrades from './assignments/DownloadGrades';
 
 import Moss from './assignments/Moss';
 
+import { Tests } from './assignments/AssignmentTest/Tests';
+
 import { sendSlack } from '../../../components/core/slack';
 
 import {
@@ -111,6 +113,7 @@ export enum DETAIL_TYPE {
   Regrades,
   Moss,
   DownloadGrades,
+  Tests,
 }
 
 interface IManageAssignmentsState {
@@ -351,6 +354,10 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
                 <Icon type="bar-chart" />
                 View Stats
+              </Menu.Item>
+              <Menu.Item key="3.2" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Tests, assignment)}>
+                <Icon type="bar-chart" />
+                View Tests
               </Menu.Item>
               {assignment.allowRegradeRequests ? (
                 <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
@@ -623,6 +630,16 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               />
             );
             break;
+          case DETAIL_TYPE.Tests:
+            return (
+              <Tests
+                activeAssignment={this.state.activeAssignment!}
+                submissions={this.props.submissions[this.state.activeAssignment!.id]}
+                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                user={this.props.user}
+                updateAssignment={this.props.updateAssignment}
+              />
+            );
         }
 
         const drawerComponent =
