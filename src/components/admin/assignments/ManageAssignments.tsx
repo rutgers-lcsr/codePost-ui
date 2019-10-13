@@ -31,6 +31,8 @@ import { encodeForRoute } from '../../core/URLutils';
 
 import Loading from '../../core/Loading';
 
+import { AssignmentTests } from './assignments/AssignmentTest/AssignmentTests';
+
 /**********************************************************************************************************************/
 
 export interface IManageAssignmentsProps {
@@ -231,6 +233,18 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Upload_Import}
                   baseURL={props.match.url}
+                />
+              )}
+            />
+            <Route
+              path={`${props.match.url}/${encodedName}/tests`}
+              render={(subprops: any) => (
+                <AssignmentTests
+                  activeAssignment={assignment}
+                  submissions={props.submissions[assignment.id]}
+                  onCancel={cancel}
+                  user={props.user}
+                  updateAssignment={props.updateAssignment}
                 />
               )}
             />

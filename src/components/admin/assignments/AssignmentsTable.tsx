@@ -315,6 +315,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               &nbsp; Edit rubric
             </Link>
           </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/${encodedName}/tests`}>
+              <Icon type="file-done" />
+              &nbsp; Edit tests
+            </Link>
+          </Menu.Item>
           <Menu.Item key="2">
             <Link to={`${this.props.baseURL}/${encodedName}/download/grades`}>
               <Icon type="download" />
