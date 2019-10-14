@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 
-import { Breadcrumb, Steps } from 'antd';
+import { Breadcrumb, Tabs } from 'antd';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 
 import { SetEnvironment } from './SetEnvironment';
+import { TestDefinitions } from './TestDefinitions';
 
-const { Step } = Steps;
+const { TabPane } = Tabs;
 
 interface IProps {
   currentAssignment: AssignmentType;
@@ -16,47 +17,31 @@ interface IProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
 
-enum STEP_TYPE {
-  Environment = 0,
-  Tests = 1,
-  Settings = 2,
-}
-
-const steps: { [stepName: string]: STEP_TYPE } = {
-  'Set environment': STEP_TYPE.Environment,
-  'Edit tests': STEP_TYPE.Tests,
-  'Manage settings': STEP_TYPE.Settings,
-};
-
 export const EditTests = (props: IProps) => {
-  const [step, setStep] = useState<STEP_TYPE>(STEP_TYPE.Environment);
-  const header = (
-    <Steps size="small" current={step}>
-      {Object.keys(steps).map((item, i) => {
-        return <Step key={item} title={item} onClick={setStep.bind({}, steps[item])} />;
-      })}
-    </Steps>
-  );
-  let content;
-  switch (step) {
-    case STEP_TYPE.Environment:
-      content = (
+  const [step, setStep] = useState('1');
+  const content = (
+    <Tabs defaultActiveKey="1" activeKey={step} onChange={setStep} animated={false}>
+      <TabPane tab={'Environment'} key={'1'}>
         <SetEnvironment
           currentAssignment={props.currentAssignment}
-          onContinue={setStep.bind({}, STEP_TYPE.Tests)}
+          onContinue={setStep.bind({}, '2')}
           onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
         />
-      );
-      break;
-    case STEP_TYPE.Tests:
-      content = <div />;
-      break;
-    case STEP_TYPE.Settings:
-      content = <div />;
-      break;
-  }
-
+      </TabPane>
+      <TabPane tab={'Tests'} key={'2'}>
+        <TestDefinitions
+          currentAssignment={props.currentAssignment}
+          onContinue={setStep.bind({}, '3')}
+          onCancel={props.onCancel}
+          updateAssignment={props.updateAssignment}
+        />
+      </TabPane>
+      <TabPane tab={'Settings'} key={'3'}>
+        <div>Settings</div>
+      </TabPane>
+    </Tabs>
+  );
   return (
     <CPAdminDetail
       breadcrumbs={
@@ -73,12 +58,7 @@ export const EditTests = (props: IProps) => {
       goBack={null}
       title={`${props.currentAssignment.name} | Tests Summary`}
       actions={[]}
-      content={
-        <div>
-          {header}
-          {content}
-        </div>
-      }
+      content={content}
     />
   );
 };
