@@ -22,12 +22,9 @@ interface TestsBySubmission {
 }
 
 const getTestCases = async (assignment: AssignmentType) => {
-  // Get Latest Assignment
-  const updatedAssignment = await Assignment.read(assignment.id);
-  const testPromises = updatedAssignment.testCases.map((id) => {
+  const testPromises = assignment.testCases.map((id) => {
     return TestCase.read(id);
   });
-
   return await Promise.all(testPromises);
 };
 

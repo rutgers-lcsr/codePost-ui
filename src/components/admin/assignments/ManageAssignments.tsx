@@ -46,7 +46,7 @@ import DownloadGrades from './assignments/DownloadGrades';
 
 import Moss from './assignments/Moss';
 
-import { Tests } from './assignments/AssignmentTest/Tests';
+import { AssignmentTests } from './assignments/AssignmentTest/Tests';
 
 import { sendSlack } from '../../../components/core/slack';
 
@@ -632,7 +632,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             break;
           case DETAIL_TYPE.Tests:
             return (
-              <Tests
+              <AssignmentTests
                 activeAssignment={this.state.activeAssignment!}
                 submissions={this.props.submissions[this.state.activeAssignment!.id]}
                 onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
