@@ -141,6 +141,17 @@ const RubricV = t.intersection(
 
 export type RubricType = t.TypeOf<typeof RubricV>;
 
+const BuildData = t.intersection([
+  GenericObject,
+  t.type({
+    dependencies: t.array(t.string),
+    language: t.string,
+    simulate: t.boolean,
+  }),
+]);
+
+const SimulateResponse = t.intersection([GenericObject, t.type({ buildSucceeded: t.boolean, logs: t.string })]);
+
 export class Assignment {
   public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');
   public static read = readObject(AssignmentV, 'assignments');
@@ -160,6 +171,9 @@ export class Assignment {
     'assignments',
     'submissionHistories',
   );
+
+  public static simulateBuild = createObjectDetail(SimulateResponse, BuildData, 'assignments', 'build');
+  public static updateBuild = createObjectDetail(AssignmentV, BuildData, 'assignments', 'build');
 }
 
 // Type for getting and patching student upload
