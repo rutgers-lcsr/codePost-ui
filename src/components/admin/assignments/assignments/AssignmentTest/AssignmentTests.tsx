@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { CourseType } from '../../../../../infrastructure/course';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { UserType } from '../../../../../infrastructure/user';
 
@@ -24,25 +23,39 @@ interface IProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
 
-export const Tests = (props: IProps) => {
+export const AssignmentTests = (props: IProps) => {
   const [detail, setDetail] = useState(DETAIL_TYPE.Summary);
+  const [assignment, setAssignment] = useState(props.activeAssignment);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const updatedAssignment = await Assignment.read(props.activeAssignment.id);
+      setAssignment(updatedAssignment);
+    };
+    fetchData();
+  }, [props.activeAssignment]);
+
+  const updateAssignment = async (patchObj: AssignmentPatchType) => {
+    const newAssignment = await Assignment.update(patchObj);
+    setAssignment(newAssignment);
+  };
 
   let content;
   switch (detail) {
     case DETAIL_TYPE.Edit:
       content = (
         <EditTests
-          currentAssignment={props.activeAssignment}
+          currentAssignment={assignment}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.Edit)}
           onCancel={props.onCancel}
-          updateAssignment={props.updateAssignment}
+          updateAssignment={updateAssignment}
         />
       );
       break;
     case DETAIL_TYPE.Summary:
       content = (
         <TestsSummary
-          currentAssignment={props.activeAssignment}
+          currentAssignment={assignment}
           submissions={props.submissions}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.Edit)}
           onCancel={props.onCancel}
