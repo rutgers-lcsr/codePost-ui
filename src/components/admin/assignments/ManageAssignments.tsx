@@ -27,7 +27,22 @@ import AssignmentRegrades from './assignments/AssignmentRegrades';
 import Moss from './assignments/Moss';
 import AssignmentsTable, { DETAIL_TYPE } from './AssignmentsTable';
 
+<<<<<<< HEAD
 import { encodeForRoute } from '../../core/URLutils';
+=======
+import { AssignmentTests } from './assignments/AssignmentTest/AssignmentTests';
+
+import { sendSlack } from '../../../components/core/slack';
+
+import {
+  calculateMultipleAssignmentProgressStats,
+  DRAWER_TYPE,
+  filterDataByStat,
+  getDrawerTitle,
+  IAssignmentProgressStatsMap,
+  StatsDrawer,
+} from './assignments/AssignmentStats/StatsUtils';
+>>>>>>> big bang autograder add
 
 import Loading from '../../core/Loading';
 
@@ -176,6 +191,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                 />
               )}
             />
+<<<<<<< HEAD
             <Route
               path={`${props.match.url}/${encodedName}/download/grades`}
               render={(subprops: any) => (
@@ -246,6 +262,62 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   user={props.user}
                   updateAssignment={props.updateAssignment}
                 />
+=======
+          </Empty>
+        );
+      } else {
+        actions = [
+          <NewAssignmentDialog
+            key={1}
+            assignments={this.props.assignments}
+            createAssignment={this.props.createAssignment}
+          />,
+          <CPButton
+            onClick={this.changeDetailType.bind(this, DETAIL_TYPE.DownloadGrades, undefined)}
+            cpType="secondary"
+            key={2}
+            icon="download"
+          >
+            Download grades
+          </CPButton>,
+        ];
+
+        const assignmentStats: IAssignmentProgressStatsMap = this.calculateStats(
+          this.props.assignments,
+          this.props.submissions,
+          this.props.submissionsByStudent,
+          this.props.viewsBySubmission,
+          this.props.students,
+        );
+
+        data = sortAssignments(this.props.assignments).map((assignment, i) => {
+          const statsForRow = assignmentStats[assignment.id];
+          const menu = (
+            <Menu>
+              <Menu.Item key="1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Rubric, assignment)}>
+                <Icon type="ordered-list" />
+                Edit rubric
+              </Menu.Item>
+              <Menu.Item key="2" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.DownloadGrades, assignment)}>
+                <Icon type="download" />
+                Download grades
+              </Menu.Item>
+              <Menu.Item key="3" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Stats, assignment)}>
+                <Icon type="bar-chart" />
+                View Stats
+              </Menu.Item>
+              <Menu.Item key="3.2" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Tests, assignment)}>
+                <Icon type="file-done" />
+                View Tests
+              </Menu.Item>
+              {assignment.allowRegradeRequests ? (
+                <Menu.Item key="3.1" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Regrades, assignment)}>
+                  <Icon type="message" />
+                  View Regrades
+                </Menu.Item>
+              ) : (
+                <div />
+>>>>>>> big bang autograder add
               )}
             />
           </div>

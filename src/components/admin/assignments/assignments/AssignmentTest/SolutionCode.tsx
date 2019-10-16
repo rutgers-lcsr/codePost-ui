@@ -4,32 +4,61 @@ import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { Layout, Menu } from 'antd';
+import { Button, Icon, Layout, Menu, message, Modal, Table, Upload } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 
-import { File } from '../../../../../infrastructure/file';
+import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import { SolutionFileType } from '../../../../../infrastructure/solutionFile';
 
-const { Sider, Content } = Layout;
+import { languageMap } from './codemirrorLanguages';
 
+const { Sider, Content } = Layout;
 interface IProps {
   assignment: AssignmentType;
   files: SolutionFileType[];
+  addFile: (file: any) => Promise<void>;
+  deleteFile: (id: number) => Promise<void>;
+  updateFile: (id: number, newCode: string) => Promise<void>;
 }
 
 export const SolutionCode = (props: IProps) => {
   const [currentIndex, setIndex] = useState('0');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCode, setEditedCode] = useState('');
 
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
   };
 
+  const onEdit = () => {
+    setIsEditing(true);
+    setEditedCode(props.files[parseInt(currentIndex, 10)].code);
+  };
+
+  const onSave = () => {
+    props.updateFile(props.files[parseInt(currentIndex, 10)].id, editedCode);
+    setIsEditing(false);
+    setEditedCode('');
+  };
+
+  const onBeforeChange = (editor: any, data: any, value: string) => {
+    console.log('here');
+    setEditedCode(value);
+  };
+
+  const getMode = (file: SolutionFileType) => {
+    const extension = file.extension.replace('.', '');
+    if (extension in languageMap) {
+      return languageMap[file.extension];
+    } else return 'txt';
+  };
+
   return (
     <div>
-      <Layout>
+      <Layout style={{ maxHeight: 450 }}>
         <Sider theme="light">
           <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
             {props.files.map((file, index) => {
@@ -44,18 +73,148 @@ export const SolutionCode = (props: IProps) => {
               );
             })}
           </Menu>
+          <CodeUploader files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
         </Sider>
-        <Content style={{ maxHeight: '70vh', overflow: 'auto' }}>
-          <SyntaxHighlighter
-            language={File.language2(props.files[parseInt(currentIndex, 10)].extension)}
-            style={googlecode}
-            showLineNumbers={true}
-            wrapLines={true}
-          >
-            {props.files[parseInt(currentIndex, 10)].code}
-          </SyntaxHighlighter>
+        <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
+          {props.files.length === 0 ? (
+            <div />
+          ) : (
+            <div style={{ position: 'relative', marginLeft: 5 }}>
+              <CodeMirror
+                key={`codeMirror`}
+                onBeforeChange={onBeforeChange}
+                value={isEditing ? editedCode : props.files[parseInt(currentIndex, 10)].code}
+                options={{
+                  lineNumbers: true,
+                  lineWrapping: true,
+                  mode: getMode(props.files[parseInt(currentIndex, 10)]),
+                  theme: 'neo',
+                  readOnly: !isEditing,
+                }}
+              />
+              <Button
+                style={{ position: 'absolute', zIndex: 999999, bottom: 15, right: 15 }}
+                type={isEditing ? 'primary' : 'default'}
+                onClick={isEditing ? onSave : onEdit}
+              >
+                {isEditing ? 'Save' : 'Edit'}
+              </Button>
+            </div>
+          )}
         </Content>
       </Layout>
+    </div>
+  );
+};
+
+// <SyntaxHighlighter
+//   language={File.language2(props.files[parseInt(currentIndex, 10)].extension)}
+//   style={googlecode}
+//   showLineNumbers={true}
+//   wrapLines={true}
+// >
+//   {props.files[parseInt(currentIndex, 10)].code}
+// </SyntaxHighlighter>
+
+interface IUploadProps {
+  files: SolutionFileType[];
+  addFile: (file: any) => Promise<void>;
+  deleteFile: (id: number) => Promise<void>;
+}
+
+const CodeUploader = (props: IUploadProps) => {
+  const [visible, setVisible] = useState(false);
+  const [newFiles, setNewFiles] = useState<any[]>([]);
+  const [counter, setCounter] = useState(0);
+
+  const toggleVisible = () => {
+    setVisible(!visible);
+  };
+
+  const columns = [
+    {
+      title: 'File Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Date uploaded',
+      dataIndex: 'created',
+      key: 'created',
+    },
+    {
+      title: 'Delete',
+      dataIndex: 'delete',
+      key: 'delete',
+    },
+  ];
+
+  const deleteFile = async (id: number) => {
+    await props.deleteFile(id);
+    message.success(`File deleted!`);
+  };
+
+  const data = props.files.map((file) => {
+    return {
+      name: file.name,
+      created: file.created,
+      delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+    };
+  });
+
+  const saveNewFiles = async () => {
+    const promises = newFiles.map((newFile) => {
+      return props.addFile(newFile);
+    });
+    await Promise.all(promises);
+    message.success(`File(s) uploaded successfully`);
+    setNewFiles([]);
+  };
+
+  const beforeUpload = (file: any, fileList: any) => {
+    let reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
+        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
+        setNewFiles([...newFiles, { uid: counter, code: cleanedData, name: file.name, extension: extension }]);
+        setCounter(counter + 1);
+      }
+    };
+    reader.readAsText(file);
+
+    return false;
+  };
+
+  const onRemove = (removedFile: any) => {
+    const updatedFiles = newFiles.filter((file) => {
+      return file.name !== removedFile.name;
+    });
+    setNewFiles(updatedFiles);
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <Button onClick={toggleVisible} style={{ marginTop: 20 }}>
+        Add / Remove Files
+      </Button>
+      <Modal visible={visible} onCancel={toggleVisible} footer={null} width={750}>
+        <Table columns={columns} dataSource={data} />
+        <Upload
+          beforeUpload={beforeUpload}
+          multiple={true}
+          showUploadList={true}
+          onRemove={onRemove}
+          fileList={newFiles}
+        >
+          <Button>
+            <Icon type="upload" /> Add Files
+          </Button>
+        </Upload>
+        <Button disabled={newFiles.length === 0} onClick={saveNewFiles}>
+          Save new files
+        </Button>
+      </Modal>
     </div>
   );
 };

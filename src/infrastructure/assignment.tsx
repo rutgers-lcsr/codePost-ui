@@ -44,6 +44,7 @@ const AssignmentV = t.intersection(
       testCases: t.array(t.number),
       solutionFiles: t.array(t.number),
       testLanguage: t.union([t.string, t.null]),
+      dependencies: t.string,
     }),
   ],
   'Assignment',
@@ -119,6 +120,7 @@ const AssignmentVPatch = t.intersection(
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
       testLanguage: t.union([t.string, t.null]),
+      dependencies: t.string,
     }),
   ],
   'AssignmentPatch',
@@ -150,7 +152,10 @@ const BuildData = t.intersection([
   }),
 ]);
 
-const SimulateResponse = t.intersection([GenericObject, t.type({ buildSucceeded: t.boolean, logs: t.string })]);
+const SimulateResponse = t.intersection([
+  GenericObject,
+  t.type({ buildSucceeded: t.boolean, logs: t.array(t.string) }),
+]);
 
 export class Assignment {
   public static create = createObject(AssignmentV, AssignmentVPost, 'assignments');

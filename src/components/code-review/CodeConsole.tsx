@@ -1014,6 +1014,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       testCases: [],
       solutionFiles: [],
       testLanguage: null,
+      dependencies: '[]',
     };
 
     const demoCourse: CourseType = {

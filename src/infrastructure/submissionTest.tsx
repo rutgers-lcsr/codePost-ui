@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject } from './generics';
 
-const SubmissionTestV = t.intersection(
+export const SubmissionTestV = t.intersection(
   [
     GenericObject,
     t.type({
