@@ -4,8 +4,9 @@ import { SubmissionType } from '../../../../../infrastructure/submission';
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
+import { Submission } from '../../../../../infrastructure/submission';
 
-import { Breadcrumb, Button, Empty, Spin, Table } from 'antd';
+import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Popover, Spin, Table } from 'antd';
 
 import CPAdminDetail from '../../../other/CPAdminDetail';
 
@@ -30,13 +31,14 @@ const getTestCases = async (assignment: AssignmentType) => {
 
 const getTestsBySubmission = async (submissions: SubmissionType[]) => {
   const toRet: TestsBySubmission = {};
-  await submissions.map(async (submission) => {
+  const promises = submissions.map(async (submission) => {
     const testPromises = submission.tests.map((id) => {
       return SubmissionTest.read(id);
     });
     const tests = await Promise.all(testPromises);
     toRet[submission.id] = tests;
   });
+  await Promise.all(promises);
   return toRet;
 };
 
@@ -44,6 +46,7 @@ export const TestsSummary = (props: IProps) => {
   const [loading, setLoading] = useState(false);
   const [testCases, setTestCases] = useState<TestCaseType[]>([]);
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
+  const [loadingSubs, setLoadingSubs] = useState<number[]>([]);
 
   // ******************************* Fetch Data  *******************************
   useEffect(() => {
@@ -81,14 +84,56 @@ export const TestsSummary = (props: IProps) => {
           title: testCase.name,
           dataIndex: testCase.id.toString(),
           key: testCase.id.toString(),
+          align: 'center' as 'center',
         };
       }),
+      {
+        title: 'Summary',
+        dataIndex: 'summary',
+        key: 'summary',
+        align: 'center' as 'center',
+      },
+      {
+        title: 'Actions',
+        dataIndex: 'actions',
+        key: 'actions',
+        align: 'center' as 'center',
+      },
     ];
 
+    const runTests = async (sub: SubmissionType) => {
+      setLoadingSubs([...loadingSubs, sub.id]);
+      const newTests = await Submission.runTests(sub.id);
+      const newTestBySub = { ...testsBySubmission };
+      newTestBySub[sub.id] = newTests;
+      setTestsBySubmission(newTestBySub);
+      const newLoadingSubs = loadingSubs.filter((id) => {
+        return id !== sub.id;
+      });
+      setLoadingSubs(newLoadingSubs);
+    };
+
     const data = props.submissions.map((submission: SubmissionType) => {
+      const actionsMenu = (
+        <Menu>
+          <Menu.Item key="1" onClick={runTests.bind({}, submission)}>
+            <Icon type="caret-right" />
+            Run tests
+          </Menu.Item>
+        </Menu>
+      );
+      let passed = 0;
+      let total = 0;
       const toRet: any = {
         students: submission.students,
         key: submission.id,
+        actions: loadingSubs.includes(submission.id) ? (
+          <Icon type="loading" />
+        ) : (
+          <Dropdown overlay={actionsMenu} trigger={['click']}>
+            <Icon type="menu" />
+          </Dropdown>
+        ),
       };
       const tests = submission.id in testsBySubmission ? testsBySubmission[submission.id] : [];
 
@@ -99,13 +144,25 @@ export const TestsSummary = (props: IProps) => {
       );
 
       for (const test of tests) {
-        toRet[test.testCase] = test.passed ? 'PASSED' : 'FAILED';
+        if (test.passed) {
+          passed += 1;
+        }
+        toRet[test.testCase] = test.passed ? (
+          <Icon type="check-circle" style={{ color: '#24be85' }} />
+        ) : (
+          <Popover content={<div style={{ color: 'red', maxWidth: 300 }}>{test.logs}</div>} title="Logs">
+            <Icon type="exclamation-circle" style={{ color: 'red' }} />
+          </Popover>
+        );
       }
       for (const testCase of testCases) {
+        total += 1;
         if (!casesWithTests.has(testCase.id)) {
-          toRet[testCase.id] = 'NOT RUN';
+          toRet[testCase.id] = <Icon type="minus" style={{ color: 'grey' }} />;
         }
       }
+
+      toRet['summary'] = <div>{`${passed} / ${total}`}</div>;
       return toRet;
     });
 

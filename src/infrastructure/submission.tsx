@@ -16,6 +16,7 @@ import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
+import { SubmissionTestV } from './submissionTest';
 
 import { slack } from '../components/core/slack';
 
@@ -152,6 +153,8 @@ export class Submission {
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
+  public static runTests = readObjectDetail(t.array(SubmissionTestV), 'submissions', 'run');
+
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,
     SubmissionHistoryVPatch,

@@ -46,7 +46,7 @@ import DownloadGrades from './assignments/DownloadGrades';
 
 import Moss from './assignments/Moss';
 
-import { AssignmentTests } from './assignments/AssignmentTest/Tests';
+import { AssignmentTests } from './assignments/AssignmentTest/AssignmentTests';
 
 import { sendSlack } from '../../../components/core/slack';
 
@@ -356,7 +356,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
                 View Stats
               </Menu.Item>
               <Menu.Item key="3.2" onClick={this.changeDetailType.bind(this, DETAIL_TYPE.Tests, assignment)}>
-                <Icon type="bar-chart" />
+                <Icon type="file-done" />
                 View Tests
               </Menu.Item>
               {assignment.allowRegradeRequests ? (
