@@ -200,7 +200,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     // Put the files in the root directory last
     const sortedDirectFiles = directoryStructure.files.sort((f1: FileType, f2: FileType) => {
-      return f1.id - f2.id;
+      return f1.name.localeCompare(f2.name);
     });
 
     sortedDirectFiles.forEach((f) => {
