@@ -1,8 +1,17 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import React from 'react';
+
+/* antd imports */
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, Input, message, Popover, Tooltip } from 'antd';
+
+/* codePost imports */
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -27,11 +36,45 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+/**********************************************************************************************************************/
+
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 const { TextArea } = Input;
+
+/* Compare two rubricComments using a minimal number of comparisons
+ * This function defines what rubricComment equality means from the perspective of a comment.
+ * For example, we shouldn't need to save a comment just because its rubricComment.comments
+ * field changed (e.g. because the rubric comment was applied by another comment somewhere else).
+ */
+const cheapEqRubricComments = (rc1: RubricCommentType | undefined, rc2: RubricCommentType | undefined) => {
+  // Returns true if references match OR if both rc1 and rc2 are undefined
+  if (rc1 === rc2) {
+    return true;
+  }
+
+  // At this point, if this returns, only one of rc1 and rc2 are undefined
+  if (rc1 === undefined || rc2 === undefined) {
+    return false;
+  }
+
+  // Now, we know neither rc1 nor rc2 is undefined, so we can go ahead and compare meaningful properties
+  if (rc1.text !== rc2.text) {
+    return false;
+  }
+
+  if (rc1.pointDelta !== rc2.pointDelta) {
+    return false;
+  }
+
+  if (rc1.category !== rc2.category) {
+    return false;
+  }
+
+  return true;
+};
 
 interface ICommentProps {
   additiveGrading: boolean;
@@ -79,7 +122,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
-    if (this.props.rubricComment !== prevProps.rubricComment) {
+    if (!cheapEqRubricComments(prevProps.rubricComment, this.props.rubricComment)) {
       if (this.props.forcedRubricMode && this.props.rubricComment === undefined) {
         this.setState({ points: 0 });
       } else if (prevProps.rubricComment !== undefined && this.props.rubricComment === undefined) {
