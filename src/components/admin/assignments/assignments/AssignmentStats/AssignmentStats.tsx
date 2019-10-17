@@ -53,10 +53,10 @@ export interface IProps {
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
 
-  onCancel: () => void;
-
   /* misc */
   myEmail: string;
+
+  breadcrumbs: React.ReactElement[];
 }
 
 interface IState {
@@ -452,10 +452,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
       <CPAdminDetail
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item onClick={this.props.onCancel}>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Assignments</a>
-            </Breadcrumb.Item>
+            {this.props.breadcrumbs}
             <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
             <Breadcrumb.Item>Stats</Breadcrumb.Item>
           </Breadcrumb>

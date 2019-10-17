@@ -42,6 +42,7 @@ export enum DRAWER_TYPE {
   Missing,
   Unviewed,
   Viewed,
+  None,
 }
 
 /******************************************************************************
@@ -294,6 +295,8 @@ export const filterDataByStat = (
         }
         return students;
       }, []);
+    default:
+      return [];
   }
 };
 
@@ -314,6 +317,8 @@ export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
       return `Unviewed submissions (${contentLength})`;
     case DRAWER_TYPE.Viewed:
       return `Unviewed submissions (${contentLength})`;
+    default:
+      return '';
   }
 };
 

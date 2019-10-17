@@ -11,6 +11,8 @@ import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 
 /* other library imports */
 import moment from 'moment';
 
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
@@ -32,11 +34,7 @@ const confirm = Modal.confirm;
 
 interface IProps {
   onBack: () => void;
-  student: string;
   students: string[];
-  submissionsMap: {
-    [assignmentID: number]: SubmissionType;
-  };
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
@@ -44,6 +42,9 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
+
+  match: any;
+  baseURL: string;
 }
 
 interface IState {
@@ -51,12 +52,19 @@ interface IState {
   selectedSubmission: string /* stores the name of the assignment associated with the submission */;
 
   assignmentToUpload?: AssignmentType;
+
+  submissionsMap: {
+    [assignmentID: number]: SubmissionType;
+  };
+  student: string;
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     uploadSubmissionVisible: false,
     selectedSubmission: '',
+    student: this.props.match.params.studentEmail,
+    submissionsMap: this.props.submissions[this.props.match.params.studentEmail],
   };
 
   public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
@@ -202,7 +210,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     ];
 
     const data = sortAssignments(this.props.assignments).map((assignment) => {
-      const submission = this.props.submissionsMap[assignment.id];
+      const submission = this.state.submissionsMap[assignment.id];
       let gradeString = 'Not submitted';
       // colorClass is to color the text based on status of submission
       if (submission && submission.isFinalized) {
@@ -285,14 +293,14 @@ class StudentDetail extends React.Component<IProps, IState> {
         partners: submission
           ? submission.students
               .filter((student) => {
-                return student !== this.props.student;
+                return student !== this.state.student;
               })
               .join(',')
           : '--',
         grade: gradeString,
         grader: graderElement,
         status: this.getStatus(submission),
-        viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
+        viewed: submission ? this.getViewIcon(submission, this.state.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
             <Icon type="menu" />
@@ -305,18 +313,18 @@ class StudentDetail extends React.Component<IProps, IState> {
       <div>
         <TableDetail
           loadComplete={true}
-          title={`Submissions: ${this.props.student}`}
+          title={`Submissions: ${this.state.student}`}
           breadcrumbs={
             <Breadcrumb>
-              <Breadcrumb.Item onClick={this.props.onBack}>
+              <Breadcrumb.Item>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a>Submissions</a>
               </Breadcrumb.Item>
               <Breadcrumb.Item onClick={this.props.onBack}>
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <a>Students</a>
+                <Link to={this.props.baseURL}>Students</Link>
               </Breadcrumb.Item>
-              <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>
+              <Breadcrumb.Item>{this.state.student}</Breadcrumb.Item>
             </Breadcrumb>
           }
           isEmpty={false}
@@ -331,7 +339,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           isVisible={this.state.uploadSubmissionVisible}
           onCancel={this.toggleUploadSubmissionVisible.bind(this, undefined)}
           assignments={this.props.assignments}
-          selectedStudents={[this.props.student]}
+          selectedStudents={[this.state.student]}
           students={this.props.students}
           submissions={this.props.submissions}
           uploadSubmission={this.props.uploadSubmission}
