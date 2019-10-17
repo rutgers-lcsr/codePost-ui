@@ -21,8 +21,6 @@ import { TableDetail } from '../../other/TableDetail';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 
-import { IAssignmentToSubmissionsMap } from '../../../../types/common';
-
 import { openSubmission } from '../../other/AdminUtils';
 
 const confirm = Modal.confirm;
@@ -30,9 +28,7 @@ const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
-  submissionsByAssignment: IAssignmentToSubmissionsMap;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
-  assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   means: { [assignmentID: number]: string | null };
@@ -41,29 +37,12 @@ interface IProps {
 
   match: any;
   baseURL: string;
-}
 
-interface IState {
+  selectedAssignment: AssignmentType;
   submissions: SubmissionType[];
-  selectedAssignment: AssignmentType | undefined;
 }
 
-class GraderAssignmentDetail extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
-    super(props);
-    const matchedAssignment = this.props.assignments.find((assignment) => {
-      return assignment.name === this.props.match.params.assignmentName.replace('_', ' ');
-    });
-    this.state = {
-      selectedAssignment: matchedAssignment,
-      submissions: matchedAssignment !== undefined ? this.props.submissionsByAssignment[matchedAssignment.id] : [],
-    };
-  }
-
-  public changeActiveAssignment = (assignment: AssignmentType | undefined) => {
-    this.setState({ selectedAssignment: assignment });
-  };
-
+class GraderAssignmentDetail extends React.Component<IProps, {}> {
   public removeSubmission = (toRemove: SubmissionType) => {
     confirm({
       title: 'Are you sure you want to delete this submission?',
@@ -189,8 +168,8 @@ class GraderAssignmentDetail extends React.Component<IProps, IState> {
       },
     ];
 
-    const submissions = this.state.submissions;
-    const selectedAssignment = this.state.selectedAssignment;
+    const submissions = this.props.submissions;
+    const selectedAssignment = this.props.selectedAssignment;
 
     if (selectedAssignment) {
       const data = submissions.map((submission) => {
@@ -243,7 +222,7 @@ class GraderAssignmentDetail extends React.Component<IProps, IState> {
                   {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <Link to={this.props.baseURL}>By Grader</Link>
                 </Breadcrumb.Item>
-                <Breadcrumb.Item onClick={this.changeActiveAssignment.bind(this, undefined)}>
+                <Breadcrumb.Item>
                   {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <Link to={this.props.baseURL}>{this.props.grader}</Link>
                 </Breadcrumb.Item>

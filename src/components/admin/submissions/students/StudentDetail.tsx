@@ -42,6 +42,7 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
+  student: string;
 
   match: any;
   baseURL: string;
@@ -56,15 +57,13 @@ interface IState {
   submissionsMap: {
     [assignmentID: number]: SubmissionType;
   };
-  student: string;
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     uploadSubmissionVisible: false,
     selectedSubmission: '',
-    student: this.props.match.params.studentEmail,
-    submissionsMap: this.props.submissions[this.props.match.params.studentEmail],
+    submissionsMap: this.props.submissions[this.props.student],
   };
 
   public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
@@ -293,14 +292,14 @@ class StudentDetail extends React.Component<IProps, IState> {
         partners: submission
           ? submission.students
               .filter((student) => {
-                return student !== this.state.student;
+                return student !== this.props.student;
               })
               .join(',')
           : '--',
         grade: gradeString,
         grader: graderElement,
         status: this.getStatus(submission),
-        viewed: submission ? this.getViewIcon(submission, this.state.student) : '--',
+        viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
             <Icon type="menu" />
@@ -313,7 +312,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       <div>
         <TableDetail
           loadComplete={true}
-          title={`Submissions: ${this.state.student}`}
+          title={`Submissions: ${this.props.student}`}
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item>
@@ -324,7 +323,7 @@ class StudentDetail extends React.Component<IProps, IState> {
                 {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <Link to={this.props.baseURL}>Students</Link>
               </Breadcrumb.Item>
-              <Breadcrumb.Item>{this.state.student}</Breadcrumb.Item>
+              <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>
             </Breadcrumb>
           }
           isEmpty={false}
@@ -339,7 +338,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           isVisible={this.state.uploadSubmissionVisible}
           onCancel={this.toggleUploadSubmissionVisible.bind(this, undefined)}
           assignments={this.props.assignments}
-          selectedStudents={[this.state.student]}
+          selectedStudents={[this.props.student]}
           students={this.props.students}
           submissions={this.props.submissions}
           uploadSubmission={this.props.uploadSubmission}

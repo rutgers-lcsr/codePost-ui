@@ -115,21 +115,24 @@ class GraderData extends React.Component<IByGraderProps, IState> {
 
     return (
       <Switch>
-        <Route
-          path={`${this.props.match.url}/:graderEmail`}
-          render={(props: any) => (
-            <GraderDetail
-              {...props}
-              baseURL={this.props.match.url}
-              submissions={this.props.submissionsByGrader}
-              assignments={this.props.assignments}
-              graders={this.props.graders}
-              viewsBySubmission={this.props.viewsBySubmission}
-              deleteSubmission={this.props.deleteSubmission}
-              means={this.state.means}
-            />
-          )}
-        />
+        {this.props.graders.map((grader) => (
+          <Route
+            path={`${this.props.match.url}/${grader}`}
+            render={(props: any) => (
+              <GraderDetail
+                {...props}
+                baseURL={this.props.match.url}
+                assignments={this.props.assignments}
+                graders={this.props.graders}
+                viewsBySubmission={this.props.viewsBySubmission}
+                deleteSubmission={this.props.deleteSubmission}
+                means={this.state.means}
+                grader={grader}
+                submissionsByAssignment={this.props.submissionsByGrader[grader]}
+              />
+            )}
+          />
+        ))}
         <Route
           exact={true}
           path={this.props.match.url}

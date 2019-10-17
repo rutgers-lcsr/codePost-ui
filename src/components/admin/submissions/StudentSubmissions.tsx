@@ -117,23 +117,26 @@ class StudentData extends React.Component<IByStudentProps, IState> {
 
     return (
       <Switch>
-        <Route
-          path={`${this.props.match.url}/:studentEmail`}
-          render={(props: any) => (
-            <StudentDetail
-              {...props}
-              baseURL={this.props.match.url}
-              assignments={this.props.assignments}
-              graders={this.props.graders}
-              submissions={this.props.submissionsByStudent}
-              uploadSubmission={this.props.uploadSubmission}
-              students={Object.keys(this.props.submissionsByStudent)}
-              viewsBySubmission={this.props.viewsBySubmission}
-              deleteSubmission={this.props.deleteSubmission}
-              changeSubmissionGrader={this.props.changeSubmissionGrader}
-            />
-          )}
-        />
+        {this.props.students.map((student) => (
+          <Route
+            path={`${this.props.match.url}/${student}`}
+            render={(subprops: any) => (
+              <StudentDetail
+                {...subprops}
+                baseURL={this.props.match.url}
+                assignments={this.props.assignments}
+                graders={this.props.graders}
+                submissions={this.props.submissionsByStudent}
+                uploadSubmission={this.props.uploadSubmission}
+                students={Object.keys(this.props.submissionsByStudent)}
+                student={student}
+                viewsBySubmission={this.props.viewsBySubmission}
+                deleteSubmission={this.props.deleteSubmission}
+                changeSubmissionGrader={this.props.changeSubmissionGrader}
+              />
+            )}
+          />
+        ))}
         <Route
           exact={true}
           path={this.props.match.url}
