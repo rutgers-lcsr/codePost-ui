@@ -454,7 +454,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       case 'object':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
-          [key]: event.target.value,
+          [key]: event === null ? 0 : event.target.value,
         };
         break;
     }
