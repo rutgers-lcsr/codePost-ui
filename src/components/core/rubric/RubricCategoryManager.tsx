@@ -243,10 +243,11 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
         const newState: any = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
-          if (value !== null) {
-            newVal = parseFloat(value);
-          } else {
+          // Note: isNaN('') returns false, isNaN(null) returns false
+          if (value === '' || value === null || isNaN(value)) {
             newVal = null;
+          } else {
+            newVal = parseFloat(value);
           }
         }
 
