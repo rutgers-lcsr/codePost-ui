@@ -191,11 +191,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, {}> {
                   },
                 ],
               })(
-                <Select
-                  disabled={this.props.isRunning}
-                  defaultValue={testCase.fileName ? testCase.fileName : undefined}
-                  style={{ minWidth: 200 }}
-                >
+                <Select disabled={this.props.isRunning} defaultValue={testCase.fileName} style={{ minWidth: 200 }}>
                   {this.props.files.map((file) => {
                     return <Option value={file.name}>{file.name}</Option>;
                   })}
