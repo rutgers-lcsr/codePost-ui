@@ -32,13 +32,21 @@ export const jupyterToMarkdown = (content: string) => {
             switch (key) {
               case 'text/plain':
                 markdown += '\n```output\n';
-                markdown += output.data['text/plain'].join('');
+                if (Array.isArray(output.data['text/plain'])) {
+                  markdown += output.data['text/plain'].join('');
+                } else {
+                  markdown += output.data['text/plain'];
+                }
                 markdown += '\n```\n';
                 break;
               case 'text/html':
                 markdown += '\n';
                 // Convert HTML to markdown
-                markdown += turndown.turndown(output.data['text/html'].join(''));
+                if (Array.isArray(output.data['text/html'])) {
+                  markdown += turndown.turndown(output.data['text/html'].join(''));
+                } else {
+                  markdown += turndown.turndown(output.data['text/html']);
+                }
                 markdown += '\n';
                 break;
               case 'image/png':
@@ -67,7 +75,11 @@ export const jupyterToMarkdown = (content: string) => {
         if (output.output_type === 'error') {
           if (output.traceback) {
             markdown += '\n```output\nERRORS --->\n\n';
-            markdown += output.traceback.join('\n');
+            if (Array.isArray(output.traceback)) {
+              markdown += output.traceback.join('\n');
+            } else {
+              markdown += output.traceback;
+            }
             markdown += '\n```\n';
           }
         }
