@@ -116,6 +116,7 @@ export enum DETAIL_TYPE {
 interface IManageAssignmentsState {
   /* what is selected? */
   activeAssignment?: AssignmentType; // which assignment has been clicked
+  activeStudent?: string; // track student from drawer to upload component
   detailType?: DETAIL_TYPE; // what detail view are we showing
   drawerType?: DRAWER_TYPE;
   drawerContent: {
@@ -158,7 +159,9 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
       this.props.submissions[assignment.id],
       this.props.viewsBySubmission,
       this.props.students,
-    );
+    ).sort((a, b) => {
+      return a.email.localeCompare(b.email);
+    });
 
     const title = getDrawerTitle(type, newContent.length);
 
@@ -194,6 +197,17 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
         message.success('Assignment successfully deleted!');
       });
     }
+  };
+
+  public uploadForStudent = (student: string) => {
+    this.setState({ activeStudent: student }, () => {
+      this.changeDetailType(DETAIL_TYPE.Upload_Single, this.state.activeAssignment);
+    });
+  };
+
+  public closeSingleSubmissionUpload = () => {
+    this.changeDetailType(undefined, undefined);
+    this.setState({ activeStudent: undefined });
   };
 
   /******************************************************************************
@@ -511,11 +525,11 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
             detailComponent = (
               <UploadSubmissionDialog
                 isVisible={true}
-                onCancel={this.changeDetailType.bind(this.props, undefined, undefined)}
+                onCancel={this.closeSingleSubmissionUpload}
                 assignments={[this.state.activeAssignment!]}
                 selectedAssignment={this.state.activeAssignment!}
                 students={this.props.students}
-                selectedStudents={[]}
+                selectedStudents={this.state.activeStudent !== undefined ? [this.state.activeStudent] : []}
                 submissions={this.props.submissionsByStudent}
                 uploadSubmission={this.props.uploadSubmission}
               />
@@ -634,6 +648,7 @@ class ManageAssignments extends React.Component<IManageAssignmentsProps, IManage
               content={this.state.drawerContent}
               onClose={this.changeDetailType.bind(this.props, undefined, undefined)}
               isVisible={this.state.detailType === DETAIL_TYPE.Drawer}
+              uploadSubmission={this.uploadForStudent}
             />
           );
 

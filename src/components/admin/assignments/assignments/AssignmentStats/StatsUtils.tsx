@@ -9,6 +9,8 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 
 import { openSubmission } from '../../../other/AdminUtils';
 
+import CPButton from '../../../../core/CPButton';
+
 type alignType = 'left' | 'right' | 'center';
 
 export interface IFullStats extends IGradingProgressStats {
@@ -322,16 +324,21 @@ export const StatsDrawer = (props: {
   content: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
   onClose: () => void;
   isVisible: boolean;
+  uploadSubmission?: (students: string) => void;
 }) => {
   // const alignCenter: alignType = 'center';
   const alignLeft: alignType = 'left';
 
-  const drawerColumns = [
+  const drawerColumns: any[] = [
     {
       title: 'Students',
       dataIndex: 'students',
       key: 'students',
       align: alignLeft,
+      defaultSortOrder: 'ascend',
+      sorter: (a: any, b: any) => {
+        return a.students.localeCompare(b.students);
+      },
     },
   ];
   if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
@@ -340,6 +347,15 @@ export const StatsDrawer = (props: {
       dataIndex: 'open',
       key: 'open',
       align: alignLeft,
+    });
+  }
+
+  if (props.type === DRAWER_TYPE.Missing) {
+    drawerColumns.push({
+      title: 'Upload',
+      dataIndex: 'upload',
+      key: 'upload',
+      align: 'center',
     });
   }
 
@@ -353,7 +369,20 @@ export const StatsDrawer = (props: {
         <a onClick={openSub} className="internal-link">
           <Icon type="code" />
         </a>
-      ) : null,
+      ) : (
+        undefined
+      ),
+      upload:
+        props.type === DRAWER_TYPE.Missing ? (
+          <CPButton
+            icon="upload"
+            onClick={props.uploadSubmission ? props.uploadSubmission.bind(false, el.email) : undefined}
+          >
+            Upload
+          </CPButton>
+        ) : (
+          undefined
+        ),
     };
   });
 
