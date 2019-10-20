@@ -10,12 +10,20 @@ export const jupyterToMarkdown = (content: string) => {
 
   jupyterJson.cells.forEach((cell: any) => {
     if (cell.cell_type === 'markdown') {
-      markdown += cell.source.join('');
+      if (Array.isArray(cell.source)) {
+        markdown += cell.source.join('');
+      } else {
+        markdown += cell.source;
+      }
     }
 
     if (cell.cell_type === 'code') {
       markdown += '```python\n';
-      markdown += cell.source.join('');
+      if (Array.isArray(cell.source)) {
+        markdown += cell.source.join('');
+      } else {
+        markdown += cell.source;
+      }
       markdown += '\n```';
 
       cell.outputs.map((output: any) => {
@@ -43,11 +51,16 @@ export const jupyterToMarkdown = (content: string) => {
         if (output.name === 'stdout') {
           if (output.text) {
             markdown += '\n```output\n';
-            markdown += output.text
-              .map((line: string) => {
-                return line.replace(']', ']\n').trim();
-              })
-              .join('\n');
+            if (Array.isArray(output.text)) {
+              markdown += output.text
+                .map((line: string) => {
+                  return line.replace(']', ']\n').trim();
+                })
+                .join('\n');
+            } else {
+              markdown += output.text;
+            }
+
             markdown += '\n```\n';
           }
         }
