@@ -1143,6 +1143,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 submissionsByAssignment={this.state.submissions}
                 submissionsByGrader={this.state.submissionsByGrader}
                 inactiveGraders={this.state.inactiveGraders}
+                baseURL={this.props.match.url}
               />
             )}
           />

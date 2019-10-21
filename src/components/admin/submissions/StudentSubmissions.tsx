@@ -11,6 +11,7 @@ import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
+import { RouteComponentProps } from 'react-router';
 import { Route, Link, Switch } from 'react-router-dom';
 
 /* codePost imports  */
@@ -33,7 +34,7 @@ import Loading from '../../../components/core/Loading';
 
 /**********************************************************************************************************************/
 
-export interface IByStudentProps {
+export interface IByStudentProps extends RouteComponentProps {
   /* UI control */
   loadComplete: boolean;
 
@@ -49,8 +50,6 @@ export interface IByStudentProps {
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
 
-  /* url */
-  match: any;
   baseURL: string;
 }
 

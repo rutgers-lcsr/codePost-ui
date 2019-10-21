@@ -45,7 +45,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
     }
   }
 
-  public getDefaultOpenKey = () => {
+  public getDefaultSelectedKey = () => {
     const routes = [
       'submissions/by_student',
       'submissions/by_grader',
@@ -85,7 +85,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
       <Menu
         theme="dark"
         defaultOpenKeys={['submissions', 'roster']}
-        defaultSelectedKeys={[this.getDefaultOpenKey()]}
+        selectedKeys={[this.getDefaultSelectedKey()]}
         mode="inline"
       >
         <SubMenu

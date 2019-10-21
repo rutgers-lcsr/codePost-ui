@@ -21,7 +21,7 @@ class GraderNav extends React.Component<IProps, {}> {
     }
   };
 
-  public getDefaultOpenKey = () => {
+  public getDefaultSelectedKeys = () => {
     const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades'];
 
     const match = routes.indexOf(this.props.match.params.panel).toString();
@@ -38,7 +38,7 @@ class GraderNav extends React.Component<IProps, {}> {
     return (
       <div>
         <div>
-          <Menu theme="dark" mode="inline" defaultSelectedKeys={[this.getDefaultOpenKey()]}>
+          <Menu theme="dark" mode="inline" selectedKeys={[this.getDefaultSelectedKeys()]}>
             <Menu.Item key="0">
               <Link to={generatePath(this.props.match.path, { panel: 'my_submissions' })}>
                 <Icon type="container" />
