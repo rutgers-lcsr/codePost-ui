@@ -12,7 +12,7 @@ import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
-import CPAdminDetail from '../other/CPAdminDetail';
+import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
 import memoizeOne from 'memoize-one';
@@ -264,23 +264,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         align: aligner,
       },
     ];
-
-    if (this.props.assignments.length === 0) {
-      return (
-        <Empty
-          imageStyle={{
-            height: 60,
-          }}
-          description={<span>No assignments yet</span>}
-        >
-          <NewAssignmentDialog
-            key={1}
-            assignments={this.props.assignments}
-            createAssignment={this.props.createAssignment}
-          />
-        </Empty>
-      );
-    }
 
     actions = [
       <NewAssignmentDialog
@@ -571,22 +554,34 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     }
 
     return (
-      <CPAdminDetail
+      <TableDetail
+        title={'Assignments'}
+        isEmpty={this.props.assignments.length === 0}
+        loadComplete={this.props.loadComplete}
+        emptyNode={
+          <Empty
+            imageStyle={{
+              height: 60,
+            }}
+            description={<span>No assignments yet</span>}
+          >
+            <NewAssignmentDialog
+              key={1}
+              assignments={this.props.assignments}
+              createAssignment={this.props.createAssignment}
+            />
+          </Empty>
+        }
+        columns={columns}
+        data={data}
+        actions={actions}
         breadcrumbs={
           <Breadcrumb>
             <Breadcrumb.Item>Assignments</Breadcrumb.Item>
           </Breadcrumb>
         }
-        goBack={null}
-        title={'Assignments'}
-        actions={actions}
-        content={
-          <div>
-            <Table pagination={false} columns={columns} dataSource={data} loading={!this.props.loadComplete} />
-            {detailComponent}
-            {drawerComponent}
-          </div>
-        }
+        titleInfo={tooltips.admin.graderRoster.title}
+        drawer={drawerComponent}
       />
     );
   }
