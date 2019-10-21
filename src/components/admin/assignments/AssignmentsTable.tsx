@@ -271,9 +271,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         assignments={this.props.assignments}
         createAssignment={this.props.createAssignment}
       />,
-      <CPButton cpType="secondary" key={2} icon="download">
-        Download grades
-      </CPButton>,
+      <Link to={`${this.props.baseURL}/download/grades`}>
+        <CPButton cpType="secondary" key={2} icon="download">
+          Download grades
+        </CPButton>
+      </Link>,
     ];
 
     const assignmentStats: IAssignmentProgressStatsMap = this.calculateStats(
@@ -538,6 +540,21 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
             />
           );
           break;
+        case DETAIL_TYPE.DownloadGrades:
+          detailComponent = (
+            <DownloadGrades
+              activeAssignment={this.props.activeAssignment}
+              assignments={this.props.assignments}
+              submissionsByStudent={this.props.submissionsByStudent}
+              students={this.props.students}
+              currentCourse={this.props.currentCourse!}
+              onCancel={cancel}
+            />
+          );
+          break;
+      }
+    } else if (this.props.detailType) {
+      switch (this.props.detailType) {
         case DETAIL_TYPE.DownloadGrades:
           detailComponent = (
             <DownloadGrades

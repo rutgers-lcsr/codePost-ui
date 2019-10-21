@@ -168,7 +168,7 @@ const DownloadGrades = (props: IProps) => {
       <Modal
         visible={true}
         width={550}
-        title="Missing Submissions"
+        title={props.activeAssignment ? `Download grades: ${props.activeAssignment.name}` : 'Download grades'}
         okText="Download"
         onCancel={props.onCancel}
         onOk={onDownload}

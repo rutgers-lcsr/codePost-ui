@@ -235,6 +235,18 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         );
       })}
       <Route
+        path={`${props.match.url}/download/grades`}
+        exact={true}
+        render={(subprops: any) => (
+          <AssignmentsTable
+            {...props}
+            {...subprops}
+            detailType={DETAIL_TYPE.DownloadGrades}
+            baseURL={props.match.url}
+          />
+        )}
+      />
+      <Route
         path={props.match.url}
         exact={true}
         render={(subprops: any) => <AssignmentsTable {...props} {...subprops} baseURL={props.match.url} />}
