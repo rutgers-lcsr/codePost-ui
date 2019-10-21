@@ -532,10 +532,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
               });
             }),
           ).then((newAssignments) => {
+            this.props.addCourse(course);
             this.props.history.push(`${formatCourseURL(course)}/assignments`);
           });
         });
       } else {
+        this.props.addCourse(course);
         this.props.history.push(`${formatCourseURL(course)}/assignments`);
       }
     });
