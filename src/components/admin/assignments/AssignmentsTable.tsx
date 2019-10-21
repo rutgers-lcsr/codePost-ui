@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Table, Tag, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tag, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -582,6 +582,8 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         }
         titleInfo={tooltips.admin.graderRoster.title}
         drawer={drawerComponent}
+        hideSearch={true}
+        detail={detailComponent}
       />
     );
   }
