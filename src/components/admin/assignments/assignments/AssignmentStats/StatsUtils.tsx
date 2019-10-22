@@ -44,6 +44,7 @@ export enum DRAWER_TYPE {
   Missing,
   Unviewed,
   Viewed,
+  None,
 }
 
 /******************************************************************************
@@ -296,6 +297,8 @@ export const filterDataByStat = (
         }
         return students;
       }, []);
+    default:
+      return [];
   }
 };
 
@@ -316,6 +319,8 @@ export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
       return `Unviewed submissions (${contentLength})`;
     case DRAWER_TYPE.Viewed:
       return `Unviewed submissions (${contentLength})`;
+    default:
+      return '';
   }
 };
 
@@ -324,7 +329,7 @@ export const StatsDrawer = (props: {
   content: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
   onClose: () => void;
   isVisible: boolean;
-  uploadSubmission?: (students: string) => void;
+  uploadSubmission?: (assignmentName: string, students: string) => void;
 }) => {
   // const alignCenter: alignType = 'center';
   const alignLeft: alignType = 'left';
@@ -361,6 +366,11 @@ export const StatsDrawer = (props: {
 
   const drawerData = props.content.content.map((el) => {
     const openSub = () => openSubmission(el.subID!);
+    const onClick = () => {
+      if (props.uploadSubmission) {
+        props.uploadSubmission(props.content.title, el.email);
+      }
+    };
 
     return {
       students: el.email,
@@ -374,10 +384,7 @@ export const StatsDrawer = (props: {
       ),
       upload:
         props.type === DRAWER_TYPE.Missing ? (
-          <CPButton
-            icon="upload"
-            onClick={props.uploadSubmission ? props.uploadSubmission.bind(false, el.email) : undefined}
-          >
+          <CPButton icon="upload" onClick={onClick}>
             Upload
           </CPButton>
         ) : (

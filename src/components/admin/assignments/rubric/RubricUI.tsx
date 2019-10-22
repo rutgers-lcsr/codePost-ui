@@ -38,17 +38,16 @@ import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
-// interface IRubricUIState extends IRubricManagerState {
-//   showPointLimits: boolean;
-//   showHelpText: boolean;
-// }
+interface IRubricUIProps extends IRubricManagerProps {
+  breadcrumbs: React.ReactElement[];
+}
 
 const RubricUI = ({
   props,
   state,
   helpers,
 }: {
-  props: IRubricManagerProps;
+  props: IRubricUIProps;
   state: IRubricManagerState;
   helpers: IRubricManagerHelpers;
 }) => {
@@ -266,10 +265,7 @@ const RubricUI = ({
         }
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item onClick={props.onCancel}>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Assignments</a>
-            </Breadcrumb.Item>
+            {props.breadcrumbs}
             <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
             <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
           </Breadcrumb>

@@ -45,7 +45,7 @@ export interface IMossProps {
 
   user: UserType;
 
-  onCancel: () => void;
+  breadcrumbs: React.ReactElement[];
   location: any;
 }
 /**********************************************************************************************************************/
@@ -430,10 +430,7 @@ const Moss = (props: IMossProps) => {
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a>Assignments</a>
-          </Breadcrumb.Item>
+          {props.breadcrumbs}
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
           <Breadcrumb.Item>Moss</Breadcrumb.Item>
         </Breadcrumb>

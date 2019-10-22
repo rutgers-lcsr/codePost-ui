@@ -5,251 +5,129 @@
 /* react imports */
 import * as React from 'react';
 
-/* ant imports */
-import { Icon, Select, Switch, Table } from 'antd';
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { Course, CourseType } from '../../infrastructure/course';
-
-import CPTooltip from '../core/CPTooltip';
-import { tooltips } from '../core/tooltips';
-
+import { CourseType } from '../../infrastructure/course';
 import { SubmissionType } from '../../infrastructure/submission';
-import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
-import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
-
-import { compare } from '../utils/SortUtils';
-
-import CPAdminDetail from '../admin/other/CPAdminDetail';
+import ViewAllDetailPanel from './ViewAllDetailPanel';
+import GraderPanelBuilder from './GraderPanel';
 
 type alignType = 'left' | 'right' | 'center';
-
-const { Option } = Select;
+const ViewAllShell = GraderPanelBuilder(ViewAllDetailPanel);
 
 /**********************************************************************************************************************/
 
-interface IViewAllProps {
-  currentCourse: CourseType;
-  currentAssignment: AssignmentType;
+interface IProps extends RouteComponentProps {
+  assignments: AssignmentType[];
+  course: CourseType;
 }
 
-interface IViewAllState {
-  graders: string[];
-  submissions: SubmissionType[];
-  selectedGraders: string[];
+interface IState {
+  submissionsByAssignment: { [id: number]: SubmissionType[] };
   isLoading: boolean;
-  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  showStudentEmails: boolean;
 }
 
-interface ITableRow extends ISubDataBasic {
-  key: number;
-  student: string | number;
-  viewIcon?: string | React.ReactElement;
-}
-
-class ViewAllPanel extends React.Component<IViewAllProps, IViewAllState> {
-  public state: Readonly<IViewAllState> = {
-    graders: [],
-    submissions: [],
-    selectedGraders: [],
-    viewsBySubmission: {},
-    isLoading: true,
-    showStudentEmails: false,
-  };
-
-  public async initialLoad() {
-    this.setState({ isLoading: true });
-    const [submissions, viewsBySubmission, roster] = await Promise.all([
-      await Assignment.readSubmissions(this.props.currentAssignment.id),
-      await this.loadSubmissionsViews(),
-      await Course.readRoster(this.props.currentCourse.id),
-    ]);
-
-    this.setState({
-      graders: roster.graders,
-      viewsBySubmission,
-      submissions,
-      isLoading: false,
-    });
+class ViewAllPanel extends React.Component<IProps, IState> {
+  public constructor(props: IProps) {
+    super(props);
+    this.state = {
+      submissionsByAssignment: [],
+      isLoading: true,
+    };
   }
 
   public componentDidMount() {
-    this.initialLoad();
+    this.loadSubmissions(this.props.assignments);
   }
 
-  public componentDidUpdate(oldProps: IViewAllProps) {
-    if (oldProps.currentAssignment !== this.props.currentAssignment) {
-      this.initialLoad();
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.assignments !== this.props.assignments) {
+      this.loadSubmissions(this.props.assignments);
     }
   }
 
-  public loadSubmissionsViews = async () => {
-    const histories = await Assignment.readSubmissionHistories(this.props.currentAssignment.id);
-    const viewsBySubmission: any = {};
-    histories.forEach((history: SubmissionHistoryType) => {
-      const submissionID = history.submission;
-      if (!(submissionID in viewsBySubmission)) {
-        viewsBySubmission[submissionID] = {};
+  public loadSubmissions = (assignments: AssignmentType[]) => {
+    this.setState({ isLoading: true }, () => {
+      const toRet = [];
+      for (const assn of assignments) {
+        toRet.push(Assignment.readSubmissions(assn.id));
       }
-      if (history.hasViewed) {
-        viewsBySubmission[submissionID][history.student] = history.dateViewed;
-      }
+
+      Promise.all(toRet).then((lists) => {
+        const mapper: { [id: number]: SubmissionType[] } = {};
+        for (const list of lists) {
+          if (list.length > 0) {
+            mapper[list[0].assignment] = list;
+          }
+        }
+        this.setState({ submissionsByAssignment: mapper, isLoading: false });
+      });
     });
-    return viewsBySubmission;
-  };
-
-  public toggleShowStudentEmails = () => {
-    this.setState({
-      showStudentEmails: !this.state.showStudentEmails,
-    });
-  };
-
-  public handleSelect = (grader: string) => {
-    const newGraders = [...this.state.selectedGraders, grader];
-    this.setState({ selectedGraders: newGraders });
-  };
-
-  public handleDeselect = (grader: string) => {
-    const newGraders = this.state.selectedGraders.filter((g) => {
-      return g !== grader;
-    });
-    this.setState({ selectedGraders: newGraders });
-  };
-
-  public openGradePage = (submission: SubmissionType) => {
-    window.open(`/code/${submission.id}`);
   };
 
   public render() {
-    const { graders, submissions, selectedGraders } = this.state;
-    const { currentAssignment } = this.props;
-    const showingEmails = !this.props.currentAssignment.anonymousGrading || this.state.showStudentEmails;
-
     const centerAlign: alignType = 'center';
     const columns = [
       {
-        title: 'Open',
-        dataIndex: 'open',
+        title: 'Zoom in',
+        dataIndex: 'zoom',
         align: centerAlign,
       },
       {
-        title: 'Student(s)',
-        dataIndex: 'student',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+        title: 'Assignment',
+        dataIndex: 'assignment',
       },
       {
-        title: 'Grade',
-        dataIndex: 'gradeText',
-        sorter: (a: ITableRow, b: ITableRow) => {
-          return sortByGrade(
-            { grade: a.grade, isFinalized: a.isFinalized },
-            { grade: b.grade, isFinalized: b.isFinalized },
-          );
-        },
+        title: 'Claimed',
+        dataIndex: 'claimed',
         align: centerAlign,
       },
       {
-        title: 'Grader',
-        dataIndex: 'grader',
-        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.grader, b.grader),
+        title: 'Finalized',
+        dataIndex: 'finalized',
         align: centerAlign,
       },
       {
-        title: 'Last Edited',
-        dataIndex: 'lastEdited',
-        align: centerAlign,
-        sorter: (a: ITableRow, b: ITableRow) => {
-          const date1 = new Date(a.lastEdited);
-          const date2 = new Date(b.lastEdited);
-          return date2.valueOf() - date1.valueOf();
-        },
-      },
-      {
-        title: 'Viewed by Student(s)',
-        dataIndex: 'viewIcon',
+        title: 'Avg. Grade',
+        dataIndex: 'grade',
         align: centerAlign,
       },
     ];
 
-    // If select bar is populated, filter by submissions who meet search conditions
-    let filteredSubs;
-    if (selectedGraders.length === 0) {
-      filteredSubs = submissions;
-    } else {
-      filteredSubs = submissions.filter((sub) => {
-        return sub.grader && selectedGraders.indexOf(sub.grader.toLowerCase()) !== -1;
-      });
-    }
-
-    const data = filteredSubs.map((sub) => {
-      const students = showingEmails ? sub.students.join(', ') : String(sub.id);
+    const submissions = this.state.submissionsByAssignment;
+    const data = this.props.assignments.map((assignment) => {
+      const list = assignment.id in submissions ? submissions[assignment.id] : [];
+      const numFinalized = list.filter((sub) => sub.isFinalized).length;
       return {
-        ...formatSub(sub, this.props.currentAssignment),
-        key: sub.id,
-        student: students,
-        viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
-        open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+        key: assignment.id,
+        assignment: assignment.name,
+        claimed: list.length,
+        finalized: numFinalized,
+        grade:
+          numFinalized > 0
+            ? `${(list.reduce((acc, sub) => (sub.isFinalized ? sub.grade! + acc : acc), 0) / numFinalized).toFixed(
+                1,
+              )}/${assignment.points}`
+            : '--',
       };
     });
 
-    // If we're in anonymous grading mode, add a toggle to reveal student emails
-    const anonymousToggle = currentAssignment.anonymousGrading ? (
-      <div style={{ display: 'inline-block', padding: '0px 20px' }}>
-        Reveal students: &nbsp;
-        <Switch
-          defaultChecked={showingEmails}
-          onChange={this.toggleShowStudentEmails}
-          key="toggleShowStudents"
-          style={{ display: 'inline-block' }}
-        />
-      </div>
-    ) : (
-      <div />
-    );
-
-    const graderSelect = (
-      <div>
-        <Select
-          placeholder="Select Graders..."
-          mode="multiple"
-          // @ts-ignore
-          onSelect={this.handleSelect}
-          // @ts-ignore
-          onDeselect={this.handleDeselect}
-          style={{ width: 500, marginBottom: 20 }}
-        >
-          {graders.map((grader) => {
-            return <Option key={grader}>{grader}</Option>;
-          })}
-        </Select>
-        <CPTooltip
-          title={tooltips.grader.allSubmissions.filter}
-          placement="right"
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: 10 }}
-        />
-      </div>
-    );
-
-    const content = (
-      <div>
-        {graderSelect}
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
-      </div>
-    );
-
     return (
-      <CPAdminDetail
-        goBack={null}
-        title={`All submissions: ${this.props.currentAssignment.name}`}
-        actions={[anonymousToggle]}
-        content={content}
-        gutterSize={0}
-        titleInfo={tooltips.grader.allSubmissions.title}
+      <ViewAllShell
+        {...this.props}
+        course={this.props.course}
+        assignment={this.props.assignments[0]}
+        assignments={this.props.assignments}
+        breadcrumbs={[]}
+        actions={[]}
+        title="View All"
+        data={data}
+        columns={columns}
+        isLoading={this.state.isLoading}
       />
     );
   }

@@ -101,6 +101,11 @@ const codeWidth = generateSettingFunctions('codeWidth', 0, floatIParser, floatOP
 // defalut value: 0
 const defaultCourse = generateSettingFunctions('defaultCourse', 0, intIParser, intOParser);
 
+// key: defaultAssignment
+// return type: int. Represents the id of the default assignment rendered in the grader console
+// defalut value: 0
+const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIParser, intOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -110,6 +115,7 @@ const LOCAL_SETTINGS = {
   codeZoom,
   codeWidth,
   defaultCourse,
+  defaultAssignment,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

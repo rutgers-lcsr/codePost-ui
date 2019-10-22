@@ -1,0 +1,89 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import * as React from 'react';
+
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
+import { Redirect, Route, Switch } from 'react-router-dom';
+
+/* codePost imports */
+
+/* API library */
+import { AssignmentType } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
+import { UserType } from '../../infrastructure/user';
+import { SectionType } from '../../infrastructure/section';
+
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
+/**********************************************************************************************************************/
+
+interface IComponentManagerProps extends RouteComponentProps<{}> {
+  initialCourses: CourseType[];
+  user: UserType;
+
+  addAssignment: (assignment: AssignmentType) => void;
+  deleteAssignment: (assignment: AssignmentType) => void;
+  addCourse: (newCourse: CourseType) => void;
+
+  superGraderCourses: CourseType[];
+  sectionsLed: SectionType[];
+
+  handleLogout: () => void;
+}
+
+export interface IComponentProps extends IComponentManagerProps {
+  currentCourse?: CourseType;
+}
+
+const formURL = (baseURL: string, course: CourseType, page?: string) => {
+  return `${baseURL}/${course.name}/${course.period}/${page !== undefined ? page : ''}`;
+};
+
+const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, defaultPage?: string) => {
+  return (props: IComponentManagerProps) => {
+    return (
+      <Switch>
+        {props.initialCourses.map((course) => (
+          <Route
+            key={course.id.toString()}
+            path={formURL(props.match.url, course)}
+            render={(subprops: any) => {
+              LOCAL_SETTINGS.defaultCourse.setter(course.id);
+              return <MyComponent {...props} {...subprops} currentCourse={course} />;
+            }}
+          />
+        ))}
+        <Route
+          key="0"
+          path={props.match.url}
+          render={(subprops: any) => {
+            const storedID = LOCAL_SETTINGS.defaultCourse.getter();
+            if (storedID !== 0) {
+              const found = props.initialCourses.find((course: CourseType) => {
+                return course.id === storedID;
+              });
+              if (found !== undefined) {
+                return <Redirect to={formURL(props.match.url, found, defaultPage)} />;
+              }
+            }
+
+            if (props.initialCourses.length > 0) {
+              const lastResort = props.initialCourses.sort((a, b) => {
+                return b.id - a.id;
+              })[0];
+              return <Redirect to={formURL(props.match.url, lastResort, defaultPage)} />;
+            }
+
+            return <MyComponent {...props} {...subprops} currentCourse={undefined} />;
+          }}
+        />
+      </Switch>
+    );
+  };
+};
+
+export default ComponentManager;
