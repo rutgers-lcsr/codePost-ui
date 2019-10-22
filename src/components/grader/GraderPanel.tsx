@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Table } from 'antd';
+import { Breadcrumb, Icon, Table } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -57,7 +57,11 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
     const data = props.data.map((row) => {
       return {
         ...row,
-        zoom: <Link to={`${props.match.url}/${encodeForReactRouter(row.assignment)}`}>click</Link>,
+        zoom: (
+          <Link to={`${props.match.url}/${encodeForReactRouter(row.assignment)}`}>
+            <Icon type="folder-open" />
+          </Link>
+        ),
       };
     });
 
