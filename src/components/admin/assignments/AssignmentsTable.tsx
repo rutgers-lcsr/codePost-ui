@@ -51,6 +51,8 @@ import {
 
 import SendEmailModal from '../other/SendEmailModal';
 
+import { encodeForReactRouter } from '../../core/URLutils';
+
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
@@ -115,6 +117,7 @@ interface IManageAssignmentsState {
     content: Array<{ email: string; subID: number | null }>;
   };
   isDownloading: boolean;
+  activeStudent?: string; // track student from drawer to upload component
 }
 
 /**********************************************************************************************************************/
@@ -146,7 +149,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.submissions[assignment.id],
       this.props.viewsBySubmission,
       this.props.students,
-    );
+    ).sort((a, b) => {
+      return a.email.localeCompare(b.email);
+    });
 
     const title = getDrawerTitle(type, newContent.length);
 
@@ -176,6 +181,19 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         this.props.history.push(this.props.baseURL);
       });
     }
+  };
+
+  public uploadForStudent = (assignmentName: string, student: string) => {
+    // Note: this call to setState is futile, because the component will be reloaded when
+    // new route is pushed to this.props.history
+    this.setState({ activeStudent: student }, () => {
+      this.props.history.push(`${this.props.baseURL}/${encodeForReactRouter(assignmentName)}/upload/single`);
+    });
+  };
+
+  public closeSingleSubmissionUpload = () => {
+    this.props.history.push(this.props.baseURL);
+    this.setState({ activeStudent: undefined });
   };
 
   /******************************************************************************
@@ -469,6 +487,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           content={this.state.drawerContent}
           isVisible={true}
           onClose={cancel}
+          uploadSubmission={this.uploadForStudent}
         />
       );
 
@@ -490,11 +509,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           detailComponent = (
             <UploadSubmissionDialog
               isVisible={true}
-              onCancel={cancel}
+              onCancel={this.closeSingleSubmissionUpload}
               assignments={[this.props.activeAssignment]}
               selectedAssignment={this.props.activeAssignment}
               students={this.props.students}
-              selectedStudents={[]}
+              selectedStudents={this.state.activeStudent !== undefined ? [this.state.activeStudent] : []}
               submissions={this.props.submissionsByStudent}
               uploadSubmission={this.props.uploadSubmission}
             />
