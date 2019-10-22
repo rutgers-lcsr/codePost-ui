@@ -1,26 +1,20 @@
 import * as React from 'react';
 
 import { Icon, Menu } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
 
-import CPFlex from '../../core/CPFlex';
+import { Link } from 'react-router-dom';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 const SubMenu = Menu.SubMenu;
 
 interface IAdminNavProps extends IWithWindowWatcherProps {
-  onClick: (e: ClickParam) => void;
-  selectedPanel: number;
   collapsed: boolean;
+  match: any;
+  baseURL: string;
 }
 
-interface IAdminNavState {
-  openKeys: string[];
-  openKeysCollapsed: string[];
-}
-
-class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
+class AdminNav extends React.Component<IAdminNavProps, {}> {
   public constructor(props: IAdminNavProps) {
     super(props);
     this.state = {
@@ -42,16 +36,6 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   }
 
   public componentDidUpdate(oldProps: IAdminNavProps) {
-    // key of the selected panel
-    const selectedPanelKey = this.calculateOpenKey(this.props.selectedPanel);
-
-    // open it if we're navigating to that panel
-    if (oldProps.selectedPanel !== this.props.selectedPanel) {
-      if (this.state.openKeys.indexOf(selectedPanelKey) < 0 && selectedPanelKey !== '') {
-        this.setState({ openKeys: [...this.state.openKeys, selectedPanelKey] });
-      }
-    }
-
     if (this.props.collapsed !== oldProps.collapsed) {
       /* re-mount Headway widget */
       (window as any).Headway.init({
@@ -61,28 +45,31 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
     }
   }
 
-  public calculateOpenKey = (defaultPanel: number) => {
-    switch (defaultPanel) {
-      case 0:
-      case 1:
-        return 'submissions';
-        break;
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-        return 'roster';
-        break;
-    }
+  public getDefaultSelectedKey = () => {
+    const routes = [
+      'submissions/by_student',
+      'submissions/by_grader',
+      'assignments/',
+      'roster/students',
+      'roster/graders',
+      'roster/admins',
+      'roster/sections',
+      'settings/',
+    ];
 
-    return '';
-  };
+    const match = routes
+      .indexOf(
+        `${this.props.match.params.panel1}/${
+          this.props.match.params.panel2 !== undefined ? this.props.match.params.panel2 : ''
+        }`,
+      )
+      .toString();
 
-  public onOpenChange = (openKeys: string[]) => {
-    if (this.props.collapsed) {
-      this.setState({ openKeysCollapsed: openKeys });
+    // default to /assignments
+    if (match === '-1') {
+      return '2';
     } else {
-      this.setState({ openKeys });
+      return match;
     }
   };
 
@@ -96,11 +83,9 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
   public render() {
     const main = (
       <Menu
-        onOpenChange={this.onOpenChange}
-        onClick={this.props.onClick}
         theme="dark"
-        openKeys={this.props.collapsed ? this.state.openKeysCollapsed : this.state.openKeys}
-        selectedKeys={[this.props.selectedPanel.toString()]}
+        defaultOpenKeys={['submissions', 'roster']}
+        selectedKeys={[this.getDefaultSelectedKey()]}
         mode="inline"
       >
         <SubMenu
@@ -112,12 +97,20 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
             </span>
           }
         >
-          <Menu.Item key="0">By Student</Menu.Item>
-          <Menu.Item key="1">By Grader</Menu.Item>
+          <Menu.Item key="0">
+            <Link to={`${this.props.baseURL}/submissions/by_student`}>By Student</Link>
+          </Menu.Item>
+          <Menu.Item key="1">
+            <Link to={`${this.props.baseURL}/submissions/by_grader`}>By Grader</Link>
+          </Menu.Item>
         </SubMenu>
         <Menu.Item key="2">
-          <Icon type="file-text" />
-          <span>Assignments</span>
+          <Link to={`${this.props.baseURL}/assignments`}>
+            <span>
+              <Icon type="file-text" />
+              <span>Assignments</span>
+            </span>
+          </Link>
         </Menu.Item>
         <SubMenu
           key="roster"
@@ -128,14 +121,26 @@ class AdminNav extends React.Component<IAdminNavProps, IAdminNavState> {
             </span>
           }
         >
-          <Menu.Item key="3">Students</Menu.Item>
-          <Menu.Item key="4">Graders</Menu.Item>
-          <Menu.Item key="5">Admin</Menu.Item>
-          <Menu.Item key="6">Sections</Menu.Item>
+          <Menu.Item key="3">
+            <Link to={`${this.props.baseURL}/roster/students`}>Students</Link>
+          </Menu.Item>
+          <Menu.Item key="4">
+            <Link to={`${this.props.baseURL}/roster/graders`}>Graders</Link>
+          </Menu.Item>
+          <Menu.Item key="5">
+            <Link to={`${this.props.baseURL}/roster/admins`}>Admins</Link>
+          </Menu.Item>
+          <Menu.Item key="6">
+            <Link to={`${this.props.baseURL}/roster/sections`}>Sections</Link>
+          </Menu.Item>
         </SubMenu>
         <Menu.Item key="7">
-          <Icon type="setting" />
-          <span>Course Settings</span>
+          <Link to={`${this.props.baseURL}/settings`}>
+            <span>
+              <Icon type="setting" />
+              <span>Course Settings</span>
+            </span>
+          </Link>
         </Menu.Item>
       </Menu>
     );

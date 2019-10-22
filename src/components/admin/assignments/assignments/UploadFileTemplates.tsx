@@ -27,6 +27,8 @@ const UploadFileTemplates = (props: any) => {
     });
 
     return () => {};
+    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onChange = (info: any) => {

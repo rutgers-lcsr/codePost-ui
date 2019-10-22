@@ -54,6 +54,7 @@ const Magnifier = (props: IMagnifierProps) => {
 
   React.useEffect(() => {
     props.updateZoom(zoom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function zoomOut() {
@@ -169,6 +170,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
         });
       }
       dir.file(file.name, file.code);
+      return true;
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {
@@ -231,7 +233,6 @@ interface IFinalizeButtonProps {
 
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [popconfirmVisible, setPopconfirmVisible] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const showTooltips = React.useContext(ShowTooltipContext);
@@ -256,7 +257,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     const codeContainer = document.getElementById('code-container');
     const comments = document.getElementById('comments');
     const grader = document.getElementById('submission-grader');
-    const rubricMenu = document.getElementById('rubric-menu');
 
     if (props.submission.isFinalized) {
       if (codeContainer !== null) {
@@ -286,17 +286,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       }
     };
   }, [props.submission]);
-
-  const confirm = async () => {
-    await props.toggleFinalized();
-    setIsLoading(false);
-    setPopconfirmVisible(false);
-  };
-
-  const cancel = () => {
-    setPopconfirmVisible(false);
-    setIsLoading(false);
-  };
 
   const isFinalized = props.submission.isFinalized;
 
@@ -344,6 +333,7 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files, props.comments);
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);

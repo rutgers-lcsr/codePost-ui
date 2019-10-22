@@ -36,7 +36,7 @@ const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
-interface IProps {
+export interface IManageAdminsProps {
   /* students data */
   students: string[];
   graders: string[];
@@ -62,7 +62,7 @@ interface IState {
   searchText: string;
 }
 
-class ManageAdmins extends React.Component<IProps, IState> {
+class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
   public removeAdmin = (toRemove: string) => {
     confirm({
       title: `Are you sure you want to remove this admin ${toRemove} from your course?`,
@@ -247,6 +247,7 @@ class ManageAdmins extends React.Component<IProps, IState> {
           <Breadcrumb>
             <Breadcrumb.Item>Roster</Breadcrumb.Item>
             <Breadcrumb.Item>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Admins</a>
             </Breadcrumb.Item>
           </Breadcrumb>

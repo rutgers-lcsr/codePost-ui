@@ -74,6 +74,8 @@ export interface IRubricManagerProps {
   assignment: AssignmentType;
   submissions: SubmissionType[];
 
+  shouldLoadFeedback: boolean;
+
   onCancel: () => void;
 
   reloadInterval?: number;
@@ -180,11 +182,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     this.onUnload = this.onUnload.bind(this);
 
     if (!props.defaultRubric) {
-      this.loadAssignmentRubric(props.assignment);
+      this.loadAssignmentRubric(props.assignment, props.shouldLoadFeedback);
     }
   }
 
-  public loadAssignmentRubric = (assignment: AssignmentType) => {
+  public loadAssignmentRubric = (assignment: AssignmentType, shouldLoadFeedback: boolean) => {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
@@ -203,7 +205,9 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             loadComplete: true,
           },
           () => {
-            this.loadFeedbackScores(rubric.rubricComments);
+            if (shouldLoadFeedback) {
+              this.loadFeedbackScores(rubric.rubricComments);
+            }
           },
         );
       })
@@ -247,7 +251,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
-        this.loadAssignmentRubric(this.props.assignment);
+        this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
       }, this.props.reloadInterval);
     }
   }
@@ -258,7 +262,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
-          await this.loadAssignmentRubric(this.props.assignment);
+          await this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
         }, this.props.reloadInterval);
       }
     }
@@ -377,113 +381,129 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     unsavedCategories: RubricCategoryType[],
     deletedCategories: RubricCategoryType[],
     resolved: { [key: number]: RESOLUTION },
+    demoMode?: boolean,
   ) => {
     // Perform all creates and updates
-    const promises = categories.map((category) => {
-      if (category.id < 0) {
-        // Category is new
-        // Step 1: create rubric category
-        // Step 2: create rubric comments, using new category ID
+    const promises = demoMode
+      ? []
+      : categories.map((category) => {
+          if (category.id < 0) {
+            // Category is new
+            // Step 1: create rubric category
+            // Step 2: create rubric comments, using new category ID
 
-        return RubricCategory.create(category).then((newCategory) => {
-          const commentList = comments[category.id];
-          const innerPromises = commentList.map((comment) => {
-            // assume all comments are also new
-            comment.category = newCategory.id;
-            return RubricComment.create(comment);
-          });
+            return RubricCategory.create(category).then((newCategory) => {
+              const commentList = comments[category.id];
+              const innerPromises = commentList.map((comment) => {
+                // assume all comments are also new
+                comment.category = newCategory.id;
+                return RubricComment.create(comment);
+              });
 
-          return Promise.all(innerPromises);
-        });
-      } else {
-        // Category already exists
-        // Step 1: update category, if necessary
-        // Step 2: loop through comments, updating if necessary
-
-        const categoryNeedsSaving = unsavedCategories.some((el) => {
-          return el.id === category.id;
-        });
-
-        let categoryPromise: Promise<any>;
-        if (categoryNeedsSaving) {
-          // We don't want to pass in the ids of comments on update
-          // Passing in these comments can create race conditions
-          const { rubricComments, ...payload } = category;
-          categoryPromise = RubricCategory.update(payload);
-        } else {
-          categoryPromise = Promise.resolve();
-        }
-
-        const commentList = comments[category.id];
-        const commentPromises = commentList.map((comment) => {
-          if (comment.id < 0) {
-            return RubricComment.create(comment);
+              return Promise.all(innerPromises);
+            });
           } else {
-            const commentNeedsSaving = unsavedComments.some((el) => {
-              return el.id === comment.id;
+            // Category already exists
+            // Step 1: update category, if necessary
+            // Step 2: loop through comments, updating if necessary
+
+            const categoryNeedsSaving = unsavedCategories.some((el) => {
+              return el.id === category.id;
             });
 
-            if (commentNeedsSaving) {
-              // We don't want to pass in the ids of linked comments on update
+            let categoryPromise: Promise<any>;
+            if (categoryNeedsSaving) {
+              // We don't want to pass in the ids of comments on update
               // Passing in these comments can create race conditions
-              // An example is if a linked comment gets deleted between rubric saves
-              const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
-              return RubricComment.update(payload);
+              const { rubricComments, ...payload } = category;
+              categoryPromise = RubricCategory.update(payload);
             } else {
-              return Promise.resolve();
+              categoryPromise = Promise.resolve();
             }
+
+            const commentList = comments[category.id];
+            const commentPromises = commentList.map((comment) => {
+              if (comment.id < 0) {
+                return RubricComment.create(comment);
+              } else {
+                const commentNeedsSaving = unsavedComments.some((el) => {
+                  return el.id === comment.id;
+                });
+
+                if (commentNeedsSaving) {
+                  // We don't want to pass in the ids of linked comments on update
+                  // Passing in these comments can create race conditions
+                  // An example is if a linked comment gets deleted between rubric saves
+                  const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+                  return RubricComment.update(payload);
+                } else {
+                  return Promise.resolve();
+                }
+              }
+            });
+
+            return Promise.all([...commentPromises, categoryPromise]).then();
           }
         });
 
-        return Promise.all([...commentPromises, categoryPromise]).then();
-      }
-    });
-
     // Perform all deletes
-    const deleteComments = deletedComments.map((rubricComment) => {
-      if (Object.keys(resolved).includes(rubricComment.id.toString())) {
-        const howToResolve = resolved[rubricComment.id];
-        switch (howToResolve) {
-          case RESOLUTION.DELETE:
-            return this.deleteLinkedComments(rubricComment).then(() => {
-              return RubricComment.delete(rubricComment.id);
-            });
-          case RESOLUTION.UNLINK:
-            return this.unlinkLinkedComments(rubricComment).then(() => {
-              return RubricComment.delete(rubricComment.id);
-            });
-          default:
-            return Promise.resolve();
-        }
-      } else {
-        return RubricComment.delete(rubricComment.id);
-      }
-    });
+    const deleteComments = demoMode
+      ? []
+      : deletedComments.map((rubricComment) => {
+          if (Object.keys(resolved).includes(rubricComment.id.toString())) {
+            const howToResolve = resolved[rubricComment.id];
+            switch (howToResolve) {
+              case RESOLUTION.DELETE:
+                return this.deleteLinkedComments(rubricComment).then(() => {
+                  return RubricComment.delete(rubricComment.id);
+                });
+              case RESOLUTION.UNLINK:
+                return this.unlinkLinkedComments(rubricComment).then(() => {
+                  return RubricComment.delete(rubricComment.id);
+                });
+              default:
+                return Promise.resolve();
+            }
+          } else {
+            return RubricComment.delete(rubricComment.id);
+          }
+        });
 
     // Wait until comments are deleted before deleting categories
     await Promise.all(deleteComments);
-    const deleteCategories = deletedCategories.map((rubricCategory) => {
-      return RubricCategory.delete(rubricCategory.id);
-    });
+    const deleteCategories = demoMode
+      ? []
+      : deletedCategories.map((rubricCategory) => {
+          return RubricCategory.delete(rubricCategory.id);
+        });
 
     const allPromises: Array<Promise<any>> = [...promises, ...deleteCategories];
     await Promise.all(allPromises);
 
     // retrieve rubric
     try {
-      return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
-        const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
-          newRubric.rubricCategories,
-          newRubric.rubricComments,
-        );
-
-        this.loadFeedbackScores(newRubric.rubricComments);
-
+      if (demoMode) {
         return {
-          rubricCategories: newRubric.rubricCategories,
-          rubricComments: commentMap,
+          rubricCategories: categories,
+          rubricComments: comments,
         };
-      });
+      } else {
+        return Assignment.readRubric(this.props.assignment.id).then((newRubric: RubricType) => {
+          const commentMap: IRubricCategoryToRubricCommentsMap = this.buildCommentMap(
+            newRubric.rubricCategories,
+            newRubric.rubricComments,
+          );
+
+          if (this.props.shouldLoadFeedback) {
+            this.loadFeedbackScores(newRubric.rubricComments);
+          }
+
+          return {
+            rubricCategories: newRubric.rubricCategories,
+            rubricComments: commentMap,
+          };
+        });
+      }
     } catch (errors) {
       return {
         rubricCategories: categories,
@@ -494,7 +514,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public deleteLinkedComments = (rubricComment: RubricCommentType) => {
     const promises = rubricComment.comments.map((commentID) => {
-      CommentIO.delete(commentID);
+      return CommentIO.delete(commentID);
     });
 
     return Promise.all(promises);
@@ -508,7 +528,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         pointDelta: rubricComment.pointDelta,
         rubricComment: null,
       };
-      CommentIO.update(payload);
+      return CommentIO.update(payload);
     });
 
     return Promise.all(promises);
@@ -546,7 +566,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     };
   };
 
-  public onSave = (fnc?: (rubric: any) => void) => {
+  public onSave = (fnc?: (rubric: any) => void, demoMode?: boolean) => {
     const {
       rubricComments,
       rubricCategories,
@@ -585,6 +605,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         unsavedCategories,
         deletedCategories,
         resolutions,
+        demoMode,
       ).then((savedRubric) => {
         message.success('Rubric saved!');
         this.setState({

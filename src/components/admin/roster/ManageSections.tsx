@@ -27,7 +27,7 @@ const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
-interface IProps {
+export interface IManageSectionsProps {
   /* students data */
   students: string[];
   graders: string[];
@@ -52,8 +52,8 @@ interface IState {
   drawerOpen: boolean;
 }
 
-class ManageSections extends React.Component<IProps, IState> {
-  public constructor(props: any) {
+class ManageSections extends React.Component<IManageSectionsProps, IState> {
+  public constructor(props: IManageSectionsProps) {
     super(props);
     this.state = {
       activeSection: '',
@@ -262,6 +262,7 @@ class ManageSections extends React.Component<IProps, IState> {
           <Breadcrumb>
             <Breadcrumb.Item>Roster</Breadcrumb.Item>
             <Breadcrumb.Item>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Sections</a>
             </Breadcrumb.Item>
           </Breadcrumb>

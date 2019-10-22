@@ -371,7 +371,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     props.linkToComment(props.rubricComment);
   };
 
-  if (!props.assignment.collaborativeRubricMode || !props.editRubricMode) {
+  if (!props.editRubricMode) {
     return (
       <div
         style={{

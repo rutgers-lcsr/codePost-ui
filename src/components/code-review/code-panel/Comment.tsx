@@ -1,8 +1,17 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import React from 'react';
 
-// We use ts-ignore since Popover never explicitly used. We just use the classNames
-// @ts-ignore: no-unused-variable
+/* antd imports */
+
+// We ignore eslint since Popover never explicitly used. We just use the classNames
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, Input, message, Popover, Tooltip } from 'antd';
+
+/* codePost imports */
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -18,6 +27,7 @@ import Badge from '../../core/Badge';
 
 import { CommentType, UiComment } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
@@ -26,11 +36,45 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+/**********************************************************************************************************************/
+
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 const { TextArea } = Input;
+
+/* Compare two rubricComments using a minimal number of comparisons
+ * This function defines what rubricComment equality means from the perspective of a comment.
+ * For example, we shouldn't need to save a comment just because its rubricComment.comments
+ * field changed (e.g. because the rubric comment was applied by another comment somewhere else).
+ */
+const cheapEqRubricComments = (rc1: RubricCommentType | undefined, rc2: RubricCommentType | undefined) => {
+  // Returns true if references match OR if both rc1 and rc2 are undefined
+  if (rc1 === rc2) {
+    return true;
+  }
+
+  // At this point, if this returns, only one of rc1 and rc2 are undefined
+  if (rc1 === undefined || rc2 === undefined) {
+    return false;
+  }
+
+  // Now, we know neither rc1 nor rc2 is undefined, so we can go ahead and compare meaningful properties
+  if (rc1.text !== rc2.text) {
+    return false;
+  }
+
+  if (rc1.pointDelta !== rc2.pointDelta) {
+    return false;
+  }
+
+  if (rc1.category !== rc2.category) {
+    return false;
+  }
+
+  return true;
+};
 
 interface ICommentProps {
   additiveGrading: boolean;
@@ -38,6 +82,7 @@ interface ICommentProps {
   comment: CommentType;
   file: FileType;
   rubricComment?: RubricCommentType;
+  rubricCategories: RubricCategoryType[];
 
   isStudent: boolean;
 
@@ -77,7 +122,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
-    if (this.props.rubricComment !== prevProps.rubricComment) {
+    if (!cheapEqRubricComments(prevProps.rubricComment, this.props.rubricComment)) {
       if (this.props.forcedRubricMode && this.props.rubricComment === undefined) {
         this.setState({ points: 0 });
       } else if (prevProps.rubricComment !== undefined && this.props.rubricComment === undefined) {
@@ -486,14 +531,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.rubricComment) {
       let rubricCommentClassName = 'comment__rubric-comment';
-      let pointsString = '';
       let style = {};
       if (this.props.rubricComment.pointDelta > 0) {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--negative');
-        pointsString = `${points * -1}`;
       } else if (this.props.rubricComment.pointDelta < 0) {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--positive');
-        pointsString = `+${points * -1}`;
       } else {
         rubricCommentClassName = rubricCommentClassName.concat(' ', 'comment__rubric-comment--neutral');
         style = {
@@ -502,9 +544,19 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         };
       }
 
+      // Note: we should always be able to find the rubricComment's category in
+      // this.props.rubricCategories, but we're playing it safe here.
+      let rubricCategoryTitle = '';
+      const matchedCategory = this.props.rubricCategories.find((cat) => {
+        return cat.id === this.props.rubricComment!.category;
+      });
+      if (matchedCategory !== undefined) {
+        rubricCategoryTitle = matchedCategory.name;
+      }
+
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
-          <span className="cp-label--very-bold">{pointsString}</span>
+          <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
           <InlineMarkdown source={this.props.rubricComment.text} />
           {commentElements.rubricCommentAction}
         </div>
@@ -537,7 +589,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={negTheme}
               onClick={setFeedback.bind(this, feedbackScore === -1 ? 0 : -1)}
             >
-              👎
+              <span role="img" aria-label="downvote">
+                👎
+              </span>
             </CPButton>
           </Tooltip>
           <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
@@ -546,7 +600,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               cpType={posTheme}
               onClick={setFeedback.bind(this, feedbackScore === 1 ? 0 : 1)}
             >
-              👍
+              <span role="img" aria-label="upvote">
+                👍
+              </span>
             </CPButton>
           </Tooltip>
         </Button.Group>

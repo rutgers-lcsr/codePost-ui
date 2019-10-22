@@ -11,6 +11,8 @@ import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 
 /* other library imports */
 import moment from 'moment';
 
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
@@ -32,11 +34,7 @@ const confirm = Modal.confirm;
 
 interface IProps {
   onBack: () => void;
-  student: string;
   students: string[];
-  submissionsMap: {
-    [assignmentID: number]: SubmissionType;
-  };
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
@@ -44,6 +42,10 @@ interface IProps {
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
+  student: string;
+
+  match: any;
+  baseURL: string;
 }
 
 interface IState {
@@ -51,12 +53,17 @@ interface IState {
   selectedSubmission: string /* stores the name of the assignment associated with the submission */;
 
   assignmentToUpload?: AssignmentType;
+
+  submissionsMap: {
+    [assignmentID: number]: SubmissionType;
+  };
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     uploadSubmissionVisible: false,
     selectedSubmission: '',
+    submissionsMap: this.props.submissions[this.props.student],
   };
 
   public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
@@ -202,7 +209,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     ];
 
     const data = sortAssignments(this.props.assignments).map((assignment) => {
-      const submission = this.props.submissionsMap[assignment.id];
+      const submission = this.state.submissionsMap[assignment.id];
       let gradeString = 'Not submitted';
       // colorClass is to color the text based on status of submission
       if (submission && submission.isFinalized) {
@@ -308,11 +315,13 @@ class StudentDetail extends React.Component<IProps, IState> {
           title={`Submissions: ${this.props.student}`}
           breadcrumbs={
             <Breadcrumb>
-              <Breadcrumb.Item onClick={this.props.onBack}>
+              <Breadcrumb.Item>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a>Submissions</a>
               </Breadcrumb.Item>
               <Breadcrumb.Item onClick={this.props.onBack}>
-                <a>Students</a>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <Link to={this.props.baseURL}>Students</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>
             </Breadcrumb>

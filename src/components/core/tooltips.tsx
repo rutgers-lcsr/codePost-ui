@@ -76,9 +76,14 @@ const GRADER_MYSUBMISSIONS_CLAIM = 'Get a submission from the queue';
 const GRADER_MYSUBMISSIONS_FILTER = 'Select filters for future submissions claimed';
 const GRADER_MYSUBMISSIONS_TITLE = 'All the submissions for this assignment for which you are the grader. ';
 const GRADER_ALLSUBMISSIONS_FILTER = 'Filter submissions by grader';
-const GRADER_ALLSUBMISSIONS_TITLE =
-  'All the submissions submitted for this assignment.\
-   Students who did not submit are not shown here. To see that data, please check the Admin panel.';
+const GRADER_ALLSUBMISSIONS_TITLE = (
+  <div>
+    All the submissions submitted for this assignment.
+    <div style={{ height: 10 }} />
+    Students who did not submit are not shown here. To see that data, please check the Admin panel.
+  </div>
+);
+
 const GRADER_SECTION_TITLE =
   'All the students in your section(s) and their submissions. Students who did not submit will show up in the table.';
 
@@ -97,9 +102,13 @@ const ADMIN_GRADERSUBMISSIONS_INACTIVES = 'Graders who have been un enrolled fro
 const ADMIN_GRADERSUBMISSIONS_EXPAND = 'View submissions graded by this grader';
 const ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT = 'View graded submissions for this assignment';
 
-const ADMIN_ASSIGNMENTS_PUBLISHED =
-  'Publishing an assignment allows students to view their submission with feedback (if finalized).\
-   If an assignment is unpublished, no student will be able to view their submissions.';
+const ADMIN_ASSIGNMENTS_PUBLISHED = (
+  <div>
+    Publishing an assignment allows students to view their submission with feedback (if finalized).
+    <div style={{ height: 10 }} />
+    If an assignment is unpublished, no student will be able to view their submissions.
+  </div>
+);
 const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment.';
 const ADMIN_ASSIGNMENTS_FINALIZED = 'Submissions marked as Finalized.';
 const ADMIN_ASSIGNMENTS_CLAIMED = 'Submissions claimed by a grader.';
@@ -117,21 +126,34 @@ const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
 );
 
 const ADMIN_RUBRIC_DELETECOMMENT = 'Delete this comment';
-const ADMIN_RUBRIC_CATEGORYPOINTLIMIT =
-  'The maximum number of points that can be deducted or added from a category.\
-   For example, if the limit of a category is -4, no student can lose more than 4 points from the category,\
-    even if more deductions are applied. If left blank, no limit will be applied.';
-const ADMIN_RUBRIC_CATEGORYHELPTEXT =
-  'Use this text to explain a rubric category to graders.\
-   It will appear alongside the rubric category in the Code Console.';
+const ADMIN_RUBRIC_CATEGORYPOINTLIMIT = (
+  <div>
+    The maximum number of points that can be deducted or added from a category.
+    <div style={{ height: 10 }} />
+    For example, if the limit of a category is -4, no student can lose more than 4 points from the category, even if
+    more deductions are applied.
+    <div style={{ height: 10 }} />
+    If left blank, no limit will be applied.
+  </div>
+);
+const ADMIN_RUBRIC_CATEGORYHELPTEXT = (
+  <div>
+    Use this text to explain a rubric category to graders.
+    <div style={{ height: 10 }} />
+    It will appear alongside the rubric category in the Code Console.
+  </div>
+);
 const ADMIN_RUBRIC_DEDUCTION = 'The deduction (or addition) associated with this comment';
 const ADMIN_RUBRIC_INSTANCES = 'The comments that apply this rubric comment';
 const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up';
 const ADMIN_RUBRIC_CATEGORYDOWN = 'Move this category down';
-const ADMIN_RUBRIC_TITLE =
-  "Each assignment has a rubric associated with it.\
-   In the Code Console, you'll be able to reference and add rubric items to each submission.";
-
+const ADMIN_RUBRIC_TITLE = (
+  <div>
+    Each assignment has a rubric associated with it.
+    <div style={{ height: 10 }} />
+    In the Code Console, you'll be able to reference and add rubric items to each submission.
+  </div>
+);
 const ADMIN_STUDENTROSTER_TITLE = 'Students currently enrolled in this course';
 const ADMIN_STUDENTROSTER_EDITSECTION = 'Edit section';
 const ADMIN_STUDENTROSTER_LOCKSECTION = 'Finish editing';
@@ -149,9 +171,8 @@ const ADMIN_SECTIONROSTER_TITLE =
 const ADMIN_DOWNLOADROSTER_CHOOSEGROUP = 'You must select at least one group to include.';
 const ADMIN_UPLOADROSTER_ERROR = 'Fix all errors before proceeding';
 
-const ADMIN_NEWCOURSE_CLONE =
-  "Cloning a course will copy all assignments (including rubrics) and course settings\
-   from the old course into your new course. All other information (including rosters) won't be copied.";
+const ADMIN_NEWCOURSE_CLONE = `Cloning a course will copy all assignments (including rubrics) and course settings
+from the old course into your new course. All other information (including rosters) won't be copied.`;
 
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (
