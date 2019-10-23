@@ -326,13 +326,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     let bonusBadge = null;
 
     if (deductions > 0) {
-      deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
+      deductionBadge = <Badge count={parseFloat((deductions * -1).toFixed(2))} faded={faded} size="small" />;
     } else {
       deductionBadge = null;
     }
 
     if (bonuses > 0) {
-      bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
+      bonusBadge = <Badge count={parseFloat(bonuses.toFixed(2))} faded={faded} size="small" />;
     } else {
       bonusBadge = null;
     }
