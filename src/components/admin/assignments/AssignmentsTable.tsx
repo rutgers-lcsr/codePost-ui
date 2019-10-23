@@ -602,8 +602,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       },
     };
 
-    // eslint-disable-next-line
-    const moveRow = (dragIndex: any, hoverIndex: any) => {
+    const moveRow = (dragIndex: number, hoverIndex: number) => {
       const { assignments } = this.state;
       const dragRow = assignments[dragIndex];
 
@@ -648,7 +647,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         hideSearch={true}
         detail={detailComponent}
         components={components}
-        onRow={(record: any, index: any) => ({
+        onRow={(record: any, index: number) => ({
           index,
           moveRow: moveRow,
         })}

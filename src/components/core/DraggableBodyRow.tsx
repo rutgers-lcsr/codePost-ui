@@ -1,26 +1,29 @@
 import * as React from 'react';
 
-import { DndProvider, DragSource, DropTarget } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
+import { ConnectDragSource, ConnectDropTarget, DragSource, DropTarget, DropTargetMonitor } from 'react-dnd';
 
 let draggingIndex = -1;
 
-class BodyRow extends React.Component {
+interface IBodyRowProps {
+  isOver: boolean;
+  connectDragSource: ConnectDragSource;
+  connectDropTarget: ConnectDropTarget;
+  moveRow: (dragIndex: number, hoverIndex: number) => void;
+  index: number;
+  style: React.CSSProperties;
+  className: string;
+}
+
+class BodyRow extends React.Component<IBodyRowProps, {}> {
   render() {
-    // @ts-ignore
     const { isOver, connectDragSource, connectDropTarget, moveRow, ...restProps } = this.props;
-    // @ts-ignore
     const style = { ...restProps.style, cursor: 'move' };
 
-    // @ts-ignore
     let { className } = restProps;
     if (isOver) {
-      // @ts-ignore
       if (restProps.index > draggingIndex) {
         className += ' drop-over-downward';
       }
-      // @ts-ignore
       if (restProps.index < draggingIndex) {
         className += ' drop-over-upward';
       }
@@ -31,7 +34,7 @@ class BodyRow extends React.Component {
 }
 
 const rowSource = {
-  beginDrag(props: any) {
+  beginDrag(props: IBodyRowProps) {
     draggingIndex = props.index;
     return {
       index: props.index,
@@ -40,7 +43,7 @@ const rowSource = {
 };
 
 const rowTarget = {
-  drop(props: any, monitor: any) {
+  drop(props: IBodyRowProps, monitor: DropTargetMonitor) {
     const dragIndex = monitor.getItem().index;
     const hoverIndex = props.index;
 
