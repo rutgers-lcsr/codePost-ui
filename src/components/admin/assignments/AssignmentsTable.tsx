@@ -306,7 +306,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
 
     data = sortAssignments(this.props.assignments).map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
-      const encodedName = encodeURIComponent(assignment.name);
+      const encodedName = encodeForReactRouter(assignment.name);
       const menu = (
         <Menu>
           <Menu.Item key="1">
