@@ -24,7 +24,7 @@ import memoizeOne from 'memoize-one';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -612,6 +612,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
             $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
           },
         }),
+        () => {
+          this.state.assignments.map((assignment: AssignmentType, index: number) => {
+            const patchObj: AssignmentPatchType = { id: assignment.id, sortKey: index };
+            Assignment.update(patchObj);
+          });
+        },
       );
     };
 

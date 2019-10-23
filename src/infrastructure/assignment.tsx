@@ -115,6 +115,7 @@ const AssignmentVPatch = t.intersection(
       additiveGrading: t.boolean,
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
+      sortKey: t.number,
     }),
   ],
   'AssignmentPatch',
