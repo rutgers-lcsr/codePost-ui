@@ -7,5 +7,14 @@
 // Only we as the app owner can disambiguate. To do this, we pre-emptively encode
 // foo/bar according to https://www.w3schools.com/tags/ref_urlencode.asp
 export const encodeForReactRouter = (pathComponent: string) => {
-  return pathComponent.replace('/', '%2F');
+  return pathComponent
+    .replace('%', '%25')
+    .replace('/', '%2F')
+    .replace('#', '%23')
+    .replace('?', '%3F')
+    .replace('&', '%26')
+    .replace('+', '%2B')
+    .replace(',', '%2C')
+    .replace('(', '%28')
+    .replace(')', '%29');
 };
