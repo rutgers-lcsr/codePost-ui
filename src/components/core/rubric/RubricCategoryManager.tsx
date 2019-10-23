@@ -243,10 +243,11 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
         const newState: any = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
-          if (value !== null) {
-            newVal = parseFloat(value);
-          } else {
+          // Note: isNaN('') returns false, isNaN(null) returns false
+          if (value === '' || value === null || isNaN(value)) {
             newVal = null;
+          } else {
+            newVal = parseFloat(value);
           }
         }
 
@@ -453,7 +454,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       case 'object':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
-          [key]: event.target.value,
+          [key]: event === null ? 0 : event.target.value,
         };
         break;
     }

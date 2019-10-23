@@ -11,7 +11,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
 import MySubmissionsPanelDetail from './MySubmissionsPanelDetail';
 
@@ -30,7 +30,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: AnonymousSubmissionType[] };
   isLoading: boolean;
 }
 
@@ -57,11 +57,11 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       const toRet = [];
       for (const assn of assignments) {
-        toRet.push(Assignment.readSubmissions(assn.id, { grader }));
+        toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { grader }));
       }
 
       Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: SubmissionType[] } = {};
+        const mapper: { [id: number]: AnonymousSubmissionType[] } = {};
         for (const list of lists) {
           if (list.length > 0) {
             mapper[list[0].assignment] = list;
