@@ -27,7 +27,7 @@ const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
-interface IProps {
+export interface IManageSectionsProps {
   /* students data */
   students: string[];
   graders: string[];
@@ -52,8 +52,8 @@ interface IState {
   drawerOpen: boolean;
 }
 
-class ManageSections extends React.Component<IProps, IState> {
-  public constructor(props: any) {
+class ManageSections extends React.Component<IManageSectionsProps, IState> {
+  public constructor(props: IManageSectionsProps) {
     super(props);
     this.state = {
       activeSection: '',

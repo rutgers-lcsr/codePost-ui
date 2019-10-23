@@ -36,7 +36,7 @@ const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
-interface IProps {
+export interface IManageStudentsProps {
   /* students data */
   students: string[];
   graders: string[];
@@ -63,8 +63,8 @@ interface IState {
   activeStudent: string;
 }
 
-class ManageStudents extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
+class ManageStudents extends React.Component<IManageStudentsProps, IState> {
+  public constructor(props: IManageStudentsProps) {
     super(props);
     this.state = {
       activeStudent: '',

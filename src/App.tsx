@@ -44,22 +44,22 @@ import { clearLocalSettings } from './components/utils/LocalSettings';
  ******************************************************************************/
 
 const AsyncStudent = Loadable({
-  loader: () => import('./components/student/Student'),
+  loader: () => import('./components/student/StudentManager'),
   loading: RouterLoading,
 });
 
 const AsyncGrader = Loadable({
-  loader: () => import('./components/grader/Grader'),
+  loader: () => import('./components/grader/GraderManager'),
+  loading: RouterLoading,
+});
+
+const AsyncAdmin = Loadable({
+  loader: () => import('./components/admin/AdminManager'),
   loading: RouterLoading,
 });
 
 const AsyncGrade = Loadable({
   loader: () => import('./components/code-review/CodeConsole'),
-  loading: RouterLoading,
-});
-
-const AsyncAdmin = Loadable({
-  loader: () => import('./components/admin/Admin'),
   loading: RouterLoading,
 });
 
@@ -419,22 +419,24 @@ class App extends React.Component<{}, IState> {
         (window as any).Intercom('shutdown');
       }
 
+      const consoleProps = {
+        user: this.state.user,
+        handleLogout: this.handleLogout,
+        addAssignment: this.addAssignment,
+        deleteAssignment: this.deleteAssignment,
+        addCourse: this.addCreatedCourse,
+        superGraderCourses,
+        sectionsLed,
+      };
+
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
         studentRoute = (
           <Route
-            exact={true}
-            path={`${STUDENT}/:courseName?/:period?`}
+            path={STUDENT}
             render={(props: any) =>
-              this.wrapTooltipContext(
-                <AsyncStudent
-                  {...props}
-                  user={this.state.user}
-                  handleLogout={this.handleLogout}
-                  initialCourses={studentCourses}
-                />,
-              )
+              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
             }
           />
         );
@@ -444,19 +446,9 @@ class App extends React.Component<{}, IState> {
       if (isGrader) {
         graderRoute = (
           <Route
-            exact={true}
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
+            path={GRADER}
             render={(props: any) =>
-              this.wrapTooltipContext(
-                <AsyncGrader
-                  {...props}
-                  user={this.state.user}
-                  handleLogout={this.handleLogout}
-                  superGraderCourses={superGraderCourses}
-                  courses={graderCourses}
-                  sectionsLed={sectionsLed}
-                />,
-              )
+              this.wrapTooltipContext(<AsyncGrader {...props} {...consoleProps} initialCourses={graderCourses} />)
             }
           />
         );
@@ -466,20 +458,9 @@ class App extends React.Component<{}, IState> {
       if (isAdmin) {
         adminRoute = (
           <Route
-            exact={true}
-            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
+            path={ADMIN}
             render={(props: any) =>
-              this.wrapTooltipContext(
-                <AsyncAdmin
-                  {...props}
-                  addCourse={this.addCreatedCourse}
-                  addAssignment={this.addAssignment}
-                  deleteAssignment={this.deleteAssignment}
-                  user={this.state.user}
-                  initialCourses={courseAdminCourses}
-                  logout={this.handleLogout}
-                />,
-              )
+              this.wrapTooltipContext(<AsyncAdmin {...props} {...consoleProps} initialCourses={courseAdminCourses} />)
             }
           />
         );
