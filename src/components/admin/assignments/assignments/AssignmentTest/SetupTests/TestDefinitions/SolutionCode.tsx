@@ -1,19 +1,16 @@
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-
 import { Button, Icon, Layout, Menu, message, Modal, Table, Upload } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { AssignmentType } from '../../../../../../../infrastructure/assignment';
 
 import { Controlled as CodeMirror } from 'react-codemirror2';
 
-import { SolutionFileType } from '../../../../../infrastructure/solutionFile';
+import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
 
-import { languageMap } from './codemirrorLanguages';
+import { CodeWindow } from './CodeWindow';
 
 const { Sider, Content } = Layout;
 interface IProps {
@@ -26,34 +23,13 @@ interface IProps {
 
 export const SolutionCode = (props: IProps) => {
   const [currentIndex, setIndex] = useState('0');
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedCode, setEditedCode] = useState('');
 
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
   };
 
-  const onEdit = () => {
-    setIsEditing(true);
-    setEditedCode(props.files[parseInt(currentIndex, 10)].code);
-  };
-
-  const onSave = () => {
-    props.updateFile(props.files[parseInt(currentIndex, 10)].id, editedCode);
-    setIsEditing(false);
-    setEditedCode('');
-  };
-
-  const onBeforeChange = (editor: any, data: any, value: string) => {
-    console.log('here');
-    setEditedCode(value);
-  };
-
-  const getMode = (file: SolutionFileType) => {
-    const extension = file.extension.replace('.', '');
-    if (extension in languageMap) {
-      return languageMap[file.extension];
-    } else return 'txt';
+  const onSave = (newCode: string) => {
+    return props.updateFile(props.files[parseInt(currentIndex, 10)].id, newCode);
   };
 
   return (
@@ -80,25 +56,11 @@ export const SolutionCode = (props: IProps) => {
             <div />
           ) : (
             <div style={{ position: 'relative', marginLeft: 5 }}>
-              <CodeMirror
-                key={`codeMirror`}
-                onBeforeChange={onBeforeChange}
-                value={isEditing ? editedCode : props.files[parseInt(currentIndex, 10)].code}
-                options={{
-                  lineNumbers: true,
-                  lineWrapping: true,
-                  mode: getMode(props.files[parseInt(currentIndex, 10)]),
-                  theme: 'neo',
-                  readOnly: !isEditing,
-                }}
+              <CodeWindow
+                code={props.files[parseInt(currentIndex, 10)].code}
+                extension={props.files[parseInt(currentIndex, 10)].extension}
+                onSave={onSave}
               />
-              <Button
-                style={{ position: 'absolute', zIndex: 999999, bottom: 15, right: 15 }}
-                type={isEditing ? 'primary' : 'default'}
-                onClick={isEditing ? onSave : onEdit}
-              >
-                {isEditing ? 'Save' : 'Edit'}
-              </Button>
             </div>
           )}
         </Content>

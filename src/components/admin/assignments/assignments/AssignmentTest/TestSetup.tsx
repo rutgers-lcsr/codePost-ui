@@ -5,8 +5,8 @@ import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructu
 import { Breadcrumb, Tabs } from 'antd';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 
-import { SetEnvironment } from './SetEnvironment';
-import { TestDefinitions } from './TestDefinitions';
+import { EnvironmentSpecs } from './SetupTests/EnvironmentSpecs';
+import { TestDefinitions } from './SetupTests/TestDefinitions';
 
 const { TabPane } = Tabs;
 
@@ -17,12 +17,12 @@ interface IProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
 
-export const EditTests = (props: IProps) => {
+export const TestSetup = (props: IProps) => {
   const [step, setStep] = useState('1');
   const content = (
     <Tabs defaultActiveKey="1" activeKey={step} onChange={setStep} animated={false}>
       <TabPane tab={'Environment'} key={'1'}>
-        <SetEnvironment
+        <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
           onContinue={setStep.bind({}, '2')}
           onCancel={props.onCancel}
