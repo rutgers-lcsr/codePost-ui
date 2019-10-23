@@ -169,6 +169,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   React.useEffect(() => {
     onCollapse(props.sider, getCachedCollapseKeys());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

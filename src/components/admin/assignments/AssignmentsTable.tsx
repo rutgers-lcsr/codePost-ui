@@ -12,6 +12,10 @@ import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
+import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
+
+import update from 'immutability-helper';
+
 import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
@@ -118,6 +122,8 @@ interface IManageAssignmentsState {
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
+
+  assignments: AssignmentType[];
 }
 
 /**********************************************************************************************************************/
@@ -126,6 +132,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   public state: Readonly<IManageAssignmentsState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
+    assignments: sortAssignments(this.props.assignments),
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -304,7 +311,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.students,
     );
 
-    data = sortAssignments(this.props.assignments).map((assignment, i) => {
+    data = this.state.assignments.map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForReactRouter(assignment.name);
       const menu = (
@@ -589,6 +596,26 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       }
     }
 
+    const components = {
+      body: {
+        row: DraggableBodyRow,
+      },
+    };
+
+    // eslint-disable-next-line
+    const moveRow = (dragIndex: any, hoverIndex: any) => {
+      const { assignments } = this.state;
+      const dragRow = assignments[dragIndex];
+
+      this.setState(
+        update(this.state, {
+          assignments: {
+            $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+          },
+        }),
+      );
+    };
+
     return (
       <TableDetail
         title={'Assignments'}
@@ -620,6 +647,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         drawer={drawerComponent}
         hideSearch={true}
         detail={detailComponent}
+        components={components}
+        onRow={(record: any, index: any) => ({
+          index,
+          moveRow: moveRow,
+        })}
       />
     );
   }
