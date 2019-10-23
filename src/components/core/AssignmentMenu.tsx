@@ -20,7 +20,7 @@ import CPDropdown from './CPDropdown';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
-import { encodeForReactRouter } from '../core/URLutils';
+import { encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -61,9 +61,7 @@ const AssignmentMenu = (props: IProps) => {
     selectorText = 'Select an assignment';
   }
 
-  const currentAssignment = props.assignments.find(
-    (el) => encodeForReactRouter(el.name) === props.match.params.assignment,
-  );
+  const currentAssignment = props.assignments.find((el) => encodeForLink(el.name) === props.match.params.assignment);
   if (currentAssignment) {
     selectorText = currentAssignment.name;
   }

@@ -26,7 +26,7 @@ import AssignmentRegrades from './assignments/AssignmentRegrades';
 import Moss from './assignments/Moss';
 import AssignmentsTable, { DETAIL_TYPE } from './AssignmentsTable';
 
-import { encodeForReactRouter } from '../../core/URLutils';
+import { encodeForRoute } from '../../core/URLutils';
 
 import Loading from '../../core/Loading';
 
@@ -90,7 +90,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         // encodes assignment.name for us when parsing path strings.
         //
         // See here: https://github.com/ReactTraining/history/issues/505
-        const encodedName = encodeForReactRouter(assignment.name);
+        const encodedName = encodeForRoute(assignment.name);
         return (
           <div key={encodedName}>
             <Route

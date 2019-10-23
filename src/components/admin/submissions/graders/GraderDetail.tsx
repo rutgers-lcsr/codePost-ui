@@ -19,7 +19,7 @@ import { TableDetail } from '../../other/TableDetail';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
-import { encodeForReactRouter } from '../../../../components/core/URLutils';
+import { encodeForLink, encodeForRoute } from '../../../../components/core/URLutils';
 
 import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
@@ -105,7 +105,7 @@ const GraderDetail = (props: IProps) => {
             const menu = (
               <Menu>
                 <Menu.Item>
-                  <Link to={`${props.match.url}/${encodeForReactRouter(assignment.name)}`}>
+                  <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
                     <Icon type="folder-open" />
                     Zoom in
                   </Link>
@@ -133,7 +133,7 @@ const GraderDetail = (props: IProps) => {
             return {
               key: assignment.name,
               expand: (
-                <Link to={`${props.match.url}/${encodeForReactRouter(assignment.name)}`}>
+                <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
                   <div style={{ cursor: 'pointer' }}>
                     <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
                       <Icon type="folder-open" />
@@ -192,7 +192,7 @@ const GraderDetail = (props: IProps) => {
       {props.assignments.map((assn) => {
         return (
           <Route
-            path={`${props.match.url}/${encodeForReactRouter(assn.name)}`}
+            path={`${props.match.url}/${encodeForRoute(assn.name)}`}
             exact={true}
             render={(subprops: any) => (
               <GraderAssignmentDetail
