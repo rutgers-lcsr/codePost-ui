@@ -36,6 +36,10 @@ const helpQueryMap = [
     'How to: Use Markdown in comments',
     'https://help.codepost.io/en/articles/3176539-how-to-use-markdown-in-comments',
   ),
+  buildQuery(
+    'How to: Assign a grader to a submission',
+    'https://help.codepost.io/en/articles/3164753-how-to-assign-a-grader-to-a-submission',
+  ),
 ];
 
 export { helpQueryMap };

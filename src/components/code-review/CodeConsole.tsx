@@ -1656,6 +1656,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       (document as any).getElementById('theme-toggle').click();
     };
 
+    const goToRubric = () => {
+      window.location.href = `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/${
+        this.state.assignment!.name
+      }/rubric`;
+    };
+
     const goToFile = (queryValue?: string) => {
       if (queryValue !== undefined) {
         const foundFile = this.state.files.find((file) => {
@@ -1728,6 +1734,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       { value: finalizeText, label: finalizeText, callback: this.toggleFinalized },
       { value: 'Download code', label: 'Download code', callback: downloadCode },
       { value: 'View as student', label: 'View as student', callback: viewAsStudent },
+      { value: 'Open rubric editor', label: 'Open rubric editor', callback: goToRubric },
       ...helpQueryMap,
     ];
 

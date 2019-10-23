@@ -7,7 +7,7 @@ import Fuse from 'fuse.js';
 
 import { Breadcrumb, Icon, Modal } from 'antd';
 
-import useHotkeys, { ESCAPE_KEY, K_KEY } from '../code-review/useHotkeys';
+import useHotkeys, { K_KEY } from '../code-review/useHotkeys';
 
 import { osControlKey } from '../core/operatingSystem';
 
@@ -25,20 +25,31 @@ interface IOptionType {
   label: string /* what is displayed in the bar */;
 }
 
-interface IQueryType extends IOptionType {
+interface IQueryBasic extends IOptionType {
   /* what gets called when a value is selected */
-  callback?: (value: string) => void;
-  generator?: (value: string) => Promise<IQueryType[]>;
-
   isDynamic?: boolean;
   confirm?: boolean;
   confirmText?: string;
   isList?: boolean;
 }
 
+interface IQueryAction extends IQueryBasic {
+  callback?: (value: string) => void;
+}
+
+interface IQueryLink extends IQueryBasic {
+  link?: string;
+}
+
+interface IQueryGenerator extends IQueryBasic {
+  generator?: (value: string) => Promise<QueryType[]>;
+}
+
+export type QueryType = IQueryAction | IQueryLink | IQueryGenerator;
+
 type IParameterList = Record<string, string[]>;
 
-type IHistoryType = Array<{ searchText: string; options: IQueryType[] }>;
+type IHistoryType = Array<{ searchText: string; options: QueryType[] }>;
 
 /* build a Fuse object for fuzzy matching on options */
 const buildFuse = (options: IOptionType[], threshold: number) => {
@@ -46,11 +57,11 @@ const buildFuse = (options: IOptionType[], threshold: number) => {
 };
 
 interface IPropsType {
-  queryMap: IQueryType[];
+  queryMap: QueryType[];
   parameters?: IParameterList;
 }
 
-const genericGenerator = (query: IQueryType, parameters: IParameterList): IQueryType[] => {
+const genericGenerator = (query: QueryType, parameters: IParameterList): QueryType[] => {
   const extractedParameters = query.label.match(/{{.*}}/g);
   if (extractedParameters === null || extractedParameters.length !== 1) {
     throw 'query.label does not include a single parameter (0 or >1).';
@@ -169,7 +180,7 @@ const Foobar = (props: IPropsType) => {
   };
 
   /* if the user selects on option, handle it appropriaetly */
-  const onInputSelect = async (record: IQueryType) => {
+  const onInputSelect = async (record: QueryType) => {
     /* when option is selected a second time, execute callback */
     if (searchText === record.label) {
       if (record.isList && record.generator !== undefined) {

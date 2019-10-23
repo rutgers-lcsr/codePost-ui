@@ -49,9 +49,11 @@ const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: b
     const handleKeydown = (e: any) => {
       const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
-      let trigger = e.which === hotkey && triggerKey;
+      let trigger;
       if (shift !== undefined && shift) {
         trigger = e.which === hotkey && triggerKey && e.shiftKey;
+      } else {
+        trigger = e.which === hotkey && triggerKey && !e.shiftKey;
       }
 
       if (trigger && !override) {
