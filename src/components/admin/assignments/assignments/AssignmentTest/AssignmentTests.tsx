@@ -4,8 +4,8 @@ import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { UserType } from '../../../../../infrastructure/user';
 
-import { EditTests } from './EditTests';
-import { TestsSummary } from './TestsSummary';
+import { TestSetup } from './TestSetup';
+import { TestResults } from './TestResults';
 
 enum DETAIL_TYPE {
   Edit,
@@ -44,7 +44,7 @@ export const AssignmentTests = (props: IProps) => {
   switch (detail) {
     case DETAIL_TYPE.Edit:
       content = (
-        <EditTests
+        <TestSetup
           currentAssignment={assignment}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.Edit)}
           onCancel={props.onCancel}
@@ -54,7 +54,7 @@ export const AssignmentTests = (props: IProps) => {
       break;
     case DETAIL_TYPE.Summary:
       content = (
-        <TestsSummary
+        <TestResults
           currentAssignment={assignment}
           submissions={props.submissions}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.Edit)}
