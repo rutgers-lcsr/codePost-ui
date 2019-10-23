@@ -36,6 +36,7 @@ export const SolutionCode = (props: IProps) => {
     <div>
       <Layout style={{ maxHeight: 450 }}>
         <Sider theme="light">
+          {'Files'}
           <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
             {props.files.map((file, index) => {
               const pathName = `${file.path ? `${file.path}/` : ''}`;
