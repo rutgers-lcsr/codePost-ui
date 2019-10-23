@@ -19,7 +19,7 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
-import { encodeForReactRouter } from '../core/URLutils';
+import { encodeForLink, encodeForRoute } from '../core/URLutils';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -58,7 +58,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       return {
         ...row,
         zoom: (
-          <Link to={`${props.match.url}/${encodeForReactRouter(row.assignment)}`}>
+          <Link to={`${props.match.url}/${encodeForLink(row.assignment)}`}>
             <Icon type="folder-open" />
           </Link>
         ),
@@ -70,7 +70,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
         {props.assignments.map((assignment) => (
           <Route
             key={assignment.id}
-            path={`${props.match.url}/${encodeForReactRouter(assignment.name)}`}
+            path={`${props.match.url}/${encodeForRoute(assignment.name)}`}
             render={(subprops: any) => {
               LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
               return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
@@ -83,7 +83,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
             const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
             const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
             if (matchedAssignment) {
-              return <Redirect to={`${props.match.url}/${encodeForReactRouter(matchedAssignment.name)}`} />;
+              return <Redirect to={`${props.match.url}/${encodeForLink(matchedAssignment.name)}`} />;
             } else {
               return (
                 <CPAdminDetail
