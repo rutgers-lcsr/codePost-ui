@@ -42,7 +42,7 @@ const getTestsBySubmission = async (submissions: SubmissionType[]) => {
   return toRet;
 };
 
-export const TestsSummary = (props: IProps) => {
+export const TestResults = (props: IProps) => {
   const [loading, setLoading] = useState(false);
   const [testCases, setTestCases] = useState<TestCaseType[]>([]);
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
@@ -135,7 +135,7 @@ export const TestsSummary = (props: IProps) => {
           </Dropdown>
         ),
       };
-      const tests = submission.id in testsBySubmission ? testsBySubmission[submission.id] : [];
+      const tests = testsBySubmission[submission.id] || [];
 
       const casesWithTests = new Set(
         tests.map((test) => {

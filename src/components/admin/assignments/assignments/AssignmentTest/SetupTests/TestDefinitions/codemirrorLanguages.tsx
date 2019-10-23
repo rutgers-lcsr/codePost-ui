@@ -3,8 +3,9 @@ import 'codemirror/mode/clike/clike';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/mllike/mllike';
 
+// Map each extension to the syntax highlighter for it
 export const languageMap: { [language: string]: string } = {
-  java: 'x-text/java',
+  java: 'text/x-java',
   py: 'python',
   js: 'javascript',
   jsx: 'javascript',

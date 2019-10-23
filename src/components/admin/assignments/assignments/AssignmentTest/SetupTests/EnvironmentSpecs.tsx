@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
 
 import { Button, Collapse, Select, Typography } from 'antd';
 const { Option } = Select;
@@ -15,7 +15,7 @@ interface IProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
 
-const languages = ['python-3.7', 'python-2.7'];
+const languages = ['python-3.7', 'python-2.7', 'java'];
 
 enum BUILD_STATUS {
   Idle,
@@ -27,7 +27,7 @@ enum BUILD_STATUS {
   Success,
 }
 
-export const SetEnvironment = (props: IProps) => {
+export const EnvironmentSpecs = (props: IProps) => {
   const [language, setLanguage] = useState<string | null>(props.currentAssignment.testLanguage);
   const [dependencies, setDependencies] = useState<string[]>(
     props.currentAssignment.dependencies ? JSON.parse(props.currentAssignment.dependencies) : [],

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/solutionFile';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
+import { SolutionFile, SolutionFileType } from '../../../../../../infrastructure/solutionFile';
 
-import { SolutionCode } from './SolutionCode';
-
-import { TestPanel } from './TestPanel';
+import { SolutionCode } from './TestDefinitions/SolutionCode';
+import { TestsList } from './TestDefinitions/TestsList';
 
 import { Collapse } from 'antd';
 
@@ -89,7 +88,7 @@ export const TestDefinitions = (props: IProps) => {
           />
         </Panel>
         <Panel header="Tests" key="2">
-          <TestPanel currentAssignment={props.currentAssignment} files={solutionFiles} />
+          <TestsList currentAssignment={props.currentAssignment} files={solutionFiles} />
         </Panel>
       </Collapse>
     </div>
