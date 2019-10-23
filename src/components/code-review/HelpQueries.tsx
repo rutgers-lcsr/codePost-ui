@@ -6,6 +6,7 @@ const openHelpDoc = (link: string) => {
 
 const buildQuery = (text: string, link: string) => {
   return {
+    kind: 'action' as const,
     value: text,
     label: text,
     callback: () => {

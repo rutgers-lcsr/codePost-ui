@@ -74,7 +74,7 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
-import Foobar from '../core/Foobar';
+import Foobar, { QueryType } from '../core/Foobar';
 import { helpQueryMap } from './HelpQueries';
 
 /**********************************************************************************************************************/
@@ -1673,7 +1673,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       }
     };
 
-    const findGraderSubmissions = async (grader: string) => {
+    const findGraderSubmissions = async (grader: string): Promise<QueryType[]> => {
       const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { grader });
       return submissions.map((sub) => {
         return {
@@ -1681,11 +1681,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           label: `Open submission ${sub.id}`,
           callback: () => openSubmissionInSameTab(sub.id),
           tags: sub.students,
+          kind: 'action',
         };
       });
     };
 
-    const findStudentSubmission = async (student: string) => {
+    const findStudentSubmission = async (student: string): Promise<QueryType[]> => {
       const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { student });
       if (submissions.length === 1) {
         const sub = submissions[0];
@@ -1695,6 +1696,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             label: `Open submission ${sub.id}`,
             callback: () => openSubmissionInSameTab(sub.id),
             tags: sub.students,
+            kind: 'action',
           },
         ];
       } else {
@@ -1704,37 +1706,47 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const finalizeText = this.state.submission && this.state.submission.isFinalized ? 'Unfinalize' : 'Finalize';
 
-    let defaultOptions = [
+    let defaultOptions: QueryType[] = [
       {
         value: 'Find submission of ',
         label: 'Find submission of {{student}}',
-        isDynamic: true,
-        isList: true,
-        generator: findStudentSubmission,
+        kind: 'dynamic',
+        child: {
+          generator: findStudentSubmission,
+          kind: 'generator',
+        },
       },
       {
         value: 'Find submissions graded by ',
         label: 'Find submissions graded by {{grader}}',
-        isDynamic: true,
-        isList: true,
-        generator: findGraderSubmissions,
+        kind: 'dynamic',
+        child: {
+          generator: findGraderSubmissions,
+          kind: 'generator',
+        },
       },
       {
         value: 'Assign to ',
         label: 'Assign to {{grader}}',
-        callback: assigner,
-        isDynamic: true,
+        kind: 'dynamic',
+        child: {
+          callback: assigner,
+          kind: 'action',
+        },
       },
       {
         value: 'Jump to ',
         label: 'Jump to {{file}}',
-        callback: goToFile,
-        isDynamic: true,
+        kind: 'dynamic',
+        child: {
+          callback: goToFile,
+          kind: 'action',
+        },
       },
-      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized },
-      { value: 'Download code', label: 'Download code', callback: downloadCode },
-      { value: 'View as student', label: 'View as student', callback: viewAsStudent },
-      { value: 'Open rubric editor', label: 'Open rubric editor', callback: goToRubric },
+      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized, kind: 'action' },
+      { value: 'Download code', label: 'Download code', callback: downloadCode, kind: 'action' },
+      { value: 'View as student', label: 'View as student', callback: viewAsStudent, kind: 'action' },
+      { value: 'Open rubric editor', label: 'Open rubric editor', callback: goToRubric, kind: 'action' },
       ...helpQueryMap,
     ];
 

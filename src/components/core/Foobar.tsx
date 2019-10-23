@@ -1,3 +1,14 @@
+// To-do List:
+// (1) escape to revert to previous query (all the way back)
+// (2) optional shortcut specification
+// (3) icon to specify what type of query
+//     - action
+//     - link
+
+/*******************************************************************************/
+/* Imports
+/*******************************************************************************/
+
 import * as React from 'react';
 
 /* other library imports */
@@ -12,56 +23,68 @@ import useHotkeys, { K_KEY } from '../code-review/useHotkeys';
 import { osControlKey } from '../core/operatingSystem';
 
 /*******************************************************************************/
-
-// To-do List:
-// (1) escape to revert to previous query (all the way back)
-// (2) optional shortcut specification
-// (3) icon to specify what type of query
-//     - action
-//     - link
+/* Query Types
+/*******************************************************************************/
 
 interface IOptionType {
   value: string /* what gets searched */;
   label: string /* what is displayed in the bar */;
+  tags?: string[] /* text to include with search key */;
 }
 
-interface IQueryBasic extends IOptionType {
-  /* what gets called when a value is selected */
-  isDynamic?: boolean;
+// Generator queries refill the query options list with new queries.
+interface IQueryGeneratorShell {
+  kind: 'generator';
+  generator: (value: string) => Promise<QueryType[]>;
+}
+
+export type IQueryGenerator = IQueryGeneratorShell & IOptionType;
+
+// Action queries execute a callback function
+interface IQueryActionShell {
+  kind: 'action';
+  callback: (value: string) => void;
   confirm?: boolean;
   confirmText?: string;
-  isList?: boolean;
 }
 
-interface IQueryAction extends IQueryBasic {
-  callback?: (value: string) => void;
+export type IQueryAction = IQueryActionShell & IOptionType;
+
+// Link queries visit a link on execute
+interface IQueryLinkShell {
+  kind: 'link';
+  link: string;
 }
 
-interface IQueryLink extends IQueryBasic {
-  link?: string;
+export type IQueryLink = IQueryLinkShell & IOptionType;
+
+// Dynamic queries include a placeholder {{variable}} whose value is filled
+// by a parameter
+interface IQueryDynamicShell {
+  kind: 'dynamic';
+  child: QueryShell;
 }
 
-interface IQueryGenerator extends IQueryBasic {
-  generator?: (value: string) => Promise<QueryType[]>;
-}
+export type IQueryDynamic = IQueryDynamicShell & IOptionType;
 
-export type QueryType = IQueryAction | IQueryLink | IQueryGenerator;
+/*******************************************************************************/
+
+// https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions
+export type QueryShell = IQueryActionShell | IQueryLinkShell | IQueryGeneratorShell | IQueryDynamicShell;
+export type QueryType = IQueryAction | IQueryLink | IQueryGenerator | IQueryDynamic;
 
 type IParameterList = Record<string, string[]>;
 
 type IHistoryType = Array<{ searchText: string; options: QueryType[] }>;
 
+/*********************************************************************************/
+
 /* build a Fuse object for fuzzy matching on options */
-const buildFuse = (options: IOptionType[], threshold: number) => {
+const buildFuse = (options: QueryType[], threshold: number) => {
   return new Fuse(options, { threshold: threshold, keys: ['label', 'tags'], shouldSort: true });
 };
 
-interface IPropsType {
-  queryMap: QueryType[];
-  parameters?: IParameterList;
-}
-
-const genericGenerator = (query: QueryType, parameters: IParameterList): QueryType[] => {
+const genericGenerator = (query: IQueryDynamic, parameters: IParameterList): QueryType[] => {
   const extractedParameters = query.label.match(/{{.*}}/g);
   if (extractedParameters === null || extractedParameters.length !== 1) {
     throw 'query.label does not include a single parameter (0 or >1).';
@@ -73,11 +96,9 @@ const genericGenerator = (query: QueryType, parameters: IParameterList): QueryTy
     } else {
       return options.map((option) => {
         return {
+          ...query.child,
           value: option,
           label: query.label.replace(/{{.*}}/g, option),
-          callback: query.callback,
-          generator: query.generator !== undefined ? query.generator.bind(false, option) : undefined,
-          isList: query.isList,
         };
       });
     }
@@ -85,6 +106,13 @@ const genericGenerator = (query: QueryType, parameters: IParameterList): QueryTy
 
   return [];
 };
+
+/*********************************************************************************/
+
+interface IPropsType {
+  queryMap: QueryType[];
+  parameters?: IParameterList;
+}
 
 const Foobar = (props: IPropsType) => {
   /******************************************************************/
@@ -136,7 +164,7 @@ const Foobar = (props: IPropsType) => {
     if (matches.length === 1) {
       // If the query is dynamic and isn't already active, make it active
       const loneMatch = matches[0];
-      if (loneMatch.value !== dynamicPrefix && loneMatch.isDynamic) {
+      if (loneMatch.value !== dynamicPrefix && loneMatch.kind === 'dynamic') {
         const newOptions = genericGenerator(loneMatch, props.parameters!);
         setOldOptions([...oldOptions, { searchText: loneMatch.label, options }]);
         setOptions(newOptions);
@@ -183,7 +211,7 @@ const Foobar = (props: IPropsType) => {
   const onInputSelect = async (record: QueryType) => {
     /* when option is selected a second time, execute callback */
     if (searchText === record.label) {
-      if (record.isList && record.generator !== undefined) {
+      if (record.kind === 'generator') {
         setLoading(true);
         const newOptions = await record.generator(record.value);
         setLoading(false);
@@ -193,14 +221,14 @@ const Foobar = (props: IPropsType) => {
         setOptions(newOptions);
         return;
       } else {
-        if (record.callback !== undefined) {
+        if (record.kind === 'action') {
           setVisible(false);
           if (record.confirm) {
             Modal.confirm({
               title: record.confirmText ? record.confirmText : 'Are you sure?',
               onOk() {
                 return new Promise((resolve, reject) => {
-                  return resolve(record.callback!(record.value));
+                  return resolve(record.callback(record.value));
                 }).catch(() => console.log('Oops errors!'));
               },
               onCancel() {},
