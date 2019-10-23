@@ -139,8 +139,16 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     console.log(this.props.language);
 
     const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
+    const errorLogs = outputJSON.log && outputJSON.log.split('\n').join('\n');
     const commandTextPlaceholder = stringTemplates[this.props.language][this.state.testType]['placeholder'];
-    const extension = this.props.language == 'python' ? 'py' : this.props.language == 'java' ? 'java' : 'txt';
+    const extension =
+      this.state.testType == 'bash'
+        ? 'sh'
+        : this.props.language == 'python'
+        ? 'py'
+        : this.props.language == 'java'
+        ? 'java'
+        : 'txt';
 
     return (
       <div>
@@ -173,6 +181,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 >
                   <Option value={'functional'}>Functional Test</Option>
                   <Option value={'unit'}>Unit Test</Option>
+                  <Option value={'bash'}>Bash Test</Option>
                 </Select>,
               )}
             </Form.Item>
@@ -272,6 +281,7 @@ const languageMap: { [language: string]: string } = {
   java: 'java',
 };
 
+const bashTemplate = '';
 const stringTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
   python: {
     functional: {
@@ -293,6 +303,7 @@ def TestCase():
   else:
     return TestOutput(passed=False, logs="Test failed.")`,
     },
+    bash: { placeholder: '', initialValue: '' },
   },
   java: {
     functional: { placeholder: 'FunctionName(Arg1, Arg2, ..)', initialValue: '' },
@@ -312,6 +323,7 @@ public static TestOutput TestCase() {
   }
 };`,
     },
+    bash: { placeholder: '', initialValue: '' },
   },
 };
 

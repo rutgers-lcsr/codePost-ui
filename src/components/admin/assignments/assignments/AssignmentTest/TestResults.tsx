@@ -6,7 +6,7 @@ import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { Submission } from '../../../../../infrastructure/submission';
 
-import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Popover, Spin, Table } from 'antd';
+import { Breadcrumb, Button, Dropdown, Empty, Icon, Input, Menu, Popover, Spin, Table } from 'antd';
 
 import CPAdminDetail from '../../../other/CPAdminDetail';
 
@@ -147,11 +147,25 @@ export const TestResults = (props: IProps) => {
         if (test.passed) {
           passed += 1;
         }
-        toRet[test.testCase] = test.passed ? (
-          <Icon type="check-circle" style={{ color: '#24be85' }} />
-        ) : (
-          <Popover content={<div style={{ color: 'red', maxWidth: 300 }}>{test.logs}</div>} title="Logs">
-            <Icon type="exclamation-circle" style={{ color: 'red' }} />
+        toRet[test.testCase] = (
+          <Popover
+            content={
+              <div style={{ color: 'black', minWidth: 700 }}>
+                <Input.TextArea
+                  disabled={true}
+                  value={test.logs}
+                  autosize={{ minRows: 4, maxRows: 8 }}
+                  style={{ marginTop: 15 }}
+                />
+              </div>
+            }
+            title="Logs"
+          >
+            {test.passed ? (
+              <Icon type="check-circle" style={{ color: '#24be85' }} />
+            ) : (
+              <Icon type="exclamation-circle" style={{ color: 'red' }} />
+            )}
           </Popover>
         );
       }
@@ -169,7 +183,29 @@ export const TestResults = (props: IProps) => {
     content = <Table columns={columns} dataSource={data} />;
   }
 
+  const runAll = async () => {
+    setLoadingSubs(
+      props.submissions.map((sub) => {
+        return sub.id;
+      }),
+    );
+    const newTestsBySub: TestsBySubmission = {};
+    const promises = props.submissions.map((sub) => {
+      return Submission.runTests(sub.id);
+    });
+    const newTests = await Promise.all(promises);
+    newTests.forEach((subTests) => {
+      const subID = subTests[0].submission;
+      newTestsBySub[subID] = subTests;
+    });
+    setTestsBySubmission(newTestsBySub);
+    setLoadingSubs([]);
+  };
+
   actions = [
+    <Button type="default" onClick={runAll}>
+      Run all Tests
+    </Button>,
     <Button type="primary" onClick={props.switchDetail}>
       Edit Tests
     </Button>,

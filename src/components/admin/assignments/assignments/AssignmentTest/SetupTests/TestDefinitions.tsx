@@ -77,7 +77,7 @@ export const TestDefinitions = (props: IProps) => {
 
   return (
     <div>
-      <Collapse bordered={false} defaultActiveKey={['1']}>
+      <Collapse bordered={false} defaultActiveKey={['1', '2']}>
         <Panel header="Correct solution" key="1">
           <SolutionCode
             assignment={props.currentAssignment}
