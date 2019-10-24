@@ -9,8 +9,8 @@ import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructu
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
-import { EnvironmentSpecs } from './SetupTests/EnvironmentSpecs';
-import { TestDefinitions } from './SetupTests/TestDefinitions';
+import { EnvironmentSpecs } from './TestingSetup/EnvironmentSpecs';
+import { TestDefinitions } from './TestingSetup/TestDefinitions';
 
 const { TabPane } = Tabs;
 
@@ -21,7 +21,7 @@ interface IProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
 
-export const TestSetup = (props: IProps) => {
+export const TestingSetup = (props: IProps) => {
   // ************************** State Variables ******************************
   const [currTab, setCurrTab] = useState('1');
 

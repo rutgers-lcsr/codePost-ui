@@ -7,8 +7,8 @@ import { SubmissionType } from '../../../../../infrastructure/submission';
 import { UserType } from '../../../../../infrastructure/user';
 
 /* codePost component imports */
-import { TestSetup } from './TestSetup';
-import { TestResults } from './TestResults';
+import { TestingSetup } from './TestingSetup';
+import { TestingSummary } from './TestingSummary';
 
 enum DETAIL_TYPE {
   SetUp,

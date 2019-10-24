@@ -23,7 +23,7 @@ interface IProps {
   onCancel: () => void;
 }
 
-export const TestResults = (props: IProps) => {
+export const TestingSummary = (props: IProps) => {
   // ************************** State Variables ******************************
   const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
