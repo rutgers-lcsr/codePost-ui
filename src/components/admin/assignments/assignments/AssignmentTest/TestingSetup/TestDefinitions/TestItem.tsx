@@ -15,7 +15,7 @@ import { CodeWindow } from './utils/CodeWindow';
 import { TestResult } from './utils/TestResult';
 
 /* codePost util imports */
-import { getLanguage, testTemplates } from './languageUtils';
+import { getLanguage, testTemplates } from './utils/languageUtils';
 
 const { Option } = Select;
 
