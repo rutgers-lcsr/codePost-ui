@@ -19,6 +19,8 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
 
+import { osControlKey } from '../../core/operatingSystem';
+
 import CPButton from '../../core/CPButton';
 
 import Loading from '../../core/Loading';
@@ -386,7 +388,7 @@ const RubricMenuUI = ({
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -409,7 +411,7 @@ const RubricMenuUI = ({
   } else {
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -437,19 +439,21 @@ const RubricMenuUI = ({
         style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
       >
         <div style={{ textAlign: 'right' }}>
-          <Tag
-            style={{
-              background: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              borderStyle: 'dashed',
-              marginBottom: '4px',
-              marginRight: '0px',
-              cursor: 'pointer',
-            }}
-            onClick={insertCategorySearch}
-          >
-            category:
-          </Tag>
+          <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
+            <Tag
+              style={{
+                background: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                borderStyle: 'dashed',
+                marginBottom: '4px',
+                marginRight: '0px',
+                cursor: 'pointer',
+              }}
+              onClick={insertCategorySearch}
+            >
+              category:
+            </Tag>
+          </CPTooltip>
         </div>
         {searchBar}
       </div>

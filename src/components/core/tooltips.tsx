@@ -58,6 +58,7 @@ const GRADE_HEADER_ALIGNMENT = (
 );
 const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;
 const GRADE_RUBRIC_SAVE = <div>save rubric [⌘ s]</div>;
+const GRADE_RUBRIC_CATEGORY_SEARCH = 'Search for specific rubric category names.';
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_HEADER_DOWNLOAD_CODE = 'Download the code for this submission.';
@@ -226,6 +227,7 @@ export const tooltips = {
     rubric: {
       edit: GRADE_RUBRIC_EDIT,
       save: GRADE_RUBRIC_SAVE,
+      categorySearch: GRADE_RUBRIC_CATEGORY_SEARCH,
     },
   },
   settings: {
