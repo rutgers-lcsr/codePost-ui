@@ -1,76 +1,98 @@
+/* react imports */
 import React, { useState, useEffect } from 'react';
 
+/* library imports */
+import { Breadcrumb, Button, Dropdown, Empty, Icon, Input, Menu, Popover, Table } from 'antd';
+
+/* codePost object imports */
 import { SubmissionType } from '../../../../../infrastructure/submission';
-import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
-import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
+import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { Submission } from '../../../../../infrastructure/submission';
 
-import { Breadcrumb, Button, Dropdown, Empty, Icon, Input, Menu, Popover, Spin, Table } from 'antd';
-
+/* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
+
+/* codePost util imports */
+import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testUtils';
 
 interface IProps {
   submissions: SubmissionType[];
   currentAssignment: AssignmentType;
-
   switchDetail: () => void;
   onCancel: () => void;
 }
 
-interface TestsBySubmission {
-  [submissionID: number]: SubmissionTestType[];
-}
-
-const getTestCases = async (assignment: AssignmentType) => {
-  const testPromises = assignment.testCases.map((id) => {
-    return TestCase.read(id);
-  });
-  return await Promise.all(testPromises);
-};
-
-const getTestsBySubmission = async (submissions: SubmissionType[]) => {
-  const toRet: TestsBySubmission = {};
-  const promises = submissions.map(async (submission) => {
-    const testPromises = submission.tests.map((id) => {
-      return SubmissionTest.read(id);
-    });
-    const tests = await Promise.all(testPromises);
-    toRet[submission.id] = tests;
-  });
-  await Promise.all(promises);
-  return toRet;
-};
-
 export const TestResults = (props: IProps) => {
-  const [loading, setLoading] = useState(false);
-  const [testCases, setTestCases] = useState<TestCaseType[]>([]);
+  // ************************** State Variables ******************************
+  const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
+  const [categories, setCategories] = useState<TestCategoryType[]>([]);
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
-  const [loadingSubs, setLoadingSubs] = useState<number[]>([]);
+  const [subsLoading, setSubsLoading] = useState<number[]>([]);
 
-  // ******************************* Fetch Data  *******************************
+  // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
-      const tests = await getTestCases(props.currentAssignment);
-      setTestCases(tests);
+      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+      setCategories(categories);
+      setTestCasesByCategory(casesByCategory);
     };
     fetchData();
   }, [props.currentAssignment]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const tests = await getTestsBySubmission(props.submissions);
+      const tests = await fetchTestsBySubmission(props.submissions);
       setTestsBySubmission(tests);
     };
     fetchData();
   }, [props.submissions]);
 
+  // ******************************* API / State change functions  *******************************
+  const runTests = async (sub: SubmissionType) => {
+    setSubsLoading([...subsLoading, sub.id]);
+    const newTests = await Submission.runTests(sub.id);
+    const newTestBySub = { ...testsBySubmission };
+    newTestBySub[sub.id] = newTests;
+    setTestsBySubmission(newTestBySub);
+    const newLoadingSubs = subsLoading.filter((id) => {
+      return id !== sub.id;
+    });
+    setSubsLoading(newLoadingSubs);
+  };
+
+  const runAll = async () => {
+    setSubsLoading(
+      props.submissions.map((sub) => {
+        return sub.id;
+      }),
+    );
+    const newTestsBySub: TestsBySubmission = {};
+    const promises = props.submissions.map(async (sub) => {
+      const results = await Submission.runTests(sub.id);
+      return {
+        submission: sub.id,
+        tests: results,
+      };
+    });
+
+    const newTests = await Promise.all(promises);
+    newTests.forEach((obj) => {
+      newTestsBySub[obj.submission] = obj.tests;
+    });
+
+    setTestsBySubmission(newTestsBySub);
+    setSubsLoading([]);
+  };
+
   // ******************************* Return  *******************************
   let content;
   let actions: any = [];
-  if (loading) {
-    content = <Spin />;
-  } else if (props.currentAssignment.testCases.length == 0) {
+  const totalTests = categories.reduce((acc: number, cat) => {
+    return acc + cat.testCases.length;
+  }, 0);
+
+  if (props.currentAssignment.testCategories.length == 0) {
     content = <Empty />;
   } else {
     const columns = [
@@ -79,11 +101,11 @@ export const TestResults = (props: IProps) => {
         dataIndex: 'students',
         key: 'students',
       },
-      ...TestCase.sort(testCases).map((testCase) => {
+      ...TestCategory.sort(categories).map((category) => {
         return {
-          title: testCase.name,
-          dataIndex: testCase.id.toString(),
-          key: testCase.id.toString(),
+          title: category.name,
+          dataIndex: category.id.toString(),
+          key: category.id.toString(),
           align: 'center' as 'center',
         };
       }),
@@ -101,18 +123,6 @@ export const TestResults = (props: IProps) => {
       },
     ];
 
-    const runTests = async (sub: SubmissionType) => {
-      setLoadingSubs([...loadingSubs, sub.id]);
-      const newTests = await Submission.runTests(sub.id);
-      const newTestBySub = { ...testsBySubmission };
-      newTestBySub[sub.id] = newTests;
-      setTestsBySubmission(newTestBySub);
-      const newLoadingSubs = loadingSubs.filter((id) => {
-        return id !== sub.id;
-      });
-      setLoadingSubs(newLoadingSubs);
-    };
-
     const data = props.submissions.map((submission: SubmissionType) => {
       const actionsMenu = (
         <Menu>
@@ -122,12 +132,11 @@ export const TestResults = (props: IProps) => {
           </Menu.Item>
         </Menu>
       );
-      let passed = 0;
-      let total = 0;
+
       const toRet: any = {
         students: submission.students,
         key: submission.id,
-        actions: loadingSubs.includes(submission.id) ? (
+        actions: subsLoading.includes(submission.id) ? (
           <Icon type="loading" />
         ) : (
           <Dropdown overlay={actionsMenu} trigger={['click']}>
@@ -135,75 +144,38 @@ export const TestResults = (props: IProps) => {
           </Dropdown>
         ),
       };
+
       const tests = testsBySubmission[submission.id] || [];
+      let passed = 0;
 
-      const casesWithTests = new Set(
-        tests.map((test) => {
-          return test.testCase;
-        }),
-      );
-
-      for (const test of tests) {
+      // Group the SubmissionTests by category
+      const testByCategory: any = {};
+      tests.forEach((test) => {
+        (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+          (testByCategory[test.testCategory] = [test]);
         if (test.passed) {
           passed += 1;
         }
-        toRet[test.testCase] = (
-          <Popover
-            content={
-              <div style={{ color: 'black', minWidth: 700 }}>
-                <Input.TextArea
-                  disabled={true}
-                  value={test.logs}
-                  autosize={{ minRows: 4, maxRows: 8 }}
-                  style={{ marginTop: 15 }}
-                />
-              </div>
-            }
-            title="Logs"
-          >
-            {test.passed ? (
-              <Icon type="check-circle" style={{ color: '#24be85' }} />
-            ) : (
-              <Icon type="exclamation-circle" style={{ color: 'red' }} />
-            )}
-          </Popover>
-        );
-      }
-      for (const testCase of testCases) {
-        total += 1;
-        if (!casesWithTests.has(testCase.id)) {
-          toRet[testCase.id] = <Icon type="minus" style={{ color: 'grey' }} />;
-        }
+      });
+
+      for (const category of categories) {
+        const submissionTests = testByCategory[category.id] || [];
+        toRet[category.id] = `${
+          submissionTests.filter((sub: any) => {
+            return sub.passed;
+          }).length
+        } / ${submissionTests.length}`;
       }
 
-      toRet['summary'] = <div>{`${passed} / ${total}`}</div>;
+      toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
       return toRet;
     });
 
     content = <Table columns={columns} dataSource={data} />;
   }
 
-  const runAll = async () => {
-    setLoadingSubs(
-      props.submissions.map((sub) => {
-        return sub.id;
-      }),
-    );
-    const newTestsBySub: TestsBySubmission = {};
-    const promises = props.submissions.map((sub) => {
-      return Submission.runTests(sub.id);
-    });
-    const newTests = await Promise.all(promises);
-    newTests.forEach((subTests) => {
-      const subID = subTests[0].submission;
-      newTestsBySub[subID] = subTests;
-    });
-    setTestsBySubmission(newTestsBySub);
-    setLoadingSubs([]);
-  };
-
   actions = [
-    <Button type="default" onClick={runAll}>
+    <Button type="default" disabled={totalTests === 0} onClick={runAll}>
       Run all Tests
     </Button>,
     <Button type="primary" onClick={props.switchDetail}>
@@ -230,3 +202,34 @@ export const TestResults = (props: IProps) => {
     />
   );
 };
+//
+// interface IProps {
+//   submissionTests: SubmissionTestType[];
+//   testCases: TestCaseType[];
+// }
+
+// const TestsPopover = (props: IProps) => {
+//   const passedTests = submissionTests.map;
+//   return (
+//     <Popover
+//       content={
+//         <div style={{ color: 'black', minWidth: 700 }}>
+//           <Input.TextArea
+//             disabled={true}
+//             value={test.logs}
+//             autosize={{ minRows: 4, maxRows: 8 }}
+//             style={{ marginTop: 15 }}
+//           />
+//         </div>
+//       }
+//       title="Logs"
+//     >
+//       {`${
+//         props.submissionTests.filter((sub: any) => {
+//           return sub.passed;
+//         }).length
+//       }
+//       / ${props.submissionTests.length}`}
+//     </Popover>
+//   );
+// };

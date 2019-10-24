@@ -1,23 +1,27 @@
+// react imports
 import React, { useState } from 'react';
 
+// library imports
 import { Controlled as CodeMirror } from 'react-codemirror2';
-
-import { languageMap } from './codemirrorLanguages';
-
 import { Button } from 'antd';
+
+// codePost other imports
+import { codeMirorLanguageMap } from './languageUtils';
 
 interface IProps {
   code: string;
   extension: string;
-  onSave?: (hello: string) => Promise<void>;
-  onChange?: (hello: string) => void;
+  onSave?: (code: string) => Promise<void>;
+  onChange?: (code: string) => void;
 }
 
 export const CodeWindow = (props: IProps) => {
+  // ************************** State Variables ******************************
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // ******************************* State change functions  *******************************
   const onEdit = () => {
     setIsEditing(true);
     setEditedCode(props.code);
@@ -37,19 +41,18 @@ export const CodeWindow = (props: IProps) => {
     if (props.onChange) {
       props.onChange(value);
     }
-    console.log('here');
     setEditedCode(value);
   };
 
+  // ******************************* Util functions  *******************************
   const getMode = () => {
     const extension = props.extension.replace('.', '');
-    console.log(extension);
-    if (extension in languageMap) {
-      console.log(languageMap[extension]);
-      return languageMap[extension];
+    if (extension in codeMirorLanguageMap) {
+      return codeMirorLanguageMap[extension];
     } else return 'txt';
   };
 
+  // ******************************* Return  *******************************
   return (
     <div>
       <CodeMirror

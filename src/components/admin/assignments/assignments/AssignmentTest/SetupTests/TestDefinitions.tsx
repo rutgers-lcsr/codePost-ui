@@ -1,12 +1,16 @@
+/* react imports */
 import React, { useEffect, useState } from 'react';
 
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
+/* library imports */
+import { Collapse } from 'antd';
+
+/* codePost object imports */
+import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
 import { SolutionFile, SolutionFileType } from '../../../../../../infrastructure/solutionFile';
 
+/* codePost component imports */
 import { SolutionCode } from './TestDefinitions/SolutionCode';
 import { TestsList } from './TestDefinitions/TestsList';
-
-import { Collapse } from 'antd';
 
 const { Panel } = Collapse;
 
@@ -25,8 +29,10 @@ const getSolutionFiles = async (assignment: AssignmentType) => {
 };
 
 export const TestDefinitions = (props: IProps) => {
+  /************************** State Variables ******************************/
   const [solutionFiles, setSolutionFiles] = useState<SolutionFileType[]>([]);
 
+  /************************** Fetch data ******************************/
   useEffect(() => {
     const fetchData = async () => {
       const solutionFiles = await getSolutionFiles(props.currentAssignment);
@@ -35,6 +41,7 @@ export const TestDefinitions = (props: IProps) => {
     fetchData();
   }, [props.currentAssignment]);
 
+  /************************** API / State change functions ******************************/
   const addFile = async (file: any) => {
     const payload = {
       name: file.name,
@@ -75,6 +82,7 @@ export const TestDefinitions = (props: IProps) => {
     setSolutionFiles(newFiles);
   };
 
+  /************************** Return ******************************/
   return (
     <div>
       <Collapse bordered={false} defaultActiveKey={['1', '2']}>

@@ -1,11 +1,14 @@
+/* react imports */
 import React, { useState } from 'react';
 
+/* library imports */
+import { Button, Collapse, Select, Typography } from 'antd';
+
+/* codePost object imports */
 import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
 
-import { Button, Collapse, Select, Typography } from 'antd';
 const { Option } = Select;
 const { Text } = Typography;
-
 const { Panel } = Collapse;
 
 interface IProps {
@@ -28,15 +31,15 @@ enum BUILD_STATUS {
 }
 
 export const EnvironmentSpecs = (props: IProps) => {
+  /******************************* State Variables ****************************/
   const [language, setLanguage] = useState<string | null>(props.currentAssignment.testLanguage);
   const [dependencies, setDependencies] = useState<string[]>(
     props.currentAssignment.dependencies ? JSON.parse(props.currentAssignment.dependencies) : [],
   );
   const [errorLogs, setErrorLogs] = useState<string[]>([]);
-
   const [buildStatus, setBuildStatus] = useState(BUILD_STATUS.Idle);
-  console.log(props.currentAssignment);
 
+  /******************************* API / State Change Functions ****************************/
   const testEnv = async () => {
     const payload = {
       id: props.currentAssignment.id,
@@ -72,12 +75,20 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   };
 
-  const hasChanged = props.currentAssignment.testLanguage !== language;
-
+  /******************************* State Change Functions ****************************/
   const onLanguageChange = (value: string) => {
     setBuildStatus(BUILD_STATUS.TestReady);
     setLanguage(value);
   };
+
+  const onDependenciesChange = (newDependencies: string[]) => {
+    setBuildStatus(BUILD_STATUS.TestReady);
+    setDependencies(newDependencies);
+  };
+  /******************************* Utils ****************************/
+  const hasChanged = props.currentAssignment.testLanguage !== language;
+
+  /******************************* Return ****************************/
 
   const selectLanguage = (
     <Select defaultValue={language ? language : undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
@@ -119,11 +130,6 @@ export const EnvironmentSpecs = (props: IProps) => {
         : 'Test Environment'}
     </Button>
   );
-
-  const onDependenciesChange = (newDependencies: string[]) => {
-    setBuildStatus(BUILD_STATUS.TestReady);
-    setDependencies(newDependencies);
-  };
 
   const selectDependencies = (
     <Select

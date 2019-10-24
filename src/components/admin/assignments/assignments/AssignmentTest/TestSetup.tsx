@@ -1,10 +1,14 @@
+/* react imports */
 import React, { useState } from 'react';
 
+/* library imports */
+import { Breadcrumb, Tabs } from 'antd';
+
+/* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 
-import { Breadcrumb, Tabs } from 'antd';
+/* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
-
 import { EnvironmentSpecs } from './SetupTests/EnvironmentSpecs';
 import { TestDefinitions } from './SetupTests/TestDefinitions';
 
@@ -18,13 +22,16 @@ interface IProps {
 }
 
 export const TestSetup = (props: IProps) => {
-  const [step, setStep] = useState('1');
+  // ************************** State Variables ******************************
+  const [currTab, setCurrTab] = useState('1');
+
+  // ************************** Return ***************************************
   const content = (
-    <Tabs defaultActiveKey="1" activeKey={step} onChange={setStep} animated={false}>
+    <Tabs defaultActiveKey="1" activeKey={currTab} onChange={setCurrTab} animated={false}>
       <TabPane tab={'Environment'} key={'1'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          onContinue={setStep.bind({}, '2')}
+          onContinue={setCurrTab.bind({}, '2')}
           onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
         />
@@ -32,7 +39,7 @@ export const TestSetup = (props: IProps) => {
       <TabPane tab={'Tests'} key={'2'}>
         <TestDefinitions
           currentAssignment={props.currentAssignment}
-          onContinue={setStep.bind({}, '3')}
+          onContinue={setCurrTab.bind({}, '3')}
           onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
         />
@@ -56,7 +63,7 @@ export const TestSetup = (props: IProps) => {
         </Breadcrumb>
       }
       goBack={null}
-      title={`${props.currentAssignment.name} | Tests Summary`}
+      title={`${props.currentAssignment.name} | Tests Setup`}
       actions={[]}
       content={content}
     />
