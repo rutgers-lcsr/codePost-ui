@@ -6,6 +6,7 @@ export const SubmissionTestV = t.intersection(
     GenericObject,
     t.type({
       testCase: t.number,
+      testCategory: t.number,
       submission: t.number,
       logs: t.string,
       passed: t.union([t.boolean, t.null]),

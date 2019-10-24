@@ -41,7 +41,7 @@ const AssignmentV = t.intersection(
       fileTemplates: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
-      testCases: t.array(t.number),
+      testCategories: t.array(t.number),
       solutionFiles: t.array(t.number),
       testLanguage: t.union([t.string, t.null]),
       dependencies: t.string,
