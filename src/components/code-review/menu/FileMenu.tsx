@@ -35,6 +35,8 @@ import { getOperatingSystem, osControlKey, OS } from '../../core/operatingSystem
 
 import { sendSlack } from '../../core/slack';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 const { SubMenu } = Menu;
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
@@ -83,7 +85,11 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       sortedFiles,
       oldVersionsMap,
     };
-    if (sortedFiles.length > 0) {
+
+    const autosettedFile = sortedFiles.find((f: FileType) => {
+      return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+    });
+    if (autosettedFile === undefined && sortedFiles.length > 0) {
       // If the file has a directory, then the order of the files in the UI might be different than the order passed in
       // After getting the order, we want to change the selected file to be the first in the list
       this.props.changeSelectedFile(sortedFiles[0].id);
