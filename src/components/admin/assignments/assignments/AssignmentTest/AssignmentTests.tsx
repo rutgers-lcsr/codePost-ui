@@ -49,7 +49,7 @@ export const AssignmentTests = (props: IProps) => {
   switch (detail) {
     case DETAIL_TYPE.SetUp:
       content = (
-        <TestSetup
+        <TestingSetup
           currentAssignment={assignment}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
           onCancel={props.onCancel}
@@ -59,7 +59,7 @@ export const AssignmentTests = (props: IProps) => {
       break;
     case DETAIL_TYPE.Summary:
       content = (
-        <TestResults
+        <TestingSummary
           currentAssignment={assignment}
           submissions={props.submissions}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.Summary)}
