@@ -1,18 +1,19 @@
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
+/* library imports  */
 import { Button, Icon, Layout, Menu, message, Modal, Table, Upload } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
+/* codePost object imports  */
 import { AssignmentType } from '../../../../../../../infrastructure/assignment';
-
-import { Controlled as CodeMirror } from 'react-codemirror2';
-
 import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
 
-import { CodeWindow } from './CodeWindow';
+/* codePost other imports  */
+import { CodeWindow } from './utils/CodeWindow';
 
 const { Sider, Content } = Layout;
+
 interface IProps {
   assignment: AssignmentType;
   files: SolutionFileType[];
@@ -22,16 +23,20 @@ interface IProps {
 }
 
 export const SolutionCode = (props: IProps) => {
+  /******************************* State Variables ****************************/
   const [currentIndex, setIndex] = useState('0');
 
-  const changeIndex = (e: ClickParam) => {
-    setIndex(e.key);
-  };
-
+  /******************************** API Functions ****************************/
   const onSave = (newCode: string) => {
     return props.updateFile(props.files[parseInt(currentIndex, 10)].id, newCode);
   };
 
+  /************************** State Change Functions ****************************/
+  const changeIndex = (e: ClickParam) => {
+    setIndex(e.key);
+  };
+
+  /***************************** Return ****************************************/
   return (
     <div>
       <Layout style={{ maxHeight: 450 }}>
@@ -70,15 +75,6 @@ export const SolutionCode = (props: IProps) => {
   );
 };
 
-// <SyntaxHighlighter
-//   language={File.language2(props.files[parseInt(currentIndex, 10)].extension)}
-//   style={googlecode}
-//   showLineNumbers={true}
-//   wrapLines={true}
-// >
-//   {props.files[parseInt(currentIndex, 10)].code}
-// </SyntaxHighlighter>
-
 interface IUploadProps {
   files: SolutionFileType[];
   addFile: (file: any) => Promise<void>;
@@ -86,44 +82,16 @@ interface IUploadProps {
 }
 
 const CodeUploader = (props: IUploadProps) => {
+  /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [counter, setCounter] = useState(0);
 
-  const toggleVisible = () => {
-    setVisible(!visible);
-  };
-
-  const columns = [
-    {
-      title: 'File Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Date uploaded',
-      dataIndex: 'created',
-      key: 'created',
-    },
-    {
-      title: 'Delete',
-      dataIndex: 'delete',
-      key: 'delete',
-    },
-  ];
-
+  /************************** API Functions ****************************/
   const deleteFile = async (id: number) => {
     await props.deleteFile(id);
     message.success(`File deleted!`);
   };
-
-  const data = props.files.map((file) => {
-    return {
-      name: file.name,
-      created: file.created,
-      delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
-    };
-  });
 
   const saveNewFiles = async () => {
     const promises = newFiles.map((newFile) => {
@@ -132,6 +100,11 @@ const CodeUploader = (props: IUploadProps) => {
     await Promise.all(promises);
     message.success(`File(s) uploaded successfully`);
     setNewFiles([]);
+  };
+
+  /************************** State Change Functions ****************************/
+  const toggleVisible = () => {
+    setVisible(!visible);
   };
 
   const beforeUpload = (file: any, fileList: any) => {
@@ -155,6 +128,32 @@ const CodeUploader = (props: IUploadProps) => {
     });
     setNewFiles(updatedFiles);
   };
+  /************************** Return ****************************/
+  const columns = [
+    {
+      title: 'File Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Date uploaded',
+      dataIndex: 'created',
+      key: 'created',
+    },
+    {
+      title: 'Delete',
+      dataIndex: 'delete',
+      key: 'delete',
+    },
+  ];
+
+  const data = props.files.map((file) => {
+    return {
+      name: file.name,
+      created: file.created,
+      delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+    };
+  });
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>

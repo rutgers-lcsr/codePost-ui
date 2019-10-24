@@ -1,16 +1,21 @@
-import React, { useEffect, useState } from 'react';
+/* react imports */
+import React, { useState } from 'react';
 
-import { AssignmentType } from '../../../../../../../infrastructure/assignment';
-
-import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
-
-import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
-
-import { Button, Form, Icon, Input, Row, Select } from 'antd';
-
+/* library imports */
+import { Button, Form, Input, Row, Select } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-import { CodeWindow } from './CodeWindow';
+/* codePost object imports */
+import { AssignmentType } from '../../../../../../../infrastructure/assignment';
+import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
+import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
+
+/* codePost component imports */
+import { CodeWindow } from './utils/CodeWindow';
+import { TestResult } from './utils/TestResult';
+
+/* codePost util imports */
+import { getLanguage, testTemplates } from './languageUtils';
 
 const { Option } = Select;
 
@@ -30,11 +35,12 @@ interface IFormValues {
 }
 
 export const TestItem = (props: ITestItemProps) => {
+  /******************************* State Variables ****************************/
   let formRef: any = React.createRef();
-
   const [testOutput, setTestOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
 
+  /******************************* API / State Change Functions ****************************/
   const handleCreate = (codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
@@ -46,7 +52,6 @@ export const TestItem = (props: ITestItemProps) => {
   };
 
   const saveTest = async (values: IFormValues, codeString?: string) => {
-    console.log(values);
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = codeString || values.text;
     testCaseCopy.name = values.name;
@@ -64,10 +69,12 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
+  /******************************* State Change Functions ****************************/
   const saveFormRef = (fRef: React.RefObject<FormComponentProps>) => {
     formRef = fRef;
   };
 
+  /******************************* Return ****************************************/
   return (
     <WrappedTestFormItem
       testCase={props.testCase}
@@ -105,6 +112,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     };
   }
 
+  /******************************* State Change Functions ****************************/
   public onChange = (text: string) => {
     this.setState({ commandText: text });
     this.props.form.setFieldsValue({
@@ -121,26 +129,23 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
   public onTypeChange = (type: string) => {
     const newType = this.props.testCase.type === type;
-    console.log(stringTemplates[this.props.language]);
     this.setState({
       testType: type,
-      commandText: newType ? this.props.testCase.text : stringTemplates[this.props.language][type]['initialValue'],
+      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type]['initialValue'],
     });
     this.props.form.setFieldsValue({
       testType: type,
-      commandText: newType ? this.props.testCase.text : stringTemplates[this.props.language][type]['initialValue'],
+      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type]['initialValue'],
     });
   };
 
+  /******************************* Render  ****************************/
   public render() {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
-    console.log(this.props.language);
-
     const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
-    const errorLogs = outputJSON.log && outputJSON.log.split('\n').join('\n');
-    const commandTextPlaceholder = stringTemplates[this.props.language][this.state.testType]['placeholder'];
+    const commandTextPlaceholder = testTemplates[this.props.language][this.state.testType]['placeholder'];
     const extension =
       this.state.testType == 'bash'
         ? 'sh'
@@ -245,86 +250,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               {this.props.testCase.id > 0 ? 'Save and Run' : 'Save'}
             </Button>
           </Row>
-          {this.props.testOutput && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {outputJSON.log && (
-                <Input.TextArea
-                  value={outputJSON.log}
-                  autosize={{ minRows: 4, maxRows: 8 }}
-                  style={{ marginTop: 15 }}
-                />
-              )}
-              {outputJSON.passed ? (
-                <div style={{ color: '#24be85', fontSize: 20, marginTop: 15 }}>
-                  <Icon type="check-circle" /> Passed
-                </div>
-              ) : (
-                <div style={{ color: 'red', fontSize: 20, marginTop: 15 }}>
-                  <Icon type="exclamation-circle" /> Failed
-                </div>
-              )}
-            </div>
-          )}
+          {this.props.testOutput && <TestResult log={outputJSON.log} passed={outputJSON.passed} />}
         </div>
       </div>
     );
   }
 }
 
-const getLanguage = (languageChoice: string) => {
-  return languageMap[languageChoice];
-};
-
-const languageMap: { [language: string]: string } = {
-  'python-3.7': 'python',
-  'python-2.7': 'python',
-  java: 'java',
-};
-
-const bashTemplate = '';
-const stringTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
-  python: {
-    functional: {
-      placeholder: 'FunctionName(Arg1, Arg2, ...)',
-      initialValue: '',
-    },
-    unit: {
-      placeholder: '',
-      initialValue: `
-# Uncomment the following line if you want to import methods
-# from files import <insert student's fileName here>
-
-def TestCase():
-  # TestCase must return a TestOutput Object
-  # TestObject is initialized
-  a = 1
-  if (a > 0):
-    return TestOutput(passed=True, logs="Test passed.")
-  else:
-    return TestOutput(passed=False, logs="Test failed.")`,
-    },
-    bash: { placeholder: '', initialValue: '' },
-  },
-  java: {
-    functional: { placeholder: 'FunctionName(Arg1, Arg2, ..)', initialValue: '' },
-    unit: {
-      placeholder: '',
-      initialValue: `
-
-public static TestOutput TestCase() {
-  int a = 1;
-  if (a > 0){
-    TestOutput passed = new TestOutput(true, "good job");
-      return passed;
-  }
-  else {
-    TestOutput failed = new TestOutput(false, "base job");
-    return failed;
-  }
-};`,
-    },
-    bash: { placeholder: '', initialValue: '' },
-  },
-};
-
-export const WrappedTestFormItem: any = Form.create()(TestFormItem);
+const WrappedTestFormItem: any = Form.create()(TestFormItem);
