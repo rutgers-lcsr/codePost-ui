@@ -6,7 +6,7 @@ const TestCaseV = t.intersection(
     GenericObject,
     t.type({
       sortKey: t.number,
-      assignment: t.number,
+      testCategory: t.number,
       name: t.string,
       text: t.string,
       expectedOutput: t.string,
@@ -26,7 +26,7 @@ const TestCaseVPatch = t.intersection(
     GenericObject,
     t.partial({
       sortKey: t.number,
-      assignment: t.number,
+      testCategory: t.number,
       name: t.string,
       text: t.string,
       expectedOutput: t.string,
@@ -79,7 +79,6 @@ export class TestCase {
   public static run = createObjectDetail(TestCaseOutputs, RunTestCaseData, 'testCases', 'run');
 
   public static sort = (testCases: TestCaseType[]): TestCaseType[] => {
-    // First sort by Assignment 'sortKey', then by ID
     const compare = (a: TestCaseType, b: TestCaseType) => {
       if (a.sortKey === b.sortKey) {
         if (a.id < 0 || b.id < 0) {
