@@ -54,7 +54,7 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Return  *******************************
   return (
-    <div>
+    <div style={{ fontSize: 12 }}>
       <CodeMirror
         key={`codeMirror`}
         onBeforeChange={onBeforeChange}
