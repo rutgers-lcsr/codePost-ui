@@ -18,6 +18,8 @@ import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
 export interface ICodeContentCoreProps {
   file: FileType;
   comments: CommentType[];
@@ -31,7 +33,7 @@ export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
   fileTemplate?: FileTemplateType;
-  showCursor: boolean;
+  showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
   cursorExtent: number;
 }
@@ -187,7 +189,7 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           addComment={this.addComment}
           commentCounter={-1}
           fileTemplate={undefined}
-          showCursor={false}
+          showCursor={CURSOR_DOMAIN.HIDDEN}
           cursorIndex={0}
           cursorExtent={1}
         />

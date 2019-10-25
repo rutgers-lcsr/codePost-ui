@@ -21,6 +21,8 @@ import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
   comments: CommentType[];
@@ -48,6 +50,9 @@ interface ICommentsEditProps {
   forcedRubricMode: boolean;
 
   oldCommentIDs: { [currentID: number]: number };
+
+  showCursor: CURSOR_DOMAIN;
+  cursorIndex: number;
 }
 
 interface ICommentPlacement {
@@ -277,6 +282,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
+    console.log('props', this.props.showCursor, this.props.cursorIndex);
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;
@@ -293,6 +299,10 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       const key = this.props.oldCommentIDs.hasOwnProperty(comment.id)
         ? this.props.oldCommentIDs[comment.id]
         : comment.id;
+
+      const cursored = this.props.showCursor === CURSOR_DOMAIN.COMMENTS && this.props.cursorIndex === index;
+
+      console.log('cursored', cursored);
 
       return (
         <Comment
@@ -314,6 +324,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           additiveGrading={this.props.additiveGrading}
           forcedRubricMode={this.props.forcedRubricMode}
           rubricCategories={this.props.rubricCategories}
+          cursored={cursored}
         />
       );
     });
@@ -387,6 +398,8 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           removeRubricComment={this.removeRubricComment}
           forcedRubricMode={false}
           oldCommentIDs={{}}
+          showCursor={CURSOR_DOMAIN.HIDDEN}
+          cursorIndex={0}
         />
       );
     }

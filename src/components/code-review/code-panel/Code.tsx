@@ -12,9 +12,11 @@ import { POSITION } from '../../../types/common';
 
 import { wait } from '../../../infrastructure/animation';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
 interface ICodeProps {
   commentCounter: number;
-  showCursor: boolean;
+  showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
   cursorExtent: number;
 }
@@ -130,7 +132,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
       const style =
-        props.showCursor && i >= props.cursorIndex && i < props.cursorIndex + props.cursorExtent
+        props.showCursor === CURSOR_DOMAIN.CODE && i >= props.cursorIndex && i < props.cursorIndex + props.cursorExtent
           ? {
               backgroundColor: 'lightblue',
               opacity: 0.2,

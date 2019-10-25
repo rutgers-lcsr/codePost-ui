@@ -88,6 +88,12 @@ enum PERMISSION_LEVEL {
   WRITE,
 }
 
+export enum CURSOR_DOMAIN {
+  HIDDEN,
+  CODE,
+  COMMENTS,
+}
+
 interface ICodeConsoleState {
   /* UI control */
   permissionLevel: PERMISSION_LEVEL;
@@ -126,7 +132,7 @@ interface ICodeConsoleState {
   rubricReload?: number;
 
   /* console cursor */
-  showCursor: boolean;
+  showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
   cursorExtent: number;
 }
@@ -416,7 +422,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       rubricReload: undefined,
 
-      showCursor: false,
+      showCursor: CURSOR_DOMAIN.HIDDEN,
       cursorIndex: 0,
       cursorExtent: 1,
     };
@@ -563,78 +569,113 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public handleKeydown = async (e: any) => {
     if (this.state.selectedFile !== undefined) {
       const lines = this.state.selectedFile.code.split('\n');
-      if (!this.state.showCursor && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+      if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        this.setState({ showCursor: true });
-      } else if (e.shiftKey && e.key === 'ArrowUp') {
+        this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+      } else if (this.state.showCursor === CURSOR_DOMAIN.HIDDEN && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('SHIFT UP');
-        if (this.state.cursorIndex >= 0) {
+        this.setState({ showCursor: CURSOR_DOMAIN.CODE });
+      } else if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+        if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
+        } else if (e.shiftKey && e.key === 'ArrowUp') {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('SHIFT UP');
+          if (this.state.cursorIndex >= 0) {
+            this.setState({
+              cursorIndex: this.state.cursorIndex,
+              cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
+            });
+          }
+        } else if (e.shiftKey && e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('SHIFT DOWN');
+          if (this.state.cursorIndex >= 0) {
+            console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
+            this.setState({
+              cursorIndex: this.state.cursorIndex,
+              cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
+            });
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          e.stopPropagation();
           this.setState({
-            cursorIndex: this.state.cursorIndex,
-            cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
+            cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
+            cursorExtent: this.state.cursorExtent,
           });
-        }
-      } else if (e.shiftKey && e.key === 'ArrowDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('SHIFT DOWN');
-        if (this.state.cursorIndex >= 0) {
-          console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
+          console.log('UP');
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('DOWN');
           this.setState({
-            cursorIndex: this.state.cursorIndex,
-            cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
+            cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
+            cursorExtent: this.state.cursorExtent,
           });
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const startLine = this.state.cursorIndex;
+          const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
+          const startChar = 0;
+          const endChar = lines[endLine].length;
+          const newComment: CommentType = {
+            id: this.state.commentCounter,
+            endChar,
+            endLine,
+            file: this.state.selectedFile.id,
+            pointDelta: 0.0,
+            startChar,
+            startLine,
+            text: '',
+            rubricComment: null,
+            author: this.props.user.email,
+            feedback: 0,
+          };
+
+          this.addComment(newComment, this.state.selectedFile);
+
+          // FIXME: we can come up with a better solution
+          await wait(5);
+
+          this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+
+          CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
         }
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0), cursorExtent: this.state.cursorExtent });
-        console.log('UP');
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('DOWN');
-        this.setState({
-          cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
-          cursorExtent: this.state.cursorExtent,
-        });
-      }
+      } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
+        if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex: 0, cursorExtent: 1 });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({
+            cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
+          });
+          console.log('UP');
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({
+            cursorIndex: Math.min(
+              this.state.cursorIndex + 1,
+              this.state.comments[this.state.selectedFile.id].length - 1,
+            ),
+          });
+        } else if (e.key === 'Enter') {
+          await wait(5);
 
-      if (this.state.showCursor && e.key === 'Enter') {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const startLine = this.state.cursorIndex;
-        const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
-        const startChar = 0;
-        const endChar = lines[endLine].length;
-        const newComment: CommentType = {
-          id: this.state.commentCounter,
-          endChar,
-          endLine,
-          file: this.state.selectedFile.id,
-          pointDelta: 0.0,
-          startChar,
-          startLine,
-          text: '',
-          rubricComment: null,
-          author: this.props.user.email,
-          feedback: 0,
-        };
-
-        this.addComment(newComment, this.state.selectedFile);
-
-        // FIXME: we can come up with a better solution
-        await wait(5);
-
-        this.setState({ showCursor: false, cursorExtent: 1 });
-
-        // setCursorSelect([cursorSelectLine, 1]);
-        // setShowCursor(false);
-        CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
+          this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorIndex: 0 });
+        }
       }
     }
   };
@@ -1414,6 +1455,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
+              showCursor={this.state.showCursor}
+              cursorIndex={this.state.cursorIndex}
             />
           );
 
@@ -1652,6 +1695,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
+              showCursor={this.state.showCursor}
+              cursorIndex={this.state.cursorIndex}
             />
           );
 

@@ -100,6 +100,8 @@ interface ICommentProps {
 
   hideAuthor: boolean;
   forcedRubricMode: boolean;
+
+  cursored: boolean;
 }
 
 interface ICommentState {
@@ -117,7 +119,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
+    document.addEventListener('keydown', this.handleCursorActivate);
     this.props.setCommentPlacements();
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleCursorActivate);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -197,6 +204,25 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error saving comment: ${JSON.stringify(error)}`);
+    }
+  };
+
+  public handleCursorActivate = (e: any) => {
+    console.log('HERE!', this.props.cursored);
+
+    if (!this.props.cursored) {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      console.log('ALSO');
+      e.preventDefault();
+      e.stopPropagation();
+      if (this.props.commentType === 'active') {
+        this.props.changeActive(undefined);
+      } else {
+        this.props.changeActive(this.props.comment.id);
+      }
     }
   };
 
@@ -639,19 +665,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <div
             className="ant-popover-arrow"
             style={{
-              borderColor:
-                this.props.comment.color !== undefined && this.props.comment.color !== null
-                  ? this.props.comment.color
-                  : this.context.consoleTheme.commentBody,
+              borderColor: this.props.cursored
+                ? 'lightblue'
+                : this.props.comment.color !== undefined && this.props.comment.color !== null
+                ? this.props.comment.color
+                : this.context.consoleTheme.commentBody,
             }}
           />
           <div className="ant-popover-inner" style={shadow}>
             <div
               style={{
-                backgroundColor:
-                  this.props.comment.color !== undefined && this.props.comment.color !== null
-                    ? this.props.comment.color
-                    : this.context.consoleTheme.commentBody,
+                backgroundColor: this.props.cursored
+                  ? 'lightblue'
+                  : this.props.comment.color !== undefined && this.props.comment.color !== null
+                  ? this.props.comment.color
+                  : this.context.consoleTheme.commentBody,
               }}
             >
               <div
