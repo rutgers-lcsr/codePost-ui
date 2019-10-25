@@ -12,6 +12,7 @@ import { Submission } from '../../../../../infrastructure/submission';
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
+import { TestResultPopover } from './TestingSummary/TestResultPopover';
 
 /* codePost util imports */
 import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testUtils';
@@ -29,13 +30,16 @@ export const TestingSummary = (props: IProps) => {
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
+      setFetchLoading(true);
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setTestCasesByCategory(casesByCategory);
+      setFetchLoading(false);
     };
     fetchData();
   }, [props.currentAssignment]);
@@ -159,19 +163,19 @@ export const TestingSummary = (props: IProps) => {
       });
 
       for (const category of categories) {
-        const submissionTests = testByCategory[category.id] || [];
-        toRet[category.id] = `${
-          submissionTests.filter((sub: any) => {
-            return sub.passed;
-          }).length
-        } / ${submissionTests.length}`;
+        toRet[category.id] = (
+          <TestResultPopover
+            submissionTests={testByCategory[category.id] || []}
+            testCases={testCasesByCategory[category.id] || []}
+          />
+        );
       }
 
       toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
       return toRet;
     });
 
-    content = <Table columns={columns} dataSource={data} />;
+    content = <Table columns={columns} loading={fetchLoading} dataSource={data} />;
   }
 
   actions = [
@@ -202,34 +206,3 @@ export const TestingSummary = (props: IProps) => {
     />
   );
 };
-//
-// interface IProps {
-//   submissionTests: SubmissionTestType[];
-//   testCases: TestCaseType[];
-// }
-
-// const TestsPopover = (props: IProps) => {
-//   const passedTests = submissionTests.map;
-//   return (
-//     <Popover
-//       content={
-//         <div style={{ color: 'black', minWidth: 700 }}>
-//           <Input.TextArea
-//             disabled={true}
-//             value={test.logs}
-//             autosize={{ minRows: 4, maxRows: 8 }}
-//             style={{ marginTop: 15 }}
-//           />
-//         </div>
-//       }
-//       title="Logs"
-//     >
-//       {`${
-//         props.submissionTests.filter((sub: any) => {
-//           return sub.passed;
-//         }).length
-//       }
-//       / ${props.submissionTests.length}`}
-//     </Popover>
-//   );
-// };

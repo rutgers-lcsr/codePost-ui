@@ -2,8 +2,8 @@ import React from 'react';
 import { Icon, Input } from 'antd';
 
 interface IResultProps {
-  passed: boolean | undefined;
-  log: string | undefined;
+  passed: boolean | null;
+  log: string | null;
 }
 
 export const TestResult = (props: IResultProps) => {
