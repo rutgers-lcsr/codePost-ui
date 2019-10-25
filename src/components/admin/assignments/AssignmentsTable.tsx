@@ -400,7 +400,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
                 Are you sure you want to publish this assignment?
               </div>
               <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
-                The majority of your submissions are still unfinalized, so students will not be able to view them
+                The majority of your submissions are still unfinalized, so students will not be able to view them.
               </div>
             </div>
           );
