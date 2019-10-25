@@ -17,6 +17,8 @@ import _ from 'lodash';
 /* codePost imports */
 import Loading from '../core/Loading';
 
+import CodePanelHighlighting from './code-panel/CodePanelHighlighting';
+
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -29,6 +31,8 @@ import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricC
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
+
+import { wait } from '../../infrastructure/animation';
 
 import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';
@@ -120,6 +124,11 @@ interface ICodeConsoleState {
   commentCounter: number;
 
   rubricReload?: number;
+
+  /* console cursor */
+  showCursor: boolean;
+  cursorIndex: number;
+  cursorExtent: number;
 }
 
 export interface ICodeConsoleProps {
@@ -406,6 +415,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       commentCounter: -1,
 
       rubricReload: undefined,
+
+      showCursor: false,
+      cursorIndex: 0,
+      cursorExtent: 1,
     };
   }
 
@@ -414,6 +427,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public async componentDidMount() {
+    document.addEventListener('keydown', this.handleKeydown);
+
     if (this.props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
       this.setState({ isLoading: false });
@@ -540,6 +555,89 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         );
     }
   }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeydown);
+  }
+
+  public handleKeydown = async (e: any) => {
+    if (this.state.selectedFile !== undefined) {
+      const lines = this.state.selectedFile.code.split('\n');
+      if (!this.state.showCursor && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState({ showCursor: true });
+      } else if (e.shiftKey && e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('SHIFT UP');
+        if (this.state.cursorIndex >= 0) {
+          this.setState({
+            cursorIndex: this.state.cursorIndex,
+            cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
+          });
+        }
+      } else if (e.shiftKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('SHIFT DOWN');
+        if (this.state.cursorIndex >= 0) {
+          console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
+          this.setState({
+            cursorIndex: this.state.cursorIndex,
+            cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
+          });
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0), cursorExtent: this.state.cursorExtent });
+        console.log('UP');
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('DOWN');
+        this.setState({
+          cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
+          cursorExtent: this.state.cursorExtent,
+        });
+      }
+
+      if (this.state.showCursor && e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startLine = this.state.cursorIndex;
+        const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
+        const startChar = 0;
+        const endChar = lines[endLine].length;
+        const newComment: CommentType = {
+          id: this.state.commentCounter,
+          endChar,
+          endLine,
+          file: this.state.selectedFile.id,
+          pointDelta: 0.0,
+          startChar,
+          startLine,
+          text: '',
+          rubricComment: null,
+          author: this.props.user.email,
+          feedback: 0,
+        };
+
+        this.addComment(newComment, this.state.selectedFile);
+
+        // FIXME: we can come up with a better solution
+        await wait(5);
+
+        this.setState({ showCursor: false, cursorExtent: 1 });
+
+        // setCursorSelect([cursorSelectLine, 1]);
+        // setShowCursor(false);
+        CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
+      }
+    }
+  };
 
   /***********************************************************************************
   /* Loading methods
@@ -1289,6 +1387,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
               fileTemplate={undefined}
+              showCursor={this.state.showCursor}
+              cursorIndex={this.state.cursorIndex}
+              cursorExtent={this.state.cursorExtent}
             />
           );
 
@@ -1524,6 +1625,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
               fileTemplate={fileTemplate}
+              showCursor={this.state.showCursor}
+              cursorIndex={this.state.cursorIndex}
+              cursorExtent={this.state.cursorExtent}
             />
           );
 
