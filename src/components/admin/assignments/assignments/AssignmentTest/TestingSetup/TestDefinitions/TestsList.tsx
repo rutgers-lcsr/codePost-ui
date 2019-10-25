@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports */
-import { Button, Collapse, Empty, Input, Layout, Menu, Modal } from 'antd';
+import { Button, Collapse, Input, Layout, Menu, Modal } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports */
@@ -38,6 +38,7 @@ export const TestsList = (props: IProps) => {
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setCasesByCategory(casesByCategory);
+      setCurrentCategory(categories.length > 0 ? categories[0].id.toString() : '');
     };
 
     fetchData();
@@ -89,7 +90,7 @@ export const TestsList = (props: IProps) => {
   const addTest = (category: number) => {
     const dummyTestCase = {
       id: newTestCounter,
-      name: '',
+      name: 'New Test',
       expectedOutput: '',
       pointsPass: 0,
       pointsFail: 0,
@@ -112,9 +113,9 @@ export const TestsList = (props: IProps) => {
   /******************************* Return  ****************************/
   const testItems = (currentCategory && casesByCategory[parseInt(currentCategory, 10)] && (
     <Collapse>
-      {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase) => {
+      {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase, i) => {
         return (
-          <Panel header={testCase.name} key={testCase.id}>
+          <Panel header={`${i + 1}. ${testCase.name}`} key={testCase.id}>
             <TestItem
               currentAssignment={props.currentAssignment}
               testCase={testCase}
@@ -125,13 +126,12 @@ export const TestsList = (props: IProps) => {
         );
       })}
     </Collapse>
-  )) || <Empty />;
+  )) || <div />;
 
   return categories.length > 0 ? (
-    <div>
+    <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
       <Layout style={{ maxHeight: 450 }}>
         <Sider theme="light">
-          {'Categories'}
           <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
             {TestCategory.sort(categories).map((category) => {
               return (
@@ -140,14 +140,20 @@ export const TestsList = (props: IProps) => {
                 </Menu.Item>
               );
             })}
-            <div>
+            <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
               <AddCategoryModal addCategory={addCategory} />
             </div>
           </Menu>
         </Sider>
-        <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
+        <Content style={{ marginLeft: 15, fontSize: 11 }}>
           <div>{testItems}</div>
-          {currentCategory && <Button onClick={addTest.bind({}, parseInt(currentCategory, 10))}>Add Test</Button>}
+          <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
+            {currentCategory && (
+              <Button type="primary" onClick={addTest.bind({}, parseInt(currentCategory, 10))}>
+                Add Test
+              </Button>
+            )}
+          </div>
         </Content>
       </Layout>
     </div>
@@ -169,6 +175,7 @@ const AddCategoryModal = (props: IUploadProps) => {
   const onSave = async () => {
     await props.addCategory(name);
     setName('');
+    setVisible(!visible);
   };
 
   /******************************* State Change Functions ****************************/
@@ -183,14 +190,11 @@ const AddCategoryModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Button onClick={toggleVisible} style={{ marginTop: 20 }}>
+      <Button onClick={toggleVisible} type="primary" style={{ marginTop: 20 }}>
         Add Test Category
       </Button>
-      <Modal visible={visible} onCancel={toggleVisible} footer={null} width={750}>
+      <Modal visible={visible} onCancel={toggleVisible} onOk={onSave} width={400} style={{ padding: 25 }}>
         <Input onChange={onChange} value={name} placeholder="Category Name" />
-        <Button onClick={onSave} type="primary" style={{ marginTop: 20 }}>
-          Save
-        </Button>
       </Modal>
     </div>
   );

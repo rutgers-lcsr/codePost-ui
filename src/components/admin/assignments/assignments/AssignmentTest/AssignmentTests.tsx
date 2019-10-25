@@ -62,7 +62,7 @@ export const AssignmentTests = (props: IProps) => {
         <TestingSummary
           currentAssignment={assignment}
           submissions={props.submissions}
-          switchDetail={setDetail.bind({}, DETAIL_TYPE.Summary)}
+          switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
           onCancel={props.onCancel}
         />
       );
