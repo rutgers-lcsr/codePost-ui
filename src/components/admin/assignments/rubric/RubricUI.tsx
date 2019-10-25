@@ -117,7 +117,7 @@ const RubricUI = ({
       });
 
     const onSave = (e: any) => {
-      helpers.onSave(undefined, e);
+      helpers.onSave(undefined);
     };
 
     const actions = [

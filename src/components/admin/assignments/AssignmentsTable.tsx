@@ -51,7 +51,7 @@ import {
 
 import SendEmailModal from '../other/SendEmailModal';
 
-import { encodeForReactRouter } from '../../core/URLutils';
+import { encodeForLink } from '../../core/URLutils';
 
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
@@ -187,7 +187,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     // Note: this call to setState is futile, because the component will be reloaded when
     // new route is pushed to this.props.history
     this.setState({ activeStudent: student }, () => {
-      this.props.history.push(`${this.props.baseURL}/${encodeForReactRouter(assignmentName)}/upload/single`);
+      this.props.history.push(`${this.props.baseURL}/${encodeForLink(assignmentName)}/upload/single`);
     });
   };
 
@@ -306,7 +306,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
 
     data = sortAssignments(this.props.assignments).map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
-      const encodedName = encodeURIComponent(assignment.name);
+      const encodedName = encodeForLink(assignment.name);
       const menu = (
         <Menu>
           <Menu.Item key="1">
