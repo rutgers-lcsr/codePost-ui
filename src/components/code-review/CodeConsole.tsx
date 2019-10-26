@@ -1720,6 +1720,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         child: {
           generator: findStudentSubmission,
           kind: 'generator',
+          emptyMessage: 'Student has no submission for this assignment',
         },
       },
       {
@@ -1729,6 +1730,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         child: {
           generator: findGraderSubmissions,
           kind: 'generator',
+          emptyMessage: "Grader hasn't graded any submissions",
         },
       },
       {
