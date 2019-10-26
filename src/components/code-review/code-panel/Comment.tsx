@@ -141,6 +141,35 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.commentType !== prevProps.commentType) {
       this.props.setCommentPlacements();
+      if (this.props.commentType === 'active') {
+        (window as any).setFoobarParams('color', ['red', 'green', 'purple']);
+        const makeColor = (color: string) => {
+          let hexVal = '#fff';
+          switch (color) {
+            case 'red':
+              hexVal = '#D08B79';
+              break;
+            case 'green':
+              hexVal = '#A4D079';
+              break;
+            case 'purple':
+              hexVal = '#ABAEEF';
+              break;
+          }
+          this.save(hexVal);
+        };
+        (window as any).addToFoobar({
+          label: 'Set comment color to {{color}}',
+          value: 'Set comment color to ',
+          kind: 'dynamic',
+          child: {
+            kind: 'action',
+            callback: makeColor,
+          },
+        });
+      } else {
+        (window as any).removeFromFoobar('Set comment color to {{color}}');
+      }
     }
 
     // If a comment is finalized, then reset the state
@@ -181,7 +210,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     return { text, points, status };
   };
 
-  public save = async () => {
+  public save = async (colorHex?: string) => {
     this.unhighlightRelatedComment();
 
     const comment = {
@@ -189,6 +218,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       text: this.state.text,
       pointDelta: this.props.rubricComment ? null : this.state.points,
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
+      color: colorHex ? colorHex : this.props.comment.color,
     };
 
     try {

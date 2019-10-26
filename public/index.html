@@ -27,6 +27,30 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <meta name="title" content="codePost - Grading and code review for university computer science courses" />
+
+    <script>
+      (function() {
+        var w = window;
+        var d = document;
+        var l = function() {
+          g = document.createElement('div');
+          g.setAttribute('id', 'foobar');
+          d.body.appendChild(g);
+          var s = d.createElement('script');
+          s.type = 'text/javascript';
+          s.async = true;
+          s.src = '%PUBLIC_URL%/foobar.js';
+          var x = d.getElementsByTagName('script')[0];
+          x.parentNode.insertBefore(s, x);
+        };
+        if (w.attachEvent) {
+          w.attachEvent('onload', l);
+        } else {
+          w.addEventListener('load', l, false);
+        }
+      })();
+    </script>
+
     <title>codePost - Grading and code review for computer science education</title>
     <meta name="description" content="codePost is the easy, free code review platform for undergrad CS courses." />
 

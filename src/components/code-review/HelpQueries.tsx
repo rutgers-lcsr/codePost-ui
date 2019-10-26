@@ -1,17 +1,9 @@
-const openHelpDoc = (link: string) => {
-  return () => {
-    window.open(link);
-  };
-};
-
 const buildQuery = (text: string, link: string) => {
   return {
-    kind: 'action' as const,
+    kind: 'link' as const,
     value: text,
     label: text,
-    callback: () => {
-      window.open(link);
-    },
+    link,
   };
 };
 

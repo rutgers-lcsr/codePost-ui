@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 
-import { Empty, message, notification } from 'antd';
+import { Empty, message, notification, Progress, Typography } from 'antd';
 
 import queryString from 'query-string';
 
@@ -74,7 +74,6 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
-import Foobar, { QueryType } from '../core/Foobar';
 import { helpQueryMap } from './HelpQueries';
 
 /**********************************************************************************************************************/
@@ -720,7 +719,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return;
         }
       } else {
-        savedComment = await CommentIO.update(comment);
+        console.log(comment.color);
+        savedComment = await CommentIO.update({ ...comment });
+        console.log(comment.color);
       }
     } else {
       if (comment.id < 0) {
@@ -1644,24 +1645,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       }
     };
 
-    const downloadCode = () => {
-      (document as any).getElementById('download-code').click();
-    };
-
-    const viewAsStudent = () => {
-      (document as any).getElementById('view-as-student').click();
-    };
-
-    const toggleTheme = () => {
-      (document as any).getElementById('theme-toggle').click();
-    };
-
-    const goToRubric = () => {
-      window.location.href = `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/${
-        this.state.assignment!.name
-      }/rubric`;
-    };
-
     const goToFile = (queryValue?: string) => {
       if (queryValue !== undefined) {
         const foundFile = this.state.files.find((file) => {
@@ -1673,7 +1656,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       }
     };
 
-    const findGraderSubmissions = async (grader: string): Promise<QueryType[]> => {
+    const findGraderSubmissions = async (grader: string) => {
       const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { grader });
       return submissions.map((sub) => {
         return {
@@ -1686,7 +1669,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
     };
 
-    const findStudentSubmission = async (student: string): Promise<QueryType[]> => {
+    const findStudentSubmission = async (student: string) => {
       const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { student });
       if (submissions.length === 1) {
         const sub = submissions[0];
@@ -1704,9 +1687,32 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       }
     };
 
-    const finalizeText = this.state.submission && this.state.submission.isFinalized ? 'Unfinalize' : 'Finalize';
+    const viewStats = async () => {
+      if (this.state.assignment) {
+        const submissions = await Assignment.readSubmissions(this.state.assignment.id);
 
-    let defaultOptions: QueryType[] = [
+        const numSubmissions = submissions.length;
+        const numGraded = submissions.filter((el) => el.isFinalized).length;
+        const numInProgress = submissions.filter((el) => el.grader && !el.isFinalized).length;
+        const numUnclaimed = numSubmissions - numGraded - numInProgress;
+
+        return (
+          <div>
+            <Progress
+              percent={Math.floor(((numGraded + numInProgress) / numSubmissions) * 100)}
+              successPercent={Math.floor((numGraded / numSubmissions) * 100)}
+              type="dashboard"
+            />
+            &nbsp;&nbsp;&nbsp;
+            <Typography.Text style={{ paddingBottom: 10 }}>
+              {`${numGraded} done / ${numInProgress} drafts / ${numUnclaimed} unclaimed`}
+            </Typography.Text>
+          </div>
+        );
+      }
+    };
+
+    let defaultOptions = [
       {
         value: 'Find submission of ',
         label: 'Find submission of {{student}}',
@@ -1743,12 +1749,24 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           kind: 'action',
         },
       },
-      { value: finalizeText, label: finalizeText, callback: this.toggleFinalized, kind: 'action' },
-      { value: 'Download code', label: 'Download code', callback: downloadCode, kind: 'action' },
-      { value: 'View as student', label: 'View as student', callback: viewAsStudent, kind: 'action' },
-      { value: 'Open rubric editor', label: 'Open rubric editor', callback: goToRubric, kind: 'action' },
+      {
+        value: 'Open rubric editor',
+        label: 'Open rubric editor',
+        link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/${
+          this.state.assignment!.name
+        }/rubric`,
+        kind: 'link',
+      },
+      { value: 'view stats', label: 'view stats', kind: 'dashboard', populator: viewStats },
       ...helpQueryMap,
     ];
+
+    for (const option of defaultOptions) {
+      (window as any).addToFoobar(option);
+    }
+    (window as any).setFoobarParams('grader', this.state.graders);
+    (window as any).setFoobarParams('student', this.state.students);
+    (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
 
     /*************************************************************************************/
 
@@ -1780,14 +1798,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           siderTitles={siderTitles}
           content={content}
           editRubricMode={this.state.editRubricMode}
-        />
-        <Foobar
-          queryMap={defaultOptions}
-          parameters={{
-            grader: this.state.graders,
-            student: this.state.students,
-            file: this.state.files.map((file) => file.name),
-          }}
         />
       </div>
     );

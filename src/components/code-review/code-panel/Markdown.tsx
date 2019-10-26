@@ -47,6 +47,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         rubricComment: null,
         author: props.user,
         feedback: 0,
+        color: null,
       };
 
       props.addComment(newComment, props.file);

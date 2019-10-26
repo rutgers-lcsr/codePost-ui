@@ -17,11 +17,11 @@ const CommentV = t.intersection(
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
       feedback: t.number,
+      color: t.union([t.string, t.null]),
     }),
     t.partial({
       author: t.string,
       isSaved: t.boolean,
-      color: t.union([t.string, t.null]),
     }),
   ],
   'Comment',
@@ -40,6 +40,7 @@ const CommentVPatch = t.intersection(
       text: t.union([t.string, t.null]),
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
+      color: t.union([t.string, t.null]),
     }),
   ],
   'CommentVPatch',
@@ -139,6 +140,7 @@ export const CommentMock: CommentType = {
   rubricComment: 1,
   author: 'grader@myschool.edu',
   feedback: 0,
+  color: null,
 };
 
 // export { CommentType, CommentIO, CommentMock, UiComment };

@@ -178,6 +178,8 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     });
   };
 
+  (window as any).addToFoobar({ value: 'Download code', label: 'Download code', callback: onClick, kind: 'action' });
+
   return (
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
       <ButtonGroup>
@@ -251,6 +253,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   useHotkeys(F_KEY, onClick, true);
+  (window as any).addToFoobar({
+    value: 'Finalize / unfinalize',
+    label: 'Finalize / unfinalize',
+    callback: onClick,
+    kind: 'action',
+  });
 
   React.useEffect(() => {
     // Activate the nudge when these elements are clicked
