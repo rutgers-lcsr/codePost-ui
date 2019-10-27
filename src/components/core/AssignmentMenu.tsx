@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { RouteComponentProps, generatePath } from 'react-router';
+import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* ant imports */
@@ -33,7 +33,7 @@ interface IProps extends RouteComponentProps<{ assignment: string; panel: string
 const AssignmentMenu = (props: IProps) => {
   const clear = () => {
     LOCAL_SETTINGS.defaultAssignment.setter(0);
-    props.history.push(generatePath(props.match.path, { panel: props.match.params.panel, assignment: undefined }));
+    props.history.push(`${props.baseURL}/${props.match.params.panel}/`);
   };
 
   const menu = (
@@ -44,7 +44,7 @@ const AssignmentMenu = (props: IProps) => {
         </span>
       </Menu.Item>
       {props.assignments.map((assignment) => {
-        const path = generatePath(props.match.path, { panel: props.match.params.panel, assignment: assignment.name });
+        const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
         return (
           <Menu.Item key={assignment.id}>
             <Link to={path}>
