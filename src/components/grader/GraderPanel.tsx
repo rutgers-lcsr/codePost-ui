@@ -47,7 +47,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       props.history.push(props.match.url);
     };
     const breadcrumbs = [
-      <Breadcrumb.Item>
+      <Breadcrumb.Item key={props.title}>
         <span style={{ cursor: 'pointer' }} onClick={back}>
           {props.title}
         </span>
