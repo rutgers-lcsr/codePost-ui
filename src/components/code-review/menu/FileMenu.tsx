@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge as AntBadge, Dropdown, Icon, Menu, Tag } from 'antd';
+import { Badge as AntBadge, Dropdown, Icon, Menu } from 'antd';
 
 import moment from 'moment';
 
@@ -200,7 +200,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     // Put the files in the root directory last
     const sortedDirectFiles = directoryStructure.files.sort((f1: FileType, f2: FileType) => {
-      return f1.id - f2.id;
+      return f1.name.localeCompare(f2.name);
     });
 
     sortedDirectFiles.forEach((f) => {
@@ -401,10 +401,12 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
               lineHeight: '12px',
             }}
           >
-            <span style={shortcutStyle}>
-              [{osControlKey()}
-              {sortedIndex + 1}]
-            </span>
+            {sortedIndex < 9 ? (
+              <span style={shortcutStyle}>
+                [{osControlKey()}
+                {sortedIndex + 1}]
+              </span>
+            ) : null}
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{
@@ -417,6 +419,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 textOverflow: 'ellipsis',
                 fontSize: 12,
               }}
+              title={file.name}
             >
               {file.name}
               {oldVersionsMenu}

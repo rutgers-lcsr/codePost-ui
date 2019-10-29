@@ -139,10 +139,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               });
             })
             .catch(() => {
+              /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
                 If the problem persists, contact the codePost tean.',
               );
+              /* eslint-enable no-multi-str */
               this.cancel();
             });
         }
@@ -250,6 +252,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             Uploading submissions: &nbsp; <Progress percent={0} size="small" />
           </div>
         );
+        break;
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.

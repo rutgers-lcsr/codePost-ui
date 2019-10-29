@@ -26,7 +26,9 @@ interface IAssignmentRegradesProps {
   onCancel: () => void;
   user: UserType;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
+  breadcrumbs: React.ReactElement[];
 }
+
 const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
   // *********************** STATE VARIABLES *************************
 
@@ -55,9 +57,7 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            <a>Assignments</a>
-          </Breadcrumb.Item>
+          {props.breadcrumbs}
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
           <Breadcrumb.Item>Student Regrade Requests</Breadcrumb.Item>
         </Breadcrumb>

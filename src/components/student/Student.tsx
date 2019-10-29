@@ -6,8 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon, Menu, Modal, Spin, Tag, Typography } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import { Button, Icon, Modal, Spin, Tag, Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -25,14 +24,9 @@ import { CourseType } from '../../infrastructure/course';
 import { loadIDList } from '../../infrastructure/generics';
 import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
-import { UserType } from '../../infrastructure/user';
-
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
 import RoleMenu from '../core/RoleMenu';
-
-import CPDropdown from '../core/CPDropdown';
-// import CPTooltip from '../core/CPTooltip';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
@@ -46,14 +40,15 @@ import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmi
 
 import ViewUpload from './ViewUpload';
 
-import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { IComponentProps } from '../core/ComponentManager';
+
+import CourseMenu from '../core/CourseMenu';
 
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
 interface IStudentState {
-  currentCourse?: CourseType;
   assignments: ICourseToAssignmentMap;
   submissions: IAssignmentToSubmissionStudentMap;
   viewsBySubmission: { [submissionID: number]: boolean };
@@ -81,21 +76,11 @@ enum CURRENT_PANEL {
   ADDFILES,
 }
 
-export interface IStudentProps extends IWithWindowWatcherProps {
-  initialCourses: CourseType[];
-  user: UserType;
-  match: any;
-  history: any;
-
-  handleLogout: () => void;
-}
-
-class Student extends React.Component<IStudentProps, IStudentState> {
-  public constructor(props: IStudentProps) {
+class Student extends React.Component<IComponentProps & IWithWindowWatcherProps, IStudentState> {
+  public constructor(props: IComponentProps & IWithWindowWatcherProps) {
     super(props);
     document.title = 'codePost - Student Console';
     this.state = {
-      currentCourse: undefined,
       assignments: {},
       submissions: {},
       viewsBySubmission: {},
@@ -114,11 +99,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   public componentDidMount() {
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
-        const { course } = this.setStateFromURL(this.props.initialCourses, assignments);
-        if (course) {
-          this.changeURL(course);
-          this.setState({ currentCourse: course });
-          this.loadSubmissions(this.state.assignments[course.id]).then((submissions) => {
+        if (this.props.currentCourse) {
+          this.loadSubmissions(this.state.assignments[this.props.currentCourse.id]).then((submissions) => {
             this.loadHistories(Object.values(submissions), this.props.user.email).then(
               (viewMap: { [submissionID: number]: boolean }) => {
                 this.setState({
@@ -133,61 +115,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
       });
     });
   }
-
-  /***********************************************************************************
-  /* URL + UI handling methods
-  /**********************************************************************************/
-
-  public setStateFromURL = (courses: CourseType[], assignments: ICourseToAssignmentMap) => {
-    const { courseName, period } = this.props.match.params;
-    if (courses.length === 0) {
-      return { course: undefined };
-    } else {
-      // is the URL trying to set the course?
-      const tryingToSetCourse = courseName && period;
-      let currentCourse: CourseType | undefined;
-      if (tryingToSetCourse) {
-        const formattedCourseName = courseName.replace(/_/g, ' ');
-        const formattedPeriod = period.replace(/_/g, ' ');
-        currentCourse = courses.find((obj: CourseType) => {
-          return obj.name === formattedCourseName && obj.period === formattedPeriod;
-        });
-      }
-
-      if (currentCourse) {
-        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
-      }
-
-      // By default open first course in course list
-      if (!currentCourse && courses.length > 0) {
-        // First, see if we have a locally cached course
-        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
-        if (stored_id !== 0) {
-          const found = courses.find((course: CourseType) => {
-            return course.id === stored_id;
-          });
-          if (found !== undefined) {
-            currentCourse = found;
-          }
-        }
-
-        // By default open first course in course list
-        if (currentCourse === undefined) {
-          currentCourse = courses.sort((a, b) => {
-            return b.id - a.id;
-          })[0];
-        }
-      }
-
-      return { course: currentCourse };
-    }
-  };
-
-  public changeURL = (course: CourseType) => {
-    const courseName = course.name.replace(/ /g, '_');
-    const coursePeriod = course.period.replace(/ /g, '_');
-    this.props.history.push(`/student/${courseName}/${coursePeriod}`);
-  };
 
   /***********************************************************************************
   /* Loading methods
@@ -261,67 +188,6 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
     // If empty, this submission does not have a history object. It was created before tracking was implemented
     return;
-  };
-
-  public handleCourseChange = (e: ClickParam) => {
-    const courseID = +e.key;
-    const currentCourse = this.props.initialCourses.find((course: CourseType) => {
-      return course.id === courseID;
-    });
-
-    if (currentCourse) {
-      LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
-      this.setState(
-        {
-          currentCourse,
-        },
-        () => {
-          this.setState({ isLoadingSubmissions: true }, () => {
-            this.changeURL(currentCourse);
-            this.loadSubmissions(this.state.assignments[currentCourse.id]).then((submissions) => {
-              this.loadHistories(Object.values(submissions), this.props.user.email).then(
-                (viewMap: { [submissionID: number]: boolean }) => {
-                  this.setState({
-                    submissions,
-                    viewsBySubmission: viewMap,
-                    isLoadingSubmissions: false,
-                  });
-                },
-              );
-            });
-          });
-        },
-      );
-    }
-  };
-
-  public selectorItemsFormatter<T>(
-    items: T[],
-    getValue: (item: T) => number,
-    getName: (item: T) => string,
-    getDisabled: (item: T) => boolean,
-  ) {
-    return items.map((item: T) => ({
-      value: getValue(item),
-      label: getName(item),
-      isDisabled: getDisabled(item),
-    }));
-  }
-
-  public getCourseName = (course: CourseType) => `${course.name} | ${course.period}`;
-  public getCourseValue = (course: CourseType) => course.id;
-  public getCourseDisabled = (course: CourseType) => false;
-  public courseSelectorItems = (courses: CourseType[]) => {
-    return this.selectorItemsFormatter(courses, this.getCourseValue, this.getCourseName, this.getCourseDisabled);
-  };
-  public courseActiveSelector = (currentCourse: CourseType | undefined) => {
-    if (!currentCourse) {
-      return undefined;
-    }
-    return {
-      value: this.getCourseValue(currentCourse),
-      label: this.getCourseName(currentCourse),
-    };
   };
 
   public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType, submission?: StudentSubmissionType) => {
@@ -645,9 +511,10 @@ class Student extends React.Component<IStudentProps, IStudentState> {
           return {
             ...toRet,
             partners:
-              submission.students.length === 1
+              submission.students !== undefined && submission.students.length === 1
                 ? '--'
-                : submission.students
+                : submission.students !== undefined &&
+                  submission.students
                     .filter((student) => {
                       return student !== this.props.user.email;
                     })
@@ -682,7 +549,8 @@ class Student extends React.Component<IStudentProps, IStudentState> {
   /**********************************************************************************/
 
   public render() {
-    const { assignments, currentCourse, isLoadingAssignments, isLoadingSubmissions, submissions } = this.state;
+    const { assignments, isLoadingAssignments, isLoadingSubmissions, submissions } = this.state;
+    const { currentCourse } = this.props;
 
     let studentContent;
     // if not loaded yet, render a get started div
@@ -749,18 +617,9 @@ class Student extends React.Component<IStudentProps, IStudentState> {
     }
 
     /* Build header */
-    let courseSelectorText = 'Select a course';
-    if (this.state.currentCourse) {
-      courseSelectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
-    }
-    const courseMenu = (
-      <Menu onClick={this.handleCourseChange}>
-        {this.props.initialCourses.map((course, i) => {
-          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
-        })}
-      </Menu>
+    const courseDropdown = (
+      <CourseMenu courses={this.props.initialCourses} currentCourse={this.props.currentCourse} base="student" />
     );
-    const courseDropdown = <CPDropdown value={courseSelectorText} overlay={courseMenu} key="dropdown" />;
 
     const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
 

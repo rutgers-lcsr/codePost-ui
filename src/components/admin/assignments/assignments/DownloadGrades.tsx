@@ -91,7 +91,8 @@ const DownloadGrades = (props: IProps) => {
       let grade;
       if (submission) {
         // If a submission exists
-        grade = submission.isFinalized && submission.grade ? submission.grade.toString() : ungradedAsZero ? '0' : '';
+        grade =
+          submission.isFinalized && submission.grade !== null ? submission.grade.toString() : ungradedAsZero ? '0' : '';
       } else {
         // If a submission is missing
         grade = zeroForMissing ? '0' : '';
@@ -133,7 +134,12 @@ const DownloadGrades = (props: IProps) => {
         let grade;
         if (submission) {
           // If a submission exists
-          grade = submission.isFinalized && submission.grade ? submission.grade.toString() : ungradedAsZero ? '0' : '';
+          grade =
+            submission.isFinalized && submission.grade !== null
+              ? submission.grade.toString()
+              : ungradedAsZero
+              ? '0'
+              : '';
         } else {
           // If a submission is missing
           grade = zeroForMissing ? '0' : '';
@@ -162,7 +168,7 @@ const DownloadGrades = (props: IProps) => {
       <Modal
         visible={true}
         width={550}
-        title="Missing Submissions"
+        title={props.activeAssignment ? `Download grades: ${props.activeAssignment.name}` : 'Download grades'}
         okText="Download"
         onCancel={props.onCancel}
         onOk={onDownload}

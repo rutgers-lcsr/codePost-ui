@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 
-import { Empty, Menu, message, notification } from 'antd';
+import { Empty, message, notification } from 'antd';
 
 import queryString from 'query-string';
 
@@ -71,8 +71,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { demoFiles } from './demoCode';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
@@ -479,7 +477,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile: files.length > 0 ? files[0] : undefined,
           permissionLevel,
-          isStudent: submission.students.indexOf(this.props.user.email) > -1,
+          isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
         });
         break;
 
@@ -1179,7 +1177,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public turnOnReload = () => {
-    this.setState({ rubricReload: 5000 });
+    this.setState({ rubricReload: 15000 });
   };
 
   public turnOffReload = () => {
@@ -1215,7 +1213,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           initialDimensions={this.state.dimensions}
           setDimensions={this.setDimensions}
           hasComments={hasComments}
-          isEditingComment={this.state.activeCommentID !== undefined}
+          isEditingComment={this.state.activeCommentID !== undefined || this.state.editRubricMode}
         />,
       );
     }
@@ -1314,6 +1312,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
@@ -1355,6 +1354,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           />,
           <RubricManager
             key="rubric-menu"
+            shouldLoadFeedback={false}
             assignment={this.state.assignment}
             submissions={[]}
             onCancel={onCancel}
@@ -1373,6 +1373,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit: true, // showcase in-console rubric editing in demo
+                demoMode: true,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1431,6 +1433,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={false}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
@@ -1544,6 +1547,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={this.state.assignment.additiveGrading}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
+              rubricCategories={this.state.rubricCategories}
             />
           );
 
@@ -1590,6 +1594,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             onCancel={onCancel}
             reloadInterval={this.state.rubricReload}
             setRubric={this.setRubric}
+            shouldLoadFeedback={false}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
@@ -1601,6 +1606,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 setRubric: this.setRubric,
                 turnOnReload: this.turnOnReload,
                 turnOffReload: this.turnOffReload,
+                canUserEdit:
+                  this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
+                demoMode: false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

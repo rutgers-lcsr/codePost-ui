@@ -52,6 +52,8 @@ const randomNormal = () => {
 // Regex match for standard email rules
 // Source: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
 // Source for formatting with typescript length restriction: https://stackoverflow.com/a/34755045
+
+/* eslint-disable no-useless-escape */
 const emailRegex = new RegExp(
   [
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))/,
@@ -65,6 +67,7 @@ const emailRegex = new RegExp(
 
 // Regex match for new organizations.
 const organizationRegex = /^[a-zA-Z]+[a-zA-Z\s\.\-\_]*$/;
+/* eslint-enable no-useless-escape */
 
 interface IState {
   email: string;
@@ -326,8 +329,6 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Divider />
             <span>
               Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
-              <Link to="/signup/join">Want to join a course instead?</Link>
-              <br />
             </span>
           </div>
         );
@@ -443,6 +444,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection,
+            paddingTop: 20,
           }}
         >
           <div>

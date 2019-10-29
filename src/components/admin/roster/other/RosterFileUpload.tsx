@@ -215,7 +215,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   };
 
   public getSectionIDFromName = (sectionName: string) => {
-    if (typeof sectionName === null || sectionName === null) {
+    if (typeof sectionName === 'undefined' || sectionName === null) {
       return undefined;
     }
 

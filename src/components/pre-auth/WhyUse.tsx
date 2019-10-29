@@ -20,6 +20,7 @@ interface IProps {
   captions: Array<string | React.ReactElement>;
   spotlights: any[];
   isFlipped: boolean;
+  name: string;
   maxPictureWidth: number;
 }
 
@@ -36,6 +37,7 @@ const Video = (props: { url: string }) => {
 const sections = [
   {
     title: 'Annotate code',
+    name: 'annotate',
     features: [
       'Make inline comments easily, with markdown',
       <span key="template">
@@ -93,6 +95,7 @@ const sections = [
   },
   {
     title: 'For students',
+    name: 'students',
     features: ['Leave feedback on feedback', 'Peer grading', 'Access scores and feedback', 'Remote office hours'],
     spotlights: [
       <img
@@ -121,6 +124,7 @@ const sections = [
   },
   {
     title: 'For instructors',
+    name: 'instructors',
     features: [
       'Make sure everything gets graded',
       <span key="moss">
@@ -275,7 +279,7 @@ const SectionRow = (props: IProps) => {
   );
 
   return (
-    <div key="wrapper">
+    <div key="wrapper" id={props.name}>
       {!props.isFlipped || windowSize.width < midBreakPoint ? (
         <div style={rowStyle}>
           {textSection}
@@ -306,6 +310,7 @@ const WhyUse = (props: IPageProps) => {
               captions={section.captions}
               isFlipped={i % 2 === 1}
               maxPictureWidth={600}
+              name={section.name}
             />
             {i !== sections.length - 1 ? <Divider style={{ margin: '75px 0' }} /> : null}
           </div>

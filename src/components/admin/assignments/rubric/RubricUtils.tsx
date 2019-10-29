@@ -32,17 +32,14 @@ const statusChange = (oldProps: any[], newProps: any[], currStatus: STATUS) => {
       } else {
         return currStatus;
       }
-      break;
     case STATUS.NONE:
       if (!shallowListEquals(oldProps, newProps)) {
         return STATUS.UNSAVED;
       } else {
         return currStatus;
       }
-      break;
     default:
       return currStatus;
-      break;
   }
 };
 

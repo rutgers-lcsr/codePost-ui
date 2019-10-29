@@ -8,9 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Checkbox, Breadcrumb, Empty } from 'antd';
 
-/* other library imports */
-import _ from 'lodash';
-
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
 
@@ -41,17 +38,16 @@ import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
-// interface IRubricUIState extends IRubricManagerState {
-//   showPointLimits: boolean;
-//   showHelpText: boolean;
-// }
+interface IRubricUIProps extends IRubricManagerProps {
+  breadcrumbs: React.ReactElement[];
+}
 
 const RubricUI = ({
   props,
   state,
   helpers,
 }: {
-  props: IRubricManagerProps;
+  props: IRubricUIProps;
   state: IRubricManagerState;
   helpers: IRubricManagerHelpers;
 }) => {
@@ -61,6 +57,7 @@ const RubricUI = ({
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     for (const cat of rubricCategories) {
       if (!showPointLimits && typeof cat.pointLimit === 'number') {
@@ -120,7 +117,7 @@ const RubricUI = ({
       });
 
     const onSave = (e: any) => {
-      helpers.onSave(undefined, e);
+      helpers.onSave(undefined);
     };
 
     const actions = [
@@ -261,16 +258,14 @@ const RubricUI = ({
             }}
             description={<span>No rubric yet</span>}
           >
-            <CPButton cpType="primary" onClick={helpers.addRubricCategory}>
+            <CPButton cpType="primary" onClick={addRubricCategory}>
               Create a category
             </CPButton>
           </Empty>
         }
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item onClick={props.onCancel}>
-              <a>Assignments</a>
-            </Breadcrumb.Item>
+            {props.breadcrumbs}
             <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
             <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
           </Breadcrumb>

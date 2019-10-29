@@ -6,42 +6,26 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Empty, Icon, Menu } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
-
-import CPDropdown from '../core/CPDropdown';
-import CPFlex from '../core/CPFlex';
-import CPTooltip from '../core/CPTooltip';
-import { tooltips } from '../core/tooltips';
+import { Button, Empty, Icon } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { Link } from 'react-router-dom';
+import { Route, Link, Switch } from 'react-router-dom';
 
 /* codePost imports */
+import AdminNav from './other/AdminNav';
 import CPLayoutAdmin from './other/CPLayoutAdmin';
 
-import GraderData from './submissions/GraderSubmissions';
-import StudentData from './submissions/StudentSubmissions';
-
+import SubmissionsManager from './submissions/SubmissionsManager';
 import ManageAssignments from './assignments/ManageAssignments';
-
-import ManageAdmins from './roster/ManageAdmins';
-import ManageGraders from './roster/ManageGraders';
-import ManageSections from './roster/ManageSections';
-import ManageStudents from './roster/ManageStudents';
-
-import RoleMenu from '../core/RoleMenu';
-
+import RosterManager from './roster/RosterManager';
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
 
+import CourseMenu from '../core/CourseMenu';
 import NewCourseDialog from './other/NewCourseDialog';
-
-import AdminNav from './other/AdminNav';
-
-import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import RoleMenu from '../core/RoleMenu';
 
 /* types */
 import {
@@ -61,58 +45,28 @@ import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
 import { Submission, SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
-import { UserType } from '../../infrastructure/user';
 import { addToPayload } from '../../infrastructure/utils';
 
 import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 
 import { ADMIN_TOUR_ID } from '../../routes';
 
+import { IComponentProps } from '../core/ComponentManager';
+
+import CPFlex from '../core/CPFlex';
+import CPTooltip from '../core/CPTooltip';
+import { tooltips } from '../core/tooltips';
+
 /**********************************************************************************************************************/
-
-export enum PANELS {
-  SUBMISSION_STUDENTS,
-  SUBMISSION_GRADERS,
-  ASSIGNMENTS,
-  ROSTER_STUDENTS,
-  ROSTER_GRADERS,
-  ROSTER_ADMINS,
-  ROSTER_SECTIONS,
-  SETTINGS,
-}
-
-const panels: any = {
-  [PANELS.SUBMISSION_STUDENTS]: 'submissions/by_student',
-  [PANELS.SUBMISSION_GRADERS]: 'submissions/by_grader',
-  [PANELS.ASSIGNMENTS]: 'assignments/',
-  [PANELS.ROSTER_STUDENTS]: 'roster/students',
-  [PANELS.ROSTER_GRADERS]: 'roster/graders',
-  [PANELS.ROSTER_ADMINS]: 'roster/admins',
-  [PANELS.ROSTER_SECTIONS]: 'roster/sections',
-  [PANELS.SETTINGS]: 'settings/',
-};
-
-const panelStrings = [
-  'submissions/by_student',
-  'submissions/by_grader',
-  'assignments/',
-  'roster/students',
-  'roster/graders',
-  'roster/admins',
-  'roster/sections',
-  'settings/',
-];
 
 // 5 minute interval for automatic reload
 const LOADING_INTERVAL = 300000;
 
 interface IAdminState {
   /**** UI control data ****/
-  currentPanel: PANELS;
   onboardingModalVisible: boolean;
 
   /**** Top-level course data ****/
-  currentCourse?: CourseType;
   courses: CourseType[];
 
   /**** Roster data ****/
@@ -143,39 +97,28 @@ interface IAdminState {
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 }
 
-interface IAdminProps {
-  initialCourses: CourseType[];
-  addAssignment: (assignment: AssignmentType) => void;
-  deleteAssignment: (assignment: AssignmentType) => void;
-  addCourse: (newCourse: CourseType) => void;
-  user: UserType;
-  match: any;
-  history: any;
-  location: any;
-  logout: () => void;
-}
+const formatCourseURL = (course: CourseType) => {
+  return `/admin/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}`;
+};
 
-class Admin extends React.Component<IAdminProps, IAdminState> {
+class Admin extends React.Component<IComponentProps, IAdminState> {
   // @ts-ignore
   private interval: number;
 
-  public constructor(props: IAdminProps) {
+  public constructor(props: IComponentProps) {
     super(props);
-    const { course, panel } = this.setStateFromURL(this.props.user.courseadminCourses);
-    if (course) {
-      this.changeURL(course, panel, true);
-      this.loadAllCourseData(course);
+
+    if (this.props.currentCourse) {
+      this.loadAllCourseData(this.props.currentCourse);
     }
 
     this.state = {
       /**** UI control data ****/
-      currentPanel: panel,
       onboardingModalVisible:
         Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
         this.props.initialCourses.length === 0,
 
       /**** Top-level course data ****/
-      currentCourse: course,
       courses: _.cloneDeep(this.props.initialCourses),
 
       /**** Roster data ****/
@@ -211,8 +154,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     document.title = 'codePost - Admin Console';
 
     this.interval = window.setInterval(() => {
-      if (this.state.currentCourse) {
-        this.loadAllCourseData(this.state.currentCourse);
+      if (this.props.currentCourse) {
+        this.loadAllCourseData(this.props.currentCourse);
       }
     }, LOADING_INTERVAL);
   }
@@ -225,116 +168,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* URL + UI handling methods
   /**********************************************************************************/
 
-  public panelFromString(name: string) {
-    const toRet = panelStrings.indexOf(name);
-    return toRet >= 0 ? toRet : 0;
-  }
-
-  public setStateFromURL = (courses: CourseType[]) => {
-    const { courseName, period, panelName1, panelName2 } = this.props.match.params;
-    if (courses.length === 0) {
-      return { course: undefined, panel: 0 };
-    } else {
-      // is the URL trying to set the course?
-      const tryingToSetCourse = courseName && period;
-      let currentCourse: CourseType | undefined;
-      let currentPanel = 0;
-      if (tryingToSetCourse) {
-        const formattedCourseName = courseName.replace(/_/g, ' ');
-        const formattedPeriod = period.replace(/_/g, ' ');
-        currentCourse = courses.find((obj: CourseType) => {
-          return obj.name === formattedCourseName && obj.period === formattedPeriod;
-        });
-      }
-
-      if (currentCourse) {
-        currentPanel = this.panelFromString(`${panelName1}/${panelName2 ? panelName2 : ''}`);
-        LOCAL_SETTINGS.defaultCourse.setter(currentCourse.id);
-      }
-
-      if (!currentCourse && courses.length > 0) {
-        const stored_id = LOCAL_SETTINGS.defaultCourse.getter();
-        if (stored_id !== 0) {
-          const found = courses.find((course: CourseType) => {
-            return course.id === stored_id;
-          });
-          if (found !== undefined) {
-            currentCourse = found;
-          }
-        }
-        if (currentCourse === undefined) {
-          currentCourse = courses.sort((a, b) => {
-            return b.id - a.id;
-          })[0];
-        }
-      }
-
-      return { course: currentCourse, panel: currentPanel };
-    }
-  };
-
-  public updateNewCourse = (newCourse: CourseType) => {
-    if (this.state.currentCourse && this.state.currentCourse.id === newCourse.id) {
-      return;
-    }
-
-    // remove loading interval for existing course
-    window.clearInterval(this.interval);
-    window.clearTimeout(this.interval);
-
-    this.setState(
-      {
-        currentCourse: newCourse,
-
-        /**** Roster data ****/
-        students: [],
-        inactiveStudents: [],
-        graders: [],
-        inactiveGraders: [],
-        admins: [],
-        superGraders: [],
-        rosterLoadComplete: false,
-
-        /**** Sections data ****/
-        sections: [],
-        sectionsLoadComplete: false,
-        sectionsByStudent: {},
-
-        /**** Assignments data ****/
-        assignments: [],
-        assignmentsLoadComplete: false,
-
-        /**** Submissions data ****/
-        submissions: {},
-        submissionsLoadComplete: false,
-        submissionsByStudent: {},
-        submissionsByGrader: {},
-        submissionsbyUserLoadComplete: false,
-        viewsBySubmission: {},
-      },
-      () => {
-        this.changeURL(newCourse, this.state.currentPanel, true);
-        this.loadAllCourseData(newCourse);
-
-        // add loading interval for new course
-        this.interval = window.setInterval(() => {
-          this.loadAllCourseData(newCourse);
-        }, LOADING_INTERVAL);
-      },
-    );
-  };
-
-  public handleCourseChange = (courseID: number) => {
-    const newCourse = this.state.courses.find((course: CourseType) => {
-      return course.id === courseID;
-    });
-
-    if (newCourse) {
-      this.updateNewCourse(newCourse);
-      LOCAL_SETTINGS.defaultCourse.setter(newCourse.id);
-    }
-  };
-
   public handleDemoCourse = (course?: CourseType) => {
     const searchParam = `?product_tour_id=${ADMIN_TOUR_ID}`;
 
@@ -344,7 +177,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       newCourses.push(course);
       this.setState({ courses: newCourses, onboardingModalVisible: false }, () => {
         this.props.addCourse(course);
-        this.updateNewCourse(course);
         this.props.history.push({
           search: searchParam,
         });
@@ -356,7 +188,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       });
       if (demoCourse !== undefined) {
         this.setState({ onboardingModalVisible: false }, () => {
-          this.updateNewCourse(demoCourse);
           this.props.history.push({
             search: searchParam,
           });
@@ -374,31 +205,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     this.props.history.push(this.props.location.pathname);
   };
 
-  public changeURL = (course: CourseType, panel: number, keepQueryString: boolean) => {
-    const formCourseName = course.name.replace(/ /g, '_');
-    const formPeriod = course.period.replace(/ /g, '_');
-    this.props.history.push({
-      pathname: `/admin/${formCourseName}/${formPeriod}/${panels[panel]}`,
-      search: keepQueryString ? this.props.location.search : '',
-    });
-  };
-
-  public handleMenuClick = (e: ClickParam) => {
-    this.handleCourseChange(parseInt(e.key, 10));
-  };
-
-  public changeTab = (panelNum: number) => {
-    this.setState({ currentPanel: panelNum }, () => {
-      if (this.state.currentCourse) {
-        this.changeURL(this.state.currentCourse!, this.state.currentPanel, false);
-      }
-    });
-  };
-
-  public handleTabClick = (e: ClickParam) => {
-    this.changeTab(parseInt(e.key, 10));
-  };
-
   /***********************************************************************************
   /* Load data and build data structures to cache relationships between
   /* objects.
@@ -406,7 +212,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public loadAllCourseData = (course: CourseType) => {
     this.loadAssignments(course).then((assignments) => {
       // use currentCourse as a nonce to see if this request is still desired
-      if (this.state.currentCourse !== course) {
+      if (this.props.currentCourse !== course) {
         return;
       }
       if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
@@ -420,7 +226,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     this.loadSubmissions(course).then((submissionList) => {
       // use currentCourse as a nonce to see if this request is still desired
-      if (this.state.currentCourse !== course) {
+      if (this.props.currentCourse !== course) {
         return;
       }
       const submissionMap: any = {};
@@ -443,7 +249,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadRoster(course).then((roster) => {
-      if (this.state.currentCourse !== course) {
+      // use currentCourse as a nonce to see if this request is still desired
+      if (this.props.currentCourse !== course) {
         return;
       }
       if (this.state.assignmentsLoadComplete && this.state.submissionsLoadComplete) {
@@ -474,7 +281,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadSections(course).then((sections) => {
-      if (this.state.currentCourse !== course) {
+      // use currentCourse as a nonce to see if this request is still desired
+      if (this.props.currentCourse !== course) {
         return;
       }
       const sectionsByStudent = this.generateSectionsByStudent(sections);
@@ -486,7 +294,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
     });
 
     this.loadViewsBySubmission(course).then((viewHistoryLists) => {
-      if (this.state.currentCourse !== course) {
+      if (this.props.currentCourse !== course) {
         return;
       }
       const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
@@ -724,21 +532,13 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
               });
             }),
           ).then((newAssignments) => {
-            course.assignments = newAssignments.map((i: AssignmentType) => {
-              return i.id;
-            });
-            const newCourses = this.state.courses;
-            newCourses.push(course);
-            this.setState({ courses: newCourses }, () => this.props.addCourse(course));
-            return this.updateNewCourse(course);
+            this.props.addCourse(course);
+            this.props.history.push(`${formatCourseURL(course)}/assignments`);
           });
         });
       } else {
-        const newCourses = this.state.courses;
-        newCourses.push(course);
-        this.setState({ courses: newCourses, currentPanel: 0 }, () => this.props.addCourse(course));
-        this.updateNewCourse(course);
-        return;
+        this.props.addCourse(course);
+        this.props.history.push(`${formatCourseURL(course)}/assignments`);
       }
     });
   };
@@ -749,11 +549,11 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         return el.id !== newCourse.id;
       });
       newCourses.push(newCourse);
-      this.setState({ currentCourse: newCourse, courses: newCourses });
+      this.setState({ courses: newCourses });
 
       // gracefully handle situations in which user changes course name
       // by automatically updating active URL
-      this.changeURL(newCourse, this.state.currentPanel, false);
+      this.props.history.push(`${formatCourseURL(newCourse)}/settings`);
       return newCourse;
     });
   };
@@ -763,7 +563,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /**********************************************************************************/
 
   public updateRoster = (newRoster: string[], userType: USER_APP) => {
-    const { currentCourse } = this.state;
+    const { currentCourse } = this.props;
 
     if (!currentCourse) {
       return Promise.reject();
@@ -832,12 +632,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /***********************************************************************/
 
   public createSection = (newSection: string) => {
-    if (!this.state.currentCourse) {
+    if (!this.props.currentCourse) {
       return Promise.reject();
     }
     const payload = {
       name: newSection,
-      course: this.state.currentCourse.id,
+      course: this.props.currentCourse.id,
       leaders: [],
       students: [],
       id: -1,
@@ -845,10 +645,10 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     return Section.create(payload).then((section: SectionType) => {
       const newSections = [...this.state.sections];
-      const updatedCourse = { ...this.state.currentCourse! };
+      const updatedCourse = { ...this.props.currentCourse! };
       newSections.push(section);
       updatedCourse.sections.push(section.id);
-      this.setState({ sections: newSections, currentCourse: updatedCourse });
+      this.setState({ sections: newSections });
       return section;
     });
   };
@@ -866,7 +666,8 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
 
     const students = thisSection.students;
     return Section.delete(sectionID).then(() => {
-      const { currentCourse, sectionsByStudent } = this.state;
+      const { sectionsByStudent } = this.state;
+      const { currentCourse } = this.props;
       // remove deleted section from state
       const newSections = sections.filter((section) => {
         return section.id !== sectionID;
@@ -883,7 +684,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         delete sectionsByStudent[student];
       });
       this.setState({
-        currentCourse,
         sections: newSections,
         sectionsByStudent,
       });
@@ -1006,7 +806,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
-    const { currentCourse } = this.state;
+    const { currentCourse } = this.props;
     if (!currentCourse) {
       return Promise.reject();
     }
@@ -1035,14 +835,12 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
       //
       // To protect against this, the code cautiously removes duplicate assignments
       // whereever they might live (in state).
-      const newCourse = { ...currentCourse, assignments: _.uniq([...currentCourse.assignments, assignment.id]) };
       const newAssignments = _.uniqBy([...assignments, assignment], (a: AssignmentType) => {
         return a.name;
       });
       submissions[assignment.id] = [];
 
       this.setState({
-        currentCourse: newCourse,
         submissions,
         assignments: newAssignments,
         submissionsByGrader: newSubsByGrader,
@@ -1056,7 +854,9 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   };
 
   public deleteAssignment = (toDelete: AssignmentType) => {
-    const { currentCourse, assignments } = this.state;
+    const { assignments } = this.state;
+    const { currentCourse } = this.props;
+
     if (!currentCourse) {
       return Promise.reject();
     }
@@ -1082,7 +882,6 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
         {
           assignments: newAssignments,
           submissions,
-          currentCourse: newCurrentCourse,
           submissionsbyUserLoadComplete: false,
         },
         () => {
@@ -1269,30 +1068,18 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
-    // console.log('admin', this.props.user);
     /* build header */
-    const menu = (
-      <Menu onClick={this.handleMenuClick}>
-        {this.props.user.courseadminCourses.map((course, i) => {
-          return <Menu.Item key={course.id}>{`${course.name} | ${course.period}`}</Menu.Item>;
-        })}
-      </Menu>
-    );
-    let selectorText = 'No courses yet...';
-    if (this.state.currentCourse) {
-      selectorText = `${this.state.currentCourse.name} | ${this.state.currentCourse.period}`;
-    }
-    // Dropdown overlay maxHeight is to create scroll for long menus that scales with window height
     const dropdown = (
-      <CPDropdown
-        value={selectorText}
-        overlay={menu}
-        overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
+      <CourseMenu
+        base="admin"
+        panel="assignments"
+        courses={this.state.courses}
+        currentCourse={this.props.currentCourse}
       />
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
-
     const headerLeft = [dropdown, createButton];
+
     // add option to switch
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
@@ -1304,7 +1091,7 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           <Icon type="setting" />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.logout}>
+      <Button key="header-logout" onClick={this.props.handleLogout}>
         Logout
       </Button>,
       <AdminOnboardingSelector
@@ -1334,154 +1121,107 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
           {createButton}
         </Empty>
       );
-    } else if (this.state.currentCourse) {
-      switch (this.state.currentPanel) {
-        case PANELS.SUBMISSION_STUDENTS:
-          detail = (
-            <StudentData
-              loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
-              assignments={this.state.assignments}
-              submissionsByStudent={this.state.submissionsByStudent}
-              deleteSubmission={this.deleteSubmission}
-              graders={this.state.graders}
-              changeSubmissionGrader={this.changeSubmissionGrader}
-              uploadSubmission={this.uploadSubmission}
-              viewsBySubmission={this.state.viewsBySubmission}
-              changeTab={this.changeTab}
-              students={this.state.students}
-              inactiveStudents={this.state.inactiveStudents}
-            />
-          );
-          break;
-        case PANELS.SUBMISSION_GRADERS:
-          detail = (
-            <GraderData
-              loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
-              assignments={this.state.assignments}
-              submissionsByAssignment={this.state.submissions}
-              submissionsByGrader={this.state.submissionsByGrader}
-              deleteSubmission={this.deleteSubmission}
-              graders={this.state.graders}
-              uploadSubmission={this.uploadSubmission}
-              viewsBySubmission={this.state.viewsBySubmission}
-              changeTab={this.changeTab}
-              inactiveGraders={this.state.inactiveGraders}
-            />
-          );
-          break;
-        case PANELS.ASSIGNMENTS:
-          detail = (
-            <ManageAssignments
-              key={this.state.currentCourse!.id}
-              loadComplete={
-                this.state.submissionsLoadComplete &&
-                this.state.assignmentsLoadComplete &&
-                this.state.submissionsbyUserLoadComplete
-              }
-              submissions={this.state.submissions}
-              currentCourse={this.state.currentCourse}
-              assignments={this.state.assignments}
-              updateAssignment={this.updateAssignment}
-              createAssignment={this.createAssignment}
-              deleteAssignment={this.deleteAssignment}
-              submissionsByStudent={this.state.submissionsByStudent}
-              students={this.state.students}
-              uploadSubmission={this.uploadSubmission}
-              deleteSubmission={this.deleteSubmission}
-              updateSubmission={this.updateSubmission}
-              viewsBySubmission={this.state.viewsBySubmission}
-              refreshCourseData={this.loadAllCourseData.bind(this, this.state.currentCourse!)}
-              myEmail={this.props.user.email}
-              user={this.props.user}
-              location={this.props.location}
-            />
-          );
-          break;
-        case PANELS.ROSTER_STUDENTS:
-          detail = (
-            <ManageStudents
-              notActivated={this.state.notActivated}
-              sections={this.state.sections}
-              students={this.state.students}
-              graders={this.state.graders}
-              admins={this.state.admins}
-              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
-              currentCourse={this.state.currentCourse}
-              updateRoster={this.updateRoster}
-              sectionsByStudent={this.state.sectionsByStudent}
-              updateSection={this.updateSection}
-              createSection={this.createSection}
-              updateStudentSection={this.updateStudentSection}
-              myEmail={this.props.user.email}
-            />
-          );
-          break;
-        case PANELS.ROSTER_GRADERS:
-          detail = (
-            <ManageGraders
-              notActivated={this.state.notActivated}
-              sections={this.state.sections}
-              students={this.state.students}
-              graders={this.state.graders}
-              superGraders={this.state.superGraders}
-              admins={this.state.admins}
-              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
-              currentCourse={this.state.currentCourse}
-              updateRoster={this.updateRoster}
-              sectionsByStudent={this.state.sectionsByStudent}
-              updateSection={this.updateSection}
-              createSection={this.createSection}
-              myEmail={this.props.user.email}
-            />
-          );
-          break;
-        case PANELS.ROSTER_ADMINS:
-          detail = (
-            <ManageAdmins
-              notActivated={this.state.notActivated}
-              sections={this.state.sections}
-              students={this.state.students}
-              graders={this.state.graders}
-              admins={this.state.admins}
-              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
-              currentCourse={this.state.currentCourse}
-              updateRoster={this.updateRoster}
-              sectionsByStudent={this.state.sectionsByStudent}
-              updateSection={this.updateSection}
-              createSection={this.createSection}
-              myEmail={this.props.user.email}
-            />
-          );
-          break;
-        case PANELS.ROSTER_SECTIONS:
-          detail = (
-            <ManageSections
-              sections={this.state.sections}
-              students={this.state.students}
-              graders={this.state.graders}
-              admins={this.state.admins}
-              loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
-              currentCourse={this.state.currentCourse}
-              updateRoster={this.updateRoster}
-              sectionsByStudent={this.state.sectionsByStudent}
-              deleteSection={this.deleteSection}
-              updateSection={this.updateSection}
-              createSection={this.createSection}
-            />
-          );
-          break;
-        case PANELS.SETTINGS:
-          detail = (
-            <CourseSettingsPanel currentCourse={this.state.currentCourse!} updateSettings={this.updateSettings} />
-          );
-          break;
-        default:
-          detail = <div>{panels[this.state.currentPanel]}</div>;
-      }
+    } else if (this.props.currentCourse) {
+      detail = (
+        <Switch>
+          <Route
+            path={`${this.props.match.url}/submissions`}
+            render={(props: any) => (
+              <SubmissionsManager
+                {...props}
+                key="submissions"
+                loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
+                assignments={this.state.assignments}
+                submissionsByStudent={this.state.submissionsByStudent}
+                deleteSubmission={this.deleteSubmission}
+                graders={this.state.graders}
+                changeSubmissionGrader={this.changeSubmissionGrader}
+                uploadSubmission={this.uploadSubmission}
+                viewsBySubmission={this.state.viewsBySubmission}
+                students={this.state.students}
+                inactiveStudents={this.state.inactiveStudents}
+                submissionsByAssignment={this.state.submissions}
+                submissionsByGrader={this.state.submissionsByGrader}
+                inactiveGraders={this.state.inactiveGraders}
+                baseURL={this.props.match.url}
+              />
+            )}
+          />
+          <Route
+            path={`${this.props.match.url}/assignments`}
+            render={(props: any) => (
+              <ManageAssignments
+                {...props}
+                key={+new Date()}
+                loadComplete={
+                  this.state.submissionsLoadComplete &&
+                  this.state.assignmentsLoadComplete &&
+                  this.state.submissionsbyUserLoadComplete
+                }
+                submissions={this.state.submissions}
+                currentCourse={this.props.currentCourse}
+                assignments={this.state.assignments}
+                updateAssignment={this.updateAssignment}
+                createAssignment={this.createAssignment}
+                deleteAssignment={this.deleteAssignment}
+                submissionsByStudent={this.state.submissionsByStudent}
+                students={this.state.students}
+                uploadSubmission={this.uploadSubmission}
+                deleteSubmission={this.deleteSubmission}
+                updateSubmission={this.updateSubmission}
+                viewsBySubmission={this.state.viewsBySubmission}
+                refreshCourseData={this.loadAllCourseData.bind(this, this.props.currentCourse!)}
+                myEmail={this.props.user.email}
+                user={this.props.user}
+                location={this.props.location}
+              />
+            )}
+          />
+          <Route
+            path={`${this.props.match.url}/roster`}
+            render={(props: any) => (
+              <RosterManager
+                {...props}
+                key="roster"
+                notActivated={this.state.notActivated}
+                sections={this.state.sections}
+                students={this.state.students}
+                graders={this.state.graders}
+                admins={this.state.admins}
+                superGraders={this.state.superGraders}
+                loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+                currentCourse={this.props.currentCourse}
+                updateRoster={this.updateRoster}
+                sectionsByStudent={this.state.sectionsByStudent}
+                updateSection={this.updateSection}
+                createSection={this.createSection}
+                updateStudentSection={this.updateStudentSection}
+                myEmail={this.props.user.email}
+                deleteSection={this.deleteSection}
+              />
+            )}
+          />
+          <Route
+            path={`${this.props.match.url}/settings`}
+            render={(props: any) => (
+              <CourseSettingsPanel
+                {...props}
+                currentCourse={this.props.currentCourse!}
+                updateSettings={this.updateSettings}
+              />
+            )}
+          />
+        </Switch>
+      );
     }
 
     const navigation = (collapsed: boolean) => (
-      <AdminNav selectedPanel={this.state.currentPanel} onClick={this.handleTabClick} collapsed={collapsed} />
+      <Switch>
+        <Route
+          path={`${this.props.match.url}/:panel1?/:panel2?`}
+          render={(props: any) => <AdminNav {...props} baseURL={this.props.match.url} collapsed={collapsed} />}
+        />
+      </Switch>
     );
 
     return (

@@ -36,7 +36,7 @@ const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
 
-interface IProps {
+export interface IManageStudentsProps {
   /* students data */
   students: string[];
   graders: string[];
@@ -63,8 +63,8 @@ interface IState {
   activeStudent: string;
 }
 
-class ManageStudents extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
+class ManageStudents extends React.Component<IManageStudentsProps, IState> {
+  public constructor(props: IManageStudentsProps) {
     super(props);
     this.state = {
       activeStudent: '',
@@ -367,6 +367,7 @@ class ManageStudents extends React.Component<IProps, IState> {
           <Breadcrumb>
             <Breadcrumb.Item>Roster</Breadcrumb.Item>
             <Breadcrumb.Item>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>Students</a>
             </Breadcrumb.Item>
           </Breadcrumb>

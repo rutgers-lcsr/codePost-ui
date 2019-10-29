@@ -36,6 +36,7 @@ interface IProps {
   hideSearch?: boolean;
   titleInfo?: string | React.ReactNode;
   onRowClick?: (record: any) => void;
+  detail?: React.ReactNode;
 }
 
 interface IState {
@@ -82,7 +83,6 @@ class TableDetail extends React.Component<IProps, IState> {
                 textToHighlight={text.toString()}
               />
             );
-            break;
           case 'number':
             return (
               <Highlighter
@@ -92,7 +92,6 @@ class TableDetail extends React.Component<IProps, IState> {
                 textToHighlight={text.toString()}
               />
             );
-            break;
           default:
             return text;
         }
@@ -120,6 +119,7 @@ class TableDetail extends React.Component<IProps, IState> {
           <br />
           <br />
           <Table columns={this.props.columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
+          {this.props.detail}
         </div>
       );
     } else {
@@ -202,6 +202,7 @@ class TableDetail extends React.Component<IProps, IState> {
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
             />
             {this.props.drawer}
+            {this.props.detail}
           </div>
         );
 

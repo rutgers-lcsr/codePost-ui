@@ -169,8 +169,8 @@ const CollectionCreateForm: any = Form.create()(
       // offending values from being input into this field using the precision prop
       // of InputNumber, but it's nicer to alert the user explicitly if they
       // try to enter a disallowed value.
-      if (parseFloat(value) < 0 || !Number.isInteger(parseFloat(value))) {
-        callback('Points must be a non-negative integer.');
+      if (parseFloat(value) < 0) {
+        callback('Points must be non-negative.');
       }
 
       // Call callback with no arguments to signal that value passed validation
@@ -336,8 +336,8 @@ const CollectionCreateForm: any = Form.create()(
                   label="Collaborative rubric"
                   extra={
                     <div>
-                      When enabled, admins and graders will be able to edit the assignment rubric inline in the code
-                      console. Graders will have full permission to create, modify and delete rubric items.
+                      When enabled, graders will be able to edit this assignment's rubric from the code console. Graders
+                      will have full permission to create, modify and delete rubric items.
                     </div>
                   }
                   labelCol={{ span: 6 }}

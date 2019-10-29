@@ -45,7 +45,7 @@ export interface IMossProps {
 
   user: UserType;
 
-  onCancel: () => void;
+  breadcrumbs: React.ReactElement[];
   location: any;
 }
 /**********************************************************************************************************************/
@@ -299,6 +299,7 @@ const Moss = (props: IMossProps) => {
           Want help getting started with Moss? Check out our guide{' '}
           <a
             target="_blank"
+            rel="noopener noreferrer"
             href="https://help.codepost.io/en/articles/3324264-faq-does-codepost-do-plagiarism-detection"
           >
             here
@@ -429,9 +430,7 @@ const Moss = (props: IMossProps) => {
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            <a>Assignments</a>
-          </Breadcrumb.Item>
+          {props.breadcrumbs}
           <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
           <Breadcrumb.Item>Moss</Breadcrumb.Item>
         </Breadcrumb>
@@ -459,6 +458,8 @@ const ProgressBar = (props: any) => {
     return () => {
       clearInterval(interval);
     };
+    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <Progress percent={counter} showInfo={false} />;

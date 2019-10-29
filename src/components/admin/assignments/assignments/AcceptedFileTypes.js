@@ -2,6 +2,10 @@
 
 export const acceptedFiles = [
   '.pdf',
+  '.org',
+  '.mll',
+  '.mli',
+  '.mly',
   '.png',
   '.jpeg',
   '.jpg',

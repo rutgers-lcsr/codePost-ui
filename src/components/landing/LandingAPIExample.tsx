@@ -14,6 +14,7 @@ import CPButton from '../core/CPButton';
 
 const Panel = Collapse.Panel;
 
+/* eslint-disable no-multi-str */
 const apiCodeExamples = [
   {
     title: 'Export grades',
@@ -104,6 +105,7 @@ for category in rubric_categories:\n\
   print(_freq_list)',
   },
 ];
+/* eslint-enable no-multi-str */
 
 interface IState {
   exampleIndex: number;
@@ -117,7 +119,6 @@ const dummyFunction = () => {
 let instance: CodeMirror.Editor | null = null;
 // @ts-ignore
 const setEditor = (editor: CodeMirror.Editor) => {
-  console.log('instance set');
   instance = editor;
 };
 
@@ -159,7 +160,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
     const customPanelStyle = {
       background: 'rgb(38, 50, 56, 0.95)',
-      borderRadius: 24,
+      borderRadius: 8,
       color: 'white',
       fontSize: 20,
       paddingTop: 10,
@@ -221,7 +222,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             top: 5,
             background: 'white',
             zIndex: 0,
-            borderRadius: 10,
+            borderRadius: 5,
             transition: '.3s',
             transform: `translateY(${
               exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'

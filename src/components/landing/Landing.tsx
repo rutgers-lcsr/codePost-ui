@@ -5,8 +5,14 @@
 /* react imports */
 import * as React from 'react';
 
+import { HashLink as Link } from 'react-router-hash-link';
+
+import { Icon } from 'antd';
+
 /* codePost Imports */
 import landingVars from '../../styles/pages/_landingVars';
+
+import CPButton from '../core/CPButton';
 
 // Section components
 import LandingGetStarted from './LandingGetStarted';
@@ -15,8 +21,9 @@ import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 
+import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
+
 // Animations
-import { AdminAnimation } from './landingAnimations/admin/AdminAnimation';
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
@@ -58,23 +65,15 @@ class Landing extends React.PureComponent<{}, {}> {
   public render() {
     const whyText = (
       <div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 20, fontSize: 14 }}>
-          Code review is the process of manually reviewing student code and making comments to explain errors and make
-          suggestions.
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
+          <b>Yes!</b> If you use an autograder, you can make it more effective by incorporating code review.
         </div>
-        <div style={{ fontWeight: 500, lineHeight: 1.5, paddingBottom: 10, fontSize: 15, color: '#24be85' }}>
-          Can I still use my autograder?
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
+          Autograding can tell your students whether their code is correct, but, by itself, the output can be confusing,
+          and bad code can still pass correctness tests.
         </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          Yes! If you use an autograder, you can make it more effective by incorporating code review.
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          Autograding can tell your students whether their code is correct, but, by itself,{' '}
-          <span style={{ fontWeight: 600 }}>the output can be confusing</span>, and{' '}
-          <span style={{ fontWeight: 600 }}>bad code can still pass correctness tests.</span>
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 14 }}>
-          With code review, you can explain autograder output and give feedback on everything an autograder can't
+        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
+          With code review, you can <b>explain autograder output</b> and give feedback on everything an autograder can't
           evaluate.
         </div>
       </div>
@@ -87,21 +86,33 @@ class Landing extends React.PureComponent<{}, {}> {
           your course staff can provide custom feedback, as well as apply standardized rubrics. And we support iPython
           notebooks too.
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>Pen-and-paper quality annotations, in the browser</div>
       </div>
     );
 
     const panelTwoText = (
-      <div>
+      <div id="panelTwo">
         <div style={{ paddingBottom: 15 }}>
           Setting up a course in codePost is easy: upload submissions to review and return graded work to students with
-          a few clicks. <span style={{ fontWeight: 600 }}>Managing a team of graders?</span> codePost lets you dispatch
-          work to graders, perform quality control on their work, and set up a rubric that lets you track what errors
-          students are making.
+          a few clicks.
+          <div style={{ paddingTop: 15 }}>
+            <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
+            <div>
+              codePost lets you dispatch work to graders, perform quality control on their work, and set up a rubric
+              that lets you track what errors students are making.
+            </div>
+          </div>
         </div>
-        <div style={{ fontWeight: 600, lineHeight: 1.5 }}>
-          Easy course management, so you can spend more time teaching
-        </div>
+        <Link to="/why-use-codePost#instructors" target="_blank">
+          <CPButton
+            key="panelTwoButton"
+            cpType="link"
+            style={{ background: 'white', fontSize: 16, padding: 0 }}
+            className="landing__link"
+          >
+            Learn more
+            <Icon type="arrow-right" className="landing__link__arrow" />
+          </CPButton>
+        </Link>
       </div>
     );
 
@@ -131,7 +142,7 @@ class Landing extends React.PureComponent<{}, {}> {
     const whyPanel = (
       <LandingPanel
         text={whyText}
-        title="Annotations = code review"
+        title="Can I still use my autograder?"
         subTitle=""
         module={<div>{<CodeReview />}</div>}
         type="left"
@@ -163,13 +174,13 @@ class Landing extends React.PureComponent<{}, {}> {
         text={panelTwoText}
         title="2. MANAGE YOUR COURSE"
         subTitle="Less time configuring software, more time teaching"
-        module={<AdminAnimation />}
+        module={<LandingFlowChart />}
         type="right"
-        moduleMaxWidth={610}
-        moduleMaxHeight={375}
+        moduleMaxWidth={700}
+        moduleMaxHeight={405}
         textSize="normal"
         removeModelSmallScreen={false}
-        bevel={true}
+        bevel={false}
         gutterSize={50}
       />
     );
