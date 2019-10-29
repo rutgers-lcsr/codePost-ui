@@ -16,7 +16,9 @@
     overflow-x: auto;
     // overflow-y: auto;
 
-    margin: 0px !important;
+    margin-top: 0px !important;
+    margin-right: 0px !important;
+    margin-bottom: 0px !important;
 
     // SyntaxHighlighter style clone
     text-rendering: optimizeLegibility;
@@ -92,6 +94,14 @@
         color: transparent; /* Gecko Browsers */
         background: transparent;
       }
+    }
+  }
+
+  .react-syntax-highlighter-line-number {
+    &:hover {
+      cursor: pointer;
+      color: white;
+      background: #24be85;
     }
   }
 }

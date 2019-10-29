@@ -111,16 +111,8 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   };
 
-  // Handle ESC key
-  public handleKeyPress = (e: KeyboardEvent) => {
-    if (e.keyCode === 27) {
-      this.props.changeActive(undefined);
-    }
-  };
-
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
-    document.addEventListener('keydown', this.handleKeyPress);
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -134,7 +126,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
-    document.removeEventListener('keydown', this.handleKeyPress);
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {

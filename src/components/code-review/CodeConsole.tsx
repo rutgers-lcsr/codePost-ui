@@ -17,6 +17,8 @@ import _ from 'lodash';
 /* codePost imports */
 import Loading from '../core/Loading';
 
+import { getOperatingSystem, OS } from '../core/operatingSystem';
+
 import CodePanelHighlighting from './code-panel/CodePanelHighlighting';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
@@ -434,6 +436,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     document.addEventListener('keydown', this.handleKeydown);
+    document.addEventListener('keydown', this.handleActiveCommentHotkeys);
 
     if (this.props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
@@ -564,6 +567,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeydown);
+    document.removeEventListener('keydown', this.handleActiveCommentHotkeys);
   }
 
   public handleKeydown = async (e: any) => {
@@ -675,6 +679,38 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           await wait(5);
 
           this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorIndex: 0 });
+        }
+      }
+    }
+  };
+
+  public setCursor = (cursorIndex: number, cursorExtent: number) => {
+    console.log('abc', cursorIndex, cursorExtent);
+    this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex, cursorExtent });
+  };
+
+  public handleActiveCommentHotkeys = (e: any) => {
+    if (e.key === 'Escape') {
+      this.setState({ activeCommentID: undefined });
+    }
+
+    if (this.state.selectedFile !== undefined && this.state.activeCommentID !== undefined) {
+      const os = getOperatingSystem();
+      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+      // FIXME: Delete Comment - consider adding a warning
+      const trigger = e.key === 'd' && triggerKey;
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const comment = this.state.comments[this.state.selectedFile.id].find((c: CommentType) => {
+          return c.id === this.state.activeCommentID;
+        });
+        this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1, activeCommentID: undefined });
+
+        if (comment !== undefined) {
+          this.deleteComment(comment);
         }
       }
     }
@@ -1431,6 +1467,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               showCursor={this.state.showCursor}
               cursorIndex={this.state.cursorIndex}
               cursorExtent={this.state.cursorExtent}
+              setCursor={this.setCursor}
             />
           );
 
@@ -1671,6 +1708,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               showCursor={this.state.showCursor}
               cursorIndex={this.state.cursorIndex}
               cursorExtent={this.state.cursorExtent}
+              setCursor={this.setCursor}
             />
           );
 

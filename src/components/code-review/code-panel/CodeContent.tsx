@@ -36,6 +36,7 @@ export interface ICodeContentEditProps {
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
   cursorExtent: number;
+  setCursor: (cursorIndex: number, cursorExtent: number) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -64,6 +65,34 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     return () => {
       if (codeMain !== null && codeSyntax !== null) {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
+      }
+    };
+  }, []);
+
+  const clickLineNumbers = (e: any) => {
+    const classNames = e.target.className.split('-');
+    if (classNames[classNames.length - 1] === 'number') {
+      const lineNumber = parseInt(e.target.innerText);
+      // Update cursor
+      props.setCursor(lineNumber - 1, 1);
+    }
+  };
+
+  React.useEffect(() => {
+    const codeSyntax = document.getElementById('code-syntax');
+    let lineNumbers: any;
+
+    if (codeSyntax !== null) {
+      lineNumbers = codeSyntax.getElementsByTagName('code')[0];
+
+      if (lineNumbers) {
+        lineNumbers.addEventListener('mousedown', clickLineNumbers);
+      }
+    }
+
+    return () => {
+      if (lineNumbers !== undefined) {
+        lineNumbers.removeEventListener('mousedown', clickLineNumbers);
       }
     };
   }, []);
@@ -144,7 +173,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             style={{
               lineHeight: `${themeVars.grade.codeLineHeight}px`,
               fontSize: `${themeVars.grade.codeFontSize}px`,
-              paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+              marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
               paddingBottom: '10px',
             }}
           >
@@ -157,7 +186,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           style={{
             lineHeight: `${themeVars.grade.codeLineHeight}px`,
             fontSize: `${themeVars.grade.codeFontSize}px`,
-            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+            marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
             paddingBottom: '10px',
           }}
         >
@@ -182,6 +211,10 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
       return;
     };
 
+    public setCursor = (cursorIndex: number, cursorExtent: number) => {
+      return;
+    };
+
     public render() {
       return (
         <Component
@@ -192,6 +225,7 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           showCursor={CURSOR_DOMAIN.HIDDEN}
           cursorIndex={0}
           cursorExtent={1}
+          setCursor={this.setCursor}
         />
       );
     }

@@ -208,14 +208,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public handleCursorActivate = (e: any) => {
-    console.log('HERE!', this.props.cursored);
-
     if (!this.props.cursored) {
       return;
     }
 
     if (e.key === 'Enter') {
-      console.log('ALSO');
       e.preventDefault();
       e.stopPropagation();
       if (this.props.commentType === 'active') {
