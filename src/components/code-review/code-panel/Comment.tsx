@@ -36,6 +36,7 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import { findBlockElement } from './BlockUtils.tsx';
 /**********************************************************************************************************************/
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -325,7 +326,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--focused ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -337,7 +339,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--commented ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -375,6 +378,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           style={{ color: this.context.consoleTheme.commentTitleText }}
         >
           Block {this.props.comment.startLine + 1}
+        </span>
+      );
+    } else if (File.codeType(this.props.file) === 'pdf') {
+      commentElements.line = (
+        <span
+          className="cp-label--mid-bold cp-label--italic"
+          style={{ color: this.context.consoleTheme.commentTitleText }}
+        >
+          Page {this.props.comment.startLine}
         </span>
       );
     } else {

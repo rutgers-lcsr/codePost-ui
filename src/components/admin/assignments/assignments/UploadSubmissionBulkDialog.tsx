@@ -248,7 +248,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         };
 
         const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-        if (['png', 'jpg', 'jpeg'].includes(extension)) {
+        if (['png', 'jpg', 'jpeg', 'pdf'].includes(extension)) {
           studentsReader.readAsDataURL(file);
         } else {
           studentsReader.readAsBinaryString(file);
